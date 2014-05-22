@@ -1,0 +1,6 @@
+/*.vssscc
+*.vspscc
+
+/src/*.vssscc
+/src/*.suo
+/src/oscript/oscript.csproj.user

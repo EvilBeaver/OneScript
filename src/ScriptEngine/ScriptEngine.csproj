@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ScriptEngine</RootNamespace>
+    <AssemblyName>ScriptEngine</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CustomMarshalers" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Compiler\Compiler.cs" />
+    <Compile Include="Compiler\CompilerContext.cs" />
+    <Compile Include="Compiler\CompilerExceptions.cs" />
+    <Compile Include="Compiler\ModulePersistor.cs" />
+    <Compile Include="Machine\Library\ContextBase.cs" />
+    <Compile Include="Machine\Library\ContextValuesMarshaller.cs" />
+    <Compile Include="Machine\Library\ExceptionInfoContext.cs" />
+    <Compile Include="Machine\Library\PropertyNameIndexAccessor.cs" />
+    <Compile Include="Machine\Library\ScriptInformationContext.cs" />
+    <Compile Include="Machine\ModuleImage.cs" />
+    <Compile Include="Compiler\ModuleWriter.cs" />
+    <Compile Include="Compiler\Parser.cs" />
+    <Compile Include="Compiler\SymbolScope.cs" />
+    <Compile Include="Compiler\Tokens.cs" />
+    <Compile Include="IHostApplication.cs" />
+    <Compile Include="ICodeSource.cs" />
+    <Compile Include="Compiler\CompilerCore.cs" />
+    <Compile Include="Compiler\ICompilerSymbolsProvider.cs" />
+    <Compile Include="Machine\Library\AttachedScriptsFactory.cs" />
+    <Compile Include="Machine\Library\COMWrapperContext.cs" />
+    <Compile Include="Machine\Library\ContextPropertyMapper.cs" />
+    <Compile Include="Machine\Library\CommandLineArguments.cs" />
+    <Compile Include="Machine\Library\DispatchUtility.cs" />
+    <Compile Include="ModuleHandle.cs" />
+    <Compile Include="Machine\BuiltinFunctions.cs" />
+    <Compile Include="Machine\Core.cs" />
+    <Compile Include="Machine\ExecutionFrame.cs" />
+    <Compile Include="Machine\GenericValue.cs" />
+    <Compile Include="Machine\IAttachableContext.cs" />
+    <Compile Include="Machine\IModuleImage.cs" />
+    <Compile Include="Machine\IRuntimeContextInstance.cs" />
+    <Compile Include="Machine\IValue.cs" />
+    <Compile Include="Machine\Library\ArrayImpl.cs" />
+    <Compile Include="Machine\Library\CollectionEnumerator.cs" />
+    <Compile Include="Machine\Library\ContextMethodMapper.cs" />
+    <Compile Include="Machine\Library\ICollectionContext.cs" />
+    <Compile Include="Machine\Library\KeyAndValueImpl.cs" />
+    <Compile Include="Machine\Library\MapImpl.cs" />
+    <Compile Include="Machine\Library\DynamicPropertiesCollectionHolder.cs" />
+    <Compile Include="Machine\Library\ContextIValueImpl.cs" />
+    <Compile Include="Machine\Library\GlobalContext.cs" />
+    <Compile Include="Machine\Library\StdLib.cs" />
+    <Compile Include="Machine\Library\StructureImpl.cs" />
+    <Compile Include="Machine\LoadedModule.cs" />
+    <Compile Include="Machine\MachineInstance.cs" />
+    <Compile Include="Machine\RuntimeExceptions.cs" />
+    <Compile Include="Machine\Scope.cs" />
+    <Compile Include="Machine\ScriptLoader.cs" />
+    <Compile Include="Machine\TypeManager.cs" />
+    <Compile Include="Machine\UserScriptContextInstance.cs" />
+    <Compile Include="Machine\ValueFactory.cs" />
+    <Compile Include="Machine\Variables.cs" />
+    <Compile Include="Process.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,104 @@
+﻿<?xml version="1.0"?>
+<SyntaxDefinition name="C#" extensions=".cs" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <!-- The named colors 'Comment' and 'String' are used in SharpDevelop to detect if a line is inside a multiline string/comment -->
+  <Color name="Comment" foreground="Green" exampleText="// comment" />
+  <Color name="String" foreground="Black" exampleText="string text = &quot;Hello, World!&quot;"/>
+  <Color name="Date" foreground="Brown" exampleText="'20010101'"/>
+  <Color name="Preprocessor" foreground="Brown" exampleText="#region Title" />
+  <Color name="Punctuation" foreground="Red" exampleText="a(b.c);" />
+  <Color name="NumberLiteral" foreground="DarkBlue" exampleText="3.1415f"/>
+  <Color name="Keywords" foreground="Red" exampleText="if (a) {} else {}"/>
+  
+  <!-- This is the main ruleset. -->
+  <RuleSet ignoreCase="true">
+    <Span color="Preprocessor">
+      <Begin>\#</Begin>
+    </Span>
+
+    <Span color="Preprocessor">
+      <Begin>\&amp;</Begin>
+    </Span>
+
+    <Span color="Comment">
+      <Begin>//</Begin>
+    </Span>
+
+    <Span color="Date">
+      <Begin>'</Begin>
+      <End>'</End>
+    </Span>
+
+    <Span color="String" multiline="true">
+      <Begin>"</Begin>
+      <End>"</End>
+      <RuleSet>
+        <!-- span for escape sequences -->
+        <Span begin='""' end=""/>
+      </RuleSet>
+    </Span>
+
+    <Keywords color="Keywords">
+      <Word>Перем</Word>
+      <Word>Если</Word>
+      <Word>Тогда</Word>
+      <Word>Иначе</Word>
+      <Word>ИначеЕсли</Word>
+      <Word>КонецЕсли</Word>
+      <Word>Для</Word>
+      <Word>Каждого</Word>
+      <Word>Из</Word>
+      <Word>По</Word>
+      <Word>Пока</Word>
+      <Word>Цикл</Word>
+      <Word>КонецЦикла</Word>
+      <Word>Возврат</Word>
+      <Word>Продолжить</Word>
+      <Word>Попытка</Word>
+      <Word>Исключение</Word>
+      <Word>ВызватьИсключение</Word>
+      <Word>КонецПопытки</Word>
+      <Word>НачатьТранзакцию</Word>
+      <Word>ЗафиксироватьТранзакцию</Word>
+      <Word>Процедура</Word>
+      <Word>Функция</Word>
+      <Word>КонецПроцедуры</Word>
+      <Word>КонецФункции</Word>
+      <Word>Знач</Word>
+      <Word>Новый</Word>
+      <Word>Экспорт</Word>
+      <Word>Истина</Word>
+      <Word>Ложь</Word>
+      <Word>Неопределено</Word>
+      <Word>Null</Word>
+      <Word>Лев</Word>
+      <Word>Прав</Word>
+      <Word>Сред</Word>
+      <Word>Число</Word>
+      <Word>Дата</Word>
+      <Word>и</Word>
+      <Word>или</Word>
+      <Word>не</Word>
+    </Keywords>
+
+    <!-- Mark previous rule
+    <Rule color="MethodCall">
+      \b
+      [\d\w_]+  # an identifier
+      (?=\s*\() # followed by (
+    </Rule-->
+
+    <!-- Digits -->
+    <Rule color="NumberLiteral">
+      \b0[xX][0-9a-fA-F]+  # hex number
+      |
+      (	\b\d+(\.[0-9]+)?   #number with optional floating point
+      |	\.[0-9]+           #or just starting with floating point
+      )
+      ([eE][+-]?[0-9]+)? # optional exponent
+    </Rule>
+
+    <Rule color="Punctuation">
+      [?,.;()\[\]{}+\-/%*=&lt;&gt;^+~!|&amp;]+
+    </Rule>
+  </RuleSet>
+</SyntaxDefinition>
