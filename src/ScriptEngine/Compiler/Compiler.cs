@@ -635,13 +635,14 @@ namespace ScriptEngine.Compiler
             PopStructureToken();
             AddCommand(OperationCode.Jmp, conditionIndex);
             
+            var endLoop = AddCommand(OperationCode.Nop, 0);
             _module.Code[jumpFalseIndex] = new Command()
             {
                 Code = OperationCode.JmpFalse,
-                Argument = AddCommand(OperationCode.Nop, 0)
+                Argument = endLoop
             };
 
-            CorrectBreakStatements(_nestedLoops.Pop(), jumpFalseIndex);
+            CorrectBreakStatements(_nestedLoops.Pop(), endLoop);
 
             NextToken();
 
