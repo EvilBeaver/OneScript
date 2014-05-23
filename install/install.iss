@@ -54,7 +54,7 @@ var
     key: string;
     install, release, serviceCount: cardinal;
     check45, success: boolean;
-var reqNetVer : string;
+//var reqNetVer : string;
 begin
     // .NET 4.5 installs as update to .NET 4.0 Full
     if version = 'v4.5' then begin
