@@ -89,9 +89,9 @@ namespace ScriptEngine.Machine
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
-            _machine.AttachContext(this, true);
             _machine.StateConsistentOperation(()=>
             {
+                _machine.AttachContext(this, true);
                 _machine.SetModule(_module);
                 _machine.ExecuteMethod(methodNumber, arguments);
             });
@@ -99,10 +99,10 @@ namespace ScriptEngine.Machine
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
-            _machine.AttachContext(this, true);
             IValue returnClosure = null;
             _machine.StateConsistentOperation(() =>
             {
+                _machine.AttachContext(this, true);
                 _machine.SetModule(_module);
                 returnClosure = _machine.ExecuteMethod(methodNumber, arguments);
             });
