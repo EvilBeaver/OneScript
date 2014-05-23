@@ -58,6 +58,9 @@ namespace ScriptEngine.Machine.Library
         private object MarshalIValue(IValue val)
         {
             object result;
+            if (val == null)
+                return val;
+
             switch (val.DataType)
             {
                 case Machine.DataType.Boolean:
@@ -89,6 +92,9 @@ namespace ScriptEngine.Machine.Library
 
         private IValue CreateIValue(object objParam)
         {
+            if (objParam == null)
+                return ValueFactory.Create();
+
             var type = objParam.GetType();
             if (type == typeof(string))
             {
