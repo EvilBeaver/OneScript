@@ -5,6 +5,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptEngine", "ScriptEngine\ScriptEngine.csproj", "{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oscript", "oscript\oscript.csproj", "{F7C89194-ECDC-4C76-8418-407994209BE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApplication1", "ConsoleApplication1\ConsoleApplication1.csproj", "{4959854F-ED1C-454D-906C-286D4868618A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,26 @@ Global
 		{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}.Release|Mixed Platforms.Build.0 = Release|x86
 		{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}.Release|x86.ActiveCfg = Release|x86
 		{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}.Release|x86.Build.0 = Release|x86
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F7C89194-ECDC-4C76-8418-407994209BE8}.Release|x86.ActiveCfg = Release|Any CPU
+		{4959854F-ED1C-454D-906C-286D4868618A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4959854F-ED1C-454D-906C-286D4868618A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4959854F-ED1C-454D-906C-286D4868618A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{4959854F-ED1C-454D-906C-286D4868618A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{4959854F-ED1C-454D-906C-286D4868618A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4959854F-ED1C-454D-906C-286D4868618A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4959854F-ED1C-454D-906C-286D4868618A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4959854F-ED1C-454D-906C-286D4868618A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4959854F-ED1C-454D-906C-286D4868618A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4959854F-ED1C-454D-906C-286D4868618A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
