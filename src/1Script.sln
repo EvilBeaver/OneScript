@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptEngine", "ScriptEngine\ScriptEngine.csproj", "{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oscript", "oscript\oscript.csproj", "{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,17 +39,6 @@ Global
 		{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}.Release|Mixed Platforms.Build.0 = Release|x86
 		{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}.Release|x86.ActiveCfg = Release|x86
 		{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}.Release|x86.Build.0 = Release|x86
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Release|Mixed Platforms.Build.0 = Release|x86
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Release|x86.ActiveCfg = Release|x86
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
