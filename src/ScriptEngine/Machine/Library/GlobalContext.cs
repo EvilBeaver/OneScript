@@ -8,18 +8,36 @@ namespace ScriptEngine.Machine.Library
 {
     class GlobalContext : IRuntimeContextInstance, IAttachableContext, Compiler.ICompilerSymbolsProvider
     {
-        Process _currentProcess;
-        IVariable[] _state;
-        CommandLineArguments _cmdArgsInstance;
-        
+        private Process _currentProcess;
+        private IVariable[] _state;
+        private DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
+        private List<Func<IValue>> _properties = new List<Func<IValue>>();
+
         public GlobalContext()
         {
             InitLibrary();
         }
 
+        public void SetProcess(Process process)
+        {
+            _currentProcess = process;
+            InitInstance();
+        }
+
         private void InitLibrary()
         {
             StdLib.Initialize();
+        }
+
+        public void RegisterProperty(string name, IValue value)
+        {
+            RegisterProperty(name, () => value);
+        }
+
+        private void RegisterProperty(string name, Func<IValue> getter)
+        {
+            _propHolder.RegisterProperty(name);
+            _properties.Add(getter);
         }
 
         private void InitInstance()
@@ -37,30 +55,10 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
-        public void SetProcess(Process process)
-        {
-            _currentProcess = process;
-            InitInstance();
-        }
-
         [ContextMethod("Сообщить")]
         public void Echo(string message)
         {
             _currentProcess.ApplicationHost.Echo(message);
-        }
-
-        [ContextProperty("АргументыКоманднойСтроки", CanWrite = false)]
-        public IRuntimeContextInstance CommandLineArguments
-        {
-            get
-            {
-                if (_cmdArgsInstance == null)
-                {
-                    _cmdArgsInstance = new CommandLineArguments(_currentProcess.ApplicationHost.GetCommandLineArguments());
-                }
-
-                return _cmdArgsInstance;
-            }
         }
 
         [ContextMethod("ПодключитьСценарий")]
@@ -133,16 +131,14 @@ namespace ScriptEngine.Machine.Library
         public IEnumerable<Compiler.VariableDescriptor> GetSymbols()
         {
             VariableDescriptor[] array = new VariableDescriptor[_properties.Count];
-            for (int i = 0; i < _properties.Count; i++)
+            foreach (var propKeyValue in _propHolder.GetProperties())
             {
-                var propInfo = _properties.GetProperty(i);
                 var descr = new VariableDescriptor();
-                descr.Identifier = propInfo.Name;
+                descr.Identifier = propKeyValue.Key;
                 descr.Type = SymbolType.ContextProperty;
-
-                array[i] = descr;
+                array[propKeyValue.Value] = descr;
             }
-
+            
             return array;
         }
 
@@ -163,7 +159,7 @@ namespace ScriptEngine.Machine.Library
 
         public bool IsIndexed
         {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public IValue GetIndexedValue(IValue index)
@@ -178,27 +174,27 @@ namespace ScriptEngine.Machine.Library
 
         public int FindProperty(string name)
         {
-            return _properties.FindProperty(name);
+            return _propHolder.GetPropertyNumber(name);
         }
 
         public bool IsPropReadable(int propNum)
         {
-            return _properties.GetProperty(propNum).CanRead;
+            return true;
         }
 
         public bool IsPropWritable(int propNum)
         {
-            return _properties.GetProperty(propNum).CanWrite;
+            return false;
         }
 
         public IValue GetPropValue(int propNum)
         {
-            return _properties.GetProperty(propNum).Getter(this);
+            return _properties[propNum]();
         }
 
         public void SetPropValue(int propNum, IValue newVal)
         {
-            _properties.GetProperty(propNum).Setter(this, newVal);
+            throw new InvalidOperationException("global props are not writable");
         }
 
         public int FindMethod(string name)
@@ -224,12 +220,10 @@ namespace ScriptEngine.Machine.Library
         #endregion
 
         private static ContextMethodsMapper<GlobalContext> _methods;
-        private static ContextPropertyMapper<GlobalContext> _properties;
 
         static GlobalContext()
         {
             _methods = new ContextMethodsMapper<GlobalContext>();
-            _properties = new ContextPropertyMapper<GlobalContext>();
         }
 
 
