@@ -68,6 +68,7 @@
     <Compile Include="Compiler\ModulePersistor.cs" />
     <Compile Include="Machine\Library\ContextBase.cs" />
     <Compile Include="Machine\Library\ContextValuesMarshaller.cs" />
+    <Compile Include="Machine\Library\DynamicPropertiesHolder.cs" />
     <Compile Include="Machine\Library\ExceptionInfoContext.cs" />
     <Compile Include="Machine\Library\PropertyNameIndexAccessor.cs" />
     <Compile Include="Machine\Library\ScriptInformationContext.cs" />
@@ -100,7 +101,7 @@
     <Compile Include="Machine\Library\ICollectionContext.cs" />
     <Compile Include="Machine\Library\KeyAndValueImpl.cs" />
     <Compile Include="Machine\Library\MapImpl.cs" />
-    <Compile Include="Machine\Library\DynamicPropertiesCollectionHolder.cs" />
+    <Compile Include="Machine\Library\DynamicPropertiesAccessor.cs" />
     <Compile Include="Machine\Library\ContextIValueImpl.cs" />
     <Compile Include="Machine\Library\GlobalContext.cs" />
     <Compile Include="Machine\Library\StdLib.cs" />
@@ -116,6 +117,7 @@
     <Compile Include="Machine\Variables.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

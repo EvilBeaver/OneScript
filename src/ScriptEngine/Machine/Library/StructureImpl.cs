@@ -6,7 +6,7 @@ using System.Text;
 namespace ScriptEngine.Machine.Library
 {
     [ContextClass("Структура")]
-    class StructureImpl : DynamicPropertiesCollectionHolder, ICollectionContext
+    class StructureImpl : DynamicPropertiesAccessor, ICollectionContext
     {
         private List<IValue> _values = new List<IValue>();
         

@@ -6,7 +6,7 @@ using System.Text;
 namespace ScriptEngine.Machine.Library
 {
     [ContextClass("КлючИЗначение")]
-    class KeyAndValueImpl : DynamicPropertiesCollectionHolder
+    class KeyAndValueImpl : ContextBase<KeyAndValueImpl>
     {
         private IValue _key;
         private IValue _value;
@@ -15,18 +15,24 @@ namespace ScriptEngine.Machine.Library
         {
             _key = key;
             _value = value;
-            RegisterProperty("Ключ");
-            RegisterProperty("Значение");
         }
 
-        public override bool IsPropReadable(int propNum)
+        [ContextProperty("Ключ")]
+        public IValue Key 
         {
-            return true;
+            get
+            {
+                return _key;
+            }
         }
 
-        public override bool IsPropWritable(int propNum)
+        [ContextProperty("Значение")]
+        public IValue Value
         {
-            return false;
+            get
+            {
+                return _value;
+            }
         }
 
         public override IValue GetPropValue(int propNum)
