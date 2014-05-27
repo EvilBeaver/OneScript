@@ -7,7 +7,7 @@ namespace ScriptEngine.Environment
 {
     public interface ICodeSourceFactory
     {
-        ModuleHandle FromFile(string path);
-        ModuleHandle FromString(string code);
+        ICodeSource FromFile(string path);
+        ICodeSource FromString(string code);
     }
 }

@@ -98,6 +98,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CompilerException.cs" />
     <Compile Include="Controls\CodeControl.xaml.cs" />
     <Compile Include="Controls\ImageArray.cs" />
     <Compile Include="Controls\MDConstants.cs" />
@@ -143,6 +144,10 @@
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
       <Project>{f09a46bd-5737-45e7-ba60-a47c9f7821a9}</Project>
       <Name>ScriptEngine.HostedScript</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
+      <Project>{f062d1d9-d307-492a-a56b-ff3c55f8f6c0}</Project>
+      <Name>ScriptEngine</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

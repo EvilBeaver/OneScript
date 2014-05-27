@@ -3,35 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ScriptEngine.Machine.Contexts;
+using ScriptEngine.HostedScript;
 using ScriptEngine.Environment;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Library
 {
     class GlobalContext : IRuntimeContextInstance, IAttachableContext, ICompilerSymbolsProvider
     {
-        private Process _currentProcess;
         private IVariable[] _state;
         private DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private List<Func<IValue>> _properties = new List<Func<IValue>>();
-
-        public GlobalContext()
-        {
-            InitLibrary();
-        }
-
-        public void SetProcess(Process process)
-        {
-            _currentProcess = process;
-            InitInstance();
-        }
-
-        private void InitLibrary()
-        {
-            var discoverer = new ContextDiscoverer();
-            discoverer.Discover(System.Reflection.Assembly.GetExecutingAssembly());
-            //StdLib.Initialize();
-        }
 
         public void RegisterProperty(string name, IValue value)
         {
@@ -44,7 +26,7 @@ namespace ScriptEngine.Machine.Library
             _properties.Add(getter);
         }
 
-        private void InitInstance()
+        public void InitInstance()
         {
             InitContextVariables();
         }
@@ -59,23 +41,26 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
-        //[ContextMethod("Сообщить")]
-        //public void Echo(string message)
-        //{
-        //    _currentProcess.ApplicationHost.Echo(message);
-        //}
+        public IHostApplication ApplicationHost { get; set; }
+        public ICodeSource CodeSource { get; set; }
 
-        //[ContextMethod("ПодключитьСценарий")]
-        //public void LoadScript(string path, string typeName)
-        //{
-        //    AttachedScriptsFactory.Attach(path, typeName);
-        //}
+        [ContextMethod("Сообщить")]
+        public void Echo(string message)
+        {
+            ApplicationHost.Echo(message);
+        }
 
-        //[ContextMethod("ТекущийСценарий")]
-        //public IRuntimeContextInstance CurrentScript()
-        //{
-        //    return new ScriptInformationContext(_currentProcess.CodeSource);
-        //}
+        [ContextMethod("ПодключитьСценарий")]
+        public void LoadScript(string path, string typeName)
+        {
+            //AttachedScriptsFactory.Attach(path, typeName);
+        }
+
+        [ContextMethod("ТекущийСценарий")]
+        public IRuntimeContextInstance CurrentScript()
+        {
+            return new ScriptInformationContext(CodeSource);
+        }
 
         [ContextMethod("Приостановить")]
         public void Sleep(int delay)
@@ -89,22 +74,22 @@ namespace ScriptEngine.Machine.Library
             throw new ScriptInterruptionException(exitCode);
         }
 
-        //[ContextMethod("ВвестиСтроку")]
-        //public bool InputString([ByRef] IVariable resut, int len = 0)
-        //{
-        //    string input;
-        //    bool inputIsDone;
+        [ContextMethod("ВвестиСтроку")]
+        public bool InputString([ByRef] IVariable resut, int len = 0)
+        {
+            string input;
+            bool inputIsDone;
 
-        //    inputIsDone = _currentProcess.ApplicationHost.InputString(out input, len);
+            inputIsDone = ApplicationHost.InputString(out input, len);
 
-        //    if (inputIsDone)
-        //    {
-        //        resut.Value = ValueFactory.Create(input);
-        //        return true;
-        //    }
-        //    else
-        //        return false;
-        //}
+            if (inputIsDone)
+            {
+                resut.Value = ValueFactory.Create(input);
+                return true;
+            }
+            else
+                return false;
+        }
 
         [ContextMethod("ОсвободитьОбъект")]
         public void DisposeObject(IRuntimeContextInstance obj)

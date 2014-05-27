@@ -129,7 +129,7 @@ namespace ScriptEngine.Compiler
 
     }
 
-    class ExtraClosedParenthesis : CompilerException
+    public class ExtraClosedParenthesis : CompilerException
     {
         public ExtraClosedParenthesis(int line) : base("Token expected: (")
         {

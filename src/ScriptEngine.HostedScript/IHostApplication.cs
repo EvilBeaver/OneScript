@@ -9,7 +9,7 @@ namespace ScriptEngine.HostedScript
     {
         void Echo(string str);
         void ShowExceptionInfo(Exception exc);
-        public bool InputString(out string result, int maxLen);
-        public string[] GetCommandLineArguments();
+        bool InputString(out string result, int maxLen);
+        string[] GetCommandLineArguments();
     }
 }

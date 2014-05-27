@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ScriptEngine;
 using ScriptEngine.HostedScript;
 
 namespace TestApp
@@ -44,20 +45,21 @@ namespace TestApp
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var src = ScriptSourceFactory.StringBased(txtCode.Text);
+            var hostedScript = new HostedScriptEngine();
+            var src = hostedScript.Loader.FromString(txtCode.Text);
             using (var writer = new StringWriter())
             {
                 try
                 {
-                    var moduleWriter = new ModuleWriter();
+                    var moduleWriter = new ScriptEngine.Compiler.ModuleWriter();
                     moduleWriter.Write(writer, src);
                     result.Text = writer.GetStringBuilder().ToString();
                 }
-                catch (CompilerException exc)
+                catch (ScriptEngine.Compiler.CompilerException exc)
                 {
                     result.Text = exc.Message + "\nLine: " + exc.LineNumber;
                 }
-                catch (ParserException exc)
+                catch (ScriptEngine.Compiler.ParserException exc)
                 {
                     result.Text = exc.Message + "\nLine: " + exc.Line;
                 }
@@ -74,7 +76,10 @@ namespace TestApp
             result.Text = "";
             var sw = new System.Diagnostics.Stopwatch();
             var host = new Host(result);
-            var process = Process.Create(host, ScriptSourceFactory.StringBased(txtCode.Text));
+
+            var hostedScript = new HostedScriptEngine();
+            var src = hostedScript.Loader.FromString(txtCode.Text);
+            var process = hostedScript.CreateProcess(host, src);
 
             result.AppendText("Script started: " + DateTime.Now.ToString() + "\n");
             sw.Start();

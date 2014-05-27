@@ -116,11 +116,11 @@ namespace ScriptEngine.Machine
 
     }
 
-    static class TypeManager
+    public static class TypeManager
     {
         private static ITypeManager _instance;
 
-        public static void Initialize(ITypeManager instance)
+        internal static void Initialize(ITypeManager instance)
         {
             _instance = instance;
         }

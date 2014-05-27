@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Library;
 
 namespace ScriptEngine
 {
@@ -11,6 +12,17 @@ namespace ScriptEngine
     {
         private MachineInstance _machine = new MachineInstance();
         private ScriptSourceFactory _scriptFactory;
+
+        public ScriptingEngine()
+        {
+            TypeManager.Initialize(new StandartTypeManager());
+            ContextDiscoverer.Discover(System.Reflection.Assembly.GetExecutingAssembly());
+        }
+
+        public void AttachAssembly(System.Reflection.Assembly asm)
+        {
+            ContextDiscoverer.Discover(asm);
+        }
 
         public void Initialize(RuntimeEnvironment environment)
         {

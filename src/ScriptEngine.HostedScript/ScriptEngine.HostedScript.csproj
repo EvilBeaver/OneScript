@@ -57,7 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HostedScript.cs" />
+    <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
     <Compile Include="Library\CommandLineArguments.cs" />
