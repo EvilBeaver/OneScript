@@ -5,7 +5,7 @@ using System.Text;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Library;
 
-namespace ScriptEngine.Machine
+namespace ScriptEngine.Machine.Contexts
 {
     class UserScriptContextInstance : PropertyNameIndexAccessor, IAttachableContext
     {

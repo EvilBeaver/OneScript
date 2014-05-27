@@ -105,7 +105,7 @@
     <Compile Include="Machine\Scope.cs" />
     <Compile Include="Machine\ScriptLoader.cs" />
     <Compile Include="Machine\TypeManager.cs" />
-    <Compile Include="Machine\UserScriptContextInstance.cs" />
+    <Compile Include="Machine\Contexts\UserScriptContextInstance.cs" />
     <Compile Include="Machine\ValueFactory.cs" />
     <Compile Include="Machine\Variables.cs" />
     <Compile Include="Process.cs" />
