@@ -7,11 +7,11 @@ using System.Text;
 
 namespace ScriptEngine.Environment
 {
-    class ScriptLoader
+    class TextCompiler
     {
         CompilerContext _context;
 
-        public ScriptLoader(CompilerContext context)
+        public TextCompiler(CompilerContext context)
         {
             _context = context;
         }

@@ -134,16 +134,16 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
-      <Project>{f062d1d9-d307-492a-a56b-ff3c55f8f6c0}</Project>
-      <Name>ScriptEngine</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\module_icons.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="script_badge.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
+      <Project>{f09a46bd-5737-45e7-ba60-a47c9f7821a9}</Project>
+      <Name>ScriptEngine.HostedScript</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

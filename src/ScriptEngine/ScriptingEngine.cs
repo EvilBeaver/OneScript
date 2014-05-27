@@ -21,16 +21,12 @@ namespace ScriptEngine
             }
         }
 
-        public LoadedModuleHandle LoadFileBasedModule(string path)
+        public ICodeSourceFactory Loader
         {
-            var src = _scriptFactory.FileBased(path);
-            return LoadModule(src.CreateModule());
-        }
-
-        public LoadedModuleHandle LoadStringBasedModule(string code)
-        {
-            var src = _scriptFactory.StringBased(code);
-            return LoadModule(src.CreateModule());
+            get
+            {
+                return _scriptFactory;
+            }
         }
 
         public LoadedModuleHandle LoadModule(ModuleHandle moduleImage)

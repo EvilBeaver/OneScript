@@ -6,7 +6,7 @@ using ScriptEngine.Compiler;
 
 namespace ScriptEngine.Environment
 {
-    class ScriptSourceFactory
+    class ScriptSourceFactory : ICodeSourceFactory
     {
         private CompilerContext _symbols;
 
@@ -15,12 +15,12 @@ namespace ScriptEngine.Environment
             _symbols = symbols;
         }
 
-        public ICodeSource StringBased(string source)
+        public ICodeSource FromString(string source)
         {
             return new StringBasedSource(_symbols, source);
         }
 
-        public ICodeSource FileBased(string path)
+        public ICodeSource FromFile(string path)
         {
             return new FileBasedSource(_symbols, path);
         }

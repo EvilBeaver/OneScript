@@ -17,7 +17,7 @@ namespace ScriptEngine.Environment
 
         protected ModuleHandle CreateModule(ICodeSource src)
         {
-            var loader = new ScriptLoader(_symbols);
+            var loader = new TextCompiler(_symbols);
             var image = loader.Load(GetCodeString());
             return new ModuleHandle() { Module = image };
         }

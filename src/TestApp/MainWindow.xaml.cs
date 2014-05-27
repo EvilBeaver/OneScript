@@ -12,8 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using ScriptEngine;
-using ScriptEngine.Compiler;
+using ScriptEngine.HostedScript;
 
 namespace TestApp
 {

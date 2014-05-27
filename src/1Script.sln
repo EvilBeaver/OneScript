@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptEngine", "ScriptEngine\ScriptEngine.csproj", "{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptEngine.StdLib", "ScriptEngine.StdLib\ScriptEngine.StdLib.csproj", "{F09A46BD-5737-45E7-BA60-A47C9F7821A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptEngine.HostedScript", "ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj", "{F09A46BD-5737-45E7-BA60-A47C9F7821A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

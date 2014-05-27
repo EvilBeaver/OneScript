@@ -7,8 +7,8 @@
     <ProjectGuid>{F09A46BD-5737-45E7-BA60-A47C9F7821A9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ScriptEngine.StdLib</RootNamespace>
-    <AssemblyName>ScriptEngine.StdLib</AssemblyName>
+    <RootNamespace>ScriptEngine.HostedScript</RootNamespace>
+    <AssemblyName>ScriptEngine.HostedScript</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -57,14 +57,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArrayImpl.cs" />
-    <Compile Include="CommandLineArguments.cs" />
-    <Compile Include="GlobalContext.cs" />
-    <Compile Include="KeyAndValueImpl.cs" />
-    <Compile Include="MapImpl.cs" />
+    <Compile Include="HostedScript.cs" />
+    <Compile Include="IHostApplication.cs" />
+    <Compile Include="Library\ArrayImpl.cs" />
+    <Compile Include="Library\CommandLineArguments.cs" />
+    <Compile Include="Library\GlobalContext.cs" />
+    <Compile Include="Library\KeyAndValueImpl.cs" />
+    <Compile Include="Library\MapImpl.cs" />
+    <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScriptInformationContext.cs" />
-    <Compile Include="StructureImpl.cs" />
+    <Compile Include="Library\ScriptInformationContext.cs" />
+    <Compile Include="Library\StructureImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">

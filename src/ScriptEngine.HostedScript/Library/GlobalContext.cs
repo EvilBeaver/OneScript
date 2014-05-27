@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine.Library
 {
-    class GlobalContext : IRuntimeContextInstance, IAttachableContext, Compiler.ICompilerSymbolsProvider
+    class GlobalContext : IRuntimeContextInstance, IAttachableContext, ICompilerSymbolsProvider
     {
         private Process _currentProcess;
         private IVariable[] _state;
