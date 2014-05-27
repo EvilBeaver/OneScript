@@ -10,4 +10,10 @@ namespace ScriptEngine
     {
         internal ModuleImage Module { get; set; }
     }
+
+    public struct LoadedModuleHandle
+    {
+        internal LoadedModule Module { get; set; }
+    }
+
 }

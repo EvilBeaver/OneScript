@@ -8,16 +8,22 @@ namespace ScriptEngine.Machine
 {
     public class MachineInstance
     {
-        private List<Scope> _scopes = new List<Scope>();
-        private Stack<IValue> _operationStack = new Stack<IValue>();
-        private Stack<ExecutionFrame> _callStack = new Stack<ExecutionFrame>();
+        private List<Scope> _scopes;
+        private Stack<IValue> _operationStack;
+        private Stack<ExecutionFrame> _callStack;
         private ExecutionFrame _currentFrame;
         private Action<int>[] _commands;
-        private bool _callModeDiscardRetValue = false;
-        private Stack<ExceptionJumpInfo> _exceptionsStack = new Stack<ExceptionJumpInfo>();
+        private bool _callModeDiscardRetValue;
+        private Stack<ExceptionJumpInfo> _exceptionsStack;
         private RuntimeException _lastException;
-        private Stack<MachineState> _states = new Stack<MachineState>();
+        private Stack<MachineState> _states;
         private LoadedModule _module;
+
+        internal MachineInstance() 
+        {
+            InitCommands();
+            Reset();
+        }
 
         private struct ExceptionJumpInfo
         {
@@ -32,6 +38,77 @@ namespace ScriptEngine.Machine
             public LoadedModule module;
             public bool callMode;
             public bool hasScope;
+        }
+
+        public void AttachContext(IAttachableContext context, bool detachable)
+        {
+            IVariable[] vars;
+            MethodInfo[] methods;
+            IRuntimeContextInstance instance;
+            context.OnAttach(this, out vars, out methods, out instance);
+            var scope = new Scope()
+            {
+                Variables = vars,
+                Methods = methods,
+                Instance = instance,
+                Detachable = detachable
+            };
+
+            _scopes.Add(scope);
+
+        }
+
+        internal void StateConsistentOperation(Action action)
+        {
+            PushState();
+            try
+            {
+                action();
+            }
+            finally
+            {
+                PopState();
+            }
+        }
+
+        internal void ExecuteModuleBody()
+        {
+            if (_module.EntryMethodIndex >= 0)
+            {
+                PrepareMethodExecution(_module.EntryMethodIndex);
+                ExecuteCode();
+            }
+        }
+
+        internal IValue ExecuteMethod(int methodIndex, IValue[] arguments)
+        {
+            PrepareMethodExecutionDirect(methodIndex);
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                if (arguments[i] is IVariable)
+                    _currentFrame.Locals[i] = (IVariable)arguments[i];
+                else
+                    _currentFrame.Locals[i] = Variable.Create(arguments[i]);
+            }
+            ExecuteCode();
+
+            if (_module.Methods[methodIndex].Signature.IsFunction)
+            {
+                return _operationStack.Pop();
+            }
+            else
+                return null;
+        }
+
+        internal void SetModule(LoadedModule module)
+        {
+            _module = module;
+        }
+
+        internal void Cleanup()
+        {
+            Reset();
+            GC.Collect();
         }
 
         private void PushState()
@@ -117,100 +194,17 @@ namespace ScriptEngine.Machine
             }
         }
 
-        public void AttachContext(IAttachableContext context, bool detachable)
+        private void Reset()
         {
-            IVariable[] vars;
-            MethodInfo[] methods;
-            IRuntimeContextInstance instance;
-            context.OnAttach(this, out vars, out methods, out instance);
-            var scope = new Scope()
-            {
-                Variables = vars,
-                Methods = methods,
-                Instance = instance,
-                Detachable = detachable
-            };
-
-            _scopes.Add(scope);
-
-        }
-
-        public void ExecuteModuleBody(int entryMethodIndex)
-        {
-            if (entryMethodIndex >= 0)
-            {
-                PrepareMethodExecution(_module.EntryMethodIndex);
-                ExecuteCode();
-            }
-        }
-
-        public IValue ExecuteMethod(int methodIndex, IValue[] arguments)
-        {
-            PrepareMethodExecutionDirect(methodIndex);
-            for (int i = 0; i < arguments.Length; i++)
-            {
-                if (arguments[i] is IVariable)
-                    _currentFrame.Locals[i] = (IVariable)arguments[i];
-                else
-                    _currentFrame.Locals[i] = Variable.Create(arguments[i]);
-            }
-            ExecuteCode();
-
-            if (_module.Methods[methodIndex].Signature.IsFunction)
-            {
-                return _operationStack.Pop();
-            }
-            else
-                return null;
-        }
-
-        public void StateConsistentOperation(Action action)
-        {
-            PushState();
-            try
-            {
-                action();
-            }
-            finally
-            {
-                PopState();
-            }
-        }
-
-        internal void SetModule(LoadedModule module)
-        {
-            _module = module;
-        }
-
-        public void Run()
-        {
-            if (_module == null)
-            {
-                throw new InvalidOperationException();
-            }
-            InitCommands();
-            Start();
-        }
-
-        private void Start()
-        {
-            if (_module.EntryMethodIndex >= 0)
-            {
-                try
-                {
-                    PrepareMethodExecution(_module.EntryMethodIndex);
-                    ExecuteCode();
-                }
-                finally
-                {
-                    _currentFrame = null;
-                    _callStack.Clear();
-                    _scopes.Clear();
-                    _exceptionsStack.Clear();
-                    _states.Clear();
-                    GC.Collect();
-                }
-            }
+            _scopes = new List<Scope>();
+            _operationStack = new Stack<IValue>();
+            _callStack = new Stack<ExecutionFrame>();
+            _exceptionsStack = new Stack<ExceptionJumpInfo>();
+            _states = new Stack<MachineState>();
+            _module = null;
+            _currentFrame = null;
+            _lastException = null;
+            _callModeDiscardRetValue = false;
         }
 
         private void PrepareMethodExecution(int methodIndex)

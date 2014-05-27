@@ -33,3 +33,11 @@
 /src/oscript/bin/x86/Release
 
 /src/oscript/obj/x86/Debug
+
+/src/ScriptEngine.StdLib/bin/x86/Release
+
+/src/ScriptEngine.StdLib/obj/Release
+
+/src/ScriptEngine.StdLib/obj/x86/Release
+
+/src/ScriptEngine.StdLib/obj/Debug/*.cache

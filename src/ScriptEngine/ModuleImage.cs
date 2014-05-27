@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ScriptEngine.Machine;
 
-namespace ScriptEngine.Machine
+namespace ScriptEngine
 {
     [Serializable]
-    class ModuleImage : IModuleImage
+    class ModuleImage
     {
         public ModuleImage()
         {
@@ -29,5 +30,20 @@ namespace ScriptEngine.Machine
         public IList<ConstDefinition> Constants { get; set; }
         public IList<ExportedSymbol> ExportedProperties { get; set; }
         public IList<ExportedSymbol> ExportedMethods { get; set; }
+    }
+
+    [Serializable]
+    struct MethodDescriptor
+    {
+        public MethodInfo Signature;
+        public int VariableFrameSize;
+        public int EntryPoint;
+    }
+
+    [Serializable]
+    struct ExportedSymbol
+    {
+        public string SymbolicName;
+        public int Index;
     }
 }

@@ -8,7 +8,7 @@ namespace ScriptEngine.Machine
 {
     class LoadedModule
     {
-        internal LoadedModule(IModuleImage image)
+        internal LoadedModule(ModuleImage image)
         {
             this.Code = image.Code.ToArray();
             this.EntryMethodIndex = image.EntryMethodIndex;

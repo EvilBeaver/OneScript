@@ -2,50 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Library;
+using ScriptEngine.Compiler;
 
-namespace ScriptEngine
+namespace ScriptEngine.Environment
 {
-    public interface ICodeSource
-    {
-        ModuleHandle CreateModule();
-        string SourceDescription { get; }
-    }
-
-    public static class ScriptSourceFactory
-    {
-        private static Compiler.ICompilerSymbolsProvider _provider;
-
-        internal static void SetProvider(Compiler.ICompilerSymbolsProvider provider)
-        {
-            _provider = provider;
-        }
-
-        internal static Compiler.ICompilerSymbolsProvider GetProvider()
-        {
-            //if(_provider == null)
-            //    _provider = new GlobalContext();
-
-            return _provider;
-        }
-
-        public static ICodeSource StringBased(string source)
-        {
-            return new StringBasedSource(source);
-        }
-
-        public static ICodeSource FileBased(string path)
-        {
-            return new FileBasedSource(path);
-        }
-    }
-
     abstract class CodeSourceBase
     {
+        private CompilerContext _symbols;
+
+        public CodeSourceBase(CompilerContext symbols)
+        {
+            _symbols = symbols;
+        }
+
         protected ModuleHandle CreateModule(ICodeSource src)
         {
-            var loader = new ScriptLoader(ScriptSourceFactory.GetProvider());
+            var loader = new ScriptLoader(_symbols);
             var image = loader.Load(GetCodeString());
             return new ModuleHandle() { Module = image };
         }
@@ -54,11 +26,11 @@ namespace ScriptEngine
 
     }
 
-    class StringBasedSource : CodeSourceBase,  ICodeSource
+    class StringBasedSource : CodeSourceBase, ICodeSource
     {
         string _src;
 
-        public StringBasedSource(string src)
+        public StringBasedSource(CompilerContext symbols, string src) : base(symbols)
         {
             _src = src;
         }
@@ -67,7 +39,7 @@ namespace ScriptEngine
 
         ModuleHandle ICodeSource.CreateModule()
         {
-            return base.CreateModule(this);    
+            return base.CreateModule(this);
         }
 
         string ICodeSource.SourceDescription
@@ -90,11 +62,11 @@ namespace ScriptEngine
     {
         string _path;
 
-        public FileBasedSource(string path)
+        public FileBasedSource(CompilerContext symbols, string path) : base(symbols)
         {
             _path = path;
         }
-        
+
         protected override string GetCodeString()
         {
             using (var file = new System.IO.FileStream(_path, System.IO.FileMode.Open))
@@ -104,7 +76,7 @@ namespace ScriptEngine
 
                 // *** Detect byte order mark if any - otherwise assume default
                 byte[] buffer = new byte[5];
-                
+
                 file.Read(buffer, 0, 5);
                 file.Position = 0;
 
@@ -116,7 +88,7 @@ namespace ScriptEngine
                     enc = Encoding.UTF32;
                 else if (buffer[0] == 0x2b && buffer[1] == 0x2f && buffer[2] == 0x76)
                     enc = Encoding.UTF7;
-                
+
                 using (var reader = new System.IO.StreamReader(file, enc, true))
                 {
                     return reader.ReadToEnd();

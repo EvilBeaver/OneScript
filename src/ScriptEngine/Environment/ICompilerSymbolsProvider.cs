@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 
-namespace ScriptEngine.Compiler
+namespace ScriptEngine.Environment
 {
     public interface ICompilerSymbolsProvider
     {
