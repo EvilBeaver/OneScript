@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("COMОбъект")]
     class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable

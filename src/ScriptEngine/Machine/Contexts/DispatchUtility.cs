@@ -9,7 +9,7 @@ using System.Security.Permissions;
 
 #endregion
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.Machine.Contexts
 {
 	/// <summary>
 	/// Provides helper methods for working with COM IDispatch objects that have a registered type library.

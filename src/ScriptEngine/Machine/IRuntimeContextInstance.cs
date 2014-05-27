@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    interface IRuntimeContextInstance
+    public interface IRuntimeContextInstance
     {
         bool IsIndexed { get; }
 

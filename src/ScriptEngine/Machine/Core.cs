@@ -116,7 +116,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    enum DataType
+    public enum DataType
     {
         Undefined,
         String,
@@ -142,7 +142,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct MethodInfo
+    public struct MethodInfo
     {
         public string Name;
         public bool IsFunction;
@@ -159,7 +159,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct ParameterDefinition
+    public struct ParameterDefinition
     {
         public bool IsByValue;
         public bool HasDefaultValue;
@@ -168,7 +168,7 @@ namespace ScriptEngine.Machine
         public const int UNDEFINED_VALUE_INDEX = -1;
     }
 
-    struct TypeDescriptor
+    public struct TypeDescriptor
     {
         public int ID;
         public string Name;

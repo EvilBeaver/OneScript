@@ -6,10 +6,16 @@ using System.Text;
 
 namespace ScriptEngine.Compiler
 {
-    struct VariableDescriptor
+    public struct VariableDescriptor
     {
         public string Identifier;
         public SymbolType Type;
+    }
+
+    public enum SymbolType
+    {
+        Variable,
+        ContextProperty
     }
 
     struct VariableInfo
@@ -22,12 +28,6 @@ namespace ScriptEngine.Compiler
     {
         public SymbolType type;
         public SymbolBinding binding;
-    }
-
-    enum SymbolType
-    {
-        Variable,
-        ContextProperty
     }
 
 }

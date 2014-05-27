@@ -4,10 +4,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.Machine.Contexts
 {
     [AttributeUsage(AttributeTargets.Property)]
-    class ContextPropertyAttribute : Attribute
+    public class ContextPropertyAttribute : Attribute
     {
         string _name;
 
@@ -28,7 +28,7 @@ namespace ScriptEngine.Machine.Library
         
     }
 
-    class PropertyTarget<TInstance>
+    public class PropertyTarget<TInstance>
     {
         private Func<TInstance, IValue> _getter;
         private Action<TInstance, IValue> _setter;
@@ -136,7 +136,7 @@ namespace ScriptEngine.Machine.Library
 
     }
 
-    class ContextPropertyMapper<TInstance>
+    public class ContextPropertyMapper<TInstance>
     {
         private List<PropertyTarget<TInstance>> _properties;
 

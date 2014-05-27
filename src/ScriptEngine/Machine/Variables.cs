@@ -5,12 +5,12 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    interface IVariable : IValue
+    public interface IVariable : IValue
     {
         IValue Value { get; set; }
     }
 
-    class Variable : IVariable
+    public class Variable : IVariable
     {
         IValue _val;
 

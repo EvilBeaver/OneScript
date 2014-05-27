@@ -6,7 +6,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    interface ICompilerSymbolsProvider
+    public interface ICompilerSymbolsProvider
     {
         IEnumerable<VariableDescriptor> GetSymbols();
         IEnumerable<MethodInfo> GetMethods();

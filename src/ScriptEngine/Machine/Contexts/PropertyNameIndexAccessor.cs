@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.Machine.Contexts
 {
-    abstract class PropertyNameIndexAccessor : ContextIValueImpl
+    public abstract class PropertyNameIndexAccessor : ContextIValueImpl
     {
         public PropertyNameIndexAccessor()
             : base(TypeManager.GetTypeByName("Object"))

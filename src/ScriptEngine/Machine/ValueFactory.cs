@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    static class ValueFactory
+    public static class ValueFactory
     {
         public static IValue Create()
         {

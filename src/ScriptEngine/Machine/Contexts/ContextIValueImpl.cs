@@ -3,15 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.Machine.Contexts
 {
-    abstract class ContextIValueImpl : IRuntimeContextInstance, IValue
+    public abstract class ContextIValueImpl : IRuntimeContextInstance, IValue
     {
         private TypeDescriptor _type;
 
         public ContextIValueImpl()
         {
-            if (!StdLib.IsKnownType(this.GetType(), out _type))
+            if (TypeManager.IsKnownType(this.GetType()))
+            {
+                _type = TypeManager.GetTypeByFrameworkType(this.GetType());
+            }
+            else
             {
                 throw new InvalidOperationException("Type is not defined");
             }
@@ -177,7 +181,7 @@ namespace ScriptEngine.Machine.Library
     }
 
     [AttributeUsage(AttributeTargets.Method)]
-    class ScriptConstructorAttribute : Attribute
+    public class ScriptConstructorAttribute : Attribute
     {
         public bool ParametrizeWithClassName { get; set; }
     }

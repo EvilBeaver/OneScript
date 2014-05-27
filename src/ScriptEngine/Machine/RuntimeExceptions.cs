@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    class RuntimeException : ApplicationException
+    public class RuntimeException : ApplicationException
     {
         public RuntimeException() : base()
         {
@@ -108,7 +108,7 @@ namespace ScriptEngine.Machine
 
     }
 
-    class ExternalSystemException : RuntimeException
+    public class ExternalSystemException : RuntimeException
     {
         public ExternalSystemException(Exception reason)
             : base("System exception", reason)
@@ -117,7 +117,7 @@ namespace ScriptEngine.Machine
         }
     }
 
-    class WrongStackConditionException : RuntimeException
+    public class WrongStackConditionException : RuntimeException
     {
         public WrongStackConditionException()
             : base("Internal error: wrong stack condition")
@@ -126,7 +126,7 @@ namespace ScriptEngine.Machine
         }
     }
 
-    class PropertyAccessException : RuntimeException
+    public class PropertyAccessException : RuntimeException
     {
         private PropertyAccessException(string msg) : base (msg)
         {
@@ -150,7 +150,7 @@ namespace ScriptEngine.Machine
 
     }
 
-    class ScriptInterruptionException : RuntimeException
+    public class ScriptInterruptionException : RuntimeException
     {
         public ScriptInterruptionException(int exitCode) : base("Script interupted")
         {

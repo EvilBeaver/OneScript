@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.Machine.Contexts
 {
-    class CollectionEnumerator : IValue, IEnumerator<IValue>
+    public class CollectionEnumerator : IValue, IEnumerator<IValue>
     {
         private IEnumerator<IValue> _iterator;
 

@@ -5,15 +5,13 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Library
 {
-    static class StdLib
+    public class ContextDiscoverer
     {
-        private static Dictionary<Type, TypeDescriptor> _knownTypes = new Dictionary<Type, TypeDescriptor>();
+        private Dictionary<Type, TypeDescriptor> _knownTypes = new Dictionary<Type, TypeDescriptor>();
 
-        public static void Initialize()
+        public void Discover(System.Reflection.Assembly assembly)
         {
-            TypeManager.Initialize(new StandartTypeManager());
-            _knownTypes.Clear();
-            var collection = System.Reflection.Assembly.GetExecutingAssembly().GetTypes().AsParallel()
+            var collection = assembly.GetTypes().AsParallel()
                 .Where(t=>t.IsDefined(typeof(ContextClassAttribute), false));
             foreach (var type in collection)
             {
@@ -21,17 +19,17 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
-        public static bool IsKnownType(Type type)
-        {
-            return _knownTypes.ContainsKey(type);
-        }
+        //public static bool IsKnownType(Type type)
+        //{
+        //    return _knownTypes.ContainsKey(type);
+        //}
 
-        public static bool IsKnownType(Type type, out TypeDescriptor descriptor)
-        {
-            return _knownTypes.TryGetValue(type, out descriptor);
-        }
+        //public static bool IsKnownType(Type type, out TypeDescriptor descriptor)
+        //{
+        //    return _knownTypes.TryGetValue(type, out descriptor);
+        //}
 
-        private static void RegisterSystemType(Type stdClass)
+        private void RegisterSystemType(Type stdClass)
         {
             var attribData = stdClass.GetCustomAttributes(typeof(ContextClassAttribute), false);
             System.Diagnostics.Debug.Assert(attribData.Length > 0, "Class is not marked as context");

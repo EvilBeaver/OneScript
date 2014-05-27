@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.Machine.Contexts
 {
-    abstract class ContextBase<TInstance> : PropertyNameIndexAccessor where TInstance : ContextBase<TInstance>
+    public abstract class ContextBase<TInstance> : PropertyNameIndexAccessor where TInstance : ContextBase<TInstance>
     {
         public override bool IsPropReadable(int propNum)
         {

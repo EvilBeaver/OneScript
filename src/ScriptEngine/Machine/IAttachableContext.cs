@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    interface IAttachableContext
+    public interface IAttachableContext
     {
         void OnAttach(MachineInstance machine,
             out IVariable[] variables, 

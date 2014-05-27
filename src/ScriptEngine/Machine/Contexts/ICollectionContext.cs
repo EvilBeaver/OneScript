@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.Machine.Contexts
 {
-    interface ICollectionContext : IEnumerable<IValue>
+    public interface ICollectionContext : IEnumerable<IValue>
     {
         int Count();
-        void Clear();
         CollectionEnumerator GetManagedIterator();
     }
 }

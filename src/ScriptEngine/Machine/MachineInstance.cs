@@ -1,4 +1,4 @@
-﻿using ScriptEngine.Machine.Library;
+﻿using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    class MachineInstance
+    public class MachineInstance
     {
         private List<Scope> _scopes = new List<Scope>();
         private Stack<IValue> _operationStack = new Stack<IValue>();
@@ -177,7 +177,7 @@ namespace ScriptEngine.Machine
             }
         }
 
-        public void SetModule(LoadedModule module)
+        internal void SetModule(LoadedModule module)
         {
             _module = module;
         }

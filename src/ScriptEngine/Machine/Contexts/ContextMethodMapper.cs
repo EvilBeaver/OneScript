@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.Machine.Contexts
 {
     [AttributeUsage(AttributeTargets.Method)]
-    class ContextMethodAttribute : Attribute
+    public class ContextMethodAttribute : Attribute
     {
         string _name;
 
@@ -24,13 +24,13 @@ namespace ScriptEngine.Machine.Library
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]
-    class ByRefAttribute : Attribute
+    public class ByRefAttribute : Attribute
     {
     }
 
-    delegate IValue ContextCallableDelegate<TInstance>(TInstance instance, IValue[] args);
+    public delegate IValue ContextCallableDelegate<TInstance>(TInstance instance, IValue[] args);
 
-    class ContextMethodsMapper<TInstance>
+    public class ContextMethodsMapper<TInstance>
     {
         private List<InternalMethInfo> _methodPtrs = new List<InternalMethInfo>();
         

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("oscript")]
+[assembly: AssemblyTitle("ScriptEngine.StdLib")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("oscript")]
+[assembly: AssemblyProduct("ScriptEngine.StdLib")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b57ae6b4-3701-4062-b81b-25d326383b4f")]
+[assembly: Guid("1b057f7e-4a28-4c51-8620-3c90a75408bf")]
 
 // Version information for an assembly consists of the following four values:
 //

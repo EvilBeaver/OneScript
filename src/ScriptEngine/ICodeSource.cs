@@ -24,8 +24,8 @@ namespace ScriptEngine
 
         internal static Compiler.ICompilerSymbolsProvider GetProvider()
         {
-            if(_provider == null)
-                _provider = new GlobalContext();
+            //if(_provider == null)
+            //    _provider = new GlobalContext();
 
             return _provider;
         }

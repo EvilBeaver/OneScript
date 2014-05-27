@@ -26,34 +26,34 @@ namespace ScriptEngine
             _source = codeSource;
         }
 
-        public void InjectObject(string name, object instance)
-        {
-            if (Machine.Library.DispatchUtility.ImplementsIDispatch(instance))
-            {
-                throw new ArgumentException("Instance must implement IDispatch");
-            }
+        //public void InjectObject(string name, object instance)
+        //{
+        //    if (Machine.Library.DispatchUtility.ImplementsIDispatch(instance))
+        //    {
+        //        throw new ArgumentException("Instance must implement IDispatch");
+        //    }
 
-            if (!Utils.IsValidIdentifier(name))
-            {
-                throw new ArgumentException("Invalid name");
-            }
+        //    if (!Utils.IsValidIdentifier(name))
+        //    {
+        //        throw new ArgumentException("Invalid name");
+        //    }
 
-            _injectedObjects.Add(new InjectedObject()
-            {
-                Identifier = name,
-                Instance = new COMWrapperContext(instance)
-            });
+        //    _injectedObjects.Add(new InjectedObject()
+        //    {
+        //        Identifier = name,
+        //        Instance = new COMWrapperContext(instance)
+        //    });
 
-        }
+        //}
 
         public int Start()
         {
-            var globalCtx = new GlobalContext();
-            RegisterGlobalProperties(globalCtx);
-            globalCtx.SetProcess(this);
+            //var globalCtx = new GlobalContext();
+            //RegisterGlobalProperties(globalCtx);
+            //globalCtx.SetProcess(this);
             _machine = new MachineInstance();
-            _machine.AttachContext(globalCtx, false);
-            ScriptSourceFactory.SetProvider(globalCtx);
+            //_machine.AttachContext(globalCtx, false);
+            //ScriptSourceFactory.SetProvider(globalCtx);
             AttachedScriptsFactory.Init(_machine);
             try
             {
@@ -82,14 +82,14 @@ namespace ScriptEngine
             
         }
 
-        private void RegisterGlobalProperties(GlobalContext globalCtx)
-        {
-            globalCtx.RegisterProperty("АргументыКоманднойСтроки",new CommandLineArguments(ApplicationHost.GetCommandLineArguments()));
-            foreach (var item in _injectedObjects)
-            {
-                globalCtx.RegisterProperty(item.Identifier, (IValue)item.Instance);
-            }
-        }
+        //private void RegisterGlobalProperties(GlobalContext globalCtx)
+        //{
+        //    globalCtx.RegisterProperty("АргументыКоманднойСтроки",new CommandLineArguments(ApplicationHost.GetCommandLineArguments()));
+        //    foreach (var item in _injectedObjects)
+        //    {
+        //        globalCtx.RegisterProperty(item.Identifier, (IValue)item.Instance);
+        //    }
+        //}
 
         internal IHostApplication ApplicationHost
         {

@@ -6,7 +6,7 @@ using System.Text;
 namespace ScriptEngine.Machine
 {
     [AttributeUsage(AttributeTargets.Class)]
-    class ContextClassAttribute : Attribute
+    public class ContextClassAttribute : Attribute
     {
         string _name;
 
@@ -25,19 +25,31 @@ namespace ScriptEngine.Machine
     {
         Type GetImplementingClass(int typeId);
         TypeDescriptor GetTypeByName(string name);
+        TypeDescriptor GetTypeByFrameworkType(Type type);
         void RegisterType(string name, Type implementingClass);
+        bool IsKnownType(Type type);
     }
 
     class StandartTypeManager : ITypeManager
     {
-        Dictionary<string, TypeDescriptor> _knownTypes = new Dictionary<string,TypeDescriptor>(StringComparer.InvariantCultureIgnoreCase);
-        List<Type> _implementations = new List<Type>();
+        //Dictionary<string, TypeDescriptor> _knownTypes = new Dictionary<string,TypeDescriptor>(StringComparer.InvariantCultureIgnoreCase);
+        //List<Type> _implementations = new List<Type>();
+
+        private Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        private List<KnownType> _knownTypes = new List<KnownType>();
+
+        private struct KnownType
+        {
+            public Type SystemType;
+            public TypeDescriptor Descriptor;
+        }
 
         public StandartTypeManager()
         {
-            foreach (var item in Enum.GetNames(typeof(DataType)))
+            foreach (var item in Enum.GetValues(typeof(DataType)))
             {
-                RegisterType(item, typeof(object));
+                var td = TypeDescriptor.FromDataType((DataType)item);
+                RegisterType(td, typeof(DataType));
             }
         }
 
@@ -45,17 +57,19 @@ namespace ScriptEngine.Machine
 
         public Type GetImplementingClass(int typeId)
         {
-            return _implementations[typeId];
+            var kt = _knownTypes.First(x => x.Descriptor.ID == typeId);
+            return kt.SystemType;
         }
 
         public TypeDescriptor GetTypeByName(string name)
         {
-            return _knownTypes[name];
+            var ktIndex = _knownTypesIndexes[name];
+            return _knownTypes[ktIndex].Descriptor;
         }
 
         public void RegisterType(string name, Type implementingClass)
         {
-            if (_knownTypes.ContainsKey(name))
+            if (_knownTypesIndexes.ContainsKey(name))
             {
                 var td = GetTypeByName(name);
                 if (GetImplementingClass(td.ID) != implementingClass)
@@ -72,13 +86,34 @@ namespace ScriptEngine.Machine
                     Name = name
                 };
 
-                _knownTypes.Add(name, typeDesc);
-                _implementations.Add(implementingClass);
+                RegisterType(typeDesc, implementingClass);
             }
 
         }
 
+        private void RegisterType(TypeDescriptor td, Type implementingClass)
+        {
+            _knownTypesIndexes.Add(td.Name, _knownTypes.Count);
+            _knownTypes.Add(new KnownType()
+                {
+                    Descriptor = td,
+                    SystemType = implementingClass
+                });
+        }
+
+        public TypeDescriptor GetTypeByFrameworkType(Type type)
+        {
+            var kt = _knownTypes.First(x => x.SystemType == type);
+            return kt.Descriptor;
+        }
+
+        public bool IsKnownType(Type type)
+        {
+            return _knownTypes.Any(x => x.SystemType == type);
+        }
+
         #endregion
+
     }
 
     static class TypeManager
@@ -109,6 +144,16 @@ namespace ScriptEngine.Machine
         {
             var type = _instance.GetTypeByName(name);
             return type.ID;
+        }
+
+        public static bool IsKnownType(Type type)
+        {
+            return _instance.IsKnownType(type);
+        }
+
+        public static TypeDescriptor GetTypeByFrameworkType(Type type)
+        {
+            return _instance.GetTypeByFrameworkType(type);
         }
     }
 
