@@ -24,6 +24,9 @@
     <ClInclude Include="Snegopat_h.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IAddinLoaderImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -33,6 +36,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="snegopat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IAddinLoaderImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Snegopat_i.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

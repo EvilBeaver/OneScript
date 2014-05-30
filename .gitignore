@@ -41,3 +41,10 @@
 /src/ScriptEngine.StdLib/obj/x86/Release
 
 /src/ScriptEngine.StdLib/obj/Debug/*.cache
+/src/*.sdf
+/src/Debug
+/src/ScriptEngine.HostedScript/bin/x86/Debug
+/src/ScriptEngine.HostedScript/obj/x86/Debug
+Debug
+/src/*.opensdf
+/src/ipch/scriptengine.snegopat-bbe5b63/scriptengine.ipch
