@@ -92,4 +92,18 @@ interface IAddin : IDispatch {
                     [out, retval] VARIANT* result);
     [id(0x60020006), propget, helpstring("Родительская группа")]
     HRESULT group([out, retval] IAddinGroup** pVal);
+
+};
+
+[
+uuid(64CE2CE5-A523-40A4-8527-824715AFE929),
+helpstring("1Script loader for Snegopat")
+]
+library OneScriptSnegopat
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+ 
+	interface IAddin;
+	interface IAddinGroup;
 };

@@ -1,20 +1,18 @@
 #include "stdafx.h"
 #include "IAddinLoaderImpl.h"
+#include "IAddinImpl.h"
 #include "Snegopat_i.c"
 
-//extern const IID IID_IAddinLoader;
-//extern const IID IID_IAddinGroup;
 
-IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner)
+IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 {
-	m_refCount = 0;
 	m_pDesigner = pDesigner;
-}
+	m_pDesigner->AddRef();
+	m_engine = gcnew ScriptEngine::ScriptingEngine();
 
+	ScriptEngine::RuntimeEnvironment^ env = gcnew ScriptEngine::RuntimeEnvironment();
+	m_engine->Initialize(env);
 
-IAddinLoaderImpl::~IAddinLoaderImpl(void)
-{
-	
 }
 
 //IUnknown interface 
@@ -24,45 +22,42 @@ HRESULT __stdcall IAddinLoaderImpl::QueryInterface(
 	REFIID riid , 
 	void **ppObj)
 {
-	if (riid == IID_IUnknown)
+	if(riid == IID_IAddinLoader)
 	{
-		*ppObj = static_cast<IUnknown*>(this); 
-		AddRef() ;
+		*ppObj = static_cast<IAddinLoader*>(this);
 		return S_OK;
 	}
-	if (riid == IID_IAddinLoader)
+	else
 	{
-		*ppObj = static_cast<IUnknown*>(this);
-		AddRef() ;
-		return S_OK;
+		return IUnknownQueried(riid, ppObj);
 	}
-	//
-	//if control reaches here then , let the client know that
-	//we do not satisfy the required interface
-	//
-	*ppObj = NULL ;
-	return E_NOINTERFACE ;
 }
 
 ULONG   __stdcall IAddinLoaderImpl::AddRef()
 {
-	return InterlockedIncrement(&m_refCount) ;
+	return RefCountable::AddRef();
 }
 
 ULONG   __stdcall IAddinLoaderImpl::Release()
 {
-	long nRefCount = 0;
-	nRefCount = InterlockedDecrement(&m_refCount) ;
-	if (nRefCount == 0)
-	{
-		m_pDesigner->Release();
-		delete this;
-	}
-
-	return nRefCount;
+	return RefCountable::AddRef();
 }
 
 #pragma endregion
+
+IAddinLoaderImpl::~IAddinLoaderImpl(void)
+{
+	if(nullptr != (ScriptEngine::ScriptingEngine^)m_engine)
+	{
+		m_engine = nullptr;
+		m_engine = nullptr;
+	}
+}
+
+void IAddinLoaderImpl::OnZeroCount()
+{
+	m_pDesigner->Release();
+}
 
 HRESULT __stdcall  IAddinLoaderImpl::proto( 
             BSTR *result)
@@ -78,7 +73,14 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
     BSTR *displayName,
     IUnknown **result)
 {
-	return E_NOTIMPL;
+	*fullPath = SysAllocString(L"fullpath");
+	*uniqueName = SysAllocString(L"uniqueName");
+	*displayName = SysAllocString(L"displayName");
+
+	IAddin* obj = new IAddinImpl(nullptr);
+
+	return S_OK;
+
 }
         
 HRESULT __stdcall  IAddinLoaderImpl::canUnload( 

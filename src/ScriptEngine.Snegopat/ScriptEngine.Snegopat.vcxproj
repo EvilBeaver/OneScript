@@ -76,15 +76,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="IAddinImpl.h" />
     <ClInclude Include="IAddinLoaderImpl.h" />
+    <ClInclude Include="RefCountable.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Snegopat_h.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="clrfactory.cpp" />
+    <ClCompile Include="IAddinImpl.cpp" />
     <ClCompile Include="IAddinLoaderImpl.cpp" />
-    <ClCompile Include="snegopat.cpp" />
+    <ClCompile Include="RefCountable.cpp" />
+    <ClCompile Include="snegopat.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Snegopat_i.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -110,6 +118,9 @@
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
       <Project>{f062d1d9-d307-492a-a56b-ff3c55f8f6c0}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Debug\ScriptEngine.Snegopat.tlb" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

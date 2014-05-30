@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0595 */
-/* at Fri May 30 18:30:35 2014
+/* at Sat May 31 00:05:35 2014
  */
 /* Compiler settings for Snegopat.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0595 
@@ -64,6 +64,20 @@ typedef interface IAddinGroup IAddinGroup;
 typedef interface IAddin IAddin;
 
 #endif 	/* __IAddin_FWD_DEFINED__ */
+
+
+#ifndef __IAddin_FWD_DEFINED__
+#define __IAddin_FWD_DEFINED__
+typedef interface IAddin IAddin;
+
+#endif 	/* __IAddin_FWD_DEFINED__ */
+
+
+#ifndef __IAddinGroup_FWD_DEFINED__
+#define __IAddinGroup_FWD_DEFINED__
+typedef interface IAddinGroup IAddinGroup;
+
+#endif 	/* __IAddinGroup_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -615,6 +629,19 @@ EXTERN_C const IID IID_IAddin;
 
 #endif 	/* __IAddin_INTERFACE_DEFINED__ */
 
+
+
+#ifndef __OneScriptSnegopat_LIBRARY_DEFINED__
+#define __OneScriptSnegopat_LIBRARY_DEFINED__
+
+/* library OneScriptSnegopat */
+/* [helpstring][uuid] */ 
+
+
+
+
+EXTERN_C const IID LIBID_OneScriptSnegopat;
+#endif /* __OneScriptSnegopat_LIBRARY_DEFINED__ */
 
 /* Additional Prototypes for ALL interfaces */
 

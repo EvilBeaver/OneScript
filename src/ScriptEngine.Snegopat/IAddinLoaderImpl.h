@@ -2,13 +2,20 @@
 
 #include "Stdafx.h"
 #include "Snegopat_h.h"
+#include "RefCountable.h"
+#include <vcclr.h>
 
 class IAddinLoaderImpl :
+	public RefCountable,
 	public IAddinLoader
 {
 private:
-	ULONG m_refCount;
+	
 	IDispatch* m_pDesigner;
+	gcroot<ScriptEngine::ScriptingEngine^> m_engine;
+
+protected:
+	virtual void OnZeroCount();
 
 public:
 	IAddinLoaderImpl(IDispatch* pDesigner);

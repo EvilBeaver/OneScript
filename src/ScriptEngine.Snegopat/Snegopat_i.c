@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0595 */
-/* at Fri May 30 18:30:35 2014
+/* at Sat May 31 00:05:35 2014
  */
 /* Compiler settings for Snegopat.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0595 
@@ -74,6 +74,9 @@ MIDL_DEFINE_GUID(IID, IID_IAddinGroup,0x80864878,0x1618,0x46BA,0xB7,0x21,0xF8,0x
 
 
 MIDL_DEFINE_GUID(IID, IID_IAddin,0x74D4C89D,0xCFB1,0x4074,0xA4,0x1E,0x49,0xC7,0xA0,0x3E,0xD8,0x62);
+
+
+MIDL_DEFINE_GUID(IID, LIBID_OneScriptSnegopat,0x64CE2CE5,0xA523,0x40A4,0x85,0x27,0x82,0x47,0x15,0xAF,0xE9,0x29);
 
 #undef MIDL_DEFINE_GUID
 

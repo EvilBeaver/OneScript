@@ -27,6 +27,12 @@
     <ClInclude Include="IAddinLoaderImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IAddinImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RefCountable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -42,6 +48,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Snegopat_i.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IAddinImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RefCountable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clrfactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -62,5 +77,10 @@
     <Midl Include="Snegopat.idl">
       <Filter>Source Files</Filter>
     </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Debug\ScriptEngine.Snegopat.tlb">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

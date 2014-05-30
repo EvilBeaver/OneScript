@@ -2,7 +2,6 @@
 #include "Stdafx.h"
 #include <comdef.h>
 #include <sstream>
-#include "IAddinLoaderImpl.h"
 
 HRESULT invoke(LPDISPATCH pdisp, 
     WORD wFlags,
@@ -13,16 +12,36 @@ HRESULT invoke(LPDISPATCH pdisp,
     LPCTSTR pszFmt, 
     ...);
 
+IUnknown* GetLoader(IDispatch* pDesigner);
+bool PrepareTypeInfo(HMODULE libHandle);
+
+HMODULE g_CurrentModule;
+
+BOOL WINAPI DllMain(
+  HINSTANCE hinstDLL,
+  DWORD fdwReason,
+  LPVOID lpvReserved
+)
+{
+	if(fdwReason == DLL_PROCESS_ATTACH)
+	{
+		g_CurrentModule = hinstDLL;
+	}
+
+	return TRUE;
+}
+
 extern "C" void __declspec(dllexport) addinInfo(BSTR* uniqueName, BSTR* displayName)
 {
     *uniqueName = SysAllocString(L"1ScriptLoader");
     *displayName = SysAllocString(L"Загрузка скриптов на языке 1С");
+
 }
 
 extern "C" void __declspec(dllexport) initAddin(IDispatch* pDesigner)
 {
-	//g_pDesigner = pDesigner;
-	pDesigner->AddRef();
+	if(!PrepareTypeInfo(g_CurrentModule))
+		return;
 
 	HRESULT hr;
 	VARIANT addins;
@@ -35,7 +54,7 @@ extern "C" void __declspec(dllexport) initAddin(IDispatch* pDesigner)
 
 	IDispatch* addinsObj = V_DISPATCH(&addins);
 
-	IAddinLoader* loader = new IAddinLoaderImpl(pDesigner);
+	IUnknown* loader = GetLoader(pDesigner);
 	
 	invoke(addinsObj, DISPATCH_METHOD, NULL, NULL, NULL, L"registerLoader", L"U", loader);
 }
