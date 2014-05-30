@@ -1,0 +1,95 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+interface IAddin;
+
+[
+  odl,
+  uuid(2BEEF9E6-AF34-4593-9E73-3D07EAA4CF0D),
+  version(1.0),
+  helpstring("Интерфейс загрузчика аддинов"),
+  nonextensible
+]
+interface IAddinLoader : IUnknown {
+    [helpstring("Получить название протокола загрузки")]
+    HRESULT _stdcall proto([out, retval] BSTR* result);
+    [helpstring("Загрузить аддин")]
+    HRESULT _stdcall load(
+                    [in] BSTR uri, 
+                    [out] BSTR* fullPath, 
+                    [out] BSTR* uniqueName, 
+                    [out] BSTR* displayName, 
+                    [out, retval] IUnknown** result);
+    [helpstring("Можно ли выгрузить аддин")]
+    HRESULT _stdcall canUnload(
+                    [in] BSTR fullPath, 
+                    [in] IUnknown* addin, 
+                    [out, retval] VARIANT_BOOL* result);
+    [helpstring("Выгрузить аддин")]
+    HRESULT _stdcall unload(
+                    [in] BSTR fullPath, 
+                    [in] IUnknown* addin, 
+                    [out, retval] VARIANT_BOOL* result);
+    [helpstring("Текстовое представление команды для загрузки")]
+    HRESULT _stdcall loadCommandName([out, retval] BSTR* result);
+    [helpstring("Выбрать что загрузить")]
+    HRESULT _stdcall selectLoadURI([out, retval] BSTR* result);
+};
+
+[
+  odl,
+  uuid(80864878-1618-46BA-B721-F8F1EA162609),
+  version(1.0),
+  helpstring("Группа аддинов"),
+  dual,
+  nonextensible,
+  oleautomation
+]
+interface IAddinGroup : IDispatch {
+    [id(0x60020000), propget, helpstring("Название группы")]
+    HRESULT name([out, retval] BSTR* pVal);
+    [id(0x60020001), propget, helpstring("Родительская группа")]
+    HRESULT parent([out, retval] IAddinGroup** pVal);
+    [id(0x60020002), propget, helpstring("Первая дочерняя группа")]
+    HRESULT child([out, retval] IAddinGroup** pVal);
+    [id(0x60020003), propget, helpstring("Следующая группа")]
+    HRESULT next([out, retval] IAddinGroup** pVal);
+    [id(0x60020004), propget, helpstring("Количество аддинов в группе")]
+    HRESULT addinsCount([out, retval] long* pVal);
+    [id(0x60020005), helpstring("Получить аддин")]
+    HRESULT addin(
+                    [in] unsigned long Idx, 
+                    [out, retval] IAddin** pVal);
+    [id(0x60020006), helpstring("Добавить группу")]
+    HRESULT addGroup(
+                    [in] BSTR name, 
+                    [out, retval] IAddinGroup** ppResult);
+};
+
+[
+  odl,
+  uuid(74D4C89D-CFB1-4074-A41E-49C7A03ED862),
+  version(1.0),
+  helpstring("Aддин"),
+  dual,
+  nonextensible,
+  oleautomation
+]
+interface IAddin : IDispatch {
+    [id(0x60020000), propget, helpstring("Отображаемое имя")]
+    HRESULT displayName([out, retval] BSTR* pVal);
+    [id(0x60020001), propget, helpstring("Уникальное имя")]
+    HRESULT uniqueName([out, retval] BSTR* pVal);
+    [id(0x60020002), propget, helpstring("Полный путь аддина")]
+    HRESULT fullPath([out, retval] BSTR* pVal);
+    [id(0x60020003), propget, helpstring("Объект аддина")]
+    HRESULT object([out, retval] IDispatch** pVal);
+    [id(0x60020004), helpstring("Макросы аддина")]
+    HRESULT macroses([out, retval] VARIANT* pVal);
+    [id(0x60020005), helpstring("Выполнить макрос")]
+    HRESULT invokeMacros(
+                    [in] BSTR MacrosName, 
+                    [out, retval] VARIANT* result);
+    [id(0x60020006), propget, helpstring("Родительская группа")]
+    HRESULT group([out, retval] IAddinGroup** pVal);
+};
