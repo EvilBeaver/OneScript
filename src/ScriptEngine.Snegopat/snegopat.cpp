@@ -15,8 +15,8 @@ HRESULT invoke(LPDISPATCH pdisp,
 
 extern "C" void __declspec(dllexport) addinInfo(BSTR* uniqueName, BSTR* displayName)
 {
-    *uniqueName = SysAllocString(L"MyDllAddin");
-    *displayName = SysAllocString(L"Мой ДЛЛ аддин");
+    *uniqueName = SysAllocString(L"1ScriptLoader");
+    *displayName = SysAllocString(L"Загрузка скриптов на языке 1С");
 }
 
 extern "C" void __declspec(dllexport) initAddin(IDispatch* pDesigner)
