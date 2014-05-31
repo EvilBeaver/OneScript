@@ -44,7 +44,7 @@ ULONG   __stdcall IAddinImpl::AddRef()
 
 ULONG   __stdcall IAddinImpl::Release()
 {
-	return RefCountable::AddRef();
+	return RefCountable::Release();
 }
 
 #pragma endregion
@@ -138,4 +138,9 @@ HRESULT STDMETHODCALLTYPE IAddinImpl::get_group(
     IAddinGroup **pVal)
 {
 	return E_NOTIMPL;
+}
+
+void IAddinImpl::OnZeroCount()
+{
+	m_innerObject = nullptr;
 }

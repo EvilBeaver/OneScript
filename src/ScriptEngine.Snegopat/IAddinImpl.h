@@ -76,6 +76,8 @@ public:
     virtual HRESULT STDMETHODCALLTYPE get_group( 
         IAddinGroup **pVal);
 
+	virtual void OnZeroCount();
+
 	~IAddinImpl(void);
 
 };
