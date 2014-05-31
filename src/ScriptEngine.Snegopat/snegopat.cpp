@@ -12,7 +12,7 @@ HRESULT invoke(LPDISPATCH pdisp,
     LPCTSTR pszFmt, 
     ...);
 
-IUnknown* GetLoader(IDispatch* pDesigner);
+IUnknown* GetLoader(IDispatch*);
 bool PrepareTypeInfo(HMODULE libHandle);
 
 HMODULE g_CurrentModule;
@@ -40,23 +40,29 @@ extern "C" void __declspec(dllexport) addinInfo(BSTR* uniqueName, BSTR* displayN
 
 extern "C" void __declspec(dllexport) initAddin(IDispatch* pDesigner)
 {
+#ifdef _DEBUG
+	MessageBox(0, L"attach debugger and press ok", L"Debug message", MB_OK);
+#endif
+
 	if(!PrepareTypeInfo(g_CurrentModule))
+	{
 		return;
+	}
 
 	HRESULT hr;
 	VARIANT addins;
+	addins.vt = VT_DISPATCH;
 	VariantInit(&addins);
 	hr = invoke(pDesigner, DISPATCH_PROPERTYGET, &addins, NULL, NULL, L"addins", NULL);
 	if(FAILED(hr))
 	{
-		MessageBoxA(0, "fail","", MB_OK);
+		return;
 	}
-
+	
 	IDispatch* addinsObj = V_DISPATCH(&addins);
 
 	IUnknown* loader = GetLoader(pDesigner);
-	
-	invoke(addinsObj, DISPATCH_METHOD, NULL, NULL, NULL, L"registerLoader", L"U", loader);
+	hr = invoke(addinsObj, DISPATCH_METHOD, NULL, NULL, NULL, L"registerLoader", L"U", loader);
 }
 
 LPCTSTR getNextVarType(LPCTSTR pszFmt, VARTYPE FAR* pvt)

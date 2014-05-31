@@ -115,12 +115,12 @@
     <Midl Include="Snegopat.idl" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Debug\ScriptEngine.Snegopat.tlb" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
       <Project>{f062d1d9-d307-492a-a56b-ff3c55f8f6c0}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Debug\ScriptEngine.Snegopat.tlb" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

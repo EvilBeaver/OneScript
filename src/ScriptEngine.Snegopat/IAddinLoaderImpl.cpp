@@ -3,15 +3,28 @@
 #include "IAddinImpl.h"
 #include "Snegopat_i.c"
 
+WCHAR* stringBuf(System::String^ str)
+{
+	int len = str->Length;
+	WCHAR* buf = new WCHAR[len+1];
+	memset(buf, 0, (len+1) * sizeof(WCHAR));
+	for(int i = 0; i < len; i++)
+	{
+		buf[i] = str[i];
+	}
+
+	return buf;
+}
 
 IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 {
 	m_pDesigner = pDesigner;
 	m_pDesigner->AddRef();
-	m_engine = gcnew ScriptEngine::ScriptingEngine();
+	
+	ScriptEngine::ScriptingEngine^ a = gcnew ScriptEngine::ScriptingEngine();
 
-	ScriptEngine::RuntimeEnvironment^ env = gcnew ScriptEngine::RuntimeEnvironment();
-	m_engine->Initialize(env);
+	/*ScriptEngine::RuntimeEnvironment^ env = gcnew ScriptEngine::RuntimeEnvironment();
+	m_engine->Initialize(env);*/
 
 }
 
@@ -102,7 +115,8 @@ HRESULT __stdcall  IAddinLoaderImpl::unload(
 HRESULT __stdcall  IAddinLoaderImpl::loadCommandName( 
     BSTR *result)
 {
-	return E_NOTIMPL;
+	*result = SysAllocString(L"load 1c|1c");
+	return S_OK;
 }
         
 HRESULT __stdcall  IAddinLoaderImpl::selectLoadURI( 
