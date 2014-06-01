@@ -39,6 +39,7 @@ HRESULT __stdcall IAddinLoaderImpl::QueryInterface(
 	if(riid == IID_IAddinLoader)
 	{
 		*ppObj = static_cast<IAddinLoader*>(this);
+		AddRef();
 		return S_OK;
 	}
 	else
@@ -54,9 +55,7 @@ ULONG   __stdcall IAddinLoaderImpl::AddRef()
 
 ULONG   __stdcall IAddinLoaderImpl::Release()
 {
-	// Снегопат почему-то вызывает Release сразу после registerLoader.
-	// если текущий объект уничтожить из-за счетчика ссылок, то снегопат упадет по segfault.
-	return 1;//RefCountable::Release();
+	return RefCountable::Release();
 }
 
 #pragma endregion

@@ -21,14 +21,16 @@ HRESULT __stdcall IAddinImpl::QueryInterface(
 	REFIID riid , 
 	void **ppObj)
 {
-	if(riid == IID_IAddinLoader)
+	if(riid == IID_IAddin)
 	{
 		*ppObj = static_cast<IAddinImpl*>(this);
+		AddRef();
 		return S_OK;
 	}
 	else if(riid == IID_IDispatch)
 	{
 		*ppObj = static_cast<IDispatch*>(this);
+		AddRef();
 		return S_OK;
 	}
 	else

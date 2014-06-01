@@ -82,6 +82,7 @@
     <ClInclude Include="IAddinLoaderImpl.h" />
     <ClInclude Include="RefCountable.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SnegopatAttachedContext.h" />
     <ClInclude Include="Snegopat_h.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
@@ -97,6 +98,7 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SnegopatAttachedContext.cpp" />
     <ClCompile Include="Snegopat_i.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
