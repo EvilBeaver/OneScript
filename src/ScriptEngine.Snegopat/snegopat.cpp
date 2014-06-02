@@ -2,7 +2,7 @@
 #include "Stdafx.h"
 #include <comdef.h>
 #include <sstream>
-#include "DispatchHelpers.h";
+#include "DispatchHelpers.h"
 
 void InitLibrary(HMODULE module);
 IUnknown* GetLoader(IDispatch*);

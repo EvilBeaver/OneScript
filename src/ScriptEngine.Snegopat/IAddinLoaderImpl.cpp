@@ -1,30 +1,28 @@
 #include "stdafx.h"
 #include "IAddinLoaderImpl.h"
-#include "IAddinImpl.h"
 #include "Snegopat_i.c"
+#include "MarshalingHelpers.h"
 #include <commdlg.h>
-
-WCHAR* stringBuf(System::String^ str)
-{
-	int len = str->Length;
-	WCHAR* buf = new WCHAR[len+1];
-	memset(buf, 0, (len+1) * sizeof(WCHAR));
-	for(int i = 0; i < len; i++)
-	{
-		buf[i] = str[i];
-	}
-
-	return buf;
-}
+#include <string>
 
 IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 {
 	m_pDesigner = pDesigner;
 	m_pDesigner->AddRef();
-	
-	ScriptEngine::ScriptingEngine^ m_engine = gcnew ScriptEngine::ScriptingEngine();
+	m_engine = gcnew ScriptEngine::ScriptingEngine();
+
 	ScriptEngine::RuntimeEnvironment^ env = gcnew ScriptEngine::RuntimeEnvironment();
 	
+	IntPtr handle = IntPtr(pDesigner);
+	Object^ managedObject = System::Runtime::InteropServices::Marshal::GetObjectForIUnknown(handle);
+	IRuntimeContextInstance^ designerWrapper = gcnew Contexts::COMWrapperContext(managedObject);
+
+	String^ ident = L"Designer";
+	env->InjectGlobalProperty((IValue^)designerWrapper, ident, true);
+
+	SnegopatAttachedContext^ importedProperties = gcnew SnegopatAttachedContext(designerWrapper);
+	env->InjectObject(importedProperties, importedProperties);
+
 	m_engine->Initialize(env);
 
 }
@@ -88,13 +86,92 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
     BSTR *displayName,
     IUnknown **result)
 {
-	*fullPath = SysAllocString(L"fullpath");
-	*uniqueName = SysAllocString(L"uniqueName");
-	*displayName = SysAllocString(L"displayName");
+	String^ strDisplayName = nullptr;
+	String^ strUniqueName = nullptr;
+	
+	HRESULT res;
 
-	IAddin* obj = new IAddinImpl(nullptr);
+	std::wstring wsUri = uri;
+	int pos = wsUri.find_first_of(':', 0);
+	if(pos != std::wstring::npos)
+	{
+		//std::wstring proto = wsUri.substr(0, pos);
+		String^ path = gcnew String(wsUri.substr(pos+1).c_str());
+		System::IO::StreamReader^ rd = nullptr;
+		try
+		{
+			rd = gcnew System::IO::StreamReader(path, true);
+			Char ch = rd->Peek();
+			while(ch > -1 && ch == '$') 
+            {
+				String^ macro = rd->ReadLine();
+				if(macro->Length > 0)
+				{
+					array<String^>^ parts = macro->Split(gcnew array<Char>(1){'='}, 2);
+					parts[0] = parts[0]->Trim();
+					parts[1] = parts[1]->Trim();
+					if(parts->Length < 2)
+					{
+						return E_FAIL;
+					}
 
-	return S_OK;
+					if(parts[0] == "$uniqueName")
+					{
+						strUniqueName = parts[1];
+					}
+					else if(parts[0] == "$displayName")
+					{
+						strDisplayName = parts[1];
+					}
+				}
+				ch = rd->Peek();
+            }
+
+			if(!rd->EndOfStream)
+			{
+				if(strDisplayName == nullptr)
+					strDisplayName = System::IO::Path::GetFileNameWithoutExtension(path);
+				if(strUniqueName == nullptr)
+					strUniqueName = System::IO::Path::GetFileNameWithoutExtension(path);
+
+				*displayName = stringToBSTR(strDisplayName);
+				*uniqueName = stringToBSTR(strUniqueName);
+				*fullPath = SysAllocString(uri);
+
+				String^ code = rd->ReadToEnd();
+				ICodeSource^ src = m_engine->Loader->FromString(code);
+				LoadedModuleHandle mh = m_engine->LoadModule(src->CreateModule());
+				
+				Contexts::UserScriptContextInstance^ obj = (Contexts::UserScriptContextInstance^)m_engine->NewObject(mh);
+				IAddinImpl* snegopatAddin = new IAddinImpl(obj);
+				snegopatAddin->AddRef();
+				snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
+				*result = snegopatAddin;
+			}
+
+			res = S_OK;
+
+		}
+		catch(Exception^ e)
+		{
+			WCHAR* msg = stringBuf(e->Message);
+			MessageBox(0, msg, L"Error", MB_OK);
+			delete[] msg;
+			
+			res = E_FAIL;
+		}
+		finally
+		{
+			if(rd != nullptr)
+			{
+				rd->Close();
+				rd = nullptr;
+			}
+		}
+
+	}
+
+	return res;
 
 }
         
@@ -112,7 +189,12 @@ HRESULT __stdcall  IAddinLoaderImpl::unload(
     IUnknown *addin,
     VARIANT_BOOL *result)
 {
-	addin->Release();
+//	addin->Release();
+//  Непонятно: Снегопат передает сюда addIn, который уже уничтожен по счетчику ссылок
+//  при создании аддина загрузчик создает ссылку, вызывая AddRef (см. метод load)
+//  при выгрузке Снегопат вызывает AddIn->Release(), хотя ответного AddRef не делал.
+//	В результате он отпускает ссылку, которой не владеет (созданную загрузчиком в методе load)
+
 	*result = VARIANT_TRUE;
 	return S_OK;
 }

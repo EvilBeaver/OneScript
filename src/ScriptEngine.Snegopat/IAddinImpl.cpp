@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "IAddinImpl.h"
+#include "MarshalingHelpers.h"
 #include <OleAuto.h>
 
 ITypeInfo* IAddinImpl::m_typeInfo = NULL;
@@ -9,7 +10,7 @@ void IAddinImpl::CreateTypeInfo(ITypeLib* lib)
 	lib->GetTypeInfoOfGuid(IID_IAddin, &m_typeInfo);
 }
 
-IAddinImpl::IAddinImpl(ScriptEngine::Machine::IRuntimeContextInstance^ innerObject) : RefCountable()
+IAddinImpl::IAddinImpl(ScriptEngine::Machine::Contexts::UserScriptContextInstance^ innerObject) : RefCountable()
 {
 	m_innerObject = innerObject;
 }
@@ -102,19 +103,22 @@ IAddinImpl::~IAddinImpl(void)
 HRESULT STDMETHODCALLTYPE IAddinImpl::get_displayName( 
             BSTR *pVal)
 {
-	return E_NOTIMPL;
+	*pVal = m_displayName;
+	return S_OK;
 }
         
 HRESULT STDMETHODCALLTYPE IAddinImpl::get_uniqueName( 
     BSTR *pVal)
 {
-	return E_NOTIMPL;
+	*pVal = m_uniqueName;
+	return S_OK;
 }
         
 HRESULT STDMETHODCALLTYPE IAddinImpl::get_fullPath( 
     BSTR *pVal)
 {
-	return E_NOTIMPL;
+	*pVal = m_fullPath;
+	return S_OK;
 }
         
 HRESULT STDMETHODCALLTYPE IAddinImpl::get_object( 
@@ -126,14 +130,42 @@ HRESULT STDMETHODCALLTYPE IAddinImpl::get_object(
 HRESULT STDMETHODCALLTYPE IAddinImpl::macroses( 
     VARIANT *pVal)
 {
-	return E_NOTIMPL;
+	array<System::String^>^ macrosArray = m_innerObject->GetExportedMethods();
+	
+	SAFEARRAYBOUND  Bound;
+    Bound.lLbound   = 0;
+	Bound.cElements = macrosArray->Length;
+	SAFEARRAY* saData = SafeArrayCreate(VT_R8, 1, &Bound);
+
+	V_VT(pVal) = VT_ARRAY;
+	V_ARRAY(pVal) = saData;
+
+	return S_OK;
+
 }
         
 HRESULT STDMETHODCALLTYPE IAddinImpl::invokeMacros( 
     BSTR MacrosName,
     VARIANT *result)
 {
-	return E_NOTIMPL;
+	System::String^ strMacro = gcnew System::String(MacrosName);
+
+	try
+	{
+		int mNum = m_innerObject->FindMethod(strMacro);
+		auto mInfo = m_innerObject->GetMethodInfo(mNum);
+		// пока без возвратов
+		m_innerObject->CallAsProcedure(mNum, gcnew array<ScriptEngine::Machine::IValue^, 1>(0));
+	}
+	catch(System::Exception^ e)
+	{
+		auto buf = stringBuf(e->Message);
+		MessageBox(0, buf, L"Error", MB_OK);
+		delete[] buf;
+	}
+
+	return S_OK;
+
 }
         
 HRESULT STDMETHODCALLTYPE IAddinImpl::get_group( 

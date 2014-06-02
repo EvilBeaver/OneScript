@@ -12,11 +12,30 @@ namespace ScriptEngine
     {
         private List<IAttachableContext> _objects = new List<IAttachableContext>();
         private CompilerContext _symbolScopes = new CompilerContext();
-        
+        private ISymbolScope _globalScope;
+        private PropertyBag _injectedProperties;
+
         public void InjectObject(IAttachableContext context, ICompilerSymbolsProvider symbols)
         {
             RegisterSymbolScope(symbols);
             RegisterObject(context);
+        }
+
+        public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
+        {
+            if (_globalScope == null)
+            {
+                _globalScope = new SymbolScope();
+                _injectedProperties = new PropertyBag();
+                _symbolScopes.PushScope(_globalScope);
+                RegisterObject(_injectedProperties);
+            }
+            var varDef = new VariableDescriptor();
+            varDef.Identifier = identifier;
+            varDef.Type = SymbolType.ContextProperty;
+            
+            _globalScope.DefineVariable(varDef);
+            _injectedProperties.Insert(value, identifier, true, !readOnly);
         }
 
         internal CompilerContext SymbolsContext

@@ -80,6 +80,7 @@
     <ClInclude Include="DispatchHelpers.h" />
     <ClInclude Include="IAddinImpl.h" />
     <ClInclude Include="IAddinLoaderImpl.h" />
+    <ClInclude Include="MarshalingHelpers.h" />
     <ClInclude Include="RefCountable.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SnegopatAttachedContext.h" />
@@ -93,6 +94,7 @@
     <ClCompile Include="DispatchHelpers.cpp" />
     <ClCompile Include="IAddinImpl.cpp" />
     <ClCompile Include="IAddinLoaderImpl.cpp" />
+    <ClCompile Include="MarshalingHelpers.cpp" />
     <ClCompile Include="RefCountable.cpp" />
     <ClCompile Include="snegopat.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>

@@ -68,6 +68,7 @@
     <Compile Include="Compiler\ModulePersistor.cs" />
     <Compile Include="Environment\CodeSources.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
+    <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />
     <Compile Include="Machine\Contexts\ContextBase.cs" />

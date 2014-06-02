@@ -11,7 +11,10 @@ class IAddinImpl :
 	public IAddin
 {
 private:
-	gcroot<ScriptEngine::Machine::IRuntimeContextInstance^> m_innerObject;
+	gcroot<ScriptEngine::Machine::Contexts::UserScriptContextInstance^> m_innerObject;
+	BSTR m_uniqueName;
+	BSTR m_displayName;
+	BSTR m_fullPath;
 
 	static ITypeInfo* m_typeInfo;
 
@@ -19,7 +22,14 @@ public:
 	
 	static void CreateTypeInfo(ITypeLib* lib);
 	
-	IAddinImpl(ScriptEngine::Machine::IRuntimeContextInstance^ innerObject);
+	IAddinImpl(ScriptEngine::Machine::Contexts::UserScriptContextInstance^ innerObject);
+
+	void SetNames(BSTR uniqueName, BSTR displayName, BSTR fullPath)
+	{
+		m_uniqueName = uniqueName;
+		m_displayName = displayName;
+		m_fullPath = fullPath;
+	}
 
 	//IUnknown interface 
     virtual HRESULT  __stdcall QueryInterface(
@@ -49,9 +59,9 @@ public:
         REFIID riid,
         LCID lcid,
         WORD wFlags,
-        DISPPARAMS *pDispParams,
+        ::DISPPARAMS *pDispParams,
         VARIANT *pVarResult,
-        EXCEPINFO *pExcepInfo,
+        ::EXCEPINFO *pExcepInfo,
         UINT *puArgErr);
 
 	virtual HRESULT STDMETHODCALLTYPE get_displayName( 

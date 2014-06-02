@@ -7,7 +7,7 @@ using System.Text;
 namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("COMОбъект")]
-    class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable
+    public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable
     {
         private Type _dispatchedType;
         private object _instance;

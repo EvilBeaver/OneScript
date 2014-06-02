@@ -7,19 +7,19 @@ using ScriptEngine.Machine.Library;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    class UserScriptContextInstance : PropertyNameIndexAccessor, IAttachableContext
+    public class UserScriptContextInstance : PropertyNameIndexAccessor, IAttachableContext
     {
         LoadedModule _module;
         MachineInstance _machine;
         IVariable[] _state;
         private const int THIS_VARIABLE_INDEX = 0;
 
-        public UserScriptContextInstance(LoadedModule module)
+        internal UserScriptContextInstance(LoadedModule module)
         {
             Init(module);  
         }
 
-        public UserScriptContextInstance(LoadedModule module, string asObjectOfType)
+        internal UserScriptContextInstance(LoadedModule module, string asObjectOfType)
         {
             DefineType(TypeManager.GetTypeByName(asObjectOfType));
             Init(module);
@@ -51,10 +51,12 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
+        #region IRuntimeContextInstance Members
+
         public override int FindProperty(string name)
         {
-            var propsFound = _module.ExportedProperies.Where(x=>String.Compare(x.SymbolicName, name, true) == 0)
-                .Select(x=>x.Index).ToArray();
+            var propsFound = _module.ExportedProperies.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
+                .Select(x => x.Index).ToArray();
             if (propsFound.Length > 0)
             {
                 return propsFound[0];
@@ -88,8 +90,8 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int FindMethod(string name)
         {
-            var methFound = _module.ExportedMethods.Where(x=>String.Compare(x.SymbolicName, name, true) == 0)
-                .Select(x=>x.Index).ToArray();
+            var methFound = _module.ExportedMethods.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
+                .Select(x => x.Index).ToArray();
             if (methFound.Length > 0)
             {
                 return methFound[0];
@@ -105,7 +107,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
-            _machine.StateConsistentOperation(()=>
+            _machine.StateConsistentOperation(() =>
             {
                 _machine.AttachContext(this, true);
                 _machine.SetModule(_module);
@@ -124,7 +126,19 @@ namespace ScriptEngine.Machine.Contexts
             });
 
             retValue = returnClosure;
-            
+
+        } 
+
+        #endregion
+
+        public string[] GetExportedProperties()
+        {
+            return _module.ExportedProperies.Select(x => x.SymbolicName).ToArray();
+        }
+
+        public string[] GetExportedMethods()
+        {
+            return _module.ExportedMethods.Select(x => x.SymbolicName).ToArray();
         }
     }
 }

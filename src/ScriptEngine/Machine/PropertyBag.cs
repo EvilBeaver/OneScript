@@ -1,0 +1,89 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using ScriptEngine.Machine.Contexts;
+
+namespace ScriptEngine.Machine
+{
+    class PropertyBag : DynamicPropertiesAccessor, IAttachableContext
+    {
+        private struct PropertyAccessFlags
+        {
+            public bool CanRead;
+            public bool CanWrite;
+        }
+
+        private List<IValue> _values = new List<IValue>();
+        private List<PropertyAccessFlags> _accessFlags = new List<PropertyAccessFlags>();
+
+        public void Insert(IValue value, string identifier)
+        {
+            Insert(value, identifier, true, true);
+        }
+
+        public void Insert(IValue value, string identifier, bool canRead, bool canWrite)
+        {
+            var num = RegisterProperty(identifier);
+
+            if (num == _values.Count)
+            {
+                _values.Add(null);
+                _accessFlags.Add(new PropertyAccessFlags() { CanRead = canRead, CanWrite = canWrite });
+            }
+
+            if (value == null)
+            {
+                value = ValueFactory.Create();
+            }
+
+            SetPropValue(num, value);
+
+        }
+
+        public override bool IsPropReadable(int propNum)
+        {
+            return _accessFlags[propNum].CanRead;
+        }
+
+        public override bool IsPropWritable(int propNum)
+        {
+            return _accessFlags[propNum].CanWrite;
+        }
+
+        public override IValue GetPropValue(int propNum)
+        {
+            return _values[propNum];
+        }
+
+        public override void SetPropValue(int propNum, IValue newVal)
+        {
+            _values[propNum] = newVal;
+        }
+
+        public int Count
+        {
+            get
+            {
+                return _values.Count;
+            }
+        }
+
+
+        #region IAttachableContext Members
+
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+        {
+            variables = new IVariable[this.Count];
+            for (int i = 0; i < variables.Length; i++)
+            {
+                variables[i] = Variable.CreateContextPropertyReference(this, i);
+            }
+
+            methods = new MethodInfo[0];
+            instance = this;
+        }
+
+        #endregion
+    }
+}

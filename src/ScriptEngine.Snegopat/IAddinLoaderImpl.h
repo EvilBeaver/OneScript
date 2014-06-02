@@ -3,7 +3,18 @@
 #include "Stdafx.h"
 #include "Snegopat_h.h"
 #include "RefCountable.h"
+#include "IAddinImpl.h"
+#include "IAddinLoaderImpl.h"
+#include "SnegopatAttachedContext.h"
+
 #include <vcclr.h>
+
+using namespace System;
+using namespace ScriptEngine;
+using namespace ScriptEngine::Machine;
+using namespace ScriptEngine::Compiler;
+using namespace ScriptEngine::Environment;
+using namespace System::Runtime::InteropServices;
 
 class IAddinLoaderImpl :
 	public RefCountable,
