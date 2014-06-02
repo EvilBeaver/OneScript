@@ -4,11 +4,11 @@
 #include "Snegopat_h.h"
 #include "RefCountable.h"
 #include <vcclr.h>
-#include <OleAuto.h>
 
 class IAddinImpl :
 	public RefCountable,
-	public IAddin
+	public IAddin,
+	public IAddinInit
 {
 private:
 	gcroot<ScriptEngine::Machine::Contexts::UserScriptContextInstance^> m_innerObject;
@@ -38,6 +38,7 @@ public:
     virtual ULONG   __stdcall AddRef();
     virtual ULONG   __stdcall Release();
 
+
 	//IDispatch interface
 	virtual HRESULT STDMETHODCALLTYPE GetTypeInfoCount( 
              UINT *pctinfo);
@@ -54,15 +55,17 @@ public:
         LCID lcid,
         DISPID *rgDispId);
         
-    virtual  HRESULT STDMETHODCALLTYPE Invoke( 
+    virtual HRESULT STDMETHODCALLTYPE Invoke( 
         DISPID dispIdMember,
         REFIID riid,
         LCID lcid,
         WORD wFlags,
-        ::DISPPARAMS *pDispParams,
+        DISPPARAMS *pDispParams,
         VARIANT *pVarResult,
-        ::EXCEPINFO *pExcepInfo,
+        EXCEPINFO *pExcepInfo,
         UINT *puArgErr);
+
+	HRESULT _stdcall initAddin(IDispatch* designer);
 
 	virtual HRESULT STDMETHODCALLTYPE get_displayName( 
             BSTR *pVal);

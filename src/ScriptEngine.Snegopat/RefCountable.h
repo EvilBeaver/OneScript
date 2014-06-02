@@ -9,7 +9,6 @@ private:
 protected:
 
 	virtual void OnZeroCount();
-	virtual HRESULT IUnknownQueried(REFIID riid, void** ppObj);
 
 public:
 	

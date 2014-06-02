@@ -40,9 +40,16 @@ HRESULT __stdcall IAddinLoaderImpl::QueryInterface(
 		AddRef();
 		return S_OK;
 	}
+	else if (riid == IID_IUnknown)
+	{
+		*ppObj = static_cast<IAddinLoader*>(this);
+		AddRef();
+		return S_OK;
+	}
 	else
 	{
-		return IUnknownQueried(riid, ppObj);
+		*ppObj = NULL ;
+		return E_NOINTERFACE ;
 	}
 }
 
@@ -144,9 +151,10 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 				
 				Contexts::UserScriptContextInstance^ obj = (Contexts::UserScriptContextInstance^)m_engine->NewObject(mh);
 				IAddinImpl* snegopatAddin = new IAddinImpl(obj);
-				snegopatAddin->AddRef();
+				//snegopatAddin->AddRef();
 				snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
-				*result = snegopatAddin;
+				snegopatAddin->QueryInterface(IID_IUnknown, (void**)result);
+				//*result = (IUnknown*)snegopatAddin;
 			}
 
 			res = S_OK;

@@ -34,9 +34,22 @@ HRESULT __stdcall IAddinImpl::QueryInterface(
 		AddRef();
 		return S_OK;
 	}
+	else if(riid == IID_IAddinInit)
+	{
+		*ppObj = static_cast<IAddinInit*>(this);
+		AddRef();
+		return S_OK;
+	}
+	else if (riid == IID_IUnknown)
+	{
+		*ppObj = static_cast<IAddin*>(this);
+		AddRef();
+		return S_OK;
+	}
 	else
 	{
-		return IUnknownQueried(riid, ppObj);
+		*ppObj = NULL ;
+		return E_NOINTERFACE ;
 	}
 }
 
@@ -95,6 +108,10 @@ HRESULT STDMETHODCALLTYPE IAddinImpl::Invoke(
 
 #pragma endregion
 
+HRESULT _stdcall IAddinImpl::initAddin(IDispatch* designer)
+{
+	return S_OK;
+}
 
 IAddinImpl::~IAddinImpl(void)
 {

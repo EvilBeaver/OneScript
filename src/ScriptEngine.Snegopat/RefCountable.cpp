@@ -6,21 +6,6 @@ RefCountable::RefCountable(void)
 	m_refCount = 0;
 }
 
-HRESULT RefCountable::IUnknownQueried(REFIID riid,  void **ppObj)
-{
-	if (riid == IID_IUnknown)
-	{
-		*ppObj = static_cast<void*>(this); 
-		AddRef();
-		return S_OK;
-	}
-	else
-	{
-		*ppObj = NULL ;
-		return E_NOINTERFACE ;
-	}
-}
-
 ULONG   __stdcall RefCountable::AddRef()
 {
 	return InterlockedIncrement(&m_refCount) ;

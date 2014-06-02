@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0595 */
-/* at Mon Jun 02 16:16:17 2014
+/* at Tue Jun 03 00:30:33 2014
  */
 /* Compiler settings for Snegopat.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0595 
@@ -64,6 +64,13 @@ typedef interface IAddinGroup IAddinGroup;
 typedef interface IAddin IAddin;
 
 #endif 	/* __IAddin_FWD_DEFINED__ */
+
+
+#ifndef __IAddinInit_FWD_DEFINED__
+#define __IAddinInit_FWD_DEFINED__
+typedef interface IAddinInit IAddinInit;
+
+#endif 	/* __IAddinInit_FWD_DEFINED__ */
 
 
 #ifndef __IAddin_FWD_DEFINED__
@@ -628,6 +635,86 @@ EXTERN_C const IID IID_IAddin;
 
 
 #endif 	/* __IAddin_INTERFACE_DEFINED__ */
+
+
+#ifndef __IAddinInit_INTERFACE_DEFINED__
+#define __IAddinInit_INTERFACE_DEFINED__
+
+/* interface IAddinInit */
+/* [object][nonextensible][helpstring][version][uuid] */ 
+
+
+EXTERN_C const IID IID_IAddinInit;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("DEA1059B-AEF4-45F0-B01C-181057A03D56")
+    IAddinInit : public IUnknown
+    {
+    public:
+        virtual /* [helpstring] */ HRESULT __stdcall initAddin( 
+            /* [in] */ IDispatch *designer) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IAddinInitVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IAddinInit * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IAddinInit * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IAddinInit * This);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *initAddin )( 
+            IAddinInit * This,
+            /* [in] */ IDispatch *designer);
+        
+        END_INTERFACE
+    } IAddinInitVtbl;
+
+    interface IAddinInit
+    {
+        CONST_VTBL struct IAddinInitVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IAddinInit_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IAddinInit_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IAddinInit_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IAddinInit_initAddin(This,designer)	\
+    ( (This)->lpVtbl -> initAddin(This,designer) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IAddinInit_INTERFACE_DEFINED__ */
 
 
 

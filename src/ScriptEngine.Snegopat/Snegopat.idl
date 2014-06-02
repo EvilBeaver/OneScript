@@ -96,6 +96,18 @@ interface IAddin : IDispatch {
 };
 
 [
+  odl,
+  uuid(DEA1059B-AEF4-45F0-B01C-181057A03D56),
+  version(1.0),
+  helpstring("Инициализация аддина"),
+  nonextensible
+]
+interface IAddinInit : IUnknown {
+    [helpstring("Инициализировать аддин")]
+    HRESULT _stdcall initAddin([in] IDispatch* designer);
+};
+
+[
 uuid(64CE2CE5-A523-40A4-8527-824715AFE929),
 helpstring("1Script loader for Snegopat")
 ]
