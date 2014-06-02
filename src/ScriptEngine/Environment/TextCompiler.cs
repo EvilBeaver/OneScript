@@ -23,8 +23,16 @@ namespace ScriptEngine.Environment
 
         private ModuleImage CreateModule(string source)
         {
-            _context.PushScope(new SymbolScope());
-            _context.DefineVariable("ЭтотОбъект");
+            var moduleScope = new SymbolScope();
+            const string THIS_PROPERTY = "ЭтотОбъект";
+
+            var thisIdx = moduleScope.DefineVariable(new VariableDescriptor()
+            {
+                Identifier = THIS_PROPERTY,
+                Type = SymbolType.ContextProperty
+            });
+
+            _context.PushScope(moduleScope);
             var parser = new Parser();
             parser.Code = source;
 
@@ -33,6 +41,11 @@ namespace ScriptEngine.Environment
             try
             {
                 compiledImage = compiler.Compile(parser, _context);
+                compiledImage.ExportedProperties.Add(new ExportedSymbol()
+                    {
+                        SymbolicName = THIS_PROPERTY,
+                        Index = thisIdx
+                    });
             }
             finally
             {

@@ -65,6 +65,31 @@ namespace ScriptEngine.Compiler
             return _module;
         }
 
+        private void BuildModule()
+        {
+            // резервируем место под переменные, определенные извне компилятора
+            _module.VariableFrameSize = _ctx.GetScope(_ctx.TopIndex()).VariableCount;
+            
+            NextToken();
+
+            if (_lastExtractedLexem.Type == LexemType.EndOfText)
+            {
+                return;
+            }
+
+            try
+            {
+                DispatchModuleBuild();
+            }
+            catch (CompilerException exc)
+            {
+                CompilerException.AppendLineNumber(exc, _parser.CurrentLine);
+                throw;
+            }
+
+
+        }
+
         private void CheckForwardedDeclarations()
         {
             if (_forwardedMethods.Count > 0)
@@ -105,28 +130,6 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void BuildModule()
-        {
-            NextToken();
-
-            if (_lastExtractedLexem.Type == LexemType.EndOfText)
-            {
-                return;
-            }
-
-            try
-            {
-                DispatchModuleBuild();
-            }
-            catch (CompilerException exc)
-            {
-                CompilerException.AppendLineNumber(exc, _parser.CurrentLine);
-                throw;
-            }
-
-
-        }
-
         private void DispatchModuleBuild()
         {
             if (_lastExtractedLexem.Type == LexemType.Identifier)
@@ -149,6 +152,64 @@ namespace ScriptEngine.Compiler
             {
                 throw CompilerException.UnexpectedOperation();
             }
+        }
+
+        private void BuildVariableDefinitions()
+        {
+            while (_lastExtractedLexem.Token == Token.VarDef)
+            {
+                NextToken();
+                if (IsUserSymbol(ref _lastExtractedLexem))
+                {
+                    var symbolicName = _lastExtractedLexem.Content;
+                    var definition = _ctx.DefineVariable(symbolicName);
+                    if (_inMethodScope)
+                    {
+                        if (_isStatementsDefined)
+                        {
+                            throw CompilerException.LateVarDefinition();
+                        }
+                    }
+                    else
+                    {
+                        if (_isMethodsDefined)
+                        {
+                            throw CompilerException.LateVarDefinition();
+                        }
+
+                        _module.VariableRefs.Add(definition);
+                        _module.VariableFrameSize++;
+                    }
+                    NextToken();
+                    if (_lastExtractedLexem.Token == Token.Export)
+                    {
+                        _module.ExportedProperties.Add(new ExportedSymbol()
+                        {
+                            SymbolicName = symbolicName,
+                            Index = definition.CodeIndex
+                        });
+                        NextToken();
+                    }
+                    if (_lastExtractedLexem.Token != Token.Semicolon)
+                    {
+                        throw CompilerException.SemicolonExpected();
+                    }
+                    NextToken();
+                }
+                else
+                {
+                    throw CompilerException.IdentifierExpected();
+                }
+            }
+
+            if (!_inMethodScope)
+                DispatchModuleBuild();
+        }
+
+        private void BuildMethods()
+        {
+            BuildSingleMethod();
+            DispatchModuleBuild();
         }
 
         private void BuildModuleBody()
@@ -183,12 +244,6 @@ namespace ScriptEngine.Compiler
                 _module.MethodRefs.Add(bodyBinding);
                 _module.EntryMethodIndex = entryRefNumber;
             }
-        }
-
-        private void BuildMethods()
-        {
-            BuildSingleMethod();
-            DispatchModuleBuild();
         }
 
         private void BuildSingleMethod()
@@ -1106,58 +1161,6 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.PushConst, GetConstNumber(ref cDef));
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
 
-        }
-
-        private void BuildVariableDefinitions()
-        {
-            while (_lastExtractedLexem.Token == Token.VarDef)
-            {
-                NextToken();
-                if (IsUserSymbol(ref _lastExtractedLexem))
-                {
-                    var symbolicName = _lastExtractedLexem.Content;
-                    var definition = _ctx.DefineVariable(symbolicName);
-                    if (_inMethodScope)
-                    {
-                        if (_isStatementsDefined)
-                        {
-                            throw CompilerException.LateVarDefinition();
-                        }
-                    }
-                    else
-                    {
-                        if (_isMethodsDefined)
-                        {
-                            throw CompilerException.LateVarDefinition();
-                        }
-
-                        _module.VariableRefs.Add(definition);
-                        _module.VariableFrameSize++;
-                    }
-                    NextToken();
-                    if (_lastExtractedLexem.Token == Token.Export)
-                    {
-                        _module.ExportedProperties.Add(new ExportedSymbol()
-                            {
-                                SymbolicName = symbolicName,
-                                Index = definition.CodeIndex
-                            });
-                        NextToken();
-                    }
-                    if (_lastExtractedLexem.Token != Token.Semicolon)
-                    {
-                        throw CompilerException.SemicolonExpected();
-                    }
-                    NextToken();
-                }
-                else
-                {
-                    throw CompilerException.IdentifierExpected();
-                }
-            }
-
-            if(!_inMethodScope)
-                DispatchModuleBuild();
         }
 
         private void BuildExpression(Token stopToken)

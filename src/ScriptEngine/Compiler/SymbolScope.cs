@@ -124,6 +124,11 @@ namespace ScriptEngine.Compiler
             }
         }
 
+        public string GetVariableName(int number)
+        {
+            return _variableNumbers.First(x => x.Value == number).Key;
+        }
+
         public int VariableCount 
         {
             get
@@ -141,6 +146,7 @@ namespace ScriptEngine.Compiler
         MethodInfo GetMethod(int number);
         int GetVariableNumber(string name);
         VariableInfo GetVariable(int number);
+        string GetVariableName(int number);
         int GetMethodNumber(string name);
         bool IsVarDefined(string name);
         bool IsMethodDefined(string name);

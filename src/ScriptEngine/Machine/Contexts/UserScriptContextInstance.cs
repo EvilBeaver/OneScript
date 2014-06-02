@@ -12,6 +12,7 @@ namespace ScriptEngine.Machine.Contexts
         LoadedModule _module;
         MachineInstance _machine;
         IVariable[] _state;
+        private const int THIS_VARIABLE_INDEX = 0;
 
         public UserScriptContextInstance(LoadedModule module)
         {
@@ -28,7 +29,8 @@ namespace ScriptEngine.Machine.Contexts
         {
             _module = module;
             _state = new IVariable[module.VariableFrameSize];
-            for (int i = 0; i < module.VariableFrameSize; i++)
+            _state[0] = Variable.CreateContextPropertyReference(this, THIS_VARIABLE_INDEX);
+            for (int i = 1; i < module.VariableFrameSize; i++)
             {
                 _state[i] = Variable.Create(ValueFactory.Create());
             }
@@ -61,9 +63,22 @@ namespace ScriptEngine.Machine.Contexts
                 throw RuntimeException.PropNotFoundException(name);
         }
 
+        public override bool IsPropWritable(int propNum)
+        {
+            return propNum > THIS_VARIABLE_INDEX;
+        }
+
+        public override bool IsPropReadable(int propNum)
+        {
+            return true;
+        }
+
         public override IValue GetPropValue(int propNum)
         {
-            return _state[propNum].Value;
+            if (propNum > THIS_VARIABLE_INDEX)
+                return _state[propNum].Value;
+            else
+                return this;
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
