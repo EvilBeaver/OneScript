@@ -24,6 +24,7 @@ namespace ScriptEngine.Environment
         private ModuleImage CreateModule(string source)
         {
             _context.PushScope(new SymbolScope());
+            _context.DefineVariable("ЭтотОбъект");
             var parser = new Parser();
             parser.Code = source;
 
