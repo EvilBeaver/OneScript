@@ -219,10 +219,18 @@ namespace ScriptEngine.Compiler
             var entry = _module.Code.Count;
 
             _ctx.PushScope(new SymbolScope());
-
-            BuildCodeBatch();
+            try
+            {
+                BuildCodeBatch();
+            }
+            catch
+            {
+                _ctx.PopScope();
+                throw;
+            }
 
             var localCtx = _ctx.PopScope();
+            
             var topIdx = _ctx.TopIndex();
 
             if (entry != _module.Code.Count)
@@ -365,9 +373,15 @@ namespace ScriptEngine.Compiler
             // тело
             var entryPoint = _module.Code.Count;
 
-            _ctx.PushScope(methodCtx);
-            DispatchMethodBody();
-            _ctx.PopScope();
+            try
+            {
+                _ctx.PushScope(methodCtx);
+                DispatchMethodBody();
+            }
+            finally
+            {
+                _ctx.PopScope();
+            }
             PopStructureToken();
 
             var descriptor = new MethodDescriptor();

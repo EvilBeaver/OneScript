@@ -161,7 +161,7 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 		catch(Exception^ e)
 		{
 			WCHAR* msg = stringBuf(e->Message);
-			MessageBox(0, msg, L"Error", MB_OK);
+			MessageBox(0, msg, L"Load error", MB_OK);
 			delete[] msg;
 			
 			res = E_FAIL;

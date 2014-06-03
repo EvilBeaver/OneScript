@@ -164,6 +164,7 @@ namespace ScriptEngine.Machine
         public bool IsByValue;
         public bool HasDefaultValue;
         public int DefaultValueIndex;
+        public bool IsParameterArray;
 
         public const int UNDEFINED_VALUE_INDEX = -1;
     }
