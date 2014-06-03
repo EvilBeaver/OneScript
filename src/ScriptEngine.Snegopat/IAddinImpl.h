@@ -7,8 +7,7 @@
 
 class IAddinImpl :
 	public RefCountable,
-	public IAddin,
-	public IAddinInit
+	public IAddinMacroses
 {
 private:
 	gcroot<ScriptEngine::Machine::Contexts::UserScriptContextInstance^> m_innerObject;
@@ -16,11 +15,7 @@ private:
 	BSTR m_displayName;
 	BSTR m_fullPath;
 
-	static ITypeInfo* m_typeInfo;
-
 public:
-	
-	static void CreateTypeInfo(ITypeLib* lib);
 	
 	IAddinImpl(ScriptEngine::Machine::Contexts::UserScriptContextInstance^ innerObject);
 
@@ -37,58 +32,11 @@ public:
                                 void **ppObj);
     virtual ULONG   __stdcall AddRef();
     virtual ULONG   __stdcall Release();
-
-
-	//IDispatch interface
-	virtual HRESULT STDMETHODCALLTYPE GetTypeInfoCount( 
-             UINT *pctinfo);
+    
+    virtual HRESULT STDMETHODCALLTYPE macroses(SAFEARRAY **result);
         
-    virtual HRESULT STDMETHODCALLTYPE GetTypeInfo( 
-         UINT iTInfo,
-         LCID lcid,
-         ITypeInfo **ppTInfo);
+    virtual HRESULT STDMETHODCALLTYPE invokeMacros(BSTR MacrosName, VARIANT *result);
         
-    virtual HRESULT STDMETHODCALLTYPE GetIDsOfNames( 
-        REFIID riid,
-        LPOLESTR *rgszNames,
-        UINT cNames,
-        LCID lcid,
-        DISPID *rgDispId);
-        
-    virtual HRESULT STDMETHODCALLTYPE Invoke( 
-        DISPID dispIdMember,
-        REFIID riid,
-        LCID lcid,
-        WORD wFlags,
-        DISPPARAMS *pDispParams,
-        VARIANT *pVarResult,
-        EXCEPINFO *pExcepInfo,
-        UINT *puArgErr);
-
-	HRESULT _stdcall initAddin(IDispatch* designer);
-
-	virtual HRESULT STDMETHODCALLTYPE get_displayName( 
-            BSTR *pVal);
-        
-    virtual HRESULT STDMETHODCALLTYPE get_uniqueName( 
-        BSTR *pVal);
-        
-    virtual HRESULT STDMETHODCALLTYPE get_fullPath( 
-        BSTR *pVal);
-        
-    virtual HRESULT STDMETHODCALLTYPE get_object( 
-        IDispatch **pVal);
-        
-    virtual HRESULT STDMETHODCALLTYPE macroses( 
-        VARIANT *pVal);
-        
-    virtual HRESULT STDMETHODCALLTYPE invokeMacros( 
-        BSTR MacrosName,
-        VARIANT *result);
-        
-    virtual HRESULT STDMETHODCALLTYPE get_group( 
-        IAddinGroup **pVal);
-
 	virtual void OnZeroCount();
 
 	~IAddinImpl(void);

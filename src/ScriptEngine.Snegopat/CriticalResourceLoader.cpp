@@ -42,16 +42,6 @@ CriticalResourceLoader::~CriticalResourceLoader(void)
 
 bool CriticalResourceLoader::PrepareTypeInfo()
 {
-	HRESULT hr;
-	ITypeLib* lib;
-	hr = LoadTypeLib(m_modulePath, &lib);
-	if(FAILED(hr))
-	{
-		return false;
-	}
-
-	IAddinImpl::CreateTypeInfo(lib);
-
 	return true;
 }
 

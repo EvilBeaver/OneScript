@@ -151,10 +151,8 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 				
 				Contexts::UserScriptContextInstance^ obj = (Contexts::UserScriptContextInstance^)m_engine->NewObject(mh);
 				IAddinImpl* snegopatAddin = new IAddinImpl(obj);
-				//snegopatAddin->AddRef();
 				snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
 				snegopatAddin->QueryInterface(IID_IUnknown, (void**)result);
-				//*result = (IUnknown*)snegopatAddin;
 			}
 
 			res = S_OK;
