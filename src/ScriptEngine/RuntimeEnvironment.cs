@@ -12,12 +12,12 @@ namespace ScriptEngine
     {
         private List<IAttachableContext> _objects = new List<IAttachableContext>();
         private CompilerContext _symbolScopes = new CompilerContext();
-        private ISymbolScope _globalScope;
+        private SymbolScope _globalScope;
         private PropertyBag _injectedProperties;
 
-        public void InjectObject(IAttachableContext context, ICompilerSymbolsProvider symbols)
+        public void InjectObject(IAttachableContext context)
         {
-            RegisterSymbolScope(symbols);
+            RegisterSymbolScope(context);
             RegisterObject(context);
         }
 
@@ -30,11 +30,8 @@ namespace ScriptEngine
                 _symbolScopes.PushScope(_globalScope);
                 RegisterObject(_injectedProperties);
             }
-            var varDef = new VariableDescriptor();
-            varDef.Identifier = identifier;
-            varDef.Type = SymbolType.ContextProperty;
             
-            _globalScope.DefineVariable(varDef);
+            _globalScope.DefineVariable(identifier, SymbolType.ContextProperty);
             _injectedProperties.Insert(value, identifier, true, !readOnly);
         }
 
@@ -54,10 +51,10 @@ namespace ScriptEngine
             }
         }
 
-        private void RegisterSymbolScope(ICompilerSymbolsProvider provider)
+        private void RegisterSymbolScope(IReflectableContext provider)
         {
             _symbolScopes.PushScope(new SymbolScope());
-            foreach (var item in provider.GetSymbols())
+            foreach (var item in provider.GetProperties())
             {
                 if (item.Type == SymbolType.Variable)
                 {

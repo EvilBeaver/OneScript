@@ -69,7 +69,6 @@ namespace ScriptEngine.Machine
             }
         }
 
-
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
@@ -82,6 +81,20 @@ namespace ScriptEngine.Machine
 
             methods = new MethodInfo[0];
             instance = this;
+        }
+
+        #endregion
+
+        #region IReflectableContext Members
+
+        IEnumerable<VariableInfo> IReflectableContext.GetProperties()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<MethodInfo> IReflectableContext.GetMethods()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

@@ -1,9 +1,10 @@
-﻿using ScriptEngine.Compiler;
-using ScriptEngine.Machine.Contexts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ScriptEngine.Compiler;
+using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Environment
 {
@@ -26,12 +27,8 @@ namespace ScriptEngine.Environment
             var moduleScope = new SymbolScope();
             const string THIS_PROPERTY = "ЭтотОбъект";
 
-            var thisIdx = moduleScope.DefineVariable(new VariableDescriptor()
-            {
-                Identifier = THIS_PROPERTY,
-                Type = SymbolType.ContextProperty
-            });
-
+            var thisIdx = moduleScope.DefineVariable(THIS_PROPERTY, SymbolType.ContextProperty);
+            
             _context.PushScope(moduleScope);
             var parser = new Parser();
             parser.Code = source;

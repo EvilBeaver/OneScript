@@ -194,4 +194,23 @@ namespace ScriptEngine.Machine
         public int CodeIndex;
         public int ContextIndex;
     }
+
+    public enum SymbolType
+    {
+        Variable,
+        ContextProperty
+    }
+
+    public struct VariableInfo
+    {
+        public int Index;
+        public string Identifier;
+        public SymbolType Type;
+    }
+
+    struct VariableBinding
+    {
+        public SymbolType type;
+        public SymbolBinding binding;
+    }
 }

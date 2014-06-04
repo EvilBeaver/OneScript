@@ -140,5 +140,30 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _module.ExportedMethods.Select(x => x.SymbolicName).ToArray();
         }
+
+        #region IReflectableContext Members
+
+        public IEnumerable<VariableInfo> GetProperties()
+        {
+            foreach (var item in _module.ExportedProperies)
+            {
+                var vi = new VariableInfo();
+                vi.Identifier = item.SymbolicName;
+                vi.Index = item.Index;
+                vi.Type = SymbolType.ContextProperty;
+                
+                yield return vi;
+            }
+        }
+
+        public IEnumerable<MethodInfo> GetMethods()
+        {
+            foreach (var item in _module.ExportedMethods)
+            {
+                yield return GetMethodInfo(item.Index);
+            }
+        }
+
+        #endregion
     }
 }
