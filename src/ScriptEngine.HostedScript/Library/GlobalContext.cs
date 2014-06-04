@@ -144,7 +144,18 @@ namespace ScriptEngine.Machine.Library
 
         public bool IsIndexed
         {
-            get { return false; }
+            get 
+            { 
+                return false; 
+            }
+        }
+
+        public bool DynamicMethodSignatures
+        {
+            get
+            {
+                return false;
+            }
         }
 
         public IValue GetIndexedValue(IValue index)

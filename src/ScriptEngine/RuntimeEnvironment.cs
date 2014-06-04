@@ -17,7 +17,12 @@ namespace ScriptEngine
 
         public void InjectObject(IAttachableContext context)
         {
-            RegisterSymbolScope(context);
+            InjectObject(context, false);
+        }
+
+        public void InjectObject(IAttachableContext context, bool asDynamicScope)
+        {
+            RegisterSymbolScope(context, asDynamicScope);
             RegisterObject(context);
         }
 
@@ -51,9 +56,12 @@ namespace ScriptEngine
             }
         }
 
-        private void RegisterSymbolScope(IReflectableContext provider)
+        private void RegisterSymbolScope(IReflectableContext provider, bool asDynamicScope)
         {
-            _symbolScopes.PushScope(new SymbolScope());
+            var scope = new SymbolScope();
+            scope.IsDynamicScope = asDynamicScope;
+
+            _symbolScopes.PushScope(scope);
             foreach (var item in provider.GetProperties())
             {
                 if (item.Type == SymbolType.Variable)

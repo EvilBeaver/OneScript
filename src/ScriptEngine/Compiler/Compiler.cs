@@ -1033,13 +1033,16 @@ namespace ScriptEngine.Compiler
             try
             {
                 var methBinding = _ctx.GetMethod(identifier);
-                var methInfo = _ctx.GetScope(methBinding.ContextIndex).GetMethod(methBinding.CodeIndex);
+                var scope = _ctx.GetScope(methBinding.ContextIndex);
+                var methInfo = scope.GetMethod(methBinding.CodeIndex);
                 if (asFunction && !methInfo.IsFunction)
                 {
                     throw CompilerException.UseProcAsFunction();
                 }
-
-                CheckFactArguments(methInfo, argsPassed);
+                
+                // dynamic scope checks signatures only at runtime
+                if(!scope.IsDynamicScope)
+                    CheckFactArguments(methInfo, argsPassed);
                 
                 int callAddr;
                 
@@ -1471,7 +1474,6 @@ namespace ScriptEngine.Compiler
             var parameters = BuiltinFunctions.ParametersInfo(funcId);
             var passedArgs = PushFactArguments();
             CheckFactArguments(parameters, passedArgs);
-            //NextToken();
 
             AddCommand(funcId, passedArgs.Length);
 

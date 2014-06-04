@@ -78,7 +78,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw e.InnerException;
             }
-        }
+        } 
 
         private static ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
         private static ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();

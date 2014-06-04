@@ -14,8 +14,6 @@ namespace ScriptEngine.Compiler
         Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         List<MethodInfo> _methods = new List<MethodInfo>();
 
-        #region ISymbolScope Members
-
         public MethodInfo GetMethod(string name)
         {
             var num = GetMethodNumber(name);
@@ -121,7 +119,11 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        #endregion
+        public bool IsDynamicScope 
+        { 
+            get; 
+            set; 
+        }
     }
 
     class SymbolNotFoundException : CompilerException

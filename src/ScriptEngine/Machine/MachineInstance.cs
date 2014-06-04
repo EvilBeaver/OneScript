@@ -611,7 +611,7 @@ namespace ScriptEngine.Machine
             var methInfo = scope.Methods[methodRef.CodeIndex];
 
             int argCount = (int)_operationStack.Pop().AsNumber();
-            IValue[] argValues = new IValue[methInfo.Params.Length];
+            IValue[] argValues = new IValue[argCount];
 
             // fact args
             for (int i = argCount - 1; i >= 0; i--)
@@ -619,8 +619,15 @@ namespace ScriptEngine.Machine
                 var argValue = _operationStack.Pop();
                 if (argValue.DataType == DataType.NotAValidValue)
                 {
-                    var constId = methInfo.Params[i].DefaultValueIndex;
-                    argValue = _module.Constants[constId];
+                    if (i < methInfo.Params.Length)
+                    {
+                        var constId = methInfo.Params[i].DefaultValueIndex;
+                        argValue = _module.Constants[constId];
+                    }
+                    else
+                    {
+                        argValue = null;
+                    }
                 }
 
                 argValues[i] = argValue;
@@ -630,7 +637,7 @@ namespace ScriptEngine.Machine
             //manage default vals
             for (int i = argCount; i < argValues.Length; i++)
             {
-                if (methInfo.Params[i].HasDefaultValue)
+                if (i < methInfo.Params.Length && methInfo.Params[i].HasDefaultValue)
                 {
                     if (methInfo.Params[i].DefaultValueIndex == ParameterDefinition.UNDEFINED_VALUE_INDEX)
                     {
@@ -803,7 +810,8 @@ namespace ScriptEngine.Machine
 
             }
             factArgs = null;
-            CheckFactArguments(methodInfo, signatureCheck);
+            if(!context.DynamicMethodSignatures)
+                CheckFactArguments(methodInfo, signatureCheck);
 
             //manage default vals
             for (int i = argCount; i < argValues.Length; i++)
