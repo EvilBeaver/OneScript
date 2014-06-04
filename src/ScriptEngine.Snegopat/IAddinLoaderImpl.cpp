@@ -82,7 +82,7 @@ void IAddinLoaderImpl::OnZeroCount()
 HRESULT __stdcall  IAddinLoaderImpl::proto( 
             BSTR *result)
 {
-	*result = SysAllocString(L"1s");
+	*result = SysAllocString(L"1clang");
 	return S_OK;
 }
         
@@ -114,19 +114,19 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 				String^ macro = rd->ReadLine();
 				if(macro->Length > 0)
 				{
-					array<String^>^ parts = macro->Split(gcnew array<Char>(1){'='}, 2);
+					array<String^>^ parts = macro->Split(gcnew array<Char>(2){' ', '\t'}, 2);
 					parts[0] = parts[0]->Trim();
 					parts[1] = parts[1]->Trim();
 					if(parts->Length < 2)
 					{
-						return E_FAIL;
+						continue;
 					}
 
-					if(parts[0] == "$uniqueName")
+					if(parts[0] == "$uname")
 					{
 						strUniqueName = parts[1];
 					}
-					else if(parts[0] == "$displayName")
+					else if(parts[0] == "$dname")
 					{
 						strDisplayName = parts[1];
 					}
@@ -151,10 +151,8 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 				
 				Contexts::UserScriptContextInstance^ obj = (Contexts::UserScriptContextInstance^)m_engine->NewObject(mh);
 				IAddinImpl* snegopatAddin = new IAddinImpl(obj);
-				//snegopatAddin->AddRef();
 				snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
 				snegopatAddin->QueryInterface(IID_IUnknown, (void**)result);
-				//*result = (IUnknown*)snegopatAddin;
 			}
 
 			res = S_OK;
@@ -163,7 +161,7 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 		catch(Exception^ e)
 		{
 			WCHAR* msg = stringBuf(e->Message);
-			MessageBox(0, msg, L"Error", MB_OK);
+			MessageBox(0, msg, L"Load error", MB_OK);
 			delete[] msg;
 			
 			res = E_FAIL;
@@ -210,7 +208,7 @@ HRESULT __stdcall  IAddinLoaderImpl::unload(
 HRESULT __stdcall  IAddinLoaderImpl::loadCommandName( 
     BSTR *result)
 {
-	*result = SysAllocString(L"Загрузить скрипт 1С|1s");
+	*result = SysAllocString(L"Загрузить скрипт 1С|1clang");
 	return S_OK;
 }
         
@@ -218,16 +216,16 @@ HRESULT __stdcall  IAddinLoaderImpl::selectLoadURI(
     BSTR *result)
 {
 	OPENFILENAME ofn;
-	const int PREFIX_LEN = 3;
+	const int PREFIX_LEN = 7;
 	const int BUFFER_SIZE = PREFIX_LEN + MAX_PATH + 1;
 	WCHAR pUri[BUFFER_SIZE];
 	memset(pUri, 0, (BUFFER_SIZE) * sizeof(WCHAR));
-	wcsncat(pUri, L"1s:", PREFIX_LEN);
+	wcsncat(pUri, L"1clang:", PREFIX_LEN);
 	WCHAR* file = pUri + PREFIX_LEN;
 
 	memset(&ofn,0,sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.lpstrFilter = L"Скрипты 1С\0*.1s\0\0";
+	ofn.lpstrFilter = L"Скрипты 1С\0*.1scr\0Все файлы\0*.*\0\0";
 	ofn.lpstrFile = file;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.Flags = OFN_EXPLORER|OFN_FILEMUSTEXIST;

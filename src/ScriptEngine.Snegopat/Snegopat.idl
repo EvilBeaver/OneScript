@@ -38,73 +38,18 @@ interface IAddinLoader : IUnknown {
 
 [
   odl,
-  uuid(80864878-1618-46BA-B721-F8F1EA162609),
+  uuid(0CCEA8E6-D187-4B84-B74D-85079F8E2008),
   version(1.0),
-  helpstring("Группа аддинов"),
-  dual,
-  nonextensible,
-  oleautomation
-]
-interface IAddinGroup : IDispatch {
-    [id(0x60020000), propget, helpstring("Название группы")]
-    HRESULT name([out, retval] BSTR* pVal);
-    [id(0x60020001), propget, helpstring("Родительская группа")]
-    HRESULT parent([out, retval] IAddinGroup** pVal);
-    [id(0x60020002), propget, helpstring("Первая дочерняя группа")]
-    HRESULT child([out, retval] IAddinGroup** pVal);
-    [id(0x60020003), propget, helpstring("Следующая группа")]
-    HRESULT next([out, retval] IAddinGroup** pVal);
-    [id(0x60020004), propget, helpstring("Количество аддинов в группе")]
-    HRESULT addinsCount([out, retval] long* pVal);
-    [id(0x60020005), helpstring("Получить аддин")]
-    HRESULT addin(
-                    [in] unsigned long Idx, 
-                    [out, retval] IAddin** pVal);
-    [id(0x60020006), helpstring("Добавить группу")]
-    HRESULT addGroup(
-                    [in] BSTR name, 
-                    [out, retval] IAddinGroup** ppResult);
-};
-
-[
-  odl,
-  uuid(74D4C89D-CFB1-4074-A41E-49C7A03ED862),
-  version(1.0),
-  helpstring("Aддин"),
-  dual,
-  nonextensible,
-  oleautomation
-]
-interface IAddin : IDispatch {
-    [id(0x60020000), propget, helpstring("Отображаемое имя")]
-    HRESULT displayName([out, retval] BSTR* pVal);
-    [id(0x60020001), propget, helpstring("Уникальное имя")]
-    HRESULT uniqueName([out, retval] BSTR* pVal);
-    [id(0x60020002), propget, helpstring("Полный путь аддина")]
-    HRESULT fullPath([out, retval] BSTR* pVal);
-    [id(0x60020003), propget, helpstring("Объект аддина")]
-    HRESULT object([out, retval] IDispatch** pVal);
-    [id(0x60020004), helpstring("Макросы аддина")]
-    HRESULT macroses([out, retval] VARIANT* pVal);
-    [id(0x60020005), helpstring("Выполнить макрос")]
-    HRESULT invokeMacros(
-                    [in] BSTR MacrosName, 
-                    [out, retval] VARIANT* result);
-    [id(0x60020006), propget, helpstring("Родительская группа")]
-    HRESULT group([out, retval] IAddinGroup** pVal);
-
-};
-
-[
-  odl,
-  uuid(DEA1059B-AEF4-45F0-B01C-181057A03D56),
-  version(1.0),
-  helpstring("Инициализация аддина"),
+  helpstring("Интерфейс доступа к макросам аддина"),
   nonextensible
 ]
-interface IAddinInit : IUnknown {
-    [helpstring("Инициализировать аддин")]
-    HRESULT _stdcall initAddin([in] IDispatch* designer);
+interface IAddinMacroses : IUnknown {
+    [helpstring("Получить макросы аддина")]
+    HRESULT _stdcall macroses([out, retval] SAFEARRAY(VARIANT)* result);
+    [helpstring("Выполнить макрос")]
+    HRESULT _stdcall invokeMacros(
+                    [in] BSTR MacrosName, 
+                    [out, retval] VARIANT* result);
 };
 
 [

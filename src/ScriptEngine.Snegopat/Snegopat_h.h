@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0595 */
-/* at Tue Jun 03 00:30:33 2014
+/* at Tue Jun 03 15:40:35 2014
  */
 /* Compiler settings for Snegopat.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0595 
@@ -52,39 +52,11 @@ typedef interface IAddinLoader IAddinLoader;
 #endif 	/* __IAddinLoader_FWD_DEFINED__ */
 
 
-#ifndef __IAddinGroup_FWD_DEFINED__
-#define __IAddinGroup_FWD_DEFINED__
-typedef interface IAddinGroup IAddinGroup;
+#ifndef __IAddinMacroses_FWD_DEFINED__
+#define __IAddinMacroses_FWD_DEFINED__
+typedef interface IAddinMacroses IAddinMacroses;
 
-#endif 	/* __IAddinGroup_FWD_DEFINED__ */
-
-
-#ifndef __IAddin_FWD_DEFINED__
-#define __IAddin_FWD_DEFINED__
-typedef interface IAddin IAddin;
-
-#endif 	/* __IAddin_FWD_DEFINED__ */
-
-
-#ifndef __IAddinInit_FWD_DEFINED__
-#define __IAddinInit_FWD_DEFINED__
-typedef interface IAddinInit IAddinInit;
-
-#endif 	/* __IAddinInit_FWD_DEFINED__ */
-
-
-#ifndef __IAddin_FWD_DEFINED__
-#define __IAddin_FWD_DEFINED__
-typedef interface IAddin IAddin;
-
-#endif 	/* __IAddin_FWD_DEFINED__ */
-
-
-#ifndef __IAddinGroup_FWD_DEFINED__
-#define __IAddinGroup_FWD_DEFINED__
-typedef interface IAddinGroup IAddinGroup;
-
-#endif 	/* __IAddinGroup_FWD_DEFINED__ */
+#endif 	/* __IAddinMacroses_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -251,441 +223,64 @@ EXTERN_C const IID IID_IAddinLoader;
 #endif 	/* __IAddinLoader_INTERFACE_DEFINED__ */
 
 
-#ifndef __IAddinGroup_INTERFACE_DEFINED__
-#define __IAddinGroup_INTERFACE_DEFINED__
+#ifndef __IAddinMacroses_INTERFACE_DEFINED__
+#define __IAddinMacroses_INTERFACE_DEFINED__
 
-/* interface IAddinGroup */
-/* [object][oleautomation][nonextensible][dual][helpstring][version][uuid] */ 
-
-
-EXTERN_C const IID IID_IAddinGroup;
-
-#if defined(__cplusplus) && !defined(CINTERFACE)
-    
-    MIDL_INTERFACE("80864878-1618-46BA-B721-F8F1EA162609")
-    IAddinGroup : public IDispatch
-    {
-    public:
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_name( 
-            /* [retval][out] */ BSTR *pVal) = 0;
-        
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_parent( 
-            /* [retval][out] */ IAddinGroup **pVal) = 0;
-        
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_child( 
-            /* [retval][out] */ IAddinGroup **pVal) = 0;
-        
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_next( 
-            /* [retval][out] */ IAddinGroup **pVal) = 0;
-        
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_addinsCount( 
-            /* [retval][out] */ long *pVal) = 0;
-        
-        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE addin( 
-            /* [in] */ unsigned long Idx,
-            /* [retval][out] */ IAddin **pVal) = 0;
-        
-        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE addGroup( 
-            /* [in] */ BSTR name,
-            /* [retval][out] */ IAddinGroup **ppResult) = 0;
-        
-    };
-    
-    
-#else 	/* C style interface */
-
-    typedef struct IAddinGroupVtbl
-    {
-        BEGIN_INTERFACE
-        
-        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            IAddinGroup * This,
-            /* [in] */ REFIID riid,
-            /* [annotation][iid_is][out] */ 
-            _COM_Outptr_  void **ppvObject);
-        
-        ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            IAddinGroup * This);
-        
-        ULONG ( STDMETHODCALLTYPE *Release )( 
-            IAddinGroup * This);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
-            IAddinGroup * This,
-            /* [out] */ UINT *pctinfo);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
-            IAddinGroup * This,
-            /* [in] */ UINT iTInfo,
-            /* [in] */ LCID lcid,
-            /* [out] */ ITypeInfo **ppTInfo);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
-            IAddinGroup * This,
-            /* [in] */ REFIID riid,
-            /* [size_is][in] */ LPOLESTR *rgszNames,
-            /* [range][in] */ UINT cNames,
-            /* [in] */ LCID lcid,
-            /* [size_is][out] */ DISPID *rgDispId);
-        
-        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
-            IAddinGroup * This,
-            /* [annotation][in] */ 
-            _In_  DISPID dispIdMember,
-            /* [annotation][in] */ 
-            _In_  REFIID riid,
-            /* [annotation][in] */ 
-            _In_  LCID lcid,
-            /* [annotation][in] */ 
-            _In_  WORD wFlags,
-            /* [annotation][out][in] */ 
-            _In_  DISPPARAMS *pDispParams,
-            /* [annotation][out] */ 
-            _Out_opt_  VARIANT *pVarResult,
-            /* [annotation][out] */ 
-            _Out_opt_  EXCEPINFO *pExcepInfo,
-            /* [annotation][out] */ 
-            _Out_opt_  UINT *puArgErr);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_name )( 
-            IAddinGroup * This,
-            /* [retval][out] */ BSTR *pVal);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_parent )( 
-            IAddinGroup * This,
-            /* [retval][out] */ IAddinGroup **pVal);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_child )( 
-            IAddinGroup * This,
-            /* [retval][out] */ IAddinGroup **pVal);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_next )( 
-            IAddinGroup * This,
-            /* [retval][out] */ IAddinGroup **pVal);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_addinsCount )( 
-            IAddinGroup * This,
-            /* [retval][out] */ long *pVal);
-        
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *addin )( 
-            IAddinGroup * This,
-            /* [in] */ unsigned long Idx,
-            /* [retval][out] */ IAddin **pVal);
-        
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *addGroup )( 
-            IAddinGroup * This,
-            /* [in] */ BSTR name,
-            /* [retval][out] */ IAddinGroup **ppResult);
-        
-        END_INTERFACE
-    } IAddinGroupVtbl;
-
-    interface IAddinGroup
-    {
-        CONST_VTBL struct IAddinGroupVtbl *lpVtbl;
-    };
-
-    
-
-#ifdef COBJMACROS
-
-
-#define IAddinGroup_QueryInterface(This,riid,ppvObject)	\
-    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
-
-#define IAddinGroup_AddRef(This)	\
-    ( (This)->lpVtbl -> AddRef(This) ) 
-
-#define IAddinGroup_Release(This)	\
-    ( (This)->lpVtbl -> Release(This) ) 
-
-
-#define IAddinGroup_GetTypeInfoCount(This,pctinfo)	\
-    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
-
-#define IAddinGroup_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
-    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
-
-#define IAddinGroup_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
-    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
-
-#define IAddinGroup_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
-    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
-
-
-#define IAddinGroup_get_name(This,pVal)	\
-    ( (This)->lpVtbl -> get_name(This,pVal) ) 
-
-#define IAddinGroup_get_parent(This,pVal)	\
-    ( (This)->lpVtbl -> get_parent(This,pVal) ) 
-
-#define IAddinGroup_get_child(This,pVal)	\
-    ( (This)->lpVtbl -> get_child(This,pVal) ) 
-
-#define IAddinGroup_get_next(This,pVal)	\
-    ( (This)->lpVtbl -> get_next(This,pVal) ) 
-
-#define IAddinGroup_get_addinsCount(This,pVal)	\
-    ( (This)->lpVtbl -> get_addinsCount(This,pVal) ) 
-
-#define IAddinGroup_addin(This,Idx,pVal)	\
-    ( (This)->lpVtbl -> addin(This,Idx,pVal) ) 
-
-#define IAddinGroup_addGroup(This,name,ppResult)	\
-    ( (This)->lpVtbl -> addGroup(This,name,ppResult) ) 
-
-#endif /* COBJMACROS */
-
-
-#endif 	/* C style interface */
-
-
-
-
-#endif 	/* __IAddinGroup_INTERFACE_DEFINED__ */
-
-
-#ifndef __IAddin_INTERFACE_DEFINED__
-#define __IAddin_INTERFACE_DEFINED__
-
-/* interface IAddin */
-/* [object][oleautomation][nonextensible][dual][helpstring][version][uuid] */ 
-
-
-EXTERN_C const IID IID_IAddin;
-
-#if defined(__cplusplus) && !defined(CINTERFACE)
-    
-    MIDL_INTERFACE("74D4C89D-CFB1-4074-A41E-49C7A03ED862")
-    IAddin : public IDispatch
-    {
-    public:
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_displayName( 
-            /* [retval][out] */ BSTR *pVal) = 0;
-        
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_uniqueName( 
-            /* [retval][out] */ BSTR *pVal) = 0;
-        
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_fullPath( 
-            /* [retval][out] */ BSTR *pVal) = 0;
-        
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_object( 
-            /* [retval][out] */ IDispatch **pVal) = 0;
-        
-        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE macroses( 
-            /* [retval][out] */ VARIANT *pVal) = 0;
-        
-        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE invokeMacros( 
-            /* [in] */ BSTR MacrosName,
-            /* [retval][out] */ VARIANT *result) = 0;
-        
-        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_group( 
-            /* [retval][out] */ IAddinGroup **pVal) = 0;
-        
-    };
-    
-    
-#else 	/* C style interface */
-
-    typedef struct IAddinVtbl
-    {
-        BEGIN_INTERFACE
-        
-        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            IAddin * This,
-            /* [in] */ REFIID riid,
-            /* [annotation][iid_is][out] */ 
-            _COM_Outptr_  void **ppvObject);
-        
-        ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            IAddin * This);
-        
-        ULONG ( STDMETHODCALLTYPE *Release )( 
-            IAddin * This);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
-            IAddin * This,
-            /* [out] */ UINT *pctinfo);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
-            IAddin * This,
-            /* [in] */ UINT iTInfo,
-            /* [in] */ LCID lcid,
-            /* [out] */ ITypeInfo **ppTInfo);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
-            IAddin * This,
-            /* [in] */ REFIID riid,
-            /* [size_is][in] */ LPOLESTR *rgszNames,
-            /* [range][in] */ UINT cNames,
-            /* [in] */ LCID lcid,
-            /* [size_is][out] */ DISPID *rgDispId);
-        
-        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
-            IAddin * This,
-            /* [annotation][in] */ 
-            _In_  DISPID dispIdMember,
-            /* [annotation][in] */ 
-            _In_  REFIID riid,
-            /* [annotation][in] */ 
-            _In_  LCID lcid,
-            /* [annotation][in] */ 
-            _In_  WORD wFlags,
-            /* [annotation][out][in] */ 
-            _In_  DISPPARAMS *pDispParams,
-            /* [annotation][out] */ 
-            _Out_opt_  VARIANT *pVarResult,
-            /* [annotation][out] */ 
-            _Out_opt_  EXCEPINFO *pExcepInfo,
-            /* [annotation][out] */ 
-            _Out_opt_  UINT *puArgErr);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_displayName )( 
-            IAddin * This,
-            /* [retval][out] */ BSTR *pVal);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_uniqueName )( 
-            IAddin * This,
-            /* [retval][out] */ BSTR *pVal);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_fullPath )( 
-            IAddin * This,
-            /* [retval][out] */ BSTR *pVal);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_object )( 
-            IAddin * This,
-            /* [retval][out] */ IDispatch **pVal);
-        
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *macroses )( 
-            IAddin * This,
-            /* [retval][out] */ VARIANT *pVal);
-        
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *invokeMacros )( 
-            IAddin * This,
-            /* [in] */ BSTR MacrosName,
-            /* [retval][out] */ VARIANT *result);
-        
-        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_group )( 
-            IAddin * This,
-            /* [retval][out] */ IAddinGroup **pVal);
-        
-        END_INTERFACE
-    } IAddinVtbl;
-
-    interface IAddin
-    {
-        CONST_VTBL struct IAddinVtbl *lpVtbl;
-    };
-
-    
-
-#ifdef COBJMACROS
-
-
-#define IAddin_QueryInterface(This,riid,ppvObject)	\
-    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
-
-#define IAddin_AddRef(This)	\
-    ( (This)->lpVtbl -> AddRef(This) ) 
-
-#define IAddin_Release(This)	\
-    ( (This)->lpVtbl -> Release(This) ) 
-
-
-#define IAddin_GetTypeInfoCount(This,pctinfo)	\
-    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
-
-#define IAddin_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
-    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
-
-#define IAddin_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
-    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
-
-#define IAddin_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
-    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
-
-
-#define IAddin_get_displayName(This,pVal)	\
-    ( (This)->lpVtbl -> get_displayName(This,pVal) ) 
-
-#define IAddin_get_uniqueName(This,pVal)	\
-    ( (This)->lpVtbl -> get_uniqueName(This,pVal) ) 
-
-#define IAddin_get_fullPath(This,pVal)	\
-    ( (This)->lpVtbl -> get_fullPath(This,pVal) ) 
-
-#define IAddin_get_object(This,pVal)	\
-    ( (This)->lpVtbl -> get_object(This,pVal) ) 
-
-#define IAddin_macroses(This,pVal)	\
-    ( (This)->lpVtbl -> macroses(This,pVal) ) 
-
-#define IAddin_invokeMacros(This,MacrosName,result)	\
-    ( (This)->lpVtbl -> invokeMacros(This,MacrosName,result) ) 
-
-#define IAddin_get_group(This,pVal)	\
-    ( (This)->lpVtbl -> get_group(This,pVal) ) 
-
-#endif /* COBJMACROS */
-
-
-#endif 	/* C style interface */
-
-
-
-
-#endif 	/* __IAddin_INTERFACE_DEFINED__ */
-
-
-#ifndef __IAddinInit_INTERFACE_DEFINED__
-#define __IAddinInit_INTERFACE_DEFINED__
-
-/* interface IAddinInit */
+/* interface IAddinMacroses */
 /* [object][nonextensible][helpstring][version][uuid] */ 
 
 
-EXTERN_C const IID IID_IAddinInit;
+EXTERN_C const IID IID_IAddinMacroses;
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
-    MIDL_INTERFACE("DEA1059B-AEF4-45F0-B01C-181057A03D56")
-    IAddinInit : public IUnknown
+    MIDL_INTERFACE("0CCEA8E6-D187-4B84-B74D-85079F8E2008")
+    IAddinMacroses : public IUnknown
     {
     public:
-        virtual /* [helpstring] */ HRESULT __stdcall initAddin( 
-            /* [in] */ IDispatch *designer) = 0;
+        virtual /* [helpstring] */ HRESULT __stdcall macroses( 
+            /* [retval][out] */ SAFEARRAY * *result) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall invokeMacros( 
+            /* [in] */ BSTR MacrosName,
+            /* [retval][out] */ VARIANT *result) = 0;
         
     };
     
     
 #else 	/* C style interface */
 
-    typedef struct IAddinInitVtbl
+    typedef struct IAddinMacrosesVtbl
     {
         BEGIN_INTERFACE
         
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            IAddinInit * This,
+            IAddinMacroses * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            IAddinInit * This);
+            IAddinMacroses * This);
         
         ULONG ( STDMETHODCALLTYPE *Release )( 
-            IAddinInit * This);
+            IAddinMacroses * This);
         
-        /* [helpstring] */ HRESULT ( __stdcall *initAddin )( 
-            IAddinInit * This,
-            /* [in] */ IDispatch *designer);
+        /* [helpstring] */ HRESULT ( __stdcall *macroses )( 
+            IAddinMacroses * This,
+            /* [retval][out] */ SAFEARRAY * *result);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *invokeMacros )( 
+            IAddinMacroses * This,
+            /* [in] */ BSTR MacrosName,
+            /* [retval][out] */ VARIANT *result);
         
         END_INTERFACE
-    } IAddinInitVtbl;
+    } IAddinMacrosesVtbl;
 
-    interface IAddinInit
+    interface IAddinMacroses
     {
-        CONST_VTBL struct IAddinInitVtbl *lpVtbl;
+        CONST_VTBL struct IAddinMacrosesVtbl *lpVtbl;
     };
 
     
@@ -693,18 +288,21 @@ EXTERN_C const IID IID_IAddinInit;
 #ifdef COBJMACROS
 
 
-#define IAddinInit_QueryInterface(This,riid,ppvObject)	\
+#define IAddinMacroses_QueryInterface(This,riid,ppvObject)	\
     ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
 
-#define IAddinInit_AddRef(This)	\
+#define IAddinMacroses_AddRef(This)	\
     ( (This)->lpVtbl -> AddRef(This) ) 
 
-#define IAddinInit_Release(This)	\
+#define IAddinMacroses_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IAddinInit_initAddin(This,designer)	\
-    ( (This)->lpVtbl -> initAddin(This,designer) ) 
+#define IAddinMacroses_macroses(This,result)	\
+    ( (This)->lpVtbl -> macroses(This,result) ) 
+
+#define IAddinMacroses_invokeMacros(This,MacrosName,result)	\
+    ( (This)->lpVtbl -> invokeMacros(This,MacrosName,result) ) 
 
 #endif /* COBJMACROS */
 
@@ -714,7 +312,7 @@ EXTERN_C const IID IID_IAddinInit;
 
 
 
-#endif 	/* __IAddinInit_INTERFACE_DEFINED__ */
+#endif 	/* __IAddinMacroses_INTERFACE_DEFINED__ */
 
 
 
@@ -736,6 +334,11 @@ unsigned long             __RPC_USER  BSTR_UserSize(     unsigned long *, unsign
 unsigned char * __RPC_USER  BSTR_UserMarshal(  unsigned long *, unsigned char *, BSTR * ); 
 unsigned char * __RPC_USER  BSTR_UserUnmarshal(unsigned long *, unsigned char *, BSTR * ); 
 void                      __RPC_USER  BSTR_UserFree(     unsigned long *, BSTR * ); 
+
+unsigned long             __RPC_USER  LPSAFEARRAY_UserSize(     unsigned long *, unsigned long            , LPSAFEARRAY * ); 
+unsigned char * __RPC_USER  LPSAFEARRAY_UserMarshal(  unsigned long *, unsigned char *, LPSAFEARRAY * ); 
+unsigned char * __RPC_USER  LPSAFEARRAY_UserUnmarshal(unsigned long *, unsigned char *, LPSAFEARRAY * ); 
+void                      __RPC_USER  LPSAFEARRAY_UserFree(     unsigned long *, LPSAFEARRAY * ); 
 
 unsigned long             __RPC_USER  VARIANT_UserSize(     unsigned long *, unsigned long            , VARIANT * ); 
 unsigned char * __RPC_USER  VARIANT_UserMarshal(  unsigned long *, unsigned char *, VARIANT * ); 

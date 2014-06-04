@@ -19,8 +19,10 @@ private:
 	IRuntimeContextInstance^ m_DesignerWrapper;
 	List<IVariable^>^ m_varList;
 	List<String^>^ m_nameList;
+	List<MethodInfo>^ m_methods;
 
 	void InsertProperty(String^ name);
+	void InsertMethod(String^ name);
 
 public:
 	SnegopatAttachedContext(IRuntimeContextInstance^ Designer);

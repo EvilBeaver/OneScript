@@ -7,10 +7,34 @@ SnegopatAttachedContext::SnegopatAttachedContext(IRuntimeContextInstance^ Design
 	m_DesignerWrapper = Designer;
 	m_varList = gcnew List<IVariable^>();
 	m_nameList = gcnew List<String^>();
+	m_methods = gcnew List<MethodInfo>();
 
 	InsertProperty("addins");
 	InsertProperty("cmdTrace");
 	InsertProperty("events");
+	InsertProperty("profileRoot");
+	InsertProperty("snegopat");
+	InsertProperty("hotkeys");
+	InsertProperty("windows");
+	InsertProperty("metadata");
+	InsertProperty("v8files");
+	InsertProperty("ownerName");
+	InsertProperty("v8debug");
+	InsertProperty("sVersion");
+	InsertProperty("v8Version");
+
+	InsertMethod("v8New");
+	InsertMethod("Message");
+	InsertMethod("MessageBox");
+	InsertMethod("globalContext");
+	InsertMethod("getCmdState");
+	InsertMethod("saveProfile");
+	InsertMethod("createTimer");
+	InsertMethod("killTimer");
+	InsertMethod("toV8Value");
+	InsertMethod("loadResourceString");
+
+
 }
 
 void SnegopatAttachedContext::OnAttach(MachineInstance^ machine,
@@ -40,7 +64,13 @@ IEnumerable<VariableDescriptor>^ SnegopatAttachedContext::GetSymbols()
 
 IEnumerable<MethodInfo>^ SnegopatAttachedContext::GetMethods()
 {
-	return gcnew array<MethodInfo,1>(0);
+	array<MethodInfo>^ arr = gcnew array<MethodInfo>(m_methods->Count);
+	for (int i = 0; i < m_methods->Count; i++)
+	{
+		arr[i] = m_methods[i];
+	}
+
+	return arr;
 }
 
 void SnegopatAttachedContext::InsertProperty(String^ name)
@@ -48,4 +78,11 @@ void SnegopatAttachedContext::InsertProperty(String^ name)
 	int propNum = m_DesignerWrapper->FindProperty(name);
 	m_varList->Add(Variable::CreateContextPropertyReference(m_DesignerWrapper, propNum));
 	m_nameList->Add(name);
+}
+
+void SnegopatAttachedContext::InsertMethod(String^ name)
+{
+	int mNum = m_DesignerWrapper->FindMethod(name);
+	MethodInfo mi = m_DesignerWrapper->GetMethodInfo(mNum);
+	m_methods->Add(mi);
 }

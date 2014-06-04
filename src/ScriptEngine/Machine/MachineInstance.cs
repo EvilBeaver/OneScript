@@ -840,7 +840,7 @@ namespace ScriptEngine.Machine
                         throw RuntimeException.ArgHasNoDefaultValue(i + 1);
                     }
                 }
-                else if (!paramDef.HasDefaultValue)
+                else if (!paramDef.HasDefaultValue && !paramDef.IsParameterArray)
                 {
                     throw RuntimeException.TooLittleArgumentsPassed();
                 }
