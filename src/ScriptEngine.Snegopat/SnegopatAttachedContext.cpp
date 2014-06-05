@@ -47,15 +47,16 @@ void SnegopatAttachedContext::OnAttach(MachineInstance^ machine,
 	variables = m_varList->ToArray();
 }
 
-IEnumerable<VariableDescriptor>^ SnegopatAttachedContext::GetSymbols()
+IEnumerable<VariableInfo>^ SnegopatAttachedContext::GetProperties()
 {
-	array<VariableDescriptor>^ arr = gcnew array<VariableDescriptor>(m_varList->Count);
+	array<VariableInfo>^ arr = gcnew array<VariableInfo>(m_varList->Count);
 	for (int i = 0; i < m_varList->Count; i++)
 	{
-		VariableDescriptor d;
-		d.Identifier = m_nameList[i];
-		d.Type = SymbolType::ContextProperty;
-		arr[i] = d;
+		VariableInfo vi;
+
+		vi.Identifier = m_nameList[i];
+		vi.Type = SymbolType::ContextProperty;
+		arr[i] = vi;
 	}
 
 	return arr;

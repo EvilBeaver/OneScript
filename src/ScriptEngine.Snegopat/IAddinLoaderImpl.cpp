@@ -13,7 +13,7 @@ IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 
 	ScriptEngine::RuntimeEnvironment^ env = gcnew ScriptEngine::RuntimeEnvironment();
 	
-	IntPtr handle = IntPtr(pDesigner);
+	IntPtr handle = IntPtr(pDesigner); 
 	Object^ managedObject = System::Runtime::InteropServices::Marshal::GetObjectForIUnknown(handle);
 	IRuntimeContextInstance^ designerWrapper = gcnew Contexts::COMWrapperContext(managedObject);
 
@@ -21,7 +21,7 @@ IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 	env->InjectGlobalProperty((IValue^)designerWrapper, ident, true);
 
 	SnegopatAttachedContext^ importedProperties = gcnew SnegopatAttachedContext(designerWrapper);
-	env->InjectObject(importedProperties, importedProperties);
+	env->InjectObject(importedProperties, true);
 
 	m_engine->Initialize(env);
 

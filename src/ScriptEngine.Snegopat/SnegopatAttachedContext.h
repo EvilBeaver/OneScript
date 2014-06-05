@@ -12,7 +12,7 @@ using namespace System::Runtime::InteropServices;
 
 /* Defines global context for snegopat script
 */
-ref class SnegopatAttachedContext : public IAttachableContext, public ICompilerSymbolsProvider
+ref class SnegopatAttachedContext : public IAttachableContext
 {
 private:
 
@@ -32,7 +32,7 @@ public:
 			[Out] cli::array<MethodInfo>^% methods, 
 			[Out] IRuntimeContextInstance^% instance);
 
-	virtual IEnumerable<VariableDescriptor>^ GetSymbols();
+	virtual IEnumerable<VariableInfo>^ GetProperties();
     virtual IEnumerable<MethodInfo>^ GetMethods();
 
 };

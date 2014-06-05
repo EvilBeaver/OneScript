@@ -233,6 +233,14 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
+        public override bool DynamicMethodSignatures
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override int FindProperty(string name)
         {
             int dispId;
