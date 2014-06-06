@@ -755,7 +755,7 @@ namespace ScriptEngine.Machine
             IValue[] argValues;
             PrepareContextCallArguments(arg, out context, out methodId, out argValues);
 
-            if (!context.GetMethodInfo(methodId).IsFunction)
+            if (!context.DynamicMethodSignatures && !context.GetMethodInfo(methodId).IsFunction)
             {
                 throw RuntimeException.UseProcAsAFunction();
             }
@@ -786,7 +786,11 @@ namespace ScriptEngine.Machine
             methodId = context.FindMethod(methodName);
             var methodInfo = context.GetMethodInfo(methodId);
 
-            argValues = new IValue[methodInfo.Params.Length];
+            if(context.DynamicMethodSignatures)
+                argValues = new IValue[argCount];
+            else
+                argValues = new IValue[methodInfo.Params.Length];
+
             bool[] signatureCheck = new bool[argCount];
 
             // fact args
@@ -803,22 +807,31 @@ namespace ScriptEngine.Machine
                     signatureCheck[i] = true;
                 }
 
-                if (methodInfo.Params[i].IsByValue)
+                if (context.DynamicMethodSignatures)
+                {
                     argValues[i] = BreakVariableLink(argValue);
+                }
                 else
-                    argValues[i] = argValue;
+                {
+                    if (methodInfo.Params[i].IsByValue)
+                        argValues[i] = BreakVariableLink(argValue);
+                    else
+                        argValues[i] = argValue;
+                }
 
             }
             factArgs = null;
-            if(!context.DynamicMethodSignatures)
+            if (!context.DynamicMethodSignatures)
+            {
                 CheckFactArguments(methodInfo, signatureCheck);
 
-            //manage default vals
-            for (int i = argCount; i < argValues.Length; i++)
-            {
-                if (methodInfo.Params[i].HasDefaultValue)
+                //manage default vals
+                for (int i = argCount; i < argValues.Length; i++)
                 {
-                    argValues[i] = null;
+                    if (methodInfo.Params[i].HasDefaultValue)
+                    {
+                        argValues[i] = null;
+                    }
                 }
             }
         }

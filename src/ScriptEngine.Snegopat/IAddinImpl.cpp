@@ -93,7 +93,7 @@ HRESULT STDMETHODCALLTYPE IAddinImpl::invokeMacros(
 	}
 	catch(System::Exception^ e)
 	{
-		auto buf = stringBuf(e->Message);
+		auto buf = stringBuf(e->ToString());
 		MessageBox(0, buf, L"Error", MB_OK);
 		delete[] buf;
 	}
