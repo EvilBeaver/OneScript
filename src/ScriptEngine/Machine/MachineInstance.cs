@@ -491,9 +491,15 @@ namespace ScriptEngine.Machine
 
         private void Div(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Create(op1.AsNumber() / op2.AsNumber()));
+            var op2 = _operationStack.Pop().AsNumber();
+            var op1 = _operationStack.Pop().AsNumber();
+
+            if (op2 == 0)
+            {
+                throw RuntimeException.DivideByZero();
+            }
+
+            _operationStack.Push(ValueFactory.Create(op1 / op2));
             NextInstruction();
         }
 
