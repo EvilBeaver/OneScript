@@ -650,7 +650,7 @@ namespace ScriptEngine.Machine
                 frame.Locals = new IVariable[methDescr.VariableFrameSize];
                 for (int i = 0; i < methDescr.VariableFrameSize; i++)
                 {
-                    if (i < argCount)
+                    if (i < argValues.Length)
                     {
                         var paramDef = methInfo.Params[i];
                         if (argValues[i] is IVariable)
