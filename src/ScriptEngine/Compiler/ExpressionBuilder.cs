@@ -12,6 +12,7 @@ partial class Compiler
     {
         Compiler _compiler;
         Stack<Token> _operators;
+        Stack<int> _logicalJumps;
 
         public ExpressionBuilder(Compiler compiler)
         {
@@ -85,20 +86,20 @@ partial class Compiler
                         }
                         else if (_compiler._lastExtractedLexem.Token == Token.Minus)
                         {
-                            _operators.Push(Token.UnaryMinus);
+                            PushOperator(Token.UnaryMinus);
                             currentState = STATE_OPERAND_EXPECTED;
                             success = true;
                         }
                         else if (_compiler._lastExtractedLexem.Token == Token.OpenPar)
                         {
-                            _operators.Push(Token.OpenPar);
+                            PushOperator(Token.OpenPar);
                             parCount++;
                             currentState = STATE_UNDEF;
                             success = true;
                         }
                         else if (_compiler._lastExtractedLexem.Token == Token.Not)
                         {
-                            _operators.Push(Token.Not);
+                            PushOperator(Token.Not);
                             currentState = STATE_OPERAND_EXPECTED;
                             success = true;
                         }
@@ -171,9 +172,9 @@ partial class Compiler
 
                             if (_operators.Count > 0)
                             {
-                                while ((current = _operators.Pop()) != Token.OpenPar)
+                                while ((current = PopOperator()) != Token.OpenPar)
                                 {
-                                    _compiler.AddCommand(TokenToOperationCode(current), 0);
+                                    AddCommandForToken(current);
                                     if (_operators.Count == 0)
                                     {
                                         throw CompilerException.TokenExpected(Token.OpenPar);
@@ -248,23 +249,16 @@ partial class Compiler
                 || token == Token.NotEqual;
         }
 
-        private void UnwindOperators()
+        private void AddCommandForToken(Token current)
         {
-            while (_operators.Count > 0)
-            {
-                var oper = _operators.Pop();
-                if (oper == Token.OpenPar)
-                    throw CompilerException.ExpressionSyntax();
-
-                _compiler.AddCommand(TokenToOperationCode(oper), 0);
-            }
+            _compiler.AddCommand(TokenToOperationCode(current), 0);
         }
 
         private void ProcessExpressionOperator()
         {
             if (_operators.Count == 0)
             {
-                _operators.Push(_compiler._lastExtractedLexem.Token);
+               PushOperator(_compiler._lastExtractedLexem.Token);
                 return;
             }
 
@@ -276,25 +270,46 @@ partial class Compiler
 
                 while (stackPriority >= currentPriority && _operators.Count > 0)
                 {
-                    var stackOp = _operators.Pop();
+                    var stackOp = PopOperator();
                     if (stackOp != Token.OpenPar)
                     {
-                        OperationCode opCode = TokenToOperationCode(stackOp);
-                        _compiler.AddCommand(opCode, 0);
+                        AddCommandForToken(stackOp);
                     }
                     else
                     {
-                        _operators.Push(stackOp);
+                        PushOperator(stackOp);
                         break;
                     }
                 }
 
-                _operators.Push(_compiler._lastExtractedLexem.Token);
+                PushOperator(_compiler._lastExtractedLexem.Token);
 
             }
             else
             {
-                _operators.Push(_compiler._lastExtractedLexem.Token);
+               PushOperator(_compiler._lastExtractedLexem.Token);
+            }
+        }
+
+        private void PushOperator(Token token)
+        {
+            _operators.Push(token);
+        }
+
+        private Token PopOperator()
+        {
+            return _operators.Pop();
+        }
+
+        private void UnwindOperators()
+        {
+            while (_operators.Count > 0)
+            {
+                var oper = PopOperator();
+                if (oper == Token.OpenPar)
+                    throw CompilerException.ExpressionSyntax();
+
+                AddCommandForToken(oper);
             }
         }
 
