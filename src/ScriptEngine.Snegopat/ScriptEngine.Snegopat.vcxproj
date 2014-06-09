@@ -125,10 +125,13 @@
     <Image Include="app.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="Snegopat.idl" />
+    <Midl Include="Snegopat.idl">
+      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)$(ProjectName).tlb</TypeLibraryName>
+      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Debug\ScriptEngine.Snegopat.tlb" />
+    <None Include="ScriptEngine.Snegopat.tlb" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">

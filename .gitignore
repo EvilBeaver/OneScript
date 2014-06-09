@@ -48,3 +48,5 @@
 Debug
 /src/*.opensdf
 /src/ipch/scriptengine.snegopat-bbe5b63/scriptengine.ipch
+/src/ScriptEngine.Snegopat/Release/ScriptEngine.Snegopat.tlb
+/src/ScriptEngine.Snegopat/ScriptEngine.Snegopat.tlb

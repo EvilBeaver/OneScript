@@ -103,7 +103,7 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Debug\ScriptEngine.Snegopat.tlb">
+    <None Include="ScriptEngine.Snegopat.tlb">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
