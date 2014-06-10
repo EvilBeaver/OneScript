@@ -2,6 +2,7 @@
 #include "IAddinLoaderImpl.h"
 #include "Snegopat_i.c"
 #include "MarshalingHelpers.h"
+#include "TrickyWrapper.h"
 #include <commdlg.h>
 #include <string>
 
@@ -153,6 +154,10 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 				IAddinImpl* snegopatAddin = new IAddinImpl(obj);
 				snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
 				snegopatAddin->QueryInterface(IID_IUnknown, (void**)result);
+
+				TrickyWrapper^ thisWrapper = gcnew TrickyWrapper(snegopatAddin);
+				thisWrapper->OverrideThisObject(m_engine->Machine);
+
 			}
 
 			res = S_OK;

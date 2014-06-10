@@ -46,7 +46,7 @@ namespace ScriptEngine.Machine.Contexts
             _machine = machine;
             variables = _state;
             methods = _module.Methods.Select(x => x.Signature).ToArray();
-            instance = this;
+            instance = this;//_state[THIS_VARIABLE_INDEX].AsObject();
         }
 
         #endregion
@@ -77,10 +77,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override IValue GetPropValue(int propNum)
         {
-            if (propNum > THIS_VARIABLE_INDEX)
-                return _state[propNum].Value;
-            else
-                return this;
+            return _state[propNum].Value;
         }
 
         public override void SetPropValue(int propNum, IValue newVal)

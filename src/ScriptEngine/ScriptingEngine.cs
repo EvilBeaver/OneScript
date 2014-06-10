@@ -67,5 +67,10 @@ namespace ScriptEngine
             NewObject(module);
         }
 
+        public MachineInstance Machine
+        {
+            get { return _machine; }
+        }
+
     }
 }

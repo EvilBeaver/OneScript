@@ -5,7 +5,27 @@
 TrickyWrapper::TrickyWrapper(IAddinImpl* dispatched)
 {
 	m_scriptDispatcher = dispatched;
+	m_scriptDispatcher->AddRef();
 	m_script = dispatched->GetManagedInstance();
+}
+
+TrickyWrapper::~TrickyWrapper()
+{
+	if(m_scriptDispatcher != nullptr)
+	{
+		m_script = nullptr;
+		m_scriptDispatcher->Release();
+		m_scriptDispatcher = NULL;
+	}
+}
+
+void TrickyWrapper::OverrideThisObject(MachineInstance^ machine)
+{
+	array<IVariable^>^ vars;
+	array<MethodInfo>^ methods;
+	IRuntimeContextInstance^ ctx;
+	m_script->OnAttach(machine, vars, methods, ctx);
+	vars[THIS_VARIABLE_INDEX] = Variable::CreateContextPropertyReference(this, THIS_VARIABLE_INDEX);
 }
 
 Object^ TrickyWrapper::UnderlyingObject::get()
@@ -26,50 +46,38 @@ bool TrickyWrapper::IsPropReadable(int propNum)
 
 bool TrickyWrapper::IsPropWritable(int propNum) 
 {
-	int dispId = m_propDispIdMap[propNum];
-	return m_DesignerWrapper->IsPropWritable(dispId);
+	return m_script->IsPropWritable(propNum);
 }
 
 IValue^ TrickyWrapper::GetPropValue(int propNum) 
 {
-	int dispId = m_propDispIdMap[propNum];
-	return m_DesignerWrapper->GetPropValue(dispId);
+	if(propNum == THIS_VARIABLE_INDEX)
+		return this;
+	else
+		return m_script->GetPropValue(propNum);
 }
 
 void TrickyWrapper::SetPropValue(int propNum, IValue^ val) 
 {
-	int dispId = m_propDispIdMap[propNum];
-	m_DesignerWrapper->SetPropValue(dispId, val);
+	m_script->SetPropValue(propNum, val);
 }
 
 int TrickyWrapper::FindMethod(String^ mName) 
 {
-	for (int i = 0; i < m_methods->Count; i++)
-	{
-		String^ nameFromList = m_methods[i].Name;
-		if(String::Compare(nameFromList, mName, true) == 0)
-		{
-			return i;
-		}
-	}
-
-	throw RuntimeException::MethodNotFoundException(mName);
+	return m_script->FindMethod(mName);
 }
 
 MethodInfo TrickyWrapper::GetMethodInfo(int mNum) 
 {
-	int dispId = m_methDispIdMap[mNum];
-	return m_DesignerWrapper->GetMethodInfo(dispId);
+	return m_script->GetMethodInfo(mNum);
 }
 
 void TrickyWrapper::CallAsProcedure(int mNum, array<IValue^>^ args) 
 {
-	int dispId = m_methDispIdMap[mNum];
-	m_DesignerWrapper->CallAsProcedure(dispId, args);
+	m_script->CallAsProcedure(mNum, args);
 }
 
 void TrickyWrapper::CallAsFunction(int mNum, array<IValue^>^ args, [Out] IValue^% retVal) 
 {
-	int dispId = m_methDispIdMap[mNum];
-	m_DesignerWrapper->CallAsFunction(dispId, args, retVal);
+	m_script->CallAsFunction(mNum, args, retVal);
 }

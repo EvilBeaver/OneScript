@@ -154,3 +154,47 @@ void IAddinImpl::OnZeroCount()
 {
 	m_innerObject = nullptr;
 }
+
+#pragma region ITypeInfo members
+
+HRESULT STDMETHODCALLTYPE IAddinImpl::GetTypeAttr(TYPEATTR **ppTypeAttr)
+{
+	TYPEATTR* ta = new TYPEATTR();
+	memset(ta, 0, sizeof(TYPEATTR));
+
+	array<System::String^>^ exportNames = m_innerObject->GetExportedMethods();
+	m_exportedMeths = gcnew array<ScriptEngine::Machine::MethodInfo>(exportNames->Length);
+	
+	for (int i = 0; i < m_exportedMeths->Length; i++)
+	{
+		int mId = m_innerObject->FindMethod(exportNames[i]);
+		m_exportedMeths[i] = m_innerObject->GetMethodInfo(mId);
+	}
+
+	ta->cFuncs = m_exportedMeths->Length;
+	ta->typekind = TKIND_DISPATCH;
+	*ppTypeAttr = ta;
+
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE IAddinImpl::GetFuncDesc( 
+        UINT index,
+        FUNCDESC **ppFuncDesc)
+{
+	
+	auto mi = m_exportedMeths[index];
+
+	FUNCDESC* fd = new FUNCDESC();
+	memset(fd, 0, sizeof(FUNCDESC));
+	fd->memid = index;
+	fd->funckind = FUNC_DISPATCH;
+	fd->invkind = INVOKE_FUNC;
+	fd->cParams = mi.Params->Length;
+
+	*ppFuncDesc = fd;
+
+	return S_OK;
+}
+
+#pragma endregion

@@ -14,9 +14,13 @@ private:
 
 	UserScriptContextInstance^ m_script;
 	IAddinImpl* m_scriptDispatcher;
+	static const int THIS_VARIABLE_INDEX = 0;
 
 public:
 	TrickyWrapper(IAddinImpl* dispatched);
+	virtual ~TrickyWrapper();
+
+	void OverrideThisObject(MachineInstance^ machine);
 
 	virtual property Object^ UnderlyingObject
 	{
