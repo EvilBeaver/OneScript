@@ -41,3 +41,7 @@
 /src/ScriptEngine.StdLib/obj/x86/Release
 
 /src/ScriptEngine.StdLib/obj/Debug/*.cache
+/src/ScriptEngine.HostedScript/bin/Debug
+Debug
+*.cache
+/src/ScriptEngine.HostedScript/obj/Release
