@@ -249,9 +249,25 @@ partial class Compiler
                 || token == Token.NotEqual;
         }
 
+        private bool IsLogicalOperator(Token token)
+        {
+            return token == Token.And || token == Token.Or;
+        }
+
         private void AddCommandForToken(Token current)
         {
-            _compiler.AddCommand(TokenToOperationCode(current), 0);
+            if (IsLogicalOperator(current))
+            {
+#if DEBUG
+                System.Diagnostics.Debug.Assert(HasPendingLogicalJumps());
+#endif
+                var idx = LogicalJumps.Pop();
+                _compiler.CorrectCommandArgument(idx, _compiler._module.Code.Count);
+            }
+            else
+            {
+                _compiler.AddCommand(TokenToOperationCode(current), 0);
+            }
         }
 
         private void ProcessExpressionOperator()
@@ -270,14 +286,14 @@ partial class Compiler
 
                 while (stackPriority >= currentPriority && _operators.Count > 0)
                 {
-                    var stackOp = PopOperator();
+                    var stackOp = _operators.Peek();
                     if (stackOp != Token.OpenPar)
                     {
+                        PopOperator();
                         AddCommandForToken(stackOp);
                     }
                     else
                     {
-                        PushOperator(stackOp);
                         break;
                     }
                 }
@@ -294,6 +310,11 @@ partial class Compiler
         private void PushOperator(Token token)
         {
             _operators.Push(token);
+            if (IsLogicalOperator(token))
+            {
+                var jmpIdx = _compiler.AddCommand(TokenToOperationCode(token), -1);
+                LogicalJumps.Push(jmpIdx);
+            }
         }
 
         private Token PopOperator()
@@ -369,6 +390,25 @@ partial class Compiler
             return opCode;
         }
 
+        private Stack<int> LogicalJumps
+        {
+            get
+            {
+                if (_logicalJumps == null)
+                {
+                    _logicalJumps = new Stack<int>();
+                }
+
+                return _logicalJumps;
+            }
+        }
+
+#if DEBUG
+        public bool HasPendingLogicalJumps()
+        {
+            return _logicalJumps == null ? false : _logicalJumps.Count > 0;
+        }
+#endif
 
     }
 }

@@ -746,11 +746,11 @@ namespace ScriptEngine.Compiler
 
         }
 
-        private void CorrectCommandArgument(int beginTryIndex, int newArgument)
+        private void CorrectCommandArgument(int index, int newArgument)
         {
-            var cmd = _module.Code[beginTryIndex];
+            var cmd = _module.Code[index];
             cmd.Argument = newArgument;
-            _module.Code[beginTryIndex] = cmd;
+            _module.Code[index] = cmd;
         }
 
         private void CorrectBreakStatements(NestedLoopInfo nestedLoopInfo, int endLoopIndex)

@@ -575,24 +575,31 @@ namespace ScriptEngine.Machine
 
         private void And(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-
-            var result = op1.AsBoolean() && op2.AsBoolean();
-
-            _operationStack.Push(ValueFactory.Create(result));
-            NextInstruction();
+            var op = _operationStack.Peek().AsBoolean();
+            if (op == false)
+            {
+                Jmp(arg);
+            }
+            else
+            {
+                _operationStack.Pop();
+                NextInstruction();
+            }
+            
         }
 
         private void Or(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-
-            var result = op1.AsBoolean() || op2.AsBoolean();
-
-            _operationStack.Push(ValueFactory.Create(result));
-            NextInstruction();
+            var op = _operationStack.Peek().AsBoolean();
+            if (op == true)
+            {
+                Jmp(arg);
+            }
+            else
+            {
+                _operationStack.Pop();
+                NextInstruction();
+            }
         }
 
         private void CallFunc(int arg)
