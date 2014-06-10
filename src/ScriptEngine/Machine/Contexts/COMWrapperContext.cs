@@ -7,7 +7,7 @@ using System.Text;
 namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("COMОбъект")]
-    public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable
+    public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper
     {
         private Type _dispatchedType;
         private object _instance;
@@ -80,8 +80,8 @@ namespace ScriptEngine.Machine.Contexts
                     break;
                 case Machine.DataType.Object:
                     result = val.AsObject();
-                    if (result.GetType() == typeof(COMWrapperContext))
-                        result = ((COMWrapperContext)result).UnderlyingObject;
+                    if (result is IObjectWrapper)
+                        result = ((IObjectWrapper)result).UnderlyingObject;
                     break;
                 default:
                     throw new RuntimeException("Unsupported type for COM marshalling");
@@ -127,7 +127,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        private object UnderlyingObject
+        public object UnderlyingObject
         {
             get
             {

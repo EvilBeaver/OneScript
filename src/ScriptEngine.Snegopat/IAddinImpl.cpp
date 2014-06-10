@@ -32,6 +32,12 @@ HRESULT __stdcall IAddinImpl::QueryInterface(
 		AddRef();
 		return S_OK;
 	}
+	if (riid == IID_IDispatch)
+	{
+		*ppObj = static_cast<IDispatch*>(this);
+		AddRef();
+		return S_OK;
+	}
 	else
 	{
 		*ppObj = NULL ;
@@ -47,6 +53,48 @@ ULONG   __stdcall IAddinImpl::AddRef()
 ULONG   __stdcall IAddinImpl::Release()
 {
 	return RefCountable::Release();
+}
+
+#pragma endregion
+#pragma region IDispatch impl
+
+HRESULT STDMETHODCALLTYPE IAddinImpl::GetTypeInfoCount( 
+	UINT *pctinfo)
+{
+	*pctinfo = 1;
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE IAddinImpl::GetTypeInfo( 
+	UINT iTInfo,
+	LCID lcid,
+	ITypeInfo **ppTInfo)
+{
+	//*ppTInfo = m_typeInfo;
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE IAddinImpl::GetIDsOfNames( 
+	REFIID riid,
+	LPOLESTR *rgszNames,
+	UINT cNames,
+	LCID lcid,
+	DISPID *rgDispId)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE IAddinImpl::Invoke( 
+	DISPID dispIdMember,
+	REFIID riid,
+	LCID lcid,
+	WORD wFlags,
+	DISPPARAMS *pDispParams,
+	VARIANT *pVarResult,
+	EXCEPINFO *pExcepInfo,
+	UINT *puArgErr)
+{
+	return E_NOTIMPL;
 }
 
 #pragma endregion
