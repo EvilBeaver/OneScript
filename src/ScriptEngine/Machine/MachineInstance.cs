@@ -491,9 +491,15 @@ namespace ScriptEngine.Machine
 
         private void Div(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Create(op1.AsNumber() / op2.AsNumber()));
+            var op2 = _operationStack.Pop().AsNumber();
+            var op1 = _operationStack.Pop().AsNumber();
+
+            if (op2 == 0)
+            {
+                throw RuntimeException.DivideByZero();
+            }
+
+            _operationStack.Push(ValueFactory.Create(op1 / op2));
             NextInstruction();
         }
 
@@ -569,24 +575,31 @@ namespace ScriptEngine.Machine
 
         private void And(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-
-            var result = op1.AsBoolean() && op2.AsBoolean();
-
-            _operationStack.Push(ValueFactory.Create(result));
-            NextInstruction();
+            var op = _operationStack.Peek().AsBoolean();
+            if (op == false)
+            {
+                Jmp(arg);
+            }
+            else
+            {
+                _operationStack.Pop();
+                NextInstruction();
+            }
+            
         }
 
         private void Or(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-
-            var result = op1.AsBoolean() || op2.AsBoolean();
-
-            _operationStack.Push(ValueFactory.Create(result));
-            NextInstruction();
+            var op = _operationStack.Peek().AsBoolean();
+            if (op == true)
+            {
+                Jmp(arg);
+            }
+            else
+            {
+                _operationStack.Pop();
+                NextInstruction();
+            }
         }
 
         private void CallFunc(int arg)
@@ -657,7 +670,7 @@ namespace ScriptEngine.Machine
                 frame.Locals = new IVariable[methDescr.VariableFrameSize];
                 for (int i = 0; i < methDescr.VariableFrameSize; i++)
                 {
-                    if (i < argCount)
+                    if (i < argValues.Length)
                     {
                         var paramDef = methInfo.Params[i];
                         if (argValues[i] is IVariable)

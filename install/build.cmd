@@ -22,7 +22,8 @@ erase /Q /S built\*
 rmdir /Q /S built)
 md built
 
-copy "%SolutionPath%\ScriptEngine\bin\x86\Release\ScriptEngine.dll" built\ScriptEngine.dll
+copy "%SolutionPath%\TestApp\bin\x86\Release\ScriptEngine.dll" built\ScriptEngine.dll
+copy "%SolutionPath%\TestApp\bin\x86\Release\ScriptEngine.HostedScript.dll" built\ScriptEngine.HostedScript.dll
 copy "%SolutionPath%\TestApp\bin\x86\Release\TestApp.exe" built\TestApp.exe
 copy "%SolutionPath%\TestApp\bin\x86\Release\ICSharpCode.AvalonEdit.dll" built\ICSharpCode.AvalonEdit.dll
 copy "%SolutionPath%\oscript\bin\x86\Release\oscript.exe" built\oscript.exe

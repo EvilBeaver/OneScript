@@ -105,6 +105,11 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Using procedure as a function");
         }
 
+        public static RuntimeException DivideByZero()
+        {
+            return new RuntimeException("Division by zero");
+        }
+
 
     }
 
