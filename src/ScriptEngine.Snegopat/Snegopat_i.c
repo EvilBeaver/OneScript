@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0595 */
-/* at Wed Jun 11 00:15:12 2014
+/* at Wed Jun 11 14:06:42 2014
  */
 /* Compiler settings for Snegopat.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0595 

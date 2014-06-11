@@ -136,6 +136,12 @@ namespace ScriptEngine.Machine
                     _scopes.Add(savedState.topScope);
                 }
             }
+            else if (_scopes[_scopes.Count - 1].Detachable)
+            {
+                Scope s;
+                DetachTopScope(out s);
+            }
+
             _module = savedState.module;
             _callModeDiscardRetValue = savedState.callMode;
             SetFrame(savedState.currentFrame);
@@ -711,6 +717,11 @@ namespace ScriptEngine.Machine
                 else
                 {
                     scope.Instance.CallAsProcedure(methodRef.CodeIndex, argValues);
+                    if (methInfo.IsFunction)
+                    {
+                        // func called as proc. must place retVal which will be discarded later
+                        _operationStack.Push(ValueFactory.Create());
+                    }
                 }
                 NextInstruction();
             }

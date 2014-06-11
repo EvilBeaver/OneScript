@@ -5,6 +5,9 @@
 #include "RefCountable.h"
 #include <vcclr.h>
 
+using namespace System;
+using namespace ScriptEngine;
+
 class IAddinImpl :
 	public RefCountable,
 	public IAddinMacroses,
@@ -12,8 +15,8 @@ class IAddinImpl :
 	public IDispatch
 {
 private:
-	gcroot<ScriptEngine::Machine::Contexts::UserScriptContextInstance^> m_innerObject;
-	gcroot<array<ScriptEngine::Machine::MethodInfo,1>^> m_exportedMeths;
+	gcroot<Machine::Contexts::UserScriptContextInstance^> m_innerObject;
+	gcroot<array<Machine::MethodInfo,1>^> m_exportedMeths;
 
 	BSTR m_uniqueName;
 	BSTR m_displayName;
@@ -21,7 +24,7 @@ private:
 
 public:
 	
-	IAddinImpl(ScriptEngine::Machine::Contexts::UserScriptContextInstance^ innerObject);
+	IAddinImpl(Machine::Contexts::UserScriptContextInstance^ innerObject);
 
 	void SetNames(BSTR uniqueName, BSTR displayName, BSTR fullPath)
 	{

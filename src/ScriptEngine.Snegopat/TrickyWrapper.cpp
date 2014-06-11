@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "TrickyWrapper.h"
+#include "MarshalingHelpers.h"
 
 
 TrickyWrapper::TrickyWrapper(IAddinImpl* dispatched)
@@ -30,8 +31,13 @@ void TrickyWrapper::OverrideThisObject(MachineInstance^ machine)
 
 Object^ TrickyWrapper::UnderlyingObject::get()
 {
-	IntPtr pointer = IntPtr(m_scriptDispatcher);
-	return Marshal::GetObjectForIUnknown(pointer); // increments refCount
+	IUnknown* pUnk;
+	m_scriptDispatcher->QueryInterface(IID_IUnknown, (void**)&pUnk);
+	IntPtr pointer = IntPtr(pUnk);
+	Object^ obj = Marshal::GetObjectForIUnknown(pointer); // increments refCount
+	pUnk->Release();
+	
+	return obj;
 }
 
 int TrickyWrapper::FindProperty(String^ name) 
