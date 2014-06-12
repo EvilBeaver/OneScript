@@ -4,17 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}</ProjectGuid>
+    <ProjectGuid>{795AA2F5-3074-4BC5-A30F-1B6354044D9B}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>oscript</RootNamespace>
-    <AssemblyName>oscript</AssemblyName>
+    <RootNamespace>StandaloneRunner</RootNamespace>
+    <AssemblyName>StandaloneRunner</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -63,32 +59,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppBehavior.cs" />
-    <Compile Include="BehaviorSelector.cs" />
-    <Compile Include="ExecuteScriptBehavior.cs" />
-    <Compile Include="MakeAppBehavior.cs" />
-    <Compile Include="MeasureBehavior.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShowCompiledBehavior.cs" />
-    <Compile Include="ShowUsageBehavior.cs" />
+    <Compile Include="StandaloneProcess.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
       <Project>{f09a46bd-5737-45e7-ba60-a47c9f7821a9}</Project>
       <Name>ScriptEngine.HostedScript</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
       <Project>{f062d1d9-d307-492a-a56b-ff3c55f8f6c0}</Project>
       <Name>ScriptEngine</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="StandaloneRunner.exe" />
+    <EmbeddedResource Include="ScriptEngine.dll" />
+    <EmbeddedResource Include="ScriptEngine.HostedScript.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>xcopy "$(SolutionDir)StandaloneRunner\$(OutDir)StandaloneRunner.exe" "$(ProjectDir)" /Y /E /D</PreBuildEvent>
+    <PreBuildEvent>xcopy "$(SolutionDir)ScriptEngine\$(OutDir)ScriptEngine.dll" "$(ProjectDir)" /Y /E /D
+xcopy "$(SolutionDir)ScriptEngine.HostedScript\$(OutDir)ScriptEngine.HostedScript.dll" "$(ProjectDir)" /Y /E /D</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

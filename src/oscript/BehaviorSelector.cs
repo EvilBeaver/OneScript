@@ -36,6 +36,15 @@ namespace oscript
                         return new ShowCompiledBehavior(path);
                     }
                 }
+                else if (cmdLineArgs[0].ToLower() == "-make")
+                {
+                    if (cmdLineArgs.Length == 3)
+                    {
+                        var codepath = cmdLineArgs[1];
+                        var output = cmdLineArgs[2];
+                        return new MakeAppBehavior(codepath, output);
+                    }
+                }
             }
             
             return new ShowUsageBehavior();
