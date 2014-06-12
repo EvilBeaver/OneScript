@@ -61,6 +61,7 @@
     <Compile Include="IHostApplication.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
     <Compile Include="Library\CommandLineArguments.cs" />
+    <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\GlobalContext.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />
     <Compile Include="Library\MapImpl.cs" />
