@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine;
+using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
+using ScriptEngine.Machine;
 
 namespace oscript
 {
@@ -41,7 +43,12 @@ namespace oscript
 
         public void ShowExceptionInfo(Exception exc)
         {
-            Console.WriteLine(exc.ToString());
+            if(exc is CompilerException)
+                Console.WriteLine(exc.ToString() + ((CompilerException)exc).LineNumber);
+            if (exc is ParserException)
+                Console.WriteLine(exc.ToString() + ((ParserException)exc).Line);
+            else
+                Console.WriteLine(exc.ToString());
         }
 
         public bool InputString(out string result, int maxLen)

@@ -102,7 +102,7 @@ namespace TestApp
         private void Open_Execute(object sender, ExecutedRoutedEventArgs e)
         {
             var dlg = new Microsoft.Win32.OpenFileDialog();
-            dlg.Filter = "Текстовый файл|*.txt";
+            dlg.Filter = "Текстовый файл|*.txt|Все файлы|*.*";
             dlg.Multiselect = false;
             if (dlg.ShowDialog() == true)
             {
