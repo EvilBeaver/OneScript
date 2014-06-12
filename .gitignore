@@ -45,3 +45,6 @@
 Debug
 *.cache
 /src/ScriptEngine.HostedScript/obj/Release
+/src/StandaloneRunner/ScriptEngine.HostedScript.dll
+/src/StandaloneRunner/ScriptEngine.dll
+/src/oscript/StandaloneRunner.exe
