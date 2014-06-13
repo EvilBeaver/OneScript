@@ -79,7 +79,27 @@ namespace TestApp
 
             var hostedScript = new HostedScriptEngine();
             var src = hostedScript.Loader.FromString(txtCode.Text);
-            var process = hostedScript.CreateProcess(host, src);
+
+            Process process = null;
+            try
+            {
+                process = hostedScript.CreateProcess(host, src);
+            }
+            catch (ScriptEngine.Compiler.CompilerException exc)
+            {
+                result.Text = exc.Message + "\nLine: " + exc.LineNumber;
+                return;
+            }
+            catch (ScriptEngine.Compiler.ParserException exc)
+            {
+                result.Text = exc.Message + "\nLine: " + exc.Line;
+                return;
+            }
+            catch (Exception exc)
+            {
+                result.Text = exc.Message;
+                return;
+            }
 
             result.AppendText("Script started: " + DateTime.Now.ToString() + "\n");
             sw.Start();

@@ -77,8 +77,8 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.CurrentDate, NoParamsInfo);
             map.Add(OperationCode.Integer, SingleDefaultParamInfo);
             map.Add(OperationCode.Round, RoundParamsInfo);
-            map.Add(OperationCode.Pow, SingleDefaultParamInfo);
-            map.Add(OperationCode.Sqrt, TwoDefaultParamsInfo);
+            map.Add(OperationCode.Pow, TwoDefaultParamsInfo);
+            map.Add(OperationCode.Sqrt, SingleDefaultParamInfo);
             // special
             map.Add(OperationCode.Question, QuestionParamInfo);
             map.Add(OperationCode.ExceptionInfo, NoParamsInfo);

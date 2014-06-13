@@ -19,9 +19,9 @@ namespace oscript
             Console.WriteLine("Mode can be one of these:");
             Console.WriteLine("  {0,-11}measures execution time", "-measure");
             Console.WriteLine("  {0,-11}shows compiled module without execution", "-compile");
-            //Console.WriteLine();
-            //Console.WriteLine("III. Build standalone executable: oscript.exe -build <script_path> <output_exe>");
-            //Console.WriteLine("Builds a standalone executable module based on script specified");
+            Console.WriteLine();
+            Console.WriteLine("III. Build standalone executable: oscript.exe -make <script_path> <output_exe>");
+            Console.WriteLine("Builds a standalone executable module based on script specified");
 
             return 0;
         }
