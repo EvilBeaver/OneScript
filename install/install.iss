@@ -8,7 +8,7 @@
 #define VerMinor
 #define VerRelease
 #define Build
-#expr ParseVersion("built\" + MainExe,VerMajor,VerMinor,VerRelease,Build)
+#expr ParseVersion("built\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
 
 [Setup]
 AppName={#AppName}
