@@ -26,7 +26,7 @@ namespace ScriptEngine.Machine.Library
 
         public override IValue GetIndexedValue(IValue index)
         {
-            return _values[(int)index.AsNumber()];
+            return Get((int)index.AsNumber());
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
@@ -122,6 +122,12 @@ namespace ScriptEngine.Machine.Library
         public int UpperBound()
         {
             return _values.Count - 1;
+        }
+
+        [ContextMethod("Получить")]
+        public IValue Get(int index)
+        {
+            return _values[index];
         }
 
         [ScriptConstructor]
