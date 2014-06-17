@@ -479,6 +479,11 @@ namespace ScriptEngine.Machine
                 var result = date.AddSeconds(-op2.AsNumber());
                 _operationStack.Push(ValueFactory.Create(result));
             }
+            else if (op1.DataType == DataType.Date && op2.DataType == DataType.Date)
+            {
+                var span = op1.AsDate() - op2.AsDate();
+                _operationStack.Push(ValueFactory.Create(span.TotalSeconds));
+            }
             else
             {   // все к числовому типу.
                 var result = op1.AsNumber() - op2.AsNumber();

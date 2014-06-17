@@ -69,30 +69,9 @@ namespace ScriptEngine.Environment
 
         protected override string GetCodeString()
         {
-            using (var file = new System.IO.FileStream(_path, System.IO.FileMode.Open))
+            using (var reader = FileOpener.OpenReader(_path))
             {
-                // *** Use Default of Encoding.Default (Ansi CodePage)
-                Encoding enc = Encoding.Default;
-
-                // *** Detect byte order mark if any - otherwise assume default
-                byte[] buffer = new byte[5];
-
-                file.Read(buffer, 0, 5);
-                file.Position = 0;
-
-                if (buffer[0] == 0xef && buffer[1] == 0xbb && buffer[2] == 0xbf)
-                    enc = Encoding.UTF8;
-                else if (buffer[0] == 0xfe && buffer[1] == 0xff)
-                    enc = Encoding.Unicode;
-                else if (buffer[0] == 0 && buffer[1] == 0 && buffer[2] == 0xfe && buffer[3] == 0xff)
-                    enc = Encoding.UTF32;
-                else if (buffer[0] == 0x2b && buffer[1] == 0x2f && buffer[2] == 0x76)
-                    enc = Encoding.UTF7;
-
-                using (var reader = new System.IO.StreamReader(file, enc, true))
-                {
-                    return reader.ReadToEnd();
-                }
+                return reader.ReadToEnd();
             }
         }
 

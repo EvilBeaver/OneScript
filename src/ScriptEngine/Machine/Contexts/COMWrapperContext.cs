@@ -211,14 +211,16 @@ namespace ScriptEngine.Machine.Contexts
                 _membersCache.Clear();
                 _methodBinding.Clear();
                 _dispIdCache.Clear();
+
+                IDisposable instanceRef = _instance as IDisposable;
+                if (instanceRef != null)
+                {
+                    instanceRef.Dispose();
+                    _instance = null;
+                }
+
             }
 
-            IDisposable instanceRef = _instance as IDisposable;
-            if (instanceRef != null)
-            {
-                instanceRef.Dispose();
-                _instance = null;
-            }
         }
 
         public void Dispose()

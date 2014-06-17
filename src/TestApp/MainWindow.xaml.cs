@@ -79,7 +79,27 @@ namespace TestApp
 
             var hostedScript = new HostedScriptEngine();
             var src = hostedScript.Loader.FromString(txtCode.Text);
-            var process = hostedScript.CreateProcess(host, src);
+
+            Process process = null;
+            try
+            {
+                process = hostedScript.CreateProcess(host, src);
+            }
+            catch (ScriptEngine.Compiler.CompilerException exc)
+            {
+                result.Text = exc.Message + "\nLine: " + exc.LineNumber;
+                return;
+            }
+            catch (ScriptEngine.Compiler.ParserException exc)
+            {
+                result.Text = exc.Message + "\nLine: " + exc.Line;
+                return;
+            }
+            catch (Exception exc)
+            {
+                result.Text = exc.Message;
+                return;
+            }
 
             result.AppendText("Script started: " + DateTime.Now.ToString() + "\n");
             sw.Start();
@@ -102,7 +122,7 @@ namespace TestApp
         private void Open_Execute(object sender, ExecutedRoutedEventArgs e)
         {
             var dlg = new Microsoft.Win32.OpenFileDialog();
-            dlg.Filter = "Текстовый файл|*.txt";
+            dlg.Filter = "Текстовый файл|*.txt|Все файлы|*.*";
             dlg.Multiselect = false;
             if (dlg.ShowDialog() == true)
             {

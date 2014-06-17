@@ -1075,9 +1075,10 @@ namespace ScriptEngine.Compiler
                 forwarded.asFunction = asFunction;
                 forwarded.codeLine = _parser.CurrentLine;
                 forwarded.factArguments = argsPassed;
-                AddCommand(OperationCode.ArgNum, forwarded.factArguments.Length);
+                //AddCommand(OperationCode.ArgNum, forwarded.factArguments.Length);
 
-                int callAddr = forwarded.commandIndex = AddCommand(OperationCode.CallProc, -1);
+                var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
+                int callAddr = forwarded.commandIndex = AddCommand(opCode, -1);
                 _forwardedMethods.Add(forwarded);
 
                 return callAddr;

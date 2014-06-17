@@ -68,6 +68,7 @@
     <Compile Include="Compiler\ExpressionBuilder.cs" />
     <Compile Include="Compiler\ModulePersistor.cs" />
     <Compile Include="Environment\CodeSources.cs" />
+    <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
@@ -117,6 +118,9 @@
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>cscript "$(SolutionDir)versionInc.js" "$(ProjectDir)Properties\AssemblyInfo.cs" 1.0.*.+</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

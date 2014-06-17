@@ -61,9 +61,11 @@
     <Compile Include="IHostApplication.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
     <Compile Include="Library\CommandLineArguments.cs" />
+    <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\GlobalContext.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />
     <Compile Include="Library\MapImpl.cs" />
+    <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\ScriptInformationContext.cs" />
@@ -76,6 +78,9 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>cscript "$(SolutionDir)versionInc.js" "$(ProjectDir)Properties\AssemblyInfo.cs" 1.0.*.+</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
