@@ -6,40 +6,23 @@ using ScriptEngine.Compiler;
 
 namespace ScriptEngine.Environment
 {
-    abstract class CodeSourceBase
-    {
-        private CompilerContext _symbols;
-
-        public CodeSourceBase(CompilerContext symbols)
-        {
-            _symbols = symbols;
-        }
-
-        protected ModuleHandle CreateModule(ICodeSource src)
-        {
-            var loader = new TextCompiler(_symbols);
-            var image = loader.Load(GetCodeString());
-            return new ModuleHandle() { Module = image };
-        }
-
-        protected abstract string GetCodeString();
-
-    }
-
-    class StringBasedSource : CodeSourceBase, ICodeSource
+    class StringBasedSource : ICodeSource
     {
         string _src;
 
-        public StringBasedSource(CompilerContext symbols, string src) : base(symbols)
+        public StringBasedSource(string src)
         {
             _src = src;
         }
 
         #region ICodeSource Members
 
-        ModuleHandle ICodeSource.CreateModule()
+        string ICodeSource.Code
         {
-            return base.CreateModule(this);
+            get
+            {
+                return _src;
+            }
         }
 
         string ICodeSource.SourceDescription
@@ -52,22 +35,18 @@ namespace ScriptEngine.Environment
 
         #endregion
 
-        protected override string GetCodeString()
-        {
-            return _src;
-        }
     }
 
-    class FileBasedSource : CodeSourceBase, ICodeSource
+    class FileBasedSource : ICodeSource
     {
         string _path;
 
-        public FileBasedSource(CompilerContext symbols, string path) : base(symbols)
+        public FileBasedSource(string path)
         {
             _path = path;
         }
 
-        protected override string GetCodeString()
+        private string GetCodeString()
         {
             using (var reader = FileOpener.OpenReader(_path))
             {
@@ -77,9 +56,12 @@ namespace ScriptEngine.Environment
 
         #region ICodeSource Members
 
-        ModuleHandle ICodeSource.CreateModule()
+        string ICodeSource.Code
         {
-            return base.CreateModule(this);
+            get
+            {
+                return GetCodeString();
+            }
         }
 
         string ICodeSource.SourceDescription

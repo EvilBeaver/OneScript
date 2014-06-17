@@ -10,7 +10,11 @@ namespace ScriptEngine.Compiler
     {
         public void Write(TextWriter output, ICodeSource source)
         {
-            var module = source.CreateModule().Module;
+            var eng = new ScriptingEngine();
+            eng.Initialize(new RuntimeEnvironment());
+            var compiler = eng.GetCompilationService();
+
+            var module = compiler.CreateModule(source).Module;
 
             output.WriteLine(".variableFrame:" + module.VariableFrameSize.ToString());
             output.WriteLine(".constants");

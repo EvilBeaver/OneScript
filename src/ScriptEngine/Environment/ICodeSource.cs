@@ -9,7 +9,7 @@ namespace ScriptEngine.Environment
 {
     public interface ICodeSource
     {
-        ModuleHandle CreateModule();
+        string Code { get; }
         string SourceDescription { get; }
     }
  

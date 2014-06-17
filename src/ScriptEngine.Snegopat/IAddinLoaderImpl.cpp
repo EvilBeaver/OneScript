@@ -148,7 +148,9 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 
 				String^ code = rd->ReadToEnd();
 				ICodeSource^ src = m_engine->Loader->FromString(code);
-				LoadedModuleHandle mh = m_engine->LoadModule(src->CreateModule());
+				CompilerService^ compiler = m_engine->GetCompilationService();
+				compiler->AddVariable(L"ÝòîòÎáúåêò", SymbolType::ContextProperty);
+				LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
 				
 				Contexts::UserScriptContextInstance^ obj = (Contexts::UserScriptContextInstance^)m_engine->NewObject(mh);
 				IAddinImpl* snegopatAddin = new IAddinImpl(obj);

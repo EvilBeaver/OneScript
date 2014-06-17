@@ -62,6 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompilerService.cs" />
     <Compile Include="Compiler\Compiler.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\CompilerExceptions.cs" />
@@ -108,7 +109,6 @@
     <Compile Include="Machine\MachineInstance.cs" />
     <Compile Include="Machine\RuntimeExceptions.cs" />
     <Compile Include="Machine\Scope.cs" />
-    <Compile Include="Environment\TextCompiler.cs" />
     <Compile Include="Machine\TypeManager.cs" />
     <Compile Include="Machine\Contexts\UserScriptContextInstance.cs" />
     <Compile Include="Machine\ValueFactory.cs" />
