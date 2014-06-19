@@ -6,7 +6,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    class CompilerContext
+    class CompilerContext : ICompilerContext
     {
         List<SymbolScope> _scopeStack = new List<SymbolScope>();
 

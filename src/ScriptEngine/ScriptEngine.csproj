@@ -64,9 +64,11 @@
   <ItemGroup>
     <Compile Include="CompilerService.cs" />
     <Compile Include="Compiler\Compiler.cs" />
+    <Compile Include="Compiler\ModuleCompilerContext.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\CompilerExceptions.cs" />
     <Compile Include="Compiler\ExpressionBuilder.cs" />
+    <Compile Include="Compiler\ICompilerContext.cs" />
     <Compile Include="Compiler\ModulePersistor.cs" />
     <Compile Include="Environment\CodeSources.cs" />
     <Compile Include="Environment\FileOpener.cs" />
