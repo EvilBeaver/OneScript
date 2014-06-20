@@ -676,63 +676,79 @@ namespace ScriptEngine.Machine
 
             if (scope.Instance == this.TopScope.Instance)
             {
-                var methDescr = _module.Methods[methodRef.CodeIndex];
-                var frame = new ExecutionFrame();
-                frame.Locals = new IVariable[methDescr.VariableFrameSize];
-                for (int i = 0; i < methDescr.VariableFrameSize; i++)
+                var sdo = scope.Instance as ScriptDrivenObject;
+                System.Diagnostics.Debug.Assert(sdo != null);
+
+                if (sdo.MethodDefinedInScript(methodRef.CodeIndex))
                 {
-                    if (i < argValues.Length)
+                    var methDescr = _module.Methods[methodRef.CodeIndex];
+                    var frame = new ExecutionFrame();
+                    frame.Locals = new IVariable[methDescr.VariableFrameSize];
+                    for (int i = 0; i < methDescr.VariableFrameSize; i++)
                     {
-                        var paramDef = methInfo.Params[i];
-                        if (argValues[i] is IVariable)
+                        if (i < argValues.Length)
                         {
-                            if (paramDef.IsByValue)
+                            var paramDef = methInfo.Params[i];
+                            if (argValues[i] is IVariable)
                             {
-                                var value = ((IVariable)argValues[i]).Value;
-                                frame.Locals[i] = Variable.Create(value);
+                                if (paramDef.IsByValue)
+                                {
+                                    var value = ((IVariable)argValues[i]).Value;
+                                    frame.Locals[i] = Variable.Create(value);
+                                }
+                                else
+                                {
+                                    frame.Locals[i] = (IVariable)argValues[i];
+                                }
                             }
                             else
                             {
-                                frame.Locals[i] = (IVariable)argValues[i];
+                                frame.Locals[i] = Variable.Create(argValues[i]);
                             }
+
                         }
                         else
-                        {
-                            frame.Locals[i] = Variable.Create(argValues[i]);
-                        }
+                            frame.Locals[i] = Variable.Create(ValueFactory.Create());
 
                     }
-                    else
-                        frame.Locals[i] = Variable.Create(ValueFactory.Create());
 
-                }
-
-                frame.InstructionPointer = methDescr.EntryPoint;
-                PushFrame();
-                SetFrame(frame);
-            }
-            else
-            {
-                if (asFunc)
-                {
-                    IValue retVal;
-                    scope.Instance.CallAsFunction(methodRef.CodeIndex, argValues, out retVal);
-                    _operationStack.Push(retVal);
+                    frame.InstructionPointer = methDescr.EntryPoint;
+                    PushFrame();
+                    SetFrame(frame);
                 }
                 else
                 {
-                    scope.Instance.CallAsProcedure(methodRef.CodeIndex, argValues);
-                    if (methInfo.IsFunction)
-                    {
-                        // func called as proc. must place retVal which will be discarded later
-                        _operationStack.Push(ValueFactory.Create());
-                    }
+                    CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
                 }
-                NextInstruction();
+
+            }
+            else
+            {
+                CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
             }
 
             return methInfo;
 
+        }
+
+        private void CallContext(IRuntimeContextInstance instance, int index, ref MethodInfo methInfo, IValue[] argValues, bool asFunc)
+        {
+            if (asFunc)
+            {
+                IValue retVal;
+                instance.CallAsFunction(index, argValues, out retVal);
+                _operationStack.Push(retVal);
+            }
+            else
+            {
+                instance.CallAsProcedure(index, argValues);
+                if (methInfo.IsFunction)
+                {
+                    // func called as proc. must place retVal which will be discarded later
+                    _operationStack.Push(ValueFactory.Create());
+                }
+            }
+            NextInstruction();
         }
 
         private void ArgNum(int arg)

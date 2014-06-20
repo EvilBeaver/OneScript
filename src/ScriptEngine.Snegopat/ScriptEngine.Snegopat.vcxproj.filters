@@ -45,7 +45,7 @@
     <ClInclude Include="MarshalingHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TrickyWrapper.h">
+    <ClInclude Include="ScriptDrivenAddin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,7 +86,7 @@
     <ClCompile Include="MarshalingHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TrickyWrapper.cpp">
+    <ClCompile Include="ScriptDrivenAddin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

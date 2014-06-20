@@ -7,124 +7,35 @@ using ScriptEngine.Machine.Library;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class UserScriptContextInstance : PropertyNameIndexAccessor, IAttachableContext
+    public class UserScriptContextInstance : ScriptDrivenObject
     {
         LoadedModule _module;
-        MachineInstance _machine;
-        IVariable[] _state;
-
-        internal UserScriptContextInstance(LoadedModule module)
+        
+        internal UserScriptContextInstance(LoadedModule module) : base(module)
         {
-            Init(module);  
+            _module = module;
         }
 
         internal UserScriptContextInstance(LoadedModule module, string asObjectOfType)
+            : base(module)
         {
             DefineType(TypeManager.GetTypeByName(asObjectOfType));
-            Init(module);
-        }
-
-        private void Init(LoadedModule module)
-        {
             _module = module;
-            _state = new IVariable[module.VariableFrameSize];
-            for (int i = 1; i < module.VariableFrameSize; i++)
-            {
-                _state[i] = Variable.Create(ValueFactory.Create());
-            }
         }
 
-        #region IAttachableContext Members
-
-        public void OnAttach(MachineInstance machine, 
-            out IVariable[] variables, 
-            out MethodInfo[] methods, 
-            out IRuntimeContextInstance instance)
+        protected override int GetMethodCount()
         {
-            _machine = machine;
-            variables = _state;
-            methods = _module.Methods.Select(x => x.Signature).ToArray();
-            instance = this;
+            return 0;
         }
 
-        #endregion
-
-        #region IRuntimeContextInstance Members
-
-        public override int FindProperty(string name)
+        protected override int GetVariableCount()
         {
-            var propsFound = _module.ExportedProperies.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
-                .Select(x => x.Index).ToArray();
-            if (propsFound.Length > 0)
-            {
-                return propsFound[0];
-            }
-            else
-                throw RuntimeException.PropNotFoundException(name);
+            return 0;
         }
 
-        public override bool IsPropWritable(int propNum)
+        protected override void UpdateState()
         {
-            return true;
         }
-
-        public override bool IsPropReadable(int propNum)
-        {
-            return true;
-        }
-
-        public override IValue GetPropValue(int propNum)
-        {
-            return _state[propNum].Value;
-        }
-
-        public override void SetPropValue(int propNum, IValue newVal)
-        {
-            _state[propNum].Value = newVal;
-        }
-
-        public override int FindMethod(string name)
-        {
-            var methFound = _module.ExportedMethods.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
-                .Select(x => x.Index).ToArray();
-            if (methFound.Length > 0)
-            {
-                return methFound[0];
-            }
-            else
-                throw RuntimeException.MethodNotFoundException(name);
-        }
-
-        public override MethodInfo GetMethodInfo(int methodNumber)
-        {
-            return _module.Methods[methodNumber].Signature;
-        }
-
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
-        {
-            _machine.StateConsistentOperation(() =>
-            {
-                _machine.AttachContext(this, true);
-                _machine.SetModule(_module);
-                _machine.ExecuteMethod(methodNumber, arguments);
-            });
-        }
-
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
-        {
-            IValue returnClosure = null;
-            _machine.StateConsistentOperation(() =>
-            {
-                _machine.AttachContext(this, true);
-                _machine.SetModule(_module);
-                returnClosure = _machine.ExecuteMethod(methodNumber, arguments);
-            });
-
-            retValue = returnClosure;
-
-        } 
-
-        #endregion
 
         public string[] GetExportedProperties()
         {
@@ -138,7 +49,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IReflectableContext Members
 
-        public IEnumerable<VariableInfo> GetProperties()
+        public override IEnumerable<VariableInfo> GetProperties()
         {
             foreach (var item in _module.ExportedProperies)
             {
@@ -151,7 +62,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public IEnumerable<MethodInfo> GetMethods()
+        public override IEnumerable<MethodInfo> GetMethods()
         {
             foreach (var item in _module.ExportedMethods)
             {

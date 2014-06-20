@@ -15,7 +15,7 @@ class IAddinImpl :
 	public IDispatch
 {
 private:
-	gcroot<Machine::Contexts::UserScriptContextInstance^> m_innerObject;
+	gcroot<Machine::Contexts::ScriptDrivenObject^> m_innerObject;
 	gcroot<array<Machine::MethodInfo,1>^> m_exportedMeths;
 
 	BSTR m_uniqueName;
@@ -24,7 +24,7 @@ private:
 
 public:
 	
-	IAddinImpl(Machine::Contexts::UserScriptContextInstance^ innerObject);
+	IAddinImpl(Machine::Contexts::ScriptDrivenObject^ innerObject);
 
 	void SetNames(BSTR uniqueName, BSTR displayName, BSTR fullPath)
 	{
@@ -33,7 +33,7 @@ public:
 		m_fullPath = fullPath;
 	}
 
-	ScriptEngine::Machine::Contexts::UserScriptContextInstance^
+	ScriptEngine::Machine::Contexts::ScriptDrivenObject^
 		GetManagedInstance()
 	{
 		return m_innerObject;

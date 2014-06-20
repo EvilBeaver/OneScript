@@ -74,10 +74,11 @@
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
+    <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />
-    <Compile Include="Machine\Contexts\ContextBase.cs" />
+    <Compile Include="Machine\Contexts\AutoContext.cs" />
     <Compile Include="Machine\Contexts\ContextValuesMarshaller.cs" />
     <Compile Include="Machine\Contexts\DynamicPropertiesHolder.cs" />
     <Compile Include="Machine\Contexts\ExceptionInfoContext.cs" />

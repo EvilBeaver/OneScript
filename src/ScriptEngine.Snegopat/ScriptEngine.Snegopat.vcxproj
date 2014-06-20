@@ -83,10 +83,10 @@
     <ClInclude Include="MarshalingHelpers.h" />
     <ClInclude Include="RefCountable.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ScriptDrivenAddin.h" />
     <ClInclude Include="SnegopatAttachedContext.h" />
     <ClInclude Include="Snegopat_h.h" />
     <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="TrickyWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
@@ -97,6 +97,7 @@
     <ClCompile Include="IAddinLoaderImpl.cpp" />
     <ClCompile Include="MarshalingHelpers.cpp" />
     <ClCompile Include="RefCountable.cpp" />
+    <ClCompile Include="ScriptDrivenAddin.cpp" />
     <ClCompile Include="snegopat.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -115,7 +116,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TrickyWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

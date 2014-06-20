@@ -5,6 +5,7 @@ using System.Text;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Library;
 
 namespace ScriptEngine
@@ -60,15 +61,15 @@ namespace ScriptEngine
         public IRuntimeContextInstance NewObject(LoadedModuleHandle module)
         {
             var scriptContext = new Machine.Contexts.UserScriptContextInstance(module.Module);
-            _machine.StateConsistentOperation(() =>
-                {
-                    _machine.SetModule(module.Module);
-                    _machine.AttachContext(scriptContext, true);
-                    _machine.ExecuteModuleBody();
-                });
+            scriptContext.Initialize(_machine);
 
             return scriptContext;
             
+        }
+
+        public void InitializeSDO(ScriptDrivenObject sdo)
+        {
+            sdo.Initialize(_machine);
         }
 
         public void ExecuteModule(LoadedModuleHandle module)

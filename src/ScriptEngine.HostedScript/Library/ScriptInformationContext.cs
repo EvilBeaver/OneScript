@@ -8,7 +8,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.Machine.Library
 {
     [ContextClass("ИнформацияОСценарии")]
-    class ScriptInformationContext : ContextBase<ScriptInformationContext>
+    class ScriptInformationContext : AutoContext<ScriptInformationContext>
     {
         private ICodeSource _info;
 

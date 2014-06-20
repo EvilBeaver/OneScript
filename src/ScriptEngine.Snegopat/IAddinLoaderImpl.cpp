@@ -2,7 +2,7 @@
 #include "IAddinLoaderImpl.h"
 #include "Snegopat_i.c"
 #include "MarshalingHelpers.h"
-#include "TrickyWrapper.h"
+#include "ScriptDrivenAddin.h"
 #include <commdlg.h>
 #include <string>
 
@@ -152,13 +152,14 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 				compiler->DefineVariable(L"ЭтотОбъект", SymbolType::ContextProperty);
 				LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
 				
-				Contexts::UserScriptContextInstance^ obj = (Contexts::UserScriptContextInstance^)m_engine->NewObject(mh);
+				ScriptDrivenAddin^ obj = gcnew ScriptDrivenAddin(mh);
+				m_engine->InitializeSDO(obj);
+
 				IAddinImpl* snegopatAddin = new IAddinImpl(obj);
+				obj->SetDispatcher(snegopatAddin);
+				
 				snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
 				snegopatAddin->QueryInterface(IID_IUnknown, (void**)result);
-
-				TrickyWrapper^ thisWrapper = gcnew TrickyWrapper(snegopatAddin);
-				thisWrapper->OverrideThisObject(m_engine->Machine);
 
 			}
 
@@ -202,7 +203,7 @@ HRESULT __stdcall  IAddinLoaderImpl::unload(
     IUnknown *addin,
     VARIANT_BOOL *result)
 {
-//	addin->Release();
+	addin->Release();
 //  Непонятно: Снегопат передает сюда addIn, который уже уничтожен по счетчику ссылок
 //  при создании аддина загрузчик создает ссылку, вызывая AddRef (см. метод load)
 //  при выгрузке Снегопат вызывает AddIn->Release(), хотя ответного AddRef не делал.

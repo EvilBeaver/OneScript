@@ -7,7 +7,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.Machine.Library
 {
     [ContextClass("Массив")]
-    class ArrayImpl : ContextBase<ArrayImpl>, ICollectionContext
+    class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext
     {
         private List<IValue> _values;
 

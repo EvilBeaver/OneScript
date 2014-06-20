@@ -4,7 +4,7 @@
 #include "DispatchHelpers.h"
 #include <OleAuto.h>
 
-IAddinImpl::IAddinImpl(ScriptEngine::Machine::Contexts::UserScriptContextInstance^ innerObject) : RefCountable()
+IAddinImpl::IAddinImpl(ScriptEngine::Machine::Contexts::ScriptDrivenObject^ innerObject) : RefCountable()
 {
 	m_innerObject = innerObject;
 }
@@ -263,6 +263,7 @@ HRESULT STDMETHODCALLTYPE IAddinImpl::Invoke(
 HRESULT STDMETHODCALLTYPE IAddinImpl::macroses(SAFEARRAY **result)
 {
 	String^ prefix = L"Макрос_";
+	
 	array<System::String^>^ macrosArray = m_innerObject->GetExportedMethods();
 	int macroCount = 0;
 	for each (String^ name in macrosArray)
