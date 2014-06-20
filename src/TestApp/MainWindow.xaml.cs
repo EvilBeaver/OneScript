@@ -51,7 +51,7 @@ namespace TestApp
             {
                 try
                 {
-                    var moduleWriter = new ScriptEngine.Compiler.ModuleWriter();
+                    var moduleWriter = new ScriptEngine.Compiler.ModuleWriter(hostedScript.GetCompilerService());
                     moduleWriter.Write(writer, src);
                     result.Text = writer.GetStringBuilder().ToString();
                 }

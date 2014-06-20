@@ -12,7 +12,6 @@ namespace ScriptEngine.Machine.Contexts
         LoadedModule _module;
         MachineInstance _machine;
         IVariable[] _state;
-        private const int THIS_VARIABLE_INDEX = 0;
 
         internal UserScriptContextInstance(LoadedModule module)
         {
@@ -29,7 +28,6 @@ namespace ScriptEngine.Machine.Contexts
         {
             _module = module;
             _state = new IVariable[module.VariableFrameSize];
-            _state[0] = Variable.CreateContextPropertyReference(this, THIS_VARIABLE_INDEX);
             for (int i = 1; i < module.VariableFrameSize; i++)
             {
                 _state[i] = Variable.Create(ValueFactory.Create());
@@ -46,7 +44,7 @@ namespace ScriptEngine.Machine.Contexts
             _machine = machine;
             variables = _state;
             methods = _module.Methods.Select(x => x.Signature).ToArray();
-            instance = this;//_state[THIS_VARIABLE_INDEX].AsObject();
+            instance = this;
         }
 
         #endregion
@@ -67,7 +65,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool IsPropWritable(int propNum)
         {
-            return propNum > THIS_VARIABLE_INDEX;
+            return true;
         }
 
         public override bool IsPropReadable(int propNum)

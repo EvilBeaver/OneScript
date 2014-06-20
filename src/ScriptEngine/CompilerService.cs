@@ -11,21 +11,17 @@ namespace ScriptEngine
     public class CompilerService
     {
         SymbolScope _scope;
-        CompilerContext _currentContext;
+        ModuleCompilerContext _currentContext;
         List<int> _predefinedVariables = new List<int>();
 
-        internal CompilerService(CompilerContext context)
+        internal CompilerService(CompilerContext outerContext)
         {
-            _currentContext = context;
+            _currentContext = new ModuleCompilerContext(outerContext);
         }
 
-        public int AddVariable(string name, SymbolType type)
+        public int DefineVariable(string name, SymbolType type)
         {
-            if (_scope == null)
-            {
-                _scope = new SymbolScope();
-                _currentContext.PushScope(_scope);
-            }
+            RegisterScopeIfNeeded();
 
             try
             {
@@ -46,6 +42,22 @@ namespace ScriptEngine
             }
         }
 
+        public int DefineMethod(MethodInfo methodInfo)
+        {
+            RegisterScopeIfNeeded();
+
+            return _currentContext.DefineMethod(methodInfo).CodeIndex;
+        }
+
+        private void RegisterScopeIfNeeded()
+        {
+            if (_scope == null)
+            {
+                _scope = new SymbolScope();
+                _currentContext.PushScope(_scope);
+            }
+        }
+
         public ModuleHandle CreateModule(ICodeSource source)
         {
             try
@@ -61,6 +73,8 @@ namespace ScriptEngine
 
         private ModuleHandle Compile(ICodeSource source)
         {
+            RegisterScopeIfNeeded();
+
             var parser = new Parser();
             parser.Code = source.Code;
 

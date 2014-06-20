@@ -9,7 +9,7 @@ namespace ScriptEngine.Compiler
     partial class Compiler
     {
         private Parser _parser;
-        private CompilerContext _ctx;
+        private ICompilerContext _ctx;
         private ModuleImage _module;
         private Lexem _lastExtractedLexem;
         private bool _inMethodScope = false;
@@ -51,7 +51,7 @@ namespace ScriptEngine.Compiler
             
         }
 
-        public ModuleImage Compile(Parser parser, CompilerContext context)
+        public ModuleImage Compile(Parser parser, ICompilerContext context)
         {
             _module = new ModuleImage();
             _ctx = context;

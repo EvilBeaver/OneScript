@@ -45,7 +45,7 @@ namespace ScriptEngine
             }
         }
 
-        public CompilerService GetCompilationService()
+        public CompilerService GetCompilerService()
         {
             return new CompilerService(_symbolsContext);
         }

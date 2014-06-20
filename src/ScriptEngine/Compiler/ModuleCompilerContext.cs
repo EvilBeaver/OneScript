@@ -11,6 +11,7 @@ namespace ScriptEngine.Compiler
         private CompilerContext _outerCtx;
         private CompilerContext _moduleCtx;
         private readonly int OUTER_CTX_SIZE;
+        private int _localScopesCount = 0;
 
         public ModuleCompilerContext(CompilerContext outerContext)
         {
@@ -49,14 +50,14 @@ namespace ScriptEngine.Compiler
         {
             try
             {
-                return _moduleCtx.GetMethod(name);
-            }
-            catch (SymbolNotFoundException)
-            {
-                var sb = _outerCtx.GetMethod(name);
+                var sb = _moduleCtx.GetMethod(name);
                 ShiftIndex(ref sb);
 
                 return sb;
+            }
+            catch (SymbolNotFoundException)
+            {
+                return _outerCtx.GetMethod(name);
             }
         }
 
@@ -76,50 +77,49 @@ namespace ScriptEngine.Compiler
         {
             try
             {
-                return _moduleCtx.GetVariable(name);
-            }
-            catch (SymbolNotFoundException)
-            {
-                var vb = _outerCtx.GetVariable(name);
+                var vb = _moduleCtx.GetVariable(name);
                 ShiftIndex(ref vb.binding);
 
                 return vb;
+                
+            }
+            catch (SymbolNotFoundException)
+            {
+                return _outerCtx.GetVariable(name);
             }
         }
 
         public SymbolScope Peek()
         {
-            if (_moduleCtx.TopIndex() >= 0)
-            {
+            if (_localScopesCount > 0)
                 return _moduleCtx.Peek();
-            }
             else
-            {
                 return _outerCtx.Peek();
-            }
         }
 
         public SymbolScope PopScope()
         {
-            if (_moduleCtx.TopIndex() >= 0)
-            {
-                return _moduleCtx.PopScope();
-            }
-            else
-            {
-                return _outerCtx.PopScope();
-            }
+            var scope = _moduleCtx.PopScope();
+            _localScopesCount--;
+
+            return scope;
+
         }
 
         public void PushScope(SymbolScope scope)
         {
             _moduleCtx.PushScope(scope);
+            _localScopesCount++;
         }
 
         public int ScopeIndex(SymbolScope scope)
         {
             int idx = _moduleCtx.ScopeIndex(scope);
-            if (idx < 0)
+            if (idx >= 0)
+            {
+                return idx + OUTER_CTX_SIZE;
+            }
+            else
             {
                 idx = _outerCtx.ScopeIndex(scope);
             }
@@ -129,7 +129,7 @@ namespace ScriptEngine.Compiler
 
         public int TopIndex()
         {
-            if (_moduleCtx.TopIndex() >= 0)
+            if (_localScopesCount > 0)
             {
                 return _moduleCtx.TopIndex() + OUTER_CTX_SIZE;
             }

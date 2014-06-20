@@ -148,8 +148,8 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 
 				String^ code = rd->ReadToEnd();
 				ICodeSource^ src = m_engine->Loader->FromString(code);
-				CompilerService^ compiler = m_engine->GetCompilationService();
-				compiler->AddVariable(L"ÝòîòÎáúåêò", SymbolType::ContextProperty);
+				CompilerService^ compiler = m_engine->GetCompilerService();
+				compiler->DefineVariable(L"ÝòîòÎáúåêò", SymbolType::ContextProperty);
 				LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
 				
 				Contexts::UserScriptContextInstance^ obj = (Contexts::UserScriptContextInstance^)m_engine->NewObject(mh);
@@ -227,7 +227,7 @@ HRESULT __stdcall  IAddinLoaderImpl::selectLoadURI(
 	const int BUFFER_SIZE = PREFIX_LEN + MAX_PATH + 1;
 	WCHAR pUri[BUFFER_SIZE];
 	memset(pUri, 0, (BUFFER_SIZE) * sizeof(WCHAR));
-	wcsncat(pUri, L"1clang:", PREFIX_LEN);
+	wcsncat_s(pUri, L"1clang:", PREFIX_LEN);
 	WCHAR* file = pUri + PREFIX_LEN;
 
 	memset(&ofn,0,sizeof(OPENFILENAME));

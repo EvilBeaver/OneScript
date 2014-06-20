@@ -38,9 +38,14 @@ namespace ScriptEngine
             }
         }
 
+        public CompilerService GetCompilerService()
+        {
+            return _engine.GetCompilerService();
+        }
+
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {
-            var compilerSvc = _engine.GetCompilationService();
+            var compilerSvc = _engine.GetCompilerService();
             var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;
