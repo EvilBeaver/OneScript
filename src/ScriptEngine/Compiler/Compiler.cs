@@ -68,7 +68,7 @@ namespace ScriptEngine.Compiler
         private void BuildModule()
         {
             // резервируем место под переменные, определенные извне компилятора
-            _module.VariableFrameSize = _ctx.GetScope(_ctx.TopIndex()).VariableCount;
+            //_module.VariableFrameSize = _ctx.GetScope(_ctx.TopIndex()).VariableCount;
             
             NextToken();
 

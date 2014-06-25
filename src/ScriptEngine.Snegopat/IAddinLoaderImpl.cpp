@@ -153,11 +153,11 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 				LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
 				
 				ScriptDrivenAddin^ obj = gcnew ScriptDrivenAddin(mh);
+				IAddinImpl* snegopatAddin = new IAddinImpl(obj);
+				
+				obj->SetDispatcher(snegopatAddin);
 				m_engine->InitializeSDO(obj);
 
-				IAddinImpl* snegopatAddin = new IAddinImpl(obj);
-				obj->SetDispatcher(snegopatAddin);
-				
 				snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
 				snegopatAddin->QueryInterface(IID_IUnknown, (void**)result);
 
