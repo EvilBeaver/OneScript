@@ -8,9 +8,16 @@ namespace ScriptEngine.Compiler
 {
     public class ModuleWriter
     {
+        CompilerService _compiler;
+
+        public ModuleWriter(CompilerService compilerService)
+        {
+            _compiler = compilerService;
+        }
+
         public void Write(TextWriter output, ICodeSource source)
         {
-            var module = source.CreateModule().Module;
+            var module = _compiler.CreateModule(source).Module;
 
             output.WriteLine(".variableFrame:" + module.VariableFrameSize.ToString());
             output.WriteLine(".constants");

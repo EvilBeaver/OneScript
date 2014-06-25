@@ -9,7 +9,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("Консоль")]
-    class ConsoleContext : ContextBase<ConsoleContext>
+    class ConsoleContext : AutoContext<ConsoleContext>
     {
         [ContextProperty("НажатаКлавиша")]
         public bool HasKey

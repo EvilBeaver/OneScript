@@ -6,7 +6,7 @@ using System.Text;
 namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("ИнформацияОбОшибке")]
-    class ExceptionInfoContext : ContextBase<ExceptionInfoContext>
+    class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
         Exception _exc;
         public ExceptionInfoContext(Exception source)

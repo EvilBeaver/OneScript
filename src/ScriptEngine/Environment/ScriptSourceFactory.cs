@@ -8,21 +8,14 @@ namespace ScriptEngine.Environment
 {
     class ScriptSourceFactory : ICodeSourceFactory
     {
-        private CompilerContext _symbols;
-
-        public ScriptSourceFactory(CompilerContext symbols)
-        {
-            _symbols = symbols;
-        }
-
         public ICodeSource FromString(string source)
         {
-            return new StringBasedSource(_symbols, source);
+            return new StringBasedSource(source);
         }
 
         public ICodeSource FromFile(string path)
         {
-            return new FileBasedSource(_symbols, path);
+            return new FileBasedSource(path);
         }
     }
 }

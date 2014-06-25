@@ -8,6 +8,7 @@ namespace ScriptEngine.Machine
     public interface IRuntimeContextInstance
     {
         bool IsIndexed { get; }
+        bool DynamicMethodSignatures { get; }
 
         IValue GetIndexedValue(IValue index);
         void SetIndexedValue(IValue index, IValue val);
@@ -17,7 +18,6 @@ namespace ScriptEngine.Machine
         bool IsPropWritable(int propNum);
         IValue GetPropValue(int propNum);
         void SetPropValue(int propNum, IValue newVal);
-
 
         int FindMethod(string name);
         MethodInfo GetMethodInfo(int methodNumber);

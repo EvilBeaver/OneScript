@@ -6,16 +6,16 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    class CompilerContext
+    class CompilerContext : ICompilerContext
     {
-        List<ISymbolScope> _scopeStack = new List<ISymbolScope>();
+        List<SymbolScope> _scopeStack = new List<SymbolScope>();
 
-        public void PushScope(ISymbolScope scope)
+        public void PushScope(SymbolScope scope)
         {
             _scopeStack.Add(scope);
         }
 
-        public ISymbolScope PopScope()
+        public SymbolScope PopScope()
         {
             var idx = _scopeStack.Count - 1;
             if (idx >= 0)
@@ -30,7 +30,7 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        public ISymbolScope Peek()
+        public SymbolScope Peek()
         {
             var idx = _scopeStack.Count - 1;
             if (idx >= 0)
@@ -43,7 +43,7 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private SymbolBinding GetSymbol(Func<ISymbolScope, int> extract)
+        private SymbolBinding GetSymbol(Func<SymbolScope, int> extract)
         {
             for (int i = _scopeStack.Count - 1; i >= 0; i--)
             {
@@ -64,7 +64,7 @@ namespace ScriptEngine.Compiler
             throw new SymbolNotFoundException();
         }
 
-        private bool HasSymbol(Func<ISymbolScope, bool> definitionCheck)
+        private bool HasSymbol(Func<SymbolScope, bool> definitionCheck)
         {
             for (int i = _scopeStack.Count - 1; i >= 0; i--)
             {
@@ -93,12 +93,12 @@ namespace ScriptEngine.Compiler
             return GetSymbol(x => x.GetMethodNumber(name));
         }
 
-        public ISymbolScope GetScope(int scopeIndex)
+        public SymbolScope GetScope(int scopeIndex)
         {
             return _scopeStack[scopeIndex];
         }
 
-        public int ScopeIndex(ISymbolScope scope)
+        public int ScopeIndex(SymbolScope scope)
         {
             return _scopeStack.IndexOf(scope);
         }
@@ -150,11 +150,7 @@ namespace ScriptEngine.Compiler
             if (_scopeStack.Count > 0)
             {
                 var idx = TopIndex();
-                var vd = new VariableDescriptor();
-                vd.Identifier = name;
-                vd.Type = SymbolType.ContextProperty;
-
-                var num = _scopeStack[idx].DefineVariable(vd);
+                var num = _scopeStack[idx].DefineVariable(name, SymbolType.ContextProperty);
                 return new SymbolBinding()
                 {
                     ContextIndex = idx,

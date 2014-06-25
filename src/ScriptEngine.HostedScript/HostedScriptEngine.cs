@@ -25,7 +25,7 @@ namespace ScriptEngine
             
             var env = new RuntimeEnvironment();
             _globalCtx = new GlobalContext();
-            env.InjectObject(_globalCtx, _globalCtx);
+            env.InjectObject(_globalCtx, false);
             
             _engine.Initialize(env);
         }
@@ -38,14 +38,32 @@ namespace ScriptEngine
             }
         }
 
+        public CompilerService GetCompilerService()
+        {
+            return _engine.GetCompilerService();
+        }
+
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {
-            var module = _engine.LoadModule(src.CreateModule());
+            var compilerSvc = _engine.GetCompilerService();
+            var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
+            return InitProcess(host, src, ref module);
+        }
+
+        public Process CreateProcess(IHostApplication host, ModuleHandle moduleHandle)
+        {
+            var module = _engine.LoadModuleImage(moduleHandle);
+            return InitProcess(host, null, ref module);
+        }
+
+        private Process InitProcess(IHostApplication host, ICodeSource src, ref LoadedModuleHandle module)
+        {
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;
             _globalCtx.InitInstance();
             var process = new Process(host, module, _engine);
             return process;
         }
+
     }
 }

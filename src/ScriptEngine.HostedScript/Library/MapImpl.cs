@@ -7,7 +7,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.Machine.Library
 {
     [ContextClass("Соответствие")]
-    class MapImpl : ContextBase<MapImpl>, ICollectionContext
+    class MapImpl : AutoContext<MapImpl>, ICollectionContext
     {
         private Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>();
 

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class ContextBase<TInstance> : PropertyNameIndexAccessor where TInstance : ContextBase<TInstance>
+    public abstract class AutoContext<TInstance> : PropertyNameIndexAccessor where TInstance : AutoContext<TInstance>
     {
         public override bool IsPropReadable(int propNum)
         {
@@ -78,7 +78,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw e.InnerException;
             }
-        }
+        } 
 
         private static ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
         private static ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();

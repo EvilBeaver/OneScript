@@ -7,7 +7,7 @@ using System.Text;
 namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("COMОбъект")]
-    class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable
+    public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper
     {
         private Type _dispatchedType;
         private object _instance;
@@ -34,7 +34,7 @@ namespace ScriptEngine.Machine.Contexts
 
             try
             {
-                _dispatchedType = DispatchUtility.GetType(_instance, true);
+                _dispatchedType = DispatchUtility.GetType(_instance, false);
             }
             catch
             {
@@ -80,8 +80,8 @@ namespace ScriptEngine.Machine.Contexts
                     break;
                 case Machine.DataType.Object:
                     result = val.AsObject();
-                    if (result.GetType() == typeof(COMWrapperContext))
-                        result = ((COMWrapperContext)result).UnderlyingObject;
+                    if (result is IObjectWrapper)
+                        result = ((IObjectWrapper)result).UnderlyingObject;
                     break;
                 default:
                     throw new RuntimeException("Unsupported type for COM marshalling");
@@ -127,7 +127,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        private object UnderlyingObject
+        public object UnderlyingObject
         {
             get
             {
@@ -235,6 +235,14 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
+        public override bool DynamicMethodSignatures
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override int FindProperty(string name)
         {
             int dispId;
@@ -242,14 +250,21 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
                 {
-                    var memberInfo = _dispatchedType.GetMember(name);
-                    if (memberInfo.Length == 0 || !(memberInfo[0].MemberType == MemberTypes.Property))
+                    if (_dispatchedType != null)
                     {
-                        throw RuntimeException.PropNotFoundException(name);
+                        var memberInfo = _dispatchedType.GetMember(name);
+                        if (memberInfo.Length == 0 || !(memberInfo[0].MemberType == MemberTypes.Property))
+                        {
+                            throw RuntimeException.PropNotFoundException(name);
+                        }
+                        else
+                        {
+                            _membersCache.Add(dispId, memberInfo[0]);
+                            _dispIdCache.Add(name, dispId);
+                        }
                     }
                     else
                     {
-                        _membersCache.Add(dispId, memberInfo[0]);
                         _dispIdCache.Add(name, dispId);
                     }
                 }
@@ -264,26 +279,51 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool IsPropReadable(int propNum)
         {
-            var propInfo = (PropertyInfo)_membersCache[propNum];
-            return propInfo.CanRead;
+            if (_dispatchedType != null)
+            {
+                var propInfo = (PropertyInfo)_membersCache[propNum];
+                return propInfo.CanRead;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         public override bool IsPropWritable(int propNum)
         {
-            var propInfo = (PropertyInfo)_membersCache[propNum];
-            return propInfo.CanWrite;
+            if (_dispatchedType != null)
+            {
+                var propInfo = (PropertyInfo)_membersCache[propNum];
+                return propInfo.CanWrite;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         public override IValue GetPropValue(int propNum)
         {
             try
             {
-                var result = DispatchUtility.Invoke(_instance, propNum, null);
-                return CreateIValue(result);
+                try
+                {
+                    var result = DispatchUtility.Invoke(_instance, propNum, null);
+                    return CreateIValue(result);
+                }
+                catch (System.Reflection.TargetInvocationException e)
+                {
+                    throw e.InnerException;
+                }
             }
-            catch (System.Reflection.TargetInvocationException e)
+            catch (System.MissingMemberException)
             {
-                throw e.InnerException;
+                throw RuntimeException.PropNotFoundException("");
+            }
+            catch (System.MemberAccessException)
+            {
+                throw RuntimeException.PropIsNotReadableException("");
             }
         }
 
@@ -291,11 +331,22 @@ namespace ScriptEngine.Machine.Contexts
         {
             try
             {
-                DispatchUtility.InvokeSetProperty(_instance, propNum, MarshalIValue(newVal));
+                try
+                {
+                    DispatchUtility.InvokeSetProperty(_instance, propNum, MarshalIValue(newVal));
+                }
+                catch (System.Reflection.TargetInvocationException e)
+                {
+                    throw e.InnerException;
+                }
             }
-            catch (System.Reflection.TargetInvocationException e)
+            catch (System.MissingMemberException)
             {
-                throw e.InnerException;
+                throw RuntimeException.PropNotFoundException("");
+            }
+            catch (System.MemberAccessException)
+            {
+                throw RuntimeException.PropIsNotWritableException("");
             }
         }
 
@@ -306,14 +357,21 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
                 {
-                    var memberInfo = _dispatchedType.GetMember(name);
-                    if (memberInfo.Length == 0 || !(memberInfo[0].MemberType == MemberTypes.Method || memberInfo[0].MemberType == MemberTypes.Property))
+                    if (_dispatchedType != null)
                     {
-                        throw RuntimeException.MethodNotFoundException(name);
+                        var memberInfo = _dispatchedType.GetMember(name);
+                        if (memberInfo.Length == 0 || !(memberInfo[0].MemberType == MemberTypes.Method || memberInfo[0].MemberType == MemberTypes.Property))
+                        {
+                            throw RuntimeException.MethodNotFoundException(name);
+                        }
+                        else
+                        {
+                            _membersCache.Add(dispId, memberInfo[0]);
+                            _dispIdCache.Add(name, dispId);
+                        }
                     }
                     else
                     {
-                        _membersCache.Add(dispId, memberInfo[0]);
                         _dispIdCache.Add(name, dispId);
                     }
                 }
@@ -332,6 +390,14 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         private MethodInfo GetMethodDescription(int methodNumber)
+        {
+            if (_dispatchedType != null)
+                return GetReflectableMethod(methodNumber);
+            else
+                return new MethodInfo();
+        }
+
+        private MethodInfo GetReflectableMethod(int methodNumber)
         {
             MethodInfo methodInfo;
             if (!_methodBinding.TryGetValue(methodNumber, out methodInfo))
@@ -391,11 +457,18 @@ namespace ScriptEngine.Machine.Contexts
         {
             try
             {
-                DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
+                try
+                {
+                    DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
+                }
+                catch (System.Reflection.TargetInvocationException e)
+                {
+                    throw e.InnerException;
+                }
             }
-            catch (System.Reflection.TargetInvocationException e)
+            catch (System.MissingMemberException)
             {
-                throw e.InnerException;
+                throw RuntimeException.MethodNotFoundException("");
             }
         }
 
@@ -403,12 +476,19 @@ namespace ScriptEngine.Machine.Contexts
         {
             try
             {
-                var result = DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
-                retValue = CreateIValue(result);
+                try
+                {
+                    var result = DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
+                    retValue = CreateIValue(result);
+                }
+                catch (System.Reflection.TargetInvocationException e)
+                {
+                    throw e.InnerException;
+                }
             }
-            catch (System.Reflection.TargetInvocationException e)
+            catch (System.MissingMemberException)
             {
-                throw e.InnerException;
+                throw RuntimeException.MethodNotFoundException("");
             }
         }
 

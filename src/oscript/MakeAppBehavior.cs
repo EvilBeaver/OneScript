@@ -33,7 +33,8 @@ namespace oscript
                 var source = engine.Loader.FromFile(_codePath);
                 var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 var persistor = new ScriptEngine.Compiler.ModulePersistor(formatter);
-                persistor.Save(source.CreateModule(), output);
+                var compiler = engine.GetCompilerService();
+                persistor.Save(compiler.CreateModule(source), output);
 
                 byte[] signature = new byte[4]
                     {

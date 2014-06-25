@@ -6,15 +6,13 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    class SymbolScope : ISymbolScope
+    class SymbolScope
     {
         Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         List<VariableInfo> _variables = new List<VariableInfo>();
 
         Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         List<MethodInfo> _methods = new List<MethodInfo>();
-
-        #region ISymbolScope Members
 
         public MethodInfo GetMethod(string name)
         {
@@ -68,6 +66,11 @@ namespace ScriptEngine.Compiler
 
         public int DefineVariable(string name)
         {
+            return DefineVariable(name, SymbolType.Variable);
+        }
+
+        public int DefineVariable(string name, SymbolType symbolType)
+        {
             if (!IsVarDefined(name))
             {
 
@@ -77,28 +80,7 @@ namespace ScriptEngine.Compiler
                 _variables.Add(new VariableInfo()
                 {
                     Index = newIdx,
-                    Type = SymbolType.Variable
-                });
-
-                return newIdx;
-            }
-            else
-            {
-                throw new InvalidOperationException("Symbol already defined in the scope");
-            }
-        }
-
-        public int DefineVariable(VariableDescriptor varSymbol)
-        {
-            if (!IsVarDefined(varSymbol.Identifier))
-            {
-                var newIdx = _variables.Count;
-                _variableNumbers[varSymbol.Identifier] = newIdx;
-
-                _variables.Add(new VariableInfo()
-                {
-                    Index = newIdx,
-                    Type = varSymbol.Type
+                    Type = symbolType
                 });
 
                 return newIdx;
@@ -124,6 +106,11 @@ namespace ScriptEngine.Compiler
             }
         }
 
+        public string GetVariableName(int number)
+        {
+            return _variableNumbers.First(x => x.Value == number).Key;
+        }
+
         public int VariableCount 
         {
             get
@@ -132,22 +119,11 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        #endregion
-    }
-
-    interface ISymbolScope
-    {
-        MethodInfo GetMethod(string name);
-        MethodInfo GetMethod(int number);
-        int GetVariableNumber(string name);
-        VariableInfo GetVariable(int number);
-        int GetMethodNumber(string name);
-        bool IsVarDefined(string name);
-        bool IsMethodDefined(string name);
-        int DefineVariable(string name);
-        int DefineVariable(VariableDescriptor varSymbol);
-        int DefineMethod(MethodInfo method);
-        int VariableCount { get; }
+        public bool IsDynamicScope 
+        { 
+            get; 
+            set; 
+        }
     }
 
     class SymbolNotFoundException : CompilerException

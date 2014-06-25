@@ -12,11 +12,32 @@ namespace ScriptEngine
     {
         private List<IAttachableContext> _objects = new List<IAttachableContext>();
         private CompilerContext _symbolScopes = new CompilerContext();
-        
-        public void InjectObject(IAttachableContext context, ICompilerSymbolsProvider symbols)
+        private SymbolScope _globalScope;
+        private PropertyBag _injectedProperties;
+
+        public void InjectObject(IAttachableContext context)
         {
-            RegisterSymbolScope(symbols);
+            InjectObject(context, false);
+        }
+
+        public void InjectObject(IAttachableContext context, bool asDynamicScope)
+        {
+            RegisterSymbolScope(context, asDynamicScope);
             RegisterObject(context);
+        }
+
+        public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
+        {
+            if (_globalScope == null)
+            {
+                _globalScope = new SymbolScope();
+                _injectedProperties = new PropertyBag();
+                _symbolScopes.PushScope(_globalScope);
+                RegisterObject(_injectedProperties);
+            }
+            
+            _globalScope.DefineVariable(identifier, SymbolType.ContextProperty);
+            _injectedProperties.Insert(value, identifier, true, !readOnly);
         }
 
         internal CompilerContext SymbolsContext
@@ -35,10 +56,13 @@ namespace ScriptEngine
             }
         }
 
-        private void RegisterSymbolScope(ICompilerSymbolsProvider provider)
+        private void RegisterSymbolScope(IReflectableContext provider, bool asDynamicScope)
         {
-            _symbolScopes.PushScope(new SymbolScope());
-            foreach (var item in provider.GetSymbols())
+            var scope = new SymbolScope();
+            scope.IsDynamicScope = asDynamicScope;
+
+            _symbolScopes.PushScope(scope);
+            foreach (var item in provider.GetProperties())
             {
                 if (item.Type == SymbolType.Variable)
                 {

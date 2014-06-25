@@ -19,8 +19,8 @@ namespace oscript
         {
             var hostedScript = new HostedScriptEngine();
             var source = hostedScript.Loader.FromFile(_path);
-            
-            var writer = new ScriptEngine.Compiler.ModuleWriter();
+            var compiler = hostedScript.GetCompilerService();
+            var writer = new ScriptEngine.Compiler.ModuleWriter(compiler);
             writer.Write(Console.Out, source);
             return 0;
         }

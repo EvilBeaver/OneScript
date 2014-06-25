@@ -110,14 +110,18 @@ namespace StandaloneRunner
 
         #region ICodeSource Members
 
-        public ScriptEngine.ModuleHandle CreateModule()
-        {
-            return _mh;
-        }
-
         public string SourceDescription
         {
             get { return "Compiled binary module"; }
+        }
+
+        #endregion
+
+        #region ICodeSource Members
+
+        public string Code
+        {
+            get { throw new NotImplementedException(); }
         }
 
         #endregion

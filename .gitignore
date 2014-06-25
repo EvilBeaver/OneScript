@@ -41,10 +41,12 @@
 /src/ScriptEngine.StdLib/obj/x86/Release
 
 /src/ScriptEngine.StdLib/obj/Debug/*.cache
-/src/ScriptEngine.HostedScript/bin/Debug
+/src/*.sdf
+/src/Debug
+/src/ScriptEngine.HostedScript/bin/x86/Debug
+/src/ScriptEngine.HostedScript/obj/x86/Debug
 Debug
-*.cache
-/src/ScriptEngine.HostedScript/obj/Release
-/src/StandaloneRunner/ScriptEngine.HostedScript.dll
-/src/StandaloneRunner/ScriptEngine.dll
-/src/oscript/StandaloneRunner.exe
+/src/*.opensdf
+/src/ipch/scriptengine.snegopat-bbe5b63/scriptengine.ipch
+/src/ScriptEngine.Snegopat/Release/ScriptEngine.Snegopat.tlb
+/src/ScriptEngine.Snegopat/ScriptEngine.Snegopat.tlb

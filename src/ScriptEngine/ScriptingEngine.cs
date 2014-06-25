@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Library;
 
 namespace ScriptEngine
@@ -12,6 +14,7 @@ namespace ScriptEngine
     {
         private MachineInstance _machine = new MachineInstance();
         private ScriptSourceFactory _scriptFactory;
+        private CompilerContext _symbolsContext;
 
         public ScriptingEngine()
         {
@@ -26,7 +29,9 @@ namespace ScriptEngine
 
         public void Initialize(RuntimeEnvironment environment)
         {
-            _scriptFactory = new ScriptSourceFactory(environment.SymbolsContext);
+            _scriptFactory = new ScriptSourceFactory();
+            _symbolsContext = environment.SymbolsContext;
+
             foreach (var item in environment.AttachedContexts)
             {
                 _machine.AttachContext(item, false);
@@ -41,7 +46,12 @@ namespace ScriptEngine
             }
         }
 
-        public LoadedModuleHandle LoadModule(ModuleHandle moduleImage)
+        public CompilerService GetCompilerService()
+        {
+            return new CompilerService(_symbolsContext);
+        }
+
+        public LoadedModuleHandle LoadModuleImage(ModuleHandle moduleImage)
         {
             var handle = new LoadedModuleHandle();
             handle.Module = new LoadedModule(moduleImage.Module);
@@ -51,20 +61,25 @@ namespace ScriptEngine
         public IRuntimeContextInstance NewObject(LoadedModuleHandle module)
         {
             var scriptContext = new Machine.Contexts.UserScriptContextInstance(module.Module);
-            _machine.StateConsistentOperation(() =>
-                {
-                    _machine.SetModule(module.Module);
-                    _machine.AttachContext(scriptContext, true);
-                    _machine.ExecuteModuleBody();
-                });
+            scriptContext.Initialize(_machine);
 
             return scriptContext;
             
         }
 
+        public void InitializeSDO(ScriptDrivenObject sdo)
+        {
+            sdo.Initialize(_machine);
+        }
+
         public void ExecuteModule(LoadedModuleHandle module)
         {
             NewObject(module);
+        }
+
+        public MachineInstance Machine
+        {
+            get { return _machine; }
         }
 
     }

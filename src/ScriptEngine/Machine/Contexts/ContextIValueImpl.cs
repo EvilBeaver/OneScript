@@ -130,6 +130,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             get { return false; }
         }
+
+        public virtual bool DynamicMethodSignatures
+        {
+            get { return false; }
+        }
+
         public virtual IValue GetIndexedValue(IValue index)
         {
             throw new NotImplementedException();

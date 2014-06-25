@@ -9,7 +9,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ЧтениеТекста")]
-    class TextReadImpl : ContextBase<TextReadImpl>, IDisposable
+    class TextReadImpl : AutoContext<TextReadImpl>, IDisposable
     {
         StreamReader _reader;
 

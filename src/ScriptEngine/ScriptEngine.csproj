@@ -62,17 +62,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompilerService.cs" />
     <Compile Include="Compiler\Compiler.cs" />
+    <Compile Include="Compiler\ModuleCompilerContext.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\CompilerExceptions.cs" />
     <Compile Include="Compiler\ExpressionBuilder.cs" />
+    <Compile Include="Compiler\ICompilerContext.cs" />
     <Compile Include="Compiler\ModulePersistor.cs" />
     <Compile Include="Environment\CodeSources.cs" />
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
+    <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
+    <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
+    <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />
-    <Compile Include="Machine\Contexts\ContextBase.cs" />
+    <Compile Include="Machine\Contexts\AutoContext.cs" />
     <Compile Include="Machine\Contexts\ContextValuesMarshaller.cs" />
     <Compile Include="Machine\Contexts\DynamicPropertiesHolder.cs" />
     <Compile Include="Machine\Contexts\ExceptionInfoContext.cs" />
@@ -83,8 +89,7 @@
     <Compile Include="Compiler\SymbolScope.cs" />
     <Compile Include="Compiler\Tokens.cs" />
     <Compile Include="Environment\ICodeSource.cs" />
-    <Compile Include="Compiler\CompilerCore.cs" />
-    <Compile Include="Environment\ICompilerSymbolsProvider.cs" />
+    <Compile Include="Machine\IReflectableContext.cs" />
     <Compile Include="Environment\AttachedScriptsFactory.cs" />
     <Compile Include="Machine\Contexts\COMWrapperContext.cs" />
     <Compile Include="Machine\Contexts\ContextPropertyMapper.cs" />
@@ -107,7 +112,6 @@
     <Compile Include="Machine\MachineInstance.cs" />
     <Compile Include="Machine\RuntimeExceptions.cs" />
     <Compile Include="Machine\Scope.cs" />
-    <Compile Include="Environment\TextCompiler.cs" />
     <Compile Include="Machine\TypeManager.cs" />
     <Compile Include="Machine\Contexts\UserScriptContextInstance.cs" />
     <Compile Include="Machine\ValueFactory.cs" />

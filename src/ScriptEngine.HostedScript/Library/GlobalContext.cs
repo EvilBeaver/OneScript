@@ -9,7 +9,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Library
 {
-    class GlobalContext : IRuntimeContextInstance, IAttachableContext, ICompilerSymbolsProvider
+    class GlobalContext : IRuntimeContextInstance, IAttachableContext
     {
         private IVariable[] _state;
         private DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
@@ -115,14 +115,12 @@ namespace ScriptEngine.Machine.Library
 
         #endregion
 
-        #region ICompilerSymbolsProvider Members
-
-        public IEnumerable<Compiler.VariableDescriptor> GetSymbols()
+        public IEnumerable<VariableInfo> GetProperties()
         {
-            VariableDescriptor[] array = new VariableDescriptor[_properties.Count];
+            VariableInfo[] array = new VariableInfo[_properties.Count];
             foreach (var propKeyValue in _propHolder.GetProperties())
             {
-                var descr = new VariableDescriptor();
+                var descr = new VariableInfo();
                 descr.Identifier = propKeyValue.Key;
                 descr.Type = SymbolType.ContextProperty;
                 array[propKeyValue.Value] = descr;
@@ -142,13 +140,22 @@ namespace ScriptEngine.Machine.Library
             return array;
         }
 
-        #endregion
-
         #region IRuntimeContextInstance Members
 
         public bool IsIndexed
         {
-            get { return false; }
+            get 
+            { 
+                return false; 
+            }
+        }
+
+        public bool DynamicMethodSignatures
+        {
+            get
+            {
+                return false;
+            }
         }
 
         public IValue GetIndexedValue(IValue index)

@@ -120,6 +120,15 @@ namespace ScriptEngine.Machine
         {
 
         }
+
+        public override string Message
+        {
+            get
+            {
+                return InnerException.Message;
+            }
+        }
+
     }
 
     public class WrongStackConditionException : RuntimeException

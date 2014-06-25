@@ -136,6 +136,12 @@ namespace ScriptEngine.Machine
                     _scopes.Add(savedState.topScope);
                 }
             }
+            else if (_scopes[_scopes.Count - 1].Detachable)
+            {
+                Scope s;
+                DetachTopScope(out s);
+            }
+
             _module = savedState.module;
             _callModeDiscardRetValue = savedState.callMode;
             SetFrame(savedState.currentFrame);
@@ -629,7 +635,7 @@ namespace ScriptEngine.Machine
             var methInfo = scope.Methods[methodRef.CodeIndex];
 
             int argCount = (int)_operationStack.Pop().AsNumber();
-            IValue[] argValues = new IValue[methInfo.Params.Length];
+            IValue[] argValues = new IValue[argCount];
 
             // fact args
             for (int i = argCount - 1; i >= 0; i--)
@@ -637,8 +643,15 @@ namespace ScriptEngine.Machine
                 var argValue = _operationStack.Pop();
                 if (argValue.DataType == DataType.NotAValidValue)
                 {
-                    var constId = methInfo.Params[i].DefaultValueIndex;
-                    argValue = _module.Constants[constId];
+                    if (i < methInfo.Params.Length)
+                    {
+                        var constId = methInfo.Params[i].DefaultValueIndex;
+                        argValue = _module.Constants[constId];
+                    }
+                    else
+                    {
+                        argValue = null;
+                    }
                 }
 
                 argValues[i] = argValue;
@@ -648,7 +661,7 @@ namespace ScriptEngine.Machine
             //manage default vals
             for (int i = argCount; i < argValues.Length; i++)
             {
-                if (methInfo.Params[i].HasDefaultValue)
+                if (i < methInfo.Params.Length && methInfo.Params[i].HasDefaultValue)
                 {
                     if (methInfo.Params[i].DefaultValueIndex == ParameterDefinition.UNDEFINED_VALUE_INDEX)
                     {
@@ -663,58 +676,79 @@ namespace ScriptEngine.Machine
 
             if (scope.Instance == this.TopScope.Instance)
             {
-                var methDescr = _module.Methods[methodRef.CodeIndex];
-                var frame = new ExecutionFrame();
-                frame.Locals = new IVariable[methDescr.VariableFrameSize];
-                for (int i = 0; i < methDescr.VariableFrameSize; i++)
+                var sdo = scope.Instance as ScriptDrivenObject;
+                System.Diagnostics.Debug.Assert(sdo != null);
+
+                if (sdo.MethodDefinedInScript(methodRef.CodeIndex))
                 {
-                    if (i < argValues.Length)
+                    var methDescr = _module.Methods[methodRef.CodeIndex];
+                    var frame = new ExecutionFrame();
+                    frame.Locals = new IVariable[methDescr.VariableFrameSize];
+                    for (int i = 0; i < methDescr.VariableFrameSize; i++)
                     {
-                        var paramDef = methInfo.Params[i];
-                        if (argValues[i] is IVariable)
+                        if (i < argValues.Length)
                         {
-                            if (paramDef.IsByValue)
+                            var paramDef = methInfo.Params[i];
+                            if (argValues[i] is IVariable)
                             {
-                                var value = ((IVariable)argValues[i]).Value;
-                                frame.Locals[i] = Variable.Create(value);
+                                if (paramDef.IsByValue)
+                                {
+                                    var value = ((IVariable)argValues[i]).Value;
+                                    frame.Locals[i] = Variable.Create(value);
+                                }
+                                else
+                                {
+                                    frame.Locals[i] = (IVariable)argValues[i];
+                                }
                             }
                             else
                             {
-                                frame.Locals[i] = (IVariable)argValues[i];
+                                frame.Locals[i] = Variable.Create(argValues[i]);
                             }
+
                         }
                         else
-                        {
-                            frame.Locals[i] = Variable.Create(argValues[i]);
-                        }
+                            frame.Locals[i] = Variable.Create(ValueFactory.Create());
 
                     }
-                    else
-                        frame.Locals[i] = Variable.Create(ValueFactory.Create());
 
-                }
-
-                frame.InstructionPointer = methDescr.EntryPoint;
-                PushFrame();
-                SetFrame(frame);
-            }
-            else
-            {
-                if (asFunc)
-                {
-                    IValue retVal;
-                    scope.Instance.CallAsFunction(methodRef.CodeIndex, argValues, out retVal);
-                    _operationStack.Push(retVal);
+                    frame.InstructionPointer = methDescr.EntryPoint;
+                    PushFrame();
+                    SetFrame(frame);
                 }
                 else
                 {
-                    scope.Instance.CallAsProcedure(methodRef.CodeIndex, argValues);
+                    CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
                 }
-                NextInstruction();
+
+            }
+            else
+            {
+                CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
             }
 
             return methInfo;
 
+        }
+
+        private void CallContext(IRuntimeContextInstance instance, int index, ref MethodInfo methInfo, IValue[] argValues, bool asFunc)
+        {
+            if (asFunc)
+            {
+                IValue retVal;
+                instance.CallAsFunction(index, argValues, out retVal);
+                _operationStack.Push(retVal);
+            }
+            else
+            {
+                instance.CallAsProcedure(index, argValues);
+                if (methInfo.IsFunction)
+                {
+                    // func called as proc. must place retVal which will be discarded later
+                    _operationStack.Push(ValueFactory.Create());
+                }
+            }
+            NextInstruction();
         }
 
         private void ArgNum(int arg)
@@ -766,7 +800,7 @@ namespace ScriptEngine.Machine
             IValue[] argValues;
             PrepareContextCallArguments(arg, out context, out methodId, out argValues);
 
-            if (!context.GetMethodInfo(methodId).IsFunction)
+            if (!context.DynamicMethodSignatures && !context.GetMethodInfo(methodId).IsFunction)
             {
                 throw RuntimeException.UseProcAsAFunction();
             }
@@ -797,7 +831,11 @@ namespace ScriptEngine.Machine
             methodId = context.FindMethod(methodName);
             var methodInfo = context.GetMethodInfo(methodId);
 
-            argValues = new IValue[methodInfo.Params.Length];
+            if(context.DynamicMethodSignatures)
+                argValues = new IValue[argCount];
+            else
+                argValues = new IValue[methodInfo.Params.Length];
+
             bool[] signatureCheck = new bool[argCount];
 
             // fact args
@@ -814,21 +852,31 @@ namespace ScriptEngine.Machine
                     signatureCheck[i] = true;
                 }
 
-                if (methodInfo.Params[i].IsByValue)
+                if (context.DynamicMethodSignatures)
+                {
                     argValues[i] = BreakVariableLink(argValue);
+                }
                 else
-                    argValues[i] = argValue;
+                {
+                    if (methodInfo.Params[i].IsByValue)
+                        argValues[i] = BreakVariableLink(argValue);
+                    else
+                        argValues[i] = argValue;
+                }
 
             }
             factArgs = null;
-            CheckFactArguments(methodInfo, signatureCheck);
-
-            //manage default vals
-            for (int i = argCount; i < argValues.Length; i++)
+            if (!context.DynamicMethodSignatures)
             {
-                if (methodInfo.Params[i].HasDefaultValue)
+                CheckFactArguments(methodInfo, signatureCheck);
+
+                //manage default vals
+                for (int i = argCount; i < argValues.Length; i++)
                 {
-                    argValues[i] = null;
+                    if (methodInfo.Params[i].HasDefaultValue)
+                    {
+                        argValues[i] = null;
+                    }
                 }
             }
         }
