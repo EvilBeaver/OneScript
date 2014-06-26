@@ -384,6 +384,8 @@ namespace ScriptEngine.Compiler
 
         public override Lexem ReadNextLexem(ParseIterator iterator)
         {
+            bool hasEscapedQuotes = false;
+
             while (iterator.MoveNext())
             {
                 var cs = iterator.CurrentSymbol;
@@ -392,14 +394,23 @@ namespace ScriptEngine.Compiler
                     // либо конец литерала, либо escape кавычки
                     if (iterator.MoveNext())
                     {
-                        if (iterator.CurrentSymbol != SpecialChars.StringQuote)
+                        if (iterator.CurrentSymbol == SpecialChars.StringQuote)
+                        {
+                            hasEscapedQuotes = true;
+                        }
+                        else
                         {
                             iterator.MoveBack();
                             var lex = new Lexem()
                             {
                                 Type = LexemType.StringLiteral,
-                                Content = iterator.GetContents(1,1).content
+                                Content = iterator.GetContents(1, 1).content
                             };
+
+                            if (hasEscapedQuotes)
+                            {
+                                lex.Content = lex.Content.Replace("\"\"", "\"");
+                            }
 
                             var newLinePosition = lex.Content.IndexOf('\n');
                             while (newLinePosition >= 0)
