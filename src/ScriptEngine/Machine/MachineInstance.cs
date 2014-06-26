@@ -658,22 +658,6 @@ namespace ScriptEngine.Machine
 
             }
 
-            //manage default vals
-            for (int i = argCount; i < argValues.Length; i++)
-            {
-                if (i < methInfo.Params.Length && methInfo.Params[i].HasDefaultValue)
-                {
-                    if (methInfo.Params[i].DefaultValueIndex == ParameterDefinition.UNDEFINED_VALUE_INDEX)
-                    {
-                        argValues[i] = null;
-                    }
-                    else
-                    {
-                        argValues[i] = _module.Constants[methInfo.Params[i].DefaultValueIndex];
-                    }
-                }
-            }
-
             if (scope.Instance == this.TopScope.Instance)
             {
                 var sdo = scope.Instance as ScriptDrivenObject;
@@ -706,6 +690,17 @@ namespace ScriptEngine.Machine
                                 frame.Locals[i] = Variable.Create(argValues[i]);
                             }
 
+                        }
+                        else if (i < methInfo.Params.Length && methInfo.Params[i].HasDefaultValue)
+                        {
+                            if (methInfo.Params[i].DefaultValueIndex == ParameterDefinition.UNDEFINED_VALUE_INDEX)
+                            {
+                                frame.Locals[i] = Variable.Create(ValueFactory.Create());
+                            }
+                            else
+                            {
+                                frame.Locals[i] = Variable.Create(_module.Constants[methInfo.Params[i].DefaultValueIndex]);
+                            }
                         }
                         else
                             frame.Locals[i] = Variable.Create(ValueFactory.Create());
