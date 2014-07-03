@@ -13,7 +13,6 @@ namespace ScriptEngine.Machine
         private Stack<ExecutionFrame> _callStack;
         private ExecutionFrame _currentFrame;
         private Action<int>[] _commands;
-        private bool _callModeDiscardRetValue;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
         private RuntimeException _lastException;
         private Stack<MachineState> _states;
@@ -36,7 +35,6 @@ namespace ScriptEngine.Machine
             public Scope topScope;
             public ExecutionFrame currentFrame;
             public LoadedModule module;
-            public bool callMode;
             public bool hasScope;
         }
 
@@ -116,7 +114,6 @@ namespace ScriptEngine.Machine
             var stateToSave = new MachineState();
             stateToSave.hasScope = DetachTopScope(out stateToSave.topScope);
             stateToSave.currentFrame = _currentFrame;
-            stateToSave.callMode = _callModeDiscardRetValue;
             stateToSave.module = _module;
 
             _states.Push(stateToSave);
@@ -143,7 +140,6 @@ namespace ScriptEngine.Machine
             }
 
             _module = savedState.module;
-            _callModeDiscardRetValue = savedState.callMode;
             SetFrame(savedState.currentFrame);
         }
 
@@ -210,7 +206,6 @@ namespace ScriptEngine.Machine
             _module = null;
             _currentFrame = null;
             _lastException = null;
-            _callModeDiscardRetValue = false;
         }
 
         private void PrepareMethodExecution(int methodIndex)
@@ -616,16 +611,16 @@ namespace ScriptEngine.Machine
         private void CallFunc(int arg)
         {
             MethodCallImpl(arg, true);
-            _callModeDiscardRetValue = false;
+            _currentFrame.DiscardReturnValue = false;
         }
 
         private void CallProc(int arg)
         {
             var methInfo = MethodCallImpl(arg, false);
             if (methInfo.IsFunction)
-                _callModeDiscardRetValue = true;
+                _currentFrame.DiscardReturnValue = true;
             else
-                _callModeDiscardRetValue = false;
+                _currentFrame.DiscardReturnValue = false;
         }
 
         private MethodInfo MethodCallImpl(int arg, bool asFunc)
@@ -935,7 +930,7 @@ namespace ScriptEngine.Machine
 
         private void Return(int arg)
         {
-            if (_callModeDiscardRetValue)
+            if (_currentFrame.DiscardReturnValue)
                 _operationStack.Pop();
 
             if (_callStack.Count != 0)
