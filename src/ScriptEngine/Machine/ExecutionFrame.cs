@@ -9,5 +9,6 @@ namespace ScriptEngine.Machine
     {
         public IVariable[] Locals;
         public int InstructionPointer;
+        public bool DiscardReturnValue;
     }
 }
