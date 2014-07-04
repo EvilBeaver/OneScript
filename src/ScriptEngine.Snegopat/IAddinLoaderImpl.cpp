@@ -28,6 +28,21 @@ IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 
 }
 
+IAddinLoaderImpl::~IAddinLoaderImpl(void)
+{
+	if(nullptr != (ScriptEngine::ScriptingEngine^)m_engine)
+	{
+		m_engine = nullptr;
+		m_pDesigner = NULL;
+	}
+}
+
+void IAddinLoaderImpl::OnZeroCount()
+{
+	m_pDesigner->Release();
+}
+
+
 //IUnknown interface 
 #pragma region IUnknown implementation
 
@@ -66,37 +81,25 @@ ULONG   __stdcall IAddinLoaderImpl::Release()
 
 #pragma endregion
 
-IAddinLoaderImpl::~IAddinLoaderImpl(void)
-{
-	if(nullptr != (ScriptEngine::ScriptingEngine^)m_engine)
-	{
-		m_engine = nullptr;
-		m_engine = nullptr;
-	}
-}
-
-void IAddinLoaderImpl::OnZeroCount()
-{
-	m_pDesigner->Release();
-}
+#pragma region IAddinLoader implementation
 
 HRESULT __stdcall  IAddinLoaderImpl::proto( 
-            BSTR *result)
+	BSTR *result)
 {
 	*result = SysAllocString(L"1clang");
 	return S_OK;
 }
-        
+
 HRESULT __stdcall  IAddinLoaderImpl::load( 
-    BSTR uri,
-    BSTR *fullPath,
-    BSTR *uniqueName,
-    BSTR *displayName,
-    IUnknown **result)
+	BSTR uri,
+	BSTR *fullPath,
+	BSTR *uniqueName,
+	BSTR *displayName,
+	IUnknown **result)
 {
 	String^ strDisplayName = nullptr;
 	String^ strUniqueName = nullptr;
-	
+
 	HRESULT res;
 
 	std::wstring wsUri = uri;
@@ -108,10 +111,11 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 		System::IO::StreamReader^ rd = nullptr;
 		try
 		{
-			rd = gcnew System::IO::StreamReader(path, true);
+			rd = ScriptEngine::Environment::FileOpener::OpenReader(path);
+
 			Char ch = rd->Peek();
 			while(ch > -1 && ch == '$') 
-            {
+			{
 				String^ macro = rd->ReadLine();
 				if(macro->Length > 0)
 				{
@@ -133,7 +137,7 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 					}
 				}
 				ch = rd->Peek();
-            }
+			}
 
 			if(!rd->EndOfStream)
 			{
@@ -151,12 +155,10 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 				CompilerService^ compiler = m_engine->GetCompilerService();
 				compiler->DefineVariable(L"ЭтотОбъект", SymbolType::ContextProperty);
 				LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
-				
-				ScriptDrivenAddin^ obj = gcnew ScriptDrivenAddin(mh);
-				IAddinImpl* snegopatAddin = new IAddinImpl(obj);
-				
-				obj->SetDispatcher(snegopatAddin);
-				m_engine->InitializeSDO(obj);
+
+				ScriptDrivenAddin^ scriptObject = gcnew ScriptDrivenAddin(mh);
+				IAddinImpl* snegopatAddin = new IAddinImpl(scriptObject);
+				m_engine->InitializeSDO(scriptObject);
 
 				snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
 				snegopatAddin->QueryInterface(IID_IUnknown, (void**)result);
@@ -171,7 +173,7 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 			WCHAR* msg = stringBuf(e->Message);
 			MessageBox(0, msg, L"Load error", MB_OK);
 			delete[] msg;
-			
+
 			res = E_FAIL;
 		}
 		finally
@@ -188,40 +190,40 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 	return res;
 
 }
-        
+
 HRESULT __stdcall  IAddinLoaderImpl::canUnload( 
-    BSTR fullPath,
-    IUnknown *addin,
-    VARIANT_BOOL *result)
+	BSTR fullPath,
+	IUnknown *addin,
+	VARIANT_BOOL *result)
 {
 	*result = VARIANT_TRUE;
 	return S_OK;
 }
-        
+
 HRESULT __stdcall  IAddinLoaderImpl::unload( 
-    BSTR fullPath,
-    IUnknown *addin,
-    VARIANT_BOOL *result)
+	BSTR fullPath,
+	IUnknown *addin,
+	VARIANT_BOOL *result)
 {
-	addin->Release();
-//  Непонятно: Снегопат передает сюда addIn, который уже уничтожен по счетчику ссылок
-//  при создании аддина загрузчик создает ссылку, вызывая AddRef (см. метод load)
-//  при выгрузке Снегопат вызывает AddIn->Release(), хотя ответного AddRef не делал.
-//	В результате он отпускает ссылку, которой не владеет (созданную загрузчиком в методе load)
+	//addin->Release();
+	//  Непонятно: Снегопат передает сюда addIn, который уже уничтожен по счетчику ссылок
+	//  при создании аддина загрузчик создает ссылку, вызывая AddRef (см. метод load)
+	//  при выгрузке Снегопат вызывает AddIn->Release(), хотя ответного AddRef не делал.
+	//	В результате он отпускает ссылку, которой не владеет (созданную загрузчиком в методе load)
 
 	*result = VARIANT_TRUE;
 	return S_OK;
 }
-        
+
 HRESULT __stdcall  IAddinLoaderImpl::loadCommandName( 
-    BSTR *result)
+	BSTR *result)
 {
 	*result = SysAllocString(L"Загрузить скрипт 1С|1clang");
 	return S_OK;
 }
-        
+
 HRESULT __stdcall  IAddinLoaderImpl::selectLoadURI( 
-    BSTR *result)
+	BSTR *result)
 {
 	OPENFILENAME ofn;
 	const int PREFIX_LEN = 7;
@@ -247,3 +249,5 @@ HRESULT __stdcall  IAddinLoaderImpl::selectLoadURI(
 		return E_ABORT;
 	}
 }
+
+#pragma endregion

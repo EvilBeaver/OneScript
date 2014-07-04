@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0595 */
-/* at Thu Jul 03 13:46:08 2014
+/* at Fri Jul 04 17:18:15 2014
  */
 /* Compiler settings for Snegopat.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0595 
@@ -57,6 +57,13 @@ typedef interface IAddinLoader IAddinLoader;
 typedef interface IAddinMacroses IAddinMacroses;
 
 #endif 	/* __IAddinMacroses_FWD_DEFINED__ */
+
+
+#ifndef __IParamsWrapper_FWD_DEFINED__
+#define __IParamsWrapper_FWD_DEFINED__
+typedef interface IParamsWrapper IParamsWrapper;
+
+#endif 	/* __IParamsWrapper_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -313,6 +320,146 @@ EXTERN_C const IID IID_IAddinMacroses;
 
 
 #endif 	/* __IAddinMacroses_INTERFACE_DEFINED__ */
+
+
+#ifndef __IParamsWrapper_INTERFACE_DEFINED__
+#define __IParamsWrapper_INTERFACE_DEFINED__
+
+/* interface IParamsWrapper */
+/* [object][oleautomation][nonextensible][dual][helpstring][version][uuid] */ 
+
+
+EXTERN_C const IID IID_IParamsWrapper;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("F80C31B9-1D9F-4438-BEF3-10D829664EFD")
+    IParamsWrapper : public IDispatch
+    {
+    public:
+        virtual /* [helpstring][propget][id] */ HRESULT STDMETHODCALLTYPE get_val( 
+            /* [retval][out] */ VARIANT *pVal) = 0;
+        
+        virtual /* [helpstring][propput][id] */ HRESULT STDMETHODCALLTYPE put_val( 
+            /* [in] */ VARIANT pVal) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IParamsWrapperVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IParamsWrapper * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IParamsWrapper * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IParamsWrapper * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
+            IParamsWrapper * This,
+            /* [out] */ UINT *pctinfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
+            IParamsWrapper * This,
+            /* [in] */ UINT iTInfo,
+            /* [in] */ LCID lcid,
+            /* [out] */ ITypeInfo **ppTInfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
+            IParamsWrapper * This,
+            /* [in] */ REFIID riid,
+            /* [size_is][in] */ LPOLESTR *rgszNames,
+            /* [range][in] */ UINT cNames,
+            /* [in] */ LCID lcid,
+            /* [size_is][out] */ DISPID *rgDispId);
+        
+        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
+            IParamsWrapper * This,
+            /* [annotation][in] */ 
+            _In_  DISPID dispIdMember,
+            /* [annotation][in] */ 
+            _In_  REFIID riid,
+            /* [annotation][in] */ 
+            _In_  LCID lcid,
+            /* [annotation][in] */ 
+            _In_  WORD wFlags,
+            /* [annotation][out][in] */ 
+            _In_  DISPPARAMS *pDispParams,
+            /* [annotation][out] */ 
+            _Out_opt_  VARIANT *pVarResult,
+            /* [annotation][out] */ 
+            _Out_opt_  EXCEPINFO *pExcepInfo,
+            /* [annotation][out] */ 
+            _Out_opt_  UINT *puArgErr);
+        
+        /* [helpstring][propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_val )( 
+            IParamsWrapper * This,
+            /* [retval][out] */ VARIANT *pVal);
+        
+        /* [helpstring][propput][id] */ HRESULT ( STDMETHODCALLTYPE *put_val )( 
+            IParamsWrapper * This,
+            /* [in] */ VARIANT pVal);
+        
+        END_INTERFACE
+    } IParamsWrapperVtbl;
+
+    interface IParamsWrapper
+    {
+        CONST_VTBL struct IParamsWrapperVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IParamsWrapper_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IParamsWrapper_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IParamsWrapper_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IParamsWrapper_GetTypeInfoCount(This,pctinfo)	\
+    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
+
+#define IParamsWrapper_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
+    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
+
+#define IParamsWrapper_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
+    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
+
+#define IParamsWrapper_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
+    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
+
+
+#define IParamsWrapper_get_val(This,pVal)	\
+    ( (This)->lpVtbl -> get_val(This,pVal) ) 
+
+#define IParamsWrapper_put_val(This,pVal)	\
+    ( (This)->lpVtbl -> put_val(This,pVal) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IParamsWrapper_INTERFACE_DEFINED__ */
 
 
 

@@ -17,14 +17,14 @@ ScriptDrivenAddin::~ScriptDrivenAddin()
 	}
 }
 
-void ScriptDrivenAddin::SetDispatcher(IAddinImpl* dispatcher)
-{
-	m_scriptDispatcher = dispatcher;
-	m_scriptDispatcher->AddRef();
-}
-
 Object^ ScriptDrivenAddin::UnderlyingObject::get()
 {
+	if(m_scriptDispatcher == NULL)
+	{
+		m_scriptDispatcher = new SelfScriptIDispatch(this);
+		m_scriptDispatcher->AddRef();
+	}
+
 	IUnknown* pUnk;
 	m_scriptDispatcher->QueryInterface(IID_IUnknown, (void**)&pUnk);
 	IntPtr pointer = IntPtr(pUnk);
