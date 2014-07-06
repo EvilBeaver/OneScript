@@ -167,7 +167,10 @@ partial class Compiler
                             if (parCount < 0)
                             {
                                 UnwindOperators();
-                                throw new ExtraClosedParenthesis(_compiler._parser.CurrentLine);
+                                var cp = new CodePositionInfo();
+                                cp.LineNumber = _compiler._parser.CurrentLine;
+                                cp.Code = _compiler._parser.GetCodeLine(cp.LineNumber);
+                                throw new ExtraClosedParenthesis(cp);
                             }
 
                             if (_operators.Count > 0)
