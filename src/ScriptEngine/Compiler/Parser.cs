@@ -39,16 +39,7 @@ namespace ScriptEngine.Compiler
 
         public string GetCodeLine(int index)
         {
-            int start = _iterator.GetLineBound(index);
-            int end = _code.IndexOf('\n', start);
-            if (end >= 0)
-            {
-                return _code.Substring(start, end - start);
-            }
-            else
-            {
-                return _code.Substring(start);
-            }
+            return _iterator.GetCodeLine(index);
         }
 
         public Lexem NextLexem()
@@ -92,7 +83,8 @@ namespace ScriptEngine.Compiler
                     }
                     else
                     {
-                        throw new ParserException(string.Format("Unknown character {0}", cs), _iterator.CurrentLine);
+                        var cp = _iterator.GetPositionInfo(_iterator.CurrentLine);
+                        throw new ParserException(cp, string.Format("Неизвестный символ {0}",cs));
                     }
 
                     var lex = _state.ReadNextLexem(_iterator);
@@ -161,6 +153,11 @@ namespace ScriptEngine.Compiler
     abstract class ParserState
     {
         abstract public Lexem ReadNextLexem(ParseIterator iterator);
+        public ParserException CreateExceptionOnCurrentLine(string message, ParseIterator iterator)
+        {
+            var cp = iterator.GetPositionInfo(iterator.CurrentLine);
+            return new ParserException(cp, message);
+        }
     }
 
     class EmptyParserState : ParserState
@@ -296,7 +293,7 @@ namespace ScriptEngine.Compiler
                                 var paddingPosition = lex.Content.IndexOf('|', newLinePosition);
                                 if (paddingPosition < 0)
                                 {
-                                    throw new ParserException("Unclosed string literal", iterator.CurrentLine);
+                                    throw CreateExceptionOnCurrentLine("Незавершенный строковый литерал", iterator);
                                 }
 
                                 string head;
@@ -324,12 +321,12 @@ namespace ScriptEngine.Compiler
                     iterator.SkipSpaces();
                     if (iterator.CurrentSymbol != '|')
                     {
-                        throw new ParserException("Wrong string literal", iterator.CurrentLine);
+                        throw CreateExceptionOnCurrentLine("Некорректный строковый литерал", iterator);
                     }
                 }
             }
 
-            throw new ParserException("Unclosed string literal", iterator.CurrentLine);
+            throw CreateExceptionOnCurrentLine("Незавершенный строковый литерал", iterator);
         }
     }
 
@@ -354,11 +351,11 @@ namespace ScriptEngine.Compiler
                 }
                 else if(!Char.IsDigit(cs))
                 {
-                    throw new ParserException("Incorrect date literal", iterator.CurrentLine);
+                    throw CreateExceptionOnCurrentLine("Незавершенный литерал даты", iterator);
                 }
             }
 
-            throw new ParserException("Unclosed date literal", iterator.CurrentLine);
+            throw CreateExceptionOnCurrentLine("Незавершенный литерал даты", iterator);
         }
     }
 
@@ -477,7 +474,7 @@ namespace ScriptEngine.Compiler
                         }
                         else
                         {
-                            throw new ParserException("Syntax error: decimal point", iterator.CurrentLine);
+                            throw CreateExceptionOnCurrentLine("Некорректно указана десятичная точка в числе", iterator);
                         }
                     }
 
@@ -491,29 +488,10 @@ namespace ScriptEngine.Compiler
                 }
                 else
                 {
-                    throw new ParserException("Unexpected character", iterator.CurrentLine);
+                    throw CreateExceptionOnCurrentLine("Некорректный символ", iterator);
                 }
             }
         }
     }
 
-    public class ParserException : ApplicationException
-    {
-        int _line;
-
-        public int Line
-        {
-            get { return _line; }
-        }
-
-        public ParserException(string msg, int line) : base(msg)
-        {
-            _line = line;
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + "\nLine: " + _line;
-        }
-    }
 }
