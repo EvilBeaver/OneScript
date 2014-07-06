@@ -43,12 +43,7 @@ namespace oscript
 
         public void ShowExceptionInfo(Exception exc)
         {
-            if(exc is CompilerException)
-                Console.WriteLine(exc.ToString() + ((CompilerException)exc).LineNumber);
-            if (exc is ParserException)
-                Console.WriteLine(exc.ToString() + ((ParserException)exc).Line);
-            else
-                Console.WriteLine(exc.ToString());
+            Console.WriteLine(exc.ToString());
         }
 
         public bool InputString(out string result, int maxLen)

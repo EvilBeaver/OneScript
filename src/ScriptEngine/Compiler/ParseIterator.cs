@@ -50,9 +50,31 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        public int GetLineBound(int lineNumber)
+        public string GetCodeLine(int index)
         {
-            return _lineBounds[lineNumber-1];
+            int start = this.GetLineBound(index);
+            int end = _code.IndexOf('\n', start);
+            if (end >= 0)
+            {
+                return _code.Substring(start, end - start);
+            }
+            else
+            {
+                return _code.Substring(start);
+            }
+        }
+
+        public CodePositionInfo GetPositionInfo(int lineNumber)
+        {
+            var cp = new CodePositionInfo();
+            cp.LineNumber = lineNumber;
+            cp.Code = GetCodeLine(lineNumber);
+            return cp;
+        }
+
+        private int GetLineBound(int lineNumber)
+        {
+            return _lineBounds[lineNumber - 1];
         }
 
         public Word GetContents(int padLeft, int padRight)

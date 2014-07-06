@@ -55,14 +55,6 @@ namespace TestApp
                     moduleWriter.Write(writer, src);
                     result.Text = writer.GetStringBuilder().ToString();
                 }
-                catch (ScriptEngine.Compiler.CompilerException exc)
-                {
-                    result.Text = exc.Message + "\nLine: " + exc.LineNumber;
-                }
-                catch (ScriptEngine.Compiler.ParserException exc)
-                {
-                    result.Text = exc.Message + "\nLine: " + exc.Line;
-                }
                 catch (Exception exc)
                 {
                     result.Text = exc.Message;
@@ -84,16 +76,6 @@ namespace TestApp
             try
             {
                 process = hostedScript.CreateProcess(host, src);
-            }
-            catch (ScriptEngine.Compiler.CompilerException exc)
-            {
-                result.Text = exc.Message + "\nLine: " + exc.LineNumber;
-                return;
-            }
-            catch (ScriptEngine.Compiler.ParserException exc)
-            {
-                result.Text = exc.Message + "\nLine: " + exc.Line;
-                return;
             }
             catch (Exception exc)
             {
