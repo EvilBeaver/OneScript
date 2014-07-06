@@ -80,7 +80,7 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException exc)
             {
-                CompilerException.AppendLineNumber(exc, _parser.CurrentLine);
+                AppendCodeInfo(_parser.CurrentLine, exc);
                 throw;
             }
 
@@ -100,14 +100,16 @@ namespace ScriptEngine.Compiler
                     }
                     catch (CompilerException exc)
                     {
-                        CompilerException.AppendLineNumber(exc, item.codeLine);
+                        AppendCodeInfo(item.codeLine, exc);
                         throw;
                     }
 
                     var methInfo = _module.Methods[methN.CodeIndex].Signature;
                     if (item.asFunction && !methInfo.IsFunction)
                     {
-                        throw CompilerException.AppendLineNumber(CompilerException.UseProcAsFunction(), item.codeLine);
+                        var exc = CompilerException.UseProcAsFunction();
+                        AppendCodeInfo(item.codeLine, exc);
+                        throw exc;
                     }
 
                     try
@@ -116,7 +118,7 @@ namespace ScriptEngine.Compiler
                     }
                     catch (CompilerException exc)
                     {
-                        CompilerException.AppendLineNumber(exc, item.codeLine);
+                        AppendCodeInfo(item.codeLine, exc);
                         throw;
                     }
 
@@ -125,6 +127,14 @@ namespace ScriptEngine.Compiler
                     _module.Code[item.commandIndex] = cmd;
                 }
             }
+        }
+
+        private void AppendCodeInfo(int line, CompilerException exc)
+        {
+            var cp = new CodePositionInfo();
+            cp.LineNumber = line;
+            cp.Code = _parser.GetCodeLine(line);
+            CompilerException.AppendCodeInfo(exc, cp);
         }
 
         private void DispatchModuleBuild()

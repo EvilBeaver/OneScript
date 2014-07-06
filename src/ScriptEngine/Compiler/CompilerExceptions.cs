@@ -5,29 +5,24 @@ using System.Text;
 
 namespace ScriptEngine.Compiler
 {
-    public class CompilerException : ApplicationException
+    public class CompilerException : ScriptException
     {
-        protected int _codeLine;
-
         internal CompilerException(string msg)
-            : base(msg)
+            : base(new CodePositionInfo(), msg)
         {
 
         }
 
-        public override string ToString()
+        internal static CompilerException AppendCodeInfo(CompilerException exc, int line, string codeString)
         {
-            return base.ToString() + "\nLine: " + _codeLine;
+            exc.LineNumber = line;
+            exc.Code = codeString;
+            return exc;
         }
 
-        public int LineNumber
+        internal static CompilerException AppendCodeInfo(CompilerException exc, CodePositionInfo codePosInfo)
         {
-            get { return _codeLine; }
-        }
-
-        internal static CompilerException AppendLineNumber(CompilerException exc, int line)
-        {
-            exc._codeLine = line;
+            AppendCodeInfo(exc, codePosInfo.LineNumber, codePosInfo.Code);
             return exc;
         }
 
@@ -131,9 +126,10 @@ namespace ScriptEngine.Compiler
 
     public class ExtraClosedParenthesis : CompilerException
     {
-        public ExtraClosedParenthesis(int line) : base("Token expected: (")
+        internal ExtraClosedParenthesis(CodePositionInfo codePosInfo) : base("Token expected: (")
         {
-            _codeLine = line;
+            this.LineNumber = codePosInfo.LineNumber;
+            this.Code = codePosInfo.Code;
         }
     }
 
