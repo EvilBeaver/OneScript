@@ -232,7 +232,7 @@ HRESULT STDMETHODCALLTYPE SelfScriptIDispatch::Invoke(
 {
 	array<ScriptEngine::Machine::IValue^>^ scriptArgs = gcnew array<ScriptEngine::Machine::IValue^>(pDispParams->cArgs);
 	IParamsWrapper **argWrappers = new IParamsWrapper*[pDispParams->cArgs];
-	for (int i = 0; i < pDispParams->cArgs; i++)
+	for (size_t i = 0; i < pDispParams->cArgs; i++)
 	{
 		argWrappers[i] = NULL;
 	};
@@ -250,10 +250,11 @@ HRESULT STDMETHODCALLTYPE SelfScriptIDispatch::Invoke(
 		{
 			IDispatch* wrapper = V_DISPATCH(&varArg);
 			IParamsWrapper* pWrapperQueried;
-			if(wrapper->QueryInterface(IID_IParamsWrapper, (void**)pWrapperQueried) == S_OK)
+			if(wrapper->QueryInterface(IID_IParamsWrapper, (void**)&pWrapperQueried) == S_OK)
 			{
 				argWrappers[j] = pWrapperQueried;
 				VARIANT vScriptArg;
+				VariantInit(&vScriptArg);
 				pWrapperQueried->get_val(&vScriptArg);
 				scriptArgValue = ConvertVariantToScriptArg(vScriptArg);
 			}
