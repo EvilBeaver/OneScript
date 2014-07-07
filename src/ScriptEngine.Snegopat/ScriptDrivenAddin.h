@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IAddinImpl.h"
+#include "SelfScriptIDispatch.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -12,7 +12,7 @@ ref class ScriptDrivenAddin : public ScriptDrivenObject, public IObjectWrapper
 {
 private:
 	
-	IAddinImpl* m_scriptDispatcher;
+	SelfScriptIDispatch* m_scriptDispatcher;
 
 
 public:
@@ -24,8 +24,6 @@ public:
 		Object^ get();
 	}
 
-	void SetDispatcher(IAddinImpl* dispatcher);
-	
 protected:
 
 	virtual int GetMethodCount() override

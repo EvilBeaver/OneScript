@@ -212,10 +212,9 @@ namespace ScriptEngine.Machine.Contexts
                 _methodBinding.Clear();
                 _dispIdCache.Clear();
 
-                IDisposable instanceRef = _instance as IDisposable;
-                if (instanceRef != null)
+                if (_instance != null)
                 {
-                    instanceRef.Dispose();
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(_instance);
                     _instance = null;
                 }
 

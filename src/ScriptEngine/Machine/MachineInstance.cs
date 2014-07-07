@@ -36,6 +36,9 @@ namespace ScriptEngine.Machine
             public ExecutionFrame currentFrame;
             public LoadedModule module;
             public bool hasScope;
+            public IValue[] operationStack;
+            public ExecutionFrame[] callStack;
+            public ExceptionJumpInfo[] exceptionsStack;
         }
 
         public void AttachContext(IAttachableContext context, bool detachable)
@@ -115,8 +118,36 @@ namespace ScriptEngine.Machine
             stateToSave.hasScope = DetachTopScope(out stateToSave.topScope);
             stateToSave.currentFrame = _currentFrame;
             stateToSave.module = _module;
+            StackToArray(ref stateToSave.callStack, _callStack);
+            StackToArray(ref stateToSave.exceptionsStack, _exceptionsStack);
+            StackToArray(ref stateToSave.operationStack, _operationStack);
 
             _states.Push(stateToSave);
+        }
+
+        private void StackToArray<T>(ref T[] destination, Stack<T> source)
+        {
+            if (source != null)
+            {
+                destination = new T[source.Count];
+                source.CopyTo(destination, 0);
+            }
+        }
+
+        private void RestoreStack<T>(ref Stack<T> destination, T[] source)
+        {
+            if (source != null)
+            {
+                destination = new Stack<T>();
+                for (int i = 0; i < source.Length; i++)
+                {
+                    destination.Push(source[i]);
+                }
+            }
+            else
+            {
+                destination = null;
+            }
         }
 
         private void PopState()
@@ -140,6 +171,11 @@ namespace ScriptEngine.Machine
             }
 
             _module = savedState.module;
+
+            RestoreStack(ref _callStack, savedState.callStack);
+            RestoreStack(ref _operationStack, savedState.operationStack);
+            RestoreStack(ref _exceptionsStack, savedState.exceptionsStack);
+
             SetFrame(savedState.currentFrame);
         }
 

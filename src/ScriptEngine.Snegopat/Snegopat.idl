@@ -53,6 +53,22 @@ interface IAddinMacroses : IUnknown {
 };
 
 [
+  odl,
+  uuid(F80C31B9-1D9F-4438-BEF3-10D829664EFD),
+  version(1.0),
+  helpstring("Обертка вокруг параметров событий формы"),
+  dual,
+  nonextensible,
+  oleautomation
+]
+interface IParamsWrapper : IDispatch {
+    [id(0x60020000), propget, helpstring("Значение")]
+    HRESULT val([out, retval] VARIANT* pVal);
+    [id(0x60020000), propput, helpstring("Значение")]
+    HRESULT val([in] VARIANT pVal);
+};
+
+[
 uuid(64CE2CE5-A523-40A4-8527-824715AFE929),
 helpstring("1Script loader for Snegopat")
 ]
