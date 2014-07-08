@@ -32,9 +32,6 @@ namespace ScriptEngine.Machine
 
     class StandartTypeManager : ITypeManager
     {
-        //Dictionary<string, TypeDescriptor> _knownTypes = new Dictionary<string,TypeDescriptor>(StringComparer.InvariantCultureIgnoreCase);
-        //List<Type> _implementations = new List<Type>();
-
         private Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private List<KnownType> _knownTypes = new List<KnownType>();
 

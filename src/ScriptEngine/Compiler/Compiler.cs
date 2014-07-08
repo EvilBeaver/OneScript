@@ -499,6 +499,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildComplexStructureStatement()
         {
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
             switch (_lastExtractedLexem.Token)
             {
                 case Token.VarDef:
@@ -853,6 +854,7 @@ namespace ScriptEngine.Compiler
             var identifier = _lastExtractedLexem.Content;
 
             NextToken();
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
             switch (_lastExtractedLexem.Token)
             {
                 case Token.OpenPar:

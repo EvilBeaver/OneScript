@@ -12,6 +12,7 @@ namespace ScriptEngine.Machine
         private Stack<IValue> _operationStack;
         private Stack<ExecutionFrame> _callStack;
         private ExecutionFrame _currentFrame;
+        private int _lineNumber;
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
         private RuntimeException _lastException;
@@ -36,6 +37,7 @@ namespace ScriptEngine.Machine
             public ExecutionFrame currentFrame;
             public LoadedModule module;
             public bool hasScope;
+            public int lineNumber;
             public IValue[] operationStack;
             public ExecutionFrame[] callStack;
             public ExceptionJumpInfo[] exceptionsStack;
@@ -118,6 +120,7 @@ namespace ScriptEngine.Machine
             stateToSave.hasScope = DetachTopScope(out stateToSave.topScope);
             stateToSave.currentFrame = _currentFrame;
             stateToSave.module = _module;
+            stateToSave.lineNumber = _lineNumber;
             StackToArray(ref stateToSave.callStack, _callStack);
             StackToArray(ref stateToSave.exceptionsStack, _exceptionsStack);
             StackToArray(ref stateToSave.operationStack, _operationStack);
@@ -171,6 +174,7 @@ namespace ScriptEngine.Machine
             }
 
             _module = savedState.module;
+            _lineNumber = savedState.lineNumber;
 
             RestoreStack(ref _callStack, savedState.callStack);
             RestoreStack(ref _operationStack, savedState.operationStack);
@@ -276,7 +280,10 @@ namespace ScriptEngine.Machine
                 catch (RuntimeException exc)
                 {
                     if (_exceptionsStack.Count == 0)
+                    {
+                        exc.LineNumber = _lineNumber;
                         throw;
+                    }
 
                     var handler = _exceptionsStack.Pop();
                     SetFrame(handler.handlerFrame);
@@ -356,6 +363,7 @@ namespace ScriptEngine.Machine
                 BeginTry,
                 EndTry,
                 RaiseException,
+                LineNum,
 
                 //built-ins
                 Question,
@@ -1013,7 +1021,16 @@ namespace ScriptEngine.Machine
                 argValues[i] = argValue;
             }
 
-            var typeId = TypeManager.GetTypeIDByName(typeName);
+            int typeId;
+            try
+            {
+                typeId = TypeManager.GetTypeIDByName(typeName);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new RuntimeException("Конструктор не найден (" + typeName + ")");
+            }
+
             var clrType = TypeManager.GetImplementingClass(typeId);
             var ctors = clrType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
                 .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute))
@@ -1166,7 +1183,14 @@ namespace ScriptEngine.Machine
             {
                 throw new RuntimeException(_operationStack.Pop().AsString());
             }
-        } 
+        }
+
+        private void LineNum(int arg)
+        {
+            _lineNumber = arg;
+            NextInstruction();
+        }
+
         #endregion
 
         #region Built-in functions

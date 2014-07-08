@@ -51,6 +51,7 @@ namespace ScriptEngine.Machine
         BeginTry,
         EndTry,
         RaiseException,
+        LineNum,
 
         // built-in functions
         Question,
