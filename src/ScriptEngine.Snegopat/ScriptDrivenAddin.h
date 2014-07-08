@@ -13,6 +13,7 @@ ref class ScriptDrivenAddin : public ScriptDrivenObject, public IObjectWrapper
 private:
 	
 	SelfScriptIDispatch* m_scriptDispatcher;
+	Object^ m_marshalledReference;
 
 
 public:

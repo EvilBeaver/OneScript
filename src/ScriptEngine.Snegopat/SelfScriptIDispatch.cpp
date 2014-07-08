@@ -288,7 +288,7 @@ HRESULT STDMETHODCALLTYPE SelfScriptIDispatch::Invoke(
 	try
 	{
 		m_scriptDrivenObject->CallAsProcedure(dispIdMember, scriptArgs);
-
+		
 		// back conversion
 		for (int i = pDispParams->cArgs-1, j = 0; i >=0; i--, j++)
 		{
