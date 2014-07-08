@@ -33,7 +33,7 @@ namespace ScriptEngine.Compiler
             }
             catch (KeyNotFoundException)
             {
-                throw new SymbolNotFoundException();
+                throw new SymbolNotFoundException(name);
             }
         }
 
@@ -50,7 +50,7 @@ namespace ScriptEngine.Compiler
             }
             catch (KeyNotFoundException)
             {
-                throw new SymbolNotFoundException();
+                throw new SymbolNotFoundException(name);
             }
         }
 
@@ -128,7 +128,7 @@ namespace ScriptEngine.Compiler
 
     class SymbolNotFoundException : CompilerException
     {
-        public SymbolNotFoundException() : base("Symbol not found")
+        public SymbolNotFoundException(string symbol) : base(string.Format("Неизвестный символ: {0}", symbol))
         {
 
         }

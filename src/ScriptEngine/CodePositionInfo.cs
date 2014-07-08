@@ -9,10 +9,5 @@ namespace ScriptEngine
     {
         public int LineNumber { get; set; }
         public string Code { get; set; }
-
-        public override string ToString()
-        {
-            return Code + "\nСтрока: " + LineNumber.ToString();
-        }
     }
 }

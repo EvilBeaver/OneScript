@@ -55,7 +55,10 @@ namespace ScriptEngine
         {
             get
             {
-                return base.Message + "\n" + _codePosition.ToString();
+                return String.Format("{{Ошибка в строке {0}: {1}}}\n  {2}",
+                    _codePosition.LineNumber,
+                    base.Message,
+                    _codePosition.Code);
             }
         }
     }

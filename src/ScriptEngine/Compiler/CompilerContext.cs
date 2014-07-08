@@ -43,7 +43,7 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private SymbolBinding GetSymbol(Func<SymbolScope, int> extract)
+        private SymbolBinding GetSymbol(string symbol, Func<SymbolScope, int> extract)
         {
             for (int i = _scopeStack.Count - 1; i >= 0; i--)
             {
@@ -61,7 +61,7 @@ namespace ScriptEngine.Compiler
                 }
             }
 
-            throw new SymbolNotFoundException();
+            throw new SymbolNotFoundException(symbol);
         }
 
         private bool HasSymbol(Func<SymbolScope, bool> definitionCheck)
@@ -78,7 +78,7 @@ namespace ScriptEngine.Compiler
 
         public VariableBinding GetVariable(string name)
         {
-            var sb = GetSymbol(x=>x.GetVariableNumber(name));
+            var sb = GetSymbol(name, x=>x.GetVariableNumber(name));
 
             return new VariableBinding()
             {
@@ -90,7 +90,7 @@ namespace ScriptEngine.Compiler
 
         public SymbolBinding GetMethod(string name)
         {
-            return GetSymbol(x => x.GetMethodNumber(name));
+            return GetSymbol(name, x => x.GetMethodNumber(name));
         }
 
         public SymbolScope GetScope(int scopeIndex)
