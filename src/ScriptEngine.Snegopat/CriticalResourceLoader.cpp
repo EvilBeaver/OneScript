@@ -16,15 +16,18 @@ CriticalResourceLoader::CriticalResourceLoader(HMODULE mod)
 Reflection::Assembly^ CriticalResourceLoader::DependencyHandler(Object^ sender, ResolveEventArgs^ args)
 {
 	System::String^ str = args->Name;
-	if(str->IndexOf("ScriptEngine",0) >= 0)
+	if(str->IndexOf(L"ScriptEngine",0) >= 0)
 	{
 		
 		System::IntPtr^ ptr = gcnew System::IntPtr(m_modulePath);
-		str = System::Runtime::InteropServices::Marshal::PtrToStringUni(*ptr, MAX_PATH);
-		System::String^ pathBuild = str;
+		System::String^ pathBuild = System::Runtime::InteropServices::Marshal::PtrToStringUni(*ptr, MAX_PATH);
+
 		int idx = pathBuild->LastIndexOf('\\');
-		pathBuild = pathBuild->Substring(0, idx + 1);
-		pathBuild = System::IO::Path::Combine(pathBuild, "ScriptEngine.dll");
+		System::String^ dir = pathBuild->Substring(0, idx + 1);
+
+		idx = str->IndexOf(',');
+		System::String^ dll = str->Substring(0, idx) + ".dll";
+		pathBuild = System::IO::Path::Combine(dir, dll);
 		
 		return System::Reflection::Assembly::LoadFrom(pathBuild);
 
