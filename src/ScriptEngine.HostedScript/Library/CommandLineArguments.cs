@@ -32,7 +32,7 @@ namespace ScriptEngine.Machine.Library
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            throw new RuntimeException("Collection can't be changed");
+            throw new RuntimeException("Коллекция предназначена только для чтения");
         }
 
         public override int FindMethod(string name)
@@ -79,12 +79,12 @@ namespace ScriptEngine.Machine.Library
 
         public void Clear()
         {
-            throw new RuntimeException("Collection can't be changed");
+            throw new RuntimeException("Коллекция предназначена только для чтения");
         }
 
         public CollectionEnumerator GetManagedIterator()
         {
-            throw new RuntimeException("Collection can't be changed");
+            return new CollectionEnumerator(GetEnumerator());
         }
 
         #endregion

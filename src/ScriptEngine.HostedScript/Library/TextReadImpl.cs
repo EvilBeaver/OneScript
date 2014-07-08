@@ -57,7 +57,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (_reader == null)
             {
-                throw new RuntimeException("File is not opened");
+                throw new RuntimeException("Файл не открыт");
             }
         }
 

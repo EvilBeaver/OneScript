@@ -19,7 +19,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (!IsValidIdentifier(name))
                 {
-                    throw new RuntimeException("Wrong argument value");
+                    throw new RuntimeException("Неверное значение аргумента");
                 }
 
                 var idx = _propNumbers.Count;

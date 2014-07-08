@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    public class RuntimeException : ApplicationException
+    public class RuntimeException : ScriptException
     {
         public RuntimeException() : base()
         {
@@ -16,23 +16,23 @@ namespace ScriptEngine.Machine
         }
 
         public RuntimeException(string msg, Exception inner)
-            : base(msg, inner)
+            : base(new CodePositionInfo(), msg, inner)
         {
         }
 
         public static RuntimeException ConvertToNumberException()
         {
-            return new RuntimeException("Conversion to Number is not supported");
+            return new RuntimeException("Преобразование к типу 'Число' не поддерживается");
         }
 
         public static RuntimeException ConvertToBooleanException()
         {
-            return new RuntimeException("Conversion to Boolean is not supported");
+            return new RuntimeException("Преобразование к типу 'Булево' не поддерживается");
         }
 
         public static RuntimeException ConvertToDateException()
         {
-            return new RuntimeException("Conversion to Date is not supported");
+            return new RuntimeException("Преобразование к типу 'Дата' не поддерживается");
         }
 
         public static RuntimeException PropIsNotReadableException(string prop)
@@ -52,62 +52,62 @@ namespace ScriptEngine.Machine
         
         public static RuntimeException MethodNotFoundException(string methodName)
         {
-            return new RuntimeException(string.Format("Object method {0} is not found", methodName));
+            return new RuntimeException(string.Format("Метод объекта не обнаружен ({0})", methodName));
         }
 
         public static RuntimeException ValueIsNotObjectException()
         {
-            return new RuntimeException("Value is not an Object, thus it can't be used with 'dot' operator");
+            return new RuntimeException("Значение не является значением объектного типа");
         }
 
         public static RuntimeException TooManyArgumentsPassed()
         {
-            return new RuntimeException("Too many actual parameters have been passed");
+            return new RuntimeException("Слишком много фактических параметров");
         }
 
         public static RuntimeException TooLittleArgumentsPassed()
         {
-            return new RuntimeException("Too litte actual parameters have been passed");
+            return new RuntimeException("Недостаточно фактических параметров");
         }
 
         public static RuntimeException ArgHasNoDefaultValue(int argNum)
         {
-            return new RuntimeException(string.Format("Argument {0} has no default value", argNum));
+            return new RuntimeException(string.Format("Аргумент {0} не имеет значения по умолчанию", argNum));
         }
 
         public static RuntimeException InvalidArgumentType()
         {
-            return new RuntimeException("Invalid argument type");
+            return new RuntimeException("Неверный тип аргумента");
         }
 
         public static RuntimeException InvalidArgumentValue()
         {
-            return new RuntimeException("Invalid argument value");
+            return new RuntimeException("Неверное значение аргумента");
         }
 
         public static RuntimeException ComparisonNotSupportedException()
         {
-            return new RuntimeException("Comparison if less/greater is not supported on type specified");
+            return new RuntimeException("Сравнение на больше/меньше для данного типа не поддерживается");
         }
 
         public static RuntimeException IndexedAccessIsNotSupportedException()
         {
-            return new RuntimeException("Object doesn't supported indexed access");
+            return new RuntimeException("Объект не поддерживает доступ по индексу");
         }
 
         public static RuntimeException IteratorIsNotDefined()
         {
-            return new RuntimeException("Object doesn't support iterations");
+            return new RuntimeException("Итератор не определен");
         }
 
         public static RuntimeException UseProcAsAFunction()
         {
-            return new RuntimeException("Using procedure as a function");
+            return new RuntimeException("Использование процедуры, как функции");
         }
 
         public static RuntimeException DivideByZero()
         {
-            return new RuntimeException("Division by zero");
+            return new RuntimeException("Деление на ноль");
         }
 
 
@@ -116,7 +116,7 @@ namespace ScriptEngine.Machine
     public class ExternalSystemException : RuntimeException
     {
         public ExternalSystemException(Exception reason)
-            : base("System exception", reason)
+            : base("Внешнее исключение", reason)
         {
 
         }
@@ -134,7 +134,7 @@ namespace ScriptEngine.Machine
     public class WrongStackConditionException : RuntimeException
     {
         public WrongStackConditionException()
-            : base("Internal error: wrong stack condition")
+            : base("Внутренняя ошибка: неверное состояние стека")
         {
 
         }
@@ -149,24 +149,24 @@ namespace ScriptEngine.Machine
 
         public static PropertyAccessException GetPropIsNotReadableException(string prop)
         {
-            return new PropertyAccessException(string.Format("Object property {0} is not readable", prop));
+            return new PropertyAccessException(string.Format("Свойство {0} недоступно для чтения", prop));
         }
 
         public static PropertyAccessException GetPropIsNotWritableException(string prop)
         {
-            return new PropertyAccessException(string.Format("Object property {0} is not writable", prop));
+            return new PropertyAccessException(string.Format("Свойство {0} недоступно для записи", prop));
         }
 
         public static PropertyAccessException GetPropNotFoundException(string prop)
         {
-            return new PropertyAccessException(string.Format("Object property {0} is not found", prop));
+            return new PropertyAccessException(string.Format("Свойство объекта не обнаружено ({0})", prop));
         }
 
     }
 
     public class ScriptInterruptionException : RuntimeException
     {
-        public ScriptInterruptionException(int exitCode) : base("Script interupted")
+        public ScriptInterruptionException(int exitCode) : base("Script interrupted")
         {
             ExitCode = exitCode;
         }

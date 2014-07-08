@@ -15,6 +15,12 @@ namespace ScriptEngine
             _codePosition.LineNumber = -1;
         }
 
+        internal ScriptException(string message)
+            : this(new CodePositionInfo(), message, null)
+        {
+
+        }
+
         internal ScriptException(CodePositionInfo codeInfo, string message)
             : this(codeInfo, message, null)
         {

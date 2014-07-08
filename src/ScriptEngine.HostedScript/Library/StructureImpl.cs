@@ -20,7 +20,7 @@ namespace ScriptEngine.Machine.Library
         {
             var props = strProperties.Split(',');
             if (props.Length < values.Length)
-                throw new RuntimeException("Wrong argument value");
+                throw new RuntimeException("Неверное значение аргумента");
 
             for (int i = 0; i < props.Length; i++)
             {

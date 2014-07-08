@@ -29,7 +29,7 @@ namespace ScriptEngine.Machine.Contexts
             if (!DispatchUtility.ImplementsIDispatch(_instance))
             {
                 _instance = null;
-                throw new RuntimeException("The object doesn't implement IDispatch.");
+                throw new RuntimeException("Объект не реализует IDispatch.");
             }
 
             try
@@ -84,7 +84,7 @@ namespace ScriptEngine.Machine.Contexts
                         result = ((IObjectWrapper)result).UnderlyingObject;
                     break;
                 default:
-                    throw new RuntimeException("Unsupported type for COM marshalling");
+                    throw new RuntimeException("Тип не поддерживает передачу в COM-объект");
             }
 
             return result;
@@ -123,7 +123,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                throw new RuntimeException("Type " + type + " can't be converted to a supported value");
+                throw new RuntimeException("Тип " + type + " невозможно преобразовать в один из поддерживаемых типов");
             }
         }
 
@@ -318,11 +318,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.PropNotFoundException("");
+                throw RuntimeException.PropNotFoundException("dispid["+propNum.ToString()+"]");
             }
             catch (System.MemberAccessException)
             {
-                throw RuntimeException.PropIsNotReadableException("");
+                throw RuntimeException.PropIsNotReadableException("dispid[" + propNum.ToString() + "]");
             }
         }
 
@@ -341,11 +341,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.PropNotFoundException("");
+                throw RuntimeException.PropNotFoundException("dispid[" + propNum.ToString() + "]");
             }
             catch (System.MemberAccessException)
             {
-                throw RuntimeException.PropIsNotWritableException("");
+                throw RuntimeException.PropIsNotWritableException("dispid[" + propNum.ToString() + "]");
             }
         }
 
@@ -467,7 +467,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.MethodNotFoundException("");
+                throw RuntimeException.MethodNotFoundException("dispid[" + methodNumber.ToString() + "]");
             }
         }
 
@@ -487,7 +487,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.MethodNotFoundException("");
+                throw RuntimeException.MethodNotFoundException("dispid[" + methodNumber.ToString() + "]");
             }
         }
 

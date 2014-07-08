@@ -1082,7 +1082,7 @@ namespace ScriptEngine.Machine
 
             }
 
-            throw new RuntimeException("Constructor not found");
+            throw new RuntimeException("Конструктор не найден ("+typeName+")");
 
 
         }
@@ -1238,7 +1238,7 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                throw new RuntimeException("Wrong parameters count");
+                throw new RuntimeException("Неверное количество параметров");
             }
 
             NextInstruction();
