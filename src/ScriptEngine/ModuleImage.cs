@@ -30,6 +30,22 @@ namespace ScriptEngine
         public IList<ConstDefinition> Constants { get; set; }
         public IList<ExportedSymbol> ExportedProperties { get; set; }
         public IList<ExportedSymbol> ExportedMethods { get; set; }
+
+        // Привязка к исходному коду для отладочной информации в RuntimeException
+        [NonSerialized]
+        private ScriptEngine.Compiler.SourceCodeIndexer _source;
+
+        internal ScriptEngine.Compiler.SourceCodeIndexer Source 
+        {
+            get
+            {
+                return _source;
+            }
+            set
+            {
+                _source = value;
+            }
+        }
     }
 
     [Serializable]

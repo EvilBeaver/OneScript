@@ -19,6 +19,7 @@ namespace ScriptEngine.Machine
             this.VariableFrameSize = image.VariableFrameSize;
             this.ExportedProperies = image.ExportedProperties.ToArray();
             this.ExportedMethods = image.ExportedMethods.ToArray();
+            this.Source = image.Source;
             for (int i = 0; i < image.Constants.Count; i++)
             {
                 var def = image.Constants[i];
@@ -35,6 +36,7 @@ namespace ScriptEngine.Machine
         public IValue[] Constants { get; private set; }
         public ExportedSymbol[] ExportedProperies { get; private set; }
         public ExportedSymbol[] ExportedMethods { get; private set; }
+        public SourceCodeIndexer Source { get; private set; }
     }
 
     

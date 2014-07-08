@@ -52,16 +52,13 @@ namespace ScriptEngine.Compiler
 
         public string GetCodeLine(int index)
         {
-            int start = this.GetLineBound(index);
-            int end = _code.IndexOf('\n', start);
-            if (end >= 0)
-            {
-                return _code.Substring(start, end - start);
-            }
-            else
-            {
-                return _code.Substring(start);
-            }
+            var idx = GetCodeIndexer();
+            return idx.GetCodeLine(index);
+        }
+
+        public SourceCodeIndexer GetCodeIndexer()
+        {
+            return new SourceCodeIndexer(_code, _lineBounds);
         }
 
         public CodePositionInfo GetPositionInfo(int lineNumber)
@@ -70,11 +67,6 @@ namespace ScriptEngine.Compiler
             cp.LineNumber = lineNumber;
             cp.Code = GetCodeLine(lineNumber);
             return cp;
-        }
-
-        private int GetLineBound(int lineNumber)
-        {
-            return _lineBounds[lineNumber - 1];
         }
 
         public Word GetContents(int padLeft, int padRight)

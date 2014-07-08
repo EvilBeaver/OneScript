@@ -282,6 +282,14 @@ namespace ScriptEngine.Machine
                     if (_exceptionsStack.Count == 0)
                     {
                         exc.LineNumber = _lineNumber;
+                        if (_module.Source != null)
+                        {
+                            exc.Code = _module.Source.GetCodeLine(_lineNumber);
+                        }
+                        else
+                        {
+                            exc.Code = "<исходный код недоступен>";
+                        }
                         throw;
                     }
 

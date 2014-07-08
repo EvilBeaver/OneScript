@@ -98,7 +98,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CompilerException.cs" />
     <Compile Include="Controls\CodeControl.xaml.cs" />
     <Compile Include="Controls\ImageArray.cs" />
     <Compile Include="Controls\MDConstants.cs" />

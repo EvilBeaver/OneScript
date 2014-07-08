@@ -204,7 +204,7 @@ namespace TestApp
 
         public void ShowExceptionInfo(Exception exc)
         {
-            _output.Text = exc.ToString();
+            _output.Text = exc.Message;
         }
 
         public bool InputString(out string result, int maxLen)

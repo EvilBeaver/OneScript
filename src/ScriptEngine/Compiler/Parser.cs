@@ -105,6 +105,11 @@ namespace ScriptEngine.Compiler
 
         }
 
+
+        internal SourceCodeIndexer GetCodeIndexer()
+        {
+            return _iterator.GetCodeIndexer();
+        }
     }
 
     struct Word

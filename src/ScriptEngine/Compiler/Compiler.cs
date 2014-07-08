@@ -62,6 +62,7 @@ namespace ScriptEngine.Compiler
             BuildModule();
             CheckForwardedDeclarations();
 
+            _module.Source = _parser.GetCodeIndexer();
             return _module;
         }
 

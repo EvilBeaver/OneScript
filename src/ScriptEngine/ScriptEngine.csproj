@@ -73,6 +73,7 @@
     <Compile Include="Compiler\ModulePersistor.cs" />
     <Compile Include="Compiler\ParseIterator.cs" />
     <Compile Include="Compiler\ParserException.cs" />
+    <Compile Include="Compiler\SourceCodeIndexer.cs" />
     <Compile Include="Environment\CodeSources.cs" />
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
