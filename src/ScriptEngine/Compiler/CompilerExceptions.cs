@@ -28,105 +28,105 @@ namespace ScriptEngine.Compiler
 
         internal static CompilerException UnexpectedOperation()
         {
-            return new CompilerException("Unexpected operation");
+            return new CompilerException("Неизвестная операция");
         }
 
         internal static CompilerException IdentifierExpected()
         {
-            return new CompilerException("Identifier expected");
+            return new CompilerException("Ожидается идентификатор");
         }
 
         internal static CompilerException SemicolonExpected()
         {
-            return new CompilerException("Semicolon expected");
+            return new CompilerException("Ожидается символ ; (точка с запятой)");
         }
 
         internal static CompilerException LateVarDefinition()
         {
-            return new CompilerException("Variable declarations must preceed methods and operators");
+            return new CompilerException("Объявления переменных должны быть расположены в начале модуля, процедуры или функции");
         }
 
         internal static CompilerException TokenExpected(params Token[] expected)
         {
             var names = expected.Select(x => Enum.GetName(typeof(Token), x));
-            return new CompilerException("Token expected: " + String.Join("/", names));
+            return new CompilerException("Ожидается символ: " + String.Join("/", names));
         }
 
         internal static CompilerException TokenExpected(string tokens)
         {
-            return new CompilerException("Token expected: " + tokens);
+            return new CompilerException("Ожидается символ: " + tokens);
         }
 
         internal static CompilerException ExpressionSyntax()
         {
-            return new CompilerException("Expression syntax");
+            return new CompilerException("Ошибка в выражении");
         }
 
         internal static CompilerException UseProcAsFunction()
         {
-            return new CompilerException("Using procedure as function");
+            return new CompilerException("Использование процедуры, как функции");
         }
 
         internal static CompilerException TooLittleArgumentsPassed()
         {
-            return new CompilerException("Too litte actual parameters have been passed");
+            return new CompilerException("Недостаточно фактических параметров");
         }
 
         internal static CompilerException TooManyArgumentsPassed()
         {
-            return new CompilerException("Too many actual parameters have been passed");
+            return new CompilerException("Слишком много фактических параметров");
         }
 
         internal static CompilerException ArgHasNoDefaultValue(int argNum)
         {
-            return new CompilerException(string.Format("Argument {0} has no default value", argNum));
+            return new CompilerException(string.Format("Аргумент {0} не имеет значения по умолчанию", argNum));
         }
 
         internal static CompilerException InternalCompilerError(string reason)
         {
-            return new CompilerException("Internal comiler error:" + reason);
+            return new CompilerException("Внутренняя ошибка компилятора:" + reason);
         }
 
         internal static CompilerException UnexpectedEndOfText()
         {
-            return new CompilerException("Unexpected end of text");
+            return new CompilerException("Обнаружено логическое завершение текста модуля");
         }
 
         internal static CompilerException BreakOutsideOfLoop()
         {
-            return new CompilerException("Break statement outside of loop");
+            return new CompilerException("Оператор \"Прервать\" может использоваться только внутри цикла");
         }
 
         internal static CompilerException ContinueOutsideOfLoop()
         {
-            return new CompilerException("Continue statement outside of loop");
+            return new CompilerException("Оператор \"Продолжить\" может использоваться только внутри цикла");
         }
 
         internal static CompilerException ReturnOutsideOfMethod()
         {
-            return new CompilerException("Return statement outside of method");
+            return new CompilerException("Оператор \"Возврат\" может использоваться только внутри метода");
         }
 
         internal static CompilerException ProcReturnsAValue()
         {
-            return new CompilerException("Procedures cannot return a value");
+            return new CompilerException("Процедуры не могут возвращать значение");
         }
 
         internal static CompilerException FuncEmptyReturnValue()
         {
-            return new CompilerException("Function must return a value");
+            return new CompilerException("Функция должна возвращать значение");
         }
         
         internal static CompilerException MismatchedRaiseException()
         {
-            return new CompilerException("Raise exception statement without an argument can appear only in Except block");
+            return new CompilerException("Оператор \"ВызватьИсключение\" без параметров может использоваться только в блоке \"Исключение\"");
         }
 
     }
 
     public class ExtraClosedParenthesis : CompilerException
     {
-        internal ExtraClosedParenthesis(CodePositionInfo codePosInfo) : base("Token expected: (")
+        internal ExtraClosedParenthesis(CodePositionInfo codePosInfo) : base("Ожидается символ: (")
         {
             this.LineNumber = codePosInfo.LineNumber;
             this.Code = codePosInfo.Code;
