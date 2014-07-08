@@ -78,6 +78,41 @@
       <Word>и</Word>
       <Word>или</Word>
       <Word>не</Word>
+      
+      <!-- English -->
+      <Word>Var</Word>
+      <Word>If</Word>
+      <Word>Then</Word>
+      <Word>Else</Word>
+      <Word>ElseIf</Word>
+      <Word>EndIf</Word>
+      <Word>For</Word>
+      <Word>Each</Word>
+      <Word>From</Word>
+      <Word>To</Word>
+      <Word>While</Word>
+      <Word>Do</Word>
+      <Word>EndDo</Word>
+      <Word>Return</Word>
+      <Word>Continue</Word>
+      <Word>Try</Word>
+      <Word>Exception</Word>
+      <Word>Raise</Word>
+      <Word>EndTry</Word>
+      <Word>Procedure</Word>
+      <Word>Function</Word>
+      <Word>EndProcedure</Word>
+      <Word>EndFunction</Word>
+      <Word>Val</Word>
+      <Word>New</Word>
+      <Word>Export</Word>
+      <Word>True</Word>
+      <Word>False</Word>
+      <Word>Undefıne</Word>
+      <Word>and</Word>
+      <Word>or</Word>
+      <Word>not</Word>
+
     </Keywords>
 
     <!-- Mark previous rule

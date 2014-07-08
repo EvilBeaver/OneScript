@@ -159,46 +159,57 @@ namespace ScriptEngine.Compiler
             while (_lastExtractedLexem.Token == Token.VarDef)
             {
                 NextToken();
-                if (IsUserSymbol(ref _lastExtractedLexem))
+                while (true)
                 {
-                    var symbolicName = _lastExtractedLexem.Content;
-                    var definition = _ctx.DefineVariable(symbolicName);
-                    if (_inMethodScope)
+
+                    if (IsUserSymbol(ref _lastExtractedLexem))
                     {
-                        if (_isStatementsDefined)
+                        var symbolicName = _lastExtractedLexem.Content;
+                        var definition = _ctx.DefineVariable(symbolicName);
+                        if (_inMethodScope)
                         {
-                            throw CompilerException.LateVarDefinition();
+                            if (_isStatementsDefined)
+                            {
+                                throw CompilerException.LateVarDefinition();
+                            }
                         }
+                        else
+                        {
+                            if (_isMethodsDefined)
+                            {
+                                throw CompilerException.LateVarDefinition();
+                            }
+
+                            _module.VariableRefs.Add(definition);
+                            _module.VariableFrameSize++;
+                        }
+                        NextToken();
+                        if (_lastExtractedLexem.Token == Token.Export)
+                        {
+                            _module.ExportedProperties.Add(new ExportedSymbol()
+                            {
+                                SymbolicName = symbolicName,
+                                Index = definition.CodeIndex
+                            });
+                            NextToken();
+                        }
+                        if (_lastExtractedLexem.Token == Token.Comma)
+                        {
+                            NextToken();
+                            continue;
+                        }
+                        if (_lastExtractedLexem.Token != Token.Semicolon)
+                        {
+                            throw CompilerException.SemicolonExpected();
+                        }
+                        NextToken();
+                        break;
                     }
                     else
                     {
-                        if (_isMethodsDefined)
-                        {
-                            throw CompilerException.LateVarDefinition();
-                        }
+                        throw CompilerException.IdentifierExpected();
+                    }
 
-                        _module.VariableRefs.Add(definition);
-                        _module.VariableFrameSize++;
-                    }
-                    NextToken();
-                    if (_lastExtractedLexem.Token == Token.Export)
-                    {
-                        _module.ExportedProperties.Add(new ExportedSymbol()
-                        {
-                            SymbolicName = symbolicName,
-                            Index = definition.CodeIndex
-                        });
-                        NextToken();
-                    }
-                    if (_lastExtractedLexem.Token != Token.Semicolon)
-                    {
-                        throw CompilerException.SemicolonExpected();
-                    }
-                    NextToken();
-                }
-                else
-                {
-                    throw CompilerException.IdentifierExpected();
                 }
             }
 

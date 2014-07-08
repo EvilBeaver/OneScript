@@ -60,6 +60,34 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("новый", Token.NewObject);
             _stringToToken.Add("экспорт", Token.Export);
 
+            _stringToToken.Add("if", Token.If);
+            _stringToToken.Add("then", Token.Then);
+            _stringToToken.Add("else", Token.Else);
+            _stringToToken.Add("elseif", Token.ElseIf);
+            _stringToToken.Add("endif", Token.EndIf);
+            _stringToToken.Add("var", Token.VarDef);
+            _stringToToken.Add("val", Token.ByValParam);
+            _stringToToken.Add("procedure", Token.Procedure);
+            _stringToToken.Add("endprocedure", Token.EndProcedure);
+            _stringToToken.Add("function", Token.Function);
+            _stringToToken.Add("endfunction", Token.EndFunction);
+            _stringToToken.Add("for", Token.For);
+            _stringToToken.Add("each", Token.Each);
+            _stringToToken.Add("from", Token.In);
+            _stringToToken.Add("to", Token.To);
+            _stringToToken.Add("while", Token.While);
+            _stringToToken.Add("do", Token.Loop);
+            _stringToToken.Add("enddo", Token.EndLoop);
+            _stringToToken.Add("return", Token.Return);
+            _stringToToken.Add("contınue", Token.Continue);
+            _stringToToken.Add("break", Token.Break);
+            _stringToToken.Add("try", Token.Try);
+            _stringToToken.Add("exception", Token.Exception);
+            _stringToToken.Add("raise", Token.RaiseException);
+            _stringToToken.Add("endtry", Token.EndTry);
+            _stringToToken.Add("new", Token.NewObject);
+            _stringToToken.Add("export", Token.Export);
+
             _stringToToken.Add("+", Token.Plus);
             _stringToToken.Add("-", Token.Minus);
             _stringToToken.Add("*", Token.Multiply);
