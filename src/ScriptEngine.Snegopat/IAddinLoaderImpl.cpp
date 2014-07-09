@@ -2,6 +2,7 @@
 #include "IAddinLoaderImpl.h"
 #include "Snegopat_i.c"
 #include "MarshalingHelpers.h"
+#include "DispatchHelpers.h"
 #include "ScriptDrivenAddin.h"
 #include <commdlg.h>
 #include <string>
@@ -42,6 +43,145 @@ void IAddinLoaderImpl::OnZeroCount()
 	m_pDesigner->Release();
 }
 
+ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromScriptFile(String^ path, addinNames* names)
+{	
+	HRESULT res;
+	String^ strDisplayName = nullptr;
+	String^ strUniqueName = nullptr;
+
+	System::IO::StreamReader^ rd = nullptr;
+	
+	rd = ScriptEngine::Environment::FileOpener::OpenReader(path);
+	ScriptDrivenAddin^ scriptObject = nullptr;
+
+	try
+	{
+		Char ch = rd->Peek();
+		while(ch > -1 && ch == '$') 
+		{
+			String^ macro = rd->ReadLine();
+			if(macro->Length > 0)
+			{
+				array<String^>^ parts = macro->Split(gcnew array<Char>(2){' ', '\t'}, 2);
+				parts[0] = parts[0]->Trim();
+				parts[1] = parts[1]->Trim();
+				if(parts->Length < 2)
+				{
+					continue;
+				}
+
+				if(parts[0] == "$uname")
+				{
+					strUniqueName = parts[1];
+				}
+				else if(parts[0] == "$dname")
+				{
+					strDisplayName = parts[1];
+				}
+			}
+			ch = rd->Peek();
+		}
+
+		if(!rd->EndOfStream)
+		{
+			if(strDisplayName == nullptr)
+				strDisplayName = System::IO::Path::GetFileNameWithoutExtension(path);
+			if(strUniqueName == nullptr)
+				strUniqueName = System::IO::Path::GetFileNameWithoutExtension(path);
+
+			names->displayName = stringToBSTR(strDisplayName);
+			names->uniqueName = stringToBSTR(strUniqueName);
+			
+			String^ code = rd->ReadToEnd();
+			ICodeSource^ src = m_engine->Loader->FromString(code);
+			CompilerService^ compiler = m_engine->GetCompilerService();
+			compiler->DefineVariable(L"ÝòîòÎáúåêò", SymbolType::ContextProperty);
+			LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
+
+			scriptObject = gcnew ScriptDrivenAddin(mh);
+
+		}
+	}
+	finally
+	{
+		rd->Dispose();
+	}
+
+	return scriptObject;
+}
+
+ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromDialog(String^ path, addinNames* names)
+{
+	IDispatch* files = NULL;
+	IDispatch* storage = NULL;
+	IDispatch* intFile = NULL;
+	
+	BSTR tmp_bstr = NULL;
+
+	HRESULT hr;
+
+	VARIANT retVal;
+	hr = invoke(m_pDesigner, DISPATCH_PROPERTYGET, &retVal, NULL, NULL, L"v8files", NULL);
+	if(SUCCEEDED(hr))
+		files = V_DISPATCH(&retVal);
+	else
+		return nullptr;
+
+	String^ uri = L"file://" + path;
+	tmp_bstr = stringToBSTR(uri);
+	try
+	{
+		hr = invoke(files, DISPATCH_METHOD, &retVal, NULL, NULL, L"open", L"si", tmp_bstr, 8);
+	
+		if(SUCCEEDED(hr))
+			intFile = V_DISPATCH(&retVal);
+		else
+			return nullptr;
+
+		hr = invoke(files, DISPATCH_METHOD, &retVal, NULL, NULL, L"attachStorage", L"U", intFile);
+
+		if(SUCCEEDED(hr))
+			storage = V_DISPATCH(&retVal);
+		else
+			return nullptr;
+
+		hr = invoke(storage, DISPATCH_METHOD, &retVal, NULL, NULL, L"open", L"si", L"module", 8);
+
+		IDispatch* moduleFile = NULL;
+		if(SUCCEEDED(hr))
+			moduleFile = V_DISPATCH(&retVal);
+		else
+			return nullptr;
+
+		hr = invoke(moduleFile, DISPATCH_METHOD, &retVal, NULL, NULL, L"getString", L"i", 2);
+		moduleFile->Release();
+
+		String^ code;
+		if(SUCCEEDED(hr))
+		{
+			tmp_bstr = V_BSTR(&retVal);
+			code = gcnew String(tmp_bstr);
+		}
+		else
+			return nullptr;
+
+
+
+	}
+	finally
+	{
+		files->Release();
+		if(intFile != NULL)
+			intFile->Release();
+
+		if(storage != NULL)
+			storage->Release();
+
+		if(tmp_bstr != NULL)
+			SysFreeString(tmp_bstr);
+	}
+
+}
 
 //IUnknown interface 
 #pragma region IUnknown implementation
@@ -100,91 +240,56 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 	String^ strDisplayName = nullptr;
 	String^ strUniqueName = nullptr;
 
-	HRESULT res;
+	HRESULT res = E_FAIL;
 
 	std::wstring wsUri = uri;
 	int pos = wsUri.find_first_of(':', 0);
 	if(pos != std::wstring::npos)
 	{
-		//std::wstring proto = wsUri.substr(0, pos);
 		String^ path = gcnew String(wsUri.substr(pos+1).c_str());
-		System::IO::StreamReader^ rd = nullptr;
+		String^ extension = System::IO::Path::GetExtension(path)->ToLower();
+		ScriptDrivenAddin^ scriptObject;
+		addinNames names;
 		try
 		{
-			rd = ScriptEngine::Environment::FileOpener::OpenReader(path);
-
-			Char ch = rd->Peek();
-			while(ch > -1 && ch == '$') 
+			if(extension == ".1scr")
 			{
-				String^ macro = rd->ReadLine();
-				if(macro->Length > 0)
-				{
-					array<String^>^ parts = macro->Split(gcnew array<Char>(2){' ', '\t'}, 2);
-					parts[0] = parts[0]->Trim();
-					parts[1] = parts[1]->Trim();
-					if(parts->Length < 2)
-					{
-						continue;
-					}
-
-					if(parts[0] == "$uname")
-					{
-						strUniqueName = parts[1];
-					}
-					else if(parts[0] == "$dname")
-					{
-						strDisplayName = parts[1];
-					}
-				}
-				ch = rd->Peek();
+				scriptObject = LoadFromScriptFile(path, &names);
+			}
+			else if(extension == ".ssf")
+			{
+				scriptObject = LoadFromDialog(path, &names);
+				res = S_OK;
+			}
+			else
+			{
+				return E_FAIL;
 			}
 
-			if(!rd->EndOfStream)
-			{
-				if(strDisplayName == nullptr)
-					strDisplayName = System::IO::Path::GetFileNameWithoutExtension(path);
-				if(strUniqueName == nullptr)
-					strUniqueName = System::IO::Path::GetFileNameWithoutExtension(path);
+			if(scriptObject == nullptr)
+				return E_FAIL;
 
-				*displayName = stringToBSTR(strDisplayName);
-				*uniqueName = stringToBSTR(strUniqueName);
-				*fullPath = SysAllocString(uri);
+			*displayName = names.displayName;
+			*uniqueName = names.uniqueName;
+			*fullPath = SysAllocString(uri);
 
-				String^ code = rd->ReadToEnd();
-				ICodeSource^ src = m_engine->Loader->FromString(code);
-				CompilerService^ compiler = m_engine->GetCompilerService();
-				compiler->DefineVariable(L"ÝòîòÎáúåêò", SymbolType::ContextProperty);
-				LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
+			IAddinImpl* snegopatAddin = new IAddinImpl(scriptObject);
+			m_engine->InitializeSDO(scriptObject);
 
-				ScriptDrivenAddin^ scriptObject = gcnew ScriptDrivenAddin(mh);
-				IAddinImpl* snegopatAddin = new IAddinImpl(scriptObject);
-				m_engine->InitializeSDO(scriptObject);
-
-				snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
-				snegopatAddin->QueryInterface(IID_IUnknown, (void**)result);
-
-			}
+			snegopatAddin->SetNames(*uniqueName, *displayName, *fullPath);
+			snegopatAddin->QueryInterface(IID_IUnknown, (void**)result);
 
 			res = S_OK;
-
 		}
 		catch(Exception^ e)
 		{
 			WCHAR* msg = stringBuf(e->Message);
-			MessageBox(0, msg, L"Load error", MB_OK);
+			MessageBox(0, msg, L"Load error", MB_ICONERROR);
 			delete[] msg;
 
 			res = E_FAIL;
 		}
-		finally
-		{
-			if(rd != nullptr)
-			{
-				rd->Close();
-				rd = nullptr;
-			}
-		}
-
+		
 	}
 
 	return res;
