@@ -281,15 +281,7 @@ namespace ScriptEngine.Machine
                 {
                     if (_exceptionsStack.Count == 0)
                     {
-                        exc.LineNumber = _lineNumber;
-                        if (_module.Source != null)
-                        {
-                            exc.Code = _module.Source.GetCodeLine(_lineNumber);
-                        }
-                        else
-                        {
-                            exc.Code = "<исходный код недоступен>";
-                        }
+                        SetScriptExceptionSource(exc);
                         throw;
                     }
 
@@ -318,7 +310,22 @@ namespace ScriptEngine.Machine
             }
             catch (Exception exc)
             {
-                throw new ExternalSystemException(exc);
+                var excWrapper = new ExternalSystemException(exc);
+                SetScriptExceptionSource(excWrapper);
+                throw excWrapper;
+            }
+        }
+
+        private void SetScriptExceptionSource(RuntimeException exc)
+        {
+            exc.LineNumber = _lineNumber;
+            if (_module.Source != null)
+            {
+                exc.Code = _module.Source.GetCodeLine(_lineNumber);
+            }
+            else
+            {
+                exc.Code = "<исходный код недоступен>";
             }
         }
 
@@ -892,18 +899,17 @@ namespace ScriptEngine.Machine
                 else
                 {
                     signatureCheck[i] = true;
-                }
-
-                if (context.DynamicMethodSignatures)
-                {
-                    argValues[i] = BreakVariableLink(argValue);
-                }
-                else
-                {
-                    if (methodInfo.Params[i].IsByValue)
+                    if (context.DynamicMethodSignatures)
+                    {
                         argValues[i] = BreakVariableLink(argValue);
+                    }
                     else
-                        argValues[i] = argValue;
+                    {
+                        if (methodInfo.Params[i].IsByValue)
+                            argValues[i] = BreakVariableLink(argValue);
+                        else
+                            argValues[i] = argValue;
+                    }
                 }
 
             }

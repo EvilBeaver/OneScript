@@ -30,7 +30,7 @@ Object^ ScriptDrivenAddin::UnderlyingObject::get()
 	{
 		m_scriptDispatcher = new SelfScriptIDispatch(this);
 		m_scriptDispatcher->AddRef();
-
+	
 		IUnknown* pUnk;
 		m_scriptDispatcher->QueryInterface(IID_IUnknown, (void**)&pUnk);
 		IntPtr pointer = IntPtr(pUnk);
