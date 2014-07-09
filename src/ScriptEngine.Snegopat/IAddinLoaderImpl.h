@@ -25,6 +25,15 @@ private:
 	IDispatch* m_pDesigner;
 	gcroot<ScriptEngine::ScriptingEngine^> m_engine;
 
+	struct addinNames
+	{
+		BSTR uniqueName;
+		BSTR displayName;
+	};
+
+	ScriptDrivenAddin^ LoadFromScriptFile(String^ path, addinNames* names);
+	ScriptDrivenAddin^ LoadFromDialog(String^ path, addinNames* names);
+
 protected:
 	virtual void OnZeroCount();
 
