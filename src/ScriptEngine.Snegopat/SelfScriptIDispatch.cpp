@@ -336,13 +336,16 @@ HRESULT STDMETHODCALLTYPE SelfScriptIDispatch::GetTypeAttr(TYPEATTR **ppTypeAttr
 	TYPEATTR* ta = new TYPEATTR();
 	memset(ta, 0, sizeof(TYPEATTR));
 
-	array<System::String^>^ exportNames = m_scriptDrivenObject->GetExportedMethods();
-	m_exportedMeths = gcnew array<ScriptEngine::Machine::MethodInfo>(exportNames->Length);
-	
-	for (int i = 0; i < m_exportedMeths->Length; i++)
+	if(m_exportedMeths == nullptr)
 	{
-		int mId = m_scriptDrivenObject->FindMethod(exportNames[i]);
-		m_exportedMeths[i] = m_scriptDrivenObject->GetMethodInfo(mId);
+		array<System::String^>^ exportNames = m_scriptDrivenObject->GetExportedMethods();
+		m_exportedMeths = gcnew array<ScriptEngine::Machine::MethodInfo>(exportNames->Length);
+	
+		for (int i = 0; i < m_exportedMeths->Length; i++)
+		{
+			int mId = m_scriptDrivenObject->FindMethod(exportNames[i]);
+			m_exportedMeths[i] = m_scriptDrivenObject->GetMethodInfo(mId);
+		}
 	}
 
 	ta->cFuncs = m_exportedMeths->Length;
