@@ -1,7 +1,7 @@
 ﻿
 #include <ISPPBuiltins.iss>
-#define AppName "1Script execution engine"
-#define FSFriendlyName "1Script execution engine"
+#define AppName "OneScript execution engine"
+#define FSFriendlyName "OneScript execution engine"
 #define MainExe "TestApp.exe"
 
 #define VerMajor
@@ -15,6 +15,7 @@ AppName={#AppName}
 AppVersion={#VerMajor}.{#VerMinor}.{#VerRelease}
 DefaultDirName="{pf}\{#FSFriendlyName}"
 DefaultGroupName="{#FSFriendlyName}"
+OutputBaseFilename="OneScript-{#VerMajor}.{#VerMinor}.{#VerRelease}-setup"
 DisableProgramGroupPage=yes
 UninstallDisplayIcon="{app}\{#MainExe}"
 Compression=lzma2
