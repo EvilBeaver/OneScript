@@ -55,7 +55,7 @@ namespace ScriptEngine.Machine.Contexts
             return args;
         }
 
-        private object MarshalIValue(IValue val)
+        public static object MarshalIValue(IValue val)
         {
             object result;
             if (val == null)
@@ -90,7 +90,7 @@ namespace ScriptEngine.Machine.Contexts
             return result;
         }
 
-        private IValue CreateIValue(object objParam)
+        public static IValue CreateIValue(object objParam)
         {
             if (objParam == null)
                 return ValueFactory.Create();

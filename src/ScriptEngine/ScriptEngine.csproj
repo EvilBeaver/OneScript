@@ -78,6 +78,7 @@
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
+    <Compile Include="Machine\Contexts\ReflectableSDO.cs" />
     <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
