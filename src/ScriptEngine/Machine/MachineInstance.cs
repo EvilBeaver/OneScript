@@ -428,7 +428,8 @@ namespace ScriptEngine.Machine
                 Pow,
                 Sqrt,
                 ExceptionInfo,
-                ExceptionDescr
+                ExceptionDescr,
+                MakeRawValue
             };
         }
 
@@ -1202,6 +1203,13 @@ namespace ScriptEngine.Machine
         private void LineNum(int arg)
         {
             _lineNumber = arg;
+            NextInstruction();
+        }
+
+        private void MakeRawValue(int arg)
+        {
+            var value = BreakVariableLink(_operationStack.Pop());
+            _operationStack.Push(value);
             NextInstruction();
         }
 
