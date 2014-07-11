@@ -678,6 +678,7 @@ namespace ScriptEngine.Compiler
             BuildLoadVariable(counter);
             NextToken();
             BuildExpression(Token.Loop);
+            AddCommand(OperationCode.MakeRawValue, 0);
             var lastIdx = _module.Code.Count;
             AddCommand(OperationCode.Jmp, lastIdx + 4);
             // increment
@@ -772,6 +773,7 @@ namespace ScriptEngine.Compiler
                     throw CompilerException.FuncEmptyReturnValue();
                 }
                 BuildExpression(Token.Semicolon);
+                AddCommand(OperationCode.MakeRawValue, 0);
             }
             else if (_inMethodScope)
             {
