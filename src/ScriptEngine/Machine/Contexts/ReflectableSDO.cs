@@ -48,17 +48,28 @@ namespace ScriptEngine.Machine.Contexts
 
         public System.Reflection.MethodInfo GetMethod(string name, BindingFlags bindingAttr)
         {
-            throw new NotImplementedException();
+            var allMethods = GetMethods(bindingAttr);
+            return allMethods.FirstOrDefault(x => String.Compare(x.Name, name, true) == 0);
         }
 
         public System.Reflection.MethodInfo GetMethod(string name, BindingFlags bindingAttr, Binder binder, Type[] types, ParameterModifier[] modifiers)
         {
-            throw new NotImplementedException();
+            return GetMethod(name, bindingAttr);
         }
 
         public System.Reflection.MethodInfo[] GetMethods(BindingFlags bindingAttr)
         {
-            throw new NotImplementedException();
+            var result = new System.Reflection.MethodInfo[_module.ExportedMethods.Length];
+            int i = 0;
+            foreach (var item in _module.ExportedMethods)
+            {
+                var signature = _module.Methods[item.Index].Signature;
+                var reflected = CreateMethodInfo(signature, false);
+                reflected.SetDispId(item.Index);
+                result[i++] = reflected;
+            }
+
+            return result;
         }
 
         public PropertyInfo[] GetProperties(BindingFlags bindingAttr)
@@ -143,6 +154,23 @@ namespace ScriptEngine.Machine.Contexts
             var pi = new ReflectedPropertyInfo(prop.SymbolicName);
             pi.SetDispId(prop.Index);
             return pi;
+        }
+
+        private static ReflectedMethodInfo CreateMethodInfo(ScriptEngine.Machine.MethodInfo engineMethod, bool asPrivate)
+        {
+            var reflectedMethod = new ReflectedMethodInfo(engineMethod.Name, asPrivate);
+            reflectedMethod.IsFunction = engineMethod.IsFunction;
+            for (int i = 0; i < engineMethod.Params.Length; i++)
+            {
+                var currentParam = engineMethod.Params[i];
+                var reflectedParam = new ReflectedParamInfo("param" + i.ToString(), currentParam.IsByValue);
+                reflectedParam.SetOwner(reflectedMethod);
+                reflectedParam.SetPosition(i);
+                reflectedMethod.Parameters.Add(reflectedParam);
+            }
+
+            return reflectedMethod;
+
         }
 
         #endregion
@@ -427,18 +455,20 @@ namespace ScriptEngine.Machine.Contexts
             _parameters = new List<ParameterInfo>();
         }
 
-         internal void SetDispId(int p)
+        internal void SetDispId(int p)
         {
             _dispId = p;
         }
 
-         public List<ParameterInfo> Parameters 
-         {
-             get
-             {
-                 return _parameters;
-             }
-         }
+        public List<ParameterInfo> Parameters 
+        {
+            get
+            {
+                return _parameters;
+            }
+        }
+
+        public bool IsFunction { get; set; }
 
         public override System.Reflection.MethodInfo GetBaseDefinition()
         {
@@ -532,6 +562,33 @@ namespace ScriptEngine.Machine.Contexts
         {
             get { return typeof(ReflectableSDO); }
         }
+    }
+
+    class ReflectedParamInfo : ParameterInfo
+    {
+        public ReflectedParamInfo(string name, bool isByVal)
+        {
+            NameImpl = name;
+            AttrsImpl = ParameterAttributes.In;
+            if (!isByVal)
+            {
+                AttrsImpl |= ParameterAttributes.Out;
+            }
+
+            ClassImpl = typeof(IValue);
+
+        }
+
+        public void SetOwner(MemberInfo owner)
+        {
+            MemberImpl = owner;
+        }
+
+        public void SetPosition(int index)
+        {
+            PositionImpl = index;
+        }
+
     }
 
 }
