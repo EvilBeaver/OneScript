@@ -6,7 +6,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Library
 {
-    [ContextClass("КоллекцияАргументовКоманднойСтроки")]
+    [ContextClass("КоллекцияАргументовКоманднойСтроки", "CommandLineArgumentsCollection")]
     class CommandLineArguments : ContextIValueImpl, ICollectionContext
     {
         string[] _values;

@@ -6,7 +6,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Library
 {
-    [ContextClass("КлючИЗначение")]
+    [ContextClass("КлючИЗначение", "KeyAndValue")]
     class KeyAndValueImpl : AutoContext<KeyAndValueImpl>
     {
         private IValue _key;
@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine.Library
             _value = value;
         }
 
-        [ContextProperty("Ключ")]
+        [ContextProperty("Ключ", "Key")]
         public IValue Key 
         {
             get
@@ -27,7 +27,7 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
-        [ContextProperty("Значение")]
+        [ContextProperty("Значение", "Value")]
         public IValue Value
         {
             get

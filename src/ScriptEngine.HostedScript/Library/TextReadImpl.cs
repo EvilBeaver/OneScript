@@ -8,12 +8,12 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library
 {
-    [ContextClass("ЧтениеТекста")]
+    [ContextClass("ЧтениеТекста", "TextReader")]
     class TextReadImpl : AutoContext<TextReadImpl>, IDisposable
     {
         StreamReader _reader;
 
-        [ContextMethod("Открыть")]
+        [ContextMethod("Открыть", "Open")]
         public void Open(string path, string encoding = null)
         {
             if (encoding == null)
@@ -27,7 +27,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ContextMethod("Прочитать")]
+        [ContextMethod("Прочитать", "Read")]
         public IValue ReadAll()
         {
             RequireOpen();
@@ -37,7 +37,7 @@ namespace ScriptEngine.HostedScript.Library
             return ValueFactory.Create(_reader.ReadToEnd());
         }
 
-        [ContextMethod("ПрочитатьСтроку")]
+        [ContextMethod("ПрочитатьСтроку", "ReadLine")]
         public IValue ReadLine()
         {
             RequireOpen();
@@ -47,7 +47,7 @@ namespace ScriptEngine.HostedScript.Library
             return ValueFactory.Create(_reader.ReadLine());
         }
 
-        [ContextMethod("Закрыть")]
+        [ContextMethod("Закрыть", "Close")]
         public void Close()
         {
             Dispose();
