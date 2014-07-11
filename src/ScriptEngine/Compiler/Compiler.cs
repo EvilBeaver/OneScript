@@ -772,6 +772,7 @@ namespace ScriptEngine.Compiler
                     throw CompilerException.FuncEmptyReturnValue();
                 }
                 BuildExpression(Token.Semicolon);
+                AddCommand(OperationCode.MakeRawValue, 0);
             }
             else if (_inMethodScope)
             {
