@@ -101,7 +101,8 @@ namespace ScriptEngine.Machine
         Pow,
         Sqrt,
         ExceptionInfo,
-        ExceptionDescr
+        ExceptionDescr,
+        MakeRawValue
     }
 
     [Serializable]
