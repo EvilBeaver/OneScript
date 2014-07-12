@@ -96,7 +96,11 @@ namespace ScriptEngine.Machine.Contexts
                 return ValueFactory.Create();
 
             var type = objParam.GetType();
-            if (type == typeof(string))
+            if (typeof(IValue).IsAssignableFrom(type))
+            {
+                return (IValue)objParam;
+            }
+            else if (type == typeof(string))
             {
                 return ValueFactory.Create((string)objParam);
             }
@@ -116,7 +120,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((bool)objParam);
             }
-            else if(DispatchUtility.ImplementsIDispatch(objParam))
+            else if (DispatchUtility.ImplementsIDispatch(objParam))
             {
                 var ctx = new COMWrapperContext(objParam);
                 return ValueFactory.Create(ctx);

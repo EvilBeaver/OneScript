@@ -5,23 +5,12 @@
 ScriptDrivenAddin::ScriptDrivenAddin(LoadedModuleHandle module) 
 	: ScriptDrivenObject(module)
 {
-	m_scriptDispatcher = NULL;
-	m_marshalledReference = gcnew ReflectableSDO(this, module);
+	m_marshalledReference = gcnew EventCallableSDO(this, module);
 }
 
 ScriptDrivenAddin::~ScriptDrivenAddin()
 {
-	/*if(m_scriptDispatcher != NULL)
-	{
-		m_scriptDispatcher->Release();
-		m_scriptDispatcher = NULL;
-	}
 
-	if(m_marshalledReference != nullptr)
-	{
-		System::Runtime::InteropServices::Marshal::ReleaseComObject(m_marshalledReference);
-		m_marshalledReference = nullptr;
-	}*/
 }
 
 Object^ ScriptDrivenAddin::UnderlyingObject::get()

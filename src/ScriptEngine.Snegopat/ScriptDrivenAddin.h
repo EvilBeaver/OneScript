@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SelfScriptIDispatch.h"
+#include "EventCallableSDO.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -11,11 +11,8 @@ using namespace ScriptEngine::Machine::Contexts;
 ref class ScriptDrivenAddin : public ScriptDrivenObject, public IObjectWrapper
 {
 private:
-	
-	SelfScriptIDispatch* m_scriptDispatcher;
-	//Object^ m_marshalledReference;
 
-	ReflectableSDO^ m_marshalledReference;
+	EventCallableSDO^ m_marshalledReference;
 
 public:
 	ScriptDrivenAddin(LoadedModuleHandle module);
