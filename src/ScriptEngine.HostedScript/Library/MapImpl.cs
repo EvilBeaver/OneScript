@@ -72,6 +72,12 @@ namespace ScriptEngine.Machine.Library
             _content.Clear();
         }
 
+        [ContextMethod("Удалить", "Delete")]
+        public void Delete(IValue key)
+        {
+            _content.Remove(key);
+        }
+
         public CollectionEnumerator GetManagedIterator()
         {
             return new CollectionEnumerator(GetEnumerator());
