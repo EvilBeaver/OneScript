@@ -78,13 +78,13 @@
   <ItemGroup>
     <ClInclude Include="CriticalResourceLoader.h" />
     <ClInclude Include="DispatchHelpers.h" />
+    <ClInclude Include="EventCallableSDO.h" />
     <ClInclude Include="IAddinImpl.h" />
     <ClInclude Include="IAddinLoaderImpl.h" />
     <ClInclude Include="MarshalingHelpers.h" />
     <ClInclude Include="RefCountable.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ScriptDrivenAddin.h" />
-    <ClInclude Include="SelfScriptIDispatch.h" />
     <ClInclude Include="SnegopatAttachedContext.h" />
     <ClInclude Include="Snegopat_h.h" />
     <ClInclude Include="Stdafx.h" />
@@ -94,12 +94,13 @@
     <ClCompile Include="clrfactory.cpp" />
     <ClCompile Include="CriticalResourceLoader.cpp" />
     <ClCompile Include="DispatchHelpers.cpp" />
+    <ClCompile Include="EventCallableSDO.cpp" />
     <ClCompile Include="IAddinImpl.cpp" />
     <ClCompile Include="IAddinLoaderImpl.cpp" />
     <ClCompile Include="MarshalingHelpers.cpp" />
     <ClCompile Include="RefCountable.cpp" />
     <ClCompile Include="ScriptDrivenAddin.cpp" />
-    <ClCompile Include="SelfScriptIDispatch.cpp" />
+    <ClCompile Include="SnegAPIDefinitions.h" />
     <ClCompile Include="snegopat.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>

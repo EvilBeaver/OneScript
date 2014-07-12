@@ -80,6 +80,7 @@ namespace ScriptEngine.Compiler
                 _variables.Add(new VariableInfo()
                 {
                     Index = newIdx,
+                    Identifier = name,
                     Type = symbolType
                 });
 
