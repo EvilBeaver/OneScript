@@ -13,6 +13,7 @@ ref class ScriptDrivenAddin : public ScriptDrivenObject, public IObjectWrapper
 private:
 
 	EventCallableSDO^ m_marshalledReference;
+	String^ m_thisName;
 
 public:
 	ScriptDrivenAddin(LoadedModuleHandle module);
@@ -21,6 +22,11 @@ public:
 	virtual property Object^ UnderlyingObject
 	{
 		Object^ get();
+	}
+
+	virtual void SetThisName(String^ thisName)
+	{
+		m_thisName = thisName->ToLower();
 	}
 
 protected:

@@ -45,7 +45,6 @@ void IAddinLoaderImpl::OnZeroCount()
 
 ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromScriptFile(String^ path, addinNames* names)
 {	
-	HRESULT res;
 	String^ strDisplayName = nullptr;
 	String^ strUniqueName = nullptr;
 
@@ -95,16 +94,19 @@ ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromScriptFile(String^ path, addinNames
 			String^ code = rd->ReadToEnd();
 			ICodeSource^ src = m_engine->Loader->FromString(code);
 			CompilerService^ compiler = m_engine->GetCompilerService();
-			compiler->DefineVariable(L"Ётотќбъект", SymbolType::ContextProperty);
+			
+			String^ thisName = L"Ётотќбъект";
+			compiler->DefineVariable(thisName, SymbolType::ContextProperty);
 			LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
 
 			scriptObject = gcnew ScriptDrivenAddin(mh);
+			scriptObject->SetThisName(thisName);
 
 		}
 	}
 	finally
 	{
-		rd->Dispose();
+		delete rd;
 	}
 
 	return scriptObject;
@@ -155,27 +157,52 @@ ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromDialog(String^ path, addinNames* na
 
 		hr = invoke(moduleFile, DISPATCH_METHOD, &retVal, NULL, NULL, L"getString", L"i", 2);
 		moduleFile->Release();
+		storage->Release();
+		storage = NULL;
+		invoke(files, DISPATCH_METHOD, NULL, NULL, NULL, L"close", L"U", intFile);
+		intFile->Release();
+		intFile = NULL;
 
 		String^ code;
 		if(SUCCEEDED(hr))
 		{
 			tmp_bstr = V_BSTR(&retVal);
-			code = gcnew String(tmp_bstr);
 		}
 		else
 			return nullptr;
+		
+		if(tmp_bstr[0] == 65279) // в некоторых формах по€вл€етс€ этот хитрый символ.
+			tmp_bstr[0] = ' ';
 
+		code = gcnew String(tmp_bstr);
 
+		ICodeSource^ src = m_engine->Loader->FromString(code);
+		CompilerService^ compiler = m_engine->GetCompilerService();
+		String^ thisName = L"Ёта‘орма";
+		compiler->DefineVariable(thisName, SymbolType::ContextProperty);
+		LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
+
+		ScriptDrivenAddin^ scriptObject = gcnew ScriptDrivenAddin(mh);
+		scriptObject->SetThisName(thisName);
+
+		SysFreeString(tmp_bstr);
+		tmp_bstr = stringToBSTR(path);
+		hr = invoke(m_pDesigner, DISPATCH_METHOD, &retVal, NULL, NULL, L"loadScriptForm", L"sD", tmp_bstr, scriptObject->UnderlyingObject);
+
+		names->displayName = stringToBSTR(System::IO::Path::GetFileNameWithoutExtension(path));
+		names->uniqueName = stringToBSTR(System::IO::Path::GetFileNameWithoutExtension(path));
+		
+		return gcnew ScriptDrivenAddin(mh);
 
 	}
 	finally
 	{
-		files->Release();
+		if(storage != NULL)
+			storage->Release();
 		if(intFile != NULL)
 			intFile->Release();
 
-		if(storage != NULL)
-			storage->Release();
+		files->Release();
 
 		if(tmp_bstr != NULL)
 			SysFreeString(tmp_bstr);
