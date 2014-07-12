@@ -147,6 +147,7 @@ namespace ScriptEngine.Machine
     public struct MethodInfo
     {
         public string Name;
+        public string Alias;
         public bool IsFunction;
         public ParameterDefinition[] Params;
 

@@ -6,7 +6,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Library
 {
-    [ContextClass("Соответствие")]
+    [ContextClass("Соответствие", "Map")]
     class MapImpl : AutoContext<MapImpl>, ICollectionContext
     {
         private Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>();
@@ -48,25 +48,25 @@ namespace ScriptEngine.Machine.Library
         
         #region ICollectionContext Members
 
-        [ContextMethod("Вставить")]
+        [ContextMethod("Вставить", "Insert")]
         public void Insert(IValue key, IValue val)
         {
             SetIndexedValue(key, val);
         }
 
-        [ContextMethod("Получить")]
+        [ContextMethod("Получить", "Get")]
         public IValue Retrieve(IValue key)
         {
             return GetIndexedValue(key);
         }
 
-        [ContextMethod("Количество")]
+        [ContextMethod("Количество", "Count")]
         public int Count()
         {
             return _content.Count;
         }
 
-        [ContextMethod("Очистить")]
+        [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
             _content.Clear();

@@ -98,6 +98,10 @@ namespace ScriptEngine.Compiler
                 int newIdx = _methods.Count;
                 _methods.Add(method);
                 _methodsNumbers[method.Name] = newIdx;
+
+                if (method.Alias != null)
+                    _methodsNumbers[method.Alias] = newIdx;
+
                 return newIdx;
             }
             else

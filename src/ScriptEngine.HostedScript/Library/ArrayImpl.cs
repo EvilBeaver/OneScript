@@ -6,7 +6,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Library
 {
-    [ContextClass("Массив")]
+    [ContextClass("Массив", "Array")]
     class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext
     {
         private List<IValue> _values;
@@ -46,13 +46,13 @@ namespace ScriptEngine.Machine.Library
 
         #region ICollectionContext Members
         
-        [ContextMethod("Количество")]
+        [ContextMethod("Количество", "Count")]
         public int Count()
         {
             return _values.Count;
         }
 
-        [ContextMethod("Очистить")]
+        [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
             _values.Clear();
@@ -86,19 +86,19 @@ namespace ScriptEngine.Machine.Library
 
         #endregion
 
-        [ContextMethod("Добавить")]
+        [ContextMethod("Добавить", "Add")]
         public void Add(IValue value)
         {
             _values.Add(value);
         }
 
-        [ContextMethod("Вставить")]
+        [ContextMethod("Вставить", "Insert")]
         public void Insert(int index, IValue value)
         {
             _values.Insert(index, value);
         }
 
-        [ContextMethod("Найти")]
+        [ContextMethod("Найти", "Find")]
         public IValue Find(IValue what)
         {
             var idx = _values.FindIndex(x => x.Equals(what));
@@ -112,19 +112,19 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
-        [ContextMethod("Удалить")]
+        [ContextMethod("Удалить", "Delete")]
         public void Remove(int index)
         {
             _values.RemoveAt(index);
         }
 
-        [ContextMethod("ВГраница")]
+        [ContextMethod("ВГраница", "UBound")]
         public int UpperBound()
         {
             return _values.Count - 1;
         }
 
-        [ContextMethod("Получить")]
+        [ContextMethod("Получить", "Get")]
         public IValue Get(int index)
         {
             return _values[index];

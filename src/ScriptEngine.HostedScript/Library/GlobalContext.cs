@@ -44,37 +44,37 @@ namespace ScriptEngine.Machine.Library
         public IHostApplication ApplicationHost { get; set; }
         public ICodeSource CodeSource { get; set; }
 
-        [ContextMethod("Сообщить")]
+        [ContextMethod("Сообщить", "Message")]
         public void Echo(string message)
         {
             ApplicationHost.Echo(message);
         }
 
-        [ContextMethod("ПодключитьСценарий")]
+        [ContextMethod("ПодключитьСценарий", "LoadScript")]
         public void LoadScript(string path, string typeName)
         {
             //AttachedScriptsFactory.Attach(path, typeName);
         }
 
-        [ContextMethod("ТекущийСценарий")]
+        [ContextMethod("ТекущийСценарий", "CurrentScript")]
         public IRuntimeContextInstance CurrentScript()
         {
             return new ScriptInformationContext(CodeSource);
         }
 
-        [ContextMethod("Приостановить")]
+        [ContextMethod("Приостановить", "Sleep")]
         public void Sleep(int delay)
         {
             System.Threading.Thread.Sleep(delay);
         }
 
-        [ContextMethod("ЗавершитьРаботу")]
+        [ContextMethod("ЗавершитьРаботу", "Exit")]
         public void Quit(int exitCode)
         {
             throw new ScriptInterruptionException(exitCode);
         }
 
-        [ContextMethod("ВвестиСтроку")]
+        [ContextMethod("ВвестиСтроку", "InputString")]
         public bool InputString([ByRef] IVariable resut, int len = 0)
         {
             string input;
@@ -91,7 +91,7 @@ namespace ScriptEngine.Machine.Library
                 return false;
         }
 
-        [ContextMethod("ОсвободитьОбъект")]
+        [ContextMethod("ОсвободитьОбъект", "FreeObject")]
         public void DisposeObject(IRuntimeContextInstance obj)
         {
             var disposable = obj as IDisposable;

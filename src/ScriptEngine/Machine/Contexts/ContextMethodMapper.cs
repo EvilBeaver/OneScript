@@ -9,15 +9,22 @@ namespace ScriptEngine.Machine.Contexts
     public class ContextMethodAttribute : Attribute
     {
         string _name;
+        string _alias;
 
-        public ContextMethodAttribute(string name)
+        public ContextMethodAttribute(string name, string alias = "")
         {
             _name = name;
+            _alias = alias;
         }
 
         public string GetName()
         {
             return _name;
+        }
+
+        public string GetAlias()
+        {
+            return _alias;
         }
 
         public bool IsFunction { get; set; }
@@ -52,7 +59,7 @@ namespace ScriptEngine.Machine.Contexts
         public int FindMethod(string name)
         {
             name = name.ToLower();
-            var idx = _methodPtrs.FindIndex(x => x.methodInfo.Name == name);
+            var idx = _methodPtrs.FindIndex(x => x.methodInfo.Name == name || x.methodInfo.Alias == name);
             if (idx < 0)
             {
                 throw RuntimeException.MethodNotFoundException(name);
@@ -128,6 +135,7 @@ namespace ScriptEngine.Machine.Contexts
                     var scriptMethInfo = new ScriptEngine.Machine.MethodInfo();
                     scriptMethInfo.IsFunction = isFunc;
                     scriptMethInfo.Name = item.Binding.GetName().ToLower();
+                    scriptMethInfo.Alias = item.Binding.GetAlias().ToLower();
                     scriptMethInfo.Params = paramDefs;
 
                     _methodPtrs.Add(new InternalMethInfo()
