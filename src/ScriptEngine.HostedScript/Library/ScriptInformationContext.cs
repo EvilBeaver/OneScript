@@ -7,7 +7,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Library
 {
-    [ContextClass("ИнформацияОСценарии")]
+    [ContextClass("ИнформацияОСценарии", "ScriptInformation")]
     class ScriptInformationContext : AutoContext<ScriptInformationContext>
     {
         private ICodeSource _info;
@@ -17,7 +17,7 @@ namespace ScriptEngine.Machine.Library
             _info = info;
         }
 
-        [ContextProperty("Источник")]
+        [ContextProperty("Источник", "Source")]
         public string Source
         {
             get

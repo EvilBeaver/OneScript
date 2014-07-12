@@ -6,7 +6,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Library
 {
-    [ContextClass("Структура")]
+    [ContextClass("Структура", "Structure")]
     class StructureImpl : DynamicPropertiesAccessor, ICollectionContext
     {
         private List<IValue> _values = new List<IValue>();
@@ -35,7 +35,7 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
-        [ContextMethod("Вставить")]
+        [ContextMethod("Вставить", "Insert")]
         public void Insert(string name, IValue val)
         {
             var num = RegisterProperty(name);
@@ -52,7 +52,7 @@ namespace ScriptEngine.Machine.Library
             SetPropValue(num, val);
         }
 
-        [ContextMethod("Удалить")]
+        [ContextMethod("Удалить", "Delete")]
         public void Remove(string name)
         {
             var id = FindProperty(name);
@@ -61,7 +61,7 @@ namespace ScriptEngine.Machine.Library
             ReorderPropertyNumbers();
         }
 
-        [ContextMethod("Свойство")]
+        [ContextMethod("Свойство", "Property")]
         public bool HasProperty(string name, [ByRef] IVariable value = null)
         {
             int propIndex;
@@ -130,13 +130,13 @@ namespace ScriptEngine.Machine.Library
 
         #region ICollectionContext Members
 
-        [ContextMethod("Количество")]
+        [ContextMethod("Количество", "Count")]
         public int Count()
         {
             return _values.Count;
         }
 
-        [ContextMethod("Очистить")]
+        [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
             ClearProperties();

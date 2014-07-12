@@ -10,10 +10,12 @@ namespace ScriptEngine.Machine.Contexts
     public class ContextPropertyAttribute : Attribute
     {
         string _name;
+        string _alias;
 
-        public ContextPropertyAttribute(string name)
+        public ContextPropertyAttribute(string name, string alias = "")
         {
             _name = name;
+            _alias = alias;
             CanRead = true;
             CanWrite = true;
         }
@@ -25,6 +27,11 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _name;
         }
+
+        public string GetAlias()
+        {
+            return _alias;
+        }
         
     }
 
@@ -33,11 +40,13 @@ namespace ScriptEngine.Machine.Contexts
         private Func<TInstance, IValue> _getter;
         private Action<TInstance, IValue> _setter;
         private string _name;
+        private string _alias;
 
         public PropertyTarget(PropertyInfo propInfo)
         {
             var attrib = (ContextPropertyAttribute)propInfo.GetCustomAttributes(typeof(ContextPropertyAttribute), false)[0];
             _name = attrib.GetName();
+            _alias = attrib.GetAlias();
 
             Func<TInstance, IValue> cantReadAction = (inst) => { throw RuntimeException.PropIsNotReadableException(_name); };
             Action<TInstance, IValue> cantWriteAction = (inst, val) => { throw RuntimeException.PropIsNotWritableException(_name); };
@@ -109,6 +118,11 @@ namespace ScriptEngine.Machine.Contexts
             get { return _name; }
         }
 
+        public string Alias
+        {
+            get { return _alias; }
+        }
+
         public bool CanRead { get; private set; }
         public bool CanWrite { get; private set; }
 
@@ -154,7 +168,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public int FindProperty(string name)
         {
-            var idx = _properties.FindIndex(x => x.Name.ToLower() == name.ToLower());
+            var idx = _properties.FindIndex(x => x.Name.ToLower() == name.ToLower() || x.Alias.ToLower() == name.ToLower());
             if (idx < 0)
                 throw RuntimeException.PropNotFoundException(name);
 

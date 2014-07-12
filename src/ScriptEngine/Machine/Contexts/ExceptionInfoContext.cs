@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    [ContextClass("ИнформацияОбОшибке")]
+    [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
     class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
         Exception _exc;
@@ -14,13 +14,13 @@ namespace ScriptEngine.Machine.Contexts
             _exc = source;
         }
 
-        [ContextProperty("Описание")]
+        [ContextProperty("Описание", "Description")]
         public string Message 
         { 
             get { return _exc.Message; } 
         }
 
-        [ContextProperty("Причина")]
+        [ContextProperty("Причина", "Cause")]
         public ExceptionInfoContext InnerException
         {
             get 
@@ -32,7 +32,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        [ContextMethod("ПодробноеОписаниеОшибки")]
+        [ContextMethod("ПодробноеОписаниеОшибки", "DetailedDescription")]
         public string GetDescription()
         {
             return _exc.ToString();

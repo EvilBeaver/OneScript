@@ -8,10 +8,10 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library
 {
-    [ContextClass("Консоль")]
+    [ContextClass("Консоль", "Console")]
     class ConsoleContext : AutoContext<ConsoleContext>
     {
-        [ContextProperty("НажатаКлавиша")]
+        [ContextProperty("НажатаКлавиша", "KeyPressed")]
         public bool HasKey
         {
             get
@@ -20,7 +20,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ContextProperty("КурсорЛево")]
+        [ContextProperty("КурсорЛево", "CursorLeft")]
         public int XPos
         {
             get
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ContextProperty("КурсорВерх")]
+        [ContextProperty("КурсорВерх", "CursorTop")]
         public int YPos
         {
             get
@@ -46,38 +46,38 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ContextMethod("ПрочитатьСтроку")]
+        [ContextMethod("ПрочитатьСтроку", "ReadLine")]
         public string ReadLine()
         {
             return Console.ReadLine();
         }
 
-        [ContextMethod("Прочитать")]
+        [ContextMethod("Прочитать", "Read")]
         public int ReadKey()
         {
             var kki = Console.ReadKey(true);
             return (int)kki.Key;
         }
 
-        [ContextMethod("Очистить")]
+        [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
             Console.Clear();
         }
 
-        [ContextMethod("ВывестиСтроку")]
+        [ContextMethod("ВывестиСтроку", "WriteLine")]
         public void WriteLine(string text)
         {
             Console.WriteLine(text);
         }
 
-        [ContextMethod("Вывести")]
+        [ContextMethod("Вывести", "Write")]
         public void Write(string text)
         {
             Console.Write(text);
         }
 
-        [ContextProperty("Ширина")]
+        [ContextProperty("Ширина", "Width")]
         public int Width
         {
             get
@@ -86,7 +86,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ContextProperty("Высота")]
+        [ContextProperty("Высота", "Height")]
         public int Высота
         {
             get
@@ -95,7 +95,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ContextMethod("ВидимостьКурсора")]
+        [ContextMethod("ВидимостьКурсора", "CursorVisible")]
         public bool CursorVisible(bool visible)
         {
             bool oldVal = Console.CursorVisible;
