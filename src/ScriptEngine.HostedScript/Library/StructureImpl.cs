@@ -24,6 +24,7 @@ namespace ScriptEngine.Machine.Library
 
             for (int i = 0; i < props.Length; i++)
             {
+                props[i] = props[i].Trim();
                 if (i < values.Length)
                 {
                     Insert(props[i], values[i]);
