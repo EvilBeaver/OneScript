@@ -4,8 +4,8 @@
 #include "Snegopat_h.h"
 #include "RefCountable.h"
 #include "IAddinImpl.h"
-#include "IAddinLoaderImpl.h"
 #include "SnegopatAttachedContext.h"
+#include "ScriptDrivenAddin.h"
 
 #include <vcclr.h>
 

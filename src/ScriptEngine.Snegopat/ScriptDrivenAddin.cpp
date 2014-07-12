@@ -20,7 +20,7 @@ Object^ ScriptDrivenAddin::UnderlyingObject::get()
 
 int ScriptDrivenAddin::FindOwnProperty(String^ name)
 {
-	if(name->ToLower() == L"ÝòîòÎáúåêò")
+	if(name->ToLower() == m_thisName)
 	{
 		return 0;
 	}
