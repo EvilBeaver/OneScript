@@ -130,6 +130,12 @@ namespace ScriptEngine.Machine.Library
             return _values[index];
         }
 
+        [ContextMethod("Установить", "Set")]
+        public void Set(int index, IValue value)
+        {
+            _values[index] = value;
+        }
+
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor()
         {

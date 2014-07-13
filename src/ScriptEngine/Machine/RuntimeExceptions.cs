@@ -118,15 +118,6 @@ namespace ScriptEngine.Machine
         public ExternalSystemException(Exception reason)
             : base("Внешнее исключение", reason)
         {
-
-        }
-
-        public override string Message
-        {
-            get
-            {
-                return InnerException.Message;
-            }
         }
 
     }

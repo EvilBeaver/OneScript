@@ -48,7 +48,7 @@
     <ClInclude Include="ScriptDrivenAddin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SelfScriptIDispatch.h">
+    <ClInclude Include="EventCallableSDO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -92,8 +92,11 @@
     <ClCompile Include="ScriptDrivenAddin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SelfScriptIDispatch.cpp">
+    <ClCompile Include="EventCallableSDO.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SnegAPIDefinitions.h">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
