@@ -10,18 +10,32 @@ namespace ScriptEngine.Machine.Contexts
         private LoadedModule _module;
         private MachineInstance _machine;
         private IVariable[] _state;
-        private readonly int VARIABLE_COUNT;
-        private readonly int METHOD_COUNT;
+        private int VARIABLE_COUNT;
+        private int METHOD_COUNT;
 
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
+        }
+
+        public ScriptDrivenObject(LoadedModuleHandle module, bool deffered)
+        {
+            _module = module.Module;
+            if (!deffered)
+            {
+                InitOwnData();
+            }
         }
 
 
         internal ScriptDrivenObject(LoadedModule module)
         {
             _module = module;
+            InitOwnData();
+        }
 
+        public void InitOwnData()
+        {
+            
             VARIABLE_COUNT = GetVariableCount();
             METHOD_COUNT = GetMethodCount();
 
@@ -34,7 +48,6 @@ namespace ScriptEngine.Machine.Contexts
                 else
                     _state[i] = Variable.Create(ValueFactory.Create());
             }
-
         }
 
         protected abstract int GetVariableCount();

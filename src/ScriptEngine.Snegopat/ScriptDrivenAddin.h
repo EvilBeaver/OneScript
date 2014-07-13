@@ -13,7 +13,8 @@ ref class ScriptDrivenAddin : public ScriptDrivenObject, public IObjectWrapper
 private:
 
 	EventCallableSDO^ m_marshalledReference;
-	String^ m_thisName;
+	List<IValue^>^ m_valuesByIndex;
+	Dictionary<String^, int>^ m_names;
 
 public:
 	ScriptDrivenAddin(LoadedModuleHandle module);
@@ -24,11 +25,8 @@ public:
 		Object^ get();
 	}
 
-	virtual void SetThisName(String^ thisName)
-	{
-		m_thisName = thisName->ToLower();
-	}
-
+	void AddProperty(String^ name, IValue^ value);
+	
 protected:
 
 	virtual int GetMethodCount() override
@@ -38,7 +36,7 @@ protected:
 
     virtual int GetVariableCount() override
     {
-        return 1;
+		return m_valuesByIndex->Count;
     }
 
 	virtual int FindOwnProperty(String^ name) override;
@@ -50,10 +48,7 @@ protected:
 	{
 		return false;
 	}
-	virtual IValue^ GetOwnPropValue(int index) override
-	{
-		return this;
-	}
+	virtual IValue^ GetOwnPropValue(int index) override;
 
 	virtual void UpdateState() override { };
 

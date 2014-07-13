@@ -100,7 +100,8 @@ ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromScriptFile(String^ path, addinNames
 			LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
 
 			scriptObject = gcnew ScriptDrivenAddin(mh);
-			scriptObject->SetThisName(thisName);
+			scriptObject->AddProperty(thisName, scriptObject);
+			scriptObject->InitOwnData();
 
 		}
 	}
@@ -178,21 +179,47 @@ ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromDialog(String^ path, addinNames* na
 
 		ICodeSource^ src = m_engine->Loader->FromString(code);
 		CompilerService^ compiler = m_engine->GetCompilerService();
-		String^ thisName = L"Ёта‘орма";
-		compiler->DefineVariable(thisName, SymbolType::ContextProperty);
+		String^ thisProp = L"Ётотќбъект";
+		String^ formProp = L"Ёта‘орма";
+		
+		compiler->DefineVariable(thisProp, SymbolType::ContextProperty);
+		compiler->DefineVariable(formProp, SymbolType::ContextProperty);
 		LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
 
 		ScriptDrivenAddin^ scriptObject = gcnew ScriptDrivenAddin(mh);
-		scriptObject->SetThisName(thisName);
 
 		SysFreeString(tmp_bstr);
 		tmp_bstr = stringToBSTR(path);
-		hr = invoke(m_pDesigner, DISPATCH_METHOD, &retVal, NULL, NULL, L"loadScriptForm", L"sD", tmp_bstr, scriptObject->UnderlyingObject);
+		
+		Object^ managedDesigner = Marshal::GetObjectForIUnknown(IntPtr(m_pDesigner));
+		array<Object^>^ args = gcnew array<Object^>(2)
+		{
+			gcnew String(tmp_bstr),
+			scriptObject->UnderlyingObject
+		};
+
+		Object^ form = nullptr;
+		try
+		{
+			form = managedDesigner->GetType()->InvokeMember("loadScriptForm", 
+			System::Reflection::BindingFlags::InvokeMethod,
+			nullptr,
+			managedDesigner,
+			args);
+		}
+		finally
+		{
+			Marshal::ReleaseComObject(managedDesigner);
+		}
+
+		scriptObject->AddProperty(thisProp, scriptObject);
+		scriptObject->AddProperty(formProp, gcnew COMWrapperContext(form));
+		scriptObject->InitOwnData();
 
 		names->displayName = stringToBSTR(System::IO::Path::GetFileNameWithoutExtension(path));
 		names->uniqueName = stringToBSTR(System::IO::Path::GetFileNameWithoutExtension(path));
 		
-		return gcnew ScriptDrivenAddin(mh);
+		return scriptObject;
 
 	}
 	finally
