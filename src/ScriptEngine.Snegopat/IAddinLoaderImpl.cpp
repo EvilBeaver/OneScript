@@ -394,7 +394,7 @@ HRESULT __stdcall  IAddinLoaderImpl::selectLoadURI(
 
 	memset(&ofn,0,sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.lpstrFilter = L"Скрипты 1С\0*.1scr\0Все файлы\0*.*\0\0";
+	ofn.lpstrFilter = L"Скрипты/формы 1С\0*.1scr;*.ssf\0Скрипты 1С\0*.1scr\0Формы 1С\0*.ssf\0Все файлы\0*.*\0\0";
 	ofn.lpstrFile = file;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.Flags = OFN_EXPLORER|OFN_FILEMUSTEXIST;
