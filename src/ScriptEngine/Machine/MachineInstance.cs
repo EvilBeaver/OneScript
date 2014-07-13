@@ -676,14 +676,14 @@ namespace ScriptEngine.Machine
 
         private void CallProc(int arg)
         {
-            var methInfo = MethodCallImpl(arg, false);
-            if (methInfo.IsFunction)
+            bool needsDiscarding = MethodCallImpl(arg, false);
+            if (needsDiscarding)
                 _currentFrame.DiscardReturnValue = true;
             else
                 _currentFrame.DiscardReturnValue = false;
         }
 
-        private MethodInfo MethodCallImpl(int arg, bool asFunc)
+        private bool MethodCallImpl(int arg, bool asFunc)
         {
             var methodRef = _module.MethodRefs[arg];
             var scope = _scopes[methodRef.ContextIndex];
@@ -712,6 +712,8 @@ namespace ScriptEngine.Machine
                 argValues[i] = argValue;
 
             }
+
+            bool needsDiscarding;
 
             if (scope.Instance == this.TopScope.Instance)
             {
@@ -765,20 +767,23 @@ namespace ScriptEngine.Machine
                     frame.InstructionPointer = methDescr.EntryPoint;
                     PushFrame();
                     SetFrame(frame);
+
+                    needsDiscarding = methInfo.IsFunction;
                 }
                 else
                 {
+                    needsDiscarding = false;
                     CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
                 }
 
             }
             else
             {
+                needsDiscarding = false;
                 CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
             }
 
-            return methInfo;
-
+            return needsDiscarding;
         }
 
         private void CallContext(IRuntimeContextInstance instance, int index, ref MethodInfo methInfo, IValue[] argValues, bool asFunc)
@@ -792,11 +797,11 @@ namespace ScriptEngine.Machine
             else
             {
                 instance.CallAsProcedure(index, argValues);
-                if (methInfo.IsFunction)
-                {
-                    // func called as proc. must place retVal which will be discarded later
-                    _operationStack.Push(ValueFactory.Create());
-                }
+                //if (methInfo.IsFunction)
+                //{
+                //    // func called as proc. must place retVal which will be discarded later
+                //    _operationStack.Push(ValueFactory.Create());
+                //}
             }
             NextInstruction();
         }
