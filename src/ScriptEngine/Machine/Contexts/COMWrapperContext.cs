@@ -141,24 +141,6 @@ namespace ScriptEngine.Machine.Contexts
 
         #region ICollectionContext Members
 
-        //public bool IsEnumerable()
-        //{
-        //    if (_isEnumerable == null)
-        //    {
-        //        var enumMethod = _dispatchedType.GetMethod("GetEnumerator");
-        //        if (enumMethod != null && enumMethod.ReturnType == typeof(System.Collections.IEnumerator))
-        //        {
-        //            _isEnumerable = true;
-        //        }
-        //        else
-        //        {
-        //            _isEnumerable = false;
-        //        }
-        //    }
-
-        //    return (bool)_isEnumerable;
-        //}
-
         public int Count()
         {
             throw new NotImplementedException();
