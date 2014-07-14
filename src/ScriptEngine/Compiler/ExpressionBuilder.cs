@@ -264,6 +264,7 @@ partial class Compiler
 #if DEBUG
                 System.Diagnostics.Debug.Assert(HasPendingLogicalJumps());
 #endif
+                _compiler.AddCommand(OperationCode.MakeBool, 0);
                 var idx = LogicalJumps.Pop();
                 _compiler.CorrectCommandArgument(idx, _compiler._module.Code.Count);
             }

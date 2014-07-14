@@ -388,6 +388,8 @@ namespace ScriptEngine.Machine
                 EndTry,
                 RaiseException,
                 LineNum,
+                MakeRawValue,
+                MakeBool,
 
                 //built-ins
                 Question,
@@ -437,8 +439,7 @@ namespace ScriptEngine.Machine
                 Pow,
                 Sqrt,
                 ExceptionInfo,
-                ExceptionDescr,
-                MakeRawValue
+                ExceptionDescr
             };
         }
 
@@ -806,11 +807,6 @@ namespace ScriptEngine.Machine
             else
             {
                 instance.CallAsProcedure(index, argValues);
-                //if (methInfo.IsFunction)
-                //{
-                //    // func called as proc. must place retVal which will be discarded later
-                //    _operationStack.Push(ValueFactory.Create());
-                //}
             }
             NextInstruction();
         }
@@ -1224,6 +1220,13 @@ namespace ScriptEngine.Machine
         {
             var value = BreakVariableLink(_operationStack.Pop());
             _operationStack.Push(value);
+            NextInstruction();
+        }
+
+        private void MakeBool(int arg)
+        {
+            var value = _operationStack.Pop().AsBoolean();            
+            _operationStack.Push(ValueFactory.Create(value));
             NextInstruction();
         }
 
