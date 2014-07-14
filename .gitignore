@@ -50,3 +50,14 @@ Debug
 /src/ipch/scriptengine.snegopat-bbe5b63/scriptengine.ipch
 /src/ScriptEngine.Snegopat/Release/ScriptEngine.Snegopat.tlb
 /src/ScriptEngine.Snegopat/ScriptEngine.Snegopat.tlb
+/src/ScriptEngine.Snegopat/Release
+/src/Release
+/src/StandaloneRunner/obj/x86/Release
+/src/ScriptEngine.HostedScript/obj/x86/Release
+/src/ScriptEngine.HostedScript/bin/x86/Release
+/src/StandaloneRunner/*.dll
+/src/StandaloneRunner/bin/x86/Release
+/src/ipch/scriptengine.snegopat-724401f6/*.ipch
+/src/oscript/*.exe
+/src/ScriptEngine.Snegopat/dlldata.c
+/src/ScriptEngine.Snegopat/Snegopat_p.c

@@ -4,8 +4,8 @@
 #include "Snegopat_h.h"
 #include "RefCountable.h"
 #include "IAddinImpl.h"
-#include "IAddinLoaderImpl.h"
 #include "SnegopatAttachedContext.h"
+#include "ScriptDrivenAddin.h"
 
 #include <vcclr.h>
 
@@ -24,6 +24,15 @@ private:
 	
 	IDispatch* m_pDesigner;
 	gcroot<ScriptEngine::ScriptingEngine^> m_engine;
+
+	struct addinNames
+	{
+		BSTR uniqueName;
+		BSTR displayName;
+	};
+
+	ScriptDrivenAddin^ LoadFromScriptFile(String^ path, addinNames* names);
+	ScriptDrivenAddin^ LoadFromDialog(String^ path, addinNames* names);
 
 protected:
 	virtual void OnZeroCount();

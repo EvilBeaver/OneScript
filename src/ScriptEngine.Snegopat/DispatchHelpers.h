@@ -5,7 +5,7 @@
 HRESULT invoke(LPDISPATCH pdisp, 
     WORD wFlags,
     LPVARIANT pvRet,
-    EXCEPINFO FAR* pexcepinfo,
+    ::EXCEPINFO FAR* pexcepinfo,
     UINT FAR* pnArgErr, 
     LPOLESTR pszName,
     LPCTSTR pszFmt, 
