@@ -286,9 +286,18 @@ namespace ScriptEngine.Machine
                     }
 
                     var handler = _exceptionsStack.Pop();
+
+                    // Раскрутка стека вызовов
+                    while (_currentFrame != handler.handlerFrame)
+                    {
+                        PopFrame();
+                    }
+
                     SetFrame(handler.handlerFrame);
                     _currentFrame.InstructionPointer = handler.handlerAddress;
                     _lastException = exc;
+                    
+
                 }
             }
         }
