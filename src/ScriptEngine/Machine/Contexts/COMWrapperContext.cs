@@ -141,23 +141,23 @@ namespace ScriptEngine.Machine.Contexts
 
         #region ICollectionContext Members
 
-        public bool IsEnumerable()
-        {
-            if (_isEnumerable == null)
-            {
-                var enumMethod = _dispatchedType.GetMethod("GetEnumerator");
-                if (enumMethod != null && enumMethod.ReturnType == typeof(System.Collections.IEnumerator))
-                {
-                    _isEnumerable = true;
-                }
-                else
-                {
-                    _isEnumerable = false;
-                }
-            }
+        //public bool IsEnumerable()
+        //{
+        //    if (_isEnumerable == null)
+        //    {
+        //        var enumMethod = _dispatchedType.GetMethod("GetEnumerator");
+        //        if (enumMethod != null && enumMethod.ReturnType == typeof(System.Collections.IEnumerator))
+        //        {
+        //            _isEnumerable = true;
+        //        }
+        //        else
+        //        {
+        //            _isEnumerable = false;
+        //        }
+        //    }
 
-            return (bool)_isEnumerable;
-        }
+        //    return (bool)_isEnumerable;
+        //}
 
         public int Count()
         {
@@ -178,18 +178,28 @@ namespace ScriptEngine.Machine.Contexts
 
         public IEnumerator<IValue> GetEnumerator()
         {
-            if (IsEnumerable())
+            var comType = _instance.GetType();
+            System.Collections.IEnumerator comEnumerator;
+
+            try
             {
-                var enumerator = (System.Collections.IEnumerator)_dispatchedType.InvokeMember("GetEnumerator", BindingFlags.InvokeMethod, null, _instance, null);
-                while (enumerator.MoveNext())
-                {
-                    yield return CreateIValue(enumerator.Current);
-                }
+
+                comEnumerator = (System.Collections.IEnumerator)comType.InvokeMember("[DispId=-4]",
+                                        BindingFlags.InvokeMethod, 
+                                        null, 
+                                        _instance, 
+                                        new object[0]);
             }
-            else
+            catch (MissingMethodException)
             {
                 throw RuntimeException.IteratorIsNotDefined();
             }
+
+            while (comEnumerator.MoveNext())
+            {
+                yield return CreateIValue(comEnumerator.Current);
+            }
+
         }
 
         #endregion
