@@ -10,10 +10,11 @@ using ScriptEngine.Machine.Library;
 
 namespace ScriptEngine
 {
-    public class ScriptingEngine
+    public class ScriptingEngine : IDisposable
     {
         private MachineInstance _machine = new MachineInstance();
         private ScriptSourceFactory _scriptFactory;
+        private AttachedScriptsFactory _attachedScriptsFactory;
         private CompilerContext _symbolsContext;
 
         public ScriptingEngine()
@@ -36,6 +37,9 @@ namespace ScriptEngine
             {
                 _machine.AttachContext(item, false);
             }
+
+            _attachedScriptsFactory = new AttachedScriptsFactory(this);
+            AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
         }
 
         public ICodeSourceFactory Loader
@@ -58,13 +62,17 @@ namespace ScriptEngine
             return handle;
         }
 
-        public IRuntimeContextInstance NewObject(LoadedModuleHandle module)
+        internal IRuntimeContextInstance NewObject(LoadedModule module)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module.Module);
+            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
             scriptContext.Initialize(_machine);
 
             return scriptContext;
-            
+        }
+
+        public IRuntimeContextInstance NewObject(LoadedModuleHandle module)
+        {
+            return NewObject(module.Module); 
         }
 
         public void InitializeSDO(ScriptDrivenObject sdo)
@@ -82,5 +90,21 @@ namespace ScriptEngine
             get { return _machine; }
         }
 
+        public AttachedScriptsFactory AttachedScriptsFactory
+        {
+            get
+            {
+                return _attachedScriptsFactory;
+            }
+        }
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            AttachedScriptsFactory.Dispose();
+        }
+
+        #endregion
     }
 }

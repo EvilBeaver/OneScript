@@ -26,6 +26,8 @@ namespace ScriptEngine.Machine.Library
             _properties.Add(getter);
         }
 
+        internal ScriptingEngine EngineInstance{ get; set; }
+
         public void InitInstance()
         {
             InitContextVariables();
@@ -53,7 +55,8 @@ namespace ScriptEngine.Machine.Library
         [ContextMethod("ПодключитьСценарий", "LoadScript")]
         public void LoadScript(string path, string typeName)
         {
-            //AttachedScriptsFactory.Attach(path, typeName);
+            var compiler = EngineInstance.GetCompilerService();
+            EngineInstance.AttachedScriptsFactory.AttachByPath(compiler, path, typeName);
         }
 
         [ContextMethod("ТекущийСценарий", "CurrentScript")]

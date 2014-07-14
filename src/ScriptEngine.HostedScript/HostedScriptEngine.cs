@@ -25,6 +25,8 @@ namespace ScriptEngine
             
             var env = new RuntimeEnvironment();
             _globalCtx = new GlobalContext();
+            _globalCtx.EngineInstance = _engine;
+
             env.InjectObject(_globalCtx, false);
             
             _engine.Initialize(env);
