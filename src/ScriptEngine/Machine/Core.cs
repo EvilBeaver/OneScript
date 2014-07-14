@@ -52,6 +52,8 @@ namespace ScriptEngine.Machine
         EndTry,
         RaiseException,
         LineNum,
+        MakeRawValue,
+        MakeBool,
 
         // built-in functions
         Question,
@@ -101,8 +103,7 @@ namespace ScriptEngine.Machine
         Pow,
         Sqrt,
         ExceptionInfo,
-        ExceptionDescr,
-        MakeRawValue
+        ExceptionDescr
     }
 
     [Serializable]

@@ -923,7 +923,7 @@ namespace ScriptEngine.Compiler
             while (_lastExtractedLexem.Token == Token.Dot)
             {
                 NextToken();
-                if (IsUserSymbol(ref _lastExtractedLexem))
+                if (IsValidIdentifier(ref _lastExtractedLexem))
                 {
                     var name = _lastExtractedLexem.Content;
                     var cDef = new ConstDefinition();
@@ -1264,6 +1264,11 @@ namespace ScriptEngine.Compiler
         private bool IsUserSymbol(ref Lexem lex)
         {
             return lex.Type == LexemType.Identifier && lex.Token == Token.NotAToken;
+        }
+
+        private bool IsValidIdentifier(ref Lexem lex)
+        {
+            return lex.Type == LexemType.Identifier;
         }
 
         private bool IsLiteral(ref Lexem lex)
