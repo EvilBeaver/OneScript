@@ -261,77 +261,85 @@ namespace ScriptEngine.Compiler
 
     class StringParserState : ParserState
     {
+        private void SkipSpacesAndComments(ParseIterator iterator)
+        {
+            while (true)
+            {   /* Пропускаем все пробелы и комментарии */
+                iterator.SkipSpaces();
+
+                if (iterator.CurrentSymbol == '/')
+                {
+                    if (!iterator.MoveNext())
+                        throw CreateExceptionOnCurrentLine("Некорректный символ", iterator);
+
+                    if (iterator.CurrentSymbol != '/')
+                        throw CreateExceptionOnCurrentLine("Некорректный символ", iterator);
+
+                    do
+                    {
+                        if (!iterator.MoveNext())
+                            break;
+
+                    } while (iterator.CurrentSymbol != '\n');
+
+                }
+                else
+                    break;
+            }
+        }
 
         public override Lexem ReadNextLexem(ParseIterator iterator)
         {
-            bool hasEscapedQuotes = false;
+            StringBuilder ContentBuilder = new StringBuilder();
 
             while (iterator.MoveNext())
             {
                 var cs = iterator.CurrentSymbol;
+
                 if (cs == SpecialChars.StringQuote)
                 {
-                    // либо конец литерала, либо escape кавычки
-                    if (iterator.MoveNext())
-                    {
-                        if (iterator.CurrentSymbol == SpecialChars.StringQuote)
-                        {
-                            hasEscapedQuotes = true;
-                        }
-                        else
-                        {
-                            iterator.MoveBack();
-                            var lex = new Lexem()
-                            {
-                                Type = LexemType.StringLiteral,
-                                Content = iterator.GetContents(1, 1).content
-                            };
-
-                            if (hasEscapedQuotes)
-                            {
-                                lex.Content = lex.Content.Replace("\"\"", "\"");
-                            }
-
-                            var newLinePosition = lex.Content.IndexOf('\n');
-                            while (newLinePosition >= 0)
-                            {
-                                var paddingPosition = lex.Content.IndexOf('|', newLinePosition);
-                                if (paddingPosition < 0)
-                                {
-                                    throw CreateExceptionOnCurrentLine("Незавершенный строковый литерал", iterator);
-                                }
-
-                                string head;
-                                string tail;
-
-                                head = lex.Content.Substring(0, newLinePosition + 1); // including \n
-                                if (paddingPosition == lex.Content.Length - 1)
-                                    tail = "";
-                                else
-                                    tail = lex.Content.Substring(paddingPosition + 1);
-
-                                lex.Content = head + tail;
-                                newLinePosition = lex.Content.IndexOf('\n', newLinePosition + 1);
-                            }
-
-                            iterator.MoveNext();
-
-                            return lex;
-                        }
+                    iterator.MoveNext();
+                    if (iterator.CurrentSymbol == SpecialChars.StringQuote)
+                    { /* Двойная кавычка */
+                        ContentBuilder.Append("\"");
+                        continue;
                     }
+
+                    /* Завершение строки */
+                    SkipSpacesAndComments(iterator);
+
+                    if (iterator.CurrentSymbol == SpecialChars.StringQuote)
+                    {   /* Сразу же началась новая строка */
+                        ContentBuilder.Append('\n');
+                        continue;
+                    }
+
+                    var lex = new Lexem
+                    {
+                        Type = LexemType.StringLiteral,
+                        Content = ContentBuilder.ToString()
+                    };
+                    return lex;
                 }
                 else if (cs == '\n')
                 {
                     iterator.MoveNext();
-                    iterator.SkipSpaces();
+                    SkipSpacesAndComments(iterator);
+
                     if (iterator.CurrentSymbol != '|')
-                    {
-                        throw CreateExceptionOnCurrentLine("Некорректный строковый литерал", iterator);
-                    }
+                        throw CreateExceptionOnCurrentLine("Некорректный строковый литерал!", iterator);
+
+                    ContentBuilder.Append('\n');
+
+                    continue;
                 }
+                else
+                    ContentBuilder.Append(cs);
+
             }
 
-            throw CreateExceptionOnCurrentLine("Незавершенный строковый литерал", iterator);
+            throw CreateExceptionOnCurrentLine("Незавершённый строковой интервал!", iterator);
+
         }
     }
 
