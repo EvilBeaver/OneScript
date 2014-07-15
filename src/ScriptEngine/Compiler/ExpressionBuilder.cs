@@ -296,7 +296,14 @@ partial class Compiler
                         PopOperator();
                         AddCommandForToken(stackOp);
                         if (_operators.Count > 0)
-                            stackPriority = LanguageDef.GetPriority(_operators.Peek());
+                        {
+                            stackOp = _operators.Peek();
+
+                            if (stackOp == Token.OpenPar)
+                                break;
+
+                            stackPriority = LanguageDef.GetPriority(stackOp);
+                        }
                         else
                             break;
                     }

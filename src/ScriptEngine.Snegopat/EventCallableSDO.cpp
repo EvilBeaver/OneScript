@@ -71,15 +71,3 @@ Object^ EventCallableSDO::InvokeInternal(String^ name,
 		delete[] wrappers;
 	}
 }
-
-//Object^ EventCallableSDO::InvokeInternal(
-//		String^ name,
-//		BindingFlags invokeAttr,
-//		Binder^ binder,
-//		Object^ target, 
-//		array<Object^>^ args, 
-//		array<ParameterModifier>^ modifiers,
-//		System::Globalization::CultureInfo^ culture)
-//{
-
-//}
