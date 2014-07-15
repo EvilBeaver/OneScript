@@ -28,11 +28,17 @@
       <End>'</End>
     </Span>
 
-    <Span color="String" multiline="true">
+    <Span color="String">
       <Begin>"</Begin>
       <End>"</End>
       <RuleSet>
-        <!-- span for escape sequences -->
+        <Span begin='""' end=""/>
+      </RuleSet>
+    </Span>
+    <Span color="String">
+      <Begin>\|</Begin>
+      <End>"</End>
+      <RuleSet>
         <Span begin='""' end=""/>
       </RuleSet>
     </Span>
