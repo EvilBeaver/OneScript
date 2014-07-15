@@ -288,13 +288,17 @@ partial class Compiler
                 var currentPriority = LanguageDef.GetPriority(_compiler._lastExtractedLexem.Token);
                 var stackPriority = LanguageDef.GetPriority(opOnStack);
 
-                while (stackPriority >= currentPriority && _operators.Count > 0)
+                while (currentPriority <= stackPriority)
                 {
                     var stackOp = _operators.Peek();
                     if (stackOp != Token.OpenPar)
                     {
                         PopOperator();
                         AddCommandForToken(stackOp);
+                        if (_operators.Count > 0)
+                            stackPriority = LanguageDef.GetPriority(_operators.Peek());
+                        else
+                            break;
                     }
                     else
                     {
