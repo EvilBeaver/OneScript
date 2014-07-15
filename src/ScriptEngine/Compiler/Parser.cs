@@ -269,7 +269,9 @@ namespace ScriptEngine.Compiler
 
                 if (iterator.CurrentSymbol == '/')
                 {
-                    iterator.MoveNext();
+                    if (!iterator.MoveNext())
+                        throw CreateExceptionOnCurrentLine("Некорректный символ", iterator);
+
                     if (iterator.CurrentSymbol != '/')
                         throw CreateExceptionOnCurrentLine("Некорректный символ", iterator);
 
@@ -312,7 +314,12 @@ namespace ScriptEngine.Compiler
                         continue;
                     }
 
-                    break; // Строка закончилась
+                    var lex = new Lexem
+                    {
+                        Type = LexemType.StringLiteral,
+                        Content = ContentBuilder.ToString()
+                    };
+                    return lex;
                 }
                 else if (cs == '\n')
                 {
@@ -331,12 +338,8 @@ namespace ScriptEngine.Compiler
 
             }
 
-            var lex = new Lexem
-            {
-                Type = LexemType.StringLiteral,
-                Content = ContentBuilder.ToString()
-            };
-            return lex;
+            throw CreateExceptionOnCurrentLine("Незавершённый строковой интервал!", iterator);
+
         }
     }
 
