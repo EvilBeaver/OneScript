@@ -1,15 +1,20 @@
 #include "stdafx.h"
 #include "SnegopatAttachedContext.h"
 
+#define ALIASED_METHOD(name, alias) InsertMethod((name)); MethodAlias((name), (alias))
 
 SnegopatAttachedContext::SnegopatAttachedContext(IRuntimeContextInstance^ Designer)
 {
 	m_DesignerWrapper = Designer;
 	m_varList = gcnew List<IVariable^>();
-	m_nameList = gcnew List<String^>();
+	//m_nameList = gcnew List<String^>();
 	m_methods = gcnew List<MethodInfo>();
 	m_propDispIdMap = gcnew Dictionary<int,int>();
 	m_methDispIdMap = gcnew Dictionary<int,int>();
+	m_propIndexes = gcnew Dictionary<String^, int>(StringComparer::InvariantCultureIgnoreCase);
+	m_methIndexes = gcnew Dictionary<String^, int>(StringComparer::InvariantCultureIgnoreCase);
+
+	s_instance = this;
 
 	InsertProperty("addins");
 	InsertProperty("cmdTrace");
@@ -25,17 +30,21 @@ SnegopatAttachedContext::SnegopatAttachedContext(IRuntimeContextInstance^ Design
 	InsertProperty("sVersion");
 	InsertProperty("v8Version");
 
-	InsertMethod("v8New");
-	InsertMethod("Message");
-	InsertMethod("MessageBox");
-	InsertMethod("globalContext");
-	InsertMethod("getCmdState");
-	InsertMethod("saveProfile");
-	InsertMethod("createTimer");
-	InsertMethod("killTimer");
-	InsertMethod("toV8Value");
-	InsertMethod("loadResourceString");
+	ALIASED_METHOD("v8New", "СоздатьОбъект");
+	ALIASED_METHOD("Message", "Сообщить");
+	ALIASED_METHOD("MessageBox", "Предупреждение");
+	ALIASED_METHOD("globalContext","ГлобальныйКонтекст");
+	ALIASED_METHOD("getCmdState", "ПолучитьСостояниеКоманды");
+	ALIASED_METHOD("saveProfile", "СохранитьНастройку");
+	ALIASED_METHOD("createTimer", "СоздатьТаймер");
+	ALIASED_METHOD("killTimer", "ОстановитьТаймер");
+	ALIASED_METHOD("toV8Value", "ВЗначение1С");
+	ALIASED_METHOD("loadResourceString", "ЗагрузитьСтрокуРесурсов");
+	ALIASED_METHOD("loadScriptForm", "ЗагрузитьФормуИзФайла");
+	ALIASED_METHOD("designScriptForm", "РедактироватьФормуИзФайла");
+	ALIASED_METHOD("sendCommand", "ПослатьКоманду");
 
+	MethodAlias("MessageBox", "Вопрос");
 
 }
 
@@ -51,14 +60,15 @@ void SnegopatAttachedContext::OnAttach(MachineInstance^ machine,
 
 IEnumerable<VariableInfo>^ SnegopatAttachedContext::GetProperties()
 {
-	array<VariableInfo>^ arr = gcnew array<VariableInfo>(m_varList->Count);
-	for (int i = 0; i < m_varList->Count; i++)
+	array<VariableInfo>^ arr = gcnew array<VariableInfo>( m_propIndexes->Count);
+	int i = 0;
+	for each (KeyValuePair<String^, int> kv in m_propIndexes)
 	{
 		VariableInfo vi;
 
-		vi.Identifier = m_nameList[i];
+		vi.Identifier = kv.Key;
 		vi.Type = SymbolType::ContextProperty;
-		arr[i] = vi;
+		arr[i++] = vi;
 	}
 
 	return arr;
@@ -78,11 +88,17 @@ IEnumerable<MethodInfo>^ SnegopatAttachedContext::GetMethods()
 
 void SnegopatAttachedContext::InsertProperty(String^ name)
 {
-	int index = m_nameList->Count;
+	int index = m_propIndexes->Count;
 	int propNum = m_DesignerWrapper->FindProperty(name);
 	m_propDispIdMap->Add(index, propNum);
 	m_varList->Add(Variable::CreateContextPropertyReference(this, index));
-	m_nameList->Add(name);
+	m_propIndexes->Add(name, index);
+}
+
+void SnegopatAttachedContext::PropertyAlias(String^ name, String^ alias)
+{
+	int index = m_propIndexes[name];
+	m_propIndexes->Add(alias, index);
 }
 
 void SnegopatAttachedContext::InsertMethod(String^ name)
@@ -92,19 +108,27 @@ void SnegopatAttachedContext::InsertMethod(String^ name)
 	MethodInfo mi = m_DesignerWrapper->GetMethodInfo(mNum);
 	m_methods->Add(mi);
 	m_methDispIdMap->Add(index, mNum);
+	m_methIndexes->Add(name, index);
+}
+
+void SnegopatAttachedContext::MethodAlias(String^ name, String^ alias)
+{
+	int index = m_methIndexes[name];
+	m_methIndexes->Add(alias, index);
+	MethodInfo mi = m_methods[index];
+	mi.Alias = alias;
+	m_methods[index] = mi;
+
 }
 
 int SnegopatAttachedContext::FindProperty(String^ name) 
 {
-	for (int i = 0; i < m_nameList->Count; i++)
+	int index;
+	if(m_propIndexes->TryGetValue(name, index))
 	{
-		String^ nameFromList = m_nameList[i];
-		if(String::Compare(nameFromList, name, true) == 0)
-		{
-			return i;
-		}
+		return index;
 	}
-
+	
 	throw RuntimeException::PropNotFoundException(name);
 }
 
@@ -134,15 +158,12 @@ void SnegopatAttachedContext::SetPropValue(int propNum, IValue^ val)
 
 int SnegopatAttachedContext::FindMethod(String^ mName) 
 {
-	for (int i = 0; i < m_methods->Count; i++)
+	int index;
+	if(m_methIndexes->TryGetValue(mName, index))
 	{
-		String^ nameFromList = m_methods[i].Name;
-		if(String::Compare(nameFromList, mName, true) == 0)
-		{
-			return i;
-		}
+		return index;
 	}
-
+	
 	throw RuntimeException::MethodNotFoundException(mName);
 }
 
@@ -162,4 +183,16 @@ void SnegopatAttachedContext::CallAsFunction(int mNum, array<IValue^>^ args, [Ou
 {
 	int dispId = m_methDispIdMap[mNum];
 	m_DesignerWrapper->CallAsFunction(dispId, args, retVal);
+}
+
+IRuntimeContextInstance^ SnegopatAttachedContext::CreateV8New(String^ className, array<IValue^>^ args)
+{
+	int v8new = s_instance->m_DesignerWrapper->FindMethod("v8new");
+	IValue^ result;
+	array<IValue^>^ realArgs = gcnew array<IValue^>(args->Length + 1);
+	realArgs[0] = ValueFactory::Create(className);
+	args->CopyTo(realArgs, 1);
+	s_instance->m_DesignerWrapper->CallAsFunction(v8new, realArgs, result);
+
+	return safe_cast<IRuntimeContextInstance^>(result);
 }

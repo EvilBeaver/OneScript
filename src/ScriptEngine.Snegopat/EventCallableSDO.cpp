@@ -62,8 +62,9 @@ Object^ EventCallableSDO::InvokeInternal(String^ name,
 		auto buf = stringBuf(exc->ToString());
 		MessageBox(0, buf, L"Error", MB_ICONERROR);
 		delete[] buf;
-			
-		return nullptr;
+		
+		throw;
+
 	}
 	finally
 	{
