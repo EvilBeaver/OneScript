@@ -19,12 +19,13 @@ IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 	Object^ managedObject = System::Runtime::InteropServices::Marshal::GetObjectForIUnknown(handle);
 	IRuntimeContextInstance^ designerWrapper = gcnew Contexts::COMWrapperContext(managedObject);
 
-	String^ ident = L"Designer";
-	env->InjectGlobalProperty((IValue^)designerWrapper, ident, true);
+	env->InjectGlobalProperty((IValue^)designerWrapper, L"Designer", true);
+	env->InjectGlobalProperty((IValue^)designerWrapper, L"Конфигуратор", true);
 
 	SnegopatAttachedContext^ importedProperties = gcnew SnegopatAttachedContext(designerWrapper);
+	TypeManager::NewInstanceHandler = importedProperties->GetType();
+	
 	env->InjectObject(importedProperties, true);
-
 	m_engine->Initialize(env);
 
 }
@@ -216,8 +217,29 @@ ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromDialog(String^ path, addinNames* na
 		scriptObject->AddProperty(formProp, gcnew COMWrapperContext(form));
 		scriptObject->InitOwnData();
 
-		names->displayName = stringToBSTR(System::IO::Path::GetFileNameWithoutExtension(path));
-		names->uniqueName = stringToBSTR(System::IO::Path::GetFileNameWithoutExtension(path));
+		String^ title = safe_cast<String^>(form->GetType()->InvokeMember(L"Заголовок", System::Reflection::BindingFlags::GetProperty, nullptr, form, nullptr));
+		if(String::IsNullOrWhiteSpace(title))
+		{
+			names->displayName = stringToBSTR(System::IO::Path::GetFileNameWithoutExtension(path));
+			names->uniqueName = stringToBSTR(System::IO::Path::GetFileNameWithoutExtension(path));
+		}
+		else
+		{
+			auto split = title->Split('/');
+			if(split->Length > 1)
+			{
+				names->uniqueName = stringToBSTR(split[0]);
+				names->displayName = stringToBSTR(split[1]);
+				array<String^>^ titleArgs = gcnew array<String^>(1);
+				titleArgs[0] = split[1];
+				form->GetType()->InvokeMember(L"Заголовок", System::Reflection::BindingFlags::SetProperty, nullptr, form, titleArgs);
+			}
+			else
+			{
+				names->displayName = stringToBSTR(title);
+				names->uniqueName = stringToBSTR(System::IO::Path::GetFileNameWithoutExtension(path));
+			}
+		}
 		
 		return scriptObject;
 
@@ -364,12 +386,6 @@ HRESULT __stdcall  IAddinLoaderImpl::unload(
 	IUnknown *addin,
 	VARIANT_BOOL *result)
 {
-	//addin->Release();
-	//  Непонятно: Снегопат передает сюда addIn, который уже уничтожен по счетчику ссылок
-	//  при создании аддина загрузчик создает ссылку, вызывая AddRef (см. метод load)
-	//  при выгрузке Снегопат вызывает AddIn->Release(), хотя ответного AddRef не делал.
-	//	В результате он отпускает ссылку, которой не владеет (созданную загрузчиком в методе load)
-
 	*result = VARIANT_TRUE;
 	return S_OK;
 }
@@ -394,7 +410,7 @@ HRESULT __stdcall  IAddinLoaderImpl::selectLoadURI(
 
 	memset(&ofn,0,sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.lpstrFilter = L"Скрипты/формы 1С\0*.1scr;*.ssf\0Скрипты 1С\0*.1scr\0Формы 1С\0*.ssf\0Все файлы\0*.*\0\0";
+	ofn.lpstrFilter = L"Скрипты/формы OneScript\0*.1scr;*.os;*.osf\0Скрипты 1С (*.os; *.1scr)\0*.os;*.1scr\0Формы 1С (*.osf; *.ssf)\0*.osf;*.ssf\0Все файлы\0*.*\0\0";
 	ofn.lpstrFile = file;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.Flags = OFN_EXPLORER|OFN_FILEMUSTEXIST;

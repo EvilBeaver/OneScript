@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -36,12 +37,14 @@ namespace ScriptEngine.Machine
         TypeDescriptor GetTypeByFrameworkType(Type type);
         void RegisterType(string name, Type implementingClass);
         bool IsKnownType(Type type);
+        Type NewInstanceHandler { get; set; }
     }
 
     class StandartTypeManager : ITypeManager
     {
         private Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private List<KnownType> _knownTypes = new List<KnownType>();
+        private Type _dynamicFactory;
 
         private struct KnownType
         {
@@ -117,6 +120,28 @@ namespace ScriptEngine.Machine
             return _knownTypes.Any(x => x.SystemType == type);
         }
 
+        public Type NewInstanceHandler 
+        { 
+            get
+            {
+                return _dynamicFactory;
+            }
+
+            set
+            {
+                if (value.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
+                    .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute))
+                    .Any())
+                {
+                    _dynamicFactory = value;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Class " + value.ToString() + " can't be registered as New handler");
+                }
+            }
+        }
+
         #endregion
 
     }
@@ -159,6 +184,42 @@ namespace ScriptEngine.Machine
         public static TypeDescriptor GetTypeByFrameworkType(Type type)
         {
             return _instance.GetTypeByFrameworkType(type);
+        }
+
+        public static Type NewInstanceHandler
+        {
+            get
+            {
+                return _instance.NewInstanceHandler;
+            }
+            set
+            {
+                _instance.NewInstanceHandler = value;
+            }
+        }
+
+        public static Type GetFactoryFor(string typeName)
+        {
+            int typeId;
+            Type clrType;
+            try
+            {
+                typeId = TypeManager.GetTypeIDByName(typeName);
+                clrType = TypeManager.GetImplementingClass(typeId);
+            }
+            catch (KeyNotFoundException)
+            {
+                if (NewInstanceHandler != null)
+                {
+                    clrType = NewInstanceHandler;
+                }
+                else
+                {
+                    throw new RuntimeException("Конструктор не найден (" + typeName + ")");
+                }
+            }
+
+            return clrType;
         }
     }
 

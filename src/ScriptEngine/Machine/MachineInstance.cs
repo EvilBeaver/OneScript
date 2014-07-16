@@ -1046,17 +1046,8 @@ namespace ScriptEngine.Machine
                 argValues[i] = argValue;
             }
 
-            int typeId;
-            try
-            {
-                typeId = TypeManager.GetTypeIDByName(typeName);
-            }
-            catch (KeyNotFoundException)
-            {
-                throw new RuntimeException("Конструктор не найден (" + typeName + ")");
-            }
+            var clrType = TypeManager.GetFactoryFor(typeName);
 
-            var clrType = TypeManager.GetImplementingClass(typeId);
             var ctors = clrType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
                 .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute))
                 .Select(x => new 

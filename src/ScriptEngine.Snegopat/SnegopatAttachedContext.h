@@ -19,23 +19,29 @@ private:
 	IRuntimeContextInstance^ m_DesignerWrapper;
 	List<IVariable^>^ m_varList;
 	List<String^>^ m_nameList;
-	List<MethodInfo>^ m_methods;
+	List<ScriptEngine::Machine::MethodInfo>^ m_methods;
 	Dictionary<int,int>^ m_propDispIdMap;
 	Dictionary<int,int>^ m_methDispIdMap;
+	Dictionary<String^, int>^ m_propIndexes;
+	Dictionary<String^, int>^ m_methIndexes;
 
 	void InsertProperty(String^ name);
+	void PropertyAlias(String^ name, String^ alias);
 	void InsertMethod(String^ name);
+	void MethodAlias(String^ name, String^ alias);
+
+	static SnegopatAttachedContext^ s_instance;
 
 public:
 	SnegopatAttachedContext(IRuntimeContextInstance^ Designer);
 
 	virtual void OnAttach(MachineInstance^ machine,
 			[Out] cli::array<IVariable^,1>^% variables, 
-			[Out] cli::array<MethodInfo>^% methods, 
+			[Out] cli::array<ScriptEngine::Machine::MethodInfo>^% methods, 
 			[Out] IRuntimeContextInstance^% instance);
 
 	virtual IEnumerable<VariableInfo>^ GetProperties();
-    virtual IEnumerable<MethodInfo>^ GetMethods();
+    virtual IEnumerable<ScriptEngine::Machine::MethodInfo>^ GetMethods();
 
 	property bool IsIndexed
 	{
@@ -56,10 +62,17 @@ public:
 	virtual IValue^ GetPropValue(int propNum);
 	virtual void SetPropValue(int propNum, IValue^ val);
 	virtual int FindMethod(String^ mName);
-	virtual MethodInfo GetMethodInfo(int mNum);
+	virtual ScriptEngine::Machine::MethodInfo GetMethodInfo(int mNum);
 	virtual void CallAsProcedure(int mNum, array<IValue^>^ args);
 	virtual void CallAsFunction(int mNum, array<IValue^>^ args, [Out] IValue^% retVal);
 
+	[ScriptEngine::Machine::Contexts::ScriptConstructor(ParametrizeWithClassName = true)]
+	static IRuntimeContextInstance^ CreateV8New(String^ className, array<IValue^>^ args);
+
+	static void SetInstance(SnegopatAttachedContext^ instance)
+	{
+		s_instance = instance;
+	}
 
 };
 
