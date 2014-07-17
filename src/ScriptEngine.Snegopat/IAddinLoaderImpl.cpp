@@ -24,8 +24,8 @@ IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 
 	SnegopatAttachedContext^ importedProperties = gcnew SnegopatAttachedContext(designerWrapper);
 	TypeManager::NewInstanceHandler = importedProperties->GetType();
-	
 	env->InjectObject(importedProperties, true);
+
 	m_engine->Initialize(env);
 
 }
@@ -328,11 +328,11 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 		addinNames names;
 		try
 		{
-			if(extension == ".1scr")
+			if(extension == ".os" || extension == ".1scr")
 			{
 				scriptObject = LoadFromScriptFile(path, &names);
 			}
-			else if(extension == ".ssf")
+			else if(extension == ".osf" || extension == ".ssf")
 			{
 				scriptObject = LoadFromDialog(path, &names);
 				res = S_OK;
