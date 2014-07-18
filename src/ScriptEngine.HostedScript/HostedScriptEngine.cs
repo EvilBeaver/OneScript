@@ -58,6 +58,12 @@ namespace ScriptEngine
             return InitProcess(host, null, ref module);
         }
 
+        public Process CreateProcess(IHostApplication host, ModuleHandle moduleHandle, ICodeSource src)
+        {
+            var module = _engine.LoadModuleImage(moduleHandle);
+            return InitProcess(host, src, ref module);
+        }
+
         private Process InitProcess(IHostApplication host, ICodeSource src, ref LoadedModuleHandle module)
         {
             _globalCtx.ApplicationHost = host;

@@ -12,8 +12,14 @@ namespace ScriptEngine.Machine.Library
     class GlobalContext : IRuntimeContextInstance, IAttachableContext
     {
         private IVariable[] _state;
+        private CommandLineArguments _args;
         private DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private List<Func<IValue>> _properties = new List<Func<IValue>>();
+
+        public GlobalContext()
+        {
+            RegisterProperty("АргументыКоманднойСтроки", new Func<IValue>(()=>(IValue)CommandLineArguments));
+        }
 
         public void RegisterProperty(string name, IValue value)
         {
@@ -102,6 +108,28 @@ namespace ScriptEngine.Machine.Library
             {
                 disposable.Dispose();
             }
+        }
+
+        [ContextProperty("АргументыКоманднойСтроки", CanWrite = false)]
+        public IRuntimeContextInstance CommandLineArguments
+        {
+            get
+            {
+                if (_args == null)
+                {
+                    if (ApplicationHost == null)
+                    {
+                        _args = ScriptEngine.Machine.Library.CommandLineArguments.Empty;
+                    }
+                    else
+                    {
+                        _args = new CommandLineArguments(ApplicationHost.GetCommandLineArguments());
+                    }
+                }
+
+                return _args;
+            }
+
         }
 
         #region IAttachableContext Members
