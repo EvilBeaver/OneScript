@@ -21,7 +21,7 @@ namespace StandaloneRunner
                 var engine = new ScriptEngine.HostedScriptEngine();
                 var src = new BinaryCodeSource(moduleHandle);
 
-                var process = engine.CreateProcess(this, src);
+                var process = engine.CreateProcess(this, moduleHandle, src);
                 return process.Start();
                 
             }
@@ -32,6 +32,8 @@ namespace StandaloneRunner
             }
 
         }
+
+        public string[] CommandLineArguments { get; set; }
 
         private Stream LocateCode()
         {
@@ -92,7 +94,10 @@ namespace StandaloneRunner
 
         public string[] GetCommandLineArguments()
         {
-            return new string[0];
+            if (CommandLineArguments != null)
+                return CommandLineArguments;
+            else
+                return new string[0];
         }
 
         #endregion
@@ -115,13 +120,9 @@ namespace StandaloneRunner
             get { return "Compiled binary module"; }
         }
 
-        #endregion
-
-        #region ICodeSource Members
-
         public string Code
         {
-            get { throw new NotImplementedException(); }
+            get { return "<Source is not available>"; }
         }
 
         #endregion

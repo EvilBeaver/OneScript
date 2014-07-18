@@ -109,5 +109,12 @@ namespace ScriptEngine.Machine.Library
         }
 
         #endregion
+
+        private static CommandLineArguments _empty = new CommandLineArguments(new string[0]);
+
+        public static CommandLineArguments Empty
+        {
+            get { return _empty; }
+        }
     }
 }

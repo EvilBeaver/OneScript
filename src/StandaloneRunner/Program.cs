@@ -13,13 +13,14 @@ namespace StandaloneRunner
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            return Run();
+            return Run(args);
 
         }
 
-        private static int Run()
+        private static int Run(string[] args)
         {
             var sp = new StandaloneProcess();
+            sp.CommandLineArguments = args;
             return sp.Run();
         }
 
