@@ -26,6 +26,9 @@ IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 	TypeManager::NewInstanceHandler = importedProperties->GetType();
 	env->InjectObject(importedProperties, true);
 
+	LibraryAttachedContext^ stdLib = gcnew LibraryAttachedContext(m_engine);
+	env->InjectObject(stdLib);
+
 	m_engine->Initialize(env);
 
 }

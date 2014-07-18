@@ -5,6 +5,7 @@
 #include "RefCountable.h"
 #include "IAddinImpl.h"
 #include "SnegopatAttachedContext.h"
+#include "LibraryAttachedContext.h"
 #include "ScriptDrivenAddin.h"
 
 #include <vcclr.h>

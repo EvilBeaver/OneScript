@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ScriptDrivenAddin.h"
+
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace ScriptEngine;
@@ -9,8 +11,16 @@ using namespace System::Runtime::InteropServices;
 
 ref class LibraryAttachedContext : public IAttachableContext, public IRuntimeContextInstance
 {
+private:
+
+	ScriptingEngine^ m_engine;
+	array<ScriptEngine::Machine::MethodInfo>^ m_methods;
+	Dictionary<String^, int>^ m_methodIndexes;
+
+	void DisposeObject(IValue^ object);
+
 public:
-	LibraryAttachedContext(AttachedScriptsFactory^ factory);
+	LibraryAttachedContext(ScriptingEngine^ engine);
 
 	virtual void OnAttach(MachineInstance^ machine,
 			[Out] cli::array<IVariable^,1>^% variables, 
