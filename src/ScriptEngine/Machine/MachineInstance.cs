@@ -1161,7 +1161,7 @@ namespace ScriptEngine.Machine
 
         private void StopIterator(int arg)
         {
-            var iterator = _operationStack.Peek() as CollectionEnumerator;
+            var iterator = _operationStack.Pop() as CollectionEnumerator;
             if (iterator == null)
             {
                 throw new WrongStackConditionException();
