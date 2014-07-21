@@ -8,7 +8,7 @@ namespace ScriptEngine.Compiler
     static class LanguageDef
     {
         static Dictionary<Token, int> _priority = new Dictionary<Token, int>();
-        static Dictionary<string, Token> _stringToToken = new Dictionary<string, Token>();
+        static Dictionary<string, Token> _stringToToken = new Dictionary<string, Token>(StringComparer.InvariantCultureIgnoreCase);
 
         // structure
         static LanguageDef()
@@ -165,12 +165,12 @@ namespace ScriptEngine.Compiler
 
         public static Token GetToken(string tokText)
         {
-            var lowerCase = tokText.ToLowerInvariant();
-            try
+            Token result;
+            if(_stringToToken.TryGetValue(tokText, out result))
             {
-                return _stringToToken[lowerCase];
+                return result;
             }
-            catch(KeyNotFoundException)
+            else
             {
                 return Token.NotAToken;
             }

@@ -16,20 +16,41 @@ namespace ScriptEngine.Machine.Contexts
             _engine = engine;
         }
 
-        public void AttachByPath(CompilerService compiler, string path, string typeName)
+        public ModuleHandle AttachByPath(CompilerService compiler, string path, string typeName)
+        {
+            ThrowIfTypeExist(typeName);
+
+            var code = _engine.Loader.FromFile(path);
+            return LoadAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
+
+        }
+
+        public ModuleHandle AttachFromString(CompilerService compiler, string text, string typeName)
+        {
+            ThrowIfTypeExist(typeName);
+
+            var code = _engine.Loader.FromString(text);
+            return LoadAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
+        }
+
+        private void ThrowIfTypeExist(string typeName)
         {
             if (_loadedModules.ContainsKey(typeName))
             {
                 throw new RuntimeException("Type «" + typeName + "» already registered");
             }
 
-            var code = _engine.Loader.FromFile(path);
+        }
+
+        private ModuleHandle LoadAndRegister(Type type, CompilerService compiler, string typeName, Environment.ICodeSource code)
+        {
             var moduleHandle = compiler.CreateModule(code);
             var loadedHandle = _engine.LoadModuleImage(moduleHandle);
             _loadedModules.Add(typeName, loadedHandle.Module);
-            
-            TypeManager.RegisterType(typeName, typeof(AttachedScriptsFactory));
 
+            TypeManager.RegisterType(typeName, type);
+
+            return moduleHandle;
         }
 
         private static AttachedScriptsFactory _instance;
