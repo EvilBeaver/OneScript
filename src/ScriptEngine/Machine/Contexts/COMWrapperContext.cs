@@ -11,10 +11,12 @@ namespace ScriptEngine.Machine.Contexts
     {
         private Type _dispatchedType;
         private object _instance;
-        private bool? _isEnumerable;
+        private bool? _isIndexed;
         private Dictionary<string, int> _dispIdCache = new Dictionary<string,int>(StringComparer.InvariantCultureIgnoreCase);
         private Dictionary<int, MemberInfo> _membersCache = new Dictionary<int, MemberInfo>();
         private Dictionary<int, MethodInfo> _methodBinding = new Dictionary<int, MethodInfo>();
+
+        private const uint E_DISP_MEMBERNOTFOUND = 0x80020003;
         
         public COMWrapperContext(string progId, IValue[] arguments)
         {
@@ -176,9 +178,17 @@ namespace ScriptEngine.Machine.Contexts
                                         _instance, 
                                         new object[0]);
             }
-            catch (MissingMethodException)
+            catch (TargetInvocationException e)
             {
-                throw RuntimeException.IteratorIsNotDefined();
+                uint hr = (uint)System.Runtime.InteropServices.Marshal.GetHRForException(e.InnerException);
+                if (hr == E_DISP_MEMBERNOTFOUND)
+                {
+                    throw RuntimeException.IteratorIsNotDefined();
+                }
+                else
+                {
+                    throw;
+                }
             }
 
             while (comEnumerator.MoveNext())
@@ -239,6 +249,40 @@ namespace ScriptEngine.Machine.Contexts
             get
             {
                 return true;
+            }
+        }
+
+        public override bool IsIndexed
+        {
+            get
+            {
+                if (_isIndexed == null)
+                {
+                    try
+                    {
+
+                        var comValue = _instance.GetType().InvokeMember("[DispId=0]",
+                                                BindingFlags.InvokeMethod|BindingFlags.GetProperty,
+                                                null,
+                                                _instance,
+                                                new object[0]);
+                        _isIndexed = true;
+                    }
+                    catch (TargetInvocationException e)
+                    {
+                        uint hr = (uint)System.Runtime.InteropServices.Marshal.GetHRForException(e.InnerException);
+                        if (hr == E_DISP_MEMBERNOTFOUND)
+                        {
+                            _isIndexed = false;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                }
+
+                return (bool)_isIndexed;
             }
         }
 
