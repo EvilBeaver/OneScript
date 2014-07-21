@@ -125,6 +125,10 @@ namespace ScriptEngine.Machine.Contexts
                 var ctx = new COMWrapperContext(objParam);
                 return ValueFactory.Create(ctx);
             }
+            else if (type.IsArray)
+            {
+                return new SafeArrayWrapper(objParam);
+            }
             else
             {
                 throw new RuntimeException("Тип " + type + " невозможно преобразовать в один из поддерживаемых типов");
