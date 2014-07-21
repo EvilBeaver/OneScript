@@ -27,8 +27,17 @@ namespace ScriptEngine.Machine.Contexts
 
         public void Dispose()
         {
-            _iterator.Dispose();
-            _iterator = null;
+            Dispose(true);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _iterator.Dispose();
+                _iterator = null;
+                GC.SuppressFinalize(this);
+            }
         }
 
         #endregion
@@ -114,7 +123,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public bool Equals(IValue other)
         {
-            throw new NotImplementedException();
+            return false;
         }
 
         #endregion
