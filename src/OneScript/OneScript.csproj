@@ -41,6 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\BasicTypes.cs" />
+    <Compile Include="Core\ContextClassAttribute.cs" />
+    <Compile Include="Core\ContextMethodAttribute.cs" />
+    <Compile Include="Core\ContextPropertyAttribute.cs" />
     <Compile Include="Core\DataType.cs" />
     <Compile Include="Core\IRuntimeContextInstance.cs" />
     <Compile Include="Core\IValue.cs" />
