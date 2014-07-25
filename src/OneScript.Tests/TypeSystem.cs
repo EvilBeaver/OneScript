@@ -80,5 +80,25 @@ namespace OneScript.Tests
             Assert.AreSame(BasicTypes.Type, manager["Тип"]);
         }
 
+        [TestMethod]
+        public void TypeRegistration()
+        {
+            var manager = new TypeManager();
+            var newType = manager.RegisterSimpleType("ВидСравнения", "ComparisonType");
+            Assert.IsTrue(newType.Name == "ВидСравнения");
+            Assert.IsTrue(newType.Alias == "ComparisonType");
+            Assert.IsFalse(newType.IsObject);
+            Assert.AreSame(newType, manager["ВидСравнения"]);
+
+            newType = manager.RegisterObjectType("Структура");
+            Assert.IsTrue(newType.Name == "Структура");
+            Assert.IsTrue(newType.IsObject);
+            Assert.AreSame(newType, manager["Структура"]);
+
+            Assert.IsTrue(TestHelpers.ExceptionThrown(
+                ()=>manager.RegisterObjectType("Структура"), 
+                typeof(ArgumentException)), "No exception thrown");
+            
+        }
     }
 }

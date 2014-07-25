@@ -44,6 +44,7 @@
     <Compile Include="ComponentModel\ContextClassAttribute.cs" />
     <Compile Include="ComponentModel\ContextMethodAttribute.cs" />
     <Compile Include="ComponentModel\ContextPropertyAttribute.cs" />
+    <Compile Include="Core\CounterBasedDisposable.cs" />
     <Compile Include="Core\DataType.cs" />
     <Compile Include="Core\EngineException.cs" />
     <Compile Include="Core\StringConstantValue.cs" />

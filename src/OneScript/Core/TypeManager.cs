@@ -19,6 +19,30 @@ namespace OneScript.Core
             RegisterType(BasicTypes.Type);
         }
 
+        public DataType RegisterSimpleType(string name)
+        {
+            return RegisterSimpleType(name, null);
+        }
+
+        public DataType RegisterSimpleType(string name, string alias)
+        {
+            DataType t = DataType.CreateSimple(name, alias);
+            RegisterType(t);
+            return t;
+        }
+
+        public DataType RegisterObjectType(string name)
+        {
+            return RegisterObjectType(name, null);
+        }
+
+        public DataType RegisterObjectType(string name, string alias)
+        {
+            DataType t = DataType.CreateObject(name, alias);
+            RegisterType(t);
+            return t;
+        }
+
         private void RegisterType(DataType dataType)
         {
             _registeredTypes.Add(dataType.Name, dataType);

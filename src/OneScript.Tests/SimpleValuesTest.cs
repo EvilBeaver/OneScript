@@ -139,22 +139,7 @@ namespace OneScript.Tests
 
         private bool ExceptionThrown(Action action, Type exceptionType)
         {
-            try
-            {
-                action();
-                return false;
-            }
-            catch(Exception e)
-            {
-                if(e.GetType() == exceptionType)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
+            return TestHelpers.ExceptionThrown(action, exceptionType);
         }
     }
 }

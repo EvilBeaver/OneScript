@@ -67,7 +67,7 @@ namespace OneScript.Core
             }
             else
             {
-                throw new NotSupportedException("Сравнение допускается только для значений с типом Тип");
+                return this.Type.CompareTo(other.Type);
             }
         }
     }
