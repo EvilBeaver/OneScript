@@ -12,6 +12,7 @@ namespace OneScript.Core
         private static DataType _date;
         private static DataType _boolean;
         private static DataType _undefined;
+        private static DataType _type;
 
         static BasicTypes()
         {
@@ -20,6 +21,7 @@ namespace OneScript.Core
             _date = DataType.CreateSimple("Дата", "Date");
             _boolean = DataType.CreateSimple("Булево", "Boolean");
             _undefined = DataType.CreateSimple("Неопределено", "Undefined");
+            _type = DataType.CreateSimple("Тип", "Type");
         }
 
         public static DataType Number
@@ -43,6 +45,10 @@ namespace OneScript.Core
         public static DataType Undefined
         {
             get { return _undefined; }
+        }
+        public static DataType Type
+        {
+            get { return _type; }
         }
 
     }

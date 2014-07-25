@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OneScript.Core
+namespace OneScript.ComponentModel
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class ContextPropertyAttribute : Attribute

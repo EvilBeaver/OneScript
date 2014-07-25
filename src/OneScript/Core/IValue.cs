@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Core
 {
-    public interface IValue
+    public interface IValue : IEquatable<IValue>, IComparable<IValue>
     {
         DataType Type { get; }
         double AsNumber();

@@ -16,6 +16,7 @@ namespace OneScript.Tests
             Assert.IsFalse(BasicTypes.Date.IsObject);
             Assert.IsFalse(BasicTypes.Boolean.IsObject);
             Assert.IsFalse(BasicTypes.Undefined.IsObject);
+            Assert.IsFalse(BasicTypes.Type.IsObject);
         }
         
         [TestMethod]
@@ -50,12 +51,14 @@ namespace OneScript.Tests
             Assert.AreEqual("Дата", BasicTypes.Date.Name);
             Assert.AreEqual("Булево", BasicTypes.Boolean.Name);
             Assert.AreEqual("Неопределено", BasicTypes.Undefined.Name);
+            Assert.AreEqual("Тип", BasicTypes.Type.Name);
 
             Assert.AreEqual("Number", BasicTypes.Number.Alias);
             Assert.AreEqual("String", BasicTypes.String.Alias);
             Assert.AreEqual("Date", BasicTypes.Date.Alias);
             Assert.AreEqual("Boolean", BasicTypes.Boolean.Alias);
             Assert.AreEqual("Undefined", BasicTypes.Undefined.Alias);
+            Assert.AreEqual("Type", BasicTypes.Type.Alias);
         }
 
         [TestMethod]
@@ -67,12 +70,14 @@ namespace OneScript.Tests
             Assert.AreSame(BasicTypes.Date, manager["Date"]);
             Assert.AreSame(BasicTypes.Boolean, manager["Boolean"]);
             Assert.AreSame(BasicTypes.Undefined, manager["Undefined"]);
+            Assert.AreSame(BasicTypes.Type, manager["Type"]);
 
             Assert.AreSame(BasicTypes.Number, manager["Число"]);
             Assert.AreSame(BasicTypes.String, manager["Строка"]);
             Assert.AreSame(BasicTypes.Date, manager["Дата"]);
             Assert.AreSame(BasicTypes.Boolean, manager["Булево"]);
             Assert.AreSame(BasicTypes.Undefined, manager["Неопределено"]);
+            Assert.AreSame(BasicTypes.Type, manager["Тип"]);
         }
 
     }

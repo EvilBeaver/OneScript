@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OneScript.Core
+namespace OneScript.ComponentModel
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class ContextMethodAttribute : Attribute

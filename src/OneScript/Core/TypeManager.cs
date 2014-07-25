@@ -16,6 +16,7 @@ namespace OneScript.Core
             RegisterType(BasicTypes.Date);
             RegisterType(BasicTypes.Boolean);
             RegisterType(BasicTypes.Undefined);
+            RegisterType(BasicTypes.Type);
         }
 
         private void RegisterType(DataType dataType)

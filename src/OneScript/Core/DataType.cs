@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Core
 {
-    public class DataType
+    public class DataType : IComparable<DataType>
     {
         private DataType()
         {
@@ -33,6 +33,16 @@ namespace OneScript.Core
                 Alias = alias,
                 IsObject = true
             };
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public int CompareTo(DataType other)
+        {
+            return string.Compare(this.Name, other.Name, true);
         }
     }
 }
