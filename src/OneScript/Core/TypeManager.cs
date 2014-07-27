@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace OneScript.Core
 {
     public class TypeManager
     {
-        private Dictionary<string, DataType> _registeredTypes = new Dictionary<string,DataType>(StringComparer.InvariantCultureIgnoreCase);
+        private Dictionary<string, int> _registeredTypes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        private List<DataType> _types = new List<DataType>();
+        private Dictionary<int, List<MethodInfo>> _constructors = new Dictionary<int, List<MethodInfo>>();
 
         public TypeManager()
         {
@@ -26,7 +29,11 @@ namespace OneScript.Core
 
         public DataType RegisterSimpleType(string name, string alias)
         {
-            DataType t = DataType.CreateSimple(name, alias);
+            return RegisterSimpleType(name, alias, null);
+        }
+        public DataType RegisterSimpleType(string name, string alias, DataTypeConstructor constructor)
+        {
+            var t = DataType.CreateSimpleType(name, alias, constructor);
             RegisterType(t);
             return t;
         }
@@ -38,33 +45,66 @@ namespace OneScript.Core
 
         public DataType RegisterObjectType(string name, string alias)
         {
-            DataType t = DataType.CreateObject(name, alias);
+            return RegisterObjectType(name, alias, null);
+        }
+
+        public DataType RegisterObjectType(string name, string alias, DataTypeConstructor constructor)
+        {
+            DataType t = DataType.CreateObjectType(name, alias, constructor);
             RegisterType(t);
             return t;
         }
 
         private void RegisterType(DataType dataType)
         {
-            _registeredTypes.Add(dataType.Name, dataType);
+            int newIndex = _types.Count;
+            _registeredTypes.Add(dataType.Name, newIndex);
             if(dataType.Alias != null)
             {
-                _registeredTypes.Add(dataType.Alias, dataType);
+                try
+                {
+                    _registeredTypes.Add(dataType.Alias, newIndex);
+                }
+                catch (ArgumentException)
+                {
+                    _registeredTypes.Remove(dataType.Name);
+                    throw;
+                }
             }
+
+            _types.Add(dataType);
+        }
+
+        public DataType GetByName(string name)
+        {
+            int index;
+            if (_registeredTypes.TryGetValue(name, out index))
+            {
+                return _types[index];
+            }
+
+            return null;
         }
 
         public DataType this[string name]
         {
             get
             {
-                DataType typeInstance;
-                if (_registeredTypes.TryGetValue(name, out typeInstance))
-                {
-                    return typeInstance;
-                }
-
-                return null;
+                return GetByName(name);
             }
         }
             
+        internal void AddConstructorFor(string name, MethodInfo method)
+        {
+            int id = _registeredTypes[name];
+            List<MethodInfo> constrList;
+            if(!_constructors.TryGetValue(id, out constrList))
+            {
+                constrList = new List<MethodInfo>();
+                _constructors[id] = constrList;
+            }
+
+            constrList.Add(method);
+        }
     }
 }

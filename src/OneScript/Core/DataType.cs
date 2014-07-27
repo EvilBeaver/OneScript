@@ -5,8 +5,12 @@ using System.Text;
 
 namespace OneScript.Core
 {
+    public delegate IValue DataTypeConstructor(DataType constructedType, IValue[] arguments);
+
     public class DataType : IComparable<DataType>
     {
+        private DataTypeConstructor _constructionDelegate;
+
         private DataType()
         {
         }
@@ -15,24 +19,16 @@ namespace OneScript.Core
         public string Alias { get; private set; }
         public bool IsObject { get; private set; }
 
-        internal static DataType CreateSimple(string name, string alias)
+        public IValue CreateInstance(IValue[] arguments)
         {
-            return new DataType()
+            if(_constructionDelegate != null)
             {
-                Name = name,
-                Alias = alias,
-                IsObject = false
-            };
-        }
-
-        internal static DataType CreateObject(string name, string alias)
-        {
-            return new DataType()
+                return _constructionDelegate(this, arguments);
+            }
+            else
             {
-                Name = name,
-                Alias = alias,
-                IsObject = true
-            };
+                throw new NotSupportedException();
+            }
         }
 
         public override string ToString()
@@ -44,5 +40,28 @@ namespace OneScript.Core
         {
             return string.Compare(this.Name, other.Name, true);
         }
+
+        internal static DataType CreateSimpleType(string name, string alias = null, DataTypeConstructor constructor = null)
+        {
+            return new DataType()
+            {
+                Name = name,
+                Alias = alias,
+                IsObject = false,
+                _constructionDelegate = constructor
+            };
+        }
+
+        internal static DataType CreateObjectType(string name, string alias = null, DataTypeConstructor constructor = null)
+        {
+            return new DataType()
+            {
+                Name = name,
+                Alias = alias,
+                IsObject = true,
+                _constructionDelegate = constructor
+            };
+        }
+
     }
 }

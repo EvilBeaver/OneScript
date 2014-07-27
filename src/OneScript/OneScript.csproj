@@ -40,8 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentModel\TypeImporter.cs" />
+    <Compile Include="ComponentModel\TypeConstructorAttribute.cs" />
     <Compile Include="Core\BasicTypes.cs" />
-    <Compile Include="ComponentModel\ContextClassAttribute.cs" />
+    <Compile Include="ComponentModel\ImportedClassAttribute.cs" />
     <Compile Include="ComponentModel\ContextMethodAttribute.cs" />
     <Compile Include="ComponentModel\ContextPropertyAttribute.cs" />
     <Compile Include="Core\CounterBasedDisposable.cs" />

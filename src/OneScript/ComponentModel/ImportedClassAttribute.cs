@@ -6,14 +6,15 @@ using System.Text;
 namespace OneScript.ComponentModel
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class ContextClassAttribute : Attribute
+    public class ImportedClassAttribute : Attribute
     {
-        public ContextClassAttribute()
+        public ImportedClassAttribute()
         {
         }
 
         public string Name { get; set; }
         public string Alias { get; set; }
+        public bool IsSimpleType { get; set; }
 
     }
 }
