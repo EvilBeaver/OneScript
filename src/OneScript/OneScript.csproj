@@ -53,6 +53,7 @@
     <Compile Include="Core\IRuntimeContextInstance.cs" />
     <Compile Include="Core\IValue.cs" />
     <Compile Include="Core\SimpleConstantValue.cs" />
+    <Compile Include="Core\TypeId.cs" />
     <Compile Include="Core\TypeManager.cs" />
     <Compile Include="Core\TypeTypeValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
