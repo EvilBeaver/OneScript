@@ -47,18 +47,15 @@ namespace ScriptEngine.Compiler
         {
             for (int i = _scopeStack.Count - 1; i >= 0; i--)
             {
-                try
-                {
-                    var number = extract(_scopeStack[i]);
-                    var result = new SymbolBinding();
-                    result.CodeIndex = number;
-                    result.ContextIndex = i;
-                    return result;
-                }
-                catch (SymbolNotFoundException)
-                {
+                var number = extract(_scopeStack[i]);
+                if (number < 0)
                     continue;
-                }
+
+                var result = new SymbolBinding();
+                result.CodeIndex = number;
+                result.ContextIndex = i;
+                return result;
+                
             }
 
             throw new SymbolNotFoundException(symbol);
@@ -78,7 +75,7 @@ namespace ScriptEngine.Compiler
 
         public VariableBinding GetVariable(string name)
         {
-            var sb = GetSymbol(name, x=>x.GetVariableNumber(name));
+            var sb = GetSymbol(name, x => ExtractVariableIndex(name, x));
 
             return new VariableBinding()
             {
@@ -90,7 +87,27 @@ namespace ScriptEngine.Compiler
 
         public SymbolBinding GetMethod(string name)
         {
-            return GetSymbol(name, x => x.GetMethodNumber(name));
+            return GetSymbol(name, x => ExtractMethodIndex(name, x));
+        }
+
+        private int ExtractVariableIndex(string name, SymbolScope scope)
+        {
+            if (scope.IsVarDefined(name))
+            {
+                return scope.GetVariableNumber(name);
+            }
+            else
+                return -1;
+        }
+
+        private int ExtractMethodIndex(string name, SymbolScope scope)
+        {
+            if (scope.IsMethodDefined(name))
+            {
+                return scope.GetMethodNumber(name);
+            }
+            else
+                return -1;
         }
 
         public SymbolScope GetScope(int scopeIndex)
