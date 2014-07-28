@@ -126,6 +126,10 @@ namespace ScriptEngine.Machine
             StackToArray(ref stateToSave.operationStack, _operationStack);
 
             _states.Push(stateToSave);
+
+            _callStack.Clear();
+            _exceptionsStack.Clear();
+            _operationStack.Clear();
         }
 
         private void StackToArray<T>(ref T[] destination, Stack<T> source)
