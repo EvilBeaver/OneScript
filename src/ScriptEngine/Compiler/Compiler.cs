@@ -16,6 +16,7 @@ namespace ScriptEngine.Compiler
         private bool _isMethodsDefined = false;
         private bool _isStatementsDefined = false;
         private bool _isFunctionProcessed = false;
+        private bool _isInTryBlock = false;
 
         private Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
@@ -653,7 +654,9 @@ namespace ScriptEngine.Compiler
             _nestedLoops.Push(loopRecord);
 
             NextToken();
+            bool savedTryFlag = SetTryBlockFlag(false);
             BuildCodeBatch();
+            SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
 
             AddCommand(OperationCode.Jmp, loopBegin);
@@ -693,7 +696,9 @@ namespace ScriptEngine.Compiler
             _nestedLoops.Push(loopRecord);
             NextToken();
             PushStructureToken(Token.EndLoop);
+            bool savedTryFlag = SetTryBlockFlag(false);
             BuildCodeBatch();
+            SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
 
             // jmp to start
@@ -721,7 +726,9 @@ namespace ScriptEngine.Compiler
 
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, 0);
             NextToken();
+            bool savedTryFlag = SetTryBlockFlag(false);
             BuildCodeBatch();
+            SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
             AddCommand(OperationCode.Jmp, conditionIndex);
             
@@ -746,6 +753,8 @@ namespace ScriptEngine.Compiler
             }
 
             var loopInfo = _nestedLoops.Peek();
+            if(_isInTryBlock)
+                AddCommand(OperationCode.EndTry, 0);
             var idx = AddCommand(OperationCode.Jmp, -1);
             loopInfo.breakStatements.Add(idx);
             NextToken();
@@ -759,6 +768,8 @@ namespace ScriptEngine.Compiler
             }
 
             var loopInfo = _nestedLoops.Peek();
+            if(_isInTryBlock)
+                AddCommand(OperationCode.EndTry, 0);
             AddCommand(OperationCode.Jmp, loopInfo.startPoint);
             NextToken();
         }
@@ -795,11 +806,12 @@ namespace ScriptEngine.Compiler
         private void BuildTryExceptStatement()
         {
             var beginTryIndex = AddCommand(OperationCode.BeginTry, -1);
+            bool savedTryFlag = SetTryBlockFlag(true);
             PushStructureToken(Token.Exception);
             NextToken();
             BuildCodeBatch();
             PopStructureToken();
-
+            SetTryBlockFlag(savedTryFlag);
             var jmpIndex = AddCommand(OperationCode.Jmp, -1);
 
             CorrectCommandArgument(beginTryIndex, _module.Code.Count);
@@ -850,6 +862,13 @@ namespace ScriptEngine.Compiler
             {
                 CorrectCommandArgument(breakCmdIndex, endLoopIndex);
             }
+        }
+
+        private bool SetTryBlockFlag(bool isInTry)
+        {
+            bool current = _isInTryBlock;
+            _isInTryBlock = isInTry;
+            return current;
         }
 
         private void BuildSimpleStatement()
