@@ -1008,11 +1008,11 @@ namespace ScriptEngine.Machine
             if (_currentFrame.DiscardReturnValue)
                 _operationStack.Pop();
 
-            if(_exceptionsStack.Count > 0 && _exceptionsStack.Peek().handlerFrame == _currentFrame)
+            while(_exceptionsStack.Count > 0 && _exceptionsStack.Peek().handlerFrame == _currentFrame)
             {
                 _exceptionsStack.Pop();
-                _lastException = null;
             }
+            _lastException = null;
 
             if (_callStack.Count != 0)
             {
