@@ -262,6 +262,7 @@ namespace ScriptEngine.Machine
         {
             var methDescr = _module.Methods[methodIndex];
             var frame = new ExecutionFrame();
+            frame.MethodName = methDescr.Signature.Name;
             frame.Locals = new IVariable[methDescr.VariableFrameSize];
             for (int i = 0; i < methDescr.VariableFrameSize; i++)
             {
@@ -738,6 +739,7 @@ namespace ScriptEngine.Machine
                 {
                     var methDescr = _module.Methods[methodRef.CodeIndex];
                     var frame = new ExecutionFrame();
+                    frame.MethodName = methInfo.Name;
                     frame.Locals = new IVariable[methDescr.VariableFrameSize];
                     for (int i = 0; i < methDescr.VariableFrameSize; i++)
                     {
@@ -1005,6 +1007,12 @@ namespace ScriptEngine.Machine
         {
             if (_currentFrame.DiscardReturnValue)
                 _operationStack.Pop();
+
+            if(_exceptionsStack.Count > 0 && _exceptionsStack.Peek().handlerFrame == _currentFrame)
+            {
+                _exceptionsStack.Pop();
+                _lastException = null;
+            }
 
             if (_callStack.Count != 0)
             {
