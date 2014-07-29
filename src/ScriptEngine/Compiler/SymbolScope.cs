@@ -27,11 +27,12 @@ namespace ScriptEngine.Compiler
 
         public int GetVariableNumber(string name)
         {
-            try
+            int varNumber;
+            if(_variableNumbers.TryGetValue(name, out varNumber))
             {
-                return _variableNumbers[name];
+                return varNumber;
             }
-            catch (KeyNotFoundException)
+            else
             {
                 throw new SymbolNotFoundException(name);
             }
