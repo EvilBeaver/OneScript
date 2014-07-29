@@ -9,6 +9,25 @@ namespace OneScript.Tests
     public class TypeSystem
     {
         [TestMethod]
+        public void TypeID_equality()
+        {
+            var first = new TypeId("1CB882B3-648C-4161-B640-49439059EC4C");
+            var second = new TypeId("1CB882B3-648C-4161-B640-49439059EC4C");
+            Assert.AreNotSame(first, second);
+            Assert.AreEqual(first, second);
+            Assert.IsTrue(first.Equals(second));
+            Assert.IsTrue(first.CompareTo(second) == 0);
+        }
+
+        [TestMethod]
+        public void TypeID_Comparison()
+        {
+            var first = new TypeId("1CB882B3-648C-4161-B640-49439059EC4C");
+            var second = new TypeId("9051962F-DE5C-4267-8F26-5761DC499806");
+            Assert.IsTrue(first.CompareTo(second) < 0);
+        }
+        
+        [TestMethod]
         public void BasicTypes_AreNonObject()
         {
             Assert.IsFalse(BasicTypes.Number.IsObject);
@@ -78,6 +97,19 @@ namespace OneScript.Tests
             Assert.AreSame(BasicTypes.Boolean, manager["Булево"]);
             Assert.AreSame(BasicTypes.Undefined, manager["Неопределено"]);
             Assert.AreSame(BasicTypes.Type, manager["Тип"]);
+        }
+
+        [TestMethod]
+        public void Types_Equality()
+        {
+            var manager1 = new TypeManager();
+            var newType1 = manager1.RegisterSimpleType("ВидСравнения", "ComparisonType");
+
+            var manager2 = new TypeManager();
+            var newType2 = manager2.RegisterSimpleType("ВидСравнения", "ComparisonType");
+
+            Assert.AreNotSame(newType1, newType2);
+            Assert.IsTrue(newType1.Equals(newType2));
         }
 
         [TestMethod]

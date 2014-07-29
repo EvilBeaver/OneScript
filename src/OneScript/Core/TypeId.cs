@@ -9,6 +9,11 @@ namespace OneScript.Core
     {
         private Guid _value;
 
+        public TypeId(string uuid)
+        {
+            _value = new Guid(uuid);
+        }
+
         public override bool Equals(object obj)
         {
             if(obj == null)

@@ -9,7 +9,9 @@ namespace OneScript.ComponentModel
 {
     public class TypeImporter
     {
-        TypeManager _manager;
+        private TypeManager _manager;
+        private Dictionary<TypeId, List<MethodInfo>> _constructors = new Dictionary<TypeId, List<MethodInfo>>();
+
         public TypeImporter(TypeManager manager)
         {
             _manager = manager;
@@ -22,9 +24,9 @@ namespace OneScript.ComponentModel
                 throw new ArgumentException("Type " + type.ToString() + " is not marked with ContextClass attribute");
             }
 
-            if(!typeof(IValue).IsAssignableFrom(type))
+            if(!typeof(ImportedClassBase).IsAssignableFrom(type))
             {
-                throw new ArgumentException("Type " + type.ToString() + " is not inherited from IValue");
+                throw new ArgumentException("Type " + type.ToString() + " is not inherited from ImportedClassBase");
             }
 
             var attrib = (ImportedClassAttribute)type.GetCustomAttributes(typeof(ImportedClassAttribute), false)[0];
@@ -46,14 +48,14 @@ namespace OneScript.ComponentModel
             else
                 newType = _manager.RegisterObjectType(typeName, typeAlias, ImportedClassesConstructor);
 
-            var constructors = type.GetMethods(BindingFlags.Static)
+            var constructors = type.GetMethods(BindingFlags.Static | BindingFlags.Public)
                 .Where((x) => x.IsDefined(typeof(TypeConstructorAttribute), false));
 
             foreach (var method in constructors)
             {
                 if(IsValidConstructor(method))
                 {
-                    _manager.AddConstructorFor(typeName, method);
+                    AddConstructorFor(newType.ID, method);
                 }
             }
 
@@ -62,27 +64,107 @@ namespace OneScript.ComponentModel
 
         private bool IsValidConstructor(MethodInfo method)
         {
-            if(!typeof(IValue).IsAssignableFrom(method.ReturnType))
-                return false;
+            return typeof(IValue).IsAssignableFrom(method.ReturnType);
+        }
 
-            var parameters = method.GetParameters();
-            if(parameters.Length < 1)
-                return false;
-            
-            if(parameters[0].ParameterType == typeof(DataType))
+        private void AddConstructorFor(TypeId id, MethodInfo method)
+        {
+            List<MethodInfo> constrList;
+            if (!_constructors.TryGetValue(id, out constrList))
             {
-                return true;
+                constrList = new List<MethodInfo>();
+                _constructors[id] = constrList;
             }
-            else
+
+            constrList.Add(method);
+        }
+        
+        private IValue CreateInstanceOf(TypeId id, IValue[] arguments)
+        {
+            List<MethodInfo> constructors;
+
+            if (!_constructors.TryGetValue(id, out constructors))
             {
-                return false;
+                throw new EngineException("Конструктор не найден: " + _manager.GetById(id).Name);
             }
+
+            if (arguments == null)
+                arguments = new IValue[0];
+
+            int argCount = arguments.Length;
+
+            foreach (var ctor in constructors)
+            {
+                ParameterInfo[] parameters = ctor.GetParameters();
+                List<object> argsToPass = new List<object>();
+
+                bool success = (parameters.Length == 0 && argCount == 0)
+                        || (parameters.Length > 0 && parameters[0].ParameterType.IsArray);
+
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    Type paramType = parameters[i].ParameterType;
+
+                    if (parameters[i].ParameterType.IsArray)
+                    {
+                        // captures all remained args
+                        IValue[] varArgs = new IValue[argCount - i];
+                        for (int j = i, k = 0; k < varArgs.Length; j++, k++)
+                        {
+                            varArgs[k] = arguments[j];
+                        }
+
+                        var convertedArgs = varArgs.Select((x) => x.ToCLRType(paramType));
+                        try
+                        {
+                            argsToPass.Add(varArgs.ToArray());
+                            success = true;
+                            break;
+                        }
+                        catch (EngineException)
+                        {
+                            success = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (i < argCount)
+                        {
+                            try
+                            {
+                                argsToPass.Add(arguments[i].ToCLRType(paramType));
+                                success = true;
+                            }
+                            catch (EngineException)
+                            {
+                                success = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            success = false;
+                            break; // no match
+                        }
+                    }
+                }
+
+                if (success)
+                {
+                    var instance = (ImportedClassBase)ctor.Invoke(null, argsToPass.ToArray());
+                    instance.SetDataType(_manager.GetById(id));
+                    return (IValue)instance;
+                }
+            }
+
+            throw new EngineException("Конструктор не найден: " + _manager.GetById(id).Name);
 
         }
 
-        private static IValue ImportedClassesConstructor(DataType constructedType, IValue[] arguments)
+        private IValue ImportedClassesConstructor(DataType constructedType, IValue[] arguments)
         {
-            throw new NotImplementedException();
+            return CreateInstanceOf(constructedType.ID, arguments);
         }
     }
 }

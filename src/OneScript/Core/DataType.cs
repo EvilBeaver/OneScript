@@ -7,23 +7,24 @@ namespace OneScript.Core
 {
     public delegate IValue DataTypeConstructor(DataType constructedType, IValue[] arguments);
 
-    public class DataType : IComparable<DataType>
+    public class DataType : IEquatable<DataType>, IComparable<DataType>
     {
-        private DataTypeConstructor _constructionDelegate;
-
-        private DataType()
+        private DataType(TypeId id)
         {
+            ID = id;
         }
 
-        public string Name { get; private set; }
-        public string Alias { get; private set; }
-        public bool IsObject { get; private set; }
+        public string Name { get; internal set; }
+        public string Alias { get; internal set; }
+        public bool IsObject { get; internal set; }
+        public DataTypeConstructor Constructor { get; internal set; }
+        public TypeId ID { get; private set; }
 
         public IValue CreateInstance(IValue[] arguments)
         {
-            if(_constructionDelegate != null)
+            if (Constructor != null)
             {
-                return _constructionDelegate(this, arguments);
+                return Constructor(this, arguments);
             }
             else
             {
@@ -36,32 +37,24 @@ namespace OneScript.Core
             return Name;
         }
 
+        public bool Equals(DataType other)
+        {
+            return string.Compare(this.Name, other.Name, true) == 0;
+        }
+
         public int CompareTo(DataType other)
         {
             return string.Compare(this.Name, other.Name, true);
         }
 
-        internal static DataType CreateSimpleType(string name, string alias = null, DataTypeConstructor constructor = null)
+        internal static DataType CreateType(string name, string alias)
         {
-            return new DataType()
-            {
-                Name = name,
-                Alias = alias,
-                IsObject = false,
-                _constructionDelegate = constructor
-            };
-        }
+            var id = TypeId.New();
+            var type = new DataType(id);
+            type.Name = name;
+            type.Alias = alias;
 
-        internal static DataType CreateObjectType(string name, string alias = null, DataTypeConstructor constructor = null)
-        {
-            return new DataType()
-            {
-                Name = name,
-                Alias = alias,
-                IsObject = true,
-                _constructionDelegate = constructor
-            };
+            return type;
         }
-
     }
 }

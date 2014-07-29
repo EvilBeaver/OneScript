@@ -16,12 +16,12 @@ namespace OneScript.Core
 
         static BasicTypes()
         {
-            _number = DataType.CreateSimpleType("Число", "Number");
-            _string = DataType.CreateSimpleType("Строка", "String");
-            _date = DataType.CreateSimpleType("Дата", "Date");
-            _boolean = DataType.CreateSimpleType("Булево", "Boolean");
-            _undefined = DataType.CreateSimpleType("Неопределено", "Undefined");
-            _type = DataType.CreateSimpleType("Тип", "Type");
+            _number = DataType.CreateType("Число", "Number");
+            _string = DataType.CreateType("Строка", "String");
+            _date = DataType.CreateType("Дата", "Date");
+            _boolean = DataType.CreateType("Булево", "Boolean");
+            _undefined = DataType.CreateType("Неопределено", "Undefined");
+            _type = DataType.CreateType("Тип", "Type");
         }
 
         public static DataType Number
