@@ -19,6 +19,17 @@ namespace ScriptEngine.Compiler
         {
             var module = _compiler.CreateModule(source).Module;
 
+            WriteImage(output, module);
+
+        }
+
+        public void Write(TextWriter output, ModuleHandle module)
+        {
+            WriteImage(output, module.Module);
+        }
+
+        private void WriteImage(TextWriter output, ModuleImage module)
+        {
             output.WriteLine(".variableFrame:" + module.VariableFrameSize.ToString());
             output.WriteLine(".constants");
             for (int i = 0; i < module.Constants.Count; i++)
@@ -54,8 +65,6 @@ namespace ScriptEngine.Compiler
             output.WriteLine(".exports");
             WriteExports(output, module.ExportedProperties);
             WriteExports(output, module.ExportedMethods);
-
-            
         }
 
         private void WriteSymbolMap(TextWriter output, IList<SymbolBinding> map)

@@ -101,7 +101,8 @@ ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromScriptFile(String^ path, addinNames
 			
 			String^ thisName = L"ÝòîòÎáúåêò";
 			compiler->DefineVariable(thisName, SymbolType::ContextProperty);
-			LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
+			ScriptEngine::ModuleHandle mHandle = compiler->CreateModule(src);
+			LoadedModuleHandle mh = m_engine->LoadModuleImage(mHandle);
 
 			scriptObject = gcnew ScriptDrivenAddin(mh);
 			scriptObject->AddProperty(thisName, scriptObject);
