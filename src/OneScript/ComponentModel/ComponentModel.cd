@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="OneScript.Core.GenericValue" Collapsed="true">
+    <Position X="3" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAACAAAAAwMwAAAgAAAAAAAAAAAAQACAAAAAAA=</HashCode>
+      <FileName>Core\GenericValue.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="OneScript.ComponentModel.ComponentBase" Collapsed="true">
+    <Position X="3" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ComponentModel\ComponentBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OneScript.ComponentModel.ContextBase" Collapsed="true">
+    <Position X="3" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABEAAACBAAEAAABEAAABAgACBAAAEAAIgECABAABA=</HashCode>
+      <FileName>ComponentModel\ContextBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

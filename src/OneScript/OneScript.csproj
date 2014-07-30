@@ -40,7 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ComponentModel\ImportedClassBase.cs" />
+    <Compile Include="ComponentModel\ComponentBase.cs" />
+    <Compile Include="ComponentModel\ContextAccessException.cs" />
+    <Compile Include="ComponentModel\ContextBase.cs" />
     <Compile Include="ComponentModel\TypeImporter.cs" />
     <Compile Include="ComponentModel\TypeConstructorAttribute.cs" />
     <Compile Include="Core\BasicTypes.cs" />
@@ -50,6 +52,7 @@
     <Compile Include="Core\CounterBasedDisposable.cs" />
     <Compile Include="Core\DataType.cs" />
     <Compile Include="Core\EngineException.cs" />
+    <Compile Include="Core\GenericValue.cs" />
     <Compile Include="Core\StringConstantValue.cs" />
     <Compile Include="Core\IRuntimeContextInstance.cs" />
     <Compile Include="Core\IValue.cs" />
@@ -61,6 +64,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScriptEngine.cs" />
     <Compile Include="Core\ValueFactory.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ComponentModel\ComponentModel.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

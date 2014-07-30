@@ -139,7 +139,7 @@ namespace OneScript.Tests
         }
 
         [ImportedClass(Name="TestMock")]
-        class CreatableInstanceMock : ImportedClassBase, IValue
+        class CreatableInstanceMock : ComponentBase, IValue
         {
             public string StringParam { get; set; }
             public int IntegerParam { get; set; }
@@ -147,7 +147,7 @@ namespace OneScript.Tests
             public static IValue Constructor(DataType constructedType, IValue[] args)
             {
                 var newObj = new CreatableInstanceMock();
-                newObj.SetDataTypeInternal(constructedType);
+                newObj.Type = constructedType;
                 return newObj;
             }
 
@@ -167,6 +167,22 @@ namespace OneScript.Tests
                 return inst;
             }
 
+        }
+
+        [ImportedClass]
+        class ImportedMembersClass
+        {
+            [ContextProperty(Name = "ЧисловоеЗначение")]
+            public int IntProperty { get; set; }
+
+            [ContextProperty]
+            public bool BooleanAutoName { get; set; }
+
+            [ContextProperty(Name = "БулевоСвойство", Alias="BooleanProperty")]
+            public bool BooleanExplicitName { get; set; }
+
+            [ContextProperty(CanWrite=false)]
+            public string ReadOnlyString { get; set; }
         }
     }
 }

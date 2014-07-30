@@ -56,6 +56,7 @@
     <Compile Include="SimpleValuesTest.cs" />
     <Compile Include="RefCounter.cs" />
     <Compile Include="ComponentsTest.cs" />
+    <Compile Include="ContextBaseTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript\OneScript.csproj">

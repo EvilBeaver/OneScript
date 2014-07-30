@@ -1,39 +1,23 @@
-﻿using OneScript.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OneScript.ComponentModel
+namespace OneScript.Core
 {
-    public abstract class ImportedClassBase : IValue
+    abstract public class GenericValue : IValue
     {
-        DataType _type;
-
-        internal void SetDataType(DataType type)
-        {
-            SetDataTypeInternal(type);
-        }
-
-        protected DataType GetDataTypeInternal()
-        {
-            return _type;
-        }
-
-        protected void SetDataTypeInternal(DataType type)
-        {
-            System.Diagnostics.Debug.Assert(_type == null);
-            _type = type;
-        }
+        private DataType _typeImpl;
 
         public override string ToString()
         {
-            return _type != null ? _type.ToString() : base.ToString();
+            return _typeImpl != null ? _typeImpl.ToString() : base.ToString();
         }
 
         public virtual DataType Type
         {
-            get { return _type; }
+            get { return _typeImpl; }
+            protected set { _typeImpl = value; }
         }
 
         public virtual double AsNumber()
@@ -73,18 +57,18 @@ namespace OneScript.ComponentModel
         {
             if (other == null)
             {
-                return _type == null ? 0 : 1;
+                return _typeImpl == null ? 0 : 1;
             }
 
-            if(_type != null)
+            if (_typeImpl != null)
             {
-                if(_type == other.Type)
+                if (_typeImpl == other.Type)
                 {
                     return CompareSameType(other);
                 }
                 else
                 {
-                    return _type.CompareTo(other.Type);
+                    return _typeImpl.CompareTo(other.Type);
                 }
             }
             else

@@ -24,9 +24,9 @@ namespace OneScript.ComponentModel
                 throw new ArgumentException("Type " + type.ToString() + " is not marked with ContextClass attribute");
             }
 
-            if(!typeof(ImportedClassBase).IsAssignableFrom(type))
+            if(!typeof(ComponentBase).IsAssignableFrom(type))
             {
-                throw new ArgumentException("Type " + type.ToString() + " is not inherited from ImportedClassBase");
+                throw new ArgumentException("Type " + type.ToString() + " is not inherited from ComponentBase");
             }
 
             var attrib = (ImportedClassAttribute)type.GetCustomAttributes(typeof(ImportedClassAttribute), false)[0];
@@ -152,7 +152,7 @@ namespace OneScript.ComponentModel
 
                 if (success)
                 {
-                    var instance = (ImportedClassBase)ctor.Invoke(null, argsToPass.ToArray());
+                    var instance = (ComponentBase)ctor.Invoke(null, argsToPass.ToArray());
                     instance.SetDataType(_manager.GetById(id));
                     return (IValue)instance;
                 }
