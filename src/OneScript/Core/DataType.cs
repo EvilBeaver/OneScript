@@ -56,5 +56,14 @@ namespace OneScript.Core
 
             return type;
         }
+
+        internal static DataType CreateType(string name, string alias, TypeId id)
+        {
+            var type = new DataType(id);
+            type.Name = name;
+            type.Alias = alias;
+
+            return type;
+        }
     }
 }
