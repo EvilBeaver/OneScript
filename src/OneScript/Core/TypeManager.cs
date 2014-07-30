@@ -41,6 +41,14 @@ namespace OneScript.Core
             return t;
         }
 
+        public DataType RegisterSimpleType(string name, string alias, TypeId id, DataTypeConstructor constructor)
+        {
+            var t = DataType.CreateType(name, alias, id);
+            t.Constructor = constructor;
+            RegisterType(t);
+            return t;
+        }
+
         public DataType RegisterObjectType(string name)
         {
             return RegisterObjectType(name, null);
@@ -54,6 +62,15 @@ namespace OneScript.Core
         public DataType RegisterObjectType(string name, string alias, DataTypeConstructor constructor)
         {
             DataType t = DataType.CreateType(name, alias);
+            t.Constructor = constructor;
+            t.IsObject = true;
+            RegisterType(t);
+            return t;
+        }
+
+        public DataType RegisterObjectType(string name, string alias, TypeId id, DataTypeConstructor constructor)
+        {
+            DataType t = DataType.CreateType(name, alias, id);
             t.Constructor = constructor;
             t.IsObject = true;
             RegisterType(t);

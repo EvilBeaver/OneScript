@@ -73,6 +73,71 @@ namespace OneScript.Tests
                 Assert.Fail("Конструктор найден, хотя не должен быть");
         }
 
+        [TestMethod]
+        public void Basic_Imported_Functionality()
+        {
+            var manager = new TypeManager();
+            var importer = new TypeImporter(manager);
+            var newtype = importer.ImportType(typeof(CreatableInstanceMock));
+
+            var instance = newtype.CreateInstance(new IValue[0]);
+            Assert.IsTrue(instance.AsString() == newtype.Name);
+            Assert.IsTrue(instance.ToString() == newtype.Name);
+
+            try
+            {
+                instance.AsNumber();
+            }
+            catch (TypeConversionException e)
+            {
+                Assert.IsTrue(e.Message == "Преобразование к типу 'Число' не может быть выполнено");
+            }
+
+            try
+            {
+                instance.AsBoolean();
+            }
+            catch (TypeConversionException e)
+            {
+                Assert.IsTrue(e.Message == "Преобразование к типу 'Булево' не может быть выполнено");
+            }
+
+            try
+            {
+                instance.AsDate();
+            }
+            catch (TypeConversionException e)
+            {
+                Assert.IsTrue(e.Message == "Преобразование к типу 'Дата' не может быть выполнено");
+            }
+
+            try
+            {
+                instance.AsObject();
+            }
+            catch (TypeConversionException e)
+            {
+                Assert.IsTrue(e.Message == "Значение не является значением объектного типа");
+            }
+        }
+
+        [TestMethod]
+        public void Imported_Comparison()
+        {
+            var manager = new TypeManager();
+            var importer = new TypeImporter(manager);
+            var newtype = importer.ImportType(typeof(CreatableInstanceMock));
+
+            var first = newtype.CreateInstance(new IValue[0]);
+            var second = newtype.CreateInstance(new IValue[0]);
+            Assert.AreNotEqual(first, second);
+            Assert.IsFalse(first.Equals(second));
+
+            int hashResult = first.GetHashCode() - second.GetHashCode();
+            Assert.IsTrue(first.CompareTo(second) == hashResult);
+
+        }
+
         [ImportedClass(Name="TestMock")]
         class CreatableInstanceMock : ImportedClassBase, IValue
         {
@@ -102,45 +167,6 @@ namespace OneScript.Tests
                 return inst;
             }
 
-            public DataType Type
-            {
-                get { return GetDataTypeInternal(); }
-            }
-
-            public double AsNumber()
-            {
-                throw new NotImplementedException();
-            }
-
-            public string AsString()
-            {
-                throw new NotImplementedException();
-            }
-
-            public DateTime AsDate()
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool AsBoolean()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IRuntimeContextInstance AsObject()
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool Equals(IValue other)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int CompareTo(IValue other)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

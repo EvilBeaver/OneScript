@@ -102,11 +102,12 @@ namespace OneScript.Tests
         [TestMethod]
         public void Types_Equality()
         {
+            var id = TypeId.New();
             var manager1 = new TypeManager();
-            var newType1 = manager1.RegisterSimpleType("ВидСравнения", "ComparisonType");
+            var newType1 = manager1.RegisterSimpleType("ВидСравнения", "ComparisonType", id, null);
 
             var manager2 = new TypeManager();
-            var newType2 = manager2.RegisterSimpleType("ВидСравнения", "ComparisonType");
+            var newType2 = manager2.RegisterSimpleType("ВидСравнения", "ComparisonType", id, null);
 
             Assert.AreNotSame(newType1, newType2);
             Assert.IsTrue(newType1.Equals(newType2));

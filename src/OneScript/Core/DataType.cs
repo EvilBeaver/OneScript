@@ -39,12 +39,12 @@ namespace OneScript.Core
 
         public bool Equals(DataType other)
         {
-            return string.Compare(this.Name, other.Name, true) == 0;
+            return this.ID.Equals(other.ID);
         }
 
         public int CompareTo(DataType other)
         {
-            return string.Compare(this.Name, other.Name, true);
+            return this.ID.CompareTo(other.ID);
         }
 
         internal static DataType CreateType(string name, string alias)

@@ -38,7 +38,7 @@ namespace OneScript.ComponentModel
 
         public virtual double AsNumber()
         {
-            throw new NotImplementedException();
+            throw TypeConversionException.ConvertToNumberException();
         }
 
         public virtual string AsString()
@@ -66,10 +66,10 @@ namespace OneScript.ComponentModel
             if (other == null)
                 return false;
 
-            return other.Type.Equals(this.Type);
+            return this.Equals((object)other);
         }
 
-        public virtual int CompareTo(IValue other)
+        public int CompareTo(IValue other)
         {
             if (other == null)
             {
@@ -78,12 +78,24 @@ namespace OneScript.ComponentModel
 
             if(_type != null)
             {
-                return _type.CompareTo(other.Type);
+                if(_type == other.Type)
+                {
+                    return CompareSameType(other);
+                }
+                else
+                {
+                    return _type.CompareTo(other.Type);
+                }
             }
             else
             {
                 return -1;
             }
+        }
+
+        protected virtual int CompareSameType(IValue other)
+        {
+            return this.GetHashCode() - other.GetHashCode();
         }
     }
 }
