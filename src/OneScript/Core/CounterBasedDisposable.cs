@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Core
 {
-    public class CounterBasedLifetime : IDisposable
+    public class CounterBasedLifetimeService : IRefCountable
     {
         int _refCount = 0;
 
@@ -19,14 +19,14 @@ namespace OneScript.Core
             int count = System.Threading.Interlocked.Decrement(ref _refCount);
             if(count == 0)
             {
-                Dispose();
+                if (BeforeDisposal != null)
+                    BeforeDisposal(this, new EventArgs());
             }
 
             return count;
         }
 
-        public virtual void Dispose()
-        {
-        }
+        public event EventHandler BeforeDisposal;
+
     }
 }

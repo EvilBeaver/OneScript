@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="OneScript.Core.GenericValue" Collapsed="true">
-    <Position X="3" Y="1.25" Width="1.5" />
+    <Position X="3" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAEAAAAACAAAAAwMwAAAgAAAAAAAAAAAAQACAAAAAAA=</HashCode>
       <FileName>Core\GenericValue.cs</FileName>
@@ -9,19 +9,26 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="OneScript.ComponentModel.ComponentBase" Collapsed="true">
-    <Position X="3" Y="2.5" Width="1.5" />
+    <Position X="3" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAA=</HashCode>
       <FileName>ComponentModel\ComponentBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OneScript.ComponentModel.ContextBase" Collapsed="true">
-    <Position X="3" Y="4" Width="1.5" />
+    <Position X="3" Y="2.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAABEAAACBAAEAAABEAAABAgACBAAAEAAIgECABAABA=</HashCode>
+      <HashCode>AAABEAAACBAQEAAABEAAABAgACBAAAEAAIgECABCABA=</HashCode>
       <FileName>ComponentModel\ContextBase.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="OneScript.ComponentModel.AutoContext&lt;TInstance&gt;" Collapsed="true">
+    <Position X="1.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAABAQEIAABEAAABAAACBAAAEAAAgEAABCABA=</HashCode>
+      <FileName>ComponentModel\AutoContext.cs</FileName>
+    </TypeIdentifier>
   </Class>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>

@@ -56,6 +56,7 @@
     <Compile Include="Core\DataType.cs" />
     <Compile Include="Core\EngineException.cs" />
     <Compile Include="Core\GenericValue.cs" />
+    <Compile Include="Core\IRefCountable.cs" />
     <Compile Include="Core\StringConstantValue.cs" />
     <Compile Include="Core\IRuntimeContextInstance.cs" />
     <Compile Include="Core\IValue.cs" />

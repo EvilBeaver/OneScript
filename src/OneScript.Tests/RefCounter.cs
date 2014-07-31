@@ -19,14 +19,31 @@ namespace OneScript.Tests
             Assert.IsTrue(ad.Disposed);
         }
 
-        class AutoDisposeStub : CounterBasedLifetime
+        class AutoDisposeStub : IRefCountable
         {
+            CounterBasedLifetimeService _counter;
+
+            public AutoDisposeStub()
+            {
+                _counter = new CounterBasedLifetimeService();
+                _counter.BeforeDisposal += (s, e) => Dispose();
+            }
+
             public bool Disposed { get; set; }
 
-            public override void Dispose()
+            public void Dispose()
             {
                 Disposed = true;
-                base.Dispose();
+            }
+
+            public int AddRef()
+            {
+                return _counter.AddRef();
+            }
+
+            public int Release()
+            {
+                return _counter.Release();
             }
         }
 
