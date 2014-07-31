@@ -24,79 +24,89 @@ namespace OneScript.ComponentModel
             return 0;
         }
 
-        public int FindProperty(string name)
+        public virtual int FindProperty(string name)
         {
             throw ContextAccessException.PropNotFound(name);
         }
 
-        public string GetPropertyName(int index)
+        public virtual string GetPropertyName(int index)
         {
             throw new ArgumentException();
         }
 
-        public IValue GetIndexedValue(IValue index)
+        public virtual IValue GetIndexedValue(IValue index)
         {
             var propIdx = FindProperty(index.AsString());
             return GetPropertyValue(propIdx);
         }
 
-        public void SetIndexedValue(IValue index, IValue newValue)
+        public virtual void SetIndexedValue(IValue index, IValue newValue)
         {
             var propIdx = FindProperty(index.AsString());
             SetPropertyValue(propIdx, newValue);
         }
 
-        public IValue GetPropertyValue(int index)
+        public virtual IValue GetPropertyValue(int index)
         {
             throw new ArgumentException();
         }
 
-        public void SetPropertyValue(int index, IValue newValue)
+        public virtual void SetPropertyValue(int index, IValue newValue)
+        {
+            throw new ArgumentException();
+        }
+        
+        public virtual bool IsPropReadable(int index)
+        {
+            throw new ArgumentException();
+        }
+       
+        public virtual bool IsPropWriteable(int index)
         {
             throw new ArgumentException();
         }
 
-        public bool DynamicMethodSignatures
+        public virtual bool DynamicMethodSignatures
         {
             get { return false; }
         }
 
-        public int GetMethodsCount()
+        public virtual int GetMethodsCount()
         {
             return 0;
         }
 
-        public int FindMethod(string name)
+        public virtual int FindMethod(string name)
         {
             throw ContextAccessException.MethodNotFound(name);
         }
 
-        public string GetMethodName(int index)
+        public virtual string GetMethodName(int index)
         {
             throw new ArgumentException();
         }
 
-        public bool HasReturnValue(int index)
+        public virtual bool HasReturnValue(int index)
         {
             throw new ArgumentException();
         }
 
-        public int GetParametersCount(int index)
+        public virtual int GetParametersCount(int index)
         {
             throw new ArgumentException();
         }
 
-        public bool GetDefaultValue(int methodIndex, int paramIndex, out IValue defaultValue)
+        public virtual bool GetDefaultValue(int methodIndex, int paramIndex, out IValue defaultValue)
         {
             throw new ArgumentException();
         }
 
-        public void CallAsProcedure(int index, IValue[] args)
+        public virtual void CallAsProcedure(int index, IValue[] args)
         {
             throw new ArgumentException();
         }
 
-        public IValue CallAsFunction(int index, IValue[] args)
+        public virtual IValue CallAsFunction(int index, IValue[] args)
         {
             throw new ArgumentException();
         } 

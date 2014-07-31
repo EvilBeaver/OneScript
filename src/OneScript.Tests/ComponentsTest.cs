@@ -169,20 +169,5 @@ namespace OneScript.Tests
 
         }
 
-        [ImportedClass]
-        class ImportedMembersClass
-        {
-            [ContextProperty(Name = "ЧисловоеЗначение")]
-            public int IntProperty { get; set; }
-
-            [ContextProperty]
-            public bool BooleanAutoName { get; set; }
-
-            [ContextProperty(Name = "БулевоСвойство", Alias="BooleanProperty")]
-            public bool BooleanExplicitName { get; set; }
-
-            [ContextProperty(CanWrite=false)]
-            public string ReadOnlyString { get; set; }
-        }
     }
 }

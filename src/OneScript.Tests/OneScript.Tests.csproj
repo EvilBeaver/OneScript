@@ -57,6 +57,7 @@
     <Compile Include="RefCounter.cs" />
     <Compile Include="ComponentsTest.cs" />
     <Compile Include="ContextBaseTest.cs" />
+    <Compile Include="AutoContextTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript\OneScript.csproj">

@@ -52,9 +52,73 @@ namespace OneScript.Tests
             Assert.IsFalse(ctx.DynamicMethodSignatures);
         }
 
+        [TestMethod]
+        public void Acces_Properties_By_Index()
+        {
+            var ctx = new CtxTest2();
+            Assert.IsTrue(ctx.GetPropCount() == 1);
+
+            int index = ctx.FindProperty("HelLoStRing");
+            Assert.IsTrue(index == 0);
+
+            var indexVal = ValueFactory.Create("HelloString");
+            Assert.IsTrue(ctx.GetIndexedValue(indexVal).Type == BasicTypes.String);
+            Assert.IsTrue(ctx.GetIndexedValue(indexVal).AsString() == "");
+            ctx.SetIndexedValue(indexVal, ValueFactory.Create("hello"));
+            Assert.IsTrue(ctx.GetIndexedValue(indexVal).AsString() == "hello");
+        }
+
         class CtxTest : ContextBase
         {
 
+        }
+
+        class CtxTest2 : ContextBase
+        {
+            string _hsValue = "";
+            public override int GetPropCount()
+            {
+                return 1;
+            }
+
+            public override bool IsPropReadable(int index)
+            {
+                return true;
+            }
+            public override bool IsPropWriteable(int index)
+            {
+                return true;
+            }
+            public override IValue GetPropertyValue(int index)
+            {
+                if (index == 0)
+                    return ValueFactory.Create(_hsValue);
+                else
+                    return base.GetPropertyValue(index);
+            }
+            public override void SetPropertyValue(int index, IValue newValue)
+            {
+                if (index == 0)
+                    _hsValue = newValue.AsString();
+                else
+                    base.SetPropertyValue(index, newValue);
+            }
+            public override int FindProperty(string name)
+            {
+                if (name.ToLower() == "hellostring")
+                    return 0;
+                else
+                    return base.FindProperty(name);
+            }
+
+            public override string GetPropertyName(int index)
+            {
+                if (index == 0)
+                    return "HelloString";
+                else
+                    return base.GetPropertyName(index);
+
+            }
         }
     }
 }

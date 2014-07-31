@@ -13,6 +13,8 @@ namespace OneScript.Core
         string GetPropertyName(int index);
         IValue GetIndexedValue(IValue index);
         void SetIndexedValue(IValue index, IValue newValue);
+        bool IsPropReadable(int index);
+        bool IsPropWriteable(int index);
         IValue GetPropertyValue(int index);
         void SetPropertyValue(int index, IValue newValue);
         bool DynamicMethodSignatures { get; }

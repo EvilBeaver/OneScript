@@ -62,6 +62,9 @@ namespace OneScript.Core
                 valueObj = null;
             }
 
+            if (valueObj == null)
+                return null;
+
             if(type.IsAssignableFrom(valueObj.GetType()))
             {
                 return valueObj;

@@ -40,9 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentModel\AutoContext.cs" />
     <Compile Include="ComponentModel\ComponentBase.cs" />
     <Compile Include="ComponentModel\ContextAccessException.cs" />
     <Compile Include="ComponentModel\ContextBase.cs" />
+    <Compile Include="ComponentModel\ContextMethodMapper.cs" />
+    <Compile Include="ComponentModel\ContextPropertyMapper.cs" />
     <Compile Include="ComponentModel\TypeImporter.cs" />
     <Compile Include="ComponentModel\TypeConstructorAttribute.cs" />
     <Compile Include="Core\BasicTypes.cs" />
