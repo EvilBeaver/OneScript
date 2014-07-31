@@ -15,6 +15,12 @@ namespace OneScript.Core
         {
 
         }
+
+        public EngineException(string message, Exception inner)
+            : base(message, inner)
+        {
+
+        }
     }
 
     public class TypeConversionException : EngineException
