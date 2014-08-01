@@ -128,7 +128,8 @@ namespace ScriptEngine.Machine
         Boolean,
         Type,
         Object,
-        NotAValidValue // default argument value
+        NotAValidValue, // default argument value
+        GenericValue
     }
 
     [Serializable]
