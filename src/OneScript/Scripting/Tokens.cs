@@ -117,7 +117,6 @@ namespace OneScript.Scripting
         Round,
         Pow,
         Sqrt,
-
         ExceptionInfo,
         ExceptionDescr
     }

@@ -58,6 +58,8 @@
     <Compile Include="ComponentsTest.cs" />
     <Compile Include="ContextBaseTest.cs" />
     <Compile Include="AutoContextTest.cs" />
+    <Compile Include="LexerBasics.cs" />
+    <Compile Include="LexerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript\OneScript.csproj">

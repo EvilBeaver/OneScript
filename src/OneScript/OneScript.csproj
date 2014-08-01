@@ -71,8 +71,10 @@
     <Compile Include="Scripting\CodePositionInfo.cs" />
     <Compile Include="Scripting\LanguageDef.cs" />
     <Compile Include="Scripting\Lexem.cs" />
+    <Compile Include="Scripting\Lexer.cs" />
     <Compile Include="Scripting\ScriptException.cs" />
     <Compile Include="Scripting\Tokens.cs" />
+    <Compile Include="Scripting\SourceCodeIterator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ComponentModel\ComponentModel.cd" />

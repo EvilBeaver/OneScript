@@ -41,4 +41,10 @@ namespace OneScript.Scripting
         EndOperator,
         EndOfText
     }
+
+    public struct Word
+    {
+        public int start;
+        public string content;
+    }
 }

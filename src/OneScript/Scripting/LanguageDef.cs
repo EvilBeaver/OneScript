@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Scripting
 {
-    static class LanguageDef
+    public static class LanguageDef
     {
         static Dictionary<Token, int> _priority = new Dictionary<Token, int>();
         static Dictionary<string, Token> _stringToToken = new Dictionary<string, Token>(StringComparer.InvariantCultureIgnoreCase);
@@ -187,7 +187,7 @@ namespace OneScript.Scripting
         }
     }
 
-    static class SpecialChars
+    public static class SpecialChars
     {
         public const char StringQuote = '"';
         public const char DateQuote = '\'';
