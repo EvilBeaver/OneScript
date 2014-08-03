@@ -8,15 +8,28 @@ namespace OneScript.Scripting
     public class Lexer
     {
         private string _code;
+        private SourceCodeIterator _iterator;
 
         public Lexer()
         {
-            Position = OUT_OF_TEXT;
-            CurrentLine = OUT_OF_TEXT;
+            _iterator = new SourceCodeIterator(null);
         }
 
-        public int Position { get; private set; }
-        public int CurrentLine { get; private set; }
+        public int Position
+        {
+            get
+            {
+                return _iterator.Position;
+            }
+        }
+
+        public int CurrentLine
+        {
+            get
+            {
+                return _iterator.CurrentLine;
+            }
+        }
         public string Code 
         {
             get
@@ -26,13 +39,71 @@ namespace OneScript.Scripting
             set
             {
                 _code = value;
-                Position = 0;
-                CurrentLine = 0;
+                _iterator = new SourceCodeIterator(value);
             }
         }
 
         public Lexem NextLexem()
         {
+            //_state = _emptyState;
+
+            //while (true)
+            //{
+            //    if (_iterator.MoveToContent())
+            //    {
+            //        char cs = _iterator.CurrentSymbol;
+            //        if (Char.IsLetter(cs) || cs == '_')
+            //        {
+            //            _state = _wordState;
+            //        }
+            //        else if (Char.IsDigit(cs))
+            //        {
+            //            _state = _numberState;
+            //        }
+            //        else if (cs == SpecialChars.DateQuote)
+            //        {
+            //            _state = _dateState;
+            //        }
+            //        else if (cs == SpecialChars.StringQuote)
+            //        {
+            //            _state = _stringState;
+            //        }
+            //        else if (SpecialChars.IsOperatorChar(cs))
+            //        {
+            //            _state = _operatorState;
+            //        }
+            //        else if (cs == SpecialChars.EndOperator)
+            //        {
+            //            _iterator.MoveNext();
+            //            return new Lexem() { Type = LexemType.EndOperator, Token = Token.Semicolon };
+            //        }
+            //        else if (cs == '?')
+            //        {
+            //            _iterator.MoveNext();
+            //            return new Lexem() { Type = LexemType.Identifier, Token = Token.Question };
+            //        }
+            //        else
+            //        {
+            //            var cp = _iterator.GetPositionInfo(_iterator.CurrentLine);
+            //            throw new ParserException(cp, string.Format("Неизвестный символ {0}", cs));
+            //        }
+
+            //        var lex = _state.ReadNextLexem(_iterator);
+            //        if (lex.Type == LexemType.NotALexem)
+            //        {
+            //            _state = _emptyState;
+            //            continue;
+            //        }
+
+            //        return lex;
+
+            //    }
+            //    else
+            //    {
+            //        return Lexem.EndOfText();
+            //    }
+            //}
+            _iterator.MoveToContent();
             return Lexem.Empty();
         }
 

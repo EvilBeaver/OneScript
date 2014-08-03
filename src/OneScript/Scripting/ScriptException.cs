@@ -1,11 +1,12 @@
-﻿using System;
+﻿using OneScript.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScriptEngine
+namespace OneScript.Scripting
 {
-    public class ScriptException : OneScript.Core.EngineException
+    public class ScriptException : EngineException
     {
         private CodePositionInfo _codePosition;
 
