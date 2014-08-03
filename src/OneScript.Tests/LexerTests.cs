@@ -12,7 +12,7 @@ namespace OneScript.Tests
         public void Empty_Lexer_Position_Is_Negative()
         {
             var lexer = new Lexer();
-            Assert.IsTrue(lexer.Position == Lexer.OUT_OF_TEXT);
+            Assert.IsTrue(lexer.CurrentColumn == Lexer.OUT_OF_TEXT);
             Assert.IsTrue(lexer.CurrentLine == Lexer.OUT_OF_TEXT);
             
         }
@@ -23,12 +23,12 @@ namespace OneScript.Tests
             var lexer = new Lexer();
             lexer.Code = "А = 1;";
             Assert.IsTrue(lexer.Code == "А = 1;");
-            Assert.IsTrue(lexer.Position == Lexer.OUT_OF_TEXT);
+            Assert.IsTrue(lexer.CurrentColumn == Lexer.OUT_OF_TEXT);
             Assert.IsTrue(lexer.CurrentLine == 1);
             lexer.NextLexem();
-            Assert.IsTrue(lexer.Position >= 0);
+            Assert.IsTrue(lexer.CurrentColumn >= 0);
             lexer.Code = "А = 1;";
-            Assert.IsTrue(lexer.Position == Lexer.OUT_OF_TEXT);
+            Assert.IsTrue(lexer.CurrentColumn == Lexer.OUT_OF_TEXT);
         }
 
         [TestMethod]
@@ -367,6 +367,46 @@ namespace OneScript.Tests
             lex = state.ReadNextLexem(iterator);
             Assert.IsTrue(lex.Type == LexemType.Operator);
             Assert.IsTrue(lex.Content == "]");
+        }
+
+        [TestMethod]
+        public void Code_Walkthrough()
+        {
+            string code = @"
+            А = Б+11.2 <> 
+            '44444444' - ""ffff""";
+
+            var lexer = new Lexer();
+            lexer.Code = code;
+
+            Lexem lex;
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.Identifier);
+            Assert.IsTrue(lex.Content == "А");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.Operator);
+            Assert.IsTrue(lex.Content == "=");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.Identifier);
+            Assert.IsTrue(lex.Content == "Б");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.Operator);
+            Assert.IsTrue(lex.Content == "+");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.NumberLiteral);
+            Assert.IsTrue(lex.Content == "11.2");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.Operator);
+            Assert.IsTrue(lex.Content == "<>");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.DateLiteral);
+            Assert.IsTrue(lex.Content == "44444444");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.Operator);
+            Assert.IsTrue(lex.Content == "-");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.StringLiteral);
+            Assert.IsTrue(lex.Content == "ffff");
         }
     }
 }
