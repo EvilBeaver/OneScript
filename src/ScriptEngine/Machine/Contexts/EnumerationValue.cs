@@ -22,12 +22,12 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public DataType DataType
+        public virtual DataType DataType
         {
             get { return Machine.DataType.GenericValue; }
         }
 
-        public TypeDescriptor SystemType
+        public virtual TypeDescriptor SystemType
         {
             get { return _owner.ValuesType; }
         }

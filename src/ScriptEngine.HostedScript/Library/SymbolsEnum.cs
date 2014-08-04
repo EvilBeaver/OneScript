@@ -31,6 +31,22 @@ namespace ScriptEngine.Machine.Library
                 return _val;
             }
 
+            public override DataType DataType
+            {
+                get
+                {
+                    return DataType.String;
+                }
+            }
+
+            public override TypeDescriptor SystemType
+            {
+                get
+                {
+                    return TypeDescriptor.FromDataType(DataType);
+                }
+            }
+
             public override int CompareTo(IValue other)
             {
                 return _val.CompareTo(other.AsString());
