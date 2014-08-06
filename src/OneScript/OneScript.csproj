@@ -69,10 +69,15 @@
     <Compile Include="ScriptEngine.cs" />
     <Compile Include="Core\ValueFactory.cs" />
     <Compile Include="Scripting\CodePositionInfo.cs" />
+    <Compile Include="Scripting\CompilerContext.cs" />
+    <Compile Include="Scripting\CompilerException.cs" />
     <Compile Include="Scripting\DateLexerState.cs" />
+    <Compile Include="Scripting\ICompilerContext.cs" />
     <Compile Include="Scripting\NumberLexerState.cs" />
     <Compile Include="Scripting\OperatorLexerState.cs" />
     <Compile Include="Scripting\StringLexerState.cs" />
+    <Compile Include="Scripting\SymbolBinding.cs" />
+    <Compile Include="Scripting\SymbolScope.cs" />
     <Compile Include="Scripting\WordLexerState.cs" />
     <Compile Include="Scripting\LanguageDef.cs" />
     <Compile Include="Scripting\Lexem.cs" />
@@ -82,6 +87,7 @@
     <Compile Include="Scripting\SyntaxErrorException.cs" />
     <Compile Include="Scripting\Tokens.cs" />
     <Compile Include="Scripting\SourceCodeIterator.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ComponentModel\ComponentModel.cd" />

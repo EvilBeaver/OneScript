@@ -60,6 +60,7 @@
     <Compile Include="AutoContextTest.cs" />
     <Compile Include="LexerBasics.cs" />
     <Compile Include="LexerTests.cs" />
+    <Compile Include="SymbolScope_Tests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript\OneScript.csproj">
