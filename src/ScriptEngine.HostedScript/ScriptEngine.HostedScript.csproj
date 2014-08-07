@@ -66,6 +66,7 @@
     <Compile Include="Library\KeyAndValueImpl.cs" />
     <Compile Include="Library\MapImpl.cs" />
     <Compile Include="Library\SymbolsEnum.cs" />
+    <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

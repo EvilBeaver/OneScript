@@ -6,7 +6,7 @@ using System.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library
+namespace ScriptEngine.Machine.Library
 {
     [ContextClass("ЧтениеТекста", "TextReader")]
     class TextReadImpl : AutoContext<TextReadImpl>, IDisposable

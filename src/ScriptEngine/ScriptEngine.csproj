@@ -88,6 +88,7 @@
     <Compile Include="Machine\Contexts\ReflectedPropertyInfo.cs" />
     <Compile Include="Machine\Contexts\SafeArrayWrapper.cs" />
     <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
+    <Compile Include="Machine\GenericIValueComparer.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />

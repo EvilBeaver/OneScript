@@ -24,7 +24,9 @@ namespace ScriptEngine.Machine.Library
 
             var attr = (ContextClassAttribute)attribData[0];
             TypeManager.RegisterType(attr.GetName(), stdClass);
-            TypeManager.RegisterType(attr.GetAlias(), stdClass);
+            string alias = attr.GetAlias();
+            if(!String.IsNullOrEmpty(alias))
+                TypeManager.RegisterType(alias, stdClass);
 
         }
 
