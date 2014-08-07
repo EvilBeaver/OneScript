@@ -101,6 +101,18 @@ namespace ScriptEngine.Machine.Library
                 return false;
         }
 
+        [ContextMethod("ПрочитатьСтандартныйВвод", "ReadStdIn")]
+        public string ReadStdIn(int length)
+        {
+            using (var reader = new System.IO.StreamReader(Console.OpenStandardInput()))
+            {
+                char[] buffer = new char[length];
+                reader.Read(buffer, 0, length);
+
+                return new string(buffer);
+            }
+        }
+
         [ContextMethod("ОсвободитьОбъект", "FreeObject")]
         public void DisposeObject(IRuntimeContextInstance obj)
         {
