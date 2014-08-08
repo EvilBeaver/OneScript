@@ -19,6 +19,7 @@ namespace ScriptEngine.Machine.Library
         public GlobalContext()
         {
             RegisterProperty("АргументыКоманднойСтроки", new Func<IValue>(()=>(IValue)CommandLineArguments));
+            RegisterProperty("Символы", new Func<IValue>(() => (IValue)SymbolsEnum));
         }
 
         public void RegisterProperty(string name, IValue value)
@@ -130,6 +131,15 @@ namespace ScriptEngine.Machine.Library
                 return _args;
             }
 
+        }
+
+        [ContextProperty("Символы")]
+        public IRuntimeContextInstance SymbolsEnum
+        {
+            get
+            {
+                return Library.SymbolsEnum.GetInstance();
+            }
         }
 
         #region IAttachableContext Members

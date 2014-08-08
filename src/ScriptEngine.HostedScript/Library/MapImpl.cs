@@ -9,7 +9,7 @@ namespace ScriptEngine.Machine.Library
     [ContextClass("Соответствие", "Map")]
     class MapImpl : AutoContext<MapImpl>, ICollectionContext
     {
-        private Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>();
+        private Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>(new GenericIValueComparer());
 
         public override bool IsIndexed
         {

@@ -13,6 +13,10 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
+        public PropertyNameIndexAccessor(TypeDescriptor type):base(type)
+        {
+        }
+
         public override bool IsIndexed
         {
             get { return true; }

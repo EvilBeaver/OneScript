@@ -35,7 +35,7 @@ namespace ScriptEngine.Machine
         Type GetImplementingClass(int typeId);
         TypeDescriptor GetTypeByName(string name);
         TypeDescriptor GetTypeByFrameworkType(Type type);
-        void RegisterType(string name, Type implementingClass);
+        TypeDescriptor RegisterType(string name, Type implementingClass);
         bool IsKnownType(Type type);
         Type NewInstanceHandler { get; set; }
     }
@@ -75,7 +75,7 @@ namespace ScriptEngine.Machine
             return _knownTypes[ktIndex].Descriptor;
         }
 
-        public void RegisterType(string name, Type implementingClass)
+        public TypeDescriptor RegisterType(string name, Type implementingClass)
         {
             if (_knownTypesIndexes.ContainsKey(name))
             {
@@ -83,7 +83,7 @@ namespace ScriptEngine.Machine
                 if (GetImplementingClass(td.ID) != implementingClass)
                     throw new InvalidOperationException("Name already registered");
 
-                return;
+                return td;
             }
             else
             {
@@ -95,6 +95,7 @@ namespace ScriptEngine.Machine
                 };
 
                 RegisterType(typeDesc, implementingClass);
+                return typeDesc;
             }
 
         }
@@ -165,9 +166,9 @@ namespace ScriptEngine.Machine
             return _instance.GetTypeByName(name);
         }
 
-        public static void RegisterType(string name, Type implementingClass)
+        public static TypeDescriptor RegisterType(string name, Type implementingClass)
         {
-            _instance.RegisterType(name, implementingClass);
+            return _instance.RegisterType(name, implementingClass);
         }
 
         public static int GetTypeIDByName(string name)
