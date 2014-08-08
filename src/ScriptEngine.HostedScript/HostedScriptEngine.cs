@@ -48,6 +48,11 @@ namespace ScriptEngine
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {
             var compilerSvc = _engine.GetCompilerService();
+            return CreateProcess(host, src, compilerSvc);
+        }
+
+        public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
+        {
             var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
             return InitProcess(host, src, ref module);
         }
