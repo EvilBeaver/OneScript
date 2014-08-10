@@ -140,6 +140,38 @@ namespace OneScript.Tests
 
         }
 
+        [TestMethod]
+        public void Preprocessable_Lexer_Skips_Lexems_Correctly()
+        {
+            string code = @"
+            F = 1;
+            #Если Клиент Тогда
+                К = 1; // cccc
+                M = 2;
+            #КонецЕсли
+            X = 0;";
+
+            Lexer lexer = new Lexer();
+            lexer.Code = code;
+
+            Lexem lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Content == "F");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Content == "=" && lex.Type == LexemType.Operator);
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.NumberLiteral);
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Token == Token.Semicolon && lex.Type == LexemType.EndOperator);
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Content == "X" && lex.Type == LexemType.Identifier);
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Content == "=" && lex.Type == LexemType.Operator);
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Type == LexemType.NumberLiteral);
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Token == Token.Semicolon && lex.Type == LexemType.EndOperator);
+        }
+
         private string GetPreprocessedContent(Preprocessor pp, string code)
         {
             var iterator = new SourceCodeIterator(code);

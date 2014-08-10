@@ -16,11 +16,25 @@ namespace OneScript.Scripting
         }
     }
 
-    class EmptyParserState : LexerState
+    class EmptyLexerState : LexerState
     {
         public override Lexem ReadNextLexem(SourceCodeIterator iterator)
         {
             return Lexem.Empty();
+        }
+    }
+
+    class FixedParserState : LexerState
+    {
+        Lexem _lex;
+        public FixedParserState(Lexem lex)
+        {
+            _lex = lex;
+        }
+
+        public override Lexem ReadNextLexem(SourceCodeIterator iterator)
+        {
+            return _lex;
         }
     }
 }
