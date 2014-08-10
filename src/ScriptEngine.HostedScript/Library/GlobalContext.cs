@@ -84,6 +84,18 @@ namespace ScriptEngine.Machine.Library
             throw new ScriptInterruptionException(exitCode);
         }
 
+        [ContextMethod("КопироватьФайл", "CopyFile")]
+        public void CopyFile(string source, string destination)
+        {
+            System.IO.File.Copy(source, destination, true);
+        }
+
+        [ContextMethod("ПереместитьФайл", "MoveFile")]
+        public void MoveFile(string source, string destination)
+        {
+            System.IO.File.Move(source, destination);
+        }
+
         [ContextMethod("ВвестиСтроку", "InputString")]
         public bool InputString([ByRef] IVariable resut, int len = 0)
         {
