@@ -75,6 +75,7 @@
     <Compile Include="Scripting\ICompilerContext.cs" />
     <Compile Include="Scripting\NumberLexerState.cs" />
     <Compile Include="Scripting\OperatorLexerState.cs" />
+    <Compile Include="Scripting\Preprocessor.cs" />
     <Compile Include="Scripting\StringLexerState.cs" />
     <Compile Include="Scripting\SymbolBinding.cs" />
     <Compile Include="Scripting\SymbolScope.cs" />

@@ -105,6 +105,9 @@ namespace OneScript.Tests
             DateTime jan_01_14 = new DateTime(2014,01,01);
             Assert.IsTrue(dateString.AsDate() == jan_01_14);
 
+            var numString = ValueFactory.Create("012.12");
+            Assert.IsTrue(numString.AsNumber() == 12.12);
+
             Assert.IsTrue(ExceptionThrown(() => dateString.AsObject(), typeof(TypeConversionException)));
             Assert.IsTrue(ExceptionThrown(() => trueString.AsNumber(), typeof(TypeConversionException)));
         }

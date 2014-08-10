@@ -132,6 +132,11 @@ namespace OneScript.Scripting
             }
         }
 
+        public SourceCodeIterator GetIterator()
+        {
+            return _iterator;
+        }
+
         private bool HandleError(SyntaxErrorException exc)
         {
             if (UnexpectedCharacterFound != null)
