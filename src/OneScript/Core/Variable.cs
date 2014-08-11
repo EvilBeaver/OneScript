@@ -19,12 +19,12 @@ namespace OneScript.Core
             this.Value = val;
         }
 
-        public virtual IValue Dereference()
+        public IValue Dereference()
         {
             return _val;
         }
 
-        public virtual IValue Value
+        public IValue Value
         {
             get
             {

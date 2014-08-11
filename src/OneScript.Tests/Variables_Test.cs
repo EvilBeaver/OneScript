@@ -53,6 +53,36 @@ namespace OneScript.Tests
 
         }
 
+        [TestMethod]
+        public void Change_Value_By_Reference()
+        {
+            var v = new Variable(ValueFactory.Create(123));
+            var reference = new Reference(v);
+
+            Assert.AreSame(v.Value, reference.Value);
+            reference.Value = ValueFactory.Create("hi");
+            Assert.AreSame(v.Value, reference.Value);
+
+        }
+
+        [TestMethod]
+        public void Dereferencing()
+        {
+            var v = new Variable();
+            var reference1 = new Reference(v);
+            var reference2 = new Reference(reference1);
+
+            reference2.Value = ValueFactory.Create(123);
+            Assert.IsTrue(v.Value.AsNumber() == 123);
+            Assert.AreSame(v.Value, reference1.Value);
+
+            var deref = reference2.Dereference();
+            Assert.IsTrue(deref.AsNumber() == v.Value.AsNumber());
+            reference2.Value = ValueFactory.Create("hi");
+            Assert.IsFalse(deref == v.Value);
+            Assert.AreNotSame(deref, v.Value);
+        }
+
         class RefCounter : CounterBasedLifetimeService, IValue
         {
             public DataType Type
