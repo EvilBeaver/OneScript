@@ -62,6 +62,7 @@
     <Compile Include="LexerTests.cs" />
     <Compile Include="SymbolScope_Tests.cs" />
     <Compile Include="Preprocessor_Tests.cs" />
+    <Compile Include="Variables_Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript\OneScript.csproj">
