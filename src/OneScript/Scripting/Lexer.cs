@@ -113,25 +113,33 @@ namespace OneScript.Scripting
 
         private void Preprocess()
         {
-            while (_iterator.Position != Lexer.OUT_OF_TEXT)
+            try
             {
-                if (_preprocessor.Solve(_iterator))
+                while (_iterator.Position != Lexer.OUT_OF_TEXT)
                 {
-                    SelectState();
-                    return;
-                }
-                else
-                {
-                    while (_iterator.CurrentSymbol != '#')
+                    if (_preprocessor.Solve(_iterator))
                     {
                         SelectState();
-                        _state.ReadNextLexem(_iterator);
-                        if(!_iterator.MoveToContent())
+                        return;
+                    }
+                    else
+                    {
+                        while (_iterator.CurrentSymbol != '#')
                         {
-                            _state = _emptyState;
+                            SelectState();
+                            _state.ReadNextLexem(_iterator);
+                            if (!_iterator.MoveToContent())
+                            {
+                                _state = _emptyState;
+                            }
                         }
                     }
                 }
+            }
+            catch (SyntaxErrorException exc)
+            {
+                if(!HandleError(exc))
+                    throw;
             }
         }
 
