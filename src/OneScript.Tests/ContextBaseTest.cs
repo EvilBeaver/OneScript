@@ -89,14 +89,14 @@ namespace OneScript.Tests
             {
                 return true;
             }
-            public override IValue GetPropertyValue(int index)
+            protected override IValue GetPropertyValueInternal(int index)
             {
                 if (index == 0)
                     return ValueFactory.Create(_hsValue);
                 else
                     return base.GetPropertyValue(index);
             }
-            public override void SetPropertyValue(int index, IValue newValue)
+            protected override void SetPropertyValueInternal(int index, IValue newValue)
             {
                 if (index == 0)
                     _hsValue = newValue.AsString();

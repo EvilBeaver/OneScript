@@ -33,7 +33,7 @@ namespace OneScript.ComponentModel
             return _properties.GetProperty(index).Name;
         }
 
-        public override IValue GetPropertyValue(int propNum)
+        protected override IValue GetPropertyValueInternal(int propNum)
         {
             try
             {
@@ -45,7 +45,7 @@ namespace OneScript.ComponentModel
             }
         }
 
-        public override void SetPropertyValue(int propNum, IValue newVal)
+        protected override void SetPropertyValueInternal(int propNum, IValue newVal)
         {
             try
             {

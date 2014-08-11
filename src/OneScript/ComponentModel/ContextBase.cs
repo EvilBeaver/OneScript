@@ -13,6 +13,16 @@ namespace OneScript.ComponentModel
             return this;
         }
 
+        protected virtual IValue GetPropertyValueInternal(int index)
+        {
+            throw new ArgumentException();
+        }
+
+        protected virtual void SetPropertyValueInternal(int index, IValue newValue)
+        {
+            throw new ArgumentException();
+        }
+
         #region IRuntimeContextInstance members
         public virtual bool IsIndexed
         {
@@ -46,14 +56,20 @@ namespace OneScript.ComponentModel
             SetPropertyValue(propIdx, newValue);
         }
 
-        public virtual IValue GetPropertyValue(int index)
+        public IValue GetPropertyValue(int index)
         {
-            throw new ArgumentException();
+            if (IsPropReadable(index))
+                return GetPropertyValueInternal(index);
+            else
+                throw ContextAccessException.PropIsNotReadable(GetPropertyName(index));
         }
 
-        public virtual void SetPropertyValue(int index, IValue newValue)
+        public void SetPropertyValue(int index, IValue newValue)
         {
-            throw new ArgumentException();
+            if (IsPropWriteable(index))
+                SetPropertyValueInternal(index, newValue);
+            else
+                throw ContextAccessException.PropIsNotWritable(GetPropertyName(index));
         }
         
         public virtual bool IsPropReadable(int index)
