@@ -28,9 +28,23 @@ namespace OneScript.ComponentModel
             return _methodPtrs[number].method;
         }
 
-        public string GetMethodName(int index)
+        public string GetMethodName(int index, NameRetrievalMode mode = NameRetrievalMode.Default)
         {
-            return _methodPtrs[index].methodDef.Name;
+            var def = _methodPtrs[index].methodDef;
+
+            switch (mode)
+            {
+                case NameRetrievalMode.PreferAlias:
+                    if (def.Alias != "")
+                        return def.Alias;
+                    else
+                        return def.Name;
+                case NameRetrievalMode.OnlyAlias:
+                    return def.Alias;
+                default:
+                    return def.Name;
+            }
+
         }
 
         public bool HasReturnValue(int index)

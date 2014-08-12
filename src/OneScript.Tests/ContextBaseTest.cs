@@ -111,12 +111,12 @@ namespace OneScript.Tests
                     return base.FindProperty(name);
             }
 
-            public override string GetPropertyName(int index)
+            public override string GetPropertyName(int index, NameRetrievalMode mode = NameRetrievalMode.Default)
             {
                 if (index == 0)
                     return "HelloString";
                 else
-                    return base.GetPropertyName(index);
+                    return base.GetPropertyName(index, mode);
 
             }
         }

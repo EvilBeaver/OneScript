@@ -28,9 +28,22 @@ namespace OneScript.ComponentModel
             return _properties.Count;
         }
 
-        public override string GetPropertyName(int index)
+        public override string GetPropertyName(int index, NameRetrievalMode mode = NameRetrievalMode.Default)
         {
-            return _properties.GetProperty(index).Name;
+            var def = _properties.GetProperty(index);
+
+            switch(mode)
+            {
+                case NameRetrievalMode.PreferAlias:
+                    if (def.Alias != "")
+                        return def.Alias;
+                    else
+                        return def.Name;
+                case NameRetrievalMode.OnlyAlias:
+                    return def.Alias;
+                default:
+                    return def.Name;
+            }
         }
 
         protected override IValue GetPropertyValueInternal(int propNum)
@@ -67,9 +80,9 @@ namespace OneScript.ComponentModel
             return _methods.Count;
         }
 
-        public override string GetMethodName(int index)
+        public override string GetMethodName(int index, NameRetrievalMode mode = NameRetrievalMode.Default)
         {
-            return _methods.GetMethodName(index);
+            return _methods.GetMethodName(index, mode);
         }
 
         public override int GetParametersCount(int index)

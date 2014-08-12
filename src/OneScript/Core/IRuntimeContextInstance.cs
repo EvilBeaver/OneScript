@@ -10,7 +10,7 @@ namespace OneScript.Core
         bool IsIndexed { get; }
         int GetPropCount();
         int FindProperty(string name);
-        string GetPropertyName(int index);
+        string GetPropertyName(int index, NameRetrievalMode mode = NameRetrievalMode.Default);
         IValue GetIndexedValue(IValue index);
         void SetIndexedValue(IValue index, IValue newValue);
         bool IsPropReadable(int index);
@@ -20,11 +20,19 @@ namespace OneScript.Core
         bool DynamicMethodSignatures { get; }
         int GetMethodsCount();
         int FindMethod(string name);
-        string GetMethodName(int index);
+        string GetMethodName(int index, NameRetrievalMode mode = NameRetrievalMode.Default);
         bool HasReturnValue(int index);
         int GetParametersCount(int index);
         bool GetDefaultValue(int methodIndex, int paramIndex, out IValue defaultValue);
         void CallAsProcedure(int index, IValue[] args);
         IValue CallAsFunction(int index, IValue[] args);
+    }
+
+    public enum NameRetrievalMode
+    {
+        Default,
+        Name,
+        PreferAlias,
+        OnlyAlias
     }
 }

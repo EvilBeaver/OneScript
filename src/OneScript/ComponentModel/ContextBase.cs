@@ -39,7 +39,7 @@ namespace OneScript.ComponentModel
             throw ContextAccessException.PropNotFound(name);
         }
 
-        public virtual string GetPropertyName(int index)
+        public virtual string GetPropertyName(int index, NameRetrievalMode mode = NameRetrievalMode.Default)
         {
             throw new ArgumentException();
         }
@@ -97,7 +97,7 @@ namespace OneScript.ComponentModel
             throw ContextAccessException.MethodNotFound(name);
         }
 
-        public virtual string GetMethodName(int index)
+        public virtual string GetMethodName(int index, NameRetrievalMode mode = NameRetrievalMode.Default)
         {
             throw new ArgumentException();
         }
