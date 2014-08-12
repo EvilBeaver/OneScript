@@ -81,39 +81,41 @@ namespace OneScript.Tests
             Assert.IsTrue(ctx.CallAsFunction(index, new IValue[3]).AsNumber() == 1);
         }
 
-        [ImportedClass]
-        class ImportedMembersClass : AutoContext<ImportedMembersClass>
+    }
+
+    [ImportedClass]
+    class ImportedMembersClass : AutoContext<ImportedMembersClass>
+    {
+        [ContextProperty(Name = "ЧисловоеЗначение")]
+        public int IntProperty { get; set; }
+
+        [ContextProperty]
+        public bool BooleanAutoName { get; set; }
+
+        [ContextProperty(Name = "БулевоСвойство", Alias = "BooleanProperty")]
+        public bool BooleanExplicitName { get; set; }
+
+        [ContextProperty(CanWrite = false)]
+        public string ReadOnlyString { get; set; }
+
+        [ContextMethod(Name = "Процедура", Alias = "Proc")]
+        public void SimpleProcedure()
+        { }
+
+        [ContextMethod]
+        public int SimpleFunction() { return 0; }
+
+        [ContextMethod(Name = "Функция")]
+        public int Func(int arg1, string arg2, string arg3 = "defParam")
         {
-            [ContextProperty(Name = "ЧисловоеЗначение")]
-            public int IntProperty { get; set; }
+            return 1;
+        }
 
-            [ContextProperty]
-            public bool BooleanAutoName { get; set; }
-
-            [ContextProperty(Name = "БулевоСвойство", Alias = "BooleanProperty")]
-            public bool BooleanExplicitName { get; set; }
-
-            [ContextProperty(CanWrite = false)]
-            public string ReadOnlyString { get; set; }
-
-            [ContextMethod(Name="Процедура", Alias="Proc")]
-            public void SimpleProcedure()
-            { }
-
-            [ContextMethod]
-            public int SimpleFunction() { return 0; }
-
-            [ContextMethod(Name="Функция")]
-            public int Func(int arg1, string arg2, string arg3 = "defParam")
-            {
-                return 1;
-            }
-
-            [TypeConstructor]
-            public static IValue Constructor()
-            {
-                return new ImportedMembersClass();
-            }
+        [TypeConstructor]
+        public static IValue Constructor()
+        {
+            return new ImportedMembersClass();
         }
     }
+
 }

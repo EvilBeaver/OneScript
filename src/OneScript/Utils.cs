@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript
 {
-    static class Utils
+    public static class Utils
     {
         public static bool IsValidIdentifier(string name)
         {
@@ -17,7 +17,7 @@ namespace OneScript
 
             for (int i = 1; i < name.Length; i++)
             {
-                if (!Char.IsLetterOrDigit(name[i]))
+                if (!(Char.IsLetterOrDigit(name[i]) || name[i] == '_'))
                     return false;
             }
 

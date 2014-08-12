@@ -9,6 +9,7 @@ namespace OneScript.Scripting
     {
         Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        Dictionary<int, MethodUsageData> _methodsData = new Dictionary<int, MethodUsageData>();
 
         public static int InvalidIndex
         {
@@ -59,7 +60,7 @@ namespace OneScript.Scripting
             }
         }
 
-        public int DefineMethod(string name)
+        public int DefineMethod(string name, MethodUsageData methodUsageData)
         {
             if(IsMethodDefined(name))
             {
@@ -73,8 +74,32 @@ namespace OneScript.Scripting
             
             int newIndex = MethodCount;
             _methodsNumbers.Add(name, newIndex);
+            _methodsData.Add(newIndex, methodUsageData);
 
             return newIndex;
+        }
+
+        public void SetMethodAlias(int methodNumber, string alias)
+        {
+            if(IsMethodDefined(alias))
+                throw new ArgumentException("Метод (" + alias + ") уже определен");
+
+            if(!Utils.IsValidIdentifier(alias))
+                throw new ArgumentException("Некорректное имя (" + alias + ")");
+
+            _methodsNumbers.Add(alias, methodNumber);
+        }
+
+        public void SetVariableAlias(int variableNumber, string alias)
+        {
+            if (IsVarDefined(alias))
+                throw new ArgumentException("Переменная (" + alias + ") уже определена");
+
+            if (!Utils.IsValidIdentifier(alias))
+                throw new ArgumentException("Некорректное имя (" + alias + ")");
+
+            _variableNumbers.Add(alias, variableNumber);
+            
         }
 
         public bool IsMethodDefined(string name)
@@ -99,8 +124,13 @@ namespace OneScript.Scripting
         {
             get
             {
-                return _methodsNumbers.Count;
+                return _methodsData.Count;
             }
+        }
+
+        public MethodUsageData GetMethodUsageData(int methodNumber)
+        {
+            return _methodsData[methodNumber];
         }
     }
 }

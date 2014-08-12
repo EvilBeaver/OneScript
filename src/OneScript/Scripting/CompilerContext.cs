@@ -84,7 +84,7 @@ namespace OneScript.Scripting
         {
             try
             {
-                int index = TopScope.DefineMethod(name);
+                int index = TopScope.DefineMethod(name, MethodUsageData.CreateProcedure(0));
                 var binding = new SymbolBinding();
                 binding.Name = name;
                 binding.Context = _attachedScopes.Count - 1;
@@ -130,5 +130,10 @@ namespace OneScript.Scripting
             throw CompilerException.MethodIsNotDefined(name);
         }
 
+
+        public object GetScope(int number)
+        {
+            return _attachedScopes[number];
+        }
     }
 }
