@@ -31,9 +31,6 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        protected virtual object fuck(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, System.Globalization.CultureInfo culture)
-        { return null; }
-
         protected virtual object InvokeInternal(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, System.Globalization.CultureInfo culture)
         {
             if (invokeAttr.HasFlag(BindingFlags.GetProperty))
