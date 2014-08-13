@@ -96,6 +96,12 @@ namespace ScriptEngine.Machine.Library
             System.IO.File.Move(source, destination);
         }
 
+        [ContextMethod("КаталогВременныхФайлов", "TempFilesDir")]
+        public string TempFilesDir()
+        {
+            return System.IO.Path.GetTempPath();
+        }
+
         [ContextMethod("ВвестиСтроку", "InputString")]
         public bool InputString([ByRef] IVariable resut, int len = 0)
         {
