@@ -45,6 +45,10 @@ namespace oscript
                         return new MakeAppBehavior(codepath, output);
                     }
                 }
+                else if(cmdLineArgs[0].ToLower() == "-cgi")
+                {
+                    return new CgiBehavior();
+                }
             }
             
             return new ShowUsageBehavior();

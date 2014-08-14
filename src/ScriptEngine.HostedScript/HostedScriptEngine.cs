@@ -36,6 +36,11 @@ namespace ScriptEngine
             _engine.Initialize(globalEnvironment);
         }
 
+        public void AttachAssembly(System.Reflection.Assembly asm)
+        {
+            _engine.AttachAssembly(asm);
+        }
+
         public ICodeSourceFactory Loader
         {
             get

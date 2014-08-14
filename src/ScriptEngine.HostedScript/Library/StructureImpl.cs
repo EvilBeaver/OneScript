@@ -7,7 +7,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.Machine.Library
 {
     [ContextClass("Структура", "Structure")]
-    class StructureImpl : DynamicPropertiesAccessor, ICollectionContext
+    public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext
     {
         private List<IValue> _values = new List<IValue>();
         
