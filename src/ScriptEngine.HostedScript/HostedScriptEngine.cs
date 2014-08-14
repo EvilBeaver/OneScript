@@ -15,21 +15,25 @@ namespace ScriptEngine
 
         public HostedScriptEngine()
         {
-            Initialize();
+            Initialize(new RuntimeEnvironment());
         }
 
-        private void Initialize()
+        public HostedScriptEngine(RuntimeEnvironment globalEnvironment)
+        {
+            Initialize(globalEnvironment);
+        }
+
+        private void Initialize(RuntimeEnvironment globalEnvironment)
         {
             _engine = new ScriptingEngine();
             _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
-            
-            var env = new RuntimeEnvironment();
+
             _globalCtx = new GlobalContext();
             _globalCtx.EngineInstance = _engine;
 
-            env.InjectObject(_globalCtx, false);
-            
-            _engine.Initialize(env);
+            globalEnvironment.InjectObject(_globalCtx, false);
+
+            _engine.Initialize(globalEnvironment);
         }
 
         public ICodeSourceFactory Loader
