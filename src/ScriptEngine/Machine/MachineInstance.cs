@@ -1088,8 +1088,14 @@ namespace ScriptEngine.Machine
                 bool success = (parameters.Length == 0 && argCount == 0)
                     ||(parameters.Length > 0 && parameters[0].ParameterType.IsArray);
 
-                for (int i = 0; i < parameters.Length; i++)
+                for (int i = 0; i < argCount; i++)
                 {
+                    if (i >= parameters.Length)
+                    {
+                        success = false;
+                        break;
+                    }
+
                     if (parameters[i].ParameterType.IsArray)
                     {
                         // captures all remained args
