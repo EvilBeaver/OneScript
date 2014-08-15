@@ -24,12 +24,14 @@ SolidCompression=yes
 [Files]
 Source: "built\*"; DestDir: "{app}"
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
+Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall;
 
 [Icons]
 Name: "{group}\{#FSFriendlyName}"; Filename: "{app}\{#MainExe}"
 
 [Run]
 Filename: {tmp}\dotNetFx40_Full_setup.exe; Parameters: "/q:a /c:""install /l /q"""; Check: not IsRequiredDotNetDetected; StatusMsg: Microsoft .NET Framework 4.0 is being installed. Please wait..
+Filename: {tmp}\vcredist_x86.exe; Parameters: "/q /norestart"; StatusMsg: MS Redistributable C++ Runtime is being installed. Please wait..
 Filename: "{app}\{#MainExe}"; Description: "Launch application"; Flags: postinstall nowait skipifsilent unchecked
 
 [Code]
