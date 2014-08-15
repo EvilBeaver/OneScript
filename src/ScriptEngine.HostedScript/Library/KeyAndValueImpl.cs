@@ -7,7 +7,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.Machine.Library
 {
     [ContextClass("КлючИЗначение", "KeyAndValue")]
-    class KeyAndValueImpl : AutoContext<KeyAndValueImpl>
+    public class KeyAndValueImpl : AutoContext<KeyAndValueImpl>
     {
         private IValue _key;
         private IValue _value;

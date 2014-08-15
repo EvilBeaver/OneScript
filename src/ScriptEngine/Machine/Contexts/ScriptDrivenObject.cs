@@ -240,7 +240,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (PropDefinedInScript(propNum))
             {
-                return _state[propNum].Value;
+                 return _state[propNum].Value;
             }
             else
             {

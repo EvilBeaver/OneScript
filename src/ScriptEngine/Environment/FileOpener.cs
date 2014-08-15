@@ -11,7 +11,7 @@ namespace ScriptEngine.Environment
 
         public static StreamReader OpenReader(string filename)
         {
-            FileStream input = new FileStream(filename, FileMode.Open);
+            FileStream input = new FileStream(filename, FileMode.Open, FileAccess.Read);
             Encoding enc = AssumeEncoding(input);
 
             return new StreamReader(input, enc, true);

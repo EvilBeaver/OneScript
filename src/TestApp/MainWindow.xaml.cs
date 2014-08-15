@@ -46,6 +46,7 @@ namespace TestApp
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var hostedScript = new HostedScriptEngine();
+            hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
             using (var writer = new StringWriter())
             {
@@ -70,6 +71,7 @@ namespace TestApp
             var host = new Host(result);
 
             var hostedScript = new HostedScriptEngine();
+            hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
 
             Process process = null;
