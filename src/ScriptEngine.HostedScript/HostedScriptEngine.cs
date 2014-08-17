@@ -5,6 +5,7 @@ using System.Text;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Machine.Library;
+using ScriptEngine.Machine;
 
 namespace ScriptEngine
 {
@@ -12,24 +13,43 @@ namespace ScriptEngine
     {
         ScriptingEngine _engine;
         GlobalContext _globalCtx;
+        RuntimeEnvironment _env;
+        bool _isInitialized;
 
         public HostedScriptEngine()
         {
-            Initialize();
-        }
-
-        private void Initialize()
-        {
             _engine = new ScriptingEngine();
             _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
-            
-            var env = new RuntimeEnvironment();
+
             _globalCtx = new GlobalContext();
             _globalCtx.EngineInstance = _engine;
 
-            env.InjectObject(_globalCtx, false);
-            
-            _engine.Initialize(env);
+            _env = new RuntimeEnvironment();
+            _env.InjectObject(_globalCtx, false);
+        }
+
+        public void Initialize()
+        {
+            if (!_isInitialized)
+            {
+                _engine.Initialize(_env);
+                _isInitialized = true;
+            }
+        }
+
+        public void AttachAssembly(System.Reflection.Assembly asm)
+        {
+            _engine.AttachAssembly(asm);
+        }
+
+        public void InjectGlobalProperty(string name, IValue value, bool readOnly)
+        {
+            _env.InjectGlobalProperty(value, name, readOnly);
+        }
+
+        public void InjectObject(IAttachableContext obj, bool asDynamicScope)
+        {
+            _env.InjectObject(obj, asDynamicScope);
         }
 
         public ICodeSourceFactory Loader
@@ -42,6 +62,7 @@ namespace ScriptEngine
 
         public CompilerService GetCompilerService()
         {
+            Initialize();
             return _engine.GetCompilerService();
         }
 
@@ -71,6 +92,7 @@ namespace ScriptEngine
 
         private Process InitProcess(IHostApplication host, ICodeSource src, ref LoadedModuleHandle module)
         {
+            Initialize();
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;
             _globalCtx.InitInstance();

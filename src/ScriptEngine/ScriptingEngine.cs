@@ -21,6 +21,8 @@ namespace ScriptEngine
         {
             TypeManager.Initialize(new StandartTypeManager());
             ContextDiscoverer.Discover(System.Reflection.Assembly.GetExecutingAssembly());
+            
+            _scriptFactory = new ScriptSourceFactory();
         }
 
         public void AttachAssembly(System.Reflection.Assembly asm)
@@ -30,7 +32,6 @@ namespace ScriptEngine
 
         public void Initialize(RuntimeEnvironment environment)
         {
-            _scriptFactory = new ScriptSourceFactory();
             _symbolsContext = environment.SymbolsContext;
 
             foreach (var item in environment.AttachedContexts)

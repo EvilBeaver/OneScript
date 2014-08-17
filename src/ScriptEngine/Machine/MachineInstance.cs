@@ -804,15 +804,36 @@ namespace ScriptEngine.Machine
 
         private void CallContext(IRuntimeContextInstance instance, int index, ref MethodInfo methInfo, IValue[] argValues, bool asFunc)
         {
+            IValue[] realArgs;
+            if (!instance.DynamicMethodSignatures)
+            {
+                realArgs = new IValue[methInfo.ArgCount];
+                for (int i = 0; i < realArgs.Length; i++)
+                {
+                    if (i < argValues.Length)
+                    {
+                        realArgs[i] = argValues[i];
+                    }
+                    else
+                    {
+                        realArgs[i] = null;
+                    }
+                }
+            }
+            else
+            {
+                realArgs = argValues;
+            }
+
             if (asFunc)
             {
                 IValue retVal;
-                instance.CallAsFunction(index, argValues, out retVal);
+                instance.CallAsFunction(index, realArgs, out retVal);
                 _operationStack.Push(retVal);
             }
             else
             {
-                instance.CallAsProcedure(index, argValues);
+                instance.CallAsProcedure(index, realArgs);
             }
             NextInstruction();
         }
@@ -1088,6 +1109,12 @@ namespace ScriptEngine.Machine
                 bool success = (parameters.Length == 0 && argCount == 0)
                     ||(parameters.Length > 0 && parameters[0].ParameterType.IsArray);
 
+                if (parameters.Length < argCount && !parameters[parameters.Length-1].ParameterType.IsArray)
+                {
+                    success = false;
+                    continue;
+                }
+                
                 for (int i = 0; i < parameters.Length; i++)
                 {
                     if (parameters[i].ParameterType.IsArray)

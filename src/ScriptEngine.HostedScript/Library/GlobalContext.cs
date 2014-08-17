@@ -160,6 +160,51 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
+        [ContextMethod("ЗапуститьПриложение", "RunApp")]
+        public void RunApp(string cmdLine, string currentDir = null, bool wait = false, [ByRef] IVariable retCode = null)
+        {
+            var sInfo = new System.Diagnostics.ProcessStartInfo();
+
+            var enumArgs = Utils.SplitCommandLine(cmdLine);
+
+            bool fNameRead = false;
+            StringBuilder argsBuilder = new StringBuilder();
+
+            foreach (var item in enumArgs)
+            {
+                if(!fNameRead)
+                {
+                    sInfo.FileName = item;
+                    fNameRead = true;
+                }
+                else
+                {
+                    argsBuilder.Append(' ');
+                    argsBuilder.Append(item);
+                }
+            }
+
+            if(argsBuilder.Length > 0)
+            {
+                argsBuilder.Remove(0, 1);
+            }
+
+            sInfo.Arguments = argsBuilder.ToString();
+            if(currentDir != null)
+                sInfo.WorkingDirectory = currentDir;
+
+            var p = new System.Diagnostics.Process();
+            p.StartInfo = sInfo;
+            p.Start();
+
+            if(wait)
+            {
+                p.WaitForExit();
+                retCode.Value = ValueFactory.Create(p.ExitCode);
+            }
+
+        }
+
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
