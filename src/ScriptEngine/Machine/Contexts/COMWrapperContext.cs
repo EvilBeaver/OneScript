@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !__MonoCS__
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -59,37 +60,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public static object MarshalIValue(IValue val)
         {
-            object result;
-            if (val == null)
-                return val;
-
-            switch (val.DataType)
-            {
-                case Machine.DataType.Boolean:
-                    result = val.AsBoolean();
-                    break;
-                case Machine.DataType.Date:
-                    result = val.AsDate();
-                    break;
-                case Machine.DataType.Number:
-                    result = val.AsNumber();
-                    break;
-                case Machine.DataType.String:
-                    result = val.AsString();
-                    break;
-                case Machine.DataType.Undefined:
-                    result = null;
-                    break;
-                case Machine.DataType.Object:
-                    result = val.AsObject();
-                    if (result is IObjectWrapper)
-                        result = ((IObjectWrapper)result).UnderlyingObject;
-                    break;
-                default:
-                    throw new RuntimeException("Тип не поддерживает передачу в COM-объект");
-            }
-
-            return result;
+			return ContextValuesMarshaller.ConvertToCLRObject(val);
         }
 
         public static IValue CreateIValue(object objParam)
@@ -543,3 +514,4 @@ namespace ScriptEngine.Machine.Contexts
 
     }
 }
+#endif

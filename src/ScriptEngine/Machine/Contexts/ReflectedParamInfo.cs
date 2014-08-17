@@ -1,3 +1,4 @@
+#if !__MonoCS__
 using System.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
@@ -29,3 +30,4 @@ namespace ScriptEngine.Machine.Contexts
 
     }
 }
+#endif

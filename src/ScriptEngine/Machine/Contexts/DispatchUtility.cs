@@ -1,4 +1,5 @@
-﻿#region Using Directives
+﻿#if !__MonoCS__
+#region Using Directives
 
 using System;
 using System.Collections.Generic;
@@ -296,3 +297,4 @@ namespace ScriptEngine.Machine.Contexts
 		#endregion
 	}
 }
+#endif
