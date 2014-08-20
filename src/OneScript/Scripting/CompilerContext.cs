@@ -80,11 +80,11 @@ namespace OneScript.Scripting
             throw CompilerException.VariableIsNotDefined(name);
         }
 
-        public SymbolBinding DefineMethod(string name)
+        public SymbolBinding DefineMethod(string name, MethodSignatureData methodUsageData)
         {
             try
             {
-                int index = TopScope.DefineMethod(name, MethodSignatureData.CreateProcedure(0));
+                int index = TopScope.DefineMethod(name, methodUsageData);
                 var binding = new SymbolBinding();
                 binding.Name = name;
                 binding.Context = _attachedScopes.Count - 1;

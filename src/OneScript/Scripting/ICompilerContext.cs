@@ -3,7 +3,7 @@ namespace OneScript.Scripting
 {
     interface ICompilerContext
     {
-        SymbolBinding DefineMethod(string name);
+        SymbolBinding DefineMethod(string name, MethodSignatureData methodSignature);
         SymbolBinding DefineVariable(string name);
         SymbolBinding GetMethod(string name);
         SymbolBinding GetVariable(string name);

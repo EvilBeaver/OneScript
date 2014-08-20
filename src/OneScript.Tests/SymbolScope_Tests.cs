@@ -137,7 +137,7 @@ namespace OneScript.Tests
             var scope2 = new SymbolScope();
 
             ctx.PushScope(scope1);
-            var globalBind = ctx.DefineMethod("Global");
+            var globalBind = ctx.DefineMethod("Global", MethodSignatureData.CreateProcedure(0));
             Assert.IsTrue(globalBind.Name == "Global");
             Assert.IsTrue(globalBind.Context == 0);
             Assert.IsTrue(globalBind.IndexInContext == 0);
@@ -147,7 +147,7 @@ namespace OneScript.Tests
             ctx.PushScope(scope2);
             Assert.IsTrue(ctx.TopScope == scope2);
 
-            var localBind = ctx.DefineMethod("Local");
+            var localBind = ctx.DefineMethod("Local", MethodSignatureData.CreateProcedure(0));
 
             Assert.IsTrue(localBind.Name == "Local");
             Assert.IsTrue(localBind.Context == 1);
