@@ -18,7 +18,7 @@ namespace OneScript.ComponentModel
         {
             var attrib = (ContextPropertyAttribute)propInfo.GetCustomAttributes(typeof(ContextPropertyAttribute), false)[0];
             _name = attrib.Name == null ? propInfo.Name : attrib.Name;
-            _alias = attrib.Alias == null ? "" : attrib.Alias;
+            _alias = attrib.Alias == null ? propInfo.Name : attrib.Alias;
 
             Func<TInstance, IValue> cantReadAction = (inst) => { throw ContextAccessException.PropIsNotReadable(_name); };
             Action<TInstance, IValue> cantWriteAction = (inst, val) => { throw ContextAccessException.PropIsNotWritable(_name); };
@@ -125,6 +125,7 @@ namespace OneScript.ComponentModel
     public class ContextPropertyMapper<TInstance>
     {
         private List<PropertyTarget<TInstance>> _properties;
+        private Dictionary<string, int> _nameIndices = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         public ContextPropertyMapper()
         {
@@ -136,15 +137,23 @@ namespace OneScript.ComponentModel
             _properties = typeof(TInstance).GetProperties()
                 .Where(x => x.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Any())
                 .Select(x => new PropertyTarget<TInstance>(x)).ToList();
+
+            for (int i = 0; i < _properties.Count; i++)
+            {
+                _nameIndices.Add(_properties[i].Name, i);
+                if (_properties[i].Name != _properties[i].Alias)
+                    _nameIndices.Add(_properties[i].Alias, i);
+            }
+
         }
 
         public int FindProperty(string name)
         {
-            var idx = _properties.FindIndex(x => x.Name.ToLower() == name.ToLower() || x.Alias.ToLower() == name.ToLower());
-            if (idx < 0)
+            int index;
+            if(!_nameIndices.TryGetValue(name, out index))
                 throw ContextAccessException.PropNotFound(name);
 
-            return idx;
+            return index;
         }
 
         public PropertyTarget<TInstance> GetProperty(int index)

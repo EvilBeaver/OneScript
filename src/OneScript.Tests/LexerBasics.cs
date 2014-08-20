@@ -56,7 +56,7 @@ namespace OneScript.Tests
 
             Assert.IsTrue(LanguageDef.GetPriority(Token.Or) == 1);
             Assert.IsTrue(LanguageDef.GetPriority(Token.And) == 2);
-            Assert.IsTrue(LanguageDef.GetPriority(Token.Not) == 5);
+            Assert.IsTrue(LanguageDef.GetPriority(Token.Not) == 3);
 
             Assert.IsTrue(LanguageDef.GetPriority(Token.Equal) == 4);
             Assert.IsTrue(LanguageDef.GetPriority(Token.MoreThan) == 4);

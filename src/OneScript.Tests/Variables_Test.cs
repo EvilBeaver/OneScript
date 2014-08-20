@@ -57,7 +57,7 @@ namespace OneScript.Tests
         public void Change_Value_By_Reference()
         {
             var v = new Variable(ValueFactory.Create(123));
-            var reference = new Reference(v);
+            var reference = Reference.Create(v);
 
             Assert.AreSame(v.Value, reference.Value);
             reference.Value = ValueFactory.Create("hi");
@@ -69,8 +69,8 @@ namespace OneScript.Tests
         public void Dereferencing()
         {
             var v = new Variable();
-            var reference1 = new Reference(v);
-            var reference2 = new Reference(reference1);
+            var reference1 = Reference.Create(v);
+            var reference2 = Reference.Create(reference1);
 
             reference2.Value = ValueFactory.Create(123);
             Assert.IsTrue(v.Value.AsNumber() == 123);
@@ -81,6 +81,18 @@ namespace OneScript.Tests
             reference2.Value = ValueFactory.Create("hi");
             Assert.IsFalse(deref == v.Value);
             Assert.AreNotSame(deref, v.Value);
+        }
+
+        [TestMethod]
+        public void ContextProperty_Reference()
+        {
+            IRuntimeContextInstance ctx = new ImportedMembersClass();
+            int idx = ctx.FindProperty("BooleanProperty");
+
+            var reference = Reference.Create(ctx, idx);
+            reference.Value = ValueFactory.Create(true);
+
+            Assert.IsTrue(((ImportedMembersClass)ctx).BooleanExplicitName == true);
         }
 
         class RefCounter : CounterBasedLifetimeService, IValue

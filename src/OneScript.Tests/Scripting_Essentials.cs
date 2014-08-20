@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Scripting;
+using OneScript.Core;
 
 namespace OneScript.Tests
 {
@@ -85,5 +86,37 @@ namespace OneScript.Tests
             Assert.IsTrue(data[2].Parameters[2].IsOptional);
 
         }
+
+        [TestMethod]
+        public void Attached_Memory_From_Context()
+        {
+            var ctx = new ImportedMembersClass();
+            ctx.ReadOnlyString = "hello";
+            ctx.IntProperty = 1;
+            ctx.BooleanAutoName = true;
+            ctx.BooleanExplicitName = true;
+
+            var memBlock = MemoryAttachedContext.CreateFromContext(ctx);
+
+            Assert.IsTrue(memBlock.ContextInstance == ctx);
+            int idx = ctx.FindProperty("IntProperty");
+            Assert.IsTrue(memBlock.State[idx].Equals(ValueFactory.Create(1)));
+            
+            idx = ctx.FindProperty("ReadOnlystring");
+            Assert.IsTrue(memBlock.State[idx].Equals(ValueFactory.Create("hello")));
+
+            idx = ctx.FindProperty("BooleanProperty");
+            Assert.IsTrue(memBlock.State[idx].Equals(ValueFactory.Create(true)));
+
+            idx = ctx.FindProperty("BooleanAutoName");
+            Assert.IsTrue(memBlock.State[idx].Equals(ValueFactory.Create(true)));
+
+            idx = ctx.FindMethod("Func");
+            Assert.IsTrue(memBlock.Methods[idx].IsFunction);
+            Assert.IsTrue(memBlock.Methods[idx].Parameters.Count == 3);
+            Assert.IsTrue(memBlock.Methods[idx].Parameters[2].IsOptional);
+            
+        }
+
     }
 }

@@ -26,6 +26,7 @@ namespace OneScript.Tests
             Assert.IsTrue(ctx.GetPropertyValue(index).AsNumber() == 5);
             Assert.IsTrue(ctx.IsPropReadable(index));
             Assert.IsTrue(ctx.IsPropWriteable(index));
+            Assert.IsTrue(ctx.FindProperty("IntProperty") == index);
 
             index = ctx.FindProperty("BooleanAutoName");
             Assert.IsTrue(ctx.GetPropertyName(index) == "BooleanAutoName");

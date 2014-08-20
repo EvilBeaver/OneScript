@@ -52,6 +52,7 @@
     <Compile Include="ComponentModel\ImportedClassAttribute.cs" />
     <Compile Include="ComponentModel\ContextMethodAttribute.cs" />
     <Compile Include="ComponentModel\ContextPropertyAttribute.cs" />
+    <Compile Include="Core\ContextPropertyReference.cs" />
     <Compile Include="Core\CounterBasedDisposable.cs" />
     <Compile Include="Core\DataType.cs" />
     <Compile Include="Core\EngineException.cs" />
@@ -59,6 +60,7 @@
     <Compile Include="Core\IRefCountable.cs" />
     <Compile Include="Core\IVariable.cs" />
     <Compile Include="Core\Reference.cs" />
+    <Compile Include="Core\SimpleReference.cs" />
     <Compile Include="Core\StringConstantValue.cs" />
     <Compile Include="Core\IRuntimeContextInstance.cs" />
     <Compile Include="Core\IValue.cs" />
@@ -76,6 +78,7 @@
     <Compile Include="Scripting\CompilerException.cs" />
     <Compile Include="Scripting\DateLexerState.cs" />
     <Compile Include="Scripting\ICompilerContext.cs" />
+    <Compile Include="Scripting\MemoryAttachedContext.cs" />
     <Compile Include="Scripting\MethodSignatureData.cs" />
     <Compile Include="Scripting\MethodSignatureExtractor.cs" />
     <Compile Include="Scripting\NumberLexerState.cs" />

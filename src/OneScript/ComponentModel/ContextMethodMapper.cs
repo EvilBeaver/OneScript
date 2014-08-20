@@ -154,10 +154,10 @@ namespace OneScript.ComponentModel
                     var scriptMethInfo = new MethodDefinition();
                     scriptMethInfo.IsFunction = isFunc;
                     scriptMethInfo.Name = item.Binding.Name == null ? item.Method.Name : item.Binding.Name;
-                    scriptMethInfo.Alias = item.Binding.Alias == null ? "" : item.Binding.Alias;
+                    scriptMethInfo.Alias = item.Binding.Alias == null ? item.Method.Name : item.Binding.Alias;
                     scriptMethInfo.Params = paramDefs;
                     _nameIndexes.Add(scriptMethInfo.Name, _methodPtrs.Count);
-                    if(scriptMethInfo.Alias != "")
+                    if(scriptMethInfo.Alias != scriptMethInfo.Name)
                         _nameIndexes.Add(scriptMethInfo.Alias, _methodPtrs.Count);
 
                     _methodPtrs.Add(new InternalMethInfo()

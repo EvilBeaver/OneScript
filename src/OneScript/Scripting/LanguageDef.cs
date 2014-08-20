@@ -21,7 +21,7 @@ namespace OneScript.Scripting
 
             _priority.Add(Token.Or, 1);
             _priority.Add(Token.And, 2);
-            _priority.Add(Token.Not, 5);
+            _priority.Add(Token.Not, 3);
 
             _priority.Add(Token.Equal, 4);
             _priority.Add(Token.MoreThan, 4);
