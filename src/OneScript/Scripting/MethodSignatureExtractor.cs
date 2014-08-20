@@ -6,15 +6,15 @@ using System.Text;
 
 namespace OneScript.Scripting
 {
-    public static class MethodUsageExtractor
+    public static class MethodSignatureExtractor
     {
-        public static MethodUsageData[] Extract(IRuntimeContextInstance context)
+        public static MethodSignatureData[] Extract(IRuntimeContextInstance context)
         {
             int count = context.GetMethodsCount();
             if (count == 0)
-                return new MethodUsageData[0];
+                return new MethodSignatureData[0];
 
-            MethodUsageData[] result = new MethodUsageData[count];
+            MethodSignatureData[] result = new MethodSignatureData[count];
 
             for (int i = 0; i < count; i++)
             {
@@ -30,11 +30,11 @@ namespace OneScript.Scripting
 
                 }
                 
-                MethodUsageData md;
+                MethodSignatureData md;
                 if (context.HasReturnValue(i))
-                    md = MethodUsageData.CreateFunction(new ParametersList(parameters));
+                    md = MethodSignatureData.CreateFunction(new ParametersList(parameters));
                 else
-                    md = MethodUsageData.CreateProcedure(new ParametersList(parameters));
+                    md = MethodSignatureData.CreateProcedure(new ParametersList(parameters));
 
 
                 result[i] = md;

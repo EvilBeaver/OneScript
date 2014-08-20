@@ -5,12 +5,12 @@ using System.Text;
 
 namespace OneScript.Scripting
 {
-    public class MethodUsageData
+    public class MethodSignatureData
     {
         private ParametersList _paramList;
         private bool _isFunction;
 
-        private MethodUsageData()
+        private MethodSignatureData()
         {
 
         }
@@ -31,30 +31,30 @@ namespace OneScript.Scripting
             }
         }
 
-        public static MethodUsageData CreateProcedure(ParametersList parameters)
+        public static MethodSignatureData CreateProcedure(ParametersList parameters)
         {
-            return new MethodUsageData()
+            return new MethodSignatureData()
             {
                 _paramList = parameters,
                 _isFunction = false
             };
         }
 
-        public static MethodUsageData CreateFunction(ParametersList parameters)
+        public static MethodSignatureData CreateFunction(ParametersList parameters)
         {
-            return new MethodUsageData()
+            return new MethodSignatureData()
             {
                 _paramList = parameters,
                 _isFunction = true
             };
         }
 
-        public static MethodUsageData CreateProcedure(int paramCount)
+        public static MethodSignatureData CreateProcedure(int paramCount)
         {
             return CreateProcedure(ParametersList.CreateDefault(paramCount));
         }
 
-        public static MethodUsageData CreateFunction(int paramCount)
+        public static MethodSignatureData CreateFunction(int paramCount)
         {
             return CreateFunction(ParametersList.CreateDefault(paramCount));
         }

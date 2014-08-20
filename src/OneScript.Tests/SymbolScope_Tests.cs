@@ -28,8 +28,8 @@ namespace OneScript.Tests
         public void SymbolScope_MethodRegistered()
         {
             var scope = new SymbolScope();
-            int idx = scope.DefineMethod("NewMethod", MethodUsageData.CreateProcedure(0));
-            int idx2 = scope.DefineMethod("NewMethod2", MethodUsageData.CreateProcedure(0));
+            int idx = scope.DefineMethod("NewMethod", MethodSignatureData.CreateProcedure(0));
+            int idx2 = scope.DefineMethod("NewMethod2", MethodSignatureData.CreateProcedure(0));
             Assert.IsTrue(idx == 0);
             Assert.IsTrue(idx2 == 1);
             Assert.IsTrue(scope.IsMethodDefined("NewMethod"));
@@ -50,7 +50,7 @@ namespace OneScript.Tests
                 () => scope.DefineVariable("4 k44"), typeof(ArgumentException)));
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(
-                () => scope.DefineMethod("4 k44", MethodUsageData.CreateProcedure(0)), typeof(ArgumentException)));
+                () => scope.DefineMethod("4 k44", MethodSignatureData.CreateProcedure(0)), typeof(ArgumentException)));
         }
 
         [TestMethod]
@@ -58,13 +58,13 @@ namespace OneScript.Tests
         {
             var scope = new SymbolScope();
             scope.DefineVariable("myVar");
-            scope.DefineMethod("myMethod", MethodUsageData.CreateProcedure(0));
+            scope.DefineMethod("myMethod", MethodSignatureData.CreateProcedure(0));
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(
                 () => scope.DefineVariable("MyVar"), typeof(ArgumentException)));
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(
-                () => scope.DefineMethod("MyMethod", MethodUsageData.CreateProcedure(0)), typeof(ArgumentException)));
+                () => scope.DefineMethod("MyMethod", MethodSignatureData.CreateProcedure(0)), typeof(ArgumentException)));
         }
 
         [TestMethod]
@@ -179,7 +179,7 @@ namespace OneScript.Tests
         {
             var scope = new SymbolScope();
             int varIndex = scope.DefineVariable("Var");
-            int methodIndex = scope.DefineMethod("Method", MethodUsageData.CreateProcedure(0));
+            int methodIndex = scope.DefineMethod("Method", MethodSignatureData.CreateProcedure(0));
 
             scope.SetVariableAlias(varIndex, "VarAlias");
             scope.SetMethodAlias(methodIndex, "MethodAlias");
@@ -197,7 +197,7 @@ namespace OneScript.Tests
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(() =>
             {
-                scope.DefineMethod("MethodAlias", MethodUsageData.CreateProcedure(0));
+                scope.DefineMethod("MethodAlias", MethodSignatureData.CreateProcedure(0));
             }, typeof(ArgumentException)));
 
         }
@@ -205,8 +205,8 @@ namespace OneScript.Tests
         [TestMethod]
         public void Get_Method_Data_By_Name_Alias_And_Index()
         {
-            var proc = MethodUsageData.CreateProcedure(1);
-            var func = MethodUsageData.CreateFunction(1);
+            var proc = MethodSignatureData.CreateProcedure(1);
+            var func = MethodSignatureData.CreateFunction(1);
             var scope = new SymbolScope();
 
             scope.DefineMethod("proc_name", proc);

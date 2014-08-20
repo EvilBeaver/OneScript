@@ -84,7 +84,7 @@ namespace OneScript.Scripting
         {
             try
             {
-                int index = TopScope.DefineMethod(name, MethodUsageData.CreateProcedure(0));
+                int index = TopScope.DefineMethod(name, MethodSignatureData.CreateProcedure(0));
                 var binding = new SymbolBinding();
                 binding.Name = name;
                 binding.Context = _attachedScopes.Count - 1;

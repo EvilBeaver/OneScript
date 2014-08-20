@@ -9,7 +9,7 @@ namespace OneScript.Scripting
     {
         Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        Dictionary<int, MethodUsageData> _methodsData = new Dictionary<int, MethodUsageData>();
+        Dictionary<int, MethodSignatureData> _methodsData = new Dictionary<int, MethodSignatureData>();
 
         public static int InvalidIndex
         {
@@ -60,7 +60,7 @@ namespace OneScript.Scripting
             }
         }
 
-        public int DefineMethod(string name, MethodUsageData methodUsageData)
+        public int DefineMethod(string name, MethodSignatureData methodUsageData)
         {
             if(IsMethodDefined(name))
             {
@@ -128,7 +128,7 @@ namespace OneScript.Scripting
             }
         }
 
-        public MethodUsageData GetMethodUsageData(int methodNumber)
+        public MethodSignatureData GetMethodUsageData(int methodNumber)
         {
             return _methodsData[methodNumber];
         }

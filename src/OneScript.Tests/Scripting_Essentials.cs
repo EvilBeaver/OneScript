@@ -32,8 +32,8 @@ namespace OneScript.Tests
         [TestMethod]
         public void MethodUsageData_Creation()
         {
-            var proc = MethodUsageData.CreateProcedure(ParametersList.CreateDefault(1));
-            var func = MethodUsageData.CreateFunction(ParametersList.CreateDefault(2));
+            var proc = MethodSignatureData.CreateProcedure(ParametersList.CreateDefault(1));
+            var func = MethodSignatureData.CreateFunction(ParametersList.CreateDefault(2));
 
             Assert.IsTrue(func.IsFunction);
             Assert.IsFalse(proc.IsFunction);
@@ -41,8 +41,8 @@ namespace OneScript.Tests
             Assert.IsTrue(proc.Parameters.Count == 1);
             Assert.IsTrue(func.Parameters.Count == 2);
 
-            proc = MethodUsageData.CreateProcedure(1);
-            func = MethodUsageData.CreateFunction(2);
+            proc = MethodSignatureData.CreateProcedure(1);
+            func = MethodSignatureData.CreateFunction(2);
 
             Assert.IsTrue(func.IsFunction);
             Assert.IsFalse(proc.IsFunction);
@@ -67,7 +67,7 @@ namespace OneScript.Tests
         public void Extract_MethodData_From_Context()
         {
             var ctx = new ImportedMembersClass();
-            var data = MethodUsageExtractor.Extract(ctx);
+            var data = MethodSignatureExtractor.Extract(ctx);
 
             Assert.IsTrue(data.Length == 3);
             Assert.IsFalse(data[0].IsFunction);
