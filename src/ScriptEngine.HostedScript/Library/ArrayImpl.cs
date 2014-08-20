@@ -16,6 +16,11 @@ namespace ScriptEngine.Machine.Library
             _values = new List<IValue>();
         }
 
+        public ArrayImpl(IEnumerable<IValue> values)
+        {
+            _values = new List<IValue>(values);
+        }
+
         public override bool IsIndexed
         {
             get

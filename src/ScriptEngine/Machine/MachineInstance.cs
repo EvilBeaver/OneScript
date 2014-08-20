@@ -716,7 +716,10 @@ namespace ScriptEngine.Machine
                     if (i < methInfo.Params.Length)
                     {
                         var constId = methInfo.Params[i].DefaultValueIndex;
-                        argValue = _module.Constants[constId];
+                        if (constId == ParameterDefinition.UNDEFINED_VALUE_INDEX)
+                            argValue = null;
+                        else
+                            argValue = _module.Constants[constId];
                     }
                     else
                     {
