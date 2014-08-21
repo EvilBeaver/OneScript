@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -104,5 +105,39 @@ namespace ScriptEngine.Machine
 
         }
 
+		public static object ConvertToCLRObject(IValue val)
+		{
+			object result;
+			if (val == null)
+				return val;
+			
+			switch (val.DataType)
+			{
+			case Machine.DataType.Boolean:
+				result = val.AsBoolean();
+				break;
+			case Machine.DataType.Date:
+				result = val.AsDate();
+				break;
+			case Machine.DataType.Number:
+				result = val.AsNumber();
+				break;
+			case Machine.DataType.String:
+				result = val.AsString();
+				break;
+			case Machine.DataType.Undefined:
+				result = null;
+				break;
+			case Machine.DataType.Object:
+				result = val.AsObject();
+				if (result is IObjectWrapper)
+					result = ((IObjectWrapper)result).UnderlyingObject;
+				break;
+			default:
+				throw new RuntimeException("Тип не поддерживает преобразование в CLR-объект");
+			}
+			
+			return result;
+		}
     }
 }

@@ -1,3 +1,4 @@
+#if !__MonoCS__
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -133,3 +134,4 @@ namespace ScriptEngine.Machine.Contexts
         }
     }
 }
+#endif

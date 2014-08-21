@@ -15,7 +15,7 @@ namespace ScriptEngine.Machine
 
         public int GetHashCode(IValue obj)
         {
-            var CLR_obj = Contexts.COMWrapperContext.MarshalIValue(obj);
+            var CLR_obj = ContextValuesMarshaller.ConvertToCLRObject(obj);
             return CLR_obj.GetHashCode();
         }
     }

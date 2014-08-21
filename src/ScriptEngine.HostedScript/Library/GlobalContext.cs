@@ -6,6 +6,7 @@ using System.Text;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.HostedScript.Library;
 
 namespace ScriptEngine.Machine.Library
 {
@@ -203,6 +204,65 @@ namespace ScriptEngine.Machine.Library
                 retCode.Value = ValueFactory.Create(p.ExitCode);
             }
 
+        }
+
+        [ContextMethod("НайтиФайлы","FindFiles")]
+        public IRuntimeContextInstance FindFiles(string dir, string mask = null, bool recursive = false)
+        {
+            if(mask == null)
+            {
+                recursive = false;
+                if(System.Environment.OSVersion.Platform == PlatformID.Unix)
+                {
+                    mask = "*";
+                }
+                else
+                {
+                    mask = "*.*";
+                }
+            }
+
+            System.IO.SearchOption mode = recursive? System.IO.SearchOption.AllDirectories: System.IO.SearchOption.TopDirectoryOnly;
+            var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
+                .Select<string, IValue>((x)=>new FileContext(x));
+
+            return new ArrayImpl(entries);
+
+        }
+
+        [ContextMethod("УдалитьФайлы", "DeleteFiles")]
+        public void DeleteFiles(string path, string mask = "")
+        {
+            if (mask == null)
+            {
+                var file = new FileContext(path);
+                if (file.IsDirectory())
+                {
+                    System.IO.Directory.Delete(path, true);
+                }
+                else
+                {
+                    System.IO.File.Delete(path);
+                }
+            }
+            else
+            {
+                var entries = System.IO.Directory.EnumerateFileSystemEntries(path, mask)
+                    .AsParallel();
+                foreach (var item in entries)
+                {
+                    System.IO.FileInfo finfo = new System.IO.FileInfo(item);
+                    if (finfo.Attributes == System.IO.FileAttributes.Directory)
+                    {
+                        //recursively delete directory
+                        System.IO.Directory.Delete(item, true);
+                    }
+                    else
+                    {
+                        System.IO.File.Delete(item);
+                    }
+                }
+            }
         }
 
         #region IAttachableContext Members

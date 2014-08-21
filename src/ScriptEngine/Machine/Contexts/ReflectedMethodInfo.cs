@@ -1,3 +1,4 @@
+#if !__MonoCS__ 
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,8 @@ using System.Runtime.InteropServices;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    class ReflectedMethodInfo : System.Reflection.MethodInfo
+   
+	class ReflectedMethodInfo : System.Reflection.MethodInfo
     {
         string _name;
         int _dispId;
@@ -134,3 +136,4 @@ namespace ScriptEngine.Machine.Contexts
         }
     }
 }
+#endif

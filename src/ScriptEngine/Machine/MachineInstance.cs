@@ -716,7 +716,10 @@ namespace ScriptEngine.Machine
                     if (i < methInfo.Params.Length)
                     {
                         var constId = methInfo.Params[i].DefaultValueIndex;
-                        argValue = _module.Constants[constId];
+                        if (constId == ParameterDefinition.UNDEFINED_VALUE_INDEX)
+                            argValue = null;
+                        else
+                            argValue = _module.Constants[constId];
                     }
                     else
                     {
@@ -1109,7 +1112,8 @@ namespace ScriptEngine.Machine
                 bool success = (parameters.Length == 0 && argCount == 0)
                     ||(parameters.Length > 0 && parameters[0].ParameterType.IsArray);
 
-                if (parameters.Length < argCount && !parameters[parameters.Length-1].ParameterType.IsArray)
+                if (parameters.Length > 0 && parameters.Length < argCount 
+                    && !parameters[parameters.Length-1].ParameterType.IsArray)
                 {
                     success = false;
                     continue;
