@@ -118,5 +118,31 @@ namespace OneScript.Tests
             
         }
 
+        [TestMethod]
+        public void Memory_Is_Attaching_And_Detaching_Contexts()
+        {
+            var mem = new MachineMemory();
+            var ctx1 = new ImportedMembersClass();
+            var ctx2 = new ImportedMembersClass();
+
+            Assert.IsTrue(mem.Count == 0);
+
+            var memBlock = MemoryAttachedContext.CreateFromContext(ctx1);
+            mem.Attach(memBlock);
+            Assert.IsTrue(mem.Count == 1);
+            Assert.AreSame(mem[0], memBlock);
+
+            memBlock = MemoryAttachedContext.CreateFromContext(ctx2);
+            mem.Attach(memBlock);
+            Assert.IsTrue(mem.Count == 2);
+            Assert.AreSame(mem[1], memBlock);
+            Assert.AreSame(mem[1].ContextInstance, ctx2);
+
+            Assert.AreSame(mem.Detach(), memBlock);
+            Assert.IsTrue(mem.Count == 1);
+            memBlock = mem.Detach();
+            Assert.AreSame(memBlock.ContextInstance, ctx1);
+            Assert.IsTrue(mem.Count == 0);
+        }
     }
 }

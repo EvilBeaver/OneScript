@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Scripting
 {
-    public class SourceCodeIterator
+    public class SourceCodeIterator : ISourceCodeIndexer
     {
         private string _code;
         private char _currentSymbol;
