@@ -64,7 +64,10 @@ namespace OneScript.Core
 
         public int CompareTo(IValue other)
         {
-            return _value.CompareTo(other.AsString());
+            if (other.Type == BasicTypes.String)
+                return _value.CompareTo(other.AsString());
+            else
+                throw TypeConversionException.ComparisonIsNotSupportedException();
         }
 
         #endregion

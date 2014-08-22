@@ -27,11 +27,6 @@ namespace OneScript.ComponentModel
             return new ContextAccessException("Свойство объекта недоступно для чтения: " + name);
         }
 
-        public static ContextAccessException PropIsNotReadable()
-        {
-            return new ContextAccessException("Свойство объекта недоступно для чтения");
-        }
-
         public static ContextAccessException PropIsNotWritable(string name)
         {
             return new ContextAccessException("Свойство объекта недоступно для записи: " + name);

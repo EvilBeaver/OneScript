@@ -48,5 +48,10 @@ namespace OneScript.Core
         {
             return new TypeConversionException("Значение не является значением объектного типа");
         }
+
+        public static TypeConversionException ComparisonIsNotSupportedException()
+        {
+            return new TypeConversionException("Сравнение на больше/меньше возможно только для совпадающих значений примитивных типов");
+        }
     }
 }

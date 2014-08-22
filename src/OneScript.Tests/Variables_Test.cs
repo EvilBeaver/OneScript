@@ -69,8 +69,10 @@ namespace OneScript.Tests
         public void Dereferencing()
         {
             var v = new Variable();
+            v.Value = ValueFactory.Create("1");
             var reference1 = Reference.Create(v);
             var reference2 = Reference.Create(reference1);
+            var reference3 = Reference.Create(reference2);
 
             reference2.Value = ValueFactory.Create(123);
             Assert.IsTrue(v.Value.AsNumber() == 123);
@@ -81,6 +83,11 @@ namespace OneScript.Tests
             reference2.Value = ValueFactory.Create("hi");
             Assert.IsFalse(deref == v.Value);
             Assert.AreNotSame(deref, v.Value);
+
+            Assert.AreSame(reference3.Value, reference2.Value);
+            deref = reference3.Dereference();
+            Assert.IsTrue(deref.AsString() == v.Value.AsString());
+            reference3.Value = ValueFactory.Create(false);
         }
 
         [TestMethod]

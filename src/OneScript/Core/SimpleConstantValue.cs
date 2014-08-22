@@ -92,14 +92,24 @@ namespace OneScript.Core
 
         public int CompareTo(IValue other)
         {
-            if (other.Type == BasicTypes.Boolean)
-                return AsBoolean().CompareTo(other.AsBoolean());
-            else if (other.Type == BasicTypes.Date)
-                return AsDate().CompareTo(other.AsDate());
-            else if (other.Type == BasicTypes.Undefined)
-                return other.Type == BasicTypes.Undefined ? 0 : -1;
-            else
-                return AsNumber().CompareTo(other.AsNumber());
+            try
+            {
+                if (other.Type == BasicTypes.Boolean)
+                    return AsBoolean().CompareTo(other.AsBoolean());
+                else if (other.Type == BasicTypes.Date)
+                    return AsDate().CompareTo(other.AsDate());
+                else if (other.Type == BasicTypes.Undefined)
+                    return other.Type == BasicTypes.Undefined ? 0 : -1;
+                else if (other.Type == BasicTypes.Number)
+                    return AsNumber().CompareTo(other.AsNumber());
+                else
+                    throw TypeConversionException.ComparisonIsNotSupportedException();
+            }
+            catch (TypeConversionException)
+            {
+                throw TypeConversionException.ComparisonIsNotSupportedException();
+            }
+    
         }
 
 

@@ -65,6 +65,7 @@ namespace OneScript.Tests
             Assert.IsTrue(ctx.GetParametersCount(index) == 0);
             Assert.IsTrue(ctx.HasReturnValue(index) == false);
             Assert.IsTrue(index == ctx.FindMethod("Proc"));
+            ctx.CallAsFunction(index, new IValue[0]);
 
             index = ctx.FindMethod("SimpleFunction");
             Assert.IsTrue(ctx.GetParametersCount(index) == 0);
@@ -80,6 +81,21 @@ namespace OneScript.Tests
             Assert.IsTrue(ctx.GetDefaultValue(index, 2, out defValue) == true);
             Assert.IsTrue(defValue.AsString() == "defParam");
             Assert.IsTrue(ctx.CallAsFunction(index, new IValue[3]).AsNumber() == 1);
+        }
+
+        [TestMethod]
+        public void Context_Access_Exceptions()
+        {
+            var ctx = new ImportedMembersClass();
+            Assert.IsTrue(TestHelpers.ExceptionThrown(() =>
+            {
+                ctx.FindMethod("NoSuchMethod");
+            }, typeof(ContextAccessException)));
+
+            Assert.IsTrue(TestHelpers.ExceptionThrown(() =>
+            {
+                ctx.FindProperty("NoSuchProp");
+            }, typeof(ContextAccessException)));
         }
 
     }

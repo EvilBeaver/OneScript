@@ -62,6 +62,8 @@ namespace OneScript.Tests
             Assert.IsFalse(Utils.IsValidIdentifier("123Var"));
             Assert.IsFalse(Utils.IsValidIdentifier("V a r"));
             Assert.IsFalse(Utils.IsValidIdentifier("Var$"));
+            Assert.IsFalse(Utils.IsValidIdentifier(null));
+
         }
 
         [TestMethod]

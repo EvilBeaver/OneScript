@@ -140,6 +140,80 @@ namespace OneScript.Tests
 
         }
 
+        [TestMethod]
+        public void Number_To_Number_Comparison()
+        {
+            var num1 = ValueFactory.Create(1);
+            var num2 = ValueFactory.Create(2);
+            var num3 = ValueFactory.Create(1);
+
+            Assert.IsTrue(num1.CompareTo(num2) < 0);
+            Assert.IsTrue(num1.CompareTo(num3) == 0);
+            Assert.IsTrue(num2.CompareTo(num1) > 0);
+            Assert.IsTrue(num3.CompareTo(num2) < 0);
+
+        }
+
+        [TestMethod]
+        public void Invalid_Comparison_Num_And_String()
+        {
+            var num1 = ValueFactory.Create(1);
+            var num2 = ValueFactory.Create("2");
+
+            Assert.IsTrue(TestHelpers.ExceptionThrown(() => num1.CompareTo(num2), typeof(TypeConversionException)));
+            Assert.IsTrue(TestHelpers.ExceptionThrown(() => num2.CompareTo(num1), typeof(TypeConversionException)));
+        }
+
+        [TestMethod]
+        public void Invalid_Comparison_Undefined()
+        {
+            var v1 = ValueFactory.Create();
+            var v2 = ValueFactory.Create(true);
+
+            try
+            {
+                v1.CompareTo(v2);
+            }
+            catch(TypeConversionException e)
+            {
+                var validExc = TypeConversionException.ComparisonIsNotSupportedException();
+                Assert.IsTrue(e.Message == validExc.Message);
+                return;
+            }
+
+            Assert.Fail("No exception thrown");
+        }
+
+        [TestMethod]
+        public void String_To_String_Comparison()
+        {
+            var str1 = ValueFactory.Create("АБВ");
+            var str2 = ValueFactory.Create("ВГД");
+
+            Assert.IsTrue(str1.CompareTo(str2) < 0);
+            Assert.IsTrue(str2.CompareTo(str1) > 0);
+            Assert.IsTrue(str1.CompareTo(ValueFactory.Create("абв")) != 0);
+        }
+
+        [TestMethod]
+        public void Boolean_Comparison()
+        {
+            var v1 = ValueFactory.Create(true);
+            var v2 = ValueFactory.Create(false);
+            var num1 = ValueFactory.Create(1);
+            var num0 = ValueFactory.Create(0);
+
+            Assert.IsTrue(v1.CompareTo(v2) > 0);
+            Assert.IsTrue(v2.CompareTo(v1) < 0);
+            Assert.IsTrue(v1.CompareTo(num1) == 0);
+            Assert.IsTrue(v2.CompareTo(num0) == 0);
+            Assert.IsTrue(v1.CompareTo(num0) > 0);
+            Assert.IsTrue(v2.CompareTo(num1) < 0);
+            Assert.IsTrue(num1.CompareTo(v1) == 0);
+            Assert.IsTrue(num1.CompareTo(v2) > 0);
+
+        }
+
         private bool ExceptionThrown(Action action, Type exceptionType)
         {
             return TestHelpers.ExceptionThrown(action, exceptionType);

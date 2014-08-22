@@ -55,22 +55,6 @@ namespace OneScript.Tests
             Assert.IsTrue(instance.StringParam == "string");
             Assert.IsTrue(instance.IntegerParam == 124);
 
-            bool thrown = false;
-            try
-            {
-                instance = (CreatableInstanceMock)newtype.CreateInstance(new IValue[]
-                {
-                    ValueFactory.Create(true),
-                    ValueFactory.Create()
-                });
-            }
-            catch (EngineException)
-            {
-                thrown = true;
-            }
-
-            if (!thrown)
-                Assert.Fail("Конструктор найден, хотя не должен быть");
         }
 
         [TestMethod]
@@ -138,11 +122,31 @@ namespace OneScript.Tests
 
         }
 
+        [TestMethod]
+        public void VariableCtor_Parameters()
+        {
+
+            var manager = new TypeManager();
+            var importer = new TypeImporter(manager);
+            var newtype = importer.ImportType(typeof(CreatableInstanceMock));
+
+            CreatableInstanceMock instance = (CreatableInstanceMock)newtype.CreateInstance(new IValue[]
+                {
+                    ValueFactory.Create("sss"),
+                    ValueFactory.Create(123),
+                    ValueFactory.Create(500),
+                    ValueFactory.Create(true)
+                });
+
+            Assert.IsTrue(instance.ConstructorNum == 3);
+        }
+
         [ImportedClass(Name="TestMock")]
         class CreatableInstanceMock : ComponentBase, IValue
         {
             public string StringParam { get; set; }
             public int IntegerParam { get; set; }
+            public int ConstructorNum { get; set; }
 
             public static IValue Constructor(DataType constructedType, IValue[] args)
             {
@@ -155,6 +159,7 @@ namespace OneScript.Tests
             public static CreatableInstanceMock CreateDefault()
             {
                 var inst = new CreatableInstanceMock();
+                inst.ConstructorNum = 1;
                 return inst;
             }
 
@@ -164,6 +169,16 @@ namespace OneScript.Tests
                 var inst = new CreatableInstanceMock();
                 inst.StringParam = strArg;
                 inst.IntegerParam = intArg;
+                inst.ConstructorNum = 2;
+                return inst;
+            }
+
+            [TypeConstructor]
+            public static CreatableInstanceMock CreateParametrized(string strArg, IValue[] args)
+            {
+                var inst = new CreatableInstanceMock();
+                inst.StringParam = strArg;
+                inst.ConstructorNum = 3;
                 return inst;
             }
 

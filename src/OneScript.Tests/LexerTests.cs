@@ -408,5 +408,25 @@ namespace OneScript.Tests
             Assert.IsTrue(lex.Type == LexemType.StringLiteral);
             Assert.IsTrue(lex.Content == "ffff");
         }
+
+        [TestMethod]
+        public void Syntax_Error_Handling()
+        {
+            string code = @"
+            А$Б";
+
+            var lexer = new Lexer();
+            lexer.Code = code;
+            lexer.UnexpectedCharacterFound += (s, e) =>
+                {
+                    e.Iterator.MoveNext();
+                    e.IsHandled = true;
+                };
+                
+            Lexem lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Content == "А");
+            lex = lexer.NextLexem();
+            Assert.IsTrue(lex.Content == "Б");
+        }
     }
 }

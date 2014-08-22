@@ -63,7 +63,6 @@
     <Compile Include="SymbolScope_Tests.cs" />
     <Compile Include="Preprocessor_Tests.cs" />
     <Compile Include="Scripting_Essentials.cs" />
-    <Compile Include="Compiler_Tests.cs" />
     <Compile Include="Variables_Test.cs" />
   </ItemGroup>
   <ItemGroup>
