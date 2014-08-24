@@ -34,5 +34,10 @@ namespace OneScript.Scripting
             return new CompilerException("Переменная не определена: " + name);
         }
 
+
+        internal static Exception UnexpectedEndOfText()
+        {
+            return new CompilerException("Обнаружено логическое завершение текста модуля");
+        }
     }
 }
