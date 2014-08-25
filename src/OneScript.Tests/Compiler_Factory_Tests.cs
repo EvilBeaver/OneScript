@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Scripting;
-using OneScript.Scripting.ByteCode;
+using System.Collections.Generic;
 
 namespace OneScript.Tests
 {
@@ -9,65 +9,99 @@ namespace OneScript.Tests
     public class Compiler_Factory_Tests
     {
         [TestMethod]
-        public void LexemExtractor_GetsTokens()
+        public void Parser_Define_Variables_NoErrors()
         {
-            var code = "Перем А;";
-            var lexer = new Lexer();
+            string code = @"Перем А Экспорт;
+                            Перем Б,В;";
+
+            var builder = new TestCodeBuilder();
+            var parser = new Parser(builder);
+
+            Lexer lexer;
+            PrepareParser(code, out lexer);
+
+            parser.Build(new CompilerContext(), lexer);
+
+            Assert.IsTrue(builder.Variables[0] == "АExport");
+            Assert.IsTrue(builder.Variables[1] == "Б");
+            Assert.IsTrue(builder.Variables[2] == "В");
+            Assert.IsTrue(builder.Variables.Count == 3);
+
+        }
+
+        [TestMethod]
+        public void Parser_Defines_Variables_And_Report_Errors()
+        {
+            string codeNoSemicolon = @"Перем А Экспорт
+                            Перем Б,В;";
+            string codeNoIdentifier1 = @"Перем А Экспорт
+                            Перем ,В;";
+            string codeNoIdentifier2 = @"Перем Экспорт
+                            Перем ,В;";
+
+            var builder = new TestCodeBuilder();
+            var parser = new Parser(builder);
+
+            Lexer lexer;
+            PrepareParser(codeNoSemicolon, out lexer);
+
+            List<string> errors = new List<string>();
+
+            parser.CompilerError += (s, e) =>
+                {
+                    errors.Add(e.Exception.Message);
+                    e.IsHandled = true;
+                };
+
+            parser.Build(new CompilerContext(), lexer);
+
+            PrepareParser(codeNoIdentifier1, out lexer);
+            parser.Build(new CompilerContext(), lexer);
+
+            PrepareParser(codeNoIdentifier2, out lexer);
+            parser.Build(new CompilerContext(), lexer);
+
+        }
+
+        private static void PrepareParser(string code, out Lexer lexer)
+        {
+            lexer = new Lexer();
             lexer.Code = code;
-
-            var extractor = new LexemExtractor(lexer);
-
-            extractor.Next();
-            Assert.IsTrue(extractor.LastExtractedLexem.Token == Token.VarDef);
-
-            extractor.Next();
-            Assert.IsTrue(extractor.LastExtractedLexem.Token == Token.NotAToken);
-            Assert.IsTrue(extractor.LastExtractedLexem.Type == LexemType.Identifier);
-
-            extractor.Next();
-            Assert.IsTrue(extractor.LastExtractedLexem.Token == Token.Semicolon);
-            Assert.IsTrue(extractor.LastExtractedLexem.Type == LexemType.EndOperator);
-
-            extractor.Next();
-            Assert.IsTrue(extractor.LastExtractedLexem.Token == Token.EndOfText);
-
-            TestHelpers.ExceptionThrown(()=>extractor.Next(), typeof(CompilerException));
         }
 
-        [TestMethod]
-        public void ByteCodeFactory_Creation()
+
+    }
+
+    class TestCodeBuilder : IModuleBuilder
+    {
+        
+        public List<string> Variables { get; set; }
+
+        public void BeginModule(CompilerContext context)
         {
-            ICodeBlockFactory factory = new ByteCodeBlockFactory();
-            
-            factory.Init(null, null);
-            Assert.IsTrue(factory.GetModuleBuilder() is Scripting.ByteCode.ModuleBuilder);
-            Assert.IsTrue(factory.GetVarDefinitionBuilder() is Scripting.ByteCode.VariableDefinitionBuilder);
-            Assert.IsTrue(factory.GetMethodSectionBuilder() is Scripting.ByteCode.MethodSectionBuilder);
-            Assert.IsTrue(factory.GetMethodBuilder() is Scripting.ByteCode.MethodBuilder);
-            Assert.IsTrue(factory.GetCodeBatchBuilder() is Scripting.ByteCode.CodeBatchBuilder);
-            Assert.IsTrue(factory.GetComplexStatementBuilder() is Scripting.ByteCode.StatementBuilder);
-            Assert.IsTrue(factory.GetStatementBuilder() is Scripting.ByteCode.StatementBuilder);
-            Assert.IsTrue(factory.GetProcCallBuilder() is Scripting.ByteCode.CallBuilder);
-            Assert.IsTrue(factory.GetAssignmentBuilder() is Scripting.ByteCode.AssignmentBuilder);
-            Assert.IsTrue(factory.GetLeftExpressionBuilder() is Scripting.ByteCode.AssignableExpressionBuilder);
-            Assert.IsTrue(factory.GetRightExpressionBuilder() is Scripting.ByteCode.SourceExpressionBuilder);
-
-
+            Variables = new List<string>();
         }
 
-        [TestMethod]
-        public void Interpreter_Creation()
+        public void DefineVariable(string name)
         {
-            var context = new CompilerContext();
-            var interpreter = new CodeInterpreter(new ByteCodeBlockFactory());
-            interpreter.Context = new CompilerContext();
-            interpreter.Code = "Перем А;";
+            Variables.Add(name);
+        }
 
-            ModuleImage result = (ModuleImage)interpreter.Run();
+        public void DefineExportVariable(string name)
+        {
+            Variables.Add(name + "Export");
+        }
 
-            Assert.IsTrue(result.Variables.Count == 1);
-            Assert.IsTrue(result.Variables[0].Name == "А");
+        public void CompleteModule()
+        {
 
         }
+
+        public void OnError(CompilerErrorEventArgs errorInfo)
+        {
+
+        }
+
+        
     }
 }

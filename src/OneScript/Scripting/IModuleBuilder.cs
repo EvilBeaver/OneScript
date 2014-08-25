@@ -5,8 +5,13 @@ using System.Text;
 
 namespace OneScript.Scripting
 {
-    public interface IModuleBuilder : IBlockBuilder
+    public interface IModuleBuilder
     {
-        object GetResult();
+        void BeginModule(CompilerContext context);
+        void CompleteModule();
+        void DefineVariable(string name);
+        void DefineExportVariable(string name);
+
+        void OnError(CompilerErrorEventArgs errorInfo);
     }
 }

@@ -24,6 +24,21 @@ namespace OneScript.Scripting
         {
         }
 
+        public static CompilerException AppendCodeInfo(CompilerException exc, int line, string codeString)
+        {
+            exc.LineNumber = line;
+            exc.Code = codeString;
+            return exc;
+        }
+
+
+        internal static CompilerException AppendCodeInfo(CompilerException exc, CodePositionInfo codePosInfo)
+        {
+            AppendCodeInfo(exc, codePosInfo.LineNumber, codePosInfo.Code);
+            return exc;
+        }
+
+
         public static CompilerException MethodIsNotDefined(string name)
         {
             return new CompilerException("Метод не определен: " + name);
@@ -34,10 +49,24 @@ namespace OneScript.Scripting
             return new CompilerException("Переменная не определена: " + name);
         }
 
-
-        internal static Exception UnexpectedEndOfText()
+        public static Exception UnexpectedEndOfText()
         {
             return new CompilerException("Обнаружено логическое завершение текста модуля");
+        }
+
+        public static CompilerException UnexpectedOperation()
+        {
+            return new CompilerException("Неизвестная операция");
+        }
+
+        public static CompilerException IdentifierExpected()
+        {
+            return new CompilerException("Ожидается идентификатор");
+        }
+
+        public static CompilerException SemicolonExpected()
+        {
+            return new CompilerException("Ожидается символ ; (точка с запятой)");
         }
     }
 }
