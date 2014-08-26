@@ -185,6 +185,21 @@ namespace OneScript.Scripting
             const int BUILTINS_INDEX = (int)Token.ByValParam;
             return (int)token > BUILTINS_INDEX;
         }
+
+        public static bool IsBeginOfStatement(Token token)
+        {
+            switch(token)
+            {
+                case Token.VarDef:
+                case Token.If:
+                case Token.For:
+                case Token.While:
+                case Token.Try:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
     public static class SpecialChars

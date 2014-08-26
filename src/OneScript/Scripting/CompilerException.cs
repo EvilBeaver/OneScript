@@ -24,21 +24,6 @@ namespace OneScript.Scripting
         {
         }
 
-        public static CompilerException AppendCodeInfo(CompilerException exc, int line, string codeString)
-        {
-            exc.LineNumber = line;
-            exc.Code = codeString;
-            return exc;
-        }
-
-
-        internal static CompilerException AppendCodeInfo(CompilerException exc, CodePositionInfo codePosInfo)
-        {
-            AppendCodeInfo(exc, codePosInfo.LineNumber, codePosInfo.Code);
-            return exc;
-        }
-
-
         public static CompilerException MethodIsNotDefined(string name)
         {
             return new CompilerException("Метод не определен: " + name);

@@ -20,7 +20,7 @@ namespace OneScript.Tests
             Lexer lexer;
             PrepareParser(code, out lexer);
 
-            parser.Build(new CompilerContext(), lexer);
+            Assert.IsTrue(parser.Build(new CompilerContext(), lexer));
 
             Assert.IsTrue(builder.Variables[0] == "АExport");
             Assert.IsTrue(builder.Variables[1] == "Б");
@@ -36,7 +36,7 @@ namespace OneScript.Tests
                             Перем Б,В;";
             string codeNoIdentifier1 = @"Перем А Экспорт
                             Перем ,В;";
-            string codeNoIdentifier2 = @"Перем Экспорт
+            string codeNoIdentifierSkipToNext = @"Перем Экспорт
                             Перем ,В;";
 
             var builder = new TestCodeBuilder();
@@ -53,13 +53,28 @@ namespace OneScript.Tests
                     e.IsHandled = true;
                 };
 
-            parser.Build(new CompilerContext(), lexer);
+            bool buildSuccess = false;
 
+            buildSuccess = parser.Build(new CompilerContext(), lexer);
+            Assert.IsTrue(errors.Count == 1);
+            Assert.IsTrue(errors[0].Contains("Ожидается символ ;"));
+            Assert.IsFalse(buildSuccess);
+
+            errors.Clear();
             PrepareParser(codeNoIdentifier1, out lexer);
-            parser.Build(new CompilerContext(), lexer);
+            buildSuccess = parser.Build(new CompilerContext(), lexer);
+            Assert.IsTrue(errors.Count == 2);
+            Assert.IsTrue(errors[0].Contains("Ожидается символ ;"));
+            Assert.IsTrue(errors[1].Contains("Ожидается идентификатор"));
+            Assert.IsFalse(buildSuccess);
 
-            PrepareParser(codeNoIdentifier2, out lexer);
-            parser.Build(new CompilerContext(), lexer);
+            errors.Clear();
+            PrepareParser(codeNoIdentifierSkipToNext, out lexer);
+            buildSuccess = parser.Build(new CompilerContext(), lexer);
+            Assert.IsTrue(errors.Count == 2);
+            Assert.IsTrue(errors[0].Contains("Ожидается идентификатор"));
+            Assert.IsTrue(errors[1].Contains("Ожидается идентификатор"));
+            Assert.IsFalse(buildSuccess);
 
         }
 

@@ -120,7 +120,7 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
-        public void Keywords()
+        public void All_Tokens()
         {
             Assert.IsTrue(LanguageDef.GetToken("если") == Token.If);
             Assert.IsTrue(LanguageDef.GetToken("тогда") == Token.Then);
@@ -250,6 +250,16 @@ namespace OneScript.Tests
             Assert.IsTrue(LanguageDef.GetToken("sqrt") == Token.Sqrt);
             Assert.IsTrue(LanguageDef.GetToken("информацияобошибке") == Token.ExceptionInfo);
             Assert.IsTrue(LanguageDef.GetToken("описаниеошибки") == Token.ExceptionDescr);
+        }
+
+        [TestMethod]
+        public void Keywords_Which_Begins_New_Statement()
+        {
+            Assert.IsTrue(LanguageDef.IsBeginOfStatement(Token.VarDef));
+            Assert.IsTrue(LanguageDef.IsBeginOfStatement(Token.If));
+            Assert.IsTrue(LanguageDef.IsBeginOfStatement(Token.For));
+            Assert.IsTrue(LanguageDef.IsBeginOfStatement(Token.While));
+            Assert.IsTrue(LanguageDef.IsBeginOfStatement(Token.Try));
         }
     }
 }

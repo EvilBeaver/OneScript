@@ -146,5 +146,6 @@ namespace OneScript.Tests
             Assert.AreSame(memBlock.ContextInstance, ctx1);
             Assert.IsTrue(mem.Count == 0);
         }
+
     }
 }

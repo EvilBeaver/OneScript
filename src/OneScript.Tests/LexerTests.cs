@@ -159,6 +159,31 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
+        public void Word_Lexer_State_BuiltIn_Tokens_As_Usual_Words()
+        {
+            string code = "Лев СтрДлина Прав";
+            var iterator = new SourceCodeIterator(code);
+            var state = new WordLexerState();
+            iterator.MoveToContent();
+            var lexem = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lexem.Type == LexemType.Identifier);
+            Assert.IsTrue(lexem.Content == "Лев");
+            Assert.IsTrue(lexem.Token == Token.NotAToken);
+
+            iterator.MoveToContent();
+            lexem = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lexem.Type == LexemType.Identifier);
+            Assert.IsTrue(lexem.Content == "СтрДлина");
+            Assert.IsTrue(lexem.Token == Token.NotAToken);
+
+            iterator.MoveToContent();
+            lexem = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lexem.Type == LexemType.Identifier);
+            Assert.IsTrue(lexem.Content == "Прав");
+            Assert.IsTrue(lexem.Token == Token.NotAToken);
+        }
+
+        [TestMethod]
         public void StringLiteral_LexerState_WorksFine()
         {
             string code;
@@ -427,6 +452,14 @@ namespace OneScript.Tests
             Assert.IsTrue(lex.Content == "А");
             lex = lexer.NextLexem();
             Assert.IsTrue(lex.Content == "Б");
+        }
+
+        [TestMethod]
+        public void New_Exception_Shows_Negative_Line_And_Column()
+        {
+            var e = new ScriptException();
+            Assert.IsTrue(e.LineNumber == -1);
+            Assert.IsTrue(e.ColumnNumber == -1);
         }
     }
 }

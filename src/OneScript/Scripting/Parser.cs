@@ -1,5 +1,7 @@
-﻿using System;
+﻿using OneScript.Core;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -11,99 +13,137 @@ namespace OneScript.Scripting
         private Lexem _lastExtractedLexem;
         private IModuleBuilder _builder;
         private CompilerContext _ctx;
+        private bool _wasErrorsInBuild;
 
         public Parser(IModuleBuilder builder)
         {
             _builder = builder;
         }
 
-        public void Build(CompilerContext context, Lexer lexer)
+        public bool Build(CompilerContext context, Lexer lexer)
         {
             _lexer = lexer;
             _ctx = context;
             _lastExtractedLexem = default(Lexem);
 
-            BuildModule();
+            return BuildModule();
         }
 
         public event EventHandler<CompilerErrorEventArgs> CompilerError;
 
-        private void BuildModule()
+        private bool BuildModule()
         {
-            _builder.BeginModule(_ctx);
-            
-            DispatchModuleBuild();
-            ProcessForwardedDeclarations();
+            try
+            {
+                _builder.BeginModule(_ctx);
 
-            _builder.CompleteModule();
+                DispatchModuleBuild();
+                ProcessForwardedDeclarations();
+
+                _builder.CompleteModule();
+            }
+            catch (ScriptException e)
+            {
+                ReportError(e);
+            }
+            catch(Exception e)
+            {
+                var newExc = new CompilerException(new CodePositionInfo(), "Внутренняя ошибка компилятора", e);
+                ReportError(newExc);
+            }
+
+            return !_wasErrorsInBuild;
         }
 
         private void DispatchModuleBuild()
         {
+            NextLexem();
+
             do
             {
-                NextLexem();
+                bool success = false;
+
                 if (_lastExtractedLexem.Token == Token.VarDef)
                 {
-                    BuildVariableDefinitions();
+                    success = BuildVariableDefinition();
                 }
+
+                if (success && CheckCorrectStatementEnd())
+                {
+                    // это точка с запятой или конец блока
+                    NextLexem();
+                }
+                else
+                {
+                    SkipToNextStatement();
+                }
+
             }
             while (_lastExtractedLexem.Token != Token.EndOfText);
         }
 
-        private void BuildVariableDefinitions()
+        private bool BuildVariableDefinition()
         {
-            while (_lastExtractedLexem.Token == Token.VarDef)
+            Debug.Assert(_lastExtractedLexem.Token == Token.VarDef);
+            
+            NextLexem();
+            while (true)
             {
-                NextLexem();
-                while (true)
+                if (IsUserSymbol(ref _lastExtractedLexem))
                 {
-                    if (IsUserSymbol(ref _lastExtractedLexem))
+                    var symbolicName = _lastExtractedLexem.Content;
+                    NextLexem();
+
+                    if (_lastExtractedLexem.Token == Token.Export)
                     {
-                        var symbolicName = _lastExtractedLexem.Content;
+                        _builder.DefineExportVariable(symbolicName);
                         NextLexem();
-
-                        if (_lastExtractedLexem.Token == Token.Export)
-                        {
-                            _builder.DefineExportVariable(symbolicName);
-                            NextLexem();
-                        }
-                        else
-                        {
-                            _builder.DefineVariable(symbolicName);
-                        }
-
-                        if (_lastExtractedLexem.Token == Token.Comma)
-                        {
-                            NextLexem();
-                            continue;
-                        }
-                        else if (_lastExtractedLexem.Token == Token.Semicolon)
-                        {
-                            NextLexem();
-                            break;
-                        }
-                        else if (_lastExtractedLexem.Token != Token.Semicolon)
-                        {
-                            ReportError(CompilerException.SemicolonExpected());
-                            break; // goto next statement (if any)
-                        }
                     }
                     else
                     {
-                        ReportError(CompilerException.IdentifierExpected());
-                        SkipTill(Token.Semicolon);
+                        _builder.DefineVariable(symbolicName);
+                    }
+
+                    if (_lastExtractedLexem.Token == Token.Comma)
+                    {
+                        NextLexem();
+                        continue;
+                    }
+                    else
+                    {
+                        // переменная объявлена.
+                        // далее, диспетчер определит - нужна ли точка с запятой
+                        // и переведет обработку дальше
                         break;
                     }
                 }
-    
+                else
+                {
+                    ReportError(CompilerException.IdentifierExpected());
+                    return false;
+                }
             }
 
+            return true;
+    
         }
 
-        private void SkipTill(Token token)
+        private bool CheckCorrectStatementEnd()
         {
-            while(_lastExtractedLexem.Token != token && _lastExtractedLexem.Token != Token.EndOfText)
+            if(!(_lastExtractedLexem.Token == Token.Semicolon ||
+                 _lastExtractedLexem.Token == Token.EndOfText))
+            {
+                ReportError(CompilerException.SemicolonExpected());
+                return false;
+            }
+
+            return true;
+        }
+
+        public void SkipToNextStatement()
+        {
+            while(!(_lastExtractedLexem.Token == Token.EndOfText
+                    || LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token)))
             {
                 NextLexem();
             }
@@ -147,9 +187,10 @@ namespace OneScript.Scripting
                 || lex.Type == LexemType.UndefinedLiteral;
         }
 
-        private void ReportError(CompilerException compilerException)
+        private void ReportError(ScriptException compilerException)
         {
-            CompilerException.AppendCodeInfo(compilerException, _lexer.GetIterator().GetPositionInfo());
+            _wasErrorsInBuild = true;
+            ScriptException.AppendCodeInfo(compilerException, _lexer.GetIterator().GetPositionInfo());
 
             if (CompilerError != null)
             {

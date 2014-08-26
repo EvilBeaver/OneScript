@@ -10,10 +10,9 @@ namespace OneScript.Scripting
     {
         private CodePositionInfo _codePosition;
 
-        internal ScriptException() 
+        public ScriptException() 
         {
             _codePosition = new CodePositionInfo();
-            _codePosition.LineNumber = -1;
         }
 
         internal ScriptException(string message)
@@ -46,6 +45,18 @@ namespace OneScript.Scripting
             }
         }
 
+        public int ColumnNumber
+        {
+            get
+            {
+                return _codePosition.ColumnNumber;
+            }
+            set
+            {
+                _codePosition.ColumnNumber = value;
+            }
+        }
+
         public string Code
         {
             get
@@ -68,5 +79,40 @@ namespace OneScript.Scripting
                     _codePosition.Code);
             }
         }
+
+        public static ScriptException AppendCodeInfo(ScriptException exc, int line, string codeString, int column = -1)
+        {
+            const int UNKNOWN_POSITION = -1;
+
+            if (exc.LineNumber == UNKNOWN_POSITION)
+            {
+                exc.LineNumber = line;
+                exc.Code = codeString;
+            }
+
+            if (column != UNKNOWN_POSITION && exc.ColumnNumber == UNKNOWN_POSITION)
+            {
+                exc.ColumnNumber = column;
+            }
+
+            return exc;
+        }
+
+        public static ScriptException AppendCodeInfoForced(ScriptException exc, int line, int column, string codeString)
+        {
+            exc.LineNumber = line;
+            exc.ColumnNumber = column;
+            exc.Code = codeString;
+            
+            return exc;
+        }
+
+
+        internal static ScriptException AppendCodeInfo(ScriptException exc, CodePositionInfo codePosInfo)
+        {
+            AppendCodeInfo(exc, codePosInfo.LineNumber, codePosInfo.Code, codePosInfo.ColumnNumber);
+            return exc;
+        }
+
     }
 }
