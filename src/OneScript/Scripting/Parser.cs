@@ -7,26 +7,44 @@ using System.Text;
 
 namespace OneScript.Scripting
 {
-    public class Parser
+    public class Parser : ILexemExtractor
     {
         private Lexer _lexer;
         private Lexem _lastExtractedLexem;
         private IModuleBuilder _builder;
-        private CompilerContext _ctx;
+        private ICompilerContext _ctx;
         private bool _wasErrorsInBuild;
+        private PositionInModule _parserPosition;
+
+        private enum PositionInModule
+        {
+            Begin,
+            VarSection,
+            MethodSection,
+            MethodHeader,
+            MethodVarSection,
+            MethodBody,
+            ModuleBody
+        }
 
         public Parser(IModuleBuilder builder)
         {
             _builder = builder;
         }
 
-        public bool Build(CompilerContext context, Lexer lexer)
+        public bool Build(ICompilerContext context, Lexer lexer)
         {
             _lexer = lexer;
             _ctx = context;
             _lastExtractedLexem = default(Lexem);
+            _lexer.UnexpectedCharacterFound += _lexer_UnexpectedCharacterFound;
 
             return BuildModule();
+        }
+
+        void _lexer_UnexpectedCharacterFound(object sender, LexerErrorEventArgs e)
+        {
+            // синтаксические ошибки пока не обрабатываются.
         }
 
         public event EventHandler<CompilerErrorEventArgs> CompilerError;
@@ -35,12 +53,12 @@ namespace OneScript.Scripting
         {
             try
             {
+                _ctx.PushScope(new SymbolScope());
                 _builder.BeginModule(_ctx);
 
                 DispatchModuleBuild();
                 ProcessForwardedDeclarations();
 
-                _builder.CompleteModule();
             }
             catch (ScriptException e)
             {
@@ -49,7 +67,12 @@ namespace OneScript.Scripting
             catch(Exception e)
             {
                 var newExc = new CompilerException(new CodePositionInfo(), "Внутренняя ошибка компилятора", e);
-                ReportError(newExc);
+                throw newExc;
+            }
+            finally
+            {
+                _builder.CompleteModule();
+                _ctx.PopScope();
             }
 
             return !_wasErrorsInBuild;
@@ -62,16 +85,21 @@ namespace OneScript.Scripting
             do
             {
                 bool success = false;
-
-                if (_lastExtractedLexem.Token == Token.VarDef)
+                try
                 {
-                    success = BuildVariableDefinition();
+                    success = SelectAndBuildOperation();
+                }
+                catch(CompilerException e)
+                {
+                    ReportError(e);
+                    success = false;
                 }
 
                 if (success && CheckCorrectStatementEnd())
                 {
                     // это точка с запятой или конец блока
-                    NextLexem();
+                    if (_lastExtractedLexem.Token != Token.EndOfText)
+                        NextLexem();
                 }
                 else
                 {
@@ -80,6 +108,41 @@ namespace OneScript.Scripting
 
             }
             while (_lastExtractedLexem.Token != Token.EndOfText);
+        }
+
+        private void ProcessForwardedDeclarations()
+        {
+            //throw new NotImplementedException();
+        }
+
+        private bool SelectAndBuildOperation()
+        {
+            bool success = false;
+
+            if (_lastExtractedLexem.Token == Token.VarDef)
+            {
+                SetPosition(PositionInModule.VarSection);
+                
+                success = BuildVariableDefinition();
+            }
+            else if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
+            {
+
+            }
+            else if (_lastExtractedLexem.Type == LexemType.Identifier)
+            {
+                if (_parserPosition == PositionInModule.VarSection || _parserPosition == PositionInModule.MethodSection)
+                    SetPosition(PositionInModule.ModuleBody);
+
+                success = BuildStatement();
+            }
+            else
+            {
+                success = false;
+                ReportError(CompilerException.UnexpectedOperation());
+            }
+
+            return success;
         }
 
         private bool BuildVariableDefinition()
@@ -96,12 +159,12 @@ namespace OneScript.Scripting
 
                     if (_lastExtractedLexem.Token == Token.Export)
                     {
-                        _builder.DefineExportVariable(symbolicName);
+                        _builder.BuildExportVariable(symbolicName);
                         NextLexem();
                     }
                     else
                     {
-                        _builder.DefineVariable(symbolicName);
+                        _builder.BuildVariable(symbolicName);
                     }
 
                     if (_lastExtractedLexem.Token == Token.Comma)
@@ -128,32 +191,84 @@ namespace OneScript.Scripting
     
         }
 
-        private bool CheckCorrectStatementEnd()
+        private bool BuildStatement()
         {
-            if(!(_lastExtractedLexem.Token == Token.Semicolon ||
-                 _lastExtractedLexem.Token == Token.EndOfText))
+            Debug.Assert(_lastExtractedLexem.Type == LexemType.Identifier);
+
+            if(LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token))
             {
-                ReportError(CompilerException.SemicolonExpected());
+                throw new NotImplementedException();
+            }
+            else if(IsUserSymbol(ref _lastExtractedLexem))
+            {
+                return BuildSimpleStatement();
+            }
+            else
+            {
+                ReportError(CompilerException.UnexpectedOperation());
                 return false;
             }
+        }
+
+        private bool BuildSimpleStatement()
+        {
+            string identifier = _lastExtractedLexem.Content;
+
+            NextLexem();
+
+            switch(_lastExtractedLexem.Token)
+            {
+                case Token.Equal:
+                    // simple assignment
+                    NextLexem();
+                    if(BuildSourceExpression())
+                    {
+                        var sb = DefineOrGetVariable(identifier);
+                        _builder.BuildLoadVariable(sb);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    break;
+                case Token.Dot:
+                    // access chain
+                    throw new NotImplementedException();
+                    break;
+                case Token.OpenPar:
+                    // call
+                    throw new NotImplementedException();
+                    break;
+                case Token.OpenBracket:
+                    // access by index
+                    throw new NotImplementedException();
+                    break;
+                default:
+                    ReportError(CompilerException.UnexpectedOperation());
+                    return false;
+            }
+        }
+
+        private bool BuildSourceExpression()
+        {
+            var constDef = CreateConstDefinition(ref _lastExtractedLexem);
+            _builder.BuildReadConstant(constDef);
+            NextLexem();
 
             return true;
         }
 
-        public void SkipToNextStatement()
+        private SymbolBinding DefineOrGetVariable(string identifier)
         {
-            while(!(_lastExtractedLexem.Token == Token.EndOfText
-                    || LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token)))
-            {
-                NextLexem();
-            }
+            SymbolBinding sb;
+            if (!_ctx.TryGetVariable(identifier, out sb))
+                sb = _ctx.DefineVariable(identifier);
+
+            return sb;
         }
 
-        private void ProcessForwardedDeclarations()
-        {
-            //throw new NotImplementedException();
-        }
-
+        
         #region Helper methods
 
         public void NextLexem()
@@ -168,23 +283,50 @@ namespace OneScript.Scripting
             }
         }
 
-        private bool IsUserSymbol(ref Lexem lex)
+        private static bool IsUserSymbol(ref Lexem lex)
         {
             return lex.Type == LexemType.Identifier && lex.Token == Token.NotAToken;
         }
 
-        private bool IsValidIdentifier(ref Lexem lex)
+        private static bool IsValidIdentifier(ref Lexem lex)
         {
             return lex.Type == LexemType.Identifier;
         }
 
-        private bool IsLiteral(ref Lexem lex)
+        private static bool IsLiteral(ref Lexem lex)
         {
             return lex.Type == LexemType.StringLiteral
                 || lex.Type == LexemType.NumberLiteral
                 || lex.Type == LexemType.BooleanLiteral
                 || lex.Type == LexemType.DateLiteral
                 || lex.Type == LexemType.UndefinedLiteral;
+        }
+
+        private static ConstDefinition CreateConstDefinition(ref Lexem lex)
+        {
+            ConstType constType = ConstType.Undefined;
+            switch (lex.Type)
+            {
+                case LexemType.BooleanLiteral:
+                    constType = ConstType.Boolean;
+                    break;
+                case LexemType.DateLiteral:
+                    constType = ConstType.Date;
+                    break;
+                case LexemType.NumberLiteral:
+                    constType = ConstType.Number;
+                    break;
+                case LexemType.StringLiteral:
+                    constType = ConstType.String;
+                    break;
+            }
+
+            ConstDefinition cDef = new ConstDefinition()
+            {
+                Type = constType,
+                Presentation = lex.Content
+            };
+            return cDef;
         }
 
         private void ReportError(ScriptException compilerException)
@@ -211,6 +353,57 @@ namespace OneScript.Scripting
             }
         }
 
+        private bool CheckCorrectStatementEnd()
+        {
+            if (!(_lastExtractedLexem.Token == Token.Semicolon ||
+                 _lastExtractedLexem.Token == Token.EndOfText))
+            {
+                ReportError(CompilerException.SemicolonExpected());
+                return false;
+            }
+
+            return true;
+        }
+
+        private void SkipToNextStatement()
+        {
+            while (!(_lastExtractedLexem.Token == Token.EndOfText
+                    || LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token)))
+            {
+                NextLexem();
+            }
+        }
+
+        private void SetPosition(PositionInModule newPosition)
+        {
+            switch(newPosition)
+            {
+                case PositionInModule.VarSection:
+                {
+                    if(!(_parserPosition == PositionInModule.Begin ||
+                        _parserPosition == PositionInModule.VarSection ||
+                        _parserPosition == PositionInModule.MethodVarSection))
+
+                        throw CompilerException.LateVarDefinition();
+
+                    break;
+                }
+            }
+            
+            _parserPosition = newPosition;
+        }
+
+        public Lexem ILexemExtractor.LastExtractedLexem
+        {
+            get { return _lastExtractedLexem; }
+        }
+
+        public void ILexemExtractor.NextLexem()
+        {
+            this.NextLexem();
+        }
+
         #endregion
+   
     }
 }

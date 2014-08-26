@@ -14,6 +14,9 @@ namespace OneScript.Scripting
         {
             get
             {
+                if (_attachedScopes.Count == 0)
+                    throw new InvalidOperationException("No scopes attached");
+
                 return _attachedScopes[_attachedScopes.Count - 1];
             }
         }
@@ -63,21 +66,13 @@ namespace OneScript.Scripting
 
         public SymbolBinding GetVariable(string name)
         {
-            for (int i = _attachedScopes.Count - 1; i >= 0; i--)
-            {
-                int varIndex = _attachedScopes[i].GetVariableNumber(name);
-                if (varIndex != SymbolScope.InvalidIndex)
-                {
-                    var binding = new SymbolBinding();
-                    binding.Context = i;
-                    binding.IndexInContext = varIndex;
-                    binding.Name = name;
+            SymbolBinding sb;
+            if (!TryGetVariable(name, out sb))
+                throw CompilerException.VariableIsNotDefined(name);
 
-                    return binding;
-                }
-            }
+            return sb;
 
-            throw CompilerException.VariableIsNotDefined(name);
+            
         }
 
         public SymbolBinding DefineMethod(string name, MethodSignatureData methodUsageData)
@@ -113,27 +108,58 @@ namespace OneScript.Scripting
 
         public SymbolBinding GetMethod(string name)
         {
-            for (int i = _attachedScopes.Count - 1; i >= 0; i--)
-            {
-                int varIndex = _attachedScopes[i].GetMethodNumber(name);
-                if (varIndex != SymbolScope.InvalidIndex)
-                {
-                    var binding = new SymbolBinding();
-                    binding.Context = i;
-                    binding.IndexInContext = varIndex;
-                    binding.Name = name;
+            SymbolBinding sb;
+            if(!TryGetMethod(name, out sb))
+                throw CompilerException.MethodIsNotDefined(name);
 
-                    return binding;
-                }
-            }
-
-            throw CompilerException.MethodIsNotDefined(name);
+            return sb;
         }
 
 
         public object GetScope(int number)
         {
             return _attachedScopes[number];
+        }
+
+
+        public bool TryGetVariable(string name, out SymbolBinding binding)
+        {
+            for (int i = _attachedScopes.Count - 1; i >= 0; i--)
+            {
+                int varIndex = _attachedScopes[i].GetVariableNumber(name);
+                if (varIndex != SymbolScope.InvalidIndex)
+                {
+                    binding = new SymbolBinding();
+                    binding.Context = i;
+                    binding.IndexInContext = varIndex;
+                    binding.Name = name;
+
+                    return true;
+                }
+            }
+
+            binding = default(SymbolBinding);
+            return false;
+        }
+
+        public bool TryGetMethod(string name, out SymbolBinding binding)
+        {
+            for (int i = _attachedScopes.Count - 1; i >= 0; i--)
+            {
+                int varIndex = _attachedScopes[i].GetMethodNumber(name);
+                if (varIndex != SymbolScope.InvalidIndex)
+                {
+                    binding = new SymbolBinding();
+                    binding.Context = i;
+                    binding.IndexInContext = varIndex;
+                    binding.Name = name;
+
+                    return true;
+                }
+            }
+
+            binding = default(SymbolBinding);
+            return false;
         }
     }
 }

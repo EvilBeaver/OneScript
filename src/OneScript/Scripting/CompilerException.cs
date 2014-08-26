@@ -53,5 +53,10 @@ namespace OneScript.Scripting
         {
             return new CompilerException("Ожидается символ ; (точка с запятой)");
         }
+
+        public static CompilerException LateVarDefinition()
+        {
+            return new CompilerException("Объявления переменных должны быть расположены в начале модуля, процедуры или функции");
+        }
     }
 }

@@ -79,7 +79,9 @@
     <Compile Include="Scripting\CompilerErrorEventArgs.cs" />
     <Compile Include="Scripting\CompilerException.cs" />
     <Compile Include="Scripting\DateLexerState.cs" />
+    <Compile Include="Scripting\ExpressionBuilder.cs" />
     <Compile Include="Scripting\ICompilerContext.cs" />
+    <Compile Include="Scripting\ILexemExtractor.cs" />
     <Compile Include="Scripting\IModuleBuilder.cs" />
     <Compile Include="Scripting\ISourceCodeIndexer.cs" />
     <Compile Include="Scripting\MachineMemory.cs" />

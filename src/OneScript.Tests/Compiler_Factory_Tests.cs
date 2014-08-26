@@ -17,8 +17,7 @@ namespace OneScript.Tests
             var builder = new TestCodeBuilder();
             var parser = new Parser(builder);
 
-            Lexer lexer;
-            PrepareParser(code, out lexer);
+            Lexer lexer = PrepareParser(code);
 
             Assert.IsTrue(parser.Build(new CompilerContext(), lexer));
 
@@ -42,9 +41,7 @@ namespace OneScript.Tests
             var builder = new TestCodeBuilder();
             var parser = new Parser(builder);
 
-            Lexer lexer;
-            PrepareParser(codeNoSemicolon, out lexer);
-
+            Lexer lexer = PrepareParser(codeNoSemicolon);
             List<string> errors = new List<string>();
 
             parser.CompilerError += (s, e) =>
@@ -61,7 +58,7 @@ namespace OneScript.Tests
             Assert.IsFalse(buildSuccess);
 
             errors.Clear();
-            PrepareParser(codeNoIdentifier1, out lexer);
+            lexer = PrepareParser(codeNoIdentifier1);
             buildSuccess = parser.Build(new CompilerContext(), lexer);
             Assert.IsTrue(errors.Count == 2);
             Assert.IsTrue(errors[0].Contains("Ожидается символ ;"));
@@ -69,7 +66,7 @@ namespace OneScript.Tests
             Assert.IsFalse(buildSuccess);
 
             errors.Clear();
-            PrepareParser(codeNoIdentifierSkipToNext, out lexer);
+            lexer = PrepareParser(codeNoIdentifierSkipToNext);
             buildSuccess = parser.Build(new CompilerContext(), lexer);
             Assert.IsTrue(errors.Count == 2);
             Assert.IsTrue(errors[0].Contains("Ожидается идентификатор"));
@@ -78,10 +75,27 @@ namespace OneScript.Tests
 
         }
 
-        private static void PrepareParser(string code, out Lexer lexer)
+        [TestMethod]
+        public void Simple_Assignment()
         {
-            lexer = new Lexer();
+            var builder = new TestCodeBuilder();
+            var parser = new Parser(builder);
+            Lexer lexer = PrepareParser("А = 2");
+            
+            var ctx = new CompilerContext();
+            
+            Assert.IsTrue(parser.Build(ctx, lexer));
+
+            Assert.IsTrue(builder.EntryPoint != -1);
+            Assert.IsTrue(builder.Constants[0].Presentation == "2");
+
+        }
+
+        private static Lexer PrepareParser(string code)
+        {
+            var lexer = new Lexer();
             lexer.Code = code;
+            return lexer;
         }
 
 
@@ -92,19 +106,37 @@ namespace OneScript.Tests
         
         public List<string> Variables { get; set; }
 
-        public void BeginModule(CompilerContext context)
+        public List<ConstDefinition> Constants { get; set; }
+
+        public int EntryPoint { get; set; }
+
+        #region IBuilder members
+        public void BeginModule(ICompilerContext context)
         {
             Variables = new List<string>();
+            Constants = new List<ConstDefinition>();
+            EntryPoint = -1;
         }
 
-        public void DefineVariable(string name)
+        public void BuildVariable(string name)
         {
             Variables.Add(name);
         }
 
-        public void DefineExportVariable(string name)
+        public void BuildExportVariable(string name)
         {
             Variables.Add(name + "Export");
+        }
+
+        public void BuildLoadVariable(SymbolBinding binding)
+        {
+            EntryPoint++;
+        }
+
+        public void BuildReadConstant(ConstDefinition constDef)
+        {
+            Constants.Add(constDef);
+            EntryPoint++;
         }
 
         public void CompleteModule()
@@ -115,8 +147,43 @@ namespace OneScript.Tests
         public void OnError(CompilerErrorEventArgs errorInfo)
         {
 
+        } 
+        
+        public void SnapToCodeLine(int line)
+        {
+            throw new NotImplementedException();
         }
 
-        
+        public void BuildGetReference(ConstDefinition constDef)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteReference()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BuildBinaryOperation(Token operationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BuildUnaryOperation(Token operationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BuildMethodCall(string methodName, int argumentCount, bool asFunction)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BuildAssignment()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }
