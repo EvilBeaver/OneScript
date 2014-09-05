@@ -13,13 +13,18 @@ namespace OneScript.Scripting
         void BuildVariable(string name);
         void BuildExportVariable(string name);
         void BuildLoadVariable(SymbolBinding binding);
+        void BuildReadVariable(SymbolBinding binding);
         void BuildReadConstant(ConstDefinition constDef);
         void BuildGetReference(ConstDefinition constDef);
         void WriteReference();
-        void BuildBinaryOperation(Token operationToken);
-        void BuildUnaryOperation(Token operationToken);
-        void BuildMethodCall(string methodName, int argumentCount, bool asFunction);
-        void BuildAssignment();
+        void BeginExpression();
+        void AddOperation(Token operatorToken);
+        void EndExpression();
+        void BeginMethodCall(string methodName, bool asFunction);
+        void AddArgument();
+        void EndMethodCall();
+        void BeginIndexAccess();
+        void EndIndexAccess();
         void OnError(CompilerErrorEventArgs errorInfo);
     }
 }

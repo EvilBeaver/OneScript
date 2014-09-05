@@ -58,5 +58,10 @@ namespace OneScript.Scripting
         {
             return new CompilerException("Объявления переменных должны быть расположены в начале модуля, процедуры или функции");
         }
+
+        public static CompilerException ExpressionSyntax()
+        {
+            return new CompilerException("Ошибка в выражении");
+        }
     }
 }

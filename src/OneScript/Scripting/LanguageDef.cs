@@ -200,6 +200,25 @@ namespace OneScript.Scripting
                     return false;
             }
         }
+
+        public static bool IsUserSymbol(ref Lexem lex)
+        {
+            return lex.Type == LexemType.Identifier && lex.Token == Token.NotAToken;
+        }
+
+        public static bool IsIdentifier(ref Lexem lex)
+        {
+            return lex.Type == LexemType.Identifier;
+        }
+
+        public static bool IsLiteral(ref Lexem lex)
+        {
+            return lex.Type == LexemType.StringLiteral
+                || lex.Type == LexemType.NumberLiteral
+                || lex.Type == LexemType.BooleanLiteral
+                || lex.Type == LexemType.DateLiteral
+                || lex.Type == LexemType.UndefinedLiteral;
+        }
     }
 
     public static class SpecialChars

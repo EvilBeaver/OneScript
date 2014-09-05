@@ -154,6 +154,11 @@ namespace OneScript.Tests
             throw new NotImplementedException();
         }
 
+
+
+        #endregion
+
+
         public void BuildGetReference(ConstDefinition constDef)
         {
             throw new NotImplementedException();
@@ -164,26 +169,51 @@ namespace OneScript.Tests
             throw new NotImplementedException();
         }
 
-        public void BuildBinaryOperation(Token operationToken)
+        public void BeginExpression()
         {
             throw new NotImplementedException();
         }
 
-        public void BuildUnaryOperation(Token operationToken)
+        public void EndExpression()
         {
             throw new NotImplementedException();
         }
 
-        public void BuildMethodCall(string methodName, int argumentCount, bool asFunction)
+        public void BeginMethodCall(string methodName, bool asFunction)
         {
             throw new NotImplementedException();
         }
 
-        public void BuildAssignment()
+        public void AddArgument()
         {
             throw new NotImplementedException();
         }
 
-        #endregion
+        public void EndMethodCall()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BeginIndexAccess()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void EndIndexAccess()
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public void AddOperation(Token operatorToken)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public void BuildReadVariable(SymbolBinding binding)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

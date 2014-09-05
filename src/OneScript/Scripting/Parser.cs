@@ -152,7 +152,7 @@ namespace OneScript.Scripting
             NextLexem();
             while (true)
             {
-                if (IsUserSymbol(ref _lastExtractedLexem))
+                if (LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
                 {
                     var symbolicName = _lastExtractedLexem.Content;
                     NextLexem();
@@ -199,7 +199,7 @@ namespace OneScript.Scripting
             {
                 throw new NotImplementedException();
             }
-            else if(IsUserSymbol(ref _lastExtractedLexem))
+            else if(LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
             {
                 return BuildSimpleStatement();
             }
@@ -221,7 +221,7 @@ namespace OneScript.Scripting
                 case Token.Equal:
                     // simple assignment
                     NextLexem();
-                    if(BuildSourceExpression())
+                    if(BuildSourceExpression(Token.Semicolon))
                     {
                         var sb = DefineOrGetVariable(identifier);
                         _builder.BuildLoadVariable(sb);
@@ -250,13 +250,20 @@ namespace OneScript.Scripting
             }
         }
 
-        private bool BuildSourceExpression()
+        private bool BuildSourceExpression(Token stopToken)
         {
-            var constDef = CreateConstDefinition(ref _lastExtractedLexem);
-            _builder.BuildReadConstant(constDef);
-            NextLexem();
+            var exprBuilder = new ExpressionBuilder(_builder, this, _ctx);
+            try
+            {
+                exprBuilder.Build(stopToken);
+                return true;
+            }
+            catch(CompilerException e)
+            {
+                ReportError(e);
+                return false;
+            }
 
-            return true;
         }
 
         private SymbolBinding DefineOrGetVariable(string identifier)
@@ -283,26 +290,9 @@ namespace OneScript.Scripting
             }
         }
 
-        private static bool IsUserSymbol(ref Lexem lex)
-        {
-            return lex.Type == LexemType.Identifier && lex.Token == Token.NotAToken;
-        }
+        
 
-        private static bool IsValidIdentifier(ref Lexem lex)
-        {
-            return lex.Type == LexemType.Identifier;
-        }
-
-        private static bool IsLiteral(ref Lexem lex)
-        {
-            return lex.Type == LexemType.StringLiteral
-                || lex.Type == LexemType.NumberLiteral
-                || lex.Type == LexemType.BooleanLiteral
-                || lex.Type == LexemType.DateLiteral
-                || lex.Type == LexemType.UndefinedLiteral;
-        }
-
-        private static ConstDefinition CreateConstDefinition(ref Lexem lex)
+        public static ConstDefinition CreateConstDefinition(ref Lexem lex)
         {
             ConstType constType = ConstType.Undefined;
             switch (lex.Type)
@@ -393,12 +383,12 @@ namespace OneScript.Scripting
             _parserPosition = newPosition;
         }
 
-        public Lexem ILexemExtractor.LastExtractedLexem
+        Lexem ILexemExtractor.LastExtractedLexem
         {
             get { return _lastExtractedLexem; }
         }
 
-        public void ILexemExtractor.NextLexem()
+        void ILexemExtractor.NextLexem()
         {
             this.NextLexem();
         }

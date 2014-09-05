@@ -5,9 +5,9 @@ using System.Text;
 
 namespace OneScript.Scripting
 {
-    interface ILexemExtractor
+    public interface ILexemExtractor
     {
-        public Lexem LastExtractedLexem { get; }
-        public void NextLexem();
+        Lexem LastExtractedLexem { get; }
+        void NextLexem();
     }
 }
