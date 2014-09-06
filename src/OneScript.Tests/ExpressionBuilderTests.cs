@@ -14,9 +14,10 @@ namespace OneScript.Tests
         {
             var builder = new CallSequenceLogger();
             Lexer lexer = new Lexer();
-            lexer.Code = "А+1*Б(1,2,3)-F.D;";
             var ctx = new CompilerContext();
             var exprBuilder = new ExpressionBuilder(builder, new LexemExtractor(lexer), ctx);
+
+            lexer.Code = "А+1*Б(1,2,3)-F.D;";
 
             exprBuilder.Build(Token.Semicolon);
 
