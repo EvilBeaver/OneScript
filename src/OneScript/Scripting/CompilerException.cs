@@ -63,5 +63,10 @@ namespace OneScript.Scripting
         {
             return new CompilerException("Ошибка в выражении");
         }
+
+        public static CompilerException ExportOnLocalVariable()
+        {
+            return new CompilerException("Локальная переменная не может быть экспортирована");
+        }
     }
 }

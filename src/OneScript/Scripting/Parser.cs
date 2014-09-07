@@ -12,7 +12,6 @@ namespace OneScript.Scripting
         private Lexer _lexer;
         private Lexem _lastExtractedLexem;
         private IModuleBuilder _builder;
-        private ICompilerContext _ctx;
         private bool _wasErrorsInBuild;
         private PositionInModule _parserPosition;
 
@@ -32,12 +31,13 @@ namespace OneScript.Scripting
             _builder = builder;
         }
 
-        public bool Build(ICompilerContext context, Lexer lexer)
+        public bool Build(Lexer lexer)
         {
             _lexer = lexer;
-            _ctx = context;
             _lastExtractedLexem = default(Lexem);
             _lexer.UnexpectedCharacterFound += _lexer_UnexpectedCharacterFound;
+            _parserPosition = PositionInModule.Begin;
+            _wasErrorsInBuild = false;
 
             return BuildModule();
         }
@@ -53,11 +53,10 @@ namespace OneScript.Scripting
         {
             try
             {
-                _ctx.PushScope(new SymbolScope());
-                _builder.BeginModule(_ctx);
+                
+                _builder.BeginModule();
 
                 DispatchModuleBuild();
-                ProcessForwardedDeclarations();
 
             }
             catch (ScriptException e)
@@ -72,7 +71,6 @@ namespace OneScript.Scripting
             finally
             {
                 _builder.CompleteModule();
-                _ctx.PopScope();
             }
 
             return !_wasErrorsInBuild;
@@ -110,18 +108,16 @@ namespace OneScript.Scripting
             while (_lastExtractedLexem.Token != Token.EndOfText);
         }
 
-        private void ProcessForwardedDeclarations()
-        {
-            //throw new NotImplementedException();
-        }
-
         private bool SelectAndBuildOperation()
         {
             bool success = false;
 
             if (_lastExtractedLexem.Token == Token.VarDef)
             {
-                SetPosition(PositionInModule.VarSection);
+                if (_parserPosition == PositionInModule.Begin)
+                    SetPosition(PositionInModule.VarSection);
+                else
+                    SetPosition(PositionInModule.MethodVarSection);
                 
                 success = BuildVariableDefinition();
             }
@@ -131,9 +127,12 @@ namespace OneScript.Scripting
             }
             else if (_lastExtractedLexem.Type == LexemType.Identifier)
             {
-                if (_parserPosition == PositionInModule.VarSection || _parserPosition == PositionInModule.MethodSection)
+                if (_parserPosition == PositionInModule.Begin
+                    || _parserPosition == PositionInModule.VarSection
+                    || _parserPosition == PositionInModule.MethodSection)
+                {
                     SetPosition(PositionInModule.ModuleBody);
-
+                }
                 success = BuildStatement();
             }
             else
@@ -159,12 +158,20 @@ namespace OneScript.Scripting
 
                     if (_lastExtractedLexem.Token == Token.Export)
                     {
-                        _builder.BuildExportVariable(symbolicName);
-                        NextLexem();
+                        if (_parserPosition == PositionInModule.VarSection)
+                        {
+                            _builder.DefineExportVariable(symbolicName);
+                            NextLexem();
+                        }
+                        else
+                        {
+                            ReportError(CompilerException.ExportOnLocalVariable());
+                            return false;
+                        }
                     }
                     else
                     {
-                        _builder.BuildVariable(symbolicName);
+                        _builder.DefineVariable(symbolicName);
                     }
 
                     if (_lastExtractedLexem.Token == Token.Comma)
@@ -212,6 +219,8 @@ namespace OneScript.Scripting
 
         private bool BuildSimpleStatement()
         {
+            Debug.Assert(LanguageDef.IsUserSymbol(ref _lastExtractedLexem));
+
             string identifier = _lastExtractedLexem.Content;
 
             NextLexem();
@@ -221,16 +230,12 @@ namespace OneScript.Scripting
                 case Token.Equal:
                     // simple assignment
                     NextLexem();
-                    if(BuildSourceExpression(Token.Semicolon))
-                    {
-                        var sb = DefineOrGetVariable(identifier);
-                        _builder.BuildLoadVariable(sb);
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+
+                    var acceptor = _builder.SelectOrUseVariable(identifier);
+                    var source = BuildExpression(Token.Semicolon);
+                    
+                    _builder.BuildAssignment(acceptor, source);
+
                     break;
                 case Token.Dot:
                     // access chain
@@ -248,33 +253,82 @@ namespace OneScript.Scripting
                     ReportError(CompilerException.UnexpectedOperation());
                     return false;
             }
+
+            return true;
         }
 
-        private bool BuildSourceExpression(Token stopToken)
+        private IASTNode BuildExpression(Token stopToken)
         {
-            var exprBuilder = new ExpressionBuilder(_builder, this, _ctx);
-            try
-            {
-                exprBuilder.Build(stopToken);
-                return true;
-            }
-            catch(CompilerException e)
-            {
-                ReportError(e);
-                return false;
-            }
+            IASTNode subNode = BuildOperation(0, BuildPrimaryNode());
+            if(_lastExtractedLexem.Token == stopToken)
+                return subNode;
 
+            // здесь нужно добавить проверку на допустимый конецблока. Пока что жестко конец текста
+            if (_lastExtractedLexem.Token == Token.EndOfText)
+                return subNode;
+
+            throw CompilerException.ExpressionSyntax();
         }
 
-        private SymbolBinding DefineOrGetVariable(string identifier)
+        private IASTNode BuildOperation(int acceptablePriority, IASTNode leftHandedNode)
         {
-            SymbolBinding sb;
-            if (!_ctx.TryGetVariable(identifier, out sb))
-                sb = _ctx.DefineVariable(identifier);
+            Debug.Assert(LanguageDef.IsBinaryOperator(_lastExtractedLexem.Token));
+            var currentOp = _lastExtractedLexem.Token;
+            var opPriority = LanguageDef.GetPriority(currentOp);
+            while(LanguageDef.IsBinaryOperator(currentOp) && opPriority >= acceptablePriority)
+            {
+                NextLexem();
+                var rightHandedNode = BuildPrimaryNode();
 
-            return sb;
+                var newOp = _lastExtractedLexem.Token;
+                int newPriority = GetBinaryPriority(newOp);
+
+                if(newPriority > opPriority)
+                {
+                    rightHandedNode = BuildOperation(newPriority, rightHandedNode);
+                }
+
+                leftHandedNode = _builder.BinaryOperation(currentOp, leftHandedNode, rightHandedNode);
+
+                currentOp = _lastExtractedLexem.Token;
+                opPriority = GetBinaryPriority(currentOp);
+                
+            }
+
+            return leftHandedNode;
         }
 
+        private static int GetBinaryPriority(Token newOp)
+        {
+            int newPriority;
+            if (LanguageDef.IsBinaryOperator(newOp))
+                newPriority = LanguageDef.GetPriority(newOp);
+            else
+                newPriority = -1;
+            
+            return newPriority;
+        }
+
+        private IASTNode BuildPrimaryNode()
+        {
+            IASTNode primary;
+            if(LanguageDef.IsLiteral(ref _lastExtractedLexem))
+            {
+                primary = _builder.ReadLiteral(_lastExtractedLexem);
+            }
+            else if(LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+            {
+                primary = _builder.ReadVariable(_lastExtractedLexem.Content);
+            }
+            else
+            {
+                throw CompilerException.ExpressionSyntax();
+            }
+
+            NextLexem();
+
+            return primary;
+        }
         
         #region Helper methods
 
@@ -374,6 +428,13 @@ namespace OneScript.Scripting
                         _parserPosition == PositionInModule.VarSection ||
                         _parserPosition == PositionInModule.MethodVarSection))
 
+                        throw CompilerException.LateVarDefinition();
+
+                    break;
+                }
+                case PositionInModule.MethodVarSection:
+                {
+                    if(_parserPosition != PositionInModule.MethodHeader)
                         throw CompilerException.LateVarDefinition();
 
                     break;

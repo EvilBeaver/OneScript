@@ -219,6 +219,29 @@ namespace OneScript.Scripting
                 || lex.Type == LexemType.DateLiteral
                 || lex.Type == LexemType.UndefinedLiteral;
         }
+
+        public static bool IsBinaryOperator(Token token)
+        {
+            return token == Token.Plus
+                || token == Token.Minus
+                || token == Token.Multiply
+                || token == Token.Division
+                || token == Token.Modulo
+                || token == Token.And
+                || token == Token.Or
+                || token == Token.Not
+                || token == Token.LessThan
+                || token == Token.LessOrEqual
+                || token == Token.MoreThan
+                || token == Token.MoreOrEqual
+                || token == Token.Equal
+                || token == Token.NotEqual;
+        }
+
+        public static bool IsLogicalBinaryOperator(Token token)
+        {
+            return token == Token.And || token == Token.Or;
+        }
     }
 
     public static class SpecialChars

@@ -50,7 +50,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ExpressionBuilderTests.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TypeSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -64,7 +63,7 @@
     <Compile Include="SymbolScope_Tests.cs" />
     <Compile Include="Preprocessor_Tests.cs" />
     <Compile Include="Scripting_Essentials.cs" />
-    <Compile Include="Compiler_Factory_Tests.cs" />
+    <Compile Include="ParserTests.cs" />
     <Compile Include="Variables_Test.cs" />
   </ItemGroup>
   <ItemGroup>
