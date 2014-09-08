@@ -263,6 +263,9 @@ namespace OneScript.Scripting
             if(_lastExtractedLexem.Token == stopToken)
                 return subNode;
 
+            // выход из подвыражения осуществляется как только встретился не-бинарный оператор
+
+
             // здесь нужно добавить проверку на допустимый конецблока. Пока что жестко конец текста
             if (_lastExtractedLexem.Token == Token.EndOfText)
                 return subNode;
@@ -272,9 +275,8 @@ namespace OneScript.Scripting
 
         private IASTNode BuildOperation(int acceptablePriority, IASTNode leftHandedNode)
         {
-            Debug.Assert(LanguageDef.IsBinaryOperator(_lastExtractedLexem.Token));
             var currentOp = _lastExtractedLexem.Token;
-            var opPriority = LanguageDef.GetPriority(currentOp);
+            var opPriority = GetBinaryPriority(currentOp);
             while(LanguageDef.IsBinaryOperator(currentOp) && opPriority >= acceptablePriority)
             {
                 NextLexem();
@@ -315,17 +317,61 @@ namespace OneScript.Scripting
             if(LanguageDef.IsLiteral(ref _lastExtractedLexem))
             {
                 primary = _builder.ReadLiteral(_lastExtractedLexem);
+                NextLexem();
             }
             else if(LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
             {
                 primary = _builder.ReadVariable(_lastExtractedLexem.Content);
+                NextLexem();
+                if(_lastExtractedLexem.Token == Token.Dot)
+                {
+
+                }
+                else if(_lastExtractedLexem.Token == Token.OpenPar)
+                {
+
+                }
+                else if(_lastExtractedLexem.Token == Token.OpenBracket)
+                {
+
+                }
+                else if(!LanguageDef.IsBinaryOperator(_lastExtractedLexem.Token))
+                {
+                    throw CompilerException.ExpressionSyntax();
+                }
+            }
+            else if(_lastExtractedLexem.Token == Token.Minus)
+            {
+                NextLexem();
+                if(!(LanguageDef.IsLiteral(ref _lastExtractedLexem)
+                    ||LanguageDef.IsIdentifier(ref _lastExtractedLexem)
+                    ||_lastExtractedLexem.Token == Token.OpenPar))
+                {
+                    throw CompilerException.ExpressionExpected();
+                }
+
+                var subNode = BuildPrimaryNode();
+                primary = _builder.UnaryOperation(Token.Minus, subNode);
+            }
+            else if(_lastExtractedLexem.Token == Token.Not)
+            {
+                var subNode = BuildPrimaryNode();
+                primary = _builder.UnaryOperation(Token.Minus, subNode);
+            }
+            else if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                NextLexem(); // съели открывающую скобку
+                var firstSubNode = BuildPrimaryNode();
+                primary = BuildOperation(0, firstSubNode);
+                
+                if (_lastExtractedLexem.Token != Token.ClosePar)
+                    throw CompilerException.TokenExpected(")");
+                NextLexem(); // съели закрывающую скобку
             }
             else
             {
                 throw CompilerException.ExpressionSyntax();
             }
-
-            NextLexem();
 
             return primary;
         }

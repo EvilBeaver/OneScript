@@ -64,6 +64,16 @@ namespace OneScript.Scripting
             return new CompilerException("Ошибка в выражении");
         }
 
+        public static CompilerException TokenExpected(string tokens)
+        {
+            return new CompilerException("Ожидается символ: " + tokens);
+        }
+
+        public static CompilerException ExpressionExpected()
+        {
+            return new CompilerException("Ожидается выражение");
+        }
+
         public static CompilerException ExportOnLocalVariable()
         {
             return new CompilerException("Локальная переменная не может быть экспортирована");
