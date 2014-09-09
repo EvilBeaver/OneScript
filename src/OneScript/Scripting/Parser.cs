@@ -14,6 +14,7 @@ namespace OneScript.Scripting
         private IModuleBuilder _builder;
         private bool _wasErrorsInBuild;
         private PositionInModule _parserPosition;
+        private Stack<Token[]> _blockEndings;
 
         private enum PositionInModule
         {
@@ -38,6 +39,7 @@ namespace OneScript.Scripting
             _lexer.UnexpectedCharacterFound += _lexer_UnexpectedCharacterFound;
             _parserPosition = PositionInModule.Begin;
             _wasErrorsInBuild = false;
+            _blockEndings = new Stack<Token[]>();
 
             return BuildModule();
         }
@@ -82,6 +84,20 @@ namespace OneScript.Scripting
 
             do
             {
+                Debug.Assert(_parserPosition != PositionInModule.MethodHeader);
+
+                // точки-с-запятой верхнего уровня пропускаем
+                if (_lastExtractedLexem.Token == Token.Semicolon)
+                {
+                    if (_parserPosition == PositionInModule.MethodVarSection)
+                        SetPosition(PositionInModule.MethodBody);
+                    else if (_parserPosition == PositionInModule.VarSection)
+                        SetPosition(PositionInModule.ModuleBody);
+
+                    NextLexem();
+                    continue;
+                }
+
                 bool success = false;
                 try
                 {
@@ -132,6 +148,7 @@ namespace OneScript.Scripting
                     || _parserPosition == PositionInModule.MethodSection)
                 {
                     SetPosition(PositionInModule.ModuleBody);
+                    PushEndTokens(Token.EndOfText);
                 }
                 success = BuildStatement();
             }
@@ -263,14 +280,15 @@ namespace OneScript.Scripting
             if(_lastExtractedLexem.Token == stopToken)
                 return subNode;
 
-            // выход из подвыражения осуществляется как только встретился не-бинарный оператор
+            var endTokens = PopEndTokens();
 
-
-            // здесь нужно добавить проверку на допустимый конецблока. Пока что жестко конец текста
-            if (_lastExtractedLexem.Token == Token.EndOfText)
+            // здесь нужно добавить проверку на допустимый конецблока.
+            if (endTokens.Contains(_lastExtractedLexem.Token))
                 return subNode;
-
-            throw CompilerException.ExpressionSyntax();
+            else if(_lastExtractedLexem.Token == Token.EndOfText)
+                throw CompilerException.UnexpectedEndOfText();
+            else
+                throw CompilerException.ExpressionSyntax();
         }
 
         private IASTNode BuildOperation(int acceptablePriority, IASTNode leftHandedNode)
@@ -321,21 +339,29 @@ namespace OneScript.Scripting
             }
             else if(LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
             {
-                primary = _builder.ReadVariable(_lastExtractedLexem.Content);
+                var identifier = _lastExtractedLexem.Content;
                 NextLexem();
                 if(_lastExtractedLexem.Token == Token.Dot)
                 {
-
+                    // это цепочка разыменований
+                    throw new NotImplementedException();
                 }
                 else if(_lastExtractedLexem.Token == Token.OpenPar)
                 {
+                    // это вызов функции
+                    IASTNode[] args = BuildArgumentList();
+                    primary = _builder.BuildFunctionCall(null, identifier, args);
 
                 }
                 else if(_lastExtractedLexem.Token == Token.OpenBracket)
                 {
-
+                    throw new NotImplementedException();
                 }
-                else if(!LanguageDef.IsBinaryOperator(_lastExtractedLexem.Token))
+                else if(LanguageDef.IsBinaryOperator(_lastExtractedLexem.Token))
+                {
+                    primary = _builder.ReadVariable(identifier);
+                }
+                else
                 {
                     throw CompilerException.ExpressionSyntax();
                 }
@@ -355,8 +381,9 @@ namespace OneScript.Scripting
             }
             else if(_lastExtractedLexem.Token == Token.Not)
             {
+                NextLexem();
                 var subNode = BuildPrimaryNode();
-                primary = _builder.UnaryOperation(Token.Minus, subNode);
+                primary = _builder.UnaryOperation(Token.Not, subNode);
             }
             else if (_lastExtractedLexem.Token == Token.OpenPar)
             {
@@ -375,7 +402,44 @@ namespace OneScript.Scripting
 
             return primary;
         }
-        
+
+        private IASTNode[] BuildArgumentList()
+        {
+            Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
+            NextLexem();
+            
+            List<IASTNode> arguments = new List<IASTNode>();
+            PushEndTokens(Token.ClosePar);
+            while(_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    arguments.Add(null);
+                    NextLexem();
+                    continue;
+                }
+
+                var argNode = BuildExpression(Token.Comma);
+                arguments.Add(argNode);
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    NextLexem();
+                    if(_lastExtractedLexem.Token == Token.ClosePar)
+                    {
+                        // список аргументов кончился
+                        arguments.Add(null);
+                    }
+                }
+            }
+
+            if (_lastExtractedLexem.Token != Token.ClosePar)
+                throw CompilerException.TokenExpected(")");
+
+            NextLexem(); // съели закрывающую скобку
+
+            return arguments.ToArray();
+        }
+
         #region Helper methods
 
         public void NextLexem()
@@ -389,8 +453,6 @@ namespace OneScript.Scripting
                 throw CompilerException.UnexpectedEndOfText();
             }
         }
-
-        
 
         public static ConstDefinition CreateConstDefinition(ref Lexem lex)
         {
@@ -485,6 +547,26 @@ namespace OneScript.Scripting
 
                     break;
                 }
+                case PositionInModule.MethodSection:
+                {
+                    if (_parserPosition != PositionInModule.Begin ||
+                        _parserPosition != PositionInModule.VarSection ||
+                        _parserPosition != PositionInModule.MethodBody)
+                    {
+                        throw CompilerException.LateMethodDefinition();
+                    }
+
+                    break;
+                }
+                case PositionInModule.MethodHeader:
+                {
+                    if (_parserPosition != PositionInModule.MethodSection)
+                    {
+                        throw CompilerException.LateMethodDefinition();
+                    }
+
+                    break;
+                }
             }
             
             _parserPosition = newPosition;
@@ -498,6 +580,16 @@ namespace OneScript.Scripting
         void ILexemExtractor.NextLexem()
         {
             this.NextLexem();
+        }
+
+        void PushEndTokens(params Token[] tokens)
+        {
+            _blockEndings.Push(tokens);
+        }
+
+        Token[] PopEndTokens()
+        {
+            return _blockEndings.Pop();
         }
 
         #endregion

@@ -59,6 +59,11 @@ namespace OneScript.Scripting
             return new CompilerException("Объявления переменных должны быть расположены в начале модуля, процедуры или функции");
         }
 
+        public static CompilerException LateMethodDefinition()
+        {
+            return new CompilerException("Определения процедур и функций должны размещаться перед операторами тела модуля");
+        }
+
         public static CompilerException ExpressionSyntax()
         {
             return new CompilerException("Ошибка в выражении");

@@ -29,5 +29,7 @@ namespace OneScript.Scripting
         IASTNode BinaryOperation(Token operationToken, IASTNode leftHandedNode, IASTNode rightHandedNode);
 
         IASTNode UnaryOperation(Token token, IASTNode operandNode);
+
+        IASTNode BuildFunctionCall(IASTNode target, string identifier, IASTNode[] args);
     }
 }
