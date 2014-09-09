@@ -31,5 +31,11 @@ namespace OneScript.Scripting
         IASTNode UnaryOperation(Token token, IASTNode operandNode);
 
         IASTNode BuildFunctionCall(IASTNode target, string identifier, IASTNode[] args);
+
+        IASTNode ResolveProperty(IASTNode target, string propertyName);
+
+        IASTNode BuildIndexedAccess(IASTNode target, IASTNode expression);
+
+        void BuildProcedureCall(IASTNode resolved, string ident, IASTNode[] args);
     }
 }

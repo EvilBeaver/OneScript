@@ -255,23 +255,50 @@ namespace OneScript.Scripting
 
                     break;
                 case Token.Dot:
+                case Token.OpenBracket:
                     // access chain
-                    throw new NotImplementedException();
+                    BuildAccessChainLeftHand(identifier);
                     break;
                 case Token.OpenPar:
                     // call
-                    throw new NotImplementedException();
+                    var args = BuildArgumentList();
+                    _builder.BuildProcedureCall(null, identifier, args);
                     break;
-                case Token.OpenBracket:
-                    // access by index
-                    throw new NotImplementedException();
-                    break;
+                
                 default:
                     ReportError(CompilerException.UnexpectedOperation());
                     return false;
             }
 
             return true;
+        }
+
+        private void BuildAccessChainLeftHand(string identifier)
+        {
+            var target = _builder.ReadVariable(identifier);
+
+            string ident;
+            var resolved = BuildContinuationLeftHand(target, out ident);
+
+            if (ident == null)
+            {
+                // это присваивание
+                NextLexem();
+                if (_lastExtractedLexem.Token != Token.Equal)
+                    throw CompilerException.UnexpectedOperation();
+
+                NextLexem(); // перешли к выражению
+                var source = BuildExpression(Token.Semicolon);
+                _builder.BuildAssignment(resolved, source);
+
+            }
+            else
+            {
+                // это вызов
+                Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
+                var args = BuildArgumentList();
+                _builder.BuildProcedureCall(resolved, ident, args);
+            }
         }
 
         private IASTNode BuildExpression(Token stopToken)
@@ -344,7 +371,8 @@ namespace OneScript.Scripting
                 if(_lastExtractedLexem.Token == Token.Dot)
                 {
                     // это цепочка разыменований
-                    throw new NotImplementedException();
+                    var target = _builder.ReadVariable(identifier);
+                    primary = BuildContinuationRightHand(target);
                 }
                 else if(_lastExtractedLexem.Token == Token.OpenPar)
                 {
@@ -355,7 +383,8 @@ namespace OneScript.Scripting
                 }
                 else if(_lastExtractedLexem.Token == Token.OpenBracket)
                 {
-                    throw new NotImplementedException();
+                    var target = _builder.ReadVariable(identifier);
+                    primary = BuildContinuationRightHand(target);
                 }
                 else if(LanguageDef.IsBinaryOperator(_lastExtractedLexem.Token))
                 {
@@ -401,6 +430,72 @@ namespace OneScript.Scripting
             }
 
             return primary;
+        }
+
+        private IASTNode BuildContinuationRightHand(IASTNode target)
+        {
+            string dummy;
+            return BuildContinuationInternal(target, false, out dummy);
+        }
+
+        private IASTNode BuildContinuationLeftHand(IASTNode target, out string lastIdentifier)
+        {
+            return BuildContinuationInternal(target, true, out lastIdentifier);
+        }
+
+        private IASTNode BuildContinuationInternal(IASTNode target, bool interruptOnCall, out string lastIdentifier)
+        {
+            lastIdentifier = null;
+            while (true)
+            {
+                if (_lastExtractedLexem.Token == Token.Dot)
+                {
+                    NextLexem();
+                    if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                        throw CompilerException.IdentifierExpected();
+
+                    string identifier = _lastExtractedLexem.Content;
+                    NextLexem();
+                    if (_lastExtractedLexem.Token == Token.Dot||_lastExtractedLexem.Token == Token.OpenBracket)
+                    {
+                        target = _builder.ResolveProperty(target, identifier);
+                    }
+                    else if (_lastExtractedLexem.Token == Token.OpenPar)
+                    {
+                        if (interruptOnCall)
+                        {
+                            lastIdentifier = identifier;
+                            return target;
+                        }
+                        else
+                        {
+                            var args = BuildArgumentList();
+                            target = _builder.BuildFunctionCall(target, identifier, args);
+                        }
+                    }
+                    else
+                    {
+                        return _builder.ResolveProperty(target, identifier);
+                    }
+                }
+                else if(_lastExtractedLexem.Token == Token.OpenBracket)
+                {
+                    NextLexem();
+                    if (_lastExtractedLexem.Token == Token.CloseBracket)
+                        throw CompilerException.ExpressionExpected();
+
+                    var expr = BuildExpression(Token.CloseBracket);
+                    Debug.Assert(_lastExtractedLexem.Token == Token.CloseBracket);
+                    NextLexem();
+
+                    target = _builder.BuildIndexedAccess(target, expr);
+                }
+                else
+                {
+                    return target;
+                }
+            }
+
         }
 
         private IASTNode[] BuildArgumentList()

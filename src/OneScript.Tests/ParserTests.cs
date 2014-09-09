@@ -265,6 +265,26 @@ namespace OneScript.Tests
             lexer.Code = "А = Б(";
             checkAction();
         }
+
+        [TestMethod]
+        public void Property_Access_Read()
+        {
+            var builder = new Builder();
+            var lexer = new Lexer();
+            var parser = new Parser(builder);
+
+            lexer.Code = "А = Б.В;";
+            Assert.IsTrue(parser.Build(lexer));
+
+            lexer.Code = "А = Б.В.Г;";
+            Assert.IsTrue(parser.Build(lexer));
+
+            lexer.Code = "А = Б.В().Г;";
+            Assert.IsTrue(parser.Build(lexer));
+
+            lexer.Code = "А = Б.В[0][1].X();";
+            Assert.IsTrue(parser.Build(lexer));
+        }
     }
 
     abstract class TestASTNodeBase : IASTNode, IEquatable<IASTNode>
@@ -454,6 +474,17 @@ namespace OneScript.Tests
         public IASTNode BuildFunctionCall(IASTNode target, string identifier, IASTNode[] args)
         {
             return new CallNode(identifier, args);
+        }
+
+
+        public IASTNode ResolveProperty(IASTNode target, string p)
+        {
+            return null;//throw new NotImplementedException();
+        }
+
+        public IASTNode BuildIndexedAccess(IASTNode target, IASTNode expr)
+        {
+            return null;//throw new NotImplementedException();
         }
     }
 }
