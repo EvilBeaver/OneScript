@@ -284,6 +284,45 @@ namespace OneScript.Tests
 
             lexer.Code = "А = Б.В[0][1].X();";
             Assert.IsTrue(parser.Build(lexer));
+
+            lexer.Code = "А = Б.В()[Г];";
+            Assert.IsTrue(parser.Build(lexer));
+        }
+
+        [TestMethod]
+        public void ModuleVariables_NoNeed_For_Semicolon_In_Last_Statement()
+        {
+            var builder = new Builder();
+            var lexer = new Lexer();
+            var parser = new Parser(builder);
+
+            lexer.Code = @"Перем А,Б Экспорт;
+                           Перем Б";
+
+            Assert.IsTrue(parser.Build(lexer));
+        }
+
+        [TestMethod]
+        public void LateVarDefinition_On_TopLevel_Semicolon()
+        {
+            var builder = new Builder();
+            var lexer = new Lexer();
+            var parser = new Parser(builder);
+
+            lexer.Code = @"Перем А,Б Экспорт;
+                           ;
+                           Перем Б";
+
+            try
+            {
+                parser.Build(lexer);
+                Assert.Fail("Exception is not thrown");
+            }
+            catch (CompilerException e)
+            {
+                Assert.IsTrue(e.Message.Contains("Объявления переменных должны быть расположены"));
+            }
+
         }
     }
 
@@ -485,6 +524,12 @@ namespace OneScript.Tests
         public IASTNode BuildIndexedAccess(IASTNode target, IASTNode expr)
         {
             return null;//throw new NotImplementedException();
+        }
+
+
+        public void BuildProcedureCall(IASTNode resolved, string ident, IASTNode[] args)
+        {
+            throw new NotImplementedException();
         }
     }
 }

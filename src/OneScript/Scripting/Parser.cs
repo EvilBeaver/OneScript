@@ -13,19 +13,7 @@ namespace OneScript.Scripting
         private Lexem _lastExtractedLexem;
         private IModuleBuilder _builder;
         private bool _wasErrorsInBuild;
-        private PositionInModule _parserPosition;
         private Stack<Token[]> _blockEndings;
-
-        private enum PositionInModule
-        {
-            Begin,
-            VarSection,
-            MethodSection,
-            MethodHeader,
-            MethodVarSection,
-            MethodBody,
-            ModuleBody
-        }
 
         public Parser(IModuleBuilder builder)
         {
@@ -37,7 +25,6 @@ namespace OneScript.Scripting
             _lexer = lexer;
             _lastExtractedLexem = default(Lexem);
             _lexer.UnexpectedCharacterFound += _lexer_UnexpectedCharacterFound;
-            _parserPosition = PositionInModule.Begin;
             _wasErrorsInBuild = false;
             _blockEndings = new Stack<Token[]>();
 
@@ -61,7 +48,7 @@ namespace OneScript.Scripting
                 DispatchModuleBuild();
 
             }
-            catch (ScriptException e)
+            catch(ScriptException e)
             {
                 ReportError(e);
             }
@@ -80,88 +67,73 @@ namespace OneScript.Scripting
 
         private void DispatchModuleBuild()
         {
-            NextLexem();
+            NextLexem(); // переход к первой лексеме
 
-            do
+            bool methodsDefined = false;
+
+            while(_lastExtractedLexem.Token != Token.EndOfText)
             {
-                Debug.Assert(_parserPosition != PositionInModule.MethodHeader);
-
-                // точки-с-запятой верхнего уровня пропускаем
-                if (_lastExtractedLexem.Token == Token.Semicolon)
+                if (_lastExtractedLexem.Token == Token.VarDef)
                 {
-                    if (_parserPosition == PositionInModule.MethodVarSection)
-                        SetPosition(PositionInModule.MethodBody);
-                    else if (_parserPosition == PositionInModule.VarSection)
-                        SetPosition(PositionInModule.ModuleBody);
-
-                    NextLexem();
-                    continue;
+                    if(!methodsDefined)
+                        DefineModuleVariables();
+                    else
+                    {
+                        ReportError(CompilerException.LateVarDefinition());
+                        SkipToNextStatement();
+                    }
                 }
-
-                bool success = false;
-                try
+                else if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
                 {
-                    success = SelectAndBuildOperation();
+                   BuildMethod();
+                   methodsDefined = true;
                 }
-                catch(CompilerException e)
+                else if(LanguageDef.IsIdentifier(ref _lastExtractedLexem) || _lastExtractedLexem.Token == Token.Semicolon)
                 {
-                    ReportError(e);
-                    success = false;
-                }
-
-                if (success && CheckCorrectStatementEnd())
-                {
-                    // это точка с запятой или конец блока
-                    if (_lastExtractedLexem.Token != Token.EndOfText)
-                        NextLexem();
+                    PushEndTokens(Token.EndOfText);
+                    BuildCodeBatch();
                 }
                 else
                 {
+                    ReportError(CompilerException.UnexpectedOperation());
                     SkipToNextStatement();
                 }
-
             }
-            while (_lastExtractedLexem.Token != Token.EndOfText);
+
         }
 
-        private bool SelectAndBuildOperation()
+        private void DefineModuleVariables()
         {
-            bool success = false;
-
-            if (_lastExtractedLexem.Token == Token.VarDef)
+            while (true)
             {
-                if (_parserPosition == PositionInModule.Begin)
-                    SetPosition(PositionInModule.VarSection);
-                else
-                    SetPosition(PositionInModule.MethodVarSection);
-                
-                success = BuildVariableDefinition();
-            }
-            else if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
-            {
-
-            }
-            else if (_lastExtractedLexem.Type == LexemType.Identifier)
-            {
-                if (_parserPosition == PositionInModule.Begin
-                    || _parserPosition == PositionInModule.VarSection
-                    || _parserPosition == PositionInModule.MethodSection)
+                try
                 {
-                    SetPosition(PositionInModule.ModuleBody);
-                    PushEndTokens(Token.EndOfText);
-                }
-                success = BuildStatement();
-            }
-            else
-            {
-                success = false;
-                ReportError(CompilerException.UnexpectedOperation());
-            }
+                    if (_lastExtractedLexem.Token != Token.VarDef)
+                        break;
 
-            return success;
+                    BuildVariableDefinition(true);
+
+                    if (_lastExtractedLexem.Token == Token.EndOfText)
+                        break;
+                    else if (_lastExtractedLexem.Token != Token.Semicolon)
+                        throw CompilerException.SemicolonExpected();
+
+                    NextLexem();
+                }
+                catch (ScriptException e)
+                {
+                    ReportError(e);
+                    SkipToNextStatement();
+                }
+            }
         }
 
-        private bool BuildVariableDefinition()
+        private void BuildMethod()
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void BuildVariableDefinition(bool allowExports)
         {
             Debug.Assert(_lastExtractedLexem.Token == Token.VarDef);
             
@@ -175,15 +147,14 @@ namespace OneScript.Scripting
 
                     if (_lastExtractedLexem.Token == Token.Export)
                     {
-                        if (_parserPosition == PositionInModule.VarSection)
+                        if (allowExports)
                         {
                             _builder.DefineExportVariable(symbolicName);
                             NextLexem();
                         }
                         else
                         {
-                            ReportError(CompilerException.ExportOnLocalVariable());
-                            return false;
+                            throw CompilerException.ExportOnLocalVariable();
                         }
                     }
                     else
@@ -206,13 +177,40 @@ namespace OneScript.Scripting
                 }
                 else
                 {
-                    ReportError(CompilerException.IdentifierExpected());
-                    return false;
+                    throw CompilerException.IdentifierExpected();
                 }
             }
+        }
 
-            return true;
-    
+        private void BuildCodeBatch()
+        {
+            var endTokens = _blockEndings.Peek();
+            while(!endTokens.Contains(_lastExtractedLexem.Token))
+            {
+                if (_lastExtractedLexem.Token == Token.EndOfText)
+                    throw CompilerException.UnexpectedEndOfText();
+
+                if (_lastExtractedLexem.Token == Token.Semicolon)
+                {
+                    NextLexem();
+                    continue;
+                }
+
+                try
+                {
+                    if (_lastExtractedLexem.Token == Token.VarDef)
+                        throw CompilerException.LateVarDefinition();
+                    else if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
+                        throw CompilerException.LateMethodDefinition();
+                
+                    BuildStatement();
+                }
+                catch (CompilerException e)
+                {
+                    ReportError(e);
+                    SkipToNextStatement();
+                }
+            }
         }
 
         private bool BuildStatement()
@@ -386,13 +384,9 @@ namespace OneScript.Scripting
                     var target = _builder.ReadVariable(identifier);
                     primary = BuildContinuationRightHand(target);
                 }
-                else if(LanguageDef.IsBinaryOperator(_lastExtractedLexem.Token))
-                {
-                    primary = _builder.ReadVariable(identifier);
-                }
                 else
                 {
-                    throw CompilerException.ExpressionSyntax();
+                    primary = _builder.ReadVariable(identifier);
                 }
             }
             else if(_lastExtractedLexem.Token == Token.Minus)
@@ -600,71 +594,17 @@ namespace OneScript.Scripting
             }
         }
 
-        private bool CheckCorrectStatementEnd()
-        {
-            if (!(_lastExtractedLexem.Token == Token.Semicolon ||
-                 _lastExtractedLexem.Token == Token.EndOfText))
-            {
-                ReportError(CompilerException.SemicolonExpected());
-                return false;
-            }
-
-            return true;
-        }
-
-        private void SkipToNextStatement()
+        private void SkipToNextStatement(Token[] additionalStops = null)
         {
             while (!(_lastExtractedLexem.Token == Token.EndOfText
                     || LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token)))
             {
                 NextLexem();
-            }
-        }
-
-        private void SetPosition(PositionInModule newPosition)
-        {
-            switch(newPosition)
-            {
-                case PositionInModule.VarSection:
+                if(additionalStops != null && additionalStops.Contains(_lastExtractedLexem.Token))
                 {
-                    if(!(_parserPosition == PositionInModule.Begin ||
-                        _parserPosition == PositionInModule.VarSection ||
-                        _parserPosition == PositionInModule.MethodVarSection))
-
-                        throw CompilerException.LateVarDefinition();
-
-                    break;
-                }
-                case PositionInModule.MethodVarSection:
-                {
-                    if(_parserPosition != PositionInModule.MethodHeader)
-                        throw CompilerException.LateVarDefinition();
-
-                    break;
-                }
-                case PositionInModule.MethodSection:
-                {
-                    if (_parserPosition != PositionInModule.Begin ||
-                        _parserPosition != PositionInModule.VarSection ||
-                        _parserPosition != PositionInModule.MethodBody)
-                    {
-                        throw CompilerException.LateMethodDefinition();
-                    }
-
-                    break;
-                }
-                case PositionInModule.MethodHeader:
-                {
-                    if (_parserPosition != PositionInModule.MethodSection)
-                    {
-                        throw CompilerException.LateMethodDefinition();
-                    }
-
                     break;
                 }
             }
-            
-            _parserPosition = newPosition;
         }
 
         Lexem ILexemExtractor.LastExtractedLexem
