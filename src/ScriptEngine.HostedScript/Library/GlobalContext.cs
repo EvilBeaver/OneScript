@@ -265,6 +265,12 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
+        [ContextMethod("СоздатьКаталог", "CreateDirectory")]
+        public void CreateDirectory(string path)
+        {
+            System.IO.Directory.CreateDirectory(path);
+        }
+
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
