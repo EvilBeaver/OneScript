@@ -79,6 +79,11 @@ namespace OneScript.Scripting
             return new CompilerException("Ожидается выражение");
         }
 
+        public static CompilerException LiteralExpected()
+        {
+            return new CompilerException("Ожидается значение примитивного типа");
+        }
+
         public static CompilerException ExportOnLocalVariable()
         {
             return new CompilerException("Локальная переменная не может быть экспортирована");

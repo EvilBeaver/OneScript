@@ -155,14 +155,42 @@ namespace OneScript.Scripting
             if (_lastExtractedLexem.Token != Token.OpenPar)
                 throw CompilerException.TokenExpected("(");
 
-            NextLexem();
+            List<MethodParameter> parameters = new List<MethodParameter>();
 
-            bool byValParam = _lastExtractedLexem.Token == Token.ByValParam;
-            if (byValParam)
+            do
+            {
+
                 NextLexem();
 
-            if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
-                throw CompilerException.IdentifierExpected();
+                bool byValParam = _lastExtractedLexem.Token == Token.ByValParam;
+                if (byValParam)
+                    NextLexem();
+
+                if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+                    throw CompilerException.IdentifierExpected();
+
+                string paramName = _lastExtractedLexem.Content;
+
+                NextLexem();
+                bool isOptional = _lastExtractedLexem.Token == Token.Equal;
+                if(isOptional)
+                {
+                    NextLexem();
+
+                    if (!LanguageDef.IsLiteral(ref _lastExtractedLexem))
+                        throw CompilerException.LiteralExpected();
+
+                    // учет значений опциональных параметров пока не реализован
+                    throw new NotImplementedException();
+
+                }
+
+                parameters.Add(new MethodParameter()
+                    {
+                        IsByValue = byValParam
+                    });
+
+            } while (_lastExtractedLexem.Token != Token.ClosePar);
 
         }
 
