@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Scripting;
+using System.Collections.Generic;
 
 namespace OneScript.Tests
 {
@@ -16,7 +17,8 @@ namespace OneScript.Tests
 
             lexer.Code = ";; А = 1;;";
             Assert.IsTrue(parser.Build(lexer));
-            Assert.IsTrue(builder.topNode is OperandNode);
+            Assert.IsTrue(builder.topNode is AssignmentNode);
+            Assert.IsTrue((builder.topNode as AssignmentNode).Right is OperandNode);
         }
 
         [TestMethod]
@@ -40,8 +42,9 @@ namespace OneScript.Tests
             lexer.Code = "А = 2 + 2 + 1";
             var parser = new Parser(builder);
             Assert.IsTrue(parser.Build(lexer));
-            Assert.IsTrue(builder.topNode is BinExpressionNode);
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, expectedTree));
+            var node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expectedTree));
 
         }
 
@@ -66,8 +69,9 @@ namespace OneScript.Tests
             lexer.Code = "А = 2 + 2 * 1";
             var parser = new Parser(builder);
             Assert.IsTrue(parser.Build(lexer));
-            Assert.IsTrue(builder.topNode is BinExpressionNode);
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, expectedTree));
+            var node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expectedTree));
         }
 
         [TestMethod]
@@ -92,8 +96,9 @@ namespace OneScript.Tests
             lexer.Code = "А = (2 + 2) * 1";
             var parser = new Parser(builder);
             Assert.IsTrue(parser.Build(lexer));
-            Assert.IsTrue(builder.topNode is BinExpressionNode);
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, expectedTree));
+            var node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expectedTree));
 
             subExpression = new BinExpressionNode();
             subExpression.opCode = Token.Multiply;
@@ -105,8 +110,9 @@ namespace OneScript.Tests
 
             lexer.Code = "А = 2 + (2 * 1)";
             Assert.IsTrue(parser.Build(lexer));
-            Assert.IsTrue(builder.topNode is BinExpressionNode);
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, expectedTree));
+            node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expectedTree));
             
         }
 
@@ -118,12 +124,14 @@ namespace OneScript.Tests
             lexer.Code = "А = (-2);";
             var parser = new Parser(builder);
             Assert.IsTrue(parser.Build(lexer));
-            Assert.IsTrue(builder.topNode is UnaryExpressionNode);
+            var node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(node.Right is UnaryExpressionNode);
 
             var unary = new UnaryExpressionNode();
             unary.opCode = Token.UnaryMinus;
             unary.operand = new OperandNode() { content = "2" };
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, unary));
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, unary));
 
             lexer.Code = "А = -2 + 1;";
             Assert.IsTrue(parser.Build(lexer));
@@ -131,12 +139,16 @@ namespace OneScript.Tests
             expected.opCode = Token.Plus;
             expected.left = unary;
             expected.right = new OperandNode() { content = "1" };
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, expected));
+            
+            node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expected));
 
             lexer.Code = "А = Не -2";
             Assert.IsTrue(parser.Build(lexer));
             var notNode = new UnaryExpressionNode() { opCode = Token.Not, operand = unary };
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, notNode));
+            node = builder.topNode as AssignmentNode;
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, notNode));
 
             lexer.Code = "А = -Не 2";
             try
@@ -166,7 +178,9 @@ namespace OneScript.Tests
             };
 
             var expected = new CallNode("Б", args);
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, expected));
+            var node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expected));
 
         }
 
@@ -189,7 +203,9 @@ namespace OneScript.Tests
             args[2] = new OperandNode("3");
 
             var expected = new CallNode("Б", args);
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, expected));
+            var node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expected));
         }
 
         [TestMethod]
@@ -205,7 +221,9 @@ namespace OneScript.Tests
 
             var args = new IASTNode[0];
             var expected = new CallNode("Б", args);
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, expected));
+            var node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expected));
         }
 
         [TestMethod]
@@ -227,7 +245,9 @@ namespace OneScript.Tests
             args[3] = new OperandNode("3");
 
             var expected = new CallNode("Б", args);
-            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)builder.topNode, expected));
+            var node = builder.topNode as AssignmentNode;
+            Assert.IsNotNull(node);
+            Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expected));
 
         }
 
@@ -290,6 +310,35 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
+        public void CodeBatch()
+        {
+            var code = @"Перем А;
+                       А[U] = 1;
+                       Б.X = 2";
+
+            var builder = new Builder();
+            var lexer = new Lexer();
+            var parser = new Parser(builder);
+
+            lexer.Code = code;
+            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(builder.Variables[0] == "А");
+            Assert.IsTrue(builder.CodeNode.Children.Count == 2);
+
+            TestASTNodeBase left = new IndexedAccessNode(
+                new OperandNode("А"),
+                new OperandNode("U"));
+
+            TestASTNodeBase expected = new AssignmentNode(left, new OperandNode("1"));
+            Assert.IsTrue(TestASTNodeBase.CompareTrees(builder.CodeNode.Children[0], expected));
+
+            left = new PropertyAccessNode(new OperandNode("Б"), "X");
+            expected = new AssignmentNode(left, new OperandNode("2"));
+            Assert.IsTrue(TestASTNodeBase.CompareTrees(builder.CodeNode.Children[1], expected));
+
+        }
+
+        [TestMethod]
         public void ModuleVariables_NoNeed_For_Semicolon_In_Last_Statement()
         {
             var builder = new Builder();
@@ -300,6 +349,10 @@ namespace OneScript.Tests
                            Перем Б";
 
             Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(builder.Variables.Count == 3);
+            Assert.IsTrue(builder.Variables[0] == "А");
+            Assert.IsTrue(builder.Variables[1] == "Б export");
+            Assert.IsTrue(builder.Variables[2] == "Б");
         }
 
         [TestMethod]
@@ -432,14 +485,142 @@ namespace OneScript.Tests
         }
     }
 
+    class AssignmentNode : TestASTNodeBase
+    {
+        public IASTNode Left;
+        public IASTNode Right;
+
+        public AssignmentNode(IASTNode left, IASTNode right)
+        {
+            Left = left;
+            Right = right;
+        }
+
+        protected override bool EqualsInternal(IASTNode other)
+        {
+            var left = (TestASTNodeBase)Left;
+            var right = (TestASTNodeBase)Right;
+
+            var otherTest = (AssignmentNode)other;
+
+            return left.Equals(otherTest.Left) && right.Equals(otherTest.Right);
+        }
+    }
+
+    class CodeBatchNode : TestASTNodeBase
+    {
+        List<TestASTNodeBase> _children = new List<TestASTNodeBase>();
+
+        public List<TestASTNodeBase> Children
+        {
+            get { return _children; }
+        }
+
+        public void Add(IASTNode node)
+        {
+            var casted = (TestASTNodeBase)node;
+            _children.Add(casted);
+
+        }
+
+        protected override bool EqualsInternal(IASTNode other)
+        {
+            var casted = (CodeBatchNode)other;
+
+            if(casted._children.Count != _children.Count)
+                return false;
+
+            bool allMatch = true;
+
+            for (int i = 0; i < _children.Count; i++)
+            {
+                allMatch = allMatch && _children[i].Equals(casted._children[i]);
+                if (!allMatch)
+                    break;
+            }
+
+            return allMatch;
+
+        }
+    }
+
+    class IndexedAccessNode : TestASTNodeBase
+    {
+        IASTNode _target;
+        IASTNode _index;
+
+        public IndexedAccessNode(IASTNode target, IASTNode index)
+        {
+            _target = target;
+            _index = index;
+        }
+
+        protected override bool EqualsInternal(IASTNode other)
+        {
+            var otherTest = (IndexedAccessNode)other;
+            var target = (TestASTNodeBase)_target;
+            var index = (TestASTNodeBase)_index;
+
+            return target.Equals(otherTest._target) && index.Equals(otherTest._index);
+
+        }
+    }
+
+    class PropertyAccessNode : TestASTNodeBase
+    {
+        IASTNode _target;
+        string _name;
+
+        public PropertyAccessNode(IASTNode target, string name)
+        {
+            _target = target;
+            _name = name;
+        }
+
+        protected override bool EqualsInternal(IASTNode other)
+        {
+            var otherTest = (PropertyAccessNode)other;
+            var target = (TestASTNodeBase)_target;
+            
+            return target.Equals(otherTest._target) && _name.Equals(otherTest._name);
+
+        }
+    }
+
     class Builder : IModuleBuilder
     {
 
-        public IASTNode topNode = null;
+        List<string> _variables = new List<string>();
+        CodeBatchNode _mainCode = new CodeBatchNode();
+
+        public IASTNode topNode
+        {
+            get
+            {
+                return _mainCode.Children[0];
+            }
+        }
+
+        public List<string> Variables
+        {
+            get
+            {
+                return _variables;
+            }
+        }
+
+        public CodeBatchNode CodeNode
+        {
+            get
+            {
+                return _mainCode;
+            }
+        }
 
         public void BeginModule()
         {
-            //throw new NotImplementedException();
+            _variables.Clear();
+            _mainCode.Children.Clear();
         }
 
         public void CompleteModule()
@@ -454,22 +635,22 @@ namespace OneScript.Tests
 
         public void DefineExportVariable(string symbolicName)
         {
-            //throw new NotImplementedException();
+            _variables.Add(symbolicName + " export");
         }
 
         public void DefineVariable(string symbolicName)
         {
-            //throw new NotImplementedException();
+            _variables.Add(symbolicName);
         }
 
         public IASTNode SelectOrUseVariable(string identifier)
         {
-            return null;
+            return ReadVariable(identifier);
         }
 
         public void BuildAssignment(IASTNode acceptor, IASTNode source)
         {
-            topNode = source;
+            _mainCode.Add(new AssignmentNode(acceptor, source));
         }
 
         public IASTNode ReadLiteral(Lexem lexem)
@@ -518,12 +699,12 @@ namespace OneScript.Tests
 
         public IASTNode ResolveProperty(IASTNode target, string p)
         {
-            return null;//throw new NotImplementedException();
+            return new PropertyAccessNode(target, p);
         }
 
         public IASTNode BuildIndexedAccess(IASTNode target, IASTNode expr)
         {
-            return null;//throw new NotImplementedException();
+            return new IndexedAccessNode(target, expr);
         }
 
 

@@ -70,12 +70,13 @@ namespace OneScript.Scripting
             NextLexem(); // переход к первой лексеме
 
             bool methodsDefined = false;
+            bool bodyDefined = false;
 
-            while(_lastExtractedLexem.Token != Token.EndOfText)
+            while (_lastExtractedLexem.Token != Token.EndOfText)
             {
                 if (_lastExtractedLexem.Token == Token.VarDef)
                 {
-                    if(!methodsDefined)
+                    if (!methodsDefined && !bodyDefined)
                         DefineModuleVariables();
                     else
                     {
@@ -85,11 +86,19 @@ namespace OneScript.Scripting
                 }
                 else if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
                 {
-                   BuildMethod();
-                   methodsDefined = true;
+                    if (!bodyDefined)
+                    {
+                        BuildMethod();
+                        methodsDefined = true;
+                    }
+                    else
+                    {
+                        throw CompilerException.LateMethodDefinition();
+                    }
                 }
-                else if(LanguageDef.IsIdentifier(ref _lastExtractedLexem) || _lastExtractedLexem.Token == Token.Semicolon)
+                else if (LanguageDef.IsIdentifier(ref _lastExtractedLexem) || _lastExtractedLexem.Token == Token.Semicolon)
                 {
+                    bodyDefined = true;
                     PushEndTokens(Token.EndOfText);
                     BuildCodeBatch();
                 }
@@ -130,7 +139,31 @@ namespace OneScript.Scripting
 
         private void BuildMethod()
         {
-            //throw new NotImplementedException();
+            Debug.Assert(_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function);
+            
+            bool isFunction = _lastExtractedLexem.Token == Token.Function;
+
+            NextLexem();
+
+            if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+                throw CompilerException.IdentifierExpected();
+
+            string identifier = _lastExtractedLexem.Content;
+
+            NextLexem();
+
+            if (_lastExtractedLexem.Token != Token.OpenPar)
+                throw CompilerException.TokenExpected("(");
+
+            NextLexem();
+
+            bool byValParam = _lastExtractedLexem.Token == Token.ByValParam;
+            if (byValParam)
+                NextLexem();
+
+            if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+                throw CompilerException.IdentifierExpected();
+
         }
 
         private void BuildVariableDefinition(bool allowExports)
@@ -204,6 +237,15 @@ namespace OneScript.Scripting
                         throw CompilerException.LateMethodDefinition();
                 
                     BuildStatement();
+
+                    if (_lastExtractedLexem.Token != Token.Semicolon)
+                    {
+                        if (!endTokens.Contains(_lastExtractedLexem.Token))
+                            throw CompilerException.SemicolonExpected();
+                    }
+                    else
+                        NextLexem();
+
                 }
                 catch (CompilerException e)
                 {
@@ -281,7 +323,7 @@ namespace OneScript.Scripting
             if (ident == null)
             {
                 // это присваивание
-                NextLexem();
+                //NextLexem();
                 if (_lastExtractedLexem.Token != Token.Equal)
                     throw CompilerException.UnexpectedOperation();
 
