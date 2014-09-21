@@ -161,6 +161,32 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
+        public void CompilerContext_Duplicate_Method_Definition()
+        {
+            var ctx = new CompilerContext();
+            var scope1 = new SymbolScope();
+            var scope2 = new SymbolScope();
+
+            ctx.PushScope(scope1);
+            ctx.DefineMethod("Global", MethodSignatureData.CreateProcedure(0));
+
+            Assert.IsTrue(TestHelpers.ExceptionThrown(
+                () =>
+                {
+                    ctx.DefineMethod("Global", MethodSignatureData.CreateFunction(1));
+                }, typeof(CompilerException)));
+
+            ctx.PushScope(scope2);
+
+            Assert.IsTrue(TestHelpers.ExceptionThrown(
+                () =>
+                {
+                    ctx.DefineMethod("Global", MethodSignatureData.CreateFunction(1));
+                }, typeof(CompilerException)));
+                
+        }
+
+        [TestMethod]
         public void Get_Scope_From_CompilerContext()
         {
             var ctx = new CompilerContext();

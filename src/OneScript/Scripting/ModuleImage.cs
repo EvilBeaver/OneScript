@@ -31,21 +31,6 @@ namespace OneScript.Scripting
         
     }
 
-    public struct ConstDefinition
-    {
-        public ConstType Type;
-        public string Presentation;
-    }
-
-    public enum ConstType
-    {
-        Undefined,
-        String,
-        Number,
-        Boolean,
-        Date
-    }
-
     public struct MethodDefinition
     {
         public int EntryPoint;

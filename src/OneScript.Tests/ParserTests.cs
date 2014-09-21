@@ -587,6 +587,32 @@ namespace OneScript.Tests
         }
     }
 
+    class MethodNode : TestASTNodeBase
+    {
+        public CodeBatchNode _body;
+        public string _name;
+        public ASTMethodParameter[] _parameters;
+        public bool _isExported;
+        public bool _isFunction;
+
+        public MethodNode(string name, bool isFunction)
+        {
+            _name = name;
+            _isFunction = isFunction;
+        }
+
+        public void SetSignature(ASTMethodParameter[] parameters, bool exportFlag)
+        {
+            _parameters = parameters;
+            _isExported = exportFlag;
+        }
+
+        protected override bool EqualsInternal(IASTNode other)
+        {
+            return _body.Equals(other);
+        }
+    }
+
     class Builder : IModuleBuilder
     {
 
@@ -709,6 +735,22 @@ namespace OneScript.Tests
 
 
         public void BuildProcedureCall(IASTNode resolved, string ident, IASTNode[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public IASTNode BeginMethod(string identifier, bool isFunction)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetMethodSignature(IASTNode methodNode, ASTMethodParameter[] parameters, bool isExported)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void EndMethod(IASTNode methodNode)
         {
             throw new NotImplementedException();
         }

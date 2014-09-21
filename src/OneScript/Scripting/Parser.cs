@@ -155,42 +155,77 @@ namespace OneScript.Scripting
             if (_lastExtractedLexem.Token != Token.OpenPar)
                 throw CompilerException.TokenExpected("(");
 
-            List<MethodParameter> parameters = new List<MethodParameter>();
-
-            do
+            IASTNode methodNode = _builder.BeginMethod(identifier, isFunction);
+            try
             {
-
-                NextLexem();
-
-                bool byValParam = _lastExtractedLexem.Token == Token.ByValParam;
-                if (byValParam)
-                    NextLexem();
-
-                if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
-                    throw CompilerException.IdentifierExpected();
-
-                string paramName = _lastExtractedLexem.Content;
-
-                NextLexem();
-                bool isOptional = _lastExtractedLexem.Token == Token.Equal;
-                if(isOptional)
+                List<ASTMethodParameter> parameters = new List<ASTMethodParameter>();
+                do
                 {
+
                     NextLexem();
 
-                    if (!LanguageDef.IsLiteral(ref _lastExtractedLexem))
-                        throw CompilerException.LiteralExpected();
+                    bool byValParam = _lastExtractedLexem.Token == Token.ByValParam;
+                    if (byValParam)
+                        NextLexem();
 
-                    // учет значений опциональных параметров пока не реализован
-                    throw new NotImplementedException();
+                    if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+                        throw CompilerException.IdentifierExpected();
 
+                    string paramName = _lastExtractedLexem.Content;
+                    if (parameters.FindIndex((x) => x.Name.Equals(paramName, StringComparison.OrdinalIgnoreCase)) >= 0)
+                        throw new CompilerException("Параметр с именем " + paramName + " уже определен");
+
+                    NextLexem();
+                    bool isOptional = _lastExtractedLexem.Token == Token.Equal;
+                    Lexem optionalLiteral = Lexem.Empty();
+
+                    if (isOptional)
+                    {
+                        NextLexem();
+
+                        if (!LanguageDef.IsLiteral(ref _lastExtractedLexem))
+                            throw CompilerException.LiteralExpected();
+
+                        optionalLiteral = _lastExtractedLexem;
+
+                    }
+
+                    var paramData = new ASTMethodParameter();
+                    paramData.Name = paramName;
+                    paramData.ByValue = byValParam;
+                    paramData.IsOptional = isOptional;
+                    if (isOptional)
+                        paramData.DefaultValueLiteral = _builder.ReadLiteral(optionalLiteral);
+
+                    parameters.Add(paramData);
+
+                } while (_lastExtractedLexem.Token != Token.ClosePar);
+
+                NextLexem(); // убрали закрывающую скобку
+
+                bool isExported = false;
+                if (_lastExtractedLexem.Token == Token.Export)
+                {
+                    isExported = true;
+                    NextLexem();
                 }
 
-                parameters.Add(new MethodParameter()
-                    {
-                        IsByValue = byValParam
-                    });
+                _builder.SetMethodSignature(methodNode, parameters.ToArray(), isExported);
 
-            } while (_lastExtractedLexem.Token != Token.ClosePar);
+            }
+            catch (CompilerException exc)
+            {
+                ReportError(exc);
+                SkipToNextStatement();
+            }
+
+            if (isFunction)
+                PushEndTokens(Token.EndFunction);
+            else
+                PushEndTokens(Token.EndProcedure);
+            
+            BuildCodeBatch();
+            _builder.EndMethod(methodNode);
 
         }
 
@@ -611,33 +646,6 @@ namespace OneScript.Scripting
             {
                 throw CompilerException.UnexpectedEndOfText();
             }
-        }
-
-        public static ConstDefinition CreateConstDefinition(ref Lexem lex)
-        {
-            ConstType constType = ConstType.Undefined;
-            switch (lex.Type)
-            {
-                case LexemType.BooleanLiteral:
-                    constType = ConstType.Boolean;
-                    break;
-                case LexemType.DateLiteral:
-                    constType = ConstType.Date;
-                    break;
-                case LexemType.NumberLiteral:
-                    constType = ConstType.Number;
-                    break;
-                case LexemType.StringLiteral:
-                    constType = ConstType.String;
-                    break;
-            }
-
-            ConstDefinition cDef = new ConstDefinition()
-            {
-                Type = constType,
-                Presentation = lex.Content
-            };
-            return cDef;
         }
 
         private void ReportError(ScriptException compilerException)

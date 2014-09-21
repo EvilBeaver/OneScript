@@ -77,7 +77,7 @@ namespace OneScript.Scripting
 
         public SymbolBinding DefineMethod(string name, MethodSignatureData methodUsageData)
         {
-            try
+            if(!IsMethodDefined(name))
             {
                 int index = TopScope.DefineMethod(name, methodUsageData);
                 var binding = new SymbolBinding();
@@ -87,9 +87,9 @@ namespace OneScript.Scripting
 
                 return binding;
             }
-            catch (ArgumentException e)
+            else
             {
-                throw new CompilerException(e.Message);
+                throw new CompilerException("Метод уже определен (" + name + ")");
             }
         }
 
