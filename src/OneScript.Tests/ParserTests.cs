@@ -377,6 +377,22 @@ namespace OneScript.Tests
             }
 
         }
+
+        [TestMethod]
+        public void MethodBuild()
+        {
+            var code = @"Процедура Название(А, Знач Б, Знач В = 123)
+                            А = 1;
+                            М = А + 1;
+                        КонецПроцедуры";
+
+            var builder = new Builder();
+            var lexer = new Lexer();
+            var parser = new Parser(builder);
+
+            lexer.Code = code;
+            Assert.IsTrue(parser.Build(lexer));
+        }
     }
 
     abstract class TestASTNodeBase : IASTNode, IEquatable<IASTNode>
@@ -742,17 +758,21 @@ namespace OneScript.Tests
 
         public IASTNode BeginMethod(string identifier, bool isFunction)
         {
-            throw new NotImplementedException();
+            var methodNode = new MethodNode(identifier, isFunction);
+            return methodNode;
         }
 
         public void SetMethodSignature(IASTNode methodNode, ASTMethodParameter[] parameters, bool isExported)
         {
-            throw new NotImplementedException();
+            var method = methodNode as MethodNode;
+            method._parameters = parameters;
+            method._isExported = isExported;
+
         }
 
         public void EndMethod(IASTNode methodNode)
         {
-            throw new NotImplementedException();
+            _mainCode.Add(methodNode);
         }
     }
 }

@@ -176,7 +176,14 @@ namespace OneScript.Scripting
                         throw new CompilerException("Параметр с именем " + paramName + " уже определен");
 
                     NextLexem();
-                    bool isOptional = _lastExtractedLexem.Token == Token.Equal;
+                    bool isOptional;
+                    if (_lastExtractedLexem.Token == Token.Equal)
+                        isOptional = true;
+                    else if (_lastExtractedLexem.Token == Token.Comma || _lastExtractedLexem.Token == Token.ClosePar)
+                        isOptional = false;
+                    else
+                        throw CompilerException.UnexpectedOperation();
+
                     Lexem optionalLiteral = Lexem.Empty();
 
                     if (isOptional)
@@ -187,6 +194,7 @@ namespace OneScript.Scripting
                             throw CompilerException.LiteralExpected();
 
                         optionalLiteral = _lastExtractedLexem;
+                        NextLexem();
 
                     }
 
@@ -195,7 +203,7 @@ namespace OneScript.Scripting
                     paramData.ByValue = byValParam;
                     paramData.IsOptional = isOptional;
                     if (isOptional)
-                        paramData.DefaultValueLiteral = _builder.ReadLiteral(optionalLiteral);
+                        paramData.DefaultValueLiteral = ConstDefinition.CreateFromLiteral(ref optionalLiteral);
 
                     parameters.Add(paramData);
 
@@ -226,6 +234,8 @@ namespace OneScript.Scripting
             
             BuildCodeBatch();
             _builder.EndMethod(methodNode);
+
+            NextLexem(); // убрали конецпроцедуры/функции
 
         }
 

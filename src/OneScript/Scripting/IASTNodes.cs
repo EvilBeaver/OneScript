@@ -14,6 +14,6 @@ namespace OneScript.Scripting
         public string Name;
         public bool ByValue;
         public bool IsOptional;
-        public IASTNode DefaultValueLiteral;
+        public ConstDefinition DefaultValueLiteral;
     }
 }
