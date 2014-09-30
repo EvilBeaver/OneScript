@@ -207,6 +207,9 @@ namespace OneScript.Scripting
 
                     parameters.Add(paramData);
 
+                    if (_lastExtractedLexem.Token != Token.ClosePar && _lastExtractedLexem.Token != Token.Comma)
+                        throw CompilerException.TokenExpected(")");
+
                 } while (_lastExtractedLexem.Token != Token.ClosePar);
 
                 NextLexem(); // убрали закрывающую скобку
