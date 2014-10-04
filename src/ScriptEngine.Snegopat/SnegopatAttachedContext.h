@@ -50,7 +50,7 @@ public:
 
 	property bool DynamicMethodSignatures
 	{
-		virtual bool get() { return false; }
+		virtual bool get() { return true; }
 	};
 
 	virtual IValue^ GetIndexedValue(IValue^ index){ return nullptr; }
