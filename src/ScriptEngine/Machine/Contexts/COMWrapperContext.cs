@@ -266,7 +266,7 @@ namespace ScriptEngine.Machine.Contexts
                 {
                     if (_dispatchedType != null)
                     {
-                        var memberInfo = _dispatchedType.GetMember(name);
+                        var memberInfo = _dispatchedType.GetMember(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
                         if (memberInfo.Length == 0 || !(memberInfo[0].MemberType == MemberTypes.Property))
                         {
                             throw RuntimeException.PropNotFoundException(name);
