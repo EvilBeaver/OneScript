@@ -271,6 +271,12 @@ namespace ScriptEngine.Machine.Library
             System.IO.Directory.CreateDirectory(path);
         }
 
+        [ContextMethod("ТекущаяДата", "CurrentDate")]
+        public DateTime CurrentDate()
+        {
+            return DateTime.Now;
+        }
+
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 

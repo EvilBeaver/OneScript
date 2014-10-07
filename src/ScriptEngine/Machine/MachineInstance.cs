@@ -798,7 +798,10 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                needsDiscarding = false;
+                // при вызове библиотечного метода (из другого scope)
+                // статус вызова текущего frame не должен изменяться.
+                //
+                needsDiscarding = _currentFrame.DiscardReturnValue;
                 CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
             }
 
@@ -1052,6 +1055,10 @@ namespace ScriptEngine.Machine
         {
             var counter = _operationStack.Pop();
             var limit = _operationStack.Pop();
+
+            if(counter.DataType != DataType.Number || limit.DataType != DataType.Number)
+                throw new WrongStackConditionException(); 
+
             if (counter.CompareTo(limit) <= 0)
             {
                 _operationStack.Push(limit);
