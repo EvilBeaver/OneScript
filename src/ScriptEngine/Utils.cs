@@ -17,7 +17,7 @@ namespace ScriptEngine
 
             for (int i = 1; i < name.Length; i++)
             {
-                if (!Char.IsLetterOrDigit(name[i])||name[i]=='_')
+                if (!(Char.IsLetterOrDigit(name[i]) || name[i] == '_'))
                     return false;
             }
 
