@@ -21,7 +21,8 @@ namespace ScriptEngine.Machine.Contexts
             _array = safearray;
         }
 
-        public int Count()
+        [ContextMethod("Количество", "Count")]
+		public int Count()
         {
             return _array.Length;
         }
