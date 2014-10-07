@@ -79,7 +79,7 @@ namespace ScriptEngine.Machine
             }
             else if (DataType == Machine.DataType.Undefined)
             {
-                return "Неопределено";
+                return "";
             }
             else
             {
