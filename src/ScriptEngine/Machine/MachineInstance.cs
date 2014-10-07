@@ -15,7 +15,6 @@ namespace ScriptEngine.Machine
         private int _lineNumber;
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
-        private RuntimeException _lastException;
         private Stack<MachineState> _states;
         private LoadedModule _module;
 
@@ -249,7 +248,6 @@ namespace ScriptEngine.Machine
             _states = new Stack<MachineState>();
             _module = null;
             _currentFrame = null;
-            _lastException = null;
         }
 
         private void PrepareMethodExecution(int methodIndex)
@@ -284,9 +282,11 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
+                    if(exc.LineNumber == 0)
+                        SetScriptExceptionSource(exc);
+
                     if (_exceptionsStack.Count == 0)
                     {
-                        SetScriptExceptionSource(exc);
                         throw;
                     }
 
@@ -300,7 +300,7 @@ namespace ScriptEngine.Machine
 
                     SetFrame(handler.handlerFrame);
                     _currentFrame.InstructionPointer = handler.handlerAddress;
-                    _lastException = exc;
+                    _currentFrame.LastException = exc;
                     
 
                 }
@@ -319,6 +319,10 @@ namespace ScriptEngine.Machine
                 }
             }
             catch (RuntimeException)
+            {
+                throw;
+            }
+            catch(ScriptInterruptionException)
             {
                 throw;
             }
@@ -1039,8 +1043,7 @@ namespace ScriptEngine.Machine
             {
                 _exceptionsStack.Pop();
             }
-            _lastException = null;
-
+            
             if (_callStack.Count != 0)
             {
                 PopFrame();
@@ -1235,7 +1238,7 @@ namespace ScriptEngine.Machine
         {
             if (_exceptionsStack.Count > 0)
                 _exceptionsStack.Pop();
-            _lastException = null;
+            _currentFrame.LastException = null;
             NextInstruction();
         }
 
@@ -1243,7 +1246,10 @@ namespace ScriptEngine.Machine
         {
             if (arg < 0)
             {
-                throw _lastException == null ? new RuntimeException("") : _lastException;
+                if (_currentFrame.LastException == null)
+                    throw new ApplicationException("Некорректное состояние стека исключений");
+
+                throw _currentFrame.LastException;
             }
             else
             {
@@ -1810,9 +1816,9 @@ namespace ScriptEngine.Machine
 
         private void ExceptionInfo(int arg)
         {
-            if (_lastException != null)
+            if (_currentFrame.LastException != null)
             {
-                var excInfo = new ExceptionInfoContext(_lastException);
+                var excInfo = new ExceptionInfoContext(_currentFrame.LastException);
                 _operationStack.Push(ValueFactory.Create(excInfo));
             }
             else
@@ -1824,9 +1830,9 @@ namespace ScriptEngine.Machine
         
         private void ExceptionDescr(int arg)
         {
-            if (_lastException != null)
+            if (_currentFrame.LastException != null)
             {
-                var excInfo = new ExceptionInfoContext(_lastException);
+                var excInfo = new ExceptionInfoContext(_currentFrame.LastException);
                 _operationStack.Push(ValueFactory.Create(excInfo.Message));
             }
             else

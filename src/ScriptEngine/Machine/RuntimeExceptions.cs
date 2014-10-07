@@ -164,7 +164,7 @@ namespace ScriptEngine.Machine
 
     }
 
-    public class ScriptInterruptionException : RuntimeException
+    public class ScriptInterruptionException : ApplicationException
     {
         public ScriptInterruptionException(int exitCode) : base("Script interrupted")
         {
