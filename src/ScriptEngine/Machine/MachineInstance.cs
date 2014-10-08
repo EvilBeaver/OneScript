@@ -399,6 +399,8 @@ namespace ScriptEngine.Machine
                 LineNum,
                 MakeRawValue,
                 MakeBool,
+                PushTmp,
+                PopTmp,
 
                 //built-ins
                 Question,
@@ -1057,14 +1059,13 @@ namespace ScriptEngine.Machine
         private void JmpCounter(int arg)
         {
             var counter = _operationStack.Pop();
-            var limit = _operationStack.Pop();
+            var limit = _currentFrame.LocalFrameStack.Peek();
 
             if(counter.DataType != DataType.Number || limit.DataType != DataType.Number)
                 throw new WrongStackConditionException(); 
 
             if (counter.CompareTo(limit) <= 0)
             {
-                _operationStack.Push(limit);
                 NextInstruction();
             }
             else
@@ -1185,7 +1186,7 @@ namespace ScriptEngine.Machine
                 }
 
                 var iterator = context.GetManagedIterator();
-                _operationStack.Push(iterator);
+                _currentFrame.LocalFrameStack.Push(iterator);
                 NextInstruction();
 
             }
@@ -1197,7 +1198,7 @@ namespace ScriptEngine.Machine
 
         private void IteratorNext(int arg)
         {
-            var iterator = _operationStack.Peek() as CollectionEnumerator;
+            var iterator = _currentFrame.LocalFrameStack.Peek() as CollectionEnumerator;
             if (iterator == null)
             {
                 throw new WrongStackConditionException();
@@ -1214,7 +1215,7 @@ namespace ScriptEngine.Machine
 
         private void StopIterator(int arg)
         {
-            var iterator = _operationStack.Pop() as CollectionEnumerator;
+            var iterator = _currentFrame.LocalFrameStack.Pop() as CollectionEnumerator;
             if (iterator == null)
             {
                 throw new WrongStackConditionException();
@@ -1274,6 +1275,23 @@ namespace ScriptEngine.Machine
         {
             var value = _operationStack.Pop().AsBoolean();            
             _operationStack.Push(ValueFactory.Create(value));
+            NextInstruction();
+        }
+
+        private void PushTmp(int arg)
+        {
+            var value = _operationStack.Pop();
+            _currentFrame.LocalFrameStack.Push(value);
+            NextInstruction();
+        }
+
+        private void PopTmp(int arg)
+        {
+            var tmpVal = _currentFrame.LocalFrameStack.Pop();
+
+            if (arg == 0)
+                _operationStack.Push(tmpVal);
+
             NextInstruction();
         }
 

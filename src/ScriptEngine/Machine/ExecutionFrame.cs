@@ -12,5 +12,7 @@ namespace ScriptEngine.Machine
         public bool DiscardReturnValue;
         public string MethodName;
         public RuntimeException LastException;
+        
+        public Stack<IValue> LocalFrameStack = new Stack<IValue>();
     }
 }

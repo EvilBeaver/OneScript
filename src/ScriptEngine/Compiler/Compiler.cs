@@ -682,6 +682,7 @@ namespace ScriptEngine.Compiler
             NextToken();
             BuildExpression(Token.Loop);
             AddCommand(OperationCode.MakeRawValue, 0);
+            AddCommand(OperationCode.PushTmp, 0);
             var lastIdx = _module.Code.Count;
             AddCommand(OperationCode.Jmp, lastIdx + 4);
             // increment
@@ -703,7 +704,7 @@ namespace ScriptEngine.Compiler
 
             // jmp to start
             AddCommand(OperationCode.Jmp, indexLoopBegin);
-            var indexLoopEnd = AddCommand(OperationCode.Nop, 0);
+            var indexLoopEnd = AddCommand(OperationCode.PopTmp, 1);
             
             var cmd = _module.Code[conditionIndex];
             cmd.Argument = indexLoopEnd;

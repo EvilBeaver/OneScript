@@ -54,6 +54,8 @@ namespace ScriptEngine.Machine
         LineNum,
         MakeRawValue,
         MakeBool,
+        PushTmp,
+        PopTmp,
 
         // built-in functions
         Question,
