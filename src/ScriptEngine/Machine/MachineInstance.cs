@@ -89,6 +89,8 @@ namespace ScriptEngine.Machine
             {
                 if (arguments[i] is IVariable)
                     _currentFrame.Locals[i] = (IVariable)arguments[i];
+                else if(arguments[i] == null)
+                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i));
                 else
                     _currentFrame.Locals[i] = Variable.Create(arguments[i]);
             }
@@ -100,6 +102,16 @@ namespace ScriptEngine.Machine
             }
             else
                 return null;
+        }
+
+        private IValue GetDefaultArgValue(int methodIndex, int paramIndex)
+        {
+            var meth = _module.Methods[methodIndex].Signature;
+            var param = meth.Params[paramIndex];
+            if (!param.HasDefaultValue)
+                throw new ApplicationException("Invalid script arguments");
+
+            return _module.Constants[param.DefaultValueIndex];
         }
 
         internal void SetModule(LoadedModule module)
