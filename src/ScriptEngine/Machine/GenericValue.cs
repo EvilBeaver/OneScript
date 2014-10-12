@@ -79,7 +79,7 @@ namespace ScriptEngine.Machine
             }
             else if (DataType == Machine.DataType.Undefined)
             {
-                return "Неопределено";
+                return "";
             }
             else
             {
@@ -111,7 +111,7 @@ namespace ScriptEngine.Machine
                 case Machine.DataType.Date:
                     return AsDate().CompareTo(other.AsDate());
                 case Machine.DataType.Undefined:
-                    return other.DataType == Machine.DataType.Undefined ? 0 : -1;
+                    return DataType == Machine.DataType.Undefined ? 0 : -1;
                 default:
                     return AsNumber().CompareTo(other.AsNumber());
             }

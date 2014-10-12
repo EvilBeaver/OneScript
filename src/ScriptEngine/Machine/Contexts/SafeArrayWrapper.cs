@@ -7,7 +7,7 @@ using System.Text;
 namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("BasicArray")]
-    public class SafeArrayWrapper : ContextIValueImpl, ICollectionContext, IObjectWrapper
+    public class SafeArrayWrapper : AutoContext<SafeArrayWrapper>, ICollectionContext, IObjectWrapper
     {
         private object[] _array;
 
@@ -21,7 +21,8 @@ namespace ScriptEngine.Machine.Contexts
             _array = safearray;
         }
 
-        public int Count()
+        [ContextMethod("Количество", "Count")]
+		public int Count()
         {
             return _array.Length;
         }
