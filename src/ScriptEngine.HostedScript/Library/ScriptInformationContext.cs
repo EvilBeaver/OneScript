@@ -7,6 +7,9 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Library
 {
+    /// <summary>
+    /// Информация о выполняемом сценарии.
+    /// </summary>
     [ContextClass("ИнформацияОСценарии", "ScriptInformation")]
     class ScriptInformationContext : AutoContext<ScriptInformationContext>
     {
@@ -17,6 +20,9 @@ namespace ScriptEngine.Machine.Library
             _info = info;
         }
 
+        /// <summary>
+        /// Путь к файлу сценария, если выполняется сценарий из файла. Для всех прочих сценариев возвращаемое значение определяется хост-приложением.
+        /// </summary>
         [ContextProperty("Источник", "Source")]
         public string Source
         {
