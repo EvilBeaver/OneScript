@@ -13,6 +13,7 @@ namespace ScriptEngine.Machine.Library
     /// <summary>
     /// Глобальный контекст. Представляет глобально доступные свойства и методы.
     /// </summary>
+    [ContextClass("ГлобальныйКонтекст", "GlobalContext")]
     class GlobalContext : IRuntimeContextInstance, IAttachableContext
     {
         private IVariable[] _state;
