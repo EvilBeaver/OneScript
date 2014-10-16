@@ -220,7 +220,7 @@ namespace ScriptEngine.Machine.Contexts
             get { return _instance.SystemType; }
         }
 
-        public double AsNumber()
+        public decimal AsNumber()
         {
             return _instance.AsNumber();
         }

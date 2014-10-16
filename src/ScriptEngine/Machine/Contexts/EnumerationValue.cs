@@ -32,7 +32,7 @@ namespace ScriptEngine.Machine.Contexts
             get { return _owner.ValuesType; }
         }
 
-        public virtual double AsNumber()
+        public virtual decimal AsNumber()
         {
             throw RuntimeException.ConvertToNumberException();
         }

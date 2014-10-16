@@ -74,7 +74,7 @@ namespace ScriptEngine.Machine
             get { return Value.SystemType; }
         }
 
-        public double AsNumber()
+        public decimal AsNumber()
         {
             return Value.AsNumber();
         }
@@ -207,7 +207,7 @@ namespace ScriptEngine.Machine
                 get { return Value.SystemType; }
             }
 
-            public double AsNumber()
+            public decimal AsNumber()
             {
                 return Value.AsNumber();
             }

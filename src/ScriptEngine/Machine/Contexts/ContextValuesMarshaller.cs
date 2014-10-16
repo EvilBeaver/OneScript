@@ -81,7 +81,7 @@ namespace ScriptEngine.Machine
             }
             else if (type == typeof(double))
             {
-                return ValueFactory.Create((double)objParam);
+                return ValueFactory.Create((decimal)objParam);
             }
             else if (type == typeof(DateTime))
             {
