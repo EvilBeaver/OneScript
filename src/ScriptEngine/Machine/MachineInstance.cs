@@ -1173,7 +1173,19 @@ namespace ScriptEngine.Machine
 
                 if (success)
                 {
-                    var instance = ctor.CtorInfo.Invoke(null, argsToPass.ToArray());
+                    object instance = null;
+                    try
+                    {
+                        instance = ctor.CtorInfo.Invoke(null, argsToPass.ToArray());
+                    }
+                    catch (System.Reflection.TargetInvocationException e)
+                    {
+                        if (e.InnerException != null && e.InnerException is RuntimeException)
+                            throw e.InnerException;
+                        else
+                            throw;
+                    }
+
                     _operationStack.Push((IValue)instance);
                     NextInstruction();
                     return;
