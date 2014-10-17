@@ -157,7 +157,7 @@ namespace ScriptEngine.Machine
             if (source != null)
             {
                 destination = new Stack<T>();
-                for (int i = 0; i < source.Length; i++)
+                for (int i = source.Length-1; i >=0 ; i--)
                 {
                     destination.Push(source[i]);
                 }
