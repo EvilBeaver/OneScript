@@ -94,7 +94,7 @@ namespace ScriptEngine.Machine
 
         public IRuntimeContextInstance AsObject()
         {
-            throw new NotImplementedException();
+            throw RuntimeException.ValueIsNotObjectException();
         }
 
         public IValue GetRawValue()
