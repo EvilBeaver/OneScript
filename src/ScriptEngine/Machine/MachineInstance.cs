@@ -1507,7 +1507,7 @@ namespace ScriptEngine.Machine
 
             string result;
 
-            if (start >= str.Length)
+            if (start > str.Length || len == 0)
             {
                 result = "";
             }
