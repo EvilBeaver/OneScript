@@ -1096,7 +1096,6 @@ namespace ScriptEngine.Machine
 
         private void NewInstance(int argCount)
         {
-            var typeName = _operationStack.Pop().AsString();
             IValue[] argValues = new IValue[argCount];
             // fact args
             for (int i = argCount - 1; i >= 0; i--)
@@ -1105,6 +1104,7 @@ namespace ScriptEngine.Machine
                 argValues[i] = argValue;
             }
 
+            var typeName = _operationStack.Pop().AsString();
             var clrType = TypeManager.GetFactoryFor(typeName);
 
             var ctors = clrType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)

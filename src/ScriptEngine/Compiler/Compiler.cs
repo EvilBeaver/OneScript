@@ -1202,7 +1202,7 @@ namespace ScriptEngine.Compiler
             {
                 // создание по имени класса
                 NextToken();
-                if(_lastExtractedLexem.Type != LexemType.StringLiteral)
+                if(_lastExtractedLexem.Type != LexemType.StringLiteral && !IsUserSymbol(ref _lastExtractedLexem))
                 {
                     throw CompilerException.IdentifierExpected();
                 }
@@ -1223,8 +1223,14 @@ namespace ScriptEngine.Compiler
 
         private void NewObjectDynamicConstructor()
         {
-            var constDef = CreateConstDefinition(ref _lastExtractedLexem);
-            NextToken();
+            try
+            {
+                BuildExpression(Token.Comma);
+            }
+            catch(ExtraClosedParenthesis)
+            {
+            }
+
             bool[] argsPassed;
             if(_lastExtractedLexem.Token != Token.ClosePar)
             {
@@ -1238,7 +1244,6 @@ namespace ScriptEngine.Compiler
                 argsPassed = new bool[0];
             }
 
-            AddCommand(OperationCode.PushConst, GetConstNumber(ref constDef));
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
 
         }
@@ -1246,6 +1251,14 @@ namespace ScriptEngine.Compiler
         private void NewObjectStaticConstructor()
         {
             var name = _lastExtractedLexem.Content;
+            var cDef = new ConstDefinition()
+            {
+                Type = DataType.String,
+                Presentation = name
+            };
+
+            AddCommand(OperationCode.PushConst, GetConstNumber(ref cDef));
+
             NextToken();
             bool[] argsPassed;
             if (_lastExtractedLexem.Token == Token.OpenPar)
@@ -1255,13 +1268,6 @@ namespace ScriptEngine.Compiler
             else
                 throw CompilerException.ExpressionSyntax();
 
-            var cDef = new ConstDefinition()
-            {
-                Type = DataType.String,
-                Presentation = name
-            };
-
-            AddCommand(OperationCode.PushConst, GetConstNumber(ref cDef));
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
         }
 
