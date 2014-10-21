@@ -8,6 +8,10 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library
 {
+    /// <summary>
+    /// Класс представляет собой инструмент доступа к системной консоли.
+    /// Предназначен для низкоуровнего манипулирования выводом в консоль.
+    /// </summary>
     [ContextClass("Консоль", "Console")]
     class ConsoleContext : AutoContext<ConsoleContext>
     {
