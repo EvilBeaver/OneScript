@@ -18,6 +18,10 @@ namespace ScriptEngine.Compiler
         private bool _isFunctionProcessed = false;
         private bool _isInTryBlock = false;
 
+        // Флаг указывающий, что при следующем NextToken() должен быть считан текущий элемент
+        //    без считывания нового
+        private bool _backOneToken = false;
+
         private Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
         private List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
@@ -1262,11 +1266,16 @@ namespace ScriptEngine.Compiler
             NextToken();
             bool[] argsPassed;
             if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                // Отрабатываем только в тех случаях, если явно указана скобка.
+                // В остальных случаях дальнейшую обработку отдаём наружу
                 argsPassed = PushFactArguments();
-            else if (_lastExtractedLexem.Token == Token.Semicolon)
-                argsPassed = new bool[0];
+            }
             else
-                throw CompilerException.ExpressionSyntax();
+            {
+                argsPassed = new bool[0];
+                BackOneToken();
+            }
 
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
         }
@@ -1517,7 +1526,10 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
-                _lastExtractedLexem = _parser.NextLexem();
+                if (!_backOneToken)
+                    _lastExtractedLexem = _parser.NextLexem();
+
+                _backOneToken = false;
             }
             else
             {
@@ -1584,6 +1596,13 @@ namespace ScriptEngine.Compiler
         private void Assert(bool condition)
         {
             System.Diagnostics.Debug.Assert(condition);
+        }
+
+        public void BackOneToken()
+        {
+            if (_backOneToken)
+                throw new Exception("Недопустим возврат на 2 и более шагов назад!");
+            _backOneToken = true;
         }
     }
 }
