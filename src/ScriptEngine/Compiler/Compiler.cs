@@ -1274,7 +1274,8 @@ namespace ScriptEngine.Compiler
             else
             {
                 argsPassed = new bool[0];
-                BackOneToken();
+                if(_lastExtractedLexem.Token == Token.ClosePar)
+                    BackOneToken();
             }
 
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
