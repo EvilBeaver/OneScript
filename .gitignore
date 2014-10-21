@@ -61,3 +61,4 @@ Debug
 /src/oscript/*.exe
 /src/ScriptEngine.Snegopat/dlldata.c
 /src/ScriptEngine.Snegopat/Snegopat_p.c
+tests/start.cmd
