@@ -17,17 +17,23 @@ namespace ScriptEngine.Machine.Contexts
         {
         }
 
-        public ScriptDrivenObject(LoadedModuleHandle module, bool deffered)
+        public ScriptDrivenObject(LoadedModuleHandle module, bool deffered) : this(module.Module, deffered)
         {
-            _module = module.Module;
+            
+        }
+
+        internal ScriptDrivenObject(LoadedModule module, bool deffered)
+            : base(TypeManager.GetTypeByName("Object"))
+        {
+            _module = module;
             if (!deffered)
             {
                 InitOwnData();
             }
         }
 
-
         internal ScriptDrivenObject(LoadedModule module)
+            : base(TypeManager.GetTypeByName("Object"))
         {
             _module = module;
             InitOwnData();

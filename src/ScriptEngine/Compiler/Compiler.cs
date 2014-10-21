@@ -1198,12 +1198,67 @@ namespace ScriptEngine.Compiler
         private void BuildNewObjectCreation()
         {
             NextToken();
-            if (!IsUserSymbol(ref _lastExtractedLexem))
+            if(_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                // создание по имени класса
+                NextToken();
+                if(_lastExtractedLexem.Type != LexemType.StringLiteral && !IsUserSymbol(ref _lastExtractedLexem))
+                {
+                    throw CompilerException.IdentifierExpected();
+                }
+
+                NewObjectDynamicConstructor();
+
+            }
+            else if (IsUserSymbol(ref _lastExtractedLexem))
+            {
+                NewObjectStaticConstructor();
+            }
+            else
             {
                 throw CompilerException.IdentifierExpected();
             }
 
+        }
+
+        private void NewObjectDynamicConstructor()
+        {
+            try
+            {
+                BuildExpression(Token.Comma);
+            }
+            catch(ExtraClosedParenthesis)
+            {
+            }
+
+            bool[] argsPassed;
+            if(_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                if (_lastExtractedLexem.Token != Token.Comma)
+                    throw CompilerException.TokenExpected(",");
+
+                argsPassed = PushFactArguments();
+            }
+            else
+            {
+                argsPassed = new bool[0];
+            }
+
+            AddCommand(OperationCode.NewInstance, argsPassed.Length);
+
+        }
+
+        private void NewObjectStaticConstructor()
+        {
             var name = _lastExtractedLexem.Content;
+            var cDef = new ConstDefinition()
+            {
+                Type = DataType.String,
+                Presentation = name
+            };
+
+            AddCommand(OperationCode.PushConst, GetConstNumber(ref cDef));
+
             NextToken();
             bool[] argsPassed;
             if (_lastExtractedLexem.Token == Token.OpenPar)
@@ -1213,15 +1268,7 @@ namespace ScriptEngine.Compiler
             else
                 throw CompilerException.ExpressionSyntax();
 
-            var cDef = new ConstDefinition()
-            {
-                Type=DataType.String,
-                Presentation = name
-            };
-
-            AddCommand(OperationCode.PushConst, GetConstNumber(ref cDef));
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
-
         }
 
         private void BuildExpression(Token stopToken)

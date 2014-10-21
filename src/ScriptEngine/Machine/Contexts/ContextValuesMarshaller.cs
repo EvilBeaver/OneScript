@@ -32,7 +32,7 @@ namespace ScriptEngine.Machine
             {
                 valueObj = (int)value.AsNumber();
             }
-            else if (type == typeof(double))
+            else if (type == typeof(double) || type == typeof(decimal))
             {
                 valueObj = value.AsNumber();
             }
@@ -79,9 +79,13 @@ namespace ScriptEngine.Machine
             {
                 return ValueFactory.Create((int)objParam);
             }
+            else if (type == typeof(decimal))
+            {
+                return ValueFactory.Create((decimal)objParam);
+            }
             else if (type == typeof(double))
             {
-                return ValueFactory.Create((double)objParam);
+                return ValueFactory.Create((decimal)(double)objParam);
             }
             else if (type == typeof(DateTime))
             {

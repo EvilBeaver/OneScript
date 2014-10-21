@@ -10,7 +10,7 @@ namespace ScriptEngine.Machine
     {
         private DataType _type;
         private long _integerPart;
-        private double _decimalPart;
+        private decimal _decimalPart;
 
         public DataType DataType
         {
@@ -25,7 +25,7 @@ namespace ScriptEngine.Machine
             }
         }
 
-        public double AsNumber()
+        public decimal AsNumber()
         {
             if (_type == Machine.DataType.Number)
                 return _decimalPart;
@@ -94,7 +94,7 @@ namespace ScriptEngine.Machine
 
         public IRuntimeContextInstance AsObject()
         {
-            throw new NotImplementedException();
+            throw RuntimeException.ValueIsNotObjectException();
         }
 
         public IValue GetRawValue()
@@ -149,7 +149,7 @@ namespace ScriptEngine.Machine
             return val;
         }
 
-        public static SimpleConstantValue Number(double value)
+        public static SimpleConstantValue Number(decimal value)
         {
             var val = new SimpleConstantValue();
             val._type = DataType.Number;
@@ -229,7 +229,7 @@ namespace ScriptEngine.Machine
             }
         }
 
-        public double AsNumber()
+        public decimal AsNumber()
         {
             return ValueFactory.Parse(_value, DataType.Number).AsNumber();
         }

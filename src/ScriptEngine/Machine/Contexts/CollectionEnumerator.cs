@@ -73,7 +73,7 @@ namespace ScriptEngine.Machine.Contexts
             get { throw new NotImplementedException(); }
         }
 
-        public double AsNumber()
+        public decimal AsNumber()
         {
             throw new NotImplementedException();
         }

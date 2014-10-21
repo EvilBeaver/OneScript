@@ -44,6 +44,8 @@ namespace ScriptEngine.Machine.Contexts
 
         private ModuleHandle LoadAndRegister(Type type, CompilerService compiler, string typeName, Environment.ICodeSource code)
         {
+            compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
+
             var moduleHandle = compiler.CreateModule(code);
             var loadedHandle = _engine.LoadModuleImage(moduleHandle);
             _loadedModules.Add(typeName, loadedHandle.Module);
@@ -75,6 +77,8 @@ namespace ScriptEngine.Machine.Contexts
             var module = _instance._loadedModules[typeName];
 
             var newObj = new UserScriptContextInstance(module, typeName);
+            newObj.AddProperty("ЭтотОбъект", newObj);
+            newObj.InitOwnData();
             newObj.Initialize(_instance._engine.Machine);
 
             return newObj;

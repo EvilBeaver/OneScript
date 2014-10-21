@@ -22,7 +22,12 @@ namespace ScriptEngine.Machine
             return SimpleConstantValue.Boolean(value);
         }
 
-        public static IValue Create(double value)
+        public static IValue Create(decimal value)
+        {
+            return SimpleConstantValue.Number(value);
+        }
+
+        public static IValue Create(int value)
         {
             return SimpleConstantValue.Number(value);
         }
@@ -83,7 +88,7 @@ namespace ScriptEngine.Machine
 
                     try
                     {
-                        result = ValueFactory.Create(Double.Parse(presentation, numStyle, numInfo));
+                        result = ValueFactory.Create(Decimal.Parse(presentation, numStyle, numInfo));
                     }
                     catch (FormatException)
                     {
@@ -118,7 +123,7 @@ namespace ScriptEngine.Machine
                 get { throw new NotImplementedException(); }
             }
 
-            public double AsNumber()
+            public decimal AsNumber()
             {
                 throw new NotImplementedException();
             }

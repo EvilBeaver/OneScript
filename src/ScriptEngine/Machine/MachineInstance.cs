@@ -157,7 +157,7 @@ namespace ScriptEngine.Machine
             if (source != null)
             {
                 destination = new Stack<T>();
-                for (int i = 0; i < source.Length; i++)
+                for (int i = source.Length-1; i >=0 ; i--)
                 {
                     destination.Push(source[i]);
                 }
@@ -541,7 +541,7 @@ namespace ScriptEngine.Machine
             else if (type1 == DataType.Date && op2.DataType == DataType.Number)
             {
                 var date = op1.AsDate();
-                var result = date.AddSeconds(op2.AsNumber());
+                var result = date.AddSeconds((double)op2.AsNumber());
                 _operationStack.Push(ValueFactory.Create(result));
             }
             else
@@ -564,13 +564,13 @@ namespace ScriptEngine.Machine
             else if (op1.DataType == DataType.Date && op2.DataType == DataType.Number)
             {
                 var date = op1.AsDate();
-                var result = date.AddSeconds(-op2.AsNumber());
+                var result = date.AddSeconds(-(double)op2.AsNumber());
                 _operationStack.Push(ValueFactory.Create(result));
             }
             else if (op1.DataType == DataType.Date && op2.DataType == DataType.Date)
             {
                 var span = op1.AsDate() - op2.AsDate();
-                _operationStack.Push(ValueFactory.Create(span.TotalSeconds));
+                _operationStack.Push(ValueFactory.Create((decimal)span.TotalSeconds));
             }
             else
             {   // все к числовому типу.
@@ -1096,7 +1096,6 @@ namespace ScriptEngine.Machine
 
         private void NewInstance(int argCount)
         {
-            var typeName = _operationStack.Pop().AsString();
             IValue[] argValues = new IValue[argCount];
             // fact args
             for (int i = argCount - 1; i >= 0; i--)
@@ -1105,6 +1104,7 @@ namespace ScriptEngine.Machine
                 argValues[i] = argValue;
             }
 
+            var typeName = _operationStack.Pop().AsString();
             var clrType = TypeManager.GetFactoryFor(typeName);
 
             var ctors = clrType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
@@ -1173,7 +1173,19 @@ namespace ScriptEngine.Machine
 
                 if (success)
                 {
-                    var instance = ctor.CtorInfo.Invoke(null, argsToPass.ToArray());
+                    object instance = null;
+                    try
+                    {
+                        instance = ctor.CtorInfo.Invoke(null, argsToPass.ToArray());
+                    }
+                    catch (System.Reflection.TargetInvocationException e)
+                    {
+                        if (e.InnerException != null && e.InnerException is RuntimeException)
+                            throw e.InnerException;
+                        else
+                            throw;
+                    }
+
                     _operationStack.Push((IValue)instance);
                     NextInstruction();
                     return;
@@ -1337,7 +1349,7 @@ namespace ScriptEngine.Machine
 
         private void Number(int arg)
         {
-            double value = _operationStack.Pop().AsNumber();
+            decimal value = _operationStack.Pop().AsNumber();
             _operationStack.Push(ValueFactory.Create(value));
             NextInstruction();
         }
@@ -1495,7 +1507,7 @@ namespace ScriptEngine.Machine
 
             string result;
 
-            if (start >= str.Length)
+            if (start > str.Length || len == 0)
             {
                 result = "";
             }
@@ -1799,7 +1811,7 @@ namespace ScriptEngine.Machine
 
         private void Round(int arg)
         {
-            double num;
+            decimal num;
             int digits;
             int mode;
             if (arg == 1)
@@ -1817,13 +1829,30 @@ namespace ScriptEngine.Machine
             else
             {
                 mode = (int)_operationStack.Pop().AsNumber();
+                mode = mode == 0 ? 0 : 1;
                 digits = (int)_operationStack.Pop().AsNumber();
                 num = _operationStack.Pop().AsNumber();
             }
 
-            double scale = Math.Pow(10.0, digits);
-            double round = Math.Floor(Math.Abs(num) * scale + (mode * 0.5));
-            var result = (Math.Sign(num) * round / scale);
+            decimal scale = (decimal)Math.Pow(10.0, digits);
+            decimal scaled = Math.Abs(num) * scale;
+
+            var director = (int)((scaled - (long)scaled) * 10 % 10);
+
+            decimal round;
+            if (director == 5)
+                round = Math.Floor(scaled + mode * 0.5m * Math.Sign(digits));
+            else if (director > 5)
+                round = Math.Ceiling(scaled);
+            else
+                round = Math.Floor(scaled);
+            
+            decimal result;
+            
+            if(digits >= 0)
+                result = (Math.Sign(num) * round / scale);
+            else
+                result = (Math.Sign(num) * round * scale);
 
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
@@ -1831,16 +1860,18 @@ namespace ScriptEngine.Machine
 
         private void Pow(int arg)
         {
-            var powPower = _operationStack.Pop().AsNumber();
-            var powBase = _operationStack.Pop().AsNumber();
-            _operationStack.Push(ValueFactory.Create(Math.Pow(powBase, powPower)));
+            var powPower = (double)_operationStack.Pop().AsNumber();
+            var powBase = (double)_operationStack.Pop().AsNumber();
+            double power = Math.Pow(powBase, powPower);
+            _operationStack.Push(ValueFactory.Create((decimal)power));
             NextInstruction();
         }
 
         private void Sqrt(int arg)
         {
-            var num = _operationStack.Pop().AsNumber();
-            _operationStack.Push(ValueFactory.Create(Math.Sqrt(num)));
+            var num = (double)_operationStack.Pop().AsNumber();
+            var root = Math.Sqrt(num);
+            _operationStack.Push(ValueFactory.Create((decimal)root));
             NextInstruction();
         }
 

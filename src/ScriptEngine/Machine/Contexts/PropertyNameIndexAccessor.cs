@@ -8,7 +8,6 @@ namespace ScriptEngine.Machine.Contexts
     public abstract class PropertyNameIndexAccessor : ContextIValueImpl
     {
         public PropertyNameIndexAccessor()
-            : base(TypeManager.GetTypeByName("Object"))
         {
 
         }

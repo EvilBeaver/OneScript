@@ -48,7 +48,7 @@ namespace ScriptEngine.Machine.Contexts
             get { return _type; }
         }
 
-        public double AsNumber()
+        public decimal AsNumber()
         {
             throw RuntimeException.ConvertToNumberException();
         }
