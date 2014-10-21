@@ -23,6 +23,7 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         internal ScriptDrivenObject(LoadedModule module, bool deffered)
+            : base(TypeManager.GetTypeByName("Object"))
         {
             _module = module;
             if (!deffered)
@@ -32,6 +33,7 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         internal ScriptDrivenObject(LoadedModule module)
+            : base(TypeManager.GetTypeByName("Object"))
         {
             _module = module;
             InitOwnData();
