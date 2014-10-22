@@ -73,6 +73,7 @@
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Library\TextWriteImpl.cs" />
+    <Compile Include="Library\XmlReaderBase.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\ScriptInformationContext.cs" />
