@@ -17,6 +17,8 @@ namespace oscript
             }
             catch (Exception e)
             {
+                // сюда при выполнении скрипта мы попадать не должны
+                // исключения времени выполнения выводятся в IApplicationHost.ShowExceptionInfo
                 Console.WriteLine(e.ToString());
                 returnCode = 1;
             }
