@@ -28,12 +28,20 @@ namespace ScriptEngine.Machine.Library
         /// <param name="arguments">Массив аргументов, передаваемых методу</param>
         /// <returns>Если вызывается функция, то возвращается ее результат. В противном случае возвращается Неопределено.</returns>
         [ContextMethod("ВызватьМетод", "CallMethod")]
-        public IValue CallMethod(IRuntimeContextInstance target, string methodName, IRuntimeContextInstance arguments)
+        public IValue CallMethod(IRuntimeContextInstance target, string methodName, IRuntimeContextInstance arguments = null)
         {
-            ArrayImpl argArray = arguments as ArrayImpl;
-            if (argArray == null)
-                throw RuntimeException.InvalidArgumentType();
-            
+            ArrayImpl argArray;
+            if (arguments != null)
+            {
+                argArray = arguments as ArrayImpl;
+                if (argArray == null)
+                    throw RuntimeException.InvalidArgumentType();
+            }
+            else
+            {
+                argArray = new ArrayImpl();
+            }
+
             var methodIdx = target.FindMethod(methodName);
 
             var methInfo = target.GetMethodInfo(methodIdx);
