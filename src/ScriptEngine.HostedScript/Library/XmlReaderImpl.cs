@@ -8,7 +8,7 @@ using System.Xml;
 
 namespace ScriptEngine.HostedScript.Library
 {
-    public class XmlReaderBase : IDisposable
+    public class XmlReaderImpl : IDisposable
     {
         XmlReader _reader;
 
@@ -34,6 +34,7 @@ namespace ScriptEngine.HostedScript.Library
             if (_reader == null)
                 throw new RuntimeException("Файл не открыт");
         }
+
 
         public void Dispose()
         {
