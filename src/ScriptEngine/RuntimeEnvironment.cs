@@ -36,6 +36,7 @@ namespace ScriptEngine
             if (_globalScope == null)
             {
                 _globalScope = new SymbolScope();
+                TypeManager.RegisterType("__globalPropertiesHolder", typeof(PropertyBag));
                 _injectedProperties = new PropertyBag();
                 _symbolScopes.PushScope(_globalScope);
                 RegisterObject(_injectedProperties);

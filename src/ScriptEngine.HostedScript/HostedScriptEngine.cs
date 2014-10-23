@@ -6,6 +6,7 @@ using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Machine.Library;
 using ScriptEngine.Machine;
+using ScriptEngine.HostedScript.Library;
 
 namespace ScriptEngine
 {
@@ -26,6 +27,7 @@ namespace ScriptEngine
 
             _env = new RuntimeEnvironment();
             _env.InjectObject(_globalCtx, false);
+            _env.InjectGlobalProperty(XmlNodeTypeEnum.GetInstance(), "ТипУзлаXML", true);
         }
 
         public void Initialize()

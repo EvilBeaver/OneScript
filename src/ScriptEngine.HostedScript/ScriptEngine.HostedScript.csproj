@@ -61,6 +61,7 @@
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
+    <Compile Include="Library\CLREnumValueWrapper.cs" />
     <Compile Include="Library\CommandLineArguments.cs" />
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />
@@ -73,7 +74,8 @@
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Library\TextWriteImpl.cs" />
-    <Compile Include="Library\XmlReaderBase.cs" />
+    <Compile Include="Library\XmlEnumerations.cs" />
+    <Compile Include="Library\XmlReaderImpl.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\ScriptInformationContext.cs" />
