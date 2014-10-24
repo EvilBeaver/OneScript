@@ -12,7 +12,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public CLREnumValueWrapper(EnumerationContext owner, T realValue):base(owner)
         {
-
+            _realValue = realValue;
         }
 
         public T UnderlyingObject
@@ -25,11 +25,11 @@ namespace ScriptEngine.HostedScript.Library
 
         public override bool Equals(Machine.IValue other)
         {
-            var otherWrapper = other as CLREnumValueWrapper<T>;
+            var otherWrapper = other.GetRawValue() as CLREnumValueWrapper<T>;
             if (otherWrapper == null)
                 return false;
 
-            return _realValue.Equals(other);
+            return this.UnderlyingObject.Equals(otherWrapper.UnderlyingObject);
         }
     }
 }

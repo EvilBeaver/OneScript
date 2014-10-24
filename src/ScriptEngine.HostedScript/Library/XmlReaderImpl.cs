@@ -9,18 +9,22 @@ using System.Xml;
 
 namespace ScriptEngine.HostedScript.Library
 {
-    public class XmlReaderImpl : IDisposable
+    [ContextClass("ЧтениеXML","XMLReader")]
+    public class XmlReaderImpl : AutoContext<XmlReaderImpl>, IDisposable
     {
         XmlTextReader _reader;
 
+        [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string path)
         {
             if (_reader != null)
                 throw new RuntimeException("Поток XML уже открыт");
             var textInput = new StreamReader(path);
             _reader = new XmlTextReader(textInput);
+            _reader.WhitespaceHandling = WhitespaceHandling.Significant;
         }
 
+        [ContextMethod("УстановитьСтроку", "SetString")]
         public void SetString(string content)
         {
             if (_reader != null)
@@ -28,6 +32,7 @@ namespace ScriptEngine.HostedScript.Library
 
             var textInput = new StringReader(content);
             _reader = new XmlTextReader(textInput);
+            _reader.WhitespaceHandling = WhitespaceHandling.Significant;
         }
 
         private void CheckIfOpen()
@@ -102,7 +107,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ContextProperty("Имя", "Name")]
-        public object Name
+        public string Name
         {
             get
             {
@@ -183,7 +188,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ContextProperty("ТипУзла", "NodeType")]
-        public object NodeType
+        public IValue NodeType
         {
             get
             {
@@ -245,12 +250,13 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return _reader.XmlSpace;
+                throw new NotImplementedException();
+                //return _reader.XmlSpace;
             }
         }
 
         [ContextProperty("ЭтоСимвольныеДанные", "IsCharacters")]
-        public object IsCharacters
+        public bool IsCharacters
         {
             get
             {
@@ -259,6 +265,7 @@ namespace ScriptEngine.HostedScript.Library
         } 
         #endregion
 
+        #region Методы
         [ContextMethod("URIПространстваИменАтрибута", "AttributeNamespaceURI")]
         public string AttributeNamespaceURI(int index)
         {
@@ -268,11 +275,11 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗначениеАтрибута", "AttributeValue")]
         public string AttributeValue(IValue indexOrName, string URIIfGiven = null)
         {
-            if(indexOrName.DataType == DataType.Number)
+            if (indexOrName.DataType == DataType.Number)
             {
                 return _reader.GetAttribute((int)indexOrName.AsNumber());
             }
-            else if(indexOrName.DataType == DataType.String)
+            else if (indexOrName.DataType == DataType.String)
             {
                 if (URIIfGiven == null)
                     return _reader.GetAttribute(indexOrName.AsString());
@@ -297,11 +304,11 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("КоличествоАтрибутов", "AttributeCount")]
         public int AttributeCount()
         {
-            return _reader.AttributeCount; 
+            return _reader.AttributeCount;
         }
-        
-        [ContextMethod("ЛокальноеИмяАтрибута","AttributeLocalName")]
-	    public string AttributeLocalName(int index)
+
+        [ContextMethod("ЛокальноеИмяАтрибута", "AttributeLocalName")]
+        public string AttributeLocalName(int index)
         {
             _reader.MoveToAttribute(index);
             var name = _reader.LocalName;
@@ -309,15 +316,15 @@ namespace ScriptEngine.HostedScript.Library
 
             return name;
         }
-        
+
         [ContextMethod("ПервоеОбъявление", "FirstDeclaration")]
         public bool FirstDeclaration()
         {
             throw new NotImplementedException();
         }
-            
-        [ContextMethod("ПервыйАтрибут","FirstAttribute")]
-	    public bool FirstAttribute()
+
+        [ContextMethod("ПервыйАтрибут", "FirstAttribute")]
+        public bool FirstAttribute()
         {
             return _reader.MoveToFirstAttribute();
         }
@@ -384,8 +391,9 @@ namespace ScriptEngine.HostedScript.Library
         public IValue MoveToContent()
         {
             return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.MoveToContent());
-        }
+        } 
 
+        #endregion
 
         public void Dispose()
         {
@@ -395,5 +403,12 @@ namespace ScriptEngine.HostedScript.Library
                 _reader = null;
             }
         }
+
+        [ScriptConstructor]
+        public static IRuntimeContextInstance Create()
+        {
+            return new XmlReaderImpl();
+        }
+
     }
 }
