@@ -276,7 +276,8 @@ namespace ScriptEngine.Machine.Library
             if(wait)
             {
                 p.WaitForExit();
-                retCode.Value = ValueFactory.Create(p.ExitCode);
+                if(retCode != null)
+                    retCode.Value = ValueFactory.Create(p.ExitCode);
             }
 
         }

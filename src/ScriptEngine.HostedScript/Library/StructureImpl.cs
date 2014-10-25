@@ -37,7 +37,7 @@ namespace ScriptEngine.Machine.Library
         }
 
         [ContextMethod("Вставить", "Insert")]
-        public void Insert(string name, IValue val)
+        public void Insert(string name, IValue val = null)
         {
             var num = RegisterProperty(name);
             if (num == _values.Count)
