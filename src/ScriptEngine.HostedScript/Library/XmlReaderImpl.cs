@@ -20,8 +20,7 @@ namespace ScriptEngine.HostedScript.Library
             if (_reader != null)
                 throw new RuntimeException("Поток XML уже открыт");
             var textInput = new StreamReader(path);
-            _reader = new XmlTextReader(textInput);
-            _reader.WhitespaceHandling = WhitespaceHandling.Significant;
+            InitReader(textInput);
         }
 
         [ContextMethod("УстановитьСтроку", "SetString")]
@@ -31,6 +30,11 @@ namespace ScriptEngine.HostedScript.Library
                 throw new RuntimeException("Поток XML уже открыт");
 
             var textInput = new StringReader(content);
+            InitReader(textInput);
+        }
+
+        private void InitReader(TextReader textInput)
+        {
             _reader = new XmlTextReader(textInput);
             _reader.WhitespaceHandling = WhitespaceHandling.Significant;
         }
