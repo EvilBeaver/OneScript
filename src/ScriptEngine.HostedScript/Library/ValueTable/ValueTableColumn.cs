@@ -24,6 +24,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         public ValueTableColumn(ValueTableColumnCollection Owner, int id, string Name, string Title, IValue Type, int Width)
         {
             _name = Name;
+            _title = Title;
+            _valueType = Type;
+            _width = Width;
+
             _owner = new WeakReference(Owner);
             _id = id;
 
@@ -37,9 +41,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextProperty("Заголовок", "Title")]
         public string Title
         {
-            get { return _title; }
-            set
-            { _title = value; }
+            get { return _title == null ? _name : _title; }
+            set { _title = value; }
         }
 
         [ContextProperty("Имя", "Name")]
@@ -51,6 +54,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 ValueTableColumnCollection Owner = _owner.Target as ValueTableColumnCollection;
                 if (Owner.FindColumnByName(value) != null)
                     throw new RuntimeException("Неверное имя колонки!");
+
+                if (_title == _name)
+                    _title = value;
 
                 _name = value;
 

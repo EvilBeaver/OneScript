@@ -24,15 +24,61 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Owner.Columns.Count();
         }
 
+        [ContextMethod("Владелец", "Owner")]
+        public ValueTable Owner()
+        {
+            return _owner.Target as ValueTable;
+        }
+
+        private IValue TryValue(ValueTableColumn Column)
+        {
+            IValue Value;
+            if (_data.TryGetValue(Column, out Value))
+                return Value;
+            return ValueFactory.Create(); // TODO: Определять пустое значение для типа колонки
+        }
+
+        [ContextMethod("Получить", "Get")]
+        public IValue Get(int index)
+        {
+            var C = Owner().Columns.FindColumnByIndex(index);
+            return TryValue(C);
+        }
+
+        public IValue Get(IValue index)
+        {
+            var C = Owner().Columns.GetColumnByIIndex(index);
+            return TryValue(C);
+        }
+
+        public IValue Get(ValueTableColumn C)
+        {
+            return TryValue(C);
+        }
+
+        [ContextMethod("Установить", "Set")]
+        public void Set(int index, IValue Value)
+        {
+            var C = Owner().Columns.FindColumnByIndex(index);
+            _data[C] = Value;
+        }
+
+        public void Set(IValue index, IValue Value)
+        {
+            var C = Owner().Columns.GetColumnByIIndex(index);
+            _data[C] = Value;
+        }
+
+        public void Set(ValueTableColumn Column, IValue Value)
+        {
+            _data[Column] = Value;
+        }
+
         public IEnumerator<IValue> GetEnumerator()
         {
-            var Owner = _owner.Target as ValueTable;
-            foreach (var item in Owner.Columns)
+            foreach (ValueTableColumn item in Owner().Columns)
             {
-                IValue Value;
-                if (!_data.TryGetValue(item, out Value))
-                    Value = ValueFactory.Create(); // TODO: Определять пустое значение для типа колонки
-                yield return item;
+                yield return TryValue(item);
             }
         }
 
@@ -48,8 +94,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public override int FindProperty(string name)
         {
-            ValueTable Owner = _owner.Target as ValueTable;
-            ValueTableColumn C = Owner.Columns.FindColumnByName(name);
+            ValueTableColumn C = Owner().Columns.FindColumnByName(name);
             
             if (C == null)
                 throw RuntimeException.PropNotFoundException(name);
@@ -59,43 +104,69 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public override IValue GetPropValue(int propNum)
         {
-            ValueTable Owner = _owner.Target as ValueTable;
-            ValueTableColumn C = Owner.Columns.FindColumnById(propNum);
-            
-            IValue Value;
-            if (_data.TryGetValue(C, out Value))
-                return Value;
-
-            return ValueFactory.Create(); // TODO: Определять пустое значение по типу колонки
+            ValueTableColumn C = Owner().Columns.FindColumnById(propNum);
+            return TryValue(C);
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
         {
-            ValueTable Owner = _owner.Target as ValueTable;
-            ValueTableColumn C = Owner.Columns.FindColumnById(propNum);
+            ValueTableColumn C = Owner().Columns.FindColumnById(propNum);
             _data[C] = newVal;
         }
 
         private ValueTableColumn GetColumnByIIndex(IValue index)
         {
-            ValueTable Owner = _owner.Target as ValueTable;
-            return Owner.Columns.GetColumnByIIndex(index);
+            return Owner().Columns.GetColumnByIIndex(index);
         }
 
         public override IValue GetIndexedValue(IValue index)
         {
             ValueTableColumn C = GetColumnByIIndex(index);
-
-            IValue Value;
-            if (_data.TryGetValue(C, out Value))
-                return Value;
-
-            return ValueFactory.Create(); // TODO: Определять пустое значение по типу колонки
+            return TryValue(C);
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
             _data[GetColumnByIIndex(index)] = val;
+        }
+
+
+        private static ContextMethodsMapper<ValueTableRow> _methods = new ContextMethodsMapper<ValueTableRow>();
+
+        public override MethodInfo GetMethodInfo(int methodNumber)
+        {
+            return _methods.GetMethodInfo(methodNumber);
+        }
+
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        {
+            var binding = _methods.GetMethod(methodNumber);
+            try
+            {
+                binding(this, arguments);
+            }
+            catch (System.Reflection.TargetInvocationException e)
+            {
+                throw e.InnerException;
+            }
+        }
+
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        {
+            var binding = _methods.GetMethod(methodNumber);
+            try
+            {
+                retValue = binding(this, arguments);
+            }
+            catch (System.Reflection.TargetInvocationException e)
+            {
+                throw e.InnerException;
+            }
+        }
+
+        public override int FindMethod(string name)
+        {
+            return _methods.FindMethod(name);
         }
     }
 }

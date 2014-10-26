@@ -139,6 +139,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 return C;
             }
 
+            if (index is ValueTableColumn) {
+                return index as ValueTableColumn;
+            }
+
             throw RuntimeException.InvalidArgumentType();
         }
 
