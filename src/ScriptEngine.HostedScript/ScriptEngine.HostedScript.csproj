@@ -73,6 +73,10 @@
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Library\TextWriteImpl.cs" />
+    <Compile Include="Library\ValueTable\ValueTable.cs" />
+    <Compile Include="Library\ValueTable\ValueTableColumn.cs" />
+    <Compile Include="Library\ValueTable\ValueTableColumnCollection.cs" />
+    <Compile Include="Library\ValueTable\ValueTableRow.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\ScriptInformationContext.cs" />
@@ -84,6 +88,7 @@
       <Name>ScriptEngine</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>cscript "$(SolutionDir)versionInc.js" "$(ProjectDir)Properties\AssemblyInfo.cs" 1.0.*.+</PreBuildEvent>
