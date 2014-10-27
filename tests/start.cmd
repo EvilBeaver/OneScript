@@ -1,8 +1,13 @@
 @echo off
 
-pushd %~dp0
-"..\install\built\oscript.exe" %CD%\start.os %1 %2 %3 %4 %5
-popd
+setlocal
+set pathdir=%~dp0
+
+rem echo сами тесты %CD%
+rem echo скрипты тестирования %pathdir%
+echo "%pathdir%\..\install\built\oscript.exe" %pathdir%\start.os -run %1 %2 %3 %4 %5
+
+"%pathdir%\..\install\built\oscript.exe" %pathdir%\start.os -run %1 %2 %3 %4 %5
 
 rem echo %ERRORLEVEL%
 if NOT %ERRORLEVEL%==0 GOTO bad_exit
