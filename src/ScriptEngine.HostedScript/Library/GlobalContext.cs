@@ -364,6 +364,25 @@ namespace ScriptEngine.Machine.Library
         }
 
         /// <summary>
+        /// Получить текущий каталог
+        /// </summary>
+        [ContextMethod("ТекущийКаталог", "CurrentDirectory")]
+        public string CurrentDirectory()
+        {
+            return System.IO.Directory.GetCurrentDirectory();
+        }
+
+        /// <summary>
+        /// Получить текущий каталог
+        /// </summary>
+        /// <param name="path">Имя нового текущего каталога</param>
+        [ContextMethod("УстановитьТекущийКаталог", "SetCurrentDirectory")]
+        public void SetCurrentDirectory(string path)
+        {
+            System.IO.Directory.SetCurrentDirectory(path);
+        }
+
+        /// <summary>
         /// Текущая дата машины
         /// </summary>
         /// <returns>Дата</returns>
