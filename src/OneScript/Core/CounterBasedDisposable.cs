@@ -20,7 +20,13 @@ namespace OneScript.Core
             if(count == 0)
             {
                 if (BeforeDisposal != null)
-                    BeforeDisposal(this, new EventArgs());
+                {
+                    lock (BeforeDisposal)
+                    {
+                        if (BeforeDisposal != null)
+                            BeforeDisposal(this, new EventArgs());
+                    }
+                }
             }
 
             return count;
