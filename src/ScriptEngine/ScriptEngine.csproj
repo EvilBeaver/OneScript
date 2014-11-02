@@ -85,15 +85,18 @@
     <Compile Include="Machine\Contexts\EnumerationContext.cs" />
     <Compile Include="Machine\Contexts\EnumerationValue.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
-    <Compile Include="Machine\Contexts\SelfAwareEnumValue.cs" />
     <Compile Include="Machine\Contexts\ReflectableSDO.cs" />
     <Compile Include="Machine\Contexts\ReflectedMethodInfo.cs" />
     <Compile Include="Machine\Contexts\ReflectedParamInfo.cs" />
     <Compile Include="Machine\Contexts\ReflectedPropertyInfo.cs" />
     <Compile Include="Machine\Contexts\SafeArrayWrapper.cs" />
     <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
+    <Compile Include="Machine\CounterBasedLifetimeService.cs" />
     <Compile Include="Machine\GenericIValueComparer.cs" />
+    <Compile Include="Machine\IRefCountable.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
+    <Compile Include="Machine\SimpleConstantValue.cs" />
+    <Compile Include="Machine\StringConstantValue.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />
     <Compile Include="Machine\Contexts\AutoContext.cs" />
@@ -117,7 +120,6 @@
     <Compile Include="Machine\BuiltinFunctions.cs" />
     <Compile Include="Machine\Core.cs" />
     <Compile Include="Machine\ExecutionFrame.cs" />
-    <Compile Include="Machine\GenericValue.cs" />
     <Compile Include="Machine\IAttachableContext.cs" />
     <Compile Include="Machine\IRuntimeContextInstance.cs" />
     <Compile Include="Machine\IValue.cs" />
