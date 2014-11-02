@@ -108,6 +108,19 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
+        // перечислители коллекций недоступны из языка
+        // поэтому, подсчет ссылок для них не нужен
+
+        public int AddRef()
+        {
+            return 1;
+        }
+
+        public int Release()
+        {
+            return 1;
+        }
+
         #endregion
 
         #region IComparable<IValue> Members

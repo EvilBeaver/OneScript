@@ -95,5 +95,18 @@ namespace ScriptEngine.Machine
         }
 
         #endregion
+        
+        #region IRefCountable Members
+
+        public int AddRef()
+        {
+            return 1;
+        }
+
+        public int Release()
+        {
+            return 1;
+        } 
+        #endregion
     }
 }

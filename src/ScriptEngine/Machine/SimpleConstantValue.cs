@@ -119,6 +119,16 @@ namespace ScriptEngine.Machine
             return AsString();
         }
 
+        public int AddRef()
+        {
+            return 1;
+        }
+
+        public int Release()
+        {
+            return 1;
+        }
+
         //////////////////////////////////////////////////
         #region Static factory methods
 
@@ -193,5 +203,6 @@ namespace ScriptEngine.Machine
         }
 
         #endregion
+
     }
 }

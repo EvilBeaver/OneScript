@@ -8,6 +8,12 @@ namespace ScriptEngine.Machine
     public class CounterBasedLifetimeService : IRefCountable
     {
         int _refCount = 0;
+        Action _releaseAction;
+
+        public CounterBasedLifetimeService(Action releaseAction)
+        {
+            _releaseAction = releaseAction;
+        }
 
         public int AddRef()
         {
@@ -19,14 +25,11 @@ namespace ScriptEngine.Machine
             int count = System.Threading.Interlocked.Decrement(ref _refCount);
             if(count == 0)
             {
-                if (BeforeDisposal != null)
-                    BeforeDisposal(this, new EventArgs());
+                _releaseAction();
             }
 
             return count;
         }
-
-        public event EventHandler BeforeDisposal;
 
     }
 }

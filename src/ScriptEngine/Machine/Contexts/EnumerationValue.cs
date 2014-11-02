@@ -97,5 +97,15 @@ namespace ScriptEngine.Machine.Contexts
         {
             return other == this;
         }
+
+        public int AddRef()
+        {
+            return 1;
+        }
+
+        public int Release()
+        {
+            return 1;
+        } 
     }
 }

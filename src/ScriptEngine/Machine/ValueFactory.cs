@@ -177,6 +177,16 @@ namespace ScriptEngine.Machine
             }
 
             #endregion
+
+            public int AddRef()
+            {
+                return 1;
+            }
+
+            public int Release()
+            {
+                return 1;
+            }
         }
 
     }

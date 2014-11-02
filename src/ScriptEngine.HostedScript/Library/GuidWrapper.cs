@@ -99,5 +99,15 @@ namespace ScriptEngine.HostedScript.Library
             else
                 return _value.Equals(otherUuid._value);
         }
+
+        public int AddRef()
+        {
+            return 1;
+        }
+
+        public int Release()
+        {
+            return 1;
+        }
     }
 }

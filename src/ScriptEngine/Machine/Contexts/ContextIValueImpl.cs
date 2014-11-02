@@ -8,6 +8,7 @@ namespace ScriptEngine.Machine.Contexts
     public abstract class ContextIValueImpl : IRuntimeContextInstance, IValue
     {
         private TypeDescriptor _type;
+        private CounterBasedLifetimeService _refCounter;
 
         public ContextIValueImpl()
         {
@@ -19,16 +20,29 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw new InvalidOperationException("Type is not defined");
             }
+
+            InitCounter();
         }
 
         public ContextIValueImpl(TypeDescriptor type)
         {
             DefineType(type);
+            InitCounter();
         }
 
         protected void DefineType(TypeDescriptor type)
         {
             _type = type;
+        }
+
+        protected virtual void OnZeroCounter()
+        {
+
+        }
+
+        private void InitCounter()
+        {
+            _refCounter = new CounterBasedLifetimeService(OnZeroCounter);
         }
 
         public override string ToString()
@@ -182,6 +196,20 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw new NotImplementedException();
         }
+
+        #endregion
+
+        #region IRefCountable Members
+
+        public int AddRef()
+        {
+            return _refCounter.AddRef();
+        }
+
+        public int Release()
+        {
+            return _refCounter.Release();
+        } 
 
         #endregion
     }

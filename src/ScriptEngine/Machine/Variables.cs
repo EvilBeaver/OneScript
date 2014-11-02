@@ -56,6 +56,8 @@ namespace ScriptEngine.Machine
             }
             set
             {
+                _val.Release();
+                value.AddRef();
                 _val = value;
             }
         }
@@ -128,6 +130,16 @@ namespace ScriptEngine.Machine
         }
 
         #endregion
+
+        public int AddRef()
+        {
+            return _val.AddRef();
+        }
+
+        public int Release()
+        {
+            return _val.Release();
+        }
 
         #region Reference
 
@@ -244,6 +256,20 @@ namespace ScriptEngine.Machine
 
             #endregion
 
+            #region IRefCountable Members
+
+            public int AddRef()
+            {
+                throw new NotImplementedException();
+            }
+
+            public int Release()
+            {
+                throw new NotImplementedException();
+            } 
+
+            #endregion
+
             #region IComparable<IValue> Members
 
             public int CompareTo(IValue other)
@@ -291,6 +317,7 @@ namespace ScriptEngine.Machine
         }
 
         #endregion
+
     }
 
 }

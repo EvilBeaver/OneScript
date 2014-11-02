@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    public interface IValue : IComparable<IValue>, IEquatable<IValue>
+    public interface IValue : IComparable<IValue>, IEquatable<IValue>, IRefCountable
     {
         DataType DataType { get; }
         TypeDescriptor SystemType { get; }

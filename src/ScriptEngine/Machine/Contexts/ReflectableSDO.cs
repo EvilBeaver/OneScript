@@ -343,6 +343,16 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         #endregion
+
+        public int AddRef()
+        {
+            return _instance.AddRef();
+        }
+
+        public int Release()
+        {
+            return _instance.Release();
+        }
     }
 
 }
