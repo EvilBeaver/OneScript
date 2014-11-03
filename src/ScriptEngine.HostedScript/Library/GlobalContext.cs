@@ -392,6 +392,32 @@ namespace ScriptEngine.Machine.Library
             return DateTime.Now;
         }
 
+        [ContextMethod("ЗначениеЗаполнено","IsValueFilled")]
+        public bool IsValueFilled(IValue value)
+        {
+            if (value.DataType == DataType.Undefined)
+                return false;
+            else if (value.DataType == DataType.Boolean)
+                return true;
+            else if (value.DataType == DataType.String)
+                return !String.IsNullOrWhiteSpace(value.AsString());
+            else if (value.DataType == DataType.Number)
+                return value.AsNumber() == 0;
+            else if (value.DataType == DataType.Date)
+            {
+                var emptyDate = new DateTime(1, 1, 1, 0, 0, 0);
+                return value.AsDate() != emptyDate;
+            }
+            else if (value.GetRawValue() is ICollectionContext)
+            {
+                var col = value.GetRawValue() as ICollectionContext;
+                return col.Count() != 0;
+            }
+            else
+                return true;
+            
+        }
+
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
