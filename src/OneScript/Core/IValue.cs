@@ -5,10 +5,10 @@ using System.Text;
 
 namespace OneScript.Core
 {
-    public interface IValue : IEquatable<IValue>, IComparable<IValue>
+    public interface IValue : IEquatable<IValue>, IComparable<IValue>, IRefCountable
     {
         DataType Type { get; }
-        double AsNumber();
+        decimal AsNumber();
         string AsString();
         DateTime AsDate();
         bool AsBoolean();

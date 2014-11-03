@@ -28,32 +28,6 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
-        public void Variable_Changes_Reference_Counter()
-        {
-            var counted = new RefCounter();
-            bool disposed = false;
-            IValue undefined = ValueFactory.Create();
-
-            Variable v1 = new Variable(counted); // first increment
-            Variable v2 = new Variable();
-
-            counted.BeforeDisposal += (s, e) =>
-                {
-                    disposed = true;
-                };
-
-            Assert.AreNotEqual(v1, v2);
-
-            v2.Value = counted; // second increment
-
-            v1.Value = undefined; // release
-            Assert.IsFalse(disposed);
-            v2.Value = undefined; // release
-            Assert.IsTrue(disposed);
-
-        }
-
-        [TestMethod]
         public void Change_Value_By_Reference()
         {
             var v = new Variable(ValueFactory.Create(123));
@@ -100,49 +74,6 @@ namespace OneScript.Tests
             reference.Value = ValueFactory.Create(true);
 
             Assert.IsTrue(((ImportedMembersClass)ctx).BooleanExplicitName == true);
-        }
-
-        class RefCounter : CounterBasedLifetimeService, IValue
-        {
-            public DataType Type
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public double AsNumber()
-            {
-                throw new NotImplementedException();
-            }
-
-            public string AsString()
-            {
-                throw new NotImplementedException();
-            }
-
-            public DateTime AsDate()
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool AsBoolean()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IRuntimeContextInstance AsObject()
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool Equals(IValue other)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int CompareTo(IValue other)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

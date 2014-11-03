@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Core
 {
-    class TypeTypeValue : IValue
+    class TypeTypeValue : GenericValue
     {
 
         public TypeTypeValue(DataType type)
@@ -15,42 +15,22 @@ namespace OneScript.Core
 
         public DataType ReferencedType { get; private set; }
 
-        public DataType Type
+        public override DataType Type
         {
             get { return BasicTypes.Type; }
         }
 
-        public double AsNumber()
-        {
-            throw TypeConversionException.ConvertToNumberException();
-        }
-
-        public string AsString()
+        public override string AsString()
         {
             return ReferencedType.ToString();
         }
 
-        public DateTime AsDate()
-        {
-            throw TypeConversionException.ConvertToDateException();
-        }
-
-        public bool AsBoolean()
-        {
-            throw TypeConversionException.ConvertToBooleanException();
-        }
-
-        public IRuntimeContextInstance AsObject()
-        {
-            throw TypeConversionException.ConvertToObjectException();
-        }
-
-        public bool Equals(IValue other)
+        public override bool Equals(IValue other)
         {
             if (other.Type == this.Type)
             {
                 var ttv = (TypeTypeValue)other;
-                return ttv.ReferencedType == this.ReferencedType;
+                return ttv.ReferencedType.Equals(this.ReferencedType);
             }
             else
             {
@@ -58,17 +38,10 @@ namespace OneScript.Core
             }
         }
 
-        public int CompareTo(IValue other)
+        protected override int CompareSameType(IValue other)
         {
             var ttv = other as TypeTypeValue;
-            if (ttv != null)
-            {
-                return this.ReferencedType.CompareTo(ttv.ReferencedType);
-            }
-            else
-            {
-                return this.Type.CompareTo(other.Type);
-            }
+            return this.ReferencedType.CompareTo(ttv.ReferencedType);
         }
     }
 }

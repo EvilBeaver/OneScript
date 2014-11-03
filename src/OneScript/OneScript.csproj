@@ -33,10 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -52,22 +49,24 @@
     <Compile Include="ComponentModel\ImportedClassAttribute.cs" />
     <Compile Include="ComponentModel\ContextMethodAttribute.cs" />
     <Compile Include="ComponentModel\ContextPropertyAttribute.cs" />
+    <Compile Include="Core\BooleanValue.cs" />
     <Compile Include="Core\ContextPropertyReference.cs" />
-    <Compile Include="Core\CounterBasedDisposable.cs" />
     <Compile Include="Core\DataType.cs" />
+    <Compile Include="Core\DateValue.cs" />
     <Compile Include="Core\EngineException.cs" />
     <Compile Include="Core\GenericValue.cs" />
     <Compile Include="Core\IRefCountable.cs" />
     <Compile Include="Core\IVariable.cs" />
+    <Compile Include="Core\NumericValue.cs" />
     <Compile Include="Core\Reference.cs" />
     <Compile Include="Core\SimpleReference.cs" />
-    <Compile Include="Core\StringConstantValue.cs" />
+    <Compile Include="Core\StringValue.cs" />
     <Compile Include="Core\IRuntimeContextInstance.cs" />
     <Compile Include="Core\IValue.cs" />
-    <Compile Include="Core\SimpleConstantValue.cs" />
     <Compile Include="Core\TypeId.cs" />
     <Compile Include="Core\TypeManager.cs" />
     <Compile Include="Core\TypeTypeValue.cs" />
+    <Compile Include="Core\UndefinedValue.cs" />
     <Compile Include="Core\ValueMarshaler.cs" />
     <Compile Include="Core\Variable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

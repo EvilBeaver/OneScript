@@ -9,32 +9,37 @@ namespace OneScript.Core
     {
         public static IValue Create()
         {
-            return SimpleConstantValue.Undefined();
+            return UndefinedValue.Instance;
         }
 
         public static IValue Create(string value)
         {
-            return new StringConstantValue(value);
+            return new StringValue(value);
         }
 
         public static IValue Create(bool value)
         {
-            return SimpleConstantValue.Boolean(value);
+            return new BooleanValue(value);
         }
 
         public static IValue Create(double value)
         {
-            return SimpleConstantValue.Number(value);
+            return new NumericValue((decimal)value);
+        }
+
+        public static IValue Create(int value)
+        {
+            return new NumericValue((int)value);
+        }
+
+        public static IValue Create(decimal value)
+        {
+            return new NumericValue(value);
         }
 
         public static IValue Create(DateTime value)
         {
-            return SimpleConstantValue.DateTime(value);
-        }
-
-        public static IValue Create(IRuntimeContextInstance instance)
-        {
-            return (IValue)instance;
+            return new DateValue(value);
         }
 
         public static IValue Create(DataType value)

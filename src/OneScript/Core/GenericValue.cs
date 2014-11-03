@@ -7,22 +7,9 @@ namespace OneScript.Core
 {
     abstract public class GenericValue : IValue
     {
-        private DataType _typeImpl;
-
-        public override string ToString()
-        {
-            return _typeImpl != null ? _typeImpl.ToString() : base.ToString();
-        }
-
         public virtual DataType Type
         {
-            get { return _typeImpl; }
-            protected set { _typeImpl = value; }
-        }
-
-        public virtual double AsNumber()
-        {
-            throw TypeConversionException.ConvertToNumberException();
+            get { throw new NotImplementedException(); }
         }
 
         public virtual string AsString()
@@ -33,6 +20,11 @@ namespace OneScript.Core
         public virtual DateTime AsDate()
         {
             throw TypeConversionException.ConvertToDateException();
+        }
+
+        public virtual decimal AsNumber()
+        {
+            throw TypeConversionException.ConvertToNumberException();
         }
 
         public virtual bool AsBoolean()
@@ -57,29 +49,32 @@ namespace OneScript.Core
         {
             if (other == null)
             {
-                return _typeImpl == null ? 0 : 1;
+                return 1;
             }
 
-            if (_typeImpl != null)
+            if (this.Type == other.Type)
             {
-                if (_typeImpl == other.Type)
-                {
-                    return CompareSameType(other);
-                }
-                else
-                {
-                    return _typeImpl.CompareTo(other.Type);
-                }
+                return CompareSameType(other);
             }
             else
             {
-                return -1;
+                throw TypeConversionException.ComparisonIsNotSupportedException();
             }
         }
 
         protected virtual int CompareSameType(IValue other)
         {
             return this.GetHashCode() - other.GetHashCode();
+        }
+
+        public virtual int AddRef()
+        {
+            return 1;
+        }
+
+        public virtual int Release()
+        {
+            return 1;
         }
     }
 }
