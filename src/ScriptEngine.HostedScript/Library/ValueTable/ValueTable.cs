@@ -54,33 +54,33 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         }
 
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue row)
+        public void Delete(IValue Row)
         {
-
+            IValue Raw = Row.GetRawValue();
             int index;
-            if (row is ValueTableRow)
+            if (Raw is ValueTableRow)
             {
                 // TODO: Проверить индекс
-                index = _rows.IndexOf(row as ValueTableRow);
+                index = _rows.IndexOf(Raw as ValueTableRow);
             }
             else
             {
                 // TODO: Переполнение int32
-                index = Decimal.ToInt32(row.AsNumber());
+                index = Decimal.ToInt32(Raw.AsNumber());
             }
             _rows.RemoveAt(index);
         }
 
         [ContextMethod("ЗагрузитьКолонку", "LoadColumn")]
-        public void LoadColumn(IValue Values, IValue Column)
+        public void LoadColumn(IValue Values, IValue ColumnIndex)
         {
-            ValueTableColumn C = Columns.GetColumnByIIndex(Column);
+            ValueTableColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
             var row_iterator = _rows.GetEnumerator();
             var array_iterator = (Values as ArrayImpl).GetEnumerator();
 
             while (row_iterator.MoveNext() && array_iterator.MoveNext())
             {
-                row_iterator.Current.Set(Column, array_iterator.Current);
+                row_iterator.Current.Set(ColumnIndex, array_iterator.Current);
             }
         }
 
@@ -105,18 +105,18 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 string[] column_names = ColumnNames.Split(',');
                 foreach (string name in column_names)
                 {
-                    ValueTableColumn C = Columns.FindColumnByName(name.Trim());
+                    ValueTableColumn Column = Columns.FindColumnByName(name.Trim());
 
-                    if (C == null)
+                    if (Column == null)
                         throw RuntimeException.PropNotFoundException(name.Trim());
 
-                    processing_list.Add(C);
+                    processing_list.Add(Column);
                 }
             }
             else
             {
-                foreach (ValueTableColumn C in _columns)
-                    processing_list.Add(C);
+                foreach (ValueTableColumn Column in _columns)
+                    processing_list.Add(Column);
             }
             return processing_list;
         }
@@ -135,24 +135,26 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         }
 
         [ContextMethod("Индекс", "IndexOf")]
-        public int IndexOf(IValue row)
+        public int IndexOf(IValue Row)
         {
-            if (row is ValueTableRow)
-                return _rows.IndexOf(row as ValueTableRow);
+            IValue Raw = Row.GetRawValue();
+
+            if (Raw is ValueTableRow)
+                return _rows.IndexOf(Raw as ValueTableRow);
 
             return -1;
         }
 
         [ContextMethod("Итог", "Total")]
-        public IValue Total(IValue Column)
+        public IValue Total(IValue ColumnIndex)
         {
-            ValueTableColumn C = Columns.GetColumnByIIndex(Column);
+            ValueTableColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
             bool has_data = false;
             decimal Result = 0;
 
             foreach (ValueTableRow row in _rows)
             {
-                IValue current_value = row.Get(C);
+                IValue current_value = row.Get(Column);
                 if (current_value.DataType == Machine.DataType.Number)
                 {
                     has_data = true;
@@ -186,11 +188,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
             foreach (KeyAndValueImpl kv in Filter)
             {
-                ValueTableColumn C = Columns.FindColumnByName(kv.Key.AsString());
-                if (C == null)
+                ValueTableColumn Column = Columns.FindColumnByName(kv.Key.AsString());
+                if (Column == null)
                     throw RuntimeException.PropNotFoundException(kv.Key.AsString());
 
-                IValue current = Row.Get(C);
+                IValue current = Row.Get(Column);
                 if (!current.Equals(kv.Value))
                     return false;
             }
@@ -234,8 +236,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             // TODO: Сворачиваем за N^2. Переделать на N*log(N)
 
-            List<ValueTableColumn> group_columns = GetProcessingColumnList(GroupColumnNames);
-            List<ValueTableColumn> agg_columns = GetProcessingColumnList(AggregateColumnNames);
+            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(GroupColumnNames);
+            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(AggregateColumnNames);
 
             List<ValueTableRow> new_rows = new List<ValueTableRow>();
 
@@ -244,8 +246,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
                 StructureImpl search = new StructureImpl();
 
-                foreach (ValueTableColumn C in group_columns)
-                    search.Insert(C.Name, row.Get(C));
+                foreach (ValueTableColumn Column in GroupColumns)
+                    search.Insert(Column.Name, row.Get(Column));
 
                 ValueTableRow new_row = null;
 
@@ -261,15 +263,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 if (new_row == null)
                 {
                     new_row = new ValueTableRow(this);
-                    foreach (ValueTableColumn C in group_columns)
-                        new_row.Set(C, row.Get(C));
+                    foreach (ValueTableColumn Column in GroupColumns)
+                        new_row.Set(Column, row.Get(Column));
 
                     new_rows.Add(new_row);
                 }
 
-                foreach (ValueTableColumn C in agg_columns)
+                foreach (ValueTableColumn Column in AggregateColumns)
                 {
-                    IValue old = new_row.Get(C);
+                    IValue old = new_row.Get(Column);
                     decimal d_old;
 
                     if (old.DataType != Machine.DataType.Number)
@@ -277,7 +279,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                     else
                         d_old = old.AsNumber();
 
-                    IValue current = row.Get(C);
+                    IValue current = row.Get(Column);
                     decimal d_current;
 
                     if (current.DataType != Machine.DataType.Number)
@@ -285,7 +287,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                     else
                         d_current = current.AsNumber();
 
-                    new_row.Set(C, ValueFactory.Create(d_old + d_current));
+                    new_row.Set(Column, ValueFactory.Create(d_old + d_current));
                 }
 
             }
@@ -299,11 +301,13 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(IValue Row, int Offset)
         {
+            IValue Raw = Row.GetRawValue();
+
             int index_source;
-            if (Row is ValueTableRow)
-                index_source = _rows.IndexOf(Row as ValueTableRow);
-            else if (Row.DataType == Machine.DataType.Number)
-                index_source = decimal.ToInt32(Row.AsNumber());
+            if (Raw is ValueTableRow)
+                index_source = _rows.IndexOf(Raw as ValueTableRow);
+            else if (Raw.DataType == Machine.DataType.Number)
+                index_source = decimal.ToInt32(Raw.AsNumber());
             else
                 throw RuntimeException.InvalidArgumentType();
 
@@ -321,9 +325,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             List<ValueTableColumn> columns = GetProcessingColumnList(ColumnNames);
 
-            foreach (ValueTableColumn C in columns)
+            foreach (ValueTableColumn Column in columns)
             {
-                Result.Columns.Add(C.Name, C.ValueType, C.Title); // TODO: Доработать после увеличения предела количества параметров
+                Result.Columns.Add(Column.Name, Column.ValueType, Column.Title); // TODO: Доработать после увеличения предела количества параметров
             }
 
             return Result;
@@ -342,9 +346,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 foreach (ValueTableRow row in _rows)
                 {
                     ValueTableRow new_row = Result.Add();
-                    foreach (ValueTableColumn C in columns)
+                    foreach (ValueTableColumn Column in columns)
                     {
-                        new_row.Set(ValueFactory.Create(C.Name), row.Get(C));
+                        new_row.Set(ValueFactory.Create(Column.Name), row.Get(Column));
                     }
                 }
             }
@@ -356,9 +360,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                     ValueTableRow row = irow as ValueTableRow;
 
                     ValueTableRow new_row = Result.Add();
-                    foreach (ValueTableColumn C in columns)
+                    foreach (ValueTableColumn Column in columns)
                     {
-                        new_row.Set(ValueFactory.Create(C.Name), row.Get(C));
+                        new_row.Set(ValueFactory.Create(Column.Name), row.Get(Column));
                     }
                 }
             }

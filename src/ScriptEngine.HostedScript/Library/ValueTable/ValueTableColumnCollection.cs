@@ -62,10 +62,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Найти", "Find")]
         public IValue Find(string Name)
         {
-            var column = FindColumnByName(Name);
-            if (column == null)
+            ValueTableColumn Column = FindColumnByName(Name);
+            if (Column == null)
                 return ValueFactory.Create();
-            return column;
+            return Column;
         }
 
         public ValueTableColumn FindColumnByName(string Name)
@@ -103,10 +103,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public override int FindProperty(string name)
         {
-            ValueTableColumn C = FindColumnByName(name);
-            if (C == null)
+            ValueTableColumn Column = FindColumnByName(name);
+            if (Column == null)
                 throw RuntimeException.PropNotFoundException(name);
-            return C.ID;
+            return Column.ID;
         }
 
         public override IValue GetPropValue(int propNum)
@@ -123,10 +123,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
             if (index.DataType == DataType.String)
             {
-                ValueTableColumn C = FindColumnByName(index.AsString());
-                if (C == null)
+                ValueTableColumn Column = FindColumnByName(index.AsString());
+                if (Column == null)
                     throw RuntimeException.PropNotFoundException(index.AsString());
-                return C;
+                return Column;
             }
 
             if (index.DataType == DataType.Number)
@@ -135,8 +135,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 if (i_index < 0 || i_index >= Count())
                     throw RuntimeException.InvalidArgumentValue();
 
-                ValueTableColumn C = FindColumnByIndex(i_index);
-                return C;
+                ValueTableColumn Column = FindColumnByIndex(i_index);
+                return Column;
             }
 
             if (index is ValueTableColumn) {
