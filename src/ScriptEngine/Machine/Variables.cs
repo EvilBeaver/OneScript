@@ -23,6 +23,7 @@ namespace ScriptEngine.Machine
 
         public static IVariable Create(IValue val)
         {
+            val.AddRef();
             return new Variable()
             {
                 _val = val
@@ -189,17 +190,27 @@ namespace ScriptEngine.Machine
                 {
                     if (_refType == ReferenceType.Simple)
                     {
+                        _referencedValue.Value.Release();
+                        AcquireValue(value);
                         _referencedValue.Value = value;
                     }
                     else if (_refType == ReferenceType.ContextProperty)
                     {
-                        if(_context.IsPropWritable(_contextPropertyNumber))
+                        if (_context.IsPropWritable(_contextPropertyNumber))
+                        {
+                            var propValue = _context.GetPropValue(_contextPropertyNumber);
+                            ReleaseValue(propValue);
+                            AcquireValue(value);
                             _context.SetPropValue(_contextPropertyNumber, value);
+                        }
                         else
                             throw RuntimeException.PropIsNotWritableException("");
                     }
                     else
                     {
+                        var currentVal = _context.GetIndexedValue(_index);
+                        ReleaseValue(currentVal);
+                        AcquireValue(value);
                         _context.SetIndexedValue(_index, value);
                     }
                 }
@@ -260,12 +271,12 @@ namespace ScriptEngine.Machine
 
             public int AddRef()
             {
-                throw new NotImplementedException();
+                return Value.AddRef();
             }
 
             public int Release()
             {
-                throw new NotImplementedException();
+                return Value.Release();
             } 
 
             #endregion
@@ -288,8 +299,21 @@ namespace ScriptEngine.Machine
 
             #endregion
 
+            private static void AcquireValue(IValue value)
+            {
+                if (value != null)
+                    value.AddRef();
+            }
+
+            private static void ReleaseValue(IValue value)
+            {
+                if (value != null)
+                    value.Release();
+            }
+
             public static IVariable CreateSimpleReference(IVariable var)
             {
+                var.AddRef();
                 var newVar = new VariableReference();
                 newVar._refType = ReferenceType.Simple;
                 newVar._referencedValue = var;
@@ -298,6 +322,12 @@ namespace ScriptEngine.Machine
 
             public static IVariable CreateContextPropertyReference(IRuntimeContextInstance context, int propertyNumber)
             {
+                if(context.IsPropReadable(propertyNumber))
+                {
+                    var propValue = context.GetPropValue(propertyNumber);
+                    AcquireValue(propValue);
+                }
+
                 var newVar = new VariableReference();
                 newVar._refType = ReferenceType.ContextProperty;
                 newVar._context = context;
@@ -307,6 +337,13 @@ namespace ScriptEngine.Machine
 
             public static IVariable CreateIndexedPropertyReference(IRuntimeContextInstance context, IValue index)
             {
+                if (context.IsIndexed)
+                {
+                    var propValue = context.GetIndexedValue(index);
+                    AcquireValue(index);
+                    AcquireValue(propValue);
+                }
+
                 var newVar = new VariableReference();
                 newVar._refType = ReferenceType.IndexedProperty;
                 newVar._context = context;

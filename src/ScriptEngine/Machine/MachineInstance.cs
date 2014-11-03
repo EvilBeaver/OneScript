@@ -88,7 +88,7 @@ namespace ScriptEngine.Machine
             for (int i = 0; i < arguments.Length; i++)
             {
                 if (arguments[i] is IVariable)
-                    _currentFrame.Locals[i] = (IVariable)arguments[i];
+                    _currentFrame.Locals[i] = Variable.CreateReference((IVariable)arguments[i]);
                 else if(arguments[i] == null)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i));
                 else
@@ -123,6 +123,7 @@ namespace ScriptEngine.Machine
         {
             Reset();
             GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         private void PushState()
@@ -141,6 +142,7 @@ namespace ScriptEngine.Machine
             _callStack.Clear();
             _exceptionsStack.Clear();
             _operationStack.Clear();
+            _currentFrame = null;
         }
 
         private void StackToArray<T>(ref T[] destination, Stack<T> source)
@@ -202,16 +204,35 @@ namespace ScriptEngine.Machine
         {
             if(_currentFrame != null)
                 _callStack.Push(_currentFrame);
+
+            _currentFrame = null;
         }
 
         private void PopFrame()
         {
-            _currentFrame = _callStack.Pop();
+            if (_currentFrame != null)
+                DestroyFrame(_currentFrame);
+
+            SetFrame(_callStack.Pop());
         }
 
         private void SetFrame(ExecutionFrame frame)
         {
             _currentFrame = frame;
+        }
+
+        private void DestroyFrame(ExecutionFrame frame)
+        {
+            while(frame.LocalFrameStack.Count > 0)
+            {
+                var value = frame.LocalFrameStack.Pop();
+                value.Release();
+            }
+
+            for (int i = 0; i < frame.Locals.Length; i++)
+            {
+                frame.Locals[i].Release();
+            }
         }
 
         private bool DetachTopScope(out Scope topScope)
@@ -1052,6 +1073,8 @@ namespace ScriptEngine.Machine
         {
             if (_currentFrame.DiscardReturnValue)
                 _operationStack.Pop();
+            else
+                _operationStack.Peek().AddRef();
 
             while(_exceptionsStack.Count > 0 && _exceptionsStack.Peek().handlerFrame == _currentFrame)
             {
