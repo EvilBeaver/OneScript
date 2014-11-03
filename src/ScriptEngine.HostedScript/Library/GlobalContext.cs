@@ -402,7 +402,7 @@ namespace ScriptEngine.Machine.Library
             else if (value.DataType == DataType.String)
                 return !String.IsNullOrWhiteSpace(value.AsString());
             else if (value.DataType == DataType.Number)
-                return value.AsNumber() == 0;
+                return value.AsNumber() != 0;
             else if (value.DataType == DataType.Date)
             {
                 var emptyDate = new DateTime(1, 1, 1, 0, 0, 0);
