@@ -13,8 +13,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     {
         private ValueTableColumnCollection _columns = new ValueTableColumnCollection();
         private List<ValueTableRow> _rows = new List<ValueTableRow>();
-
-        // TODO: Индексы
+        private CollectionIndexes _indexes = new CollectionIndexes();
 
         public ValueTable()
         {
@@ -24,6 +23,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         public ValueTableColumnCollection Columns
         {
             get { return _columns; }
+        }
+
+        [ContextProperty("Индексы", "Indexes")]
+        public CollectionIndexes Indexes
+        {
+            get { return _indexes; }
         }
 
         [ContextMethod("Количество", "Count")]

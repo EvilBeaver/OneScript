@@ -73,6 +73,8 @@
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Library\TextWriteImpl.cs" />
+    <Compile Include="Library\ValueTable\CollectionIndexes.cs" />
+    <Compile Include="Library\ValueTable\ValueTableIndex.cs" />
     <Compile Include="Library\ValueTable\ValueTable.cs" />
     <Compile Include="Library\ValueTable\ValueTableColumn.cs" />
     <Compile Include="Library\ValueTable\ValueTableColumnCollection.cs" />
