@@ -361,8 +361,88 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Result;
         }
 
-        // TODO: Сортировать
-        // TODO(?): ВыбратьСтроку
+        private struct ValueTableSortRule
+        {
+            public ValueTableColumn Column;
+            public int direction; // 1 = asc, -1 = desc
+        }
+
+        private List<ValueTableSortRule> GetSortRules(string Columns)
+        {
+
+            string[] a_columns = Columns.Split(',');
+
+            List<ValueTableSortRule> Rules = new List<ValueTableSortRule>();
+
+            foreach (string column in a_columns)
+            {
+                string[] description = column.Trim().Split(' ');
+                if (description.Count() == 0)
+                    throw RuntimeException.PropNotFoundException(""); // TODO: WrongColumnNameException
+
+                ValueTableSortRule Desc = new ValueTableSortRule();
+                Desc.Column = this.Columns.FindColumnByName(description[0]);
+
+                if (description.Count() > 1)
+                {
+                    if (String.Compare(description[1], "DESC", true) == 0 || String.Compare(description[1], "УБЫВ", true) == 0)
+                        Desc.direction = -1;
+                }
+                else
+                    Desc.direction = 1;
+
+                Rules.Add(Desc);
+            }
+
+            return Rules;
+        }
+
+        private class RowComparator : IComparer<ValueTableRow>
+        {
+            List<ValueTableSortRule> Rules;
+
+            public RowComparator(List<ValueTableSortRule> Rules)
+            {
+                if (Rules.Count() == 0)
+                    throw RuntimeException.InvalidArgumentValue();
+
+                this.Rules = Rules;
+            }
+
+            private int OneCompare(ValueTableRow x, ValueTableRow y, ValueTableSortRule Rule)
+            {
+                IValue xValue = x.Get(Rule.Column);
+                IValue yValue = y.Get(Rule.Column);
+
+                int result = xValue.CompareTo(yValue) * Rule.direction;
+
+                return result;
+            }
+
+            public int Compare(ValueTableRow x, ValueTableRow y)
+            {
+                int i = 0, r;
+                while ((r = OneCompare(x, y, Rules[i])) == 0)
+                {
+                    if (++i >= Rules.Count())
+                        return 0;
+                }
+
+                return r;
+            }
+        }
+
+        [ContextMethod("Сортировать", "Sort")]
+        public void Sort(string columns, IValue Comparator = null)
+        {
+            _rows.Sort(new RowComparator(GetSortRules(columns)));
+        }
+
+        [ContextMethod("ВыбратьСтроку", "ChooseRow")]
+        public void ChooseRow(string Title = null, IValue StartRow = null)
+        {
+            throw new NotSupportedException();
+        }
 
         public IEnumerator<IValue> GetEnumerator()
         {
