@@ -63,6 +63,7 @@
     <Compile Include="Preprocessor_Tests.cs" />
     <Compile Include="Scripting_Essentials.cs" />
     <Compile Include="ParserTests.cs" />
+    <Compile Include="VariableTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript\OneScript.csproj">
