@@ -19,22 +19,32 @@ namespace OneScript.Core
 
         public static IValue Create(bool value)
         {
-            return new BooleanValue(value);
+            if (value)
+                return BooleanValue.True;
+            else
+                return BooleanValue.False;
         }
 
         public static IValue Create(double value)
         {
-            return new NumericValue((decimal)value);
+            return Create((decimal)value);
         }
 
         public static IValue Create(int value)
         {
-            return new NumericValue((int)value);
+            return Create((decimal)value);
         }
 
         public static IValue Create(decimal value)
         {
-            return new NumericValue(value);
+            if (value == 0)
+                return NumericValue.Zero;
+            else if (value == 1)
+                return NumericValue.One;
+            else if (value == -1)
+                return NumericValue.MinusOne;
+            else
+                return new NumericValue(value);
         }
 
         public static IValue Create(DateTime value)

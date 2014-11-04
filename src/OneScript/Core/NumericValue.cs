@@ -26,9 +26,14 @@ namespace OneScript.Core
             }
         }
 
+        public override string ToString()
+        {
+            return _value.ToString(System.Globalization.NumberFormatInfo.InvariantInfo);
+        }
+
         public override bool AsBoolean()
         {
-            return _value != null;
+            return _value != 0;
         }
 
         public override decimal AsNumber()
@@ -36,11 +41,16 @@ namespace OneScript.Core
             return _value;
         }
 
-        protected override int CompareSameType(IValue other)
+        public override int CompareTo(IValue other)
         {
-            return _value.CompareTo(other.AsNumber());
+            if (other.Type == BasicTypes.Number || other.Type == BasicTypes.Boolean)
+            {
+                return this.AsNumber().CompareTo(other.AsNumber());
+            }
+            else
+                throw TypeConversionException.ComparisonIsNotSupportedException();
         }
-
+        
         public override bool Equals(IValue other)
         {
             return _value.Equals(other.AsNumber());

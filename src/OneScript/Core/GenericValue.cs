@@ -45,7 +45,7 @@ namespace OneScript.Core
             return this.Equals((object)other);
         }
 
-        public int CompareTo(IValue other)
+        public virtual int CompareTo(IValue other)
         {
             if (other == null)
             {

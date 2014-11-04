@@ -151,7 +151,7 @@ namespace OneScript.Tests
             public static IValue Constructor(DataType constructedType, IValue[] args)
             {
                 var newObj = new CreatableInstanceMock();
-                newObj.Type = constructedType;
+                newObj.SetDataTypeInternal(constructedType);
                 return newObj;
             }
 

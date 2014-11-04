@@ -54,7 +54,6 @@
     <Compile Include="TypeSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleValuesTest.cs" />
-    <Compile Include="RefCounter.cs" />
     <Compile Include="ComponentsTest.cs" />
     <Compile Include="ContextBaseTest.cs" />
     <Compile Include="AutoContextTest.cs" />
@@ -64,7 +63,6 @@
     <Compile Include="Preprocessor_Tests.cs" />
     <Compile Include="Scripting_Essentials.cs" />
     <Compile Include="ParserTests.cs" />
-    <Compile Include="Variables_Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript\OneScript.csproj">

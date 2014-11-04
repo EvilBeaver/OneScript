@@ -19,7 +19,7 @@ namespace OneScript.Scripting
             instance.State = new IVariable[sourceContext.GetPropCount()];
             for (int i = 0; i < instance.State.Length; i++)
             {
-                instance.State[i] = Reference.Create(sourceContext, i);
+                throw new NotImplementedException();//instance.State[i] = Reference.Create(sourceContext, i);
             }
 
             instance.Methods = MethodSignatureExtractor.Extract(sourceContext);

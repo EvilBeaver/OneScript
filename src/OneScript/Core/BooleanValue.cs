@@ -12,7 +12,7 @@ namespace OneScript.Core
         
         private bool _value = false;
 
-        public BooleanValue(bool valueToSet)
+        private BooleanValue(bool valueToSet)
         {
             _value = valueToSet;
         }
@@ -40,9 +40,18 @@ namespace OneScript.Core
             return _value == true ? 1 : 0;
         }
 
-        protected override int CompareSameType(IValue other)
+        public override int CompareTo(IValue other)
         {
-            return _value.CompareTo(other.AsBoolean());
+            if (other.Type == BasicTypes.Number)
+            {
+                return this.AsNumber().CompareTo(other.AsNumber());
+            }
+            else if (other.Type == BasicTypes.Boolean)
+            {
+                return _value.CompareTo(other.AsBoolean());
+            }
+            else
+                throw TypeConversionException.ComparisonIsNotSupportedException();
         }
 
         public override bool Equals(IValue other)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OneScript.ComponentModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -103,10 +104,10 @@ namespace OneScript.Core
             {
                 return ValueFactory.Create((bool)objParam);
             }
-            else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
+            else if (typeof(ContextBase).IsAssignableFrom(type))
             {
                 if (objParam != null)
-                    return ValueFactory.Create((IRuntimeContextInstance)objParam);
+                    return (ContextBase)objParam;
                 else
                     return ValueFactory.Create();
             }

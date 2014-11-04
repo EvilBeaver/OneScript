@@ -26,9 +26,9 @@ namespace OneScript.Tests
             Assert.IsTrue(value.Type == BasicTypes.Boolean, "Boolean 2 test failed");
             Assert.IsTrue(value.AsBoolean() == false, "False test failed");
 
-            value = ValueFactory.Create(1.56);
+            value = ValueFactory.Create(1.56m);
             Assert.IsTrue(value.Type == BasicTypes.Number, "Number test failed");
-            Assert.IsTrue(value.AsNumber() == 1.56, "Number value test failed");
+            Assert.IsTrue(value.AsNumber() == 1.56m, "Number value test failed");
 
             var today = DateTime.Today;
             value = ValueFactory.Create(today);
@@ -68,7 +68,7 @@ namespace OneScript.Tests
             var first = ValueFactory.Create(1);
             var second = ValueFactory.Create(1);
             Assert.IsTrue(first.Equals(second));
-            Assert.AreNotSame(first, second);
+            Assert.AreSame(first, second);
             Assert.IsTrue(first.AsNumber() == 1);
             Assert.IsTrue(first.CompareTo(second) == 0);
             Assert.IsTrue(first.AsBoolean() == true);
@@ -106,7 +106,7 @@ namespace OneScript.Tests
             Assert.IsTrue(dateString.AsDate() == jan_01_14);
 
             var numString = ValueFactory.Create("012.12");
-            Assert.IsTrue(numString.AsNumber() == 12.12);
+            Assert.IsTrue(numString.AsNumber() == 12.12m);
 
             Assert.IsTrue(ExceptionThrown(() => dateString.AsObject(), typeof(TypeConversionException)));
             Assert.IsTrue(ExceptionThrown(() => trueString.AsNumber(), typeof(TypeConversionException)));
@@ -117,7 +117,7 @@ namespace OneScript.Tests
         {
             var value = ValueFactory.Create();
             Assert.IsTrue(value.Type == BasicTypes.Undefined);
-            Assert.IsTrue(value.AsString() == "Неопределено");
+            Assert.IsTrue(value.AsString() == "");
 
             Assert.IsTrue(ExceptionThrown(() => value.AsNumber(), typeof(TypeConversionException)));
             Assert.IsTrue(ExceptionThrown(() => value.AsBoolean(), typeof(TypeConversionException)));
