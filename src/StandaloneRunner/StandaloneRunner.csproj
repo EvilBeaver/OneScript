@@ -82,8 +82,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>xcopy "$(SolutionDir)ScriptEngine\$(OutDir)ScriptEngine.dll" "$(ProjectDir)" /Y /E /D
-xcopy "$(SolutionDir)ScriptEngine.HostedScript\$(OutDir)ScriptEngine.HostedScript.dll" "$(ProjectDir)" /Y /E /D
-cscript "$(SolutionDir)versionInc.js" "$(ProjectDir)Properties\AssemblyInfo.cs" 1.0.*.+</PreBuildEvent>
+xcopy "$(SolutionDir)ScriptEngine.HostedScript\$(OutDir)ScriptEngine.HostedScript.dll" "$(ProjectDir)" /Y /E /D</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
