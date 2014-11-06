@@ -94,6 +94,13 @@ namespace ScriptEngine
                 }
             }
 
+            var mi = new ModuleInformation();
+            mi.CodeIndexer = parser.GetCodeIndexer();
+            // пока у модулей нет собственных имен, будет совпадать с источником модуля
+            mi.ModuleName = source.SourceDescription;
+            mi.Origin = source.SourceDescription;
+            compiledImage.ModuleInfo = mi;
+
             return new ModuleHandle()
             {
                 Module = compiledImage

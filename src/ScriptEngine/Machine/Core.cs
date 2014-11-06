@@ -105,7 +105,8 @@ namespace ScriptEngine.Machine
         Pow,
         Sqrt,
         ExceptionInfo,
-        ExceptionDescr
+        ExceptionDescr,
+        ModuleInfo
     }
 
     [Serializable]

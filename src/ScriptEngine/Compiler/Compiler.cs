@@ -67,7 +67,6 @@ namespace ScriptEngine.Compiler
             BuildModule();
             CheckForwardedDeclarations();
 
-            _module.Source = _parser.GetCodeIndexer();
             return _module;
         }
 
@@ -1457,6 +1456,8 @@ namespace ScriptEngine.Compiler
                     return OperationCode.ExceptionInfo;
                 case Token.ExceptionDescr:
                     return OperationCode.ExceptionDescr;
+                case Token.ModuleInfo:
+                    return OperationCode.ModuleInfo;
                 default:
                     throw new ArgumentException("Token is not a built-in function");
             }

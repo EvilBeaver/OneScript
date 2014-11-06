@@ -160,6 +160,7 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("sqrt", Token.Sqrt);
             _stringToToken.Add("информацияобошибке", Token.ExceptionInfo);
             _stringToToken.Add("описаниеошибки", Token.ExceptionDescr);
+            _stringToToken.Add("текущийсценарий", Token.ModuleInfo);
             
         }
 
@@ -341,7 +342,8 @@ namespace ScriptEngine.Compiler
         Sqrt,
 
         ExceptionInfo,
-        ExceptionDescr
+        ExceptionDescr,
+        ModuleInfo
     }
 
 }

@@ -349,9 +349,9 @@ namespace ScriptEngine.Machine
         private void SetScriptExceptionSource(RuntimeException exc)
         {
             exc.LineNumber = _lineNumber;
-            if (_module.Source != null)
+            if (_module.ModuleInfo != null)
             {
-                exc.Code = _module.Source.GetCodeLine(_lineNumber);
+                exc.Code = _module.ModuleInfo.CodeIndexer.GetCodeLine(_lineNumber);
             }
             else
             {
@@ -462,7 +462,8 @@ namespace ScriptEngine.Machine
                 Pow,
                 Sqrt,
                 ExceptionInfo,
-                ExceptionDescr
+                ExceptionDescr,
+                ModuleInfo
             };
         }
 
@@ -1900,6 +1901,15 @@ namespace ScriptEngine.Machine
             {
                 _operationStack.Push(ValueFactory.Create(""));
             }
+            NextInstruction();
+        }
+
+        private void ModuleInfo(int arg)
+        {
+
+            var infoContext = new ScriptInformationContext(_module.ModuleInfo);
+            _operationStack.Push(infoContext);
+
             NextInstruction();
         }
 

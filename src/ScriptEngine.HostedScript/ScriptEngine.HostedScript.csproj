@@ -78,7 +78,6 @@
     <Compile Include="Library\XmlReaderImpl.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Library\ScriptInformationContext.cs" />
     <Compile Include="Library\StructureImpl.cs" />
   </ItemGroup>
   <ItemGroup>

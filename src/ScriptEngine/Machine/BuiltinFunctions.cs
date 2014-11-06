@@ -83,6 +83,7 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.Question, QuestionParamInfo);
             map.Add(OperationCode.ExceptionInfo, NoParamsInfo);
             map.Add(OperationCode.ExceptionDescr, NoParamsInfo);
+            map.Add(OperationCode.ModuleInfo, NoParamsInfo);
 
             _paramInfoGenerators = map;
         }

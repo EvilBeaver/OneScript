@@ -81,10 +81,12 @@
     <Compile Include="Environment\CodeSources.cs" />
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
+    <Compile Include="Environment\ModuleInformation.cs" />
     <Compile Include="Machine\Contexts\AttachedScriptsFactory.cs" />
     <Compile Include="Machine\Contexts\EnumerationContext.cs" />
     <Compile Include="Machine\Contexts\EnumerationValue.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
+    <Compile Include="Machine\Contexts\ScriptInformationContext.cs" />
     <Compile Include="Machine\Contexts\SelfAwareEnumValue.cs" />
     <Compile Include="Machine\Contexts\ReflectableSDO.cs" />
     <Compile Include="Machine\Contexts\ReflectedMethodInfo.cs" />
