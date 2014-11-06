@@ -349,6 +349,7 @@ namespace ScriptEngine.Machine
         private void SetScriptExceptionSource(RuntimeException exc)
         {
             exc.LineNumber = _lineNumber;
+            exc.ModuleName = _module.ModuleInfo.ModuleName;
             if (_module.ModuleInfo != null)
             {
                 exc.Code = _module.ModuleInfo.CodeIndexer.GetCodeLine(_lineNumber);
