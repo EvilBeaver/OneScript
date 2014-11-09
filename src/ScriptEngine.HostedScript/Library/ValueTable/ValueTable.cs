@@ -56,17 +56,17 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue Row)
         {
-            IValue Raw = Row.GetRawValue();
+            Row = Row.GetRawValue();
             int index;
-            if (Raw is ValueTableRow)
+            if (Row is ValueTableRow)
             {
-                // TODO: Проверить индекс
-                index = _rows.IndexOf(Raw as ValueTableRow);
+                index = _rows.IndexOf(Row as ValueTableRow);
+                if (index == -1)
+                    throw RuntimeException.InvalidArgumentValue();
             }
             else
             {
-                // TODO: Переполнение int32
-                index = Decimal.ToInt32(Raw.AsNumber());
+                index = Decimal.ToInt32(Row.AsNumber());
             }
             _rows.RemoveAt(index);
         }
@@ -137,10 +137,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Индекс", "IndexOf")]
         public int IndexOf(IValue Row)
         {
-            IValue Raw = Row.GetRawValue();
+            Row = Row.GetRawValue();
 
-            if (Raw is ValueTableRow)
-                return _rows.IndexOf(Raw as ValueTableRow);
+            if (Row is ValueTableRow)
+                return _rows.IndexOf(Row as ValueTableRow);
 
             return -1;
         }
@@ -295,19 +295,29 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             _rows.Clear();
             _rows.AddRange(new_rows);
 
-            // TODO: Убить старые колонки
+            {
+                int i = 0;
+                while (i < _columns.Count())
+                {
+                    ValueTableColumn Column = _columns.FindColumnByIndex(i);
+                    if (GroupColumns.IndexOf(Column) == -1 && AggregateColumns.IndexOf(Column) == -1)
+                        _columns.Delete(Column);
+                    else
+                        ++i;
+                }
+            }
         }
         
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(IValue Row, int Offset)
         {
-            IValue Raw = Row.GetRawValue();
+            Row = Row.GetRawValue();
 
             int index_source;
-            if (Raw is ValueTableRow)
-                index_source = _rows.IndexOf(Raw as ValueTableRow);
-            else if (Raw.DataType == Machine.DataType.Number)
-                index_source = decimal.ToInt32(Raw.AsNumber());
+            if (Row is ValueTableRow)
+                index_source = _rows.IndexOf(Row as ValueTableRow);
+            else if (Row.DataType == Machine.DataType.Number)
+                index_source = decimal.ToInt32(Row.AsNumber());
             else
                 throw RuntimeException.InvalidArgumentType();
 

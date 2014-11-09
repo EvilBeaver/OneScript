@@ -68,6 +68,13 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Column;
         }
 
+        [ContextMethod("Удалить", "Delete")]
+        public void Delete(IValue Column)
+        {
+            Column = Column.GetRawValue();
+            _columns.Remove(GetColumnByIIndex(Column));
+        }
+
         public ValueTableColumn FindColumnByName(string Name)
         {
             var Comparer = StringComparer.OrdinalIgnoreCase;

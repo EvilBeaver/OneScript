@@ -31,11 +31,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue Index)
         {
-            IValue Raw = Index.GetRawValue();
-            if (Raw is CollectionIndex)
-                _indexes.Remove(Raw as CollectionIndex);
+            Index = Index.GetRawValue();
+            if (Index is CollectionIndex)
+                _indexes.Remove(Index as CollectionIndex);
             else
-                _indexes.RemoveAt(Decimal.ToInt32(Raw.AsNumber()));
+                _indexes.RemoveAt(Decimal.ToInt32(Index.AsNumber()));
         }
 
         [ContextMethod("Очистить", "Clear")]
