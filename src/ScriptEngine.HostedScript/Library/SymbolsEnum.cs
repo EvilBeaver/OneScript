@@ -10,7 +10,7 @@ namespace ScriptEngine.Machine.Library
 
     class SymbolsEnum : EnumerationContext
     {
-        public SymbolsEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
+        private SymbolsEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             :base(typeRepresentation, valuesType)
         {
 

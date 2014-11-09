@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Machine;
+using ScriptEngine.Environment;
 
 namespace ScriptEngine
 {
@@ -33,9 +34,9 @@ namespace ScriptEngine
 
         // Привязка к исходному коду для отладочной информации в RuntimeException
         [NonSerialized]
-        private ScriptEngine.Compiler.SourceCodeIndexer _source;
+        private ModuleInformation _source;
 
-        internal ScriptEngine.Compiler.SourceCodeIndexer Source 
+        internal ModuleInformation ModuleInfo 
         {
             get
             {

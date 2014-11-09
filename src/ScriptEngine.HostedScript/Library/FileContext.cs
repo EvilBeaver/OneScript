@@ -82,6 +82,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Существует","Exists")]
         public bool Exists()
         {
+            _fsEntry.Refresh();
             return _fsEntry.Exists;
         }
 

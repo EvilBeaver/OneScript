@@ -11,6 +11,9 @@ namespace ScriptEngine.Machine.Contexts
         Exception _exc;
         public ExceptionInfoContext(Exception source)
         {
+            if (source == null)
+                throw new ArgumentNullException();
+
             _exc = source;
         }
 
@@ -21,14 +24,14 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         [ContextProperty("Причина", "Cause")]
-        public ExceptionInfoContext InnerException
+        public IValue InnerException
         {
             get 
             {
-                if (_exc != null)
+                if (_exc.InnerException != null)
                     return new ExceptionInfoContext(_exc.InnerException);
                 else
-                    return null;
+                    return ValueFactory.Create();
             }
         }
 

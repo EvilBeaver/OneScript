@@ -85,10 +85,12 @@ namespace ScriptEngine.Machine.Library
         }
 
         /// <summary>
-        /// Возвращает информацию о текущем сценарии.
+        /// Возвращает информацию о сценарии, который был точкой входа в программу.
+        /// Можно выделить два вида сценариев: те, которые были подключены, как классы и те, которые запущены непосредственно. Метод СтартовыйСценарий возвращает информацию о сценарии, запущенном непосредственно.
+        /// Для получения информации о текущем выполняемом сценарии см. метод ТекущийСценарий()
         /// </summary>
         /// <returns>Объект ИнформацияОСценарии</returns>
-        [ContextMethod("ТекущийСценарий", "CurrentScript")]
+        [ContextMethod("СтартовыйСценарий", "EntryScript")]
         public IRuntimeContextInstance CurrentScript()
         {
             return new ScriptInformationContext(CodeSource);
@@ -276,7 +278,8 @@ namespace ScriptEngine.Machine.Library
             if(wait)
             {
                 p.WaitForExit();
-                retCode.Value = ValueFactory.Create(p.ExitCode);
+                if(retCode != null)
+                    retCode.Value = ValueFactory.Create(p.ExitCode);
             }
 
         }
@@ -363,6 +366,25 @@ namespace ScriptEngine.Machine.Library
         }
 
         /// <summary>
+        /// Получить текущий каталог
+        /// </summary>
+        [ContextMethod("ТекущийКаталог", "CurrentDirectory")]
+        public string CurrentDirectory()
+        {
+            return System.IO.Directory.GetCurrentDirectory();
+        }
+
+        /// <summary>
+        /// Получить текущий каталог
+        /// </summary>
+        /// <param name="path">Имя нового текущего каталога</param>
+        [ContextMethod("УстановитьТекущийКаталог", "SetCurrentDirectory")]
+        public void SetCurrentDirectory(string path)
+        {
+            System.IO.Directory.SetCurrentDirectory(path);
+        }
+
+        /// <summary>
         /// Текущая дата машины
         /// </summary>
         /// <returns>Дата</returns>
@@ -370,6 +392,32 @@ namespace ScriptEngine.Machine.Library
         public DateTime CurrentDate()
         {
             return DateTime.Now;
+        }
+
+        [ContextMethod("ЗначениеЗаполнено","IsValueFilled")]
+        public bool IsValueFilled(IValue value)
+        {
+            if (value.DataType == DataType.Undefined)
+                return false;
+            else if (value.DataType == DataType.Boolean)
+                return true;
+            else if (value.DataType == DataType.String)
+                return !String.IsNullOrWhiteSpace(value.AsString());
+            else if (value.DataType == DataType.Number)
+                return value.AsNumber() != 0;
+            else if (value.DataType == DataType.Date)
+            {
+                var emptyDate = new DateTime(1, 1, 1, 0, 0, 0);
+                return value.AsDate() != emptyDate;
+            }
+            else if (value.GetRawValue() is ICollectionContext)
+            {
+                var col = value.GetRawValue() as ICollectionContext;
+                return col.Count() != 0;
+            }
+            else
+                return true;
+            
         }
 
         #region IAttachableContext Members
