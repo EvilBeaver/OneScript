@@ -102,6 +102,13 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             List<ValueTableColumn> processing_list = new List<ValueTableColumn>();
             if (ColumnNames != null)
             {
+
+                if (ColumnNames.Trim().Length == 0)
+                {
+                    // Передали пустую строку вместо списка колонок
+                    return processing_list;
+                }
+
                 string[] column_names = ColumnNames.Split(',');
                 foreach (string name in column_names)
                 {
@@ -311,6 +318,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(IValue Row, int Offset)
         {
+            // TODO: Сдвиг работает неправильно. Просто поменять местами строки недостаточно
+
             Row = Row.GetRawValue();
 
             int index_source;
