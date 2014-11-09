@@ -318,8 +318,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(IValue Row, int Offset)
         {
-            // TODO: Сдвиг работает неправильно. Просто поменять местами строки недостаточно
-
             Row = Row.GetRawValue();
 
             int index_source;
@@ -330,11 +328,26 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             else
                 throw RuntimeException.InvalidArgumentType();
 
-            int index_dest = index_source + Offset;
+            if (index_source < 0 || index_source >= _rows.Count())
+                throw RuntimeException.InvalidArgumentValue();
 
-            ValueTableRow tmp = _rows[index_dest];
-            _rows[index_dest] = _rows[index_source];
-            _rows[index_source] = tmp;
+            int index_dest = (index_source + Offset) % _rows.Count();
+            while (index_dest < 0)
+                index_dest += _rows.Count();
+
+            ValueTableRow tmp = _rows[index_source];
+
+            if (index_source < index_dest)
+            {
+                _rows.Insert(index_dest + 1, tmp);
+                _rows.RemoveAt(index_source);
+            }
+            else
+            {
+                _rows.RemoveAt(index_source);
+                _rows.Insert(index_dest, tmp);
+            }
+
         }
 
         [ContextMethod("СкопироватьКолонки", "CopyColumns")]
