@@ -481,6 +481,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return new CollectionEnumerator(GetEnumerator());
         }
 
+        public override IValue GetIndexedValue(IValue index)
+        {
+            return Get((int)index.AsNumber());
+        }
+
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor()
         {
