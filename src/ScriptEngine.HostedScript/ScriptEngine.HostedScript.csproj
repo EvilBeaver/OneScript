@@ -76,6 +76,12 @@
     <Compile Include="Library\TextWriteImpl.cs" />
     <Compile Include="Library\XmlEnumerations.cs" />
     <Compile Include="Library\XmlReaderImpl.cs" />
+    <Compile Include="Library\ValueTable\CollectionIndexes.cs" />
+    <Compile Include="Library\ValueTable\ValueTableIndex.cs" />
+    <Compile Include="Library\ValueTable\ValueTable.cs" />
+    <Compile Include="Library\ValueTable\ValueTableColumn.cs" />
+    <Compile Include="Library\ValueTable\ValueTableColumnCollection.cs" />
+    <Compile Include="Library\ValueTable\ValueTableRow.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\StructureImpl.cs" />
@@ -86,6 +92,7 @@
       <Name>ScriptEngine</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
