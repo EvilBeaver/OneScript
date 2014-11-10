@@ -27,7 +27,7 @@ namespace ScriptEngine
 
             _env = new RuntimeEnvironment();
             _env.InjectObject(_globalCtx, false);
-            _env.InjectGlobalProperty(XmlNodeTypeEnum.GetInstance(), "ТипУзлаXML", true);
+            _env.InjectGlobalProperty(ScriptEngine.HostedScript.Library.Xml.XmlNodeTypeEnum.GetInstance(), "ТипУзлаXML", true);
         }
 
         public void Initialize()
