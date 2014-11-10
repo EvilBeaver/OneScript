@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 
-namespace ScriptEngine.HostedScript.Library
+namespace ScriptEngine.HostedScript.Library.Xml
 {
     [ContextClass("ЧтениеXML","XMLReader")]
     public class XmlReaderImpl : AutoContext<XmlReaderImpl>, IDisposable

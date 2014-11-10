@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 
-namespace ScriptEngine.HostedScript.Library
+namespace ScriptEngine.HostedScript.Library.Xml
 {
    public class XmlNodeTypeEnum : EnumerationContext
    {
