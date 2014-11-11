@@ -20,14 +20,20 @@ namespace ScriptEngine
         public ScriptingEngine()
         {
             TypeManager.Initialize(new StandartTypeManager());
-            ContextDiscoverer.Discover(System.Reflection.Assembly.GetExecutingAssembly());
+            ContextDiscoverer.DiscoverClasses(System.Reflection.Assembly.GetExecutingAssembly());
             
             _scriptFactory = new ScriptSourceFactory();
         }
 
         public void AttachAssembly(System.Reflection.Assembly asm)
         {
-            ContextDiscoverer.Discover(asm);
+            ContextDiscoverer.DiscoverClasses(asm);
+        }
+
+        public void AttachAssembly(System.Reflection.Assembly asm, RuntimeEnvironment globalEnvironment)
+        {
+            ContextDiscoverer.DiscoverClasses(asm);
+            ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm);
         }
 
         public void Initialize(RuntimeEnvironment environment)

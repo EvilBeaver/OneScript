@@ -8,34 +8,35 @@ using System.Xml;
 
 namespace ScriptEngine.HostedScript.Library.Xml
 {
-   public class XmlNodeTypeEnum : EnumerationContext
-   {
-       Dictionary<XmlNodeType, IValue> _valuesCache = new Dictionary<XmlNodeType,IValue>();
+    [SystemEnum("ТипУзлаXML", "XMLNodeType")]
+    public class XmlNodeTypeEnum : EnumerationContext
+    {
+        Dictionary<XmlNodeType, IValue> _valuesCache = new Dictionary<XmlNodeType,IValue>();
 
-       private XmlNodeTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-           : base(typeRepresentation, valuesType)
-       {
+        private XmlNodeTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
+            : base(typeRepresentation, valuesType)
+        {
 
-       }
+        }
 
-       public IValue FromNativeValue(XmlNodeType native)
-       {
-           if (native == XmlNodeType.SignificantWhitespace)
-               native = XmlNodeType.Whitespace;
+        public IValue FromNativeValue(XmlNodeType native)
+        {
+            if (native == XmlNodeType.SignificantWhitespace)
+                native = XmlNodeType.Whitespace;
 
-           IValue val;
-           if(_valuesCache.TryGetValue(native, out val))
-           {
-               return val;
-           }
-           else
-           {
-               val = this.ValuesInternal.First(x => ((CLREnumValueWrapper<XmlNodeType>)x).UnderlyingObject == native);
-               _valuesCache.Add(native, val);
-           }
+            IValue val;
+            if(_valuesCache.TryGetValue(native, out val))
+            {
+                return val;
+            }
+            else
+            {
+                val = this.ValuesInternal.First(x => ((CLREnumValueWrapper<XmlNodeType>)x).UnderlyingObject == native);
+                _valuesCache.Add(native, val);
+            }
 
-           return val;
-       }
+            return val;
+        }
 
         private static XmlNodeTypeEnum _instance;
 
@@ -85,6 +86,5 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
             return _instance;
         }
-
    }
 }

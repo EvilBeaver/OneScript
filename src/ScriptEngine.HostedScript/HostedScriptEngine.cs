@@ -20,14 +20,13 @@ namespace ScriptEngine
         public HostedScriptEngine()
         {
             _engine = new ScriptingEngine();
-            _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            _env = new RuntimeEnvironment();
+            _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly(), _env);
 
             _globalCtx = new GlobalContext();
             _globalCtx.EngineInstance = _engine;
 
-            _env = new RuntimeEnvironment();
             _env.InjectObject(_globalCtx, false);
-            _env.InjectGlobalProperty(ScriptEngine.HostedScript.Library.Xml.XmlNodeTypeEnum.GetInstance(), "ТипУзлаXML", true);
         }
 
         public void Initialize()
