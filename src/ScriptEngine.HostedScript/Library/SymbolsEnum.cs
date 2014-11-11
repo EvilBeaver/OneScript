@@ -8,7 +8,8 @@ using System.Text;
 namespace ScriptEngine.Machine.Library
 {
 
-    class SymbolsEnum : EnumerationContext
+    [SystemEnum("Символы", "Symbols")]
+    public class SymbolsEnum : EnumerationContext
     {
         private SymbolsEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             :base(typeRepresentation, valuesType)

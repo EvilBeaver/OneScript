@@ -13,7 +13,7 @@ namespace ScriptEngine
     public class HostedScriptEngine
     {
         ScriptingEngine _engine;
-        GlobalContext _globalCtx;
+        SystemGlobalContext _globalCtx;
         RuntimeEnvironment _env;
         bool _isInitialized;
 
@@ -23,7 +23,7 @@ namespace ScriptEngine
             _env = new RuntimeEnvironment();
             _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly(), _env);
 
-            _globalCtx = new GlobalContext();
+            _globalCtx = new SystemGlobalContext();
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
@@ -40,7 +40,7 @@ namespace ScriptEngine
 
         public void AttachAssembly(System.Reflection.Assembly asm)
         {
-            _engine.AttachAssembly(asm);
+            _engine.AttachAssembly(asm, _env);
         }
 
         public void InjectGlobalProperty(string name, IValue value, bool readOnly)

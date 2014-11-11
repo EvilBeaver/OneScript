@@ -85,6 +85,7 @@
     <Compile Include="Machine\Contexts\AttachedScriptsFactory.cs" />
     <Compile Include="Machine\Contexts\EnumerationContext.cs" />
     <Compile Include="Machine\Contexts\EnumerationValue.cs" />
+    <Compile Include="Machine\Contexts\GlobalContextAttribute.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
     <Compile Include="Machine\Contexts\ScriptInformationContext.cs" />
     <Compile Include="Machine\Contexts\SelfAwareEnumValue.cs" />

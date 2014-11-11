@@ -65,7 +65,8 @@
     <Compile Include="Library\CommandLineArguments.cs" />
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />
-    <Compile Include="Library\GlobalContext.cs" />
+    <Compile Include="Library\FileOperations.cs" />
+    <Compile Include="Library\SystemGlobalContext.cs" />
     <Compile Include="Library\GuidWrapper.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />
     <Compile Include="Library\MapImpl.cs" />
