@@ -13,6 +13,14 @@ namespace ScriptEngine.HostedScript.Library.Xml
     public class XmlReaderImpl : AutoContext<XmlReaderImpl>, IDisposable
     {
         XmlTextReader _reader;
+        EmptyElemCompabilityState _emptyElemReadState = EmptyElemCompabilityState.Off;
+
+        private enum EmptyElemCompabilityState
+        {
+            Off,
+            EmptyElementEntered,
+            EmptyElementRead
+        }
 
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string path)
@@ -79,7 +87,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             get
             {
-                throw new NotSupportedException();
+                return "1.0";
             }
         }
 
@@ -196,7 +204,14 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             get
             {
-                return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.NodeType);
+                if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
+                {
+                    return XmlNodeTypeEnum.GetInstance().FromNativeValue(XmlNodeType.EndElement);
+                }
+                else
+                {
+                    return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.NodeType);
+                }
             }
         }
 
@@ -358,7 +373,20 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("Прочитать", "Read")]
         public bool Read()
         {
-            return _reader.Read();
+            if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementEntered)
+            {
+                _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
+                return true;
+            }
+            
+            var canRead = _reader.Read();
+            
+            if (_reader.IsEmptyElement)
+                _emptyElemReadState = EmptyElemCompabilityState.EmptyElementEntered;
+            else
+                _emptyElemReadState = EmptyElemCompabilityState.Off;
+
+            return canRead;
         }
 
         [ContextMethod("ПрочитатьАтрибут", "ReadAttribute")]
