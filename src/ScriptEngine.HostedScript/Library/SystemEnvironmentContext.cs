@@ -29,6 +29,14 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
+        [ContextProperty("Версия","Version")]
+        public string Version 
+        { 
+            get
+            {
+                return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            }
+        }
         [ContextMethod("ПеременныеСреды", "EnvironmentVariables")]
         public IRuntimeContextInstance EnvironmentVariables()
         {
