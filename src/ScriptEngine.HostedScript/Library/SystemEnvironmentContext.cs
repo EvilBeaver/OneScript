@@ -8,9 +8,15 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Library
 {
+    /// <summary>
+    /// Класс предоставляет информацию о системе
+    /// </summary>
     [ContextClass("СистемнаяИнформация", "SystemInfo")]
     public class SystemEnvironmentContext : AutoContext<SystemEnvironmentContext>
     {
+        /// <summary>
+        /// Имя машины, на которой выполняется сценарий
+        /// </summary>
         [ContextProperty("ИмяКомпьютера", "MachineName")]
         public string MachineName 
         {
@@ -20,6 +26,9 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
+        /// <summary>
+        /// Версия операционной системы, на которой выполняется сценарий
+        /// </summary>
         [ContextProperty("ВерсияОС", "OSVersion")]
         public string OSVersion
         {
@@ -29,6 +38,9 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
+        /// <summary>
+        /// Версия OneScript, выполняющая данный сценарий
+        /// </summary>
         [ContextProperty("Версия","Version")]
         public string Version 
         { 
@@ -37,6 +49,17 @@ namespace ScriptEngine.Machine.Library
                 return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             }
         }
+
+        /// <summary>
+        /// Возвращает соответствие переменных среды. Ключом является имя переменной, а значением - значение переменной
+        /// </summary>
+        /// <example>
+        /// СИ = Новый СистемнаяИнформация();
+        /// Для Каждого Переменная Из СИ.ПеременныеСреды() Цикл
+        ///     Сообщить(Переменная.Ключ + " = " + Переменная.Значение);
+        /// КонецЦикла;
+        /// </example>
+        /// <returns>Соответствие</returns>
         [ContextMethod("ПеременныеСреды", "EnvironmentVariables")]
         public IRuntimeContextInstance EnvironmentVariables()
         {
