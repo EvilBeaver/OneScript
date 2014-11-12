@@ -1182,7 +1182,7 @@ namespace ScriptEngine.Machine
                     }
                     catch (System.Reflection.TargetInvocationException e)
                     {
-                        if (e.InnerException != null && e.InnerException is RuntimeException)
+                        if (e.InnerException != null)
                             throw e.InnerException;
                         else
                             throw;
