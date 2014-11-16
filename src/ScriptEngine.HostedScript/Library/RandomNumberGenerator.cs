@@ -20,20 +20,36 @@ namespace ScriptEngine.Machine.Library
         }
 
         [ContextMethod("СлучайноеЧисло", "RandomNumber")]
-        public int RandomNumber(IValue low = null, IValue high = null)
+        public IValue RandomNumber(IValue low = null, IValue high = null)
         {
-            // TODO: должно работать с диапазоном 0..4294967295
-            // TODO: Проверка типов
-
-            int lo = 0, hi = int.MaxValue;
+            long lo64 = 0, hi64 = UInt32.MaxValue;
 
             if (low != null)
-                lo = decimal.ToInt32(low.AsNumber());
+                lo64 = decimal.ToInt64(low.AsNumber());
 
             if (high != null)
-                hi = decimal.ToInt32(high.AsNumber());
+                hi64 = decimal.ToInt64(high.AsNumber());
 
-            return _random.Next(lo, hi);
+            if (lo64 < 0 || lo64 > 4294967295)
+                throw RuntimeException.InvalidArgumentValue();
+
+            if (hi64 < 0 || hi64 > 4294967295)
+                throw RuntimeException.InvalidArgumentValue();
+
+            if (hi64 < lo64)
+                throw RuntimeException.InvalidArgumentValue();
+
+            // Приводим к рабочему диапазону
+            lo64 += Int32.MinValue;
+            hi64 += Int32.MinValue;
+
+            int lo = (int)lo64, hi = (int)hi64;
+
+            int v = _random.Next(lo, hi);
+            long v64 = v;
+            v64 -= Int32.MinValue;
+
+            return ValueFactory.Create( v64 );
         }
 
         [ScriptConstructor]
