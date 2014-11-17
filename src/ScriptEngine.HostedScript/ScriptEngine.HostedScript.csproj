@@ -70,6 +70,7 @@
     <Compile Include="Library\GuidWrapper.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />
     <Compile Include="Library\MapImpl.cs" />
+    <Compile Include="Library\RandomNumberGenerator.cs" />
     <Compile Include="Library\Reflector.cs" />
     <Compile Include="Library\SymbolsEnum.cs" />
     <Compile Include="Library\SystemEnvironmentContext.cs" />
