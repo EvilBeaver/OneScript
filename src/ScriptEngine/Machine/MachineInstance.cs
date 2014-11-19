@@ -349,13 +349,14 @@ namespace ScriptEngine.Machine
         private void SetScriptExceptionSource(RuntimeException exc)
         {
             exc.LineNumber = _lineNumber;
-            exc.ModuleName = _module.ModuleInfo.ModuleName;
             if (_module.ModuleInfo != null)
             {
+                exc.ModuleName = _module.ModuleInfo.ModuleName;
                 exc.Code = _module.ModuleInfo.CodeIndexer.GetCodeLine(_lineNumber);
             }
             else
             {
+                exc.ModuleName = "<имя модуля недоступно>";
                 exc.Code = "<исходный код недоступен>";
             }
         }
@@ -1908,9 +1909,15 @@ namespace ScriptEngine.Machine
         private void ModuleInfo(int arg)
         {
 
-            var infoContext = new ScriptInformationContext(_module.ModuleInfo);
-            _operationStack.Push(infoContext);
-
+            if (_module.ModuleInfo != null)
+            {
+                var infoContext = new ScriptInformationContext(_module.ModuleInfo);
+                _operationStack.Push(infoContext);
+            }
+            else
+            {
+                _operationStack.Push(ValueFactory.Create());
+            }
             NextInstruction();
         }
 
