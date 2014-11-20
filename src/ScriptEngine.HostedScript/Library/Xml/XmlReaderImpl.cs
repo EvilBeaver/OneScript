@@ -22,6 +22,11 @@ namespace ScriptEngine.HostedScript.Library.Xml
             EmptyElementRead
         }
 
+        public XmlReader GetNativeReader()
+        {
+            return _reader;
+        }
+
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string path)
         {
