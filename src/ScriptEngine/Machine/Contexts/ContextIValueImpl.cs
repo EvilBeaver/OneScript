@@ -189,6 +189,7 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Method)]
     public class ScriptConstructorAttribute : Attribute
     {
+        public string Name { get; set; }
         public bool ParametrizeWithClassName { get; set; }
     }
 }

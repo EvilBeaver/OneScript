@@ -52,6 +52,11 @@ namespace ScriptEngine.Machine.Library
             return ValueFactory.Create( v64 );
         }
 
+        /// <summary>
+        /// Формирует ГСЧ с возможностью указания начального числа.
+        /// </summary>
+        /// <param name="seed">Начальное число. Последовательность случайных чисел для одного и того же начального числа будет одинакова</param>
+        /// <returns></returns>
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor(IValue seed)
         {
@@ -62,7 +67,7 @@ namespace ScriptEngine.Machine.Library
             return new RandomNumberGenerator();
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name="Формирование неинициализированного объекта")]
         public static IRuntimeContextInstance Constructor()
         {
             return new RandomNumberGenerator();

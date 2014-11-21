@@ -27,6 +27,12 @@ namespace ScriptEngine.Machine.Library
             Open(path, encoding, append);
         }
 
+        /// <summary>
+        /// Открывает файл для записи.
+        /// </summary>
+        /// <param name="path">Путь к файлу</param>
+        /// <param name="encoding">Кодировка (необязательный). По умолчанию используется utf-8</param>
+        /// <param name="append">Признак добавления в конец файла. (необязательный)</param>
         [ContextMethod("Открыть", "Open")]
         public void Open(string path, string encoding = null, bool append = false)
         {
@@ -49,12 +55,20 @@ namespace ScriptEngine.Machine.Library
             Dispose();
         }
 
+        /// <summary>
+        /// Записывает текст "как есть"
+        /// </summary>
+        /// <param name="what">Текст для записи</param>
         [ContextMethod("Записать", "Write")]
         public void Write(string what)
         {
             _writer.Write(what);
         }
 
+        /// <summary>
+        /// Записывает текст и добавляет перевод строки
+        /// </summary>
+        /// <param name="what">Текст для записи</param>
         [ContextMethod("ЗаписатьСтроку", "WriteLine")]
         public void WriteLine(string what)
         {
@@ -70,19 +84,29 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "")]
         public static IRuntimeContextInstance Constructor(IValue path, IValue encoding)
         {
             return new TextWriteImpl(path.AsString(), encoding.AsString());
         }
 
-        [ScriptConstructor]
+        /// <summary>
+        /// Создает объект с начальными значениями имени файла и кодировки.
+        /// </summary>
+        /// <param name="path">Имя файла</param>
+        /// <param name="encoding">Кодировка в виде строки</param>
+        /// <param name="append">Признак добавления в конец файла (необязательный)</param>
+        [ScriptConstructor(Name = "По имени файла и кодировке")]
         public static IRuntimeContextInstance Constructor(IValue path, IValue encoding, IValue append)
         {
             return new TextWriteImpl(path.AsString(), encoding.AsString(), append.AsBoolean());
         }
 
-        [ScriptConstructor]
+        /// <summary>
+        /// Создает объект по имени файла с кодировкой utf-8. Существующий файл будет перезаписан.
+        /// </summary>
+        /// <param name="path">Путь к файлу</param>
+        [ScriptConstructor(Name = "По имени файла")]
         public static IRuntimeContextInstance Constructor(IValue path)
         {
             var obj = new TextWriteImpl();

@@ -182,7 +182,12 @@ namespace ScriptEngine.Machine.Library
             return new StructureImpl();
         }
 
-        [ScriptConstructor]
+        /// <summary>
+        /// Создает структуру по заданному перечню свойств и значений
+        /// </summary>
+        /// <param name="strProperties">Строка с именами свойств, указанными через запятую.</param>
+        /// <param name="args">Значения свойств. Каждое значение передается, как отдельный параметр.</param>
+        [ScriptConstructor(Name="На основании свойств и значений")]
         public static IRuntimeContextInstance Constructor(IValue strProperties, IValue[] args)
         {
             return new StructureImpl(strProperties.AsString(), args);
