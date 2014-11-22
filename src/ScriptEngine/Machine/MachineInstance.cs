@@ -12,7 +12,6 @@ namespace ScriptEngine.Machine
         private Stack<IValue> _operationStack;
         private Stack<ExecutionFrame> _callStack;
         private ExecutionFrame _currentFrame;
-        private int _lineNumber;
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
         private Stack<MachineState> _states;
@@ -36,7 +35,6 @@ namespace ScriptEngine.Machine
             public ExecutionFrame currentFrame;
             public LoadedModule module;
             public bool hasScope;
-            public int lineNumber;
             public IValue[] operationStack;
             public ExecutionFrame[] callStack;
             public ExceptionJumpInfo[] exceptionsStack;
@@ -131,7 +129,6 @@ namespace ScriptEngine.Machine
             stateToSave.hasScope = DetachTopScope(out stateToSave.topScope);
             stateToSave.currentFrame = _currentFrame;
             stateToSave.module = _module;
-            stateToSave.lineNumber = _lineNumber;
             StackToArray(ref stateToSave.callStack, _callStack);
             StackToArray(ref stateToSave.exceptionsStack, _exceptionsStack);
             StackToArray(ref stateToSave.operationStack, _operationStack);
@@ -189,7 +186,6 @@ namespace ScriptEngine.Machine
             }
 
             _module = savedState.module;
-            _lineNumber = savedState.lineNumber;
 
             RestoreStack(ref _callStack, savedState.callStack);
             RestoreStack(ref _operationStack, savedState.operationStack);
@@ -348,11 +344,11 @@ namespace ScriptEngine.Machine
 
         private void SetScriptExceptionSource(RuntimeException exc)
         {
-            exc.LineNumber = _lineNumber;
+            exc.LineNumber = _currentFrame.LineNumber;
             if (_module.ModuleInfo != null)
             {
                 exc.ModuleName = _module.ModuleInfo.ModuleName;
-                exc.Code = _module.ModuleInfo.CodeIndexer.GetCodeLine(_lineNumber);
+                exc.Code = _module.ModuleInfo.CodeIndexer.GetCodeLine(exc.LineNumber);
             }
             else
             {
@@ -1287,7 +1283,7 @@ namespace ScriptEngine.Machine
 
         private void LineNum(int arg)
         {
-            _lineNumber = arg;
+            _currentFrame.LineNumber = arg;
             NextInstruction();
         }
 

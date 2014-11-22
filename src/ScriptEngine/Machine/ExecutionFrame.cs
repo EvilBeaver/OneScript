@@ -9,6 +9,7 @@ namespace ScriptEngine.Machine
     {
         public IVariable[] Locals;
         public int InstructionPointer;
+        public int LineNumber;
         public bool DiscardReturnValue;
         public string MethodName;
         public RuntimeException LastException;
