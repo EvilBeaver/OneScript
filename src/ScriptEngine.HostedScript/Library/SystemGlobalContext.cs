@@ -275,6 +275,31 @@ namespace ScriptEngine.Machine.Library
             
         }
 
+        [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
+        public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
+        {
+            var accReflector = acceptor as IReflectableContext;
+            if (accReflector == null)
+                throw RuntimeException.InvalidArgumentValue();
+            
+            var srcReflector = source as IReflectableContext;
+            if (srcReflector == null)
+                throw RuntimeException.InvalidArgumentValue();
+
+            IEnumerable<string> sourceProperties;
+            if(filledProperties == null)
+            {
+                sourceProperties = srcReflector.GetProperties().Select(x => x.Identifier);
+            }
+            else
+            {
+                sourceProperties = filledProperties.Split(',')
+                    .Select(x => x.Trim())
+                    .Where(x => x.Length > 0);
+            }
+
+        }
+
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
