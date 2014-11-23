@@ -287,6 +287,7 @@ namespace ScriptEngine.Machine.Library
                 throw RuntimeException.InvalidArgumentValue();
 
             IEnumerable<string> sourceProperties;
+            IEnumerable<string> ignoredPropCollection;
             if(filledProperties == null)
             {
                 sourceProperties = srcReflector.GetProperties().Select(x => x.Identifier);
@@ -295,7 +296,41 @@ namespace ScriptEngine.Machine.Library
             {
                 sourceProperties = filledProperties.Split(',')
                     .Select(x => x.Trim())
+                    .Where(x => x.Length > 0)
+                    .ToArray();
+
+                // Проверка существования заявленных свойств
+                foreach (var item in sourceProperties)
+                {
+                    acceptor.FindProperty(item);
+                }
+            }
+
+            if(ignoredProperties != null)
+            {
+                ignoredPropCollection = filledProperties.Split(',')
+                    .Select(x => x.Trim())
                     .Where(x => x.Length > 0);
+            }
+            else
+            {
+                ignoredPropCollection = new string[0];
+            }
+
+            foreach (var srcProperty in sourceProperties.Where(x=>!ignoredPropCollection.Contains(x)))
+            {
+                try
+                {
+                    var propIdx = acceptor.FindProperty(srcProperty);
+                    var srcPropIdx = source.FindProperty(srcProperty);
+
+                    acceptor.SetPropValue(propIdx, source.GetPropValue(srcPropIdx));
+
+                }
+                catch(PropertyAccessException)
+                {
+                }
+
             }
 
         }
