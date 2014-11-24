@@ -164,7 +164,7 @@ namespace ScriptEngine.Machine.Library
         /// Доступ к аргументам командной строки.
         /// Объект АргументыКоманднойСтроки представляет собой массив в режиме "только чтение".
         /// </summary>
-        [ContextProperty("АргументыКоманднойСтроки", CanWrite = false)]
+        [ContextProperty("АргументыКоманднойСтроки", "CommandLineArguments", CanWrite = false)]
         public IRuntimeContextInstance CommandLineArguments
         {
             get
@@ -273,6 +273,66 @@ namespace ScriptEngine.Machine.Library
             else
                 return true;
             
+        }
+
+        [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
+        public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
+        {
+            var accReflector = acceptor as IReflectableContext;
+            if (accReflector == null)
+                throw RuntimeException.InvalidArgumentValue();
+            
+            var srcReflector = source as IReflectableContext;
+            if (srcReflector == null)
+                throw RuntimeException.InvalidArgumentValue();
+
+            IEnumerable<string> sourceProperties;
+            IEnumerable<string> ignoredPropCollection;
+            if(filledProperties == null)
+            {
+                sourceProperties = srcReflector.GetProperties().Select(x => x.Identifier);
+            }
+            else
+            {
+                sourceProperties = filledProperties.Split(',')
+                    .Select(x => x.Trim())
+                    .Where(x => x.Length > 0)
+                    .ToArray();
+
+                // Проверка существования заявленных свойств
+                foreach (var item in sourceProperties)
+                {
+                    acceptor.FindProperty(item);
+                }
+            }
+
+            if(ignoredProperties != null)
+            {
+                ignoredPropCollection = ignoredProperties.Split(',')
+                    .Select(x => x.Trim())
+                    .Where(x => x.Length > 0);
+            }
+            else
+            {
+                ignoredPropCollection = new string[0];
+            }
+
+            foreach (var srcProperty in sourceProperties.Where(x=>!ignoredPropCollection.Contains(x)))
+            {
+                try
+                {
+                    var propIdx = acceptor.FindProperty(srcProperty);
+                    var srcPropIdx = source.FindProperty(srcProperty);
+
+                    acceptor.SetPropValue(propIdx, source.GetPropValue(srcPropIdx));
+
+                }
+                catch(PropertyAccessException)
+                {
+                }
+
+            }
+
         }
 
         #region IAttachableContext Members

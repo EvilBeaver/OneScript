@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class AutoContext<TInstance> : PropertyNameIndexAccessor where TInstance : AutoContext<TInstance>
+    public abstract class AutoContext<TInstance> : LibraryContextBase where TInstance : AutoContext<TInstance>
     {
         public override bool IsPropReadable(int propNum)
         {
@@ -78,7 +78,25 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw e.InnerException;
             }
-        } 
+        }
+
+        public override IEnumerable<VariableInfo> GetProperties()
+        {
+            var allProps = _properties.GetProperties();
+            var result = new VariableInfo[allProps.Length];
+            for (int i = 0; i < allProps.Length; i++)
+            {
+                result[i] = new VariableInfo()
+                {
+                    Identifier = allProps[i],
+                    Index = i,
+                    Type = SymbolType.ContextProperty
+                };
+            }
+
+            return result;
+
+        }
 
         private static ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
         private static ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();

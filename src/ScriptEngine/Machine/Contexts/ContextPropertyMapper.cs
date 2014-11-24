@@ -188,5 +188,10 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        public string[] GetProperties()
+        {
+            return _properties.Select(x => x.Name).ToArray();
+        }
+
     }
 }
