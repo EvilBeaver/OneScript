@@ -164,7 +164,7 @@ namespace ScriptEngine.Machine.Library
         /// Доступ к аргументам командной строки.
         /// Объект АргументыКоманднойСтроки представляет собой массив в режиме "только чтение".
         /// </summary>
-        [ContextProperty("АргументыКоманднойСтроки", CanWrite = false)]
+        [ContextProperty("АргументыКоманднойСтроки", "CommandLineArguments", CanWrite = false)]
         public IRuntimeContextInstance CommandLineArguments
         {
             get
@@ -308,7 +308,7 @@ namespace ScriptEngine.Machine.Library
 
             if(ignoredProperties != null)
             {
-                ignoredPropCollection = filledProperties.Split(',')
+                ignoredPropCollection = ignoredProperties.Split(',')
                     .Select(x => x.Trim())
                     .Where(x => x.Length > 0);
             }
