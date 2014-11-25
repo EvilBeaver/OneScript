@@ -15,9 +15,16 @@ namespace OneScript.Scripting.Compiler
         {
             System.Diagnostics.Debug.Assert(LanguageDef.IsLiteral(ref lex));
 
-            ConstType constType = ConstType.Undefined;
+            ConstType constType;
+
             switch (lex.Type)
             {
+                case LexemType.StringLiteral:
+                    constType = ConstType.String;
+                    break;
+                case LexemType.UndefinedLiteral:
+                    constType = ConstType.Undefined;
+                    break;
                 case LexemType.BooleanLiteral:
                     constType = ConstType.Boolean;
                     break;
@@ -27,9 +34,12 @@ namespace OneScript.Scripting.Compiler
                 case LexemType.NumberLiteral:
                     constType = ConstType.Number;
                     break;
-                case LexemType.StringLiteral:
-                    constType = ConstType.String;
+                case LexemType.NullLiteral:
+                    constType = ConstType.Null;
                     break;
+                default:
+                    throw new InvalidOperationException("Lexem type is not a literal");
+                
             }
 
             ConstDefinition cDef = new ConstDefinition()
@@ -48,6 +58,7 @@ namespace OneScript.Scripting.Compiler
         String,
         Number,
         Boolean,
-        Date
+        Date,
+        Null
     }
 }

@@ -227,6 +227,53 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
+        public void Word_Literals_Processed_Correctly()
+        {
+            string code;
+            SourceCodeIterator iterator;
+            Lexem lex;
+            WordLexerState state = new WordLexerState();
+
+            code = " Истина  Ложь  Неопределено  Null  True False Undefined";
+            iterator = new SourceCodeIterator(code);
+            iterator.MoveToContent();
+            lex = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lex.Type == LexemType.BooleanLiteral);
+            Assert.IsTrue(lex.Content == "Истина");
+
+            iterator.MoveToContent();
+            lex = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lex.Type == LexemType.BooleanLiteral);
+            Assert.IsTrue(lex.Content == "Ложь");
+
+            iterator.MoveToContent();
+            lex = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lex.Type == LexemType.UndefinedLiteral);
+            Assert.IsTrue(lex.Content == "Неопределено");
+
+            iterator.MoveToContent();
+            lex = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lex.Type == LexemType.NullLiteral);
+            Assert.IsTrue(lex.Content == "Null");
+
+            iterator.MoveToContent();
+            lex = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lex.Type == LexemType.BooleanLiteral);
+            Assert.IsTrue(lex.Content == "True");
+
+            iterator.MoveToContent();
+            lex = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lex.Type == LexemType.BooleanLiteral);
+            Assert.IsTrue(lex.Content == "False");
+
+            iterator.MoveToContent();
+            lex = state.ReadNextLexem(iterator);
+            Assert.IsTrue(lex.Type == LexemType.UndefinedLiteral);
+            Assert.IsTrue(lex.Content == "Undefined");
+
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(SyntaxErrorException))]
         public void Unclosed_String_Literal()
         {

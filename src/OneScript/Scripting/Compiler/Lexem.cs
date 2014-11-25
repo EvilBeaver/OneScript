@@ -38,6 +38,7 @@ namespace OneScript.Scripting.Compiler
         NumberLiteral,
         BooleanLiteral,
         UndefinedLiteral,
+        NullLiteral,
         EndOperator,
         EndOfText
     }

@@ -217,7 +217,31 @@ namespace OneScript.Scripting.Compiler.Lexics
                 || lex.Type == LexemType.NumberLiteral
                 || lex.Type == LexemType.BooleanLiteral
                 || lex.Type == LexemType.DateLiteral
+                || lex.Type == LexemType.NullLiteral
                 || lex.Type == LexemType.UndefinedLiteral;
+        }
+
+        public static bool IsBooleanTrueString(string value)
+        {
+            return string.Compare(value, "истина", true) == 0
+                    || string.Compare(value, "true", true) == 0;
+        }
+
+        public static bool IsBooleanFalseString(string value)
+        {
+            return string.Compare(value, "ложь", true) == 0
+                    || string.Compare(value, "false", true) == 0;
+        }
+
+        public static bool IsUndefinedString(string value)
+        {
+            return string.Compare(value, "неопределено", true) == 0
+                   || string.Compare(value, "undefined", true) == 0;
+        }
+
+        public static bool IsNullString(string value)
+        {
+            return string.Compare(value, "Null", true) == 0;
         }
 
         public static bool IsBinaryOperator(Token token)

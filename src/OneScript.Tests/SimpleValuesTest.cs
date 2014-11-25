@@ -234,5 +234,45 @@ namespace OneScript.Tests
         {
             return TestHelpers.ExceptionThrown(action, exceptionType);
         }
+
+        [TestMethod]
+        public void Value_Factory_Parses_Undefined()
+        {
+            var value = ValueFactory.Parse("Неопределено", BasicTypes.Undefined);
+            Assert.IsTrue(value.Type == BasicTypes.Undefined);
+        }
+
+        [TestMethod]
+        public void Value_Factory_Parses_Null()
+        {
+            var value = ValueFactory.Parse("Null", BasicTypes.Null);
+            Assert.IsTrue(value.Type == BasicTypes.Null);
+        }
+
+        [TestMethod]
+        public void Value_Factory_Parses_Boolean()
+        {
+            IValue value;
+            value = ValueFactory.Parse("Истина", BasicTypes.Boolean);
+            Assert.IsTrue(value.Type == BasicTypes.Boolean);
+
+            value = ValueFactory.Parse("Ложь", BasicTypes.Boolean);
+            Assert.IsTrue(value.Type == BasicTypes.Boolean);
+
+            value = ValueFactory.Parse("True", BasicTypes.Boolean);
+            Assert.IsTrue(value.Type == BasicTypes.Boolean);
+
+            value = ValueFactory.Parse("False", BasicTypes.Boolean);
+            Assert.IsTrue(value.Type == BasicTypes.Boolean);
+        }
+
+        [TestMethod]
+        public void Value_Factory_Parses_Date()
+        {
+            var value = ValueFactory.Parse("20140105", BasicTypes.Date);
+            Assert.IsTrue(value.Type == BasicTypes.Date);
+            value = ValueFactory.Parse("20140105010101", BasicTypes.Date);
+            Assert.IsTrue(value.Type == BasicTypes.Date);
+        }
     }
 }

@@ -25,7 +25,10 @@ namespace OneScript.Scripting.Compiler.Lexics
 
                     if (String.Compare(content, "и", true) == 0
                             || String.Compare(content, "или", true) == 0
-                            || String.Compare(content, "не", true) == 0)
+                            || String.Compare(content, "не", true) == 0
+                            || String.Compare(content, "and", true) == 0
+                            || String.Compare(content, "or", true) == 0
+                            || String.Compare(content, "not", true) == 0)
                     {
                         lex = new Lexem()
                         {
@@ -34,8 +37,8 @@ namespace OneScript.Scripting.Compiler.Lexics
                             Content = content
                         };
                     }
-                    else if (String.Compare(content, "истина", true) == 0
-                        || String.Compare(content, "ложь", true) == 0)
+                    else if (LanguageDef.IsBooleanTrueString(content) 
+                        || LanguageDef.IsBooleanFalseString(content))
                     {
                         lex = new Lexem()
                         {
@@ -43,11 +46,20 @@ namespace OneScript.Scripting.Compiler.Lexics
                             Content = content
                         };
                     }
-                    else if (String.Compare(content, "неопределено", true) == 0)
+                    else if (LanguageDef.IsUndefinedString(content))
                     {
                         lex = new Lexem()
                         {
                             Type = LexemType.UndefinedLiteral,
+                            Content = content
+                        };
+
+                    }
+                    else if (LanguageDef.IsNullString(content))
+                    {
+                        lex = new Lexem()
+                        {
+                            Type = LexemType.NullLiteral,
                             Content = content
                         };
 

@@ -85,6 +85,10 @@ namespace OneScript.Core
             {
                 result = ValueFactory.Create();
             }
+            else if (type == BasicTypes.Null)
+            {
+                result = ValueFactory.CreateNull();
+            }
             else
                 throw new NotImplementedException("constant type is not supported");
 
@@ -134,9 +138,9 @@ namespace OneScript.Core
         private static IValue ParseAsBoolean(string presentation)
         {
             IValue result;
-            if (string.Compare(presentation, "истина", true) == 0)
+            if (OneScript.Scripting.Compiler.Lexics.LanguageDef.IsBooleanTrueString(presentation))
                 result = ValueFactory.Create(true);
-            else if (string.Compare(presentation, "ложь", true) == 0)
+            else if (OneScript.Scripting.Compiler.Lexics.LanguageDef.IsBooleanFalseString(presentation))
                 result = ValueFactory.Create(false);
             else
                 throw TypeConversionException.ConvertToBooleanException();
