@@ -56,6 +56,7 @@
     <Compile Include="Core\GenericValue.cs" />
     <Compile Include="Core\IRefCountable.cs" />
     <Compile Include="Core\IVariable.cs" />
+    <Compile Include="Core\NullValue.cs" />
     <Compile Include="Core\NumericValue.cs" />
     <Compile Include="Core\StringValue.cs" />
     <Compile Include="Core\IRuntimeContextInstance.cs" />

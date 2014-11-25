@@ -34,6 +34,9 @@ namespace OneScript.Tests
             value = ValueFactory.Create(today);
             Assert.IsTrue(value.Type == BasicTypes.Date, "Date test failed");
             Assert.IsTrue(value.AsDate() == today, "Date value test failed");
+
+            value = ValueFactory.CreateNull();
+            Assert.IsTrue(value.Type == BasicTypes.Null, "Null test failed");
         }
 
         [TestMethod]
@@ -117,6 +120,19 @@ namespace OneScript.Tests
         {
             var value = ValueFactory.Create();
             Assert.IsTrue(value.Type == BasicTypes.Undefined);
+            Assert.IsTrue(value.AsString() == "");
+
+            Assert.IsTrue(ExceptionThrown(() => value.AsNumber(), typeof(TypeConversionException)));
+            Assert.IsTrue(ExceptionThrown(() => value.AsBoolean(), typeof(TypeConversionException)));
+            Assert.IsTrue(ExceptionThrown(() => value.AsObject(), typeof(TypeConversionException)));
+            Assert.IsTrue(ExceptionThrown(() => value.AsDate(), typeof(TypeConversionException)));
+        }
+
+        [TestMethod]
+        public void Null_Value_Test()
+        {
+            var value = ValueFactory.CreateNull();
+            Assert.IsTrue(value.Type == BasicTypes.Null);
             Assert.IsTrue(value.AsString() == "");
 
             Assert.IsTrue(ExceptionThrown(() => value.AsNumber(), typeof(TypeConversionException)));

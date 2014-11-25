@@ -57,6 +57,11 @@ namespace OneScript.Core
             return new TypeTypeValue(value);
         }
 
+        public static IValue CreateNull()
+        {
+            return NullValue.Instance;
+        }
+
         public static IValue Parse(string presentation, DataType type)
         {
             IValue result;

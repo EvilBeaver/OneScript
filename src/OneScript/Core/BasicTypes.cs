@@ -13,6 +13,7 @@ namespace OneScript.Core
         private static DataType _boolean;
         private static DataType _undefined;
         private static DataType _type;
+        private static DataType _null;
 
         static BasicTypes()
         {
@@ -22,6 +23,7 @@ namespace OneScript.Core
             _boolean = DataType.CreateType("Булево", "Boolean", TypeId.New("34EDD2E3-DD29-4829-A424-67B3404AF423"));
             _undefined = DataType.CreateType("Неопределено", "Undefined", TypeId.New("783CE532-8CE0-4C59-BEF4-835AEFB715E4"));
             _type = DataType.CreateType("Тип", "Type", TypeId.New("4BCF3B78-B525-4159-8180-C76EDA613652"));
+            _null = DataType.CreateType("Null", "Null", TypeId.New("26D78088-915A-4294-97E1-FB39E70187A6"));
         }
 
         public static DataType Number
@@ -42,13 +44,20 @@ namespace OneScript.Core
         {
             get { return _boolean; }
         }
+        
         public static DataType Undefined
         {
             get { return _undefined; }
         }
+        
         public static DataType Type
         {
             get { return _type; }
+        }
+        
+        public static DataType Null
+        {
+            get { return _null; }
         }
 
     }
