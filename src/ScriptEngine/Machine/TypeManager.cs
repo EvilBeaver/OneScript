@@ -59,6 +59,8 @@ namespace ScriptEngine.Machine
                 var td = TypeDescriptor.FromDataType((DataType)item);
                 RegisterType(td, typeof(DataType));
             }
+
+            RegisterType("Null", typeof(NullValueImpl));
         }
 
         #region ITypeManager Members

@@ -98,6 +98,7 @@
     <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
     <Compile Include="Machine\Contexts\SystemEnumAttribute.cs" />
     <Compile Include="Machine\GenericIValueComparer.cs" />
+    <Compile Include="Machine\NullValueImpl.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />

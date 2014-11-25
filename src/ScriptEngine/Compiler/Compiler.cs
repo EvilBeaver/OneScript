@@ -1353,7 +1353,8 @@ namespace ScriptEngine.Compiler
                 || lex.Type == LexemType.NumberLiteral
                 || lex.Type == LexemType.BooleanLiteral
                 || lex.Type == LexemType.DateLiteral
-                || lex.Type == LexemType.UndefinedLiteral;
+                || lex.Type == LexemType.UndefinedLiteral
+                || lex.Type == LexemType.NullLiteral;
         }
 
         private OperationCode BuiltInFunctionCode(Token token)
@@ -1479,6 +1480,9 @@ namespace ScriptEngine.Compiler
                     break;
                 case LexemType.StringLiteral:
                     constType = DataType.String;
+                    break;
+                case LexemType.NullLiteral:
+                    constType = DataType.GenericValue;
                     break;
             }
 
