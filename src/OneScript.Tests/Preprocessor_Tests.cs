@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Scripting;
 using System.Text;
+using OneScript.Scripting.Compiler;
+using OneScript.Scripting.Compiler.Lexics;
 
 namespace OneScript.Tests
 {

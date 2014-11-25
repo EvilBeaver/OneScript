@@ -1,9 +1,10 @@
-﻿using System;
+﻿using OneScript.Scripting.Compiler.Lexics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OneScript.Scripting
+namespace OneScript.Scripting.Compiler
 {
     public class Preprocessor
     {

@@ -1,13 +1,14 @@
 ﻿using OneScript.Core;
+using OneScript.Scripting.Compiler.Lexics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace OneScript.Scripting
+namespace OneScript.Scripting.Compiler
 {
-    public class Parser : ILexemExtractor
+    public class Parser
     {
         private Lexer _lexer;
         private Lexem _lastExtractedLexem;
@@ -696,16 +697,6 @@ namespace OneScript.Scripting
                     break;
                 }
             }
-        }
-
-        Lexem ILexemExtractor.LastExtractedLexem
-        {
-            get { return _lastExtractedLexem; }
-        }
-
-        void ILexemExtractor.NextLexem()
-        {
-            this.NextLexem();
         }
 
         void PushEndTokens(params Token[] tokens)

@@ -1,5 +1,5 @@
 ﻿using System;
-namespace OneScript.Scripting
+namespace OneScript.Scripting.Compiler
 {
     public interface ISourceCodeIndexer
     {

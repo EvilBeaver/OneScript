@@ -17,6 +17,11 @@ namespace OneScript.Core
             return ToString();
         }
 
+        public override string ToString()
+        {
+            return Type.ToString();
+        }
+
         public virtual DateTime AsDate()
         {
             throw TypeConversionException.ConvertToDateException();

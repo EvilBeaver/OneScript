@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OneScript.Scripting
+namespace OneScript.Scripting.Compiler
 {
     public enum Token
     {

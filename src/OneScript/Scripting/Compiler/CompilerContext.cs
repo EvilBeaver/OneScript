@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OneScript.Scripting
+namespace OneScript.Scripting.Compiler
 {
-    public class CompilerContext : OneScript.Scripting.ICompilerContext
+    public class CompilerContext : ICompilerContext
     {
         List<SymbolScope> _attachedScopes = new List<SymbolScope>();
 

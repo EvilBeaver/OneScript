@@ -25,9 +25,7 @@ namespace OneScript.Core
                 if (value == null)
                     throw new ArgumentNullException("value-set");
 
-                _val.Release();
                 _val = value;
-                _val.AddRef();
             }
         }
 
