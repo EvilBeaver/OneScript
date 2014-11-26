@@ -14,7 +14,6 @@ namespace ScriptEngine.Machine
         DateTime AsDate();
         bool AsBoolean();
         string AsString();
-        TypeDescriptor AsType();
         IRuntimeContextInstance AsObject();
         IValue GetRawValue();
         

@@ -67,11 +67,6 @@ namespace ScriptEngine.HostedScript.Library
             return _value.ToString();
         }
 
-        public TypeDescriptor AsType()
-        {
-            throw new NotImplementedException();
-        }
-
         public IRuntimeContextInstance AsObject()
         {
             throw RuntimeException.ValueIsNotObjectException();

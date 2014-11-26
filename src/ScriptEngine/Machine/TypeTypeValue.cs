@@ -5,17 +5,28 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    class NullValueImpl : IValue
+    class TypeTypeValue : IValue
     {
+        TypeDescriptor _instance;
+
+        public TypeTypeValue(string name)
+        {
+            _instance = TypeManager.GetTypeByName(name);
+        }
+
+        public TypeTypeValue(TypeDescriptor type)
+        {
+            _instance = type;
+        }
 
         public DataType DataType
         {
-            get { return Machine.DataType.GenericValue; }
+            get { return Machine.DataType.Type; }
         }
 
         public TypeDescriptor SystemType
         {
-            get { return TypeManager.GetTypeByFrameworkType(typeof(NullValueImpl)); }
+            get { return TypeDescriptor.FromDataType(DataType.Type); }
         }
 
         public decimal AsNumber()
@@ -35,7 +46,7 @@ namespace ScriptEngine.Machine
 
         public string AsString()
         {
-            return "";
+            return _instance.ToString();
         }
 
         public IRuntimeContextInstance AsObject()
@@ -55,14 +66,15 @@ namespace ScriptEngine.Machine
 
         public bool Equals(IValue other)
         {
-            return other.GetRawValue() == Instance;
-        }
-
-        public static readonly NullValueImpl Instance;
-
-        static NullValueImpl()
-        {
-            Instance = new NullValueImpl();
+            if(other.DataType == this.DataType)
+            {
+                var otherVal = other.GetRawValue() as TypeTypeValue;
+                return otherVal._instance.ID == this._instance.ID;
+            }
+            else
+            {
+                return false;
+            }
         }
 
     }

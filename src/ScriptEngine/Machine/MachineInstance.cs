@@ -418,6 +418,8 @@ namespace ScriptEngine.Machine
                 Number,
                 Str,
                 Date,
+                Type,
+                ValType,
                 StrLen,
                 TrimL,
                 TrimR,
@@ -1392,6 +1394,22 @@ namespace ScriptEngine.Machine
                 throw new RuntimeException("Неверное количество параметров");
             }
 
+            NextInstruction();
+        }
+
+        private void Type(int arg)
+        {
+            var typeName = _operationStack.Pop().AsString();
+            var value = new TypeTypeValue(typeName);
+            _operationStack.Push(value);
+            NextInstruction();
+        }
+
+        private void ValType(int arg)
+        {
+            var value = _operationStack.Pop();
+            var valueType = new TypeTypeValue(value.SystemType);
+            _operationStack.Push(valueType);
             NextInstruction();
         }
 

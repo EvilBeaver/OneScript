@@ -57,11 +57,6 @@ namespace ScriptEngine.Machine.Contexts
             return ValuePresentation == null ? SystemType.Name : ValuePresentation;
         }
 
-        public virtual TypeDescriptor AsType()
-        {
-            throw new NotImplementedException();
-        }
-
         public virtual IRuntimeContextInstance AsObject()
         {
             throw RuntimeException.ValueIsNotObjectException();
