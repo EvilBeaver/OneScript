@@ -36,6 +36,7 @@ namespace ScriptEngine.Machine
         TypeDescriptor GetTypeByName(string name);
         TypeDescriptor GetTypeByFrameworkType(Type type);
         TypeDescriptor RegisterType(string name, Type implementingClass);
+        void RegisterAliasFor(TypeDescriptor td, string alias);
         bool IsKnownType(Type type);
         Type NewInstanceHandler { get; set; }
     }
@@ -56,8 +57,39 @@ namespace ScriptEngine.Machine
         {
             foreach (var item in Enum.GetValues(typeof(DataType)))
             {
-                var td = TypeDescriptor.FromDataType((DataType)item);
+                DataType typeEnum = (DataType)item;
+                string alias;
+                switch (typeEnum)
+                {
+                    case DataType.Undefined:
+                        alias = "Неопределено";
+                        break;
+                    case DataType.Boolean:
+                        alias = "Булево";
+                        break;
+                    case DataType.String:
+                        alias = "Строка";
+                        break;
+                    case DataType.Date:
+                        alias = "Дата";
+                        break;
+                    case DataType.Number:
+                        alias = "Число";
+                        break;
+                    case DataType.Type:
+                        alias = "Тип";
+                        break;
+                    case DataType.Object:
+                        alias = "$_";
+                        break;
+                    default:
+                        continue;
+                }
+
+                var td = TypeDescriptor.FromDataType(typeEnum);
                 RegisterType(td, typeof(DataType));
+                RegisterAliasFor(td, alias);
+
             }
 
             RegisterType("Null", typeof(NullValueImpl));
@@ -104,12 +136,17 @@ namespace ScriptEngine.Machine
 
         private void RegisterType(TypeDescriptor td, Type implementingClass)
         {
-            _knownTypesIndexes.Add(td.Name, _knownTypes.Count);
+            _knownTypesIndexes.Add(td.Name, td.ID);
             _knownTypes.Add(new KnownType()
                 {
                     Descriptor = td,
                     SystemType = implementingClass
                 });
+        }
+
+        public void RegisterAliasFor(TypeDescriptor td, string alias)
+        {
+            _knownTypesIndexes[alias] = td.ID;
         }
 
         public TypeDescriptor GetTypeByFrameworkType(Type type)
@@ -171,6 +208,11 @@ namespace ScriptEngine.Machine
         public static TypeDescriptor RegisterType(string name, Type implementingClass)
         {
             return _instance.RegisterType(name, implementingClass);
+        }
+
+        public static void RegisterAliasFor(TypeDescriptor td, string alias)
+        {
+            _instance.RegisterAliasFor(td, alias);
         }
 
         public static int GetTypeIDByName(string name)

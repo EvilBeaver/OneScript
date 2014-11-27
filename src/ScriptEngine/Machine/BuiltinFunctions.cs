@@ -36,6 +36,8 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.Str, SingleDefaultParamInfo);
             map.Add(OperationCode.Number, SingleDefaultParamInfo);
             map.Add(OperationCode.Date, DateFunctionParamInfo);
+            map.Add(OperationCode.Type, SingleDefaultParamInfo);
+            map.Add(OperationCode.ValType, SingleDefaultParamInfo);
             // string
             map.Add(OperationCode.StrLen, SingleDefaultParamInfo);
             map.Add(OperationCode.TrimL, SingleDefaultParamInfo);

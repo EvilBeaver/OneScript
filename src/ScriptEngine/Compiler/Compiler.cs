@@ -1371,6 +1371,10 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Str;
                 case Token.Date:
                     return OperationCode.Date;
+                case Token.Type:
+                    return OperationCode.Type;
+                case Token.ValType:
+                    return OperationCode.ValType;
                 case Token.StrLen:
                     return OperationCode.StrLen;
                 case Token.TrimL:

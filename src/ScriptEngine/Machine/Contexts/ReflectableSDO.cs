@@ -240,11 +240,6 @@ namespace ScriptEngine.Machine.Contexts
             return _instance.AsString();
         }
 
-        public TypeDescriptor AsType()
-        {
-            return _instance.AsType();
-        }
-
         public IRuntimeContextInstance AsObject()
         {
             return this;

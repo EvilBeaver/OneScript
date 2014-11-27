@@ -87,11 +87,6 @@ namespace ScriptEngine.Machine
             }
         }
 
-        public TypeDescriptor AsType()
-        {
-            throw new NotImplementedException();
-        }
-
         public IRuntimeContextInstance AsObject()
         {
             throw RuntimeException.ValueIsNotObjectException();
@@ -247,11 +242,6 @@ namespace ScriptEngine.Machine
         public string AsString()
         {
             return _value;
-        }
-
-        public TypeDescriptor AsType()
-        {
-            throw new NotImplementedException();
         }
 
         public IRuntimeContextInstance AsObject()

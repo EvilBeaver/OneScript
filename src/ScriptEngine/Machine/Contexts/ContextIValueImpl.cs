@@ -68,11 +68,6 @@ namespace ScriptEngine.Machine.Contexts
             return ToString();
         }
 
-        public TypeDescriptor AsType()
-        {
-            throw new NotImplementedException();
-        }
-
         public IRuntimeContextInstance AsObject()
         {
             return this;

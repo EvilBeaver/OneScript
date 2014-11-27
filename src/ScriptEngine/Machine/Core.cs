@@ -63,6 +63,8 @@ namespace ScriptEngine.Machine
         Number,
         Str,
         Date,
+        Type,
+        ValType,
         StrLen,
         TrimL,
         TrimR,

@@ -115,6 +115,8 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("число", Token.Number);
             _stringToToken.Add("строка", Token.Str);
             _stringToToken.Add("дата", Token.Date);
+            _stringToToken.Add("тип", Token.Type);
+            _stringToToken.Add("типзнч", Token.ValType);
             
             _stringToToken.Add("стрдлина", Token.StrLen);
             _stringToToken.Add("сокрл", Token.TrimL);
@@ -299,6 +301,8 @@ namespace ScriptEngine.Compiler
         Number,
         Str,
         Date,
+        Type,
+        ValType,
         StrLen,
         TrimL,
         TrimR,
