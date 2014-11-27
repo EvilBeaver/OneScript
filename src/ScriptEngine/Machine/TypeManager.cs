@@ -80,15 +80,15 @@ namespace ScriptEngine.Machine
                         alias = "Тип";
                         break;
                     case DataType.Object:
-                        alias = "$_";
+                        alias = "Object";
                         break;
                     default:
                         continue;
                 }
 
                 var td = TypeDescriptor.FromDataType(typeEnum);
+                td.Name = alias;
                 RegisterType(td, typeof(DataType));
-                RegisterAliasFor(td, alias);
 
             }
 
