@@ -190,11 +190,15 @@ namespace ScriptEngine.Machine
 
         public static TypeDescriptor FromDataType(DataType srcType)
         {
-            return new TypeDescriptor()
-            {
-                ID = (int)srcType,
-                Name = Enum.GetName(typeof(DataType), srcType)
-            };
+            System.Diagnostics.Debug.Assert(
+                   srcType == DataType.Boolean
+                || srcType == DataType.Date
+                || srcType == DataType.Number
+                || srcType == DataType.String
+                || srcType == DataType.Undefined
+                || srcType == DataType.Type);
+
+            return TypeManager.GetTypeById((int)srcType);
         }
     }
 

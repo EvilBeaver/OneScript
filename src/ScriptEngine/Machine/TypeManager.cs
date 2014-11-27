@@ -34,6 +34,7 @@ namespace ScriptEngine.Machine
     {
         Type GetImplementingClass(int typeId);
         TypeDescriptor GetTypeByName(string name);
+        TypeDescriptor GetTypeById(int id);
         TypeDescriptor GetTypeByFrameworkType(Type type);
         TypeDescriptor RegisterType(string name, Type implementingClass);
         void RegisterAliasFor(TypeDescriptor td, string alias);
@@ -86,8 +87,12 @@ namespace ScriptEngine.Machine
                         continue;
                 }
 
-                var td = TypeDescriptor.FromDataType(typeEnum);
-                td.Name = alias;
+                var td = new TypeDescriptor()
+                {
+                    Name = alias,
+                    ID = (int)typeEnum
+                };
+
                 RegisterType(td, typeof(DataType));
 
             }
@@ -107,6 +112,11 @@ namespace ScriptEngine.Machine
         {
             var ktIndex = _knownTypesIndexes[name];
             return _knownTypes[ktIndex].Descriptor;
+        }
+
+        public TypeDescriptor GetTypeById(int id)
+        {
+            return _knownTypes[id].Descriptor;
         }
 
         public TypeDescriptor RegisterType(string name, Type implementingClass)
@@ -215,10 +225,10 @@ namespace ScriptEngine.Machine
             _instance.RegisterAliasFor(td, alias);
         }
 
-        public static int GetTypeIDByName(string name)
+        public static TypeDescriptor GetTypeById(int id)
         {
-            var type = _instance.GetTypeByName(name);
-            return type.ID;
+            var type = _instance.GetTypeById(id);
+            return type;
         }
 
         public static bool IsKnownType(Type type)
@@ -249,7 +259,7 @@ namespace ScriptEngine.Machine
             Type clrType;
             try
             {
-                typeId = TypeManager.GetTypeIDByName(typeName);
+                typeId = TypeManager.GetTypeByName(typeName).ID;
                 clrType = TypeManager.GetImplementingClass(typeId);
             }
             catch (KeyNotFoundException)
