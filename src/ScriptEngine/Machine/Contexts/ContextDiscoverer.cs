@@ -45,11 +45,10 @@ namespace ScriptEngine.Machine.Library
             System.Diagnostics.Trace.Assert(attribData.Length > 0, "Class is not marked as context");
 
             var attr = (ContextClassAttribute)attribData[0];
-            TypeManager.RegisterType(attr.GetName(), stdClass);
+            var newType = TypeManager.RegisterType(attr.GetName(), stdClass);
             string alias = attr.GetAlias();
             if(!String.IsNullOrEmpty(alias))
-                TypeManager.RegisterType(alias, stdClass);
-
+                TypeManager.RegisterAliasFor(newType, alias);
         }
 
         private static void RegisterSystemEnum(Type enumType, RuntimeEnvironment environment)
