@@ -2,7 +2,7 @@
 
 Пример запуска тестов:
 ```
-"C:\Program Files (x86)\OneScript\oscript.exe" start.os %1 %2 %3 %4 %5
+"C:\Program Files (x86)\OneScript\oscript.exe" start.os test-filename.os
 ```
 
 Формат тестов совместим с форматом тестов проекта https://github.com/xDrivenDevelopment/xUnitFor1C/wiki
