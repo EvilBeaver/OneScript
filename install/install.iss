@@ -1,4 +1,3 @@
-﻿
 #include <ISPPBuiltins.iss>
 #define AppName "OneScript execution engine"
 #define FSFriendlyName "OneScript execution engine"
