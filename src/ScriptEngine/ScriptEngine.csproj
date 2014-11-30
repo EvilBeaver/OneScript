@@ -102,6 +102,7 @@
     <Compile Include="Machine\NullValueImpl.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="Machine\TypeTypeValue.cs" />
+    <Compile Include="Machine\ValueFormatter.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />
     <Compile Include="Machine\Contexts\AutoContext.cs" />
