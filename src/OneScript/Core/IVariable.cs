@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Core
 {
-    public interface IVariable
+    public interface IVariable : IEquatable<IValue>
     {
         IValue Value { get; set; }
         IValue Dereference();

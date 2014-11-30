@@ -52,5 +52,10 @@ namespace OneScript.Core
 
             return result;
         }
+
+        public bool Equals(IValue other)
+        {
+            return this.Value.Equals(other);
+        }
     }
 }

@@ -50,6 +50,7 @@
     <Compile Include="ComponentModel\ContextMethodAttribute.cs" />
     <Compile Include="ComponentModel\ContextPropertyAttribute.cs" />
     <Compile Include="Core\BooleanValue.cs" />
+    <Compile Include="Core\ContextPropertyReference.cs" />
     <Compile Include="Core\DataType.cs" />
     <Compile Include="Core\DateValue.cs" />
     <Compile Include="Core\EngineException.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Core\IVariable.cs" />
     <Compile Include="Core\NullValue.cs" />
     <Compile Include="Core\NumericValue.cs" />
+    <Compile Include="Core\ReferenceFactory.cs" />
     <Compile Include="Core\StringValue.cs" />
     <Compile Include="Core\IRuntimeContextInstance.cs" />
     <Compile Include="Core\IValue.cs" />
