@@ -1,22 +1,60 @@
 <Project DefaultTargets="BuildAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
+  <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
   <PropertyGroup>
     <Configuration>Release</Configuration>
     <OutputPath>$(MSBuildProjectDirectory)\build\</OutputPath>
     <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
     <Solution>.\src\1Script.sln</Solution>
+    <InstallerStandartPath>C:\Program Files (x86)\Inno Setup 5\iscc.exe</InstallerStandartPath>
   </PropertyGroup>
 
   
-  <Target Name="BuildAll" DependsOnTargets="CleanAll;CoreBuild"/>
+  <Target Name="BuildAll" DependsOnTargets="CleanAll;CoreBuild;CopyFiles"/>
 
   <Target Name="CoreBuild">
     <MakeDir Directories="$(OutputPath)"      Condition="!Exists('$(OutputPath)')" />
     <MSBuild Projects="$(Solution)" Targets="Build" Properties="Configuration=$(Configuration);"/>
   </Target>
- 
+
+  <Target Name="CopyFiles">
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\ScriptEngine.dll"
+          DestinationFiles="$(OutputPath)\ScriptEngine.HostedScript.dll" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\ScriptEngine.HostedScript.dll"
+          DestinationFiles="$(OutputPath)\ScriptEngine.dll" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\Release\ScriptEngine.Snegopat.dll"
+          DestinationFiles="$(OutputPath)\ScriptEngine.Snegopat.dll" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\TestApp.exe"
+          DestinationFiles="$(OutputPath)\TestApp.exe" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\ICSharpCode.AvalonEdit.dll"
+          DestinationFiles="$(OutputPath)\ICSharpCode.AvalonEdit.dll" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\oscript\bin\x86\Release\oscript.exe"
+          DestinationFiles="$(OutputPath)\oscript.exe" />
+    <!--TODO переделать на нормальные пути в инсталяторе-->
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\install\install.iss"
+          DestinationFiles="$(OutputPath)\install.iss" />
+    
+  </Target>
+
+
   <Target Name="CleanAll">
+    <Exec Command="del /F /Q $(OutputPath)\*.*"/>
     <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);"/>
+  </Target>
+
+  <Target Name="CreateDistr">
+    <!--TODO переделать на нормальные пути в инсталяторе-->
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\install\install.iss"
+          DestinationFiles="$(OutputPath)\install.iss" />
+    
+    <Exec Command="$InstallerStandartPath $(MSBuildProjectDirectory)\install\"/>
+    
+    
   </Target>
 
 </Project>
