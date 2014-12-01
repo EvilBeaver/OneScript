@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   
-  <Target Name="BuildAll" DependsOnTargets="CleanAll;CoreBuild;CopyFiles"/>
+  <Target Name="BuildAll" DependsOnTargets="CleanAll;CoreBuild;CopyFiles;CreateDistr"/>
 
   <Target Name="CoreBuild">
     <MakeDir Directories="$(OutputPath)"      Condition="!Exists('$(OutputPath)')" />
@@ -41,18 +41,24 @@
     
   </Target>
 
-
-  <Target Name="CleanAll">
+  <Target Name="CleanDist">
+    <Exec Command="del /F /Q $(DistPath)\*.*"/>
+  </Target>
+  
+  
+  <Target Name="CleanAll" DependsOnTargets="CleanDist">
     <Exec Command="del /F /Q $(OutputPath)\*.*"/>
     <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);"/>
   </Target>
 
-  <Target Name="CreateDistr">
-    <!--TODO переделать на нормальные пути в инсталяторе-->
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\install\install.iss"
-          DestinationFiles="$(OutputPath)\install.iss" />
+  <Target Name="CreateDistr" DependsOnTargets="CleanDist">
+    <ItemGroup>
+      <DistFilesIncl Include="**\*.*" Exclude="*.iss" />
+    </ItemGroup>
     
-    <Exec Command="$InstallerStandartPath $(MSBuildProjectDirectory)\install\"/>
+    <Zip WorkingDirectory="$(OutputPath)" ZipLevel="9" Files="$(DistFilesIncl)" ZipFileName="$(DistPath)OneScript-latest.zip" />
+    
+    <!--<Exec Command="$InstallerStandartPath $(MSBuildProjectDirectory)\install\"/>-->
     
     
   </Target>
