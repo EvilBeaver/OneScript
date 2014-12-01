@@ -1,0 +1,22 @@
+<Project DefaultTargets="BuildAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+    <OutputPath>$(MSBuildProjectDirectory)\build\</OutputPath>
+    <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
+    <Solution>.\src\1Script.sln</Solution>
+  </PropertyGroup>
+
+  
+  <Target Name="BuildAll" DependsOnTargets="CleanAll;CoreBuild"/>
+
+  <Target Name="CoreBuild">
+    <MakeDir Directories="$(OutputPath)"      Condition="!Exists('$(OutputPath)')" />
+    <MSBuild Projects="$(Solution)" Targets="Build" Properties="Configuration=$(Configuration);"/>
+  </Target>
+ 
+  <Target Name="CleanAll">
+    <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);"/>
+  </Target>
+
+</Project>
