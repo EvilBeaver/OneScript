@@ -1,15 +1,16 @@
 <Project DefaultTargets="BuildAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+  
   <PropertyGroup>
     <Configuration>Release</Configuration>
-    <OutputPathForDist>$(MSBuildProjectDirectory)\build\</OutputPathForDist>
+    <OutputPathForDist>$(MSBuildProjectDirectory)\install\built\</OutputPathForDist>
     <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
     <Solution>.\src\1Script.sln</Solution>
     <InstallerStandartPath>C:\Program Files (x86)\Inno Setup 5\iscc.exe</InstallerStandartPath>
   </PropertyGroup>
 
   
-  <Target Name="BuildAll" DependsOnTargets="CleanAll;CoreBuild;CopyFiles;CreateDistr"/>
+  <Target Name="BuildAll" DependsOnTargets="CleanAll;CoreBuild;CopyFiles;CreateLatestZip"/>
 
   <Target Name="CoreBuild">
     <MakeDir Directories="$(OutputPathForDist)"      Condition="!Exists('$(OutputPathForDist)')" />
@@ -19,10 +20,10 @@
   <Target Name="CopyFiles">
 
     <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\ScriptEngine.dll"
-          DestinationFiles="$(OutputPathForDist)\ScriptEngine.HostedScript.dll" />
+          DestinationFiles="$(OutputPathForDist)\ScriptEngine.dll" />
 
     <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\ScriptEngine.HostedScript.dll"
-          DestinationFiles="$(OutputPathForDist)\ScriptEngine.dll" />
+          DestinationFiles="$(OutputPathForDist)\ScriptEngine.HostedScript.dlll" />
 
     <Copy SourceFiles="$(MSBuildProjectDirectory)\src\Release\ScriptEngine.Snegopat.dll"
           DestinationFiles="$(OutputPathForDist)\ScriptEngine.Snegopat.dll" />
@@ -35,14 +36,11 @@
 
     <Copy SourceFiles="$(MSBuildProjectDirectory)\src\oscript\bin\x86\Release\oscript.exe"
           DestinationFiles="$(OutputPathForDist)\oscript.exe" />
-    <!--TODO переделать на нормальные пути в инсталяторе-->
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\install\install.iss"
-          DestinationFiles="$(OutputPathForDist)\install.iss" />
     
   </Target>
 
   <Target Name="CleanDist">
-    <Exec Command="del /F /Q $(DistPath)\*.*"/>
+    <Exec Command="del /F /Q $(DistPath)*.*"/>
   </Target>
   
   
@@ -51,16 +49,22 @@
     <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);"/>
   </Target>
 
-  <Target Name="CreateDistr" DependsOnTargets="CleanDist">
-    <ItemGroup>
-      <DistFilesIncl Include="**" Exclude="*.iss" />
-    </ItemGroup>
-    
-    <Zip WorkingDirectory="$(OutputPathForDist)" ZipLevel="9" Files="$(DistFilesIncl)" ZipFileName="$(DistPath)OneScript-latest.zip"/>
-    
-    <!--<Exec Command="$InstallerStandartPath $(MSBuildProjectDirectory)\install\"/>-->
-    
+  <Target Name="CreateLatestZip" DependsOnTargets="CleanDist">
+        
+    <Zip ZipLevel="9" 
+         WorkingDirectory="&quot;$(OutputPathForDist)&quot;"
+         Files="ScriptEngine.HostedScript.dll;ScriptEngine.dll;ScriptEngine.Snegopat.dll;TestApp.exe;ICSharpCode.AvalonEdit.dll;oscript.exe" 
+         ZipFileName="$(DistPath)OneScript-latest.zip"/>
+    <InnoSetup OutputPath="$(DistPath)" ToolExe="$(InstallerStandartPath)" ScriptFile="$(MSBuildProjectDirectory)\install\install.iss" />
     
   </Target>
 
+  <Target Name="CreateInnoDist"  DependsOnTargets="CleanDist">
+    <InnoSetup OutputPath="$(DistPath)" ToolExe="$(InstallerStandartPath)" ScriptFile="$(MSBuildProjectDirectory)\install\install.iss" />
+  </Target>
+
+  <Target Name="CreateMSI"  DependsOnTargets="CleanDist">
+    <!--TODO Add WixSupport-->
+  </Target>
+  
 </Project>
