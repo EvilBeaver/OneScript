@@ -75,3 +75,4 @@ src/ScriptEngine.Snegopat/Snegopat_i.c
 #CI
 /dist
 /build
+/install/built
