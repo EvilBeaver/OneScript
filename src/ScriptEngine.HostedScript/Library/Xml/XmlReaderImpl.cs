@@ -14,6 +14,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
     {
         XmlTextReader _reader;
         EmptyElemCompabilityState _emptyElemReadState = EmptyElemCompabilityState.Off;
+        bool _hasAttributesOnEndElem;
 
         private enum EmptyElemCompabilityState
         {
@@ -209,7 +210,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             get
             {
-                if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
+                if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead && _reader.NodeType != XmlNodeType.Attribute)
                 {
                     return XmlNodeTypeEnum.GetInstance().FromNativeValue(XmlNodeType.EndElement);
                 }
@@ -383,13 +384,27 @@ namespace ScriptEngine.HostedScript.Library.Xml
                 _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
                 return true;
             }
-            
-            var canRead = _reader.Read();
-            
-            if (_reader.IsEmptyElement)
-                _emptyElemReadState = EmptyElemCompabilityState.EmptyElementEntered;
-            else
+            else if(_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
+            {
                 _emptyElemReadState = EmptyElemCompabilityState.Off;
+                return _reader.Read();
+            }
+            
+            bool canRead;
+
+            if (_reader.IsEmptyElement)
+            {
+                canRead = true;
+                _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
+            }
+            else
+            {
+                canRead = _reader.Read();
+                if (_reader.IsEmptyElement)
+                    _emptyElemReadState = EmptyElemCompabilityState.EmptyElementEntered;
+                else
+                    _emptyElemReadState = EmptyElemCompabilityState.Off;
+            }
 
             return canRead;
         }
