@@ -14,7 +14,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
     {
         XmlTextReader _reader;
         EmptyElemCompabilityState _emptyElemReadState = EmptyElemCompabilityState.Off;
-        bool _hasAttributesOnEndElem;
+        bool _attributesLoopReset = false;
 
         private enum EmptyElemCompabilityState
         {
@@ -210,7 +210,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             get
             {
-                if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead && _reader.NodeType != XmlNodeType.Attribute)
+                if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
                 {
                     return XmlNodeTypeEnum.GetInstance().FromNativeValue(XmlNodeType.EndElement);
                 }
@@ -374,6 +374,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         public void Skip()
         {
             _reader.Skip();
+            CheckEmptyElementEntering();
         }
 
         [ContextMethod("Прочитать", "Read")]
@@ -384,35 +385,44 @@ namespace ScriptEngine.HostedScript.Library.Xml
                 _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
                 return true;
             }
-            else if(_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
-            {
-                _emptyElemReadState = EmptyElemCompabilityState.Off;
-                return _reader.Read();
-            }
-            
-            bool canRead;
-
-            if (_reader.IsEmptyElement)
-            {
-                canRead = true;
-                _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
-            }
             else
             {
-                canRead = _reader.Read();
-                if (_reader.IsEmptyElement)
-                    _emptyElemReadState = EmptyElemCompabilityState.EmptyElementEntered;
-                else
-                    _emptyElemReadState = EmptyElemCompabilityState.Off;
+                bool readingDone = _reader.Read();
+                CheckEmptyElementEntering();
+                return readingDone;
+            }
+        }
+
+        private void CheckEmptyElementEntering()
+        {
+            _attributesLoopReset = false;
+            if (_reader.IsEmptyElement)
+                _emptyElemReadState = EmptyElemCompabilityState.EmptyElementEntered;
+            else
+                _emptyElemReadState = EmptyElemCompabilityState.Off;
+        }
+
+        private bool IsEndElement()
+        {
+            var isEnd = (NodeType == XmlNodeTypeEnum.GetInstance().FromNativeValue(XmlNodeType.EndElement));
+            return isEnd;
+        }
+
+        private bool ReadAttributeInternal()
+        {
+            if (IsEndElement() && !_attributesLoopReset)
+            {
+                _attributesLoopReset = true;
+                return _reader.MoveToFirstAttribute();
             }
 
-            return canRead;
+            return _reader.MoveToNextAttribute();
         }
 
         [ContextMethod("ПрочитатьАтрибут", "ReadAttribute")]
         public bool ReadAttribute()
         {
-            return _reader.MoveToNextAttribute();
+            return ReadAttributeInternal();
         }
 
         [ContextMethod("СледующееОбъявление", "NextDeclaration")]
@@ -424,7 +434,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("СледующийАтрибут", "NextAttribute")]
         public bool NextAttribute()
         {
-            return _reader.MoveToNextAttribute();
+            return ReadAttributeInternal();
         }
 
         [ContextMethod("ТипАтрибута", "AttributeType")]
@@ -442,7 +452,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ПерейтиКСодержимому", "MoveToContent")]
         public IValue MoveToContent()
         {
-            return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.MoveToContent());
+            var nodeType = _reader.MoveToContent();
+            CheckEmptyElementEntering();
+            return XmlNodeTypeEnum.GetInstance().FromNativeValue(nodeType);
         } 
 
         #endregion
