@@ -37,6 +37,7 @@ namespace ScriptEngine.Machine
         TypeDescriptor GetTypeById(int id);
         TypeDescriptor GetTypeByFrameworkType(Type type);
         TypeDescriptor RegisterType(string name, Type implementingClass);
+        TypeDescriptor GetTypeDescriptorFor(IValue typeTypeValue);
         void RegisterAliasFor(TypeDescriptor td, string alias);
         bool IsKnownType(Type type);
         Type NewInstanceHandler { get; set; }
@@ -192,6 +193,19 @@ namespace ScriptEngine.Machine
             }
         }
 
+        public TypeDescriptor GetTypeDescriptorFor(IValue typeTypeValue)
+        {
+            if (typeTypeValue.DataType != DataType.Type)
+                throw RuntimeException.InvalidArgumentType();
+
+            var ttVal = typeTypeValue.GetRawValue() as TypeTypeValue;
+
+            System.Diagnostics.Debug.Assert(ttVal != null, "value must be of type TypeTypeValue");
+
+            return ttVal.Value;
+
+        }
+
         #endregion
 
     }
@@ -239,6 +253,11 @@ namespace ScriptEngine.Machine
         public static TypeDescriptor GetTypeByFrameworkType(Type type)
         {
             return _instance.GetTypeByFrameworkType(type);
+        }
+
+        public static TypeDescriptor GetTypeDescriptorFor(IValue typeTypeValue)
+        {
+            return _instance.GetTypeDescriptorFor(typeTypeValue);
         }
 
         public static Type NewInstanceHandler

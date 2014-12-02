@@ -178,7 +178,7 @@ namespace ScriptEngine.Machine
         public const int UNDEFINED_VALUE_INDEX = -1;
     }
 
-    public struct TypeDescriptor
+    public struct TypeDescriptor : IEquatable<TypeDescriptor>
     {
         public int ID;
         public string Name;
@@ -199,6 +199,11 @@ namespace ScriptEngine.Machine
                 || srcType == DataType.Type);
 
             return TypeManager.GetTypeById((int)srcType);
+        }
+
+        public bool Equals(TypeDescriptor other)
+        {
+            return other.ID == this.ID;
         }
     }
 
