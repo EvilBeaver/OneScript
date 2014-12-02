@@ -1,4 +1,4 @@
-<Project DefaultTargets="BuildAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
   
   <PropertyGroup>
@@ -7,9 +7,69 @@
     <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
     <Solution>.\src\1Script.sln</Solution>
     <InstallerStandartPath>C:\Program Files (x86)\Inno Setup 5\iscc.exe</InstallerStandartPath>
+    <Major>1</Major>
+    <Minor>0</Minor>
+    <Build>8</Build>
+    <Revision>0</Revision>
   </PropertyGroup>
 
-  
+
+  <PropertyGroup Condition=" '$(BUILD_NUMBER)' != '' ">
+    <!-- CI Build Server Build Number -->
+    <Revision>$(BUILD_NUMBER)</Revision>
+  </PropertyGroup>
+ 
+  <ItemGroup>
+    <DefaultExclude Include="**\.git\**" />
+    <DefaultExclude Include="**\.git*" />
+    <DefaultExclude Include="**\bin\**" />
+    <DefaultExclude Include="**\obj\**" />
+    <DefaultExclude Include="**\Release\**" />
+    <DefaultExclude Include="**\Debug\**" />
+    <DefaultExclude Include="**\packages\**" />
+    <DefaultExclude Include="**\Test\**" />
+    <DefaultExclude Include="**\TestResults\**" />
+    <DefaultExclude Include="**\doc\**" />
+    <DefaultExclude Include="**\*.user" />
+    <DefaultExclude Include="**\*.suo" />
+    <DefaultExclude Include="**\*.patch" />
+    <DefaultExclude Include="**\*.cache" />
+    <DefaultExclude Include="*.zip" />
+  </ItemGroup>
+
+  <Target Name="Initialize"">
+    <Message Text="Beginning Master Build." />
+  </Target>
+ 
+  <Target Name="Version" DependsOnTargets="Initialize">
+    <GitVersion LocalPath="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="CommitHash" PropertyName="CommitHash" />
+    </GitVersion>
+
+    <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)"/>
+    <Message Text="Commit Hash: $(CommitHash)"/>
+
+    <Time>
+      <Output TaskParameter="Month" PropertyName="Month" />
+      <Output TaskParameter="Day" PropertyName="Day" />
+      <Output TaskParameter="Year" PropertyName="Year" />
+    </Time>
+
+    <AssemblyInfo CodeLanguage="CS"
+                  OutputFile="src\GlobalAssemblyInfo.cs"
+                  GenerateClass="true"
+                  AssemblyCompany=""
+                  AssemblyProduct=""
+                  AssemblyCopyright="Copyright © $(Year) "
+                  AssemblyConfiguration="Commit $(CommitHash)"
+                  ComVisible="false"
+                  CLSCompliant="false"
+                  AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)"
+                  AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)"
+                  AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" />
+  </Target>
+
+
   <Target Name="BuildAll" DependsOnTargets="CleanAll;CoreBuild;CopyFiles;CreateLatestZip"/>
 
   <Target Name="CoreBuild">
@@ -57,15 +117,19 @@
          ZipFileName="$(DistPath)OneScript-latest.zip"/>
   </Target>
 
-  <Target Name="CreateInnoDist"  DependsOnTargets="CleanDist">
+  <Target Name="Dist"  DependsOnTargets="CleanDist">
     <!--<InnoSetup OutputPath="$(DistPath)" ToolExe="$(InstallerStandartPath)" ScriptFile="$(MSBuildProjectDirectory)\install\install.iss" />-->
     <Exec Command="$(InstallerStandartPath) $(MSBuildProjectDirectory)\install\install.iss" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\install\Output\*.*"
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\install\Output\*.exe"
           DestinationFolder="$(OutputPathForDist)" />
   </Target>
 
-  <Target Name="CreateMSI"  DependsOnTargets="CleanDist">
+  <Target Name="Installer"  DependsOnTargets="Zip;Dist">
     <!--TODO Add WixSupport-->
   </Target>
+
+  <Target Name="Build" DependsOnTargets="Installer">
+    <Message Text="Build Complete"/>
+  </Target> 
   
 </Project>
