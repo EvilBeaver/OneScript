@@ -77,5 +77,13 @@ namespace ScriptEngine.Machine
             }
         }
 
+        public TypeDescriptor Value
+        {
+            get
+            {
+                return _instance;
+            }
+        }
+
     }
 }

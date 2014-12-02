@@ -78,6 +78,7 @@
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Library\TextWriteImpl.cs" />
+    <Compile Include="Library\Xml\XmlGlobalFunctions.cs" />
     <Compile Include="Library\Xml\XmlNodeTypeEnum.cs" />
     <Compile Include="Library\Xml\XmlReaderImpl.cs" />
     <Compile Include="Library\ValueTable\CollectionIndexes.cs" />

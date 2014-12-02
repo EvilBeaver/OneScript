@@ -37,6 +37,14 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        public byte[] Buffer
+        {
+            get
+            {
+                return _buffer;
+            }
+        }
+
         [ScriptConstructor(Name="На основании файла")]
         public static BinaryDataContext Constructor(IValue filename)
         {
