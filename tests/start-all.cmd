@@ -1,4 +1,5 @@
-@echo on
+@echo off
+
 chcp 866 > nul
 
 setlocal
@@ -16,6 +17,7 @@ if NOT "%%~nI"=="testrunner" (
 	echo - δ ©« β₯αβ  -   %%I
 	echo ---
 
+dir %1
 	call %1 start.os -run %%I %2 %3 %4 %5
 
 	rem @call "%pathdir%\..\install\built\oscript.exe" "%pathdir%\start.os" -run %%I %1 %2 %3 %4 %5
