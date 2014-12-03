@@ -9,6 +9,11 @@ namespace ScriptEngine.Machine
     {
         static Dictionary<Type, object> _instances = new Dictionary<Type, object>();
 
+        internal static void Reset()
+        {
+            _instances.Clear();
+        }
+
         internal static void RegisterInstance(object instance)
         {
             _instances.Add(instance.GetType(), instance);
