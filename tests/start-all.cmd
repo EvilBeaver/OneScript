@@ -1,4 +1,5 @@
 @echo on
+chcp 866 > nul
 
 setlocal
 set pathdir=%~dp0
@@ -15,7 +16,7 @@ if NOT "%%~nI"=="testrunner" (
 	echo - δ ©« β₯αβ  -   %%I
 	echo ---
 
-	@call %1 "%pathdir%\start.os" -run %%I %1 %2 %3 %4 %5
+	@call %1 "%pathdir%\start.os" -run %%I %2 %3 %4 %5
 
 	rem @call "%pathdir%\..\install\built\oscript.exe" "%pathdir%\start.os" -run %%I %1 %2 %3 %4 %5
 	rem @call "%ProgramFiles(x86)%\OneScript\oscript.exe" "%pathdir%\start.os" -run %%I %1 %2 %3 %4 %5
