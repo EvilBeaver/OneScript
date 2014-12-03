@@ -297,23 +297,31 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ЗначениеАтрибута", "AttributeValue")]
-        public string AttributeValue(IValue indexOrName, string URIIfGiven = null)
+        public IValue AttributeValue(IValue indexOrName, string URIIfGiven = null)
         {
+            string attributeValue = null;
+
             if (indexOrName.DataType == DataType.Number)
             {
-                return _reader.GetAttribute((int)indexOrName.AsNumber());
+                attributeValue = _reader.GetAttribute((int)indexOrName.AsNumber());
             }
             else if (indexOrName.DataType == DataType.String)
             {
                 if (URIIfGiven == null)
-                    return _reader.GetAttribute(indexOrName.AsString());
+                    attributeValue = _reader.GetAttribute(indexOrName.AsString());
                 else
-                    return _reader.GetAttribute(indexOrName.AsString(), URIIfGiven);
+                    attributeValue = _reader.GetAttribute(indexOrName.AsString(), URIIfGiven);
             }
             else
             {
                 throw RuntimeException.InvalidArgumentType();
             }
+
+            if (attributeValue != null)
+                return ValueFactory.Create(attributeValue);
+            else
+                return ValueFactory.Create();
+
         }
 
         [ContextMethod("ИмяАтрибута", "AttributeName")]
@@ -354,7 +362,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ПолучитьАтрибут", "GetAttribute")]
-        public string GetAttribute(IValue indexOrName, string URIIfGiven = null)
+        public IValue GetAttribute(IValue indexOrName, string URIIfGiven = null)
         {
             return AttributeValue(indexOrName, URIIfGiven);
         }
