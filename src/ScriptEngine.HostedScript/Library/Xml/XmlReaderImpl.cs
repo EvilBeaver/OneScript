@@ -211,11 +211,11 @@ namespace ScriptEngine.HostedScript.Library.Xml
             {
                 if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
                 {
-                    return XmlNodeTypeEnum.GetInstance().FromNativeValue(XmlNodeType.EndElement);
+                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(XmlNodeType.EndElement);
                 }
                 else
                 {
-                    return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.NodeType);
+                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(_reader.NodeType);
                 }
             }
         }
@@ -435,7 +435,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ПерейтиКСодержимому", "MoveToContent")]
         public IValue MoveToContent()
         {
-            return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.MoveToContent());
+            return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(_reader.MoveToContent());
         } 
 
         #endregion

@@ -145,16 +145,10 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         private static ContextMethodsMapper<FileOperations> _methods = new ContextMethodsMapper<FileOperations>();
-        private static FileOperations _instance;
-
-        static FileOperations()
+        
+        public static IAttachableContext CreateInstance()
         {
-            _instance = new FileOperations();
-        }
-
-        public static IAttachableContext GetInstance()
-        {
-            return _instance;
+            return new FileOperations();
         }
 
         #region IRuntimeContextInstance members
