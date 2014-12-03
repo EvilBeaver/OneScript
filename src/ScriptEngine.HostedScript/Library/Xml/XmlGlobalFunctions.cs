@@ -35,7 +35,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
                     }
                     else
                     {
-                        return value.ToString();
+                        return value.GetRawValue().AsString();
                     }
 
             }
