@@ -1,7 +1,6 @@
 @echo off
 
-rem chcp 866 > nul
-chcp 65001
+chcp 866 > nul
 
 setlocal
 set pathdir=%~dp0
