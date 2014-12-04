@@ -1,6 +1,9 @@
 <Project DefaultTargets="BuildAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+   
   
+  
+  <!--
   <PropertyGroup>
     <Configuration>Release</Configuration>
     <OutputPathForDist>$(MSBuildProjectDirectory)\install\built\</OutputPathForDist>
@@ -40,12 +43,12 @@
   </Target>
 
   <Target Name="CleanDist">
-    <Exec Command="del /F /Q $(DistPath)*.*"/>
+    <Exec Command="del /F /Q $(DistPath)*.*" Condition="Exists('$(DistPath)')"/>
   </Target>
   
   
   <Target Name="CleanAll" DependsOnTargets="CleanDist">
-    <Exec Command="del /F /Q $(OutputPathForDist)\*.*"/>
+    <Exec Command="del /F /Q $(OutputPathForDist)\*.*" Condition="Exists('$(OutputPathForDist)')" />
     <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);"/>
   </Target>
 
@@ -55,16 +58,16 @@
          WorkingDirectory="&quot;$(OutputPathForDist)&quot;"
          Files="ScriptEngine.HostedScript.dll;ScriptEngine.dll;ScriptEngine.Snegopat.dll;TestApp.exe;ICSharpCode.AvalonEdit.dll;oscript.exe" 
          ZipFileName="$(DistPath)OneScript-latest.zip"/>
-    <InnoSetup OutputPath="$(DistPath)" ToolExe="$(InstallerStandartPath)" ScriptFile="$(MSBuildProjectDirectory)\install\install.iss" />
-    
   </Target>
 
   <Target Name="CreateInnoDist"  DependsOnTargets="CleanDist">
     <InnoSetup OutputPath="$(DistPath)" ToolExe="$(InstallerStandartPath)" ScriptFile="$(MSBuildProjectDirectory)\install\install.iss" />
+    <Exec Command="$(InstallerStandartPath) $(MSBuildProjectDirectory)\install\install.iss" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\install\Output\*.*"
+          DestinationFolder="$(OutputPathForDist)" />
   </Target>
 
   <Target Name="CreateMSI"  DependsOnTargets="CleanDist">
-    <!--TODO Add WixSupport-->
-  </Target>
-  
+    TODO Add WixSupport
+  </Target>-->
 </Project>
