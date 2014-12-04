@@ -59,6 +59,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
