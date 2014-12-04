@@ -211,11 +211,11 @@ namespace ScriptEngine.HostedScript.Library.Xml
             {
                 if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
                 {
-                    return XmlNodeTypeEnum.GetInstance().FromNativeValue(XmlNodeType.EndElement);
+                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(XmlNodeType.EndElement);
                 }
                 else
                 {
-                    return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.NodeType);
+                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(_reader.NodeType);
                 }
             }
         }
@@ -297,23 +297,31 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ЗначениеАтрибута", "AttributeValue")]
-        public string AttributeValue(IValue indexOrName, string URIIfGiven = null)
+        public IValue AttributeValue(IValue indexOrName, string URIIfGiven = null)
         {
+            string attributeValue = null;
+
             if (indexOrName.DataType == DataType.Number)
             {
-                return _reader.GetAttribute((int)indexOrName.AsNumber());
+                attributeValue = _reader.GetAttribute((int)indexOrName.AsNumber());
             }
             else if (indexOrName.DataType == DataType.String)
             {
                 if (URIIfGiven == null)
-                    return _reader.GetAttribute(indexOrName.AsString());
+                    attributeValue = _reader.GetAttribute(indexOrName.AsString());
                 else
-                    return _reader.GetAttribute(indexOrName.AsString(), URIIfGiven);
+                    attributeValue = _reader.GetAttribute(indexOrName.AsString(), URIIfGiven);
             }
             else
             {
                 throw RuntimeException.InvalidArgumentType();
             }
+
+            if (attributeValue != null)
+                return ValueFactory.Create(attributeValue);
+            else
+                return ValueFactory.Create();
+
         }
 
         [ContextMethod("ИмяАтрибута", "AttributeName")]
@@ -354,7 +362,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ПолучитьАтрибут", "GetAttribute")]
-        public string GetAttribute(IValue indexOrName, string URIIfGiven = null)
+        public IValue GetAttribute(IValue indexOrName, string URIIfGiven = null)
         {
             return AttributeValue(indexOrName, URIIfGiven);
         }
@@ -427,7 +435,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ПерейтиКСодержимому", "MoveToContent")]
         public IValue MoveToContent()
         {
-            return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.MoveToContent());
+            return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(_reader.MoveToContent());
         } 
 
         #endregion
