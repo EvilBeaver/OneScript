@@ -75,16 +75,10 @@ namespace ScriptEngine.HostedScript.Library.Xml
         
 
         private static ContextMethodsMapper<XmlGlobalFunctions> _methods = new ContextMethodsMapper<XmlGlobalFunctions>();
-        private static XmlGlobalFunctions _instance;
-
-        static XmlGlobalFunctions()
+        
+        public static IAttachableContext CreateInstance()
         {
-            _instance = new XmlGlobalFunctions();
-        }
-
-        public static IAttachableContext GetInstance()
-        {
-            return _instance;
+            return new XmlGlobalFunctions();
         }
 
         #region IRuntimeContextInstance members
