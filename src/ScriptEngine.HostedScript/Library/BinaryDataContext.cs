@@ -9,7 +9,7 @@ using System.Text;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ДвоичныеДанные", "BinaryData")]
-    public class BinaryDataContext : AutoContext<BinaryDataContext>
+    public class BinaryDataContext : AutoContext<BinaryDataContext>, IDisposable
     {
         byte[] _buffer;
 
@@ -21,7 +21,17 @@ namespace ScriptEngine.HostedScript.Library
                 fs.Read(_buffer, 0, _buffer.Length);
             }
         }
-        
+
+        public BinaryDataContext(byte[] buffer)
+        {
+            _buffer = buffer;
+        }
+
+        public void Dispose()
+        {
+            _buffer = null;
+        }
+
         [ContextMethod("Размер","Size")]
         public int Size()
         {
