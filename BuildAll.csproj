@@ -11,24 +11,23 @@
 
 
                                       
-  <Target Name="Build" DependsOnTargets="Compile" >
+  <Target Name="Build" DependsOnTargets="CleanAll;Compile" >
     <CallTarget Targets="ContinueBuild" />
   </Target>
   
   <Target Name="Compile">
-    <CreateItem Include="$(OutputPathForDist)\*">
-      <Output TaskParameter="Include" ItemName="RemoveFiles" />
-    </CreateItem>
-    <Delete Files="@(RemoveFiles)" />
     
-    <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)"/>
-
     <MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)" />
     
   </Target>
 
 
   <Target Name="CleanAll">
+	<CreateItem Include="$(OutputPathForDist)\*">
+    	  <Output TaskParameter="Include" ItemName="RemoveFiles" />
+    	</CreateItem>
+    
+	<Delete Files="@(RemoveFiles)" />
 	<MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)"/>
   </Target>
 
