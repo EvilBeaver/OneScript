@@ -47,4 +47,4 @@ echo    “― Άι¨¥ β¥αβλ:
 type %logfile%
 
 if ".%1"=="." pause
-exit /B 0
+exit /B 1
