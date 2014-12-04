@@ -4,8 +4,8 @@
   <PropertyGroup>
     <Configuration>Release</Configuration>
     <OutputPathForDist>$(MSBuildProjectDirectory)\build\</OutputPathForDist>
-    <DistPath>$(MSBuildProjectDirectory)dist\</DistPath>
-    <Solution>$(MSBuildProjectDirectory)src\1Script.sln</Solution>
+    <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
+    <Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
     <InstallerStandartPath>C:\Program Files (x86)\Inno Setup 5\iscc.exe</InstallerStandartPath>
   </PropertyGroup>
 
