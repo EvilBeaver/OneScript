@@ -3,15 +3,13 @@
   
   <PropertyGroup>
     <Configuration>Release</Configuration>
-    <OutputPathForDist>$(MSBuildProjectDirectory)\build\</OutputPathForDist>
+    <OutputPathForDist>$(MSBuildProjectDirectory)\install\build\</OutputPathForDist>
     <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
     <Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
-    <InstallerStandartPath>C:\Program Files (x86)\Inno Setup 5\iscc.exe</InstallerStandartPath>
+    <InstallerStandartPath>"C:\Program Files (x86)\Inno Setup 5\iscc.exe"</InstallerStandartPath>
   </PropertyGroup>
-
-
                                       
-  <Target Name="Build" DependsOnTargets="CleanAll;Compile" >
+  <Target Name="Build" DependsOnTargets="CleanAll;Compile;CreateInstall" >
     <CallTarget Targets="ContinueBuild" />
   </Target>
   
@@ -23,19 +21,25 @@
 
 
   <Target Name="CleanAll">
-	<CreateItem Include="$(OutputPathForDist)\*">
-    	  <Output TaskParameter="Include" ItemName="RemoveFiles" />
-    	</CreateItem>
+	  <CreateItem Include="$(OutputPathForDist)\*">
+      <Output TaskParameter="Include" ItemName="RemoveFiles" />
+    </CreateItem>
     
-	<Delete Files="@(RemoveFiles)" />
-	<MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)"/>
+	  <Delete Files="@(RemoveFiles)" />
+  	<MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)"/>
+
+  </Target>
+
+
+  <Target Name="CreateInstall">
+
+    <Exec Command="$(InstallerStandartPath) $(MSBuildProjectDirectory)\install\install.iss /o./dist" />
+    
   </Target>
 
   <Target Name="ContinueBuild">
-
-
+    
   </Target>
-  
   
   <!--
   <PropertyGroup>
