@@ -1,6 +1,41 @@
-<Project DefaultTargets="BuildAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
-   
+  
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+    <OutputPathForDist>$(MSBuildProjectDirectory)\build\</OutputPathForDist>
+    <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
+    <Solution>.\src\1Script.sln</Solution>
+    <InstallerStandartPath>C:\Program Files (x86)\Inno Setup 5\iscc.exe</InstallerStandartPath>
+  </PropertyGroup>
+
+
+                                      
+  <Target Name="Build" DependsOnTargets="Compile" >
+    <CallTarget Targets="ContinueBuild" />
+  </Target>
+  
+  <Target Name="Compile">
+    <CreateItem Include="$(OutputPathForDist)\*">
+      <Output TaskParameter="Include" ItemName="RemoveFiles" />
+    </CreateItem>
+    <Delete Files="@(RemoveFiles)" />
+    
+    <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)"/>
+
+    <MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)" />
+    
+  </Target>
+
+
+  <Target Name="CleanAll">
+	<MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)"/>
+  </Target>
+
+  <Target Name="ContinueBuild">
+
+
+  </Target>
   
   
   <!--
