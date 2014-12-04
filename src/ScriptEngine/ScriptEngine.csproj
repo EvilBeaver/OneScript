@@ -90,6 +90,7 @@
     <Compile Include="Machine\Contexts\EnumerationContext.cs" />
     <Compile Include="Machine\Contexts\EnumerationValue.cs" />
     <Compile Include="Machine\Contexts\GlobalContextAttribute.cs" />
+    <Compile Include="Machine\Contexts\GlobalContextBase.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
     <Compile Include="Machine\Contexts\LibraryContextBase.cs" />
     <Compile Include="Machine\Contexts\ScriptInformationContext.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
     <Compile Include="Machine\Contexts\SystemEnumAttribute.cs" />
     <Compile Include="Machine\GenericIValueComparer.cs" />
+    <Compile Include="Machine\GlobalInstancesManager.cs" />
     <Compile Include="Machine\NullValueImpl.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="Machine\TypeTypeValue.cs" />

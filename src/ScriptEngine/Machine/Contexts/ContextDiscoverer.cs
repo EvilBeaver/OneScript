@@ -8,6 +8,8 @@ namespace ScriptEngine.Machine.Library
 {
     static class ContextDiscoverer
     {
+        private const string INSTANCE_RETRIEVER_NAME = "CreateInstance";
+        
         public static void DiscoverClasses(System.Reflection.Assembly assembly)
         {
             var collection = GetMarkedTypes(assembly.GetTypes().AsParallel(), typeof(ContextClassAttribute));
@@ -53,11 +55,12 @@ namespace ScriptEngine.Machine.Library
 
         private static void RegisterSystemEnum(Type enumType, RuntimeEnvironment environment)
         {
-            var method = enumType.GetMethod("GetInstance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+            var method = enumType.GetMethod(INSTANCE_RETRIEVER_NAME, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
             
-            System.Diagnostics.Trace.Assert(method != null, "System enum must have a static method GetInstance");
+            System.Diagnostics.Trace.Assert(method != null, "System enum must have a static method " + INSTANCE_RETRIEVER_NAME);
 
             var instance = (IValue)method.Invoke(null, null);
+            GlobalsManager.RegisterInstance(instance);
             var enumMetadata = (SystemEnumAttribute)enumType.GetCustomAttributes(typeof(SystemEnumAttribute), false)[0];
             environment.InjectGlobalProperty(instance, enumMetadata.GetName(), true);
             if(enumMetadata.GetAlias() != String.Empty)
@@ -71,10 +74,10 @@ namespace ScriptEngine.Machine.Library
             if (attribData.ManualRegistration)
                 return;
 
-            var method = contextType.GetMethod("GetInstance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-            System.Diagnostics.Trace.Assert(method != null, "Global context must have a static method GetInstance");
+            var method = contextType.GetMethod(INSTANCE_RETRIEVER_NAME, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+            System.Diagnostics.Trace.Assert(method != null, "Global context must have a static method " + INSTANCE_RETRIEVER_NAME);
             var instance = (IAttachableContext)method.Invoke(null, null);
-
+            GlobalsManager.RegisterInstance(instance);
             environment.InjectObject(instance, false);
 
         }

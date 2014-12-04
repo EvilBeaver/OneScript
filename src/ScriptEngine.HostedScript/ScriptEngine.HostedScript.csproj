@@ -71,6 +71,7 @@
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
+    <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\SystemGlobalContext.cs" />
     <Compile Include="Library\GuidWrapper.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Library\TextWriteImpl.cs" />
+    <Compile Include="Library\Xml\XmlGlobalFunctions.cs" />
     <Compile Include="Library\Xml\XmlNodeTypeEnum.cs" />
     <Compile Include="Library\Xml\XmlReaderImpl.cs" />
     <Compile Include="Library\ValueTable\CollectionIndexes.cs" />
