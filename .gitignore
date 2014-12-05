@@ -75,3 +75,4 @@ src/ScriptEngine.Snegopat/Snegopat_i.c
 #CI and full build|deploy
 /dist
 /install/build
+*.os.xml
