@@ -14,6 +14,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
     {
         XmlTextReader _reader;
         EmptyElemCompabilityState _emptyElemReadState = EmptyElemCompabilityState.Off;
+        bool _attributesLoopReset = false;
 
         private enum EmptyElemCompabilityState
         {
@@ -381,6 +382,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         public void Skip()
         {
             _reader.Skip();
+            CheckEmptyElementEntering();
         }
 
         [ContextMethod("Прочитать", "Read")]
@@ -391,21 +393,44 @@ namespace ScriptEngine.HostedScript.Library.Xml
                 _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
                 return true;
             }
-            
-            var canRead = _reader.Read();
-            
+            else
+            {
+                bool readingDone = _reader.Read();
+                CheckEmptyElementEntering();
+                return readingDone;
+            }
+        }
+
+        private void CheckEmptyElementEntering()
+        {
+            _attributesLoopReset = false;
             if (_reader.IsEmptyElement)
                 _emptyElemReadState = EmptyElemCompabilityState.EmptyElementEntered;
             else
                 _emptyElemReadState = EmptyElemCompabilityState.Off;
+        }
 
-            return canRead;
+        private bool IsEndElement()
+        {
+            var isEnd = (NodeType == GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(XmlNodeType.EndElement));
+            return isEnd;
+        }
+
+        private bool ReadAttributeInternal()
+        {
+            if (IsEndElement() && !_attributesLoopReset)
+            {
+                _attributesLoopReset = true;
+                return _reader.MoveToFirstAttribute();
+            }
+
+            return _reader.MoveToNextAttribute();
         }
 
         [ContextMethod("ПрочитатьАтрибут", "ReadAttribute")]
         public bool ReadAttribute()
         {
-            return _reader.MoveToNextAttribute();
+            return ReadAttributeInternal();
         }
 
         [ContextMethod("СледующееОбъявление", "NextDeclaration")]
@@ -417,7 +442,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("СледующийАтрибут", "NextAttribute")]
         public bool NextAttribute()
         {
-            return _reader.MoveToNextAttribute();
+            return ReadAttributeInternal();
         }
 
         [ContextMethod("ТипАтрибута", "AttributeType")]
@@ -435,8 +460,10 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ПерейтиКСодержимому", "MoveToContent")]
         public IValue MoveToContent()
         {
-            return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(_reader.MoveToContent());
-        } 
+            var nodeType = _reader.MoveToContent();
+            CheckEmptyElementEntering();
+            return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(nodeType);        
+	    } 
 
         #endregion
 
