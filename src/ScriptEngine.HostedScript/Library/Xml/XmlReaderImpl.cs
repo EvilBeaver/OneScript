@@ -412,7 +412,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         private bool IsEndElement()
         {
-            var isEnd = (NodeType == XmlNodeTypeEnum.GetInstance().FromNativeValue(XmlNodeType.EndElement));
+            var isEnd = (NodeType == GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(XmlNodeType.EndElement));
             return isEnd;
         }
 
