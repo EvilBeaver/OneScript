@@ -104,27 +104,23 @@
   <!--aditional tasks-->
 
   <Target Name="CreateZipForUpdateDll">
-    <CreateItem Include="$(OutputPathForDist)\*.*" Exclude="$(DefaultExclude)" >
-      <Output TaskParameter="Include" ItemName="ZipFiles" />
-    </CreateItem>
-
     <CreateItem Include="$(OutputPathForDist)\*.pdb;$(OutputPathForDist)\*.XML;$(DistPath)\*.zip">
       <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
     </CreateItem>
 
     <Delete Files="@(RemoveUnnessesaryFiles)" />
 
+    <CreateItem Include="$(OutputPathForDist)\*.*" Exclude="$(DefaultExclude)" >
+      <Output TaskParameter="Include" ItemName="ZipFiles" />
+    </CreateItem>
+
     <GitBranch>
       <Output TaskParameter="Branch" PropertyName="GitBranch" />
     </GitBranch>
-
-    <PropertyGroup Condition="$(GitBranch) == 'develop' Or $(GitBranch) == 'master'">
-      <ZipBuildBranch>-$(GitBranch)</ZipBuildBranch>
-    </PropertyGroup>
     
     <Zip Files="@(ZipFiles)"
          WorkingDirectory="$(OutputPathForDist)"
-         ZipFileName="$(DistPath)OneScript-latest$(ZipBuildBranch).zip" />
+         ZipFileName="$(DistPath)OneScript-latest-$(GitBranch.Replace('\','-').Replace('/','-')).zip" />
    
   </Target>  
   
