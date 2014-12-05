@@ -140,6 +140,8 @@
     <GitBranch>
       <Output TaskParameter="Branch" PropertyName="GitBranch" />
     </GitBranch>
+
+    <Message Text="Current GIT branch $(GitBranch)"/>
     
     <Zip Files="@(ZipFiles)"
          WorkingDirectory="$(OutputPathForDist)"
