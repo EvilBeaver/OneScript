@@ -118,13 +118,13 @@
       <Output TaskParameter="Branch" PropertyName="GitBranch" />
     </GitBranch>
 
-    <CreateItem Condition="$(GitBranch) == 'develop' Or $(GitBranch) == 'master'">
-      <Output TaskParameter="-$(GitBranch)" PropertyName="ZipBuildBranch"/>
-    </CreateItem>
+    <PropertyGroup Condition="$(GitBranch) == 'develop' Or $(GitBranch) == 'master'">
+      <ZipBuildBranch>-$(GitBranch)</ZipBuildBranch>
+    </PropertyGroup>
     
     <Zip Files="@(ZipFiles)"
          WorkingDirectory="$(OutputPathForDist)"
-         ZipFileName="$(DistPath)\OneScript-latest$(ZipBuildBranch).zip" />
+         ZipFileName="$(DistPath)OneScript-latest$(ZipBuildBranch).zip" />
    
   </Target>  
   
