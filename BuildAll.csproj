@@ -1,73 +1,161 @@
-<Project DefaultTargets="BuildAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
-   
   
-  
-  <!--
   <PropertyGroup>
     <Configuration>Release</Configuration>
-    <OutputPathForDist>$(MSBuildProjectDirectory)\install\built\</OutputPathForDist>
+    <OutputPathForDist>$(MSBuildProjectDirectory)\install\build\</OutputPathForDist>
     <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
-    <Solution>.\src\1Script.sln</Solution>
-    <InstallerStandartPath>C:\Program Files (x86)\Inno Setup 5\iscc.exe</InstallerStandartPath>
+    <Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
+    <InstallerStandartPath>"C:\Program Files (x86)\Inno Setup 5\iscc.exe"</InstallerStandartPath>
+
+    <Major>1</Major>
+    <Minor>0</Minor>
+    <Build>8</Build>
+    <Revision>0</Revision>
+    
   </PropertyGroup>
 
-  
-  <Target Name="BuildAll" DependsOnTargets="CleanAll;CoreBuild;CopyFiles;CreateLatestZip"/>
+  <PropertyGroup Condition=" '$(BUILD_NUMBER)' != '' ">
+    <!-- CI Build Number -->
+    <Revision>$(BUILD_NUMBER)</Revision>
+  </PropertyGroup>
+ 
 
-  <Target Name="CoreBuild">
-    <MakeDir Directories="$(OutputPathForDist)"      Condition="!Exists('$(OutputPathForDist)')" />
-    <MSBuild Projects="$(Solution)" Targets="Build" Properties="Configuration=$(Configuration);"/>
+  <ItemGroup>
+    <DefaultExclude Include="**\.git\**" />
+    <DefaultExclude Include="**\.git*" />
+    <DefaultExclude Include="**\*.pdb" />
+    <DefaultExclude Include="**\*.XML" />
+    <DefaultExclude Include="*.zip" />
+    <DefaultExclude Include="$(OutputPathForDist)\*.pdb" />
+    <DefaultExclude Include="$(OutputPathForDist)\*.XML" />
+  </ItemGroup>
+
+  <Target Name="VersionGenerate">
+    <Time>
+      <Output TaskParameter="Month" PropertyName="Month" />
+      <Output TaskParameter="Day" PropertyName="Day" />
+      <Output TaskParameter="Year" PropertyName="Year" />
+    </Time>
+
+    <AssemblyInfo CodeLanguage="CS"
+                  OutputFile="src\GlobalAssemblyInfo.cs"
+                  GenerateClass="true"
+                  AssemblyCompany="BeaverSoft"
+                  AssemblyCopyright="Copyright (c) 2014 BeaverSoft"
+                  AssemblyConfiguration="Configuration=$(Configuration) Commit $(CommitHash)"
+             
+                  AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)"
+                  AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)"
+                  AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" />
+    
   </Target>
+  
 
-  <Target Name="CopyFiles">
+  <Target Name="Configure">
+    <GitVersion LocalPath="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="CommitHash" PropertyName="CommitHash" />
+    </GitVersion>
 
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\ScriptEngine.dll"
-          DestinationFiles="$(OutputPathForDist)\ScriptEngine.dll" />
+    <!--CI server will be generate build numbaer and regenerate all AssemblyInfo without commit-->
+    <CallTarget Targets="VersionGenerate" Condition=" '$(BUILD_NUMBER)' != '' "/>
 
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\ScriptEngine.HostedScript.dll"
-          DestinationFiles="$(OutputPathForDist)\ScriptEngine.HostedScript.dlll" />
+    <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)"/>
+    <Message Text="Commit Hash: $(CommitHash)"/>
+    
+  </Target>
+  
+  <Target Name="Build" DependsOnTargets="CleanAll;Configure;Compile;CreateInstall" >
+    <CallTarget Targets="ContinueBuild" />
+  </Target>
+  
+  <Target Name="Compile">
+    
+    <MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)" />
 
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\Release\ScriptEngine.Snegopat.dll"
-          DestinationFiles="$(OutputPathForDist)\ScriptEngine.Snegopat.dll" />
+    <CreateItem Include="$(OutputPathForDist)\*.pdb;$(OutputPathForDist)\*.XML">
+      <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
+    </CreateItem>
 
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\TestApp.exe"
-          DestinationFiles="$(OutputPathForDist)\TestApp.exe" />
-
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\TestApp\bin\x86\Release\ICSharpCode.AvalonEdit.dll"
-          DestinationFiles="$(OutputPathForDist)\ICSharpCode.AvalonEdit.dll" />
-
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\src\oscript\bin\x86\Release\oscript.exe"
-          DestinationFiles="$(OutputPathForDist)\oscript.exe" />
+    <Delete Files="@(RemoveUnnessesaryFiles)" />
     
   </Target>
 
-  <Target Name="CleanDist">
-    <Exec Command="del /F /Q $(DistPath)*.*" Condition="Exists('$(DistPath)')"/>
+
+  <Target Name="CleanAll">
+	  <CreateItem Include="$(OutputPathForDist)\*">
+      <Output TaskParameter="Include" ItemName="RemoveFiles" />
+    </CreateItem>
+
+    <CreateItem Include="$(DistPath)\*">
+      <Output TaskParameter="Include" ItemName="RemoveDistrs" />
+    </CreateItem>
+
+    <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
+      <Output TaskParameter="Include" ItemName="RemoveXMLTestResultOnClean" />
+    </CreateItem>
+    
+    
+	  <Delete Files="@(RemoveFiles)" />
+    <Delete Files="@(RemoveDistrs)" />
+    <Delete Files="@(RemoveXMLTestResultOnClean)" />
+    
+    <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)"/>
+
+  </Target>
+
+
+  <Target Name="CreateInstall">
+
+    <Exec Command="$(InstallerStandartPath) $(MSBuildProjectDirectory)\install\install.iss /o./dist" />
+    
+  </Target>
+
+  <Target Name="ContinueBuild">
+    <!--TODO Add Wix cretation MSI-->
+  </Target>
+  
+  <!--aditional tasks-->
+
+  <Target Name="xUnitTest">
+    <ItemGroup>
+      <TestFiles Include="$(MSBuildProjectDirectory)\tests\*.os" Exclude="$(MSBuildProjectDirectory)\tests\start.os;$(MSBuildProjectDirectory)\tests\testrunner.os"/>
+    </ItemGroup>
+
+    <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
+      <Output TaskParameter="Include" ItemName="RemoveXMLTestResult" />
+    </CreateItem>
+    
+    <Delete Files="@(RemoveXMLTestResult)" />
+
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="$(OutputPathForDist)\oscript.exe $(MSBuildProjectDirectory)\tests\start.os -run %(TestFiles.FullPath)" IgnoreExitCode="true"/>
+    
   </Target>
   
   
-  <Target Name="CleanAll" DependsOnTargets="CleanDist">
-    <Exec Command="del /F /Q $(OutputPathForDist)\*.*" Condition="Exists('$(OutputPathForDist)')" />
-    <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);"/>
-  </Target>
+  <Target Name="CreateZipForUpdateDll">
+    <CreateItem Include="$(DistPath)\*.zip">
+      <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
+    </CreateItem>
 
-  <Target Name="CreateLatestZip" DependsOnTargets="CleanDist">
-        
-    <Zip ZipLevel="9" 
-         WorkingDirectory="&quot;$(OutputPathForDist)&quot;"
-         Files="ScriptEngine.HostedScript.dll;ScriptEngine.dll;ScriptEngine.Snegopat.dll;TestApp.exe;ICSharpCode.AvalonEdit.dll;oscript.exe" 
-         ZipFileName="$(DistPath)OneScript-latest.zip"/>
-  </Target>
+    <Delete Files="@(RemoveUnnessesaryFiles)" />
 
-  <Target Name="CreateInnoDist"  DependsOnTargets="CleanDist">
-    <InnoSetup OutputPath="$(DistPath)" ToolExe="$(InstallerStandartPath)" ScriptFile="$(MSBuildProjectDirectory)\install\install.iss" />
-    <Exec Command="$(InstallerStandartPath) $(MSBuildProjectDirectory)\install\install.iss" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\install\Output\*.*"
-          DestinationFolder="$(OutputPathForDist)" />
-  </Target>
+    <CreateItem Include="$(OutputPathForDist)\*.*" Exclude="$(DefaultExclude)" >
+      <Output TaskParameter="Include" ItemName="ZipFiles" />
+    </CreateItem>
 
-  <Target Name="CreateMSI"  DependsOnTargets="CleanDist">
-    TODO Add WixSupport
-  </Target>-->
+    <GitBranch>
+      <Output TaskParameter="Branch" PropertyName="GitBranch" />
+    </GitBranch>
+
+    <Message Text="Current GIT branch $(GitBranch)"/>
+  
+    <!--$(GitBranch.Replace('\','-').Replace('/','-'))-->
+    
+    <Zip Files="@(ZipFiles)"
+         WorkingDirectory="$(OutputPathForDist)"
+         ZipFileName="$(DistPath)OneScript-latest.zip" />
+   
+  </Target>  
+  
 </Project>

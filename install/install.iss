@@ -7,7 +7,7 @@
 #define VerMinor
 #define VerRelease
 #define Build
-#expr ParseVersion("built\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
+#expr ParseVersion("build\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
 
 [Setup]
 AppName={#AppName}
@@ -21,7 +21,7 @@ Compression=lzma2
 SolidCompression=yes
 
 [Files]
-Source: "built\*"; DestDir: "{app}"
+Source: "build\*"; DestDir: "{app}"
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
 Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall;
 
