@@ -106,6 +106,7 @@ namespace ScriptEngine.Machine
         Round,
         Pow,
         Sqrt,
+        Format,
         ExceptionInfo,
         ExceptionDescr,
         ModuleInfo

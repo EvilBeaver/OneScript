@@ -461,6 +461,7 @@ namespace ScriptEngine.Machine
                 Round,
                 Pow,
                 Sqrt,
+                Format,
                 ExceptionInfo,
                 ExceptionDescr,
                 ModuleInfo
@@ -1890,6 +1891,17 @@ namespace ScriptEngine.Machine
             var root = Math.Sqrt(num);
             _operationStack.Push(ValueFactory.Create((decimal)root));
             NextInstruction();
+        }
+
+        private void Format(int arg)
+        {
+            var formatString = _operationStack.Pop().AsString();
+            var valueToFormat = _operationStack.Pop();
+
+            var formatted = ValueFormatter.Format(valueToFormat, formatString);
+
+            _operationStack.Push(ValueFactory.Create(formatted));
+
         }
 
         private void ExceptionInfo(int arg)
