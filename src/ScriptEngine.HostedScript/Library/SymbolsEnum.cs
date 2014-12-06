@@ -59,24 +59,21 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
-        private static SymbolsEnum _instance;
-        public static SymbolsEnum GetInstance()
+        public static SymbolsEnum CreateInstance()
         {
-            if (_instance == null)
-            {
-                var type = TypeManager.RegisterType("Символы", typeof(SymbolsEnum));
-                var stringType = TypeDescriptor.FromDataType(DataType.String);
-                _instance = new SymbolsEnum(type, stringType);
 
-                _instance.AddValue("ПС", new SymbolsEnumValue(_instance, "\n"));
-                _instance.AddValue("ВК", new SymbolsEnumValue(_instance, "\r"));
-                _instance.AddValue("ВТаб", new SymbolsEnumValue(_instance, "\v"));
-                _instance.AddValue("Таб", new SymbolsEnumValue(_instance, "\t"));
-                _instance.AddValue("ПФ", new SymbolsEnumValue(_instance, "\f"));
-                _instance.AddValue("НПП", new SymbolsEnumValue(_instance, "\u00A0"));
-            }
+            var type = TypeManager.RegisterType("Символы", typeof(SymbolsEnum));
+            var stringType = TypeDescriptor.FromDataType(DataType.String);
+            var instance = new SymbolsEnum(type, stringType);
 
-            return _instance;
+            instance.AddValue("ПС", new SymbolsEnumValue(instance, "\n"));
+            instance.AddValue("ВК", new SymbolsEnumValue(instance, "\r"));
+            instance.AddValue("ВТаб", new SymbolsEnumValue(instance, "\v"));
+            instance.AddValue("Таб", new SymbolsEnumValue(instance, "\t"));
+            instance.AddValue("ПФ", new SymbolsEnumValue(instance, "\f"));
+            instance.AddValue("НПП", new SymbolsEnumValue(instance, "\u00A0"));
+
+            return instance;
         }
 
     }

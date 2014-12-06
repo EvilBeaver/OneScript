@@ -9,7 +9,7 @@ using System.Xml;
 namespace ScriptEngine.HostedScript.Library.Xml
 {
     [GlobalContext(Category="Функции работы с XML")]
-    public class XmlGlobalFunctions : IRuntimeContextInstance, IAttachableContext
+    public class XmlGlobalFunctions : GlobalContextBase<XmlGlobalFunctions>
     {
         [ContextMethod("XMLСтрока", "XMLString")]
         public string XMLString(IValue value)
@@ -35,7 +35,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
                     }
                     else
                     {
-                        return value.ToString();
+                        return value.GetRawValue().AsString();
                     }
 
             }
@@ -73,114 +73,10 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         }
         
-
-        private static ContextMethodsMapper<XmlGlobalFunctions> _methods = new ContextMethodsMapper<XmlGlobalFunctions>();
-        private static XmlGlobalFunctions _instance;
-
-        static XmlGlobalFunctions()
+        public static IAttachableContext CreateInstance()
         {
-            _instance = new XmlGlobalFunctions();
+            return new XmlGlobalFunctions();
         }
 
-        public static IAttachableContext GetInstance()
-        {
-            return _instance;
-        }
-
-        #region IRuntimeContextInstance members
-
-        public bool IsIndexed
-        {
-            get { return false; }
-        }
-
-        public bool DynamicMethodSignatures
-        {
-            get { return false; }
-        }
-
-        public IValue GetIndexedValue(IValue index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetIndexedValue(IValue index, IValue val)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int FindProperty(string name)
-        {
-            throw RuntimeException.PropNotFoundException(name);
-        }
-
-        public bool IsPropReadable(int propNum)
-        {
-            return false;
-        }
-
-        public bool IsPropWritable(int propNum)
-        {
-            return false;
-        }
-
-        public IValue GetPropValue(int propNum)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetPropValue(int propNum, IValue newVal)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int FindMethod(string name)
-        {
-            return _methods.FindMethod(name);
-        }
-
-        public MethodInfo GetMethodInfo(int methodNumber)
-        {
-            return _methods.GetMethodInfo(methodNumber);
-        }
-
-        public void CallAsProcedure(int methodNumber, IValue[] arguments)
-        {
-            _methods.GetMethod(methodNumber)(this, arguments);
-        }
-
-        public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
-        {
-            retValue = _methods.GetMethod(methodNumber)(this, arguments);
-        }
-
-        #endregion
-
-        #region IAttachableContext members
-
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
-        {
-            variables = new IVariable[0];
-            methods = GetMethods().ToArray();
-            instance = this;
-        }
-
-        public IEnumerable<VariableInfo> GetProperties()
-        {
-            return new VariableInfo[0];
-        }
-
-        public IEnumerable<MethodInfo> GetMethods()
-        {
-            var array = new MethodInfo[_methods.Count];
-            for (int i = 0; i < _methods.Count; i++)
-            {
-                array[i] = _methods.GetMethodInfo(i);
-            }
-
-            return array;
-        }
-
-        #endregion
     }
 }

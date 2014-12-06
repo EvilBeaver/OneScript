@@ -14,6 +14,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
     {
         XmlTextReader _reader;
         EmptyElemCompabilityState _emptyElemReadState = EmptyElemCompabilityState.Off;
+        bool _attributesLoopReset = false;
 
         private enum EmptyElemCompabilityState
         {
@@ -211,11 +212,11 @@ namespace ScriptEngine.HostedScript.Library.Xml
             {
                 if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
                 {
-                    return XmlNodeTypeEnum.GetInstance().FromNativeValue(XmlNodeType.EndElement);
+                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(XmlNodeType.EndElement);
                 }
                 else
                 {
-                    return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.NodeType);
+                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(_reader.NodeType);
                 }
             }
         }
@@ -297,23 +298,31 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ЗначениеАтрибута", "AttributeValue")]
-        public string AttributeValue(IValue indexOrName, string URIIfGiven = null)
+        public IValue AttributeValue(IValue indexOrName, string URIIfGiven = null)
         {
+            string attributeValue = null;
+
             if (indexOrName.DataType == DataType.Number)
             {
-                return _reader.GetAttribute((int)indexOrName.AsNumber());
+                attributeValue = _reader.GetAttribute((int)indexOrName.AsNumber());
             }
             else if (indexOrName.DataType == DataType.String)
             {
                 if (URIIfGiven == null)
-                    return _reader.GetAttribute(indexOrName.AsString());
+                    attributeValue = _reader.GetAttribute(indexOrName.AsString());
                 else
-                    return _reader.GetAttribute(indexOrName.AsString(), URIIfGiven);
+                    attributeValue = _reader.GetAttribute(indexOrName.AsString(), URIIfGiven);
             }
             else
             {
                 throw RuntimeException.InvalidArgumentType();
             }
+
+            if (attributeValue != null)
+                return ValueFactory.Create(attributeValue);
+            else
+                return ValueFactory.Create();
+
         }
 
         [ContextMethod("ИмяАтрибута", "AttributeName")]
@@ -354,7 +363,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ПолучитьАтрибут", "GetAttribute")]
-        public string GetAttribute(IValue indexOrName, string URIIfGiven = null)
+        public IValue GetAttribute(IValue indexOrName, string URIIfGiven = null)
         {
             return AttributeValue(indexOrName, URIIfGiven);
         }
@@ -373,6 +382,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         public void Skip()
         {
             _reader.Skip();
+            CheckEmptyElementEntering();
         }
 
         [ContextMethod("Прочитать", "Read")]
@@ -383,21 +393,44 @@ namespace ScriptEngine.HostedScript.Library.Xml
                 _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
                 return true;
             }
-            
-            var canRead = _reader.Read();
-            
+            else
+            {
+                bool readingDone = _reader.Read();
+                CheckEmptyElementEntering();
+                return readingDone;
+            }
+        }
+
+        private void CheckEmptyElementEntering()
+        {
+            _attributesLoopReset = false;
             if (_reader.IsEmptyElement)
                 _emptyElemReadState = EmptyElemCompabilityState.EmptyElementEntered;
             else
                 _emptyElemReadState = EmptyElemCompabilityState.Off;
+        }
 
-            return canRead;
+        private bool IsEndElement()
+        {
+            var isEnd = (NodeType == GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(XmlNodeType.EndElement));
+            return isEnd;
+        }
+
+        private bool ReadAttributeInternal()
+        {
+            if (IsEndElement() && !_attributesLoopReset)
+            {
+                _attributesLoopReset = true;
+                return _reader.MoveToFirstAttribute();
+            }
+
+            return _reader.MoveToNextAttribute();
         }
 
         [ContextMethod("ПрочитатьАтрибут", "ReadAttribute")]
         public bool ReadAttribute()
         {
-            return _reader.MoveToNextAttribute();
+            return ReadAttributeInternal();
         }
 
         [ContextMethod("СледующееОбъявление", "NextDeclaration")]
@@ -409,7 +442,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("СледующийАтрибут", "NextAttribute")]
         public bool NextAttribute()
         {
-            return _reader.MoveToNextAttribute();
+            return ReadAttributeInternal();
         }
 
         [ContextMethod("ТипАтрибута", "AttributeType")]
@@ -427,8 +460,10 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ПерейтиКСодержимому", "MoveToContent")]
         public IValue MoveToContent()
         {
-            return XmlNodeTypeEnum.GetInstance().FromNativeValue(_reader.MoveToContent());
-        } 
+            var nodeType = _reader.MoveToContent();
+            CheckEmptyElementEntering();
+            return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(nodeType);        
+	    } 
 
         #endregion
 

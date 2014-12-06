@@ -20,6 +20,7 @@ namespace ScriptEngine
         public ScriptingEngine()
         {
             TypeManager.Initialize(new StandartTypeManager());
+            GlobalsManager.Reset();
             ContextDiscoverer.DiscoverClasses(System.Reflection.Assembly.GetExecutingAssembly());
             
             _scriptFactory = new ScriptSourceFactory();

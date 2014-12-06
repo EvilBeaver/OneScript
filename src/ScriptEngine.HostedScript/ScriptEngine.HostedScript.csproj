@@ -59,6 +59,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
@@ -68,6 +71,7 @@
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
+    <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\SystemGlobalContext.cs" />
     <Compile Include="Library\GuidWrapper.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />
@@ -103,6 +107,9 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

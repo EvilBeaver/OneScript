@@ -1262,7 +1262,7 @@ namespace ScriptEngine.Machine
 
         private void EndTry(int arg)
         {
-            if (_exceptionsStack.Count > 0)
+            if (_exceptionsStack.Count > 0 && _exceptionsStack.Peek().handlerFrame == _currentFrame)
                 _exceptionsStack.Pop();
             _currentFrame.LastException = null;
             NextInstruction();
