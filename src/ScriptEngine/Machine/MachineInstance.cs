@@ -1901,6 +1901,7 @@ namespace ScriptEngine.Machine
             var formatted = ValueFormatter.Format(valueToFormat, formatString);
 
             _operationStack.Push(ValueFactory.Create(formatted));
+            NextInstruction();
 
         }
 
