@@ -13,6 +13,9 @@ namespace ScriptEngine.Machine
         static readonly string[] NUM_MAX_SIZE = { "ЧЦ", "ND" };
         static readonly string[] NUM_DECIMAL_SIZE = { "ЧДЦ", "NFD" };
 
+        // Длины разрядов мантиссы типа decimal в строковом десятичном представлении
+        static readonly int[] decimal_digits_sizes = { 10, 20, 29 };
+
         private struct FormatParameter
         {
             private string _name;
@@ -132,7 +135,6 @@ namespace ScriptEngine.Machine
                 }
 
                 int start = index;
-                bool success = false;
 
                 while (index < format.Length)
                 {
@@ -144,19 +146,17 @@ namespace ScriptEngine.Machine
                             valueBuffer.Append(valueEnd);
                             continue;
                         }
-                        success = true;
                         break;
                     }
                     else if (valueEnd == SPACE && format[index] == ';')
                     {
-                        success = true;
                         break;
                     }
                     else
                         valueBuffer.Append(format[index++]);
                 }
 
-                if (success)
+                if (index < format.Length)
                 {
                     if (valueEnd == DOUBLE_QUOTE || valueEnd == SINGLE_QUOTE)
                     {
@@ -170,11 +170,9 @@ namespace ScriptEngine.Machine
 
                     if (index < format.Length && format[index] == ';')
                         index++;
-
-                    return valueBuffer.ToString();
                 }
-                else
-                    return null;
+
+                return valueBuffer.ToString();
 
             }
 
@@ -307,6 +305,9 @@ namespace ScriptEngine.Machine
                 int paramToInt;
                 if (Int32.TryParse(param, out paramToInt))
                 {
+                    if (paramToInt < 0)
+                        paramToInt = 0;
+
                     hasDigitLimits = true;
                     totalDigits = paramToInt;
                 }
@@ -317,35 +318,87 @@ namespace ScriptEngine.Machine
                 int paramToInt;
                 if (Int32.TryParse(param, out paramToInt))
                 {
+                    if (paramToInt < 0)
+                        paramToInt = 0;
+
                     hasDigitLimits = true;
                     fractionDigits = paramToInt;
                 }
             }
 
-            if(hasDigitLimits)
+            if (hasDigitLimits)
             {
                 ApplyNumericSizeRestrictions(ref p, totalDigits, fractionDigits);
+                string customFormat = "#." + new string('#', fractionDigits);
+                return p.ToString(customFormat, nf);
             }
-
-            return p.ToString(nf);
+            else
+                return p.ToString(nf);
 
         }
 
         private static void ApplyNumericSizeRestrictions(ref decimal p, int totalDigits, int fractionDigits)
         {
+            if (totalDigits == 0)
+                return;
+
             decimal value = Math.Round(p, fractionDigits);
             int sign = Math.Sign(value);
             value = Math.Abs(value);
 
             if (totalDigits < fractionDigits)
                 totalDigits = fractionDigits;
+            //else
+            //    totalDigits = totalDigits + fractionDigits;
 
-            int integerPartLen = totalDigits - fractionDigits;
-            long realIntegerPart = (long)value;
-            long realFractions = (long)((value - realIntegerPart) * (10 ^ fractionDigits));
-            // some magic should be done here )
+            if (totalDigits > decimal_digits_sizes[2])
+                totalDigits = decimal_digits_sizes[2];
 
-            p = value;
+            var bits = Decimal.GetBits(value);
+
+            int digits = 1;
+
+            for (int i = 0; i < 3; i++)
+            {
+                if ((uint)bits[i] == uint.MaxValue)
+                {
+                    digits = decimal_digits_sizes[i];
+                }
+                else
+                {
+                    uint divided = (uint)bits[i];
+                    if (divided == 0 && digits == 1)
+                    {
+                        digits = 0;
+                        break;
+                    }
+
+                    while ((divided /= 10) >= 1)
+                    {
+                        digits++;
+                    }
+                    break;
+                }
+            }
+
+            int digitsLengthAvailable = totalDigits;
+            uint power = 0;
+            unchecked
+            {
+                power = (uint)bits[3] & 0x00FF0000;
+                power >>= 16;
+                digitsLengthAvailable -= (int)power;
+            }
+
+            if (digits-power > digitsLengthAvailable)
+            {
+                string fake = new String('9', totalDigits);
+                int pointPos = totalDigits - fractionDigits;
+                fake = fake.Insert(pointPos, ".");
+                value = Decimal.Parse(fake, System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo);
+            }
+
+            p = value * sign;
 
         }
 
