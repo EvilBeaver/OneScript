@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 
 namespace ScriptEngine.Machine
 {
@@ -12,6 +13,9 @@ namespace ScriptEngine.Machine
         static readonly string[] LOCALE = { "Л", "L" };
         static readonly string[] NUM_MAX_SIZE = { "ЧЦ", "ND" };
         static readonly string[] NUM_DECIMAL_SIZE = { "ЧДЦ", "NFD" };
+        static readonly string[] NUM_FRACTION_DELIMITER = { "ЧРД", "NDS" };
+        static readonly string[] NUM_GROUPS_DELIMITER = { "ЧРГ", "NGS" };
+        static readonly string[] NUM_ZERO_APPEARANCE = { "ЧН", "NZ" };
 
         // Длины разрядов мантиссы типа decimal в строковом десятичном представлении
         static readonly int[] decimal_digits_sizes = { 10, 20, 29 };
@@ -39,6 +43,8 @@ namespace ScriptEngine.Machine
 
 
         }
+        
+        #region Format string parser
 
         private class FormatParametersList
         {
@@ -195,7 +201,7 @@ namespace ScriptEngine.Machine
             {
                 return FindParamValue(x => String.Compare(x.Name, paramNameRus, true) == 0
                     || String.Compare(x.Name, paramNameEng, true) == 0);
-               
+
             }
 
             public string GetParamValue(string[] biLingua)
@@ -207,7 +213,7 @@ namespace ScriptEngine.Machine
             public bool HasParam(string[] biLingua, out string value)
             {
                 var paramValue = GetParamValue(biLingua);
-                if(paramValue != null)
+                if (paramValue != null)
                 {
                     value = paramValue;
                     return true;
@@ -230,6 +236,8 @@ namespace ScriptEngine.Machine
             }
 
         }
+
+        #endregion
 
         public static string Format(IValue value, string format)
         {
@@ -282,16 +290,16 @@ namespace ScriptEngine.Machine
         private static string FormatNumber(decimal p, FormatParametersList formatParameters)
         {
             var locale = formatParameters.GetParamValue(LOCALE);
-            System.Globalization.NumberFormatInfo nf;
+            NumberFormatInfo nf;
             if (locale != null)
             {
                 var culture = System.Globalization.CultureInfo.CreateSpecificCulture(locale);
-                nf = culture.NumberFormat;
+                nf = (NumberFormatInfo)culture.NumberFormat.Clone();
 
             }
             else
             {
-                nf = System.Globalization.NumberFormatInfo.CurrentInfo;
+                nf = (NumberFormatInfo)NumberFormatInfo.CurrentInfo.Clone();
             }
 
             string param;
@@ -326,6 +334,16 @@ namespace ScriptEngine.Machine
                 }
             }
 
+            if(formatParameters.HasParam(NUM_FRACTION_DELIMITER, out param))
+            {
+                nf.NumberDecimalSeparator = param;
+            }
+
+            if (formatParameters.HasParam(NUM_GROUPS_DELIMITER, out param))
+            {
+                nf.NumberGroupSeparator = param;
+            }
+
             if (hasDigitLimits)
             {
                 ApplyNumericSizeRestrictions(ref p, totalDigits, fractionDigits);
@@ -333,7 +351,11 @@ namespace ScriptEngine.Machine
                 return p.ToString(customFormat, nf);
             }
             else
-                return p.ToString(nf);
+            {
+                var precision = GetDecimalPrecision(Decimal.GetBits(p));
+                string customFormat = "#." + new string('#', precision);
+                return p.ToString(customFormat, nf);
+            }
 
         }
 
@@ -348,9 +370,7 @@ namespace ScriptEngine.Machine
 
             if (totalDigits < fractionDigits)
                 totalDigits = fractionDigits;
-            //else
-            //    totalDigits = totalDigits + fractionDigits;
-
+            
             if (totalDigits > decimal_digits_sizes[2])
                 totalDigits = decimal_digits_sizes[2];
 
@@ -381,15 +401,9 @@ namespace ScriptEngine.Machine
                 }
             }
 
-            int digitsLengthAvailable = totalDigits;
-            uint power = 0;
-            unchecked
-            {
-                power = (uint)bits[3] & 0x00FF0000;
-                power >>= 16;
-                digitsLengthAvailable -= (int)power;
-            }
-
+            int power = GetDecimalPrecision(bits);
+            int digitsLengthAvailable = totalDigits - power;
+            
             if (digits-power > digitsLengthAvailable)
             {
                 string fake = new String('9', totalDigits);
@@ -399,7 +413,18 @@ namespace ScriptEngine.Machine
             }
 
             p = value * sign;
+        }
 
+        private static int GetDecimalPrecision(int[] bits)
+        {
+            uint power = 0;
+            unchecked
+            {
+                power = (uint)bits[3] & 0x00FF0000;
+                power >>= 16;
+            }
+
+            return (int)power;
         }
 
         private static string FormatDate(DateTime dateTime, FormatParametersList formatParameters)
