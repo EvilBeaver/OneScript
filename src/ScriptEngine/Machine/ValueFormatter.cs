@@ -16,6 +16,8 @@ namespace ScriptEngine.Machine
         static readonly string[] NUM_FRACTION_DELIMITER = { "ЧРД", "NDS" };
         static readonly string[] NUM_GROUPS_DELIMITER = { "ЧРГ", "NGS" };
         static readonly string[] NUM_ZERO_APPEARANCE = { "ЧН", "NZ" };
+        static readonly string[] NUM_GROUPING = { "ЧГ", "NG" };
+        static readonly string[] NUM_LEADING_ZERO = { "ЧВН", "NLZ" };
 
         // Длины разрядов мантиссы типа decimal в строковом десятичном представлении
         static readonly int[] decimal_digits_sizes = { 10, 20, 29 };
@@ -70,7 +72,7 @@ namespace ScriptEngine.Machine
 
                     string value = ReadValue(format, ref index);
                     if (value == null)
-                        break;
+                        value = "";
 
                     _paramList.Add(new FormatParameter(param, value));
                 }
@@ -280,10 +282,6 @@ namespace ScriptEngine.Machine
                     return falsePresentation;
             }
 
-            //var locale = formatParameters.GetParamValue(LOCALE);
-            //if (locale != null)
-                //throw new NotImplementedException("Explicit localization of booleans isn't implemented yet");
-
             return ValueFactory.Create(p).AsString();
         }
 
@@ -343,20 +341,67 @@ namespace ScriptEngine.Machine
             {
                 nf.NumberGroupSeparator = param;
             }
+            else
+            {
+                nf.NumberGroupSeparator = " ";
+            }
+
+            if(formatParameters.HasParam(NUM_GROUPING, out param))
+            {
+                nf.NumberGroupSizes = ParseGroupSizes(param);
+            }
+
+            char leadingFormatSpecifier = '#';
+            if(formatParameters.HasParam(NUM_LEADING_ZERO, out param))
+            {
+                leadingFormatSpecifier = '0';
+            }
+
+            StringBuilder formatBuilder = new StringBuilder();
 
             if (hasDigitLimits)
             {
                 ApplyNumericSizeRestrictions(ref p, totalDigits, fractionDigits);
-                string customFormat = "#." + new string('#', fractionDigits);
-                return p.ToString(customFormat, nf);
+
+                formatBuilder.Append(leadingFormatSpecifier, totalDigits - fractionDigits);
+                formatBuilder.Append('.');
+                formatBuilder.Append('#', fractionDigits);
+
+                ApplyDigitsGrouping(formatBuilder, leadingFormatSpecifier, nf.NumberGroupSizes);
+
             }
             else
             {
-                var precision = GetDecimalPrecision(Decimal.GetBits(p));
-                string customFormat = "#." + new string('#', precision);
-                return p.ToString(customFormat, nf);
+                formatBuilder.Append("N");
             }
 
+            return p.ToString(formatBuilder.ToString(), nf);
+
+        }
+
+        private static int[] ParseGroupSizes(string param)
+        {
+            if(param == "" || param == "0")
+                return new int[1]{0};
+
+            int start = 0;
+            List<int> sizes = new List<int>();
+            for (int i = 0; i < param.Length; i++)
+            {
+                if(!Char.IsNumber(param, i))
+                {
+                    string substring;
+                    if (start == i)
+                        substring = param.Substring(start, 1);
+                    else
+                        substring = param.Substring(start, i - start);
+
+                    start = i;
+                    sizes.Add(int.Parse(substring));
+                }
+            }
+
+            return sizes.ToArray();
         }
 
         private static void ApplyNumericSizeRestrictions(ref decimal p, int totalDigits, int fractionDigits)
@@ -413,6 +458,11 @@ namespace ScriptEngine.Machine
             }
 
             p = value * sign;
+        }
+
+        private static void ApplyDigitsGrouping(StringBuilder builder, char placeholder, int[] groupSizes)
+        {
+            
         }
 
         private static int GetDecimalPrecision(int[] bits)
