@@ -295,6 +295,8 @@ namespace ScriptEngine.Machine
             NumberFormatInfo nf;
             if (locale != null)
             {
+                // culture codes in 1C-style
+                locale = locale.Replace('_', '-');
                 var culture = System.Globalization.CultureInfo.CreateSpecificCulture(locale);
                 nf = (NumberFormatInfo)culture.NumberFormat.Clone();
 
