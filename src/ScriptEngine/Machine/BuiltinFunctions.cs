@@ -81,6 +81,7 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.Round, RoundParamsInfo);
             map.Add(OperationCode.Pow, TwoDefaultParamsInfo);
             map.Add(OperationCode.Sqrt, SingleDefaultParamInfo);
+            map.Add(OperationCode.Format, TwoDefaultParamsInfo);
             // special
             map.Add(OperationCode.Question, QuestionParamInfo);
             map.Add(OperationCode.ExceptionInfo, NoParamsInfo);

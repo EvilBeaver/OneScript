@@ -160,6 +160,7 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("окр", Token.Round);
             _stringToToken.Add("pow", Token.Pow);
             _stringToToken.Add("sqrt", Token.Sqrt);
+            _stringToToken.Add("формат", Token.Format);
             _stringToToken.Add("информацияобошибке", Token.ExceptionInfo);
             _stringToToken.Add("описаниеошибки", Token.ExceptionDescr);
             _stringToToken.Add("текущийсценарий", Token.ModuleInfo);
@@ -344,6 +345,7 @@ namespace ScriptEngine.Compiler
         Round,
         Pow,
         Sqrt,
+        Format,
 
         ExceptionInfo,
         ExceptionDescr,
