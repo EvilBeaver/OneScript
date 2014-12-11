@@ -18,6 +18,7 @@ namespace ScriptEngine.Machine
         static readonly string[] NUM_ZERO_APPEARANCE = { "ЧН", "NZ" };
         static readonly string[] NUM_GROUPING = { "ЧГ", "NG" };
         static readonly string[] NUM_LEADING_ZERO = { "ЧВН", "NLZ" };
+        static readonly string[] NUM_NEGATIVE_APPEARANCE = { "ЧО", "NN" };
 
         // Длины разрядов мантиссы типа decimal в строковом десятичном представлении
         static readonly int[] decimal_digits_sizes = { 10, 20, 29 };
@@ -305,6 +306,14 @@ namespace ScriptEngine.Machine
 
             string param;
 
+            if(p == 0)
+            {
+                if (formatParameters.HasParam(NUM_ZERO_APPEARANCE, out param))
+                    return param;
+                else
+                    return "";
+            }
+
             bool hasDigitLimits = false;
             int totalDigits = 0;
             int fractionDigits = 0;
@@ -352,6 +361,13 @@ namespace ScriptEngine.Machine
             if(formatParameters.HasParam(NUM_GROUPING, out param))
             {
                 nf.NumberGroupSizes = ParseGroupSizes(param);
+            }
+
+            if (formatParameters.HasParam(NUM_NEGATIVE_APPEARANCE, out param))
+            {
+                int pattern;
+                if(int.TryParse(param, out pattern))
+                    nf.NumberNegativePattern = pattern;
             }
 
             char leadingFormatSpecifier = '#';
