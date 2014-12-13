@@ -36,13 +36,19 @@ namespace OneScript.Scripting.Compiler
 
         IASTNode BuildIndexedAccess(IASTNode target, IASTNode expression);
 
-        void BuildProcedureCall(IASTNode resolved, string ident, IASTNode[] args);
+        void BuildProcedureCall(IASTNode target, string ident, IASTNode[] args);
 
         IASTNode BeginMethod(string identifier, bool isFunction);
 
         void SetMethodSignature(IASTNode methodNode, ASTMethodParameter[] parameters, bool isExported);
 
         void EndMethod(IASTNode methodNode);
+
+        IASTNode BeginBatch();
+        
+        void EndBatch(IASTNode batch);
+
+        IASTIfNode IfStatement();
 
     }
 }

@@ -395,6 +395,26 @@ namespace OneScript.Tests
             lexer.Code = code;
             Assert.IsTrue(parser.Build(lexer));
         }
+
+        [TestMethod]
+        public void ConditionBuild()
+        {
+            var code = @"Если А=Б Тогда
+                             А = 1;
+                         Иначе
+                            Б = 2;
+                            Г = 4;  
+                         КонецЕсли";
+
+            var builder = new Builder();
+            var lexer = new Lexer();
+            var parser = new Parser(builder);
+
+            lexer.Code = code;
+            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(builder.CodeNode.Equals(null));
+
+        }
     }
 
     abstract class TestASTNodeBase : IASTNode, IEquatable<IASTNode>
@@ -631,6 +651,59 @@ namespace OneScript.Tests
         }
     }
 
+    class ConditionNode : TestASTNodeBase, IASTIfNode
+    {
+        private IASTNode _condition;
+
+        CodeBatchNode _truePart;
+        CodeBatchNode _falsePart;
+
+        protected override bool EqualsInternal(IASTNode other)
+        {
+            var otherConditionNode = other as ConditionNode;
+            var expression = (TestASTNodeBase)(otherConditionNode._condition);
+            return (expression.Equals(_condition) 
+                && _truePart.Equals(otherConditionNode._truePart)
+                && _falsePart.Equals(otherConditionNode._falsePart));
+        }
+
+        public IASTNode Condition
+        {
+            get
+            {
+                return _condition;
+            }
+            set
+            {
+                _condition = value;
+            }
+        }
+
+        public IASTNode TruePart
+        {
+            get
+            {
+                return _truePart;
+            }
+            set
+            {
+                _truePart = (CodeBatchNode) value;
+            }
+        }
+
+        public IASTNode FalsePart
+        {
+            get
+            {
+                return _falsePart;
+            }
+            set
+            {
+                _falsePart = (CodeBatchNode) value;
+            }
+        }
+    }
+
     class Builder : IModuleBuilder
     {
 
@@ -775,6 +848,15 @@ namespace OneScript.Tests
         public void EndMethod(IASTNode methodNode)
         {
             _mainCode.Add(methodNode);
+        }
+
+        public IASTNode BeginBatch() { return null; }
+
+        public void EndBatch(IASTNode batch) { }
+
+        public IASTIfNode IfStatement()
+        {
+            return new ConditionNode();
         }
     }
 }

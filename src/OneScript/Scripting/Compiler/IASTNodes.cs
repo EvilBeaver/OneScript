@@ -9,6 +9,13 @@ namespace OneScript.Scripting.Compiler
     {
     }
 
+    public interface IASTIfNode : IASTNode
+    {
+        IASTNode Condition { get; set; }
+        IASTNode TruePart { get; set; }
+        IASTNode FalsePart { get; set; }
+    }
+
     public struct ASTMethodParameter
     {
         public string Name;

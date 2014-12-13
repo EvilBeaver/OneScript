@@ -13,8 +13,10 @@ namespace OneScript.Scripting.Compiler
         private Lexer _lexer;
         private Lexem _lastExtractedLexem;
         private IModuleBuilder _builder;
-        private bool _wasErrorsInBuild;
+        private bool _wereErrorsInBuild;
         private Stack<Token[]> _blockEndings;
+
+        private bool _isInMethodScope = false;
 
         public Parser(IModuleBuilder builder)
         {
@@ -26,7 +28,7 @@ namespace OneScript.Scripting.Compiler
             _lexer = lexer;
             _lastExtractedLexem = default(Lexem);
             _lexer.UnexpectedCharacterFound += _lexer_UnexpectedCharacterFound;
-            _wasErrorsInBuild = false;
+            _wereErrorsInBuild = false;
             _blockEndings = new Stack<Token[]>();
 
             return BuildModule();
@@ -63,7 +65,7 @@ namespace OneScript.Scripting.Compiler
                 _builder.CompleteModule();
             }
 
-            return !_wasErrorsInBuild;
+            return !_wereErrorsInBuild;
         }
 
         private void DispatchModuleBuild()
@@ -235,8 +237,11 @@ namespace OneScript.Scripting.Compiler
                 PushEndTokens(Token.EndFunction);
             else
                 PushEndTokens(Token.EndProcedure);
-            
-            BuildCodeBatch();
+
+            _isInMethodScope = true;
+            BuildCodeBatch();            
+            _isInMethodScope = false;
+
             _builder.EndMethod(methodNode);
 
             NextLexem(); // убрали конецпроцедуры/функции
@@ -292,8 +297,10 @@ namespace OneScript.Scripting.Compiler
             }
         }
 
-        private void BuildCodeBatch()
+        private IASTNode BuildCodeBatch()
         {
+            var batch = _builder.BeginBatch();
+
             var endTokens = _blockEndings.Peek();
             while(!endTokens.Contains(_lastExtractedLexem.Token))
             {
@@ -330,6 +337,9 @@ namespace OneScript.Scripting.Compiler
                     SkipToNextStatement();
                 }
             }
+
+            _builder.EndBatch(batch);
+            return batch;
         }
 
         private bool BuildStatement()
@@ -338,7 +348,7 @@ namespace OneScript.Scripting.Compiler
 
             if(LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token))
             {
-                throw new NotImplementedException();
+                return BuildComplexStatement();
             }
             else if(LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
             {
@@ -349,6 +359,23 @@ namespace OneScript.Scripting.Compiler
                 ReportError(CompilerException.UnexpectedOperation());
                 return false;
             }
+        }
+
+        private bool BuildComplexStatement()
+        {
+            bool success;
+            switch(_lastExtractedLexem.Token)
+            {
+                case Token.VarDef:
+                    throw new NotImplementedException();
+                case Token.If:
+                    success = BuildIfStatement();
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            return success;
         }
 
         private bool BuildSimpleStatement()
@@ -648,6 +675,11 @@ namespace OneScript.Scripting.Compiler
             return arguments.ToArray();
         }
 
+        private bool BuildIfStatement()
+        {
+            throw new NotImplementedException();
+        }
+
         #region Helper methods
 
         public void NextLexem()
@@ -664,7 +696,7 @@ namespace OneScript.Scripting.Compiler
 
         private void ReportError(ScriptException compilerException)
         {
-            _wasErrorsInBuild = true;
+            _wereErrorsInBuild = true;
             ScriptException.AppendCodeInfo(compilerException, _lexer.GetIterator().GetPositionInfo());
 
             if (CompilerError != null)
