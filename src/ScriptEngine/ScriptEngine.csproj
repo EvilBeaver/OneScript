@@ -122,7 +122,6 @@
     <Compile Include="Compiler\Tokens.cs" />
     <Compile Include="Environment\ICodeSource.cs" />
     <Compile Include="Machine\IReflectableContext.cs" />
-    <Compile Include="Environment\AttachedScriptsFactory.cs" />
     <Compile Include="Machine\Contexts\COMWrapperContext.cs" />
     <Compile Include="Machine\Contexts\ContextPropertyMapper.cs" />
     <Compile Include="Machine\Contexts\DispatchUtility.cs" />
