@@ -45,6 +45,29 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
+        /// Получает имя файла во временом каталоге.
+        /// </summary>
+        /// <param name="ext">Расширение будущего файла. Если не указано, то по умолчанию расширение равно ".tmp"</param>
+        /// <returns>Строка. Полный путь ко временному файлу.</returns>
+        [ContextMethod("ПолучитьИмяВременногоФайла", "GetTempFileName")]
+        public string GetTempFilename(string ext = null)
+        {
+            // примитивная реализация "в лоб"
+            var fn = System.IO.Path.GetRandomFileName();
+            if (ext != null)
+            {
+                if (ext[0] == '.')
+                    fn += ext;
+                else
+                    fn += "." + ext;
+
+            }
+
+            return fn;
+
+        }
+
+        /// <summary>
         /// Выполняет поиск файлов по маске
         /// </summary>
         /// <param name="dir">Каталог, в котором выполняется поиск</param>
