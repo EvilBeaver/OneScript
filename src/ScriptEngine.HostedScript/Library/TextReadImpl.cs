@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ЧтениеТекста", "TextReader")]
     class TextReadImpl : AutoContext<TextReadImpl>, IDisposable

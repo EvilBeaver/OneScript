@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ГенераторСлучайныхЧисел", "RandomNumberGenerator")]
     class RandomNumberGenerator : AutoContext<RandomNumberGenerator>

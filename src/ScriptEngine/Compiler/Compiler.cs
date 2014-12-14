@@ -1457,6 +1457,8 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Pow;
                 case Token.Sqrt:
                     return OperationCode.Sqrt;
+                case Token.Format:
+                    return OperationCode.Format;
                 case Token.ExceptionInfo:
                     return OperationCode.ExceptionInfo;
                 case Token.ExceptionDescr:

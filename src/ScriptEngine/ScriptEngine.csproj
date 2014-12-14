@@ -107,6 +107,7 @@
     <Compile Include="Machine\NullValueImpl.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="Machine\TypeTypeValue.cs" />
+    <Compile Include="Machine\ValueFormatter.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />
     <Compile Include="Machine\Contexts\AutoContext.cs" />
@@ -121,7 +122,6 @@
     <Compile Include="Compiler\Tokens.cs" />
     <Compile Include="Environment\ICodeSource.cs" />
     <Compile Include="Machine\IReflectableContext.cs" />
-    <Compile Include="Environment\AttachedScriptsFactory.cs" />
     <Compile Include="Machine\Contexts\COMWrapperContext.cs" />
     <Compile Include="Machine\Contexts\ContextPropertyMapper.cs" />
     <Compile Include="Machine\Contexts\DispatchUtility.cs" />

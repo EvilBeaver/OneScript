@@ -1,14 +1,12 @@
-﻿using ScriptEngine.Compiler;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ScriptEngine.HostedScript;
 using ScriptEngine.Environment;
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.HostedScript.Library
 {
     /// <summary>
     /// Глобальный контекст. Представляет глобально доступные свойства и методы.
@@ -173,7 +171,7 @@ namespace ScriptEngine.Machine.Library
                 {
                     if (ApplicationHost == null)
                     {
-                        _args = ScriptEngine.Machine.Library.CommandLineArguments.Empty;
+                        _args = Library.CommandLineArguments.Empty;
                     }
                     else
                     {
