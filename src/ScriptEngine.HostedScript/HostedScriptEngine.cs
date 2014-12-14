@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ScriptEngine.Environment;
-using ScriptEngine.HostedScript;
-using ScriptEngine.Machine.Library;
-using ScriptEngine.Machine;
+﻿using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
+using ScriptEngine.Machine;
 
-namespace ScriptEngine
+namespace ScriptEngine.HostedScript
 {
     public class HostedScriptEngine
     {

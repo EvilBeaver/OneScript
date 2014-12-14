@@ -1,11 +1,7 @@
 ﻿using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.HostedScript.Library
 {
 
     [SystemEnum("Символы", "Symbols")]
