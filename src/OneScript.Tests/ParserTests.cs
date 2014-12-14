@@ -745,11 +745,6 @@ namespace OneScript.Tests
             //throw new NotImplementedException();
         }
 
-        public void OnError(CompilerErrorEventArgs eventArgs)
-        {
-            //throw new NotImplementedException();
-        }
-
         public void DefineExportVariable(string symbolicName)
         {
             _variables.Add(symbolicName + " export");

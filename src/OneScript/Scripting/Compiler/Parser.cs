@@ -1,10 +1,8 @@
-﻿using OneScript.Core;
-using OneScript.Scripting.Compiler.Lexics;
+﻿using OneScript.Scripting.Compiler.Lexics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace OneScript.Scripting.Compiler
 {
@@ -53,7 +51,8 @@ namespace OneScript.Scripting.Compiler
             }
             catch(ScriptException e)
             {
-                ReportError(e);
+                if (!ReportError(e))
+                    throw;
             }
             catch(Exception e)
             {
@@ -83,7 +82,7 @@ namespace OneScript.Scripting.Compiler
                         DefineModuleVariables();
                     else
                     {
-                        ReportError(CompilerException.LateVarDefinition());
+                        ReportErrorOrThrow(CompilerException.LateVarDefinition());
                         SkipToNextStatement();
                     }
                 }
@@ -107,7 +106,7 @@ namespace OneScript.Scripting.Compiler
                 }
                 else
                 {
-                    ReportError(CompilerException.UnexpectedOperation());
+                    ReportErrorOrThrow(CompilerException.UnexpectedOperation());
                     SkipToNextStatement();
                 }
             }
@@ -127,14 +126,17 @@ namespace OneScript.Scripting.Compiler
 
                     if (_lastExtractedLexem.Token == Token.EndOfText)
                         break;
-                    else if (_lastExtractedLexem.Token != Token.Semicolon)
+                    
+                    if (_lastExtractedLexem.Token != Token.Semicolon)
                         throw CompilerException.SemicolonExpected();
 
                     NextLexem();
                 }
                 catch (ScriptException e)
                 {
-                    ReportError(e);
+                    if(!ReportError(e))
+                        throw;
+
                     SkipToNextStatement();
                 }
             }
@@ -161,7 +163,7 @@ namespace OneScript.Scripting.Compiler
             IASTNode methodNode = _builder.BeginMethod(identifier, isFunction);
             try
             {
-                List<ASTMethodParameter> parameters = new List<ASTMethodParameter>();
+                var parameters = new List<ASTMethodParameter>();
                 do
                 {
 
@@ -229,14 +231,13 @@ namespace OneScript.Scripting.Compiler
             }
             catch (CompilerException exc)
             {
-                ReportError(exc);
+                if(!ReportError(exc))
+                    throw;
+
                 SkipToNextStatement();
             }
 
-            if (isFunction)
-                PushEndTokens(Token.EndFunction);
-            else
-                PushEndTokens(Token.EndProcedure);
+            PushEndTokens(isFunction ? Token.EndFunction : Token.EndProcedure);
 
             _isInMethodScope = true;
             BuildCodeBatch();            
@@ -333,8 +334,10 @@ namespace OneScript.Scripting.Compiler
                 }
                 catch (CompilerException e)
                 {
-                    ReportError(e);
-                    SkipToNextStatement();
+                    if(!ReportError(e))
+                        throw;
+
+                    SkipToNextStatement(endTokens);
                 }
             }
 
@@ -356,7 +359,7 @@ namespace OneScript.Scripting.Compiler
             }
             else
             {
-                ReportError(CompilerException.UnexpectedOperation());
+                ReportErrorOrThrow(CompilerException.UnexpectedOperation());
                 return false;
             }
         }
@@ -410,7 +413,7 @@ namespace OneScript.Scripting.Compiler
                     break;
                 
                 default:
-                    ReportError(CompilerException.UnexpectedOperation());
+                    ReportErrorOrThrow(CompilerException.UnexpectedOperation());
                     return false;
             }
 
@@ -694,28 +697,29 @@ namespace OneScript.Scripting.Compiler
             }
         }
 
-        private void ReportError(ScriptException compilerException)
+        private bool ReportError(ScriptException compilerException)
         {
             _wereErrorsInBuild = true;
             ScriptException.AppendCodeInfo(compilerException, _lexer.GetIterator().GetPositionInfo());
 
-            if (CompilerError != null)
+            if (CompilerError == null) 
+                return false;
+            
+            var eventArgs = new CompilerErrorEventArgs
             {
-                var eventArgs = new CompilerErrorEventArgs();
-                eventArgs.Exception = compilerException;
-                eventArgs.LexerState = _lexer;
-                CompilerError(this, eventArgs);
+                Exception = compilerException, 
+                LexerState = _lexer
+            };
 
-                if (!eventArgs.IsHandled)
-                    throw compilerException;
+            CompilerError(this, eventArgs);
 
-                _builder.OnError(eventArgs);
+            return eventArgs.IsHandled;
+        }
 
-            }
-            else
-            {
+        private void ReportErrorOrThrow(ScriptException compilerException)
+        {
+            if (!ReportError(compilerException))
                 throw compilerException;
-            }
         }
 
         private void SkipToNextStatement(Token[] additionalStops = null)

@@ -12,8 +12,6 @@ namespace OneScript.Scripting.Compiler
 
         void CompleteModule();
 
-        void OnError(CompilerErrorEventArgs eventArgs);
-
         void DefineExportVariable(string symbolicName);
 
         void DefineVariable(string symbolicName);
