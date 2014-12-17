@@ -6,7 +6,11 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    [ContextClass("BasicArray")]
+    /// <summary>
+    /// Вспомогательный класс для работы с объектами COMSafeArray, получаемыми из COM-объектов.
+    /// На данный момент класс не является полноценной заменой для COMSafeArray и его нельзя создать вручную.
+    /// </summary>
+    [ContextClass("SafeArrayWrapper")]
     public class SafeArrayWrapper : AutoContext<SafeArrayWrapper>, ICollectionContext, IObjectWrapper
     {
         private object[] _array;
