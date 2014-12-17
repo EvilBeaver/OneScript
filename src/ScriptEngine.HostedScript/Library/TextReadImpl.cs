@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ЧтениеТекста", "TextReader")]
     class TextReadImpl : AutoContext<TextReadImpl>, IDisposable
@@ -61,7 +59,7 @@ namespace ScriptEngine.Machine.Library
             }
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name="По имени файла и кодировке")]
         public static IRuntimeContextInstance Constructor(IValue path, IValue encoding)
         {
             var reader = new TextReadImpl();
@@ -69,7 +67,7 @@ namespace ScriptEngine.Machine.Library
             return reader;
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "По имени файла")]
         public static IRuntimeContextInstance Constructor(IValue path)
         {
             var reader = new TextReadImpl();

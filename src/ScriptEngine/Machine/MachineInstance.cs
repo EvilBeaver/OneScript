@@ -12,7 +12,6 @@ namespace ScriptEngine.Machine
         private Stack<IValue> _operationStack;
         private Stack<ExecutionFrame> _callStack;
         private ExecutionFrame _currentFrame;
-        private int _lineNumber;
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
         private Stack<MachineState> _states;
@@ -36,7 +35,6 @@ namespace ScriptEngine.Machine
             public ExecutionFrame currentFrame;
             public LoadedModule module;
             public bool hasScope;
-            public int lineNumber;
             public IValue[] operationStack;
             public ExecutionFrame[] callStack;
             public ExceptionJumpInfo[] exceptionsStack;
@@ -131,7 +129,6 @@ namespace ScriptEngine.Machine
             stateToSave.hasScope = DetachTopScope(out stateToSave.topScope);
             stateToSave.currentFrame = _currentFrame;
             stateToSave.module = _module;
-            stateToSave.lineNumber = _lineNumber;
             StackToArray(ref stateToSave.callStack, _callStack);
             StackToArray(ref stateToSave.exceptionsStack, _exceptionsStack);
             StackToArray(ref stateToSave.operationStack, _operationStack);
@@ -189,7 +186,6 @@ namespace ScriptEngine.Machine
             }
 
             _module = savedState.module;
-            _lineNumber = savedState.lineNumber;
 
             RestoreStack(ref _callStack, savedState.callStack);
             RestoreStack(ref _operationStack, savedState.operationStack);
@@ -348,13 +344,15 @@ namespace ScriptEngine.Machine
 
         private void SetScriptExceptionSource(RuntimeException exc)
         {
-            exc.LineNumber = _lineNumber;
-            if (_module.Source != null)
+            exc.LineNumber = _currentFrame.LineNumber;
+            if (_module.ModuleInfo != null)
             {
-                exc.Code = _module.Source.GetCodeLine(_lineNumber);
+                exc.ModuleName = _module.ModuleInfo.ModuleName;
+                exc.Code = _module.ModuleInfo.CodeIndexer.GetCodeLine(exc.LineNumber);
             }
             else
             {
+                exc.ModuleName = "<имя модуля недоступно>";
                 exc.Code = "<исходный код недоступен>";
             }
         }
@@ -420,6 +418,8 @@ namespace ScriptEngine.Machine
                 Number,
                 Str,
                 Date,
+                Type,
+                ValType,
                 StrLen,
                 TrimL,
                 TrimR,
@@ -461,8 +461,10 @@ namespace ScriptEngine.Machine
                 Round,
                 Pow,
                 Sqrt,
+                Format,
                 ExceptionInfo,
-                ExceptionDescr
+                ExceptionDescr,
+                ModuleInfo
             };
         }
 
@@ -1180,7 +1182,7 @@ namespace ScriptEngine.Machine
                     }
                     catch (System.Reflection.TargetInvocationException e)
                     {
-                        if (e.InnerException != null && e.InnerException is RuntimeException)
+                        if (e.InnerException != null)
                             throw e.InnerException;
                         else
                             throw;
@@ -1261,7 +1263,7 @@ namespace ScriptEngine.Machine
 
         private void EndTry(int arg)
         {
-            if (_exceptionsStack.Count > 0)
+            if (_exceptionsStack.Count > 0 && _exceptionsStack.Peek().handlerFrame == _currentFrame)
                 _exceptionsStack.Pop();
             _currentFrame.LastException = null;
             NextInstruction();
@@ -1284,7 +1286,7 @@ namespace ScriptEngine.Machine
 
         private void LineNum(int arg)
         {
-            _lineNumber = arg;
+            _currentFrame.LineNumber = arg;
             NextInstruction();
         }
 
@@ -1393,6 +1395,22 @@ namespace ScriptEngine.Machine
                 throw new RuntimeException("Неверное количество параметров");
             }
 
+            NextInstruction();
+        }
+
+        private void Type(int arg)
+        {
+            var typeName = _operationStack.Pop().AsString();
+            var value = new TypeTypeValue(typeName);
+            _operationStack.Push(value);
+            NextInstruction();
+        }
+
+        private void ValType(int arg)
+        {
+            var value = _operationStack.Pop();
+            var valueType = new TypeTypeValue(value.SystemType);
+            _operationStack.Push(valueType);
             NextInstruction();
         }
 
@@ -1875,6 +1893,18 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void Format(int arg)
+        {
+            var formatString = _operationStack.Pop().AsString();
+            var valueToFormat = _operationStack.Pop();
+
+            var formatted = ValueFormatter.Format(valueToFormat, formatString);
+
+            _operationStack.Push(ValueFactory.Create(formatted));
+            NextInstruction();
+
+        }
+
         private void ExceptionInfo(int arg)
         {
             if (_currentFrame.LastException != null)
@@ -1899,6 +1929,21 @@ namespace ScriptEngine.Machine
             else
             {
                 _operationStack.Push(ValueFactory.Create(""));
+            }
+            NextInstruction();
+        }
+
+        private void ModuleInfo(int arg)
+        {
+
+            if (_module.ModuleInfo != null)
+            {
+                var infoContext = new ScriptInformationContext(_module.ModuleInfo);
+                _operationStack.Push(infoContext);
+            }
+            else
+            {
+                _operationStack.Push(ValueFactory.Create());
             }
             NextInstruction();
         }

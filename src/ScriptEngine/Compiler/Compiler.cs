@@ -67,7 +67,6 @@ namespace ScriptEngine.Compiler
             BuildModule();
             CheckForwardedDeclarations();
 
-            _module.Source = _parser.GetCodeIndexer();
             return _module;
         }
 
@@ -1354,7 +1353,8 @@ namespace ScriptEngine.Compiler
                 || lex.Type == LexemType.NumberLiteral
                 || lex.Type == LexemType.BooleanLiteral
                 || lex.Type == LexemType.DateLiteral
-                || lex.Type == LexemType.UndefinedLiteral;
+                || lex.Type == LexemType.UndefinedLiteral
+                || lex.Type == LexemType.NullLiteral;
         }
 
         private OperationCode BuiltInFunctionCode(Token token)
@@ -1371,6 +1371,10 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Str;
                 case Token.Date:
                     return OperationCode.Date;
+                case Token.Type:
+                    return OperationCode.Type;
+                case Token.ValType:
+                    return OperationCode.ValType;
                 case Token.StrLen:
                     return OperationCode.StrLen;
                 case Token.TrimL:
@@ -1453,10 +1457,14 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Pow;
                 case Token.Sqrt:
                     return OperationCode.Sqrt;
+                case Token.Format:
+                    return OperationCode.Format;
                 case Token.ExceptionInfo:
                     return OperationCode.ExceptionInfo;
                 case Token.ExceptionDescr:
                     return OperationCode.ExceptionDescr;
+                case Token.ModuleInfo:
+                    return OperationCode.ModuleInfo;
                 default:
                     throw new ArgumentException("Token is not a built-in function");
             }
@@ -1478,6 +1486,9 @@ namespace ScriptEngine.Compiler
                     break;
                 case LexemType.StringLiteral:
                     constType = DataType.String;
+                    break;
+                case LexemType.NullLiteral:
+                    constType = DataType.GenericValue;
                     break;
             }
 

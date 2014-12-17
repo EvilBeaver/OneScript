@@ -73,5 +73,13 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _values[propNum];
         }
+
+        protected IList<EnumerationValue> ValuesInternal
+        {
+            get
+            {
+                return _values;
+            }
+        }
     }
 }

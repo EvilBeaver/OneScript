@@ -57,11 +57,24 @@ namespace ScriptEngine
             }
         }
 
+        public string ModuleName
+        {
+            get
+            {
+                return _codePosition.ModuleName;
+            }
+            internal set
+            {
+                _codePosition.ModuleName = value;
+            }
+        }
+
         public override string Message
         {
             get
             {
-                return String.Format("{{Ошибка в строке {0}: {1}}}\n  {2}",
+                return String.Format("{{Модуль {0} / Ошибка в строке: {1} / {2}}}\n  {3}",
+                    _codePosition.ModuleName,
                     _codePosition.LineNumber,
                     base.Message,
                     _codePosition.Code);

@@ -1,4 +1,3 @@
-﻿
 #include <ISPPBuiltins.iss>
 #define AppName "OneScript execution engine"
 #define FSFriendlyName "OneScript execution engine"
@@ -8,7 +7,7 @@
 #define VerMinor
 #define VerRelease
 #define Build
-#expr ParseVersion("built\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
+#expr ParseVersion("build\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
 
 [Setup]
 AppName={#AppName}
@@ -22,12 +21,15 @@ Compression=lzma2
 SolidCompression=yes
 
 [Files]
-Source: "built\*"; DestDir: "{app}"
+Source: "build\*"; DestDir: "{app}"
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
 Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall;
 
 [Icons]
 Name: "{group}\{#FSFriendlyName}"; Filename: "{app}\{#MainExe}"
+
+[Registry]
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app};"; Check: NeedsAddPath(ExpandConstant('{app}'))
 
 [Run]
 Filename: {tmp}\dotNetFx40_Full_setup.exe; Parameters: "/q:a /c:""install /l /q"""; Check: not IsRequiredDotNetDetected; StatusMsg: Microsoft .NET Framework 4.0 is being installed. Please wait..
@@ -36,7 +38,21 @@ Filename: "{app}\{#MainExe}"; Description: "Launch application"; Flags: postinst
 
 [Code]
 
-
+function NeedsAddPath(Param: string): boolean;
+var
+  OrigPath: string;
+begin
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
+  then begin
+    Result := True;
+    exit;
+  end;
+  // look for the path with leading and trailing semicolon
+  // Pos() returns 0 if not found
+  Result := Pos(';' + UpperCase(Param) + ';', ';' + UpperCase(OrigPath) + ';') = 0;  
+  if Result = True then
+     Result := Pos(';' + UpperCase(Param) + '\;', ';' + UpperCase(OrigPath) + ';') = 0; 
+end;
 
 function IsDotNetDetected(version: string; service: cardinal): boolean;
 // Indicates whether the specified version and service pack of the .NET Framework is installed.

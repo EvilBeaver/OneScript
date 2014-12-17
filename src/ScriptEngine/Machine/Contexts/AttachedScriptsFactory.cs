@@ -18,6 +18,9 @@ namespace ScriptEngine.Machine.Contexts
 
         public ModuleHandle AttachByPath(CompilerService compiler, string path, string typeName)
         {
+            if (!Utils.IsValidIdentifier(typeName))
+                throw RuntimeException.InvalidArgumentValue();
+
             ThrowIfTypeExist(typeName);
 
             var code = _engine.Loader.FromFile(path);

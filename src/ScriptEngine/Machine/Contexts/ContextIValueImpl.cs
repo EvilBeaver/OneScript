@@ -68,11 +68,6 @@ namespace ScriptEngine.Machine.Contexts
             return ToString();
         }
 
-        public TypeDescriptor AsType()
-        {
-            throw new NotImplementedException();
-        }
-
         public IRuntimeContextInstance AsObject()
         {
             return this;
@@ -189,6 +184,7 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Method)]
     public class ScriptConstructorAttribute : Attribute
     {
+        public string Name { get; set; }
         public bool ParametrizeWithClassName { get; set; }
     }
 }

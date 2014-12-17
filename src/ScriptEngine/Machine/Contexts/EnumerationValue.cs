@@ -22,6 +22,11 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        public string ValuePresentation
+        {
+            get;set;
+        }
+
         public virtual DataType DataType
         {
             get { return Machine.DataType.GenericValue; }
@@ -49,12 +54,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual string AsString()
         {
-            return SystemType.Name;
-        }
-
-        public virtual TypeDescriptor AsType()
-        {
-            throw new NotImplementedException();
+            return ValuePresentation == null ? SystemType.Name : ValuePresentation;
         }
 
         public virtual IRuntimeContextInstance AsObject()

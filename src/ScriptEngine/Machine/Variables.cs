@@ -94,11 +94,6 @@ namespace ScriptEngine.Machine
             return Value.AsString();
         }
 
-        public TypeDescriptor AsType()
-        {
-            return Value.AsType();
-        }
-
         public IRuntimeContextInstance AsObject()
         {
             return Value.AsObject();
@@ -225,11 +220,6 @@ namespace ScriptEngine.Machine
             public string AsString()
             {
                 return Value.AsString();
-            }
-
-            public TypeDescriptor AsType()
-            {
-                return Value.AsType();
             }
 
             public IRuntimeContextInstance AsObject()

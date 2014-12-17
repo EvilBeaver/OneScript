@@ -42,6 +42,11 @@ namespace ScriptEngine.Machine
             return new InvalidValue();
         }
 
+        public static IValue CreateNullValue()
+        {
+            return NullValueImpl.Instance;
+        }
+
         public static IValue Create(IRuntimeContextInstance instance)
         {
             return (IValue)instance;
@@ -101,6 +106,13 @@ namespace ScriptEngine.Machine
                 case DataType.Undefined:
                     result = ValueFactory.Create();
                     break;
+                case DataType.GenericValue:
+                    if (string.Compare(presentation, "null", true) == 0)
+                        result = ValueFactory.CreateNullValue();
+                    else
+                        throw new NotImplementedException("constant type is not supported");
+
+                    break;
                 default:
                     throw new NotImplementedException("constant type is not supported");
             }
@@ -139,11 +151,6 @@ namespace ScriptEngine.Machine
             }
 
             public string AsString()
-            {
-                throw new NotImplementedException();
-            }
-
-            public TypeDescriptor AsType()
             {
                 throw new NotImplementedException();
             }

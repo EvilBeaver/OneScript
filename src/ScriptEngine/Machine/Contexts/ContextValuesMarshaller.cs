@@ -44,7 +44,7 @@ namespace ScriptEngine.Machine
             {
                 valueObj = value.AsBoolean();
             }
-            else if (type.IsAssignableFrom(typeof(IRuntimeContextInstance)))
+            else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
                 valueObj = value.AsObject();
             }

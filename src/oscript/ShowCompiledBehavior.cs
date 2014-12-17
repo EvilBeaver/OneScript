@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine;
+using ScriptEngine.HostedScript;
 
 namespace oscript
 {

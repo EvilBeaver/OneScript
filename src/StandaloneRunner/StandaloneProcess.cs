@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using ScriptEngine.HostedScript;
 
 namespace StandaloneRunner
 {
@@ -18,7 +19,7 @@ namespace StandaloneRunner
                 var formatter = new BinaryFormatter();
                 var reader = new ScriptEngine.Compiler.ModulePersistor(formatter);
                 var moduleHandle = reader.Read(codeStream);
-                var engine = new ScriptEngine.HostedScriptEngine();
+                var engine = new HostedScriptEngine();
                 var src = new BinaryCodeSource(moduleHandle);
 
                 var process = engine.CreateProcess(this, moduleHandle, src);

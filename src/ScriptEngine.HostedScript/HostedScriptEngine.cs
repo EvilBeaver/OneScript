@@ -1,30 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ScriptEngine.Environment;
-using ScriptEngine.HostedScript;
-using ScriptEngine.Machine.Library;
+﻿using ScriptEngine.Environment;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 
-namespace ScriptEngine
+namespace ScriptEngine.HostedScript
 {
     public class HostedScriptEngine
     {
         ScriptingEngine _engine;
-        GlobalContext _globalCtx;
+        SystemGlobalContext _globalCtx;
         RuntimeEnvironment _env;
         bool _isInitialized;
 
         public HostedScriptEngine()
         {
             _engine = new ScriptingEngine();
-            _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            _env = new RuntimeEnvironment();
+            _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly(), _env);
 
-            _globalCtx = new GlobalContext();
+            _globalCtx = new SystemGlobalContext();
             _globalCtx.EngineInstance = _engine;
 
-            _env = new RuntimeEnvironment();
             _env.InjectObject(_globalCtx, false);
         }
 
@@ -39,7 +34,7 @@ namespace ScriptEngine
 
         public void AttachAssembly(System.Reflection.Assembly asm)
         {
-            _engine.AttachAssembly(asm);
+            _engine.AttachAssembly(asm, _env);
         }
 
         public void InjectGlobalProperty(string name, IValue value, bool readOnly)

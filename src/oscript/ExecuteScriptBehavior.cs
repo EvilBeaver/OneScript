@@ -44,7 +44,7 @@ namespace oscript
 
         public void ShowExceptionInfo(Exception exc)
         {
-            Console.WriteLine(exc.ToString());
+            Console.WriteLine(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)
