@@ -381,8 +381,28 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("Пропустить", "Skip")]
         public void Skip()
         {
-            _reader.Skip();
+            if(_emptyElemReadState == EmptyElemCompabilityState.EmptyElementEntered)
+            {
+                _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
+                return;
+            }
+
+            V8CompatibleSkip();
             CheckEmptyElementEntering();
+        }
+
+        private void V8CompatibleSkip()
+        {
+            if (_reader.NodeType == XmlNodeType.Element)
+            {
+                int initialDepth = _reader.Depth;
+                while (_reader.Read() && _reader.Depth > initialDepth) ;
+                System.Diagnostics.Debug.Assert(_reader.NodeType == XmlNodeType.EndElement);
+            }
+            else
+            {
+                _reader.Skip();
+            }
         }
 
         [ContextMethod("Прочитать", "Read")]
