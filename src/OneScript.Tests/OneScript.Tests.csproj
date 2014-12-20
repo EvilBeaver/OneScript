@@ -60,9 +60,10 @@
     <Compile Include="LexerBasics.cs" />
     <Compile Include="LexerTests.cs" />
     <Compile Include="SymbolScope_Tests.cs" />
-    <Compile Include="Preprocessor_Tests.cs" />
+    <Compile Include="PreprocessorTests.cs" />
     <Compile Include="Scripting_Essentials.cs" />
-    <Compile Include="ParserTests.cs" />
+    <Compile Include="ParserTests\ParserTests.cs" />
+    <Compile Include="CompilerTest.cs" />
     <Compile Include="VariableTest.cs" />
   </ItemGroup>
   <ItemGroup>

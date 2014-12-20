@@ -72,6 +72,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScriptEngine.cs" />
     <Compile Include="Core\ValueFactory.cs" />
+    <Compile Include="Scripting\Compiler\Compiler.cs" />
+    <Compile Include="Scripting\Compiler\CompilerFactory.cs" />
     <Compile Include="Scripting\Compiler\IASTNodes.cs" />
     <Compile Include="Scripting\CodePositionInfo.cs" />
     <Compile Include="Scripting\Commands.cs" />

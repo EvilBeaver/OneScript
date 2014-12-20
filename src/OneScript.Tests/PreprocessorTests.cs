@@ -8,7 +8,7 @@ using OneScript.Scripting.Compiler.Lexics;
 namespace OneScript.Tests
 {
     [TestClass]
-    public class Preprocessor_Tests
+    public class PreprocessorTests
     {
         [TestMethod]
         public void Definitions_Are_Defined()
