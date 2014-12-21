@@ -79,11 +79,19 @@
 
     <Delete Files="@(RemoveUnnessesaryFiles)" />
     
+    <!--TODO Why Snheopat.Engine build into source dir -->
+    
+    <ItemGroup>
+        <SnegopatEngine Include="$(MSBuildProjectDirectory)\src\Release\ScriptEngine.Snegopat.dll"/>
+    </ItemGroup>
+
+    <Copy  SourceFiles="@(SnegopatEngine)" DestinationFolder="$(OutputPathForDist)\" />
+
   </Target>
 
 
   <Target Name="CleanAll">
-	  <CreateItem Include="$(OutputPathForDist)\*">
+    <CreateItem Include="$(OutputPathForDist)\*">
       <Output TaskParameter="Include" ItemName="RemoveFiles" />
     </CreateItem>
 
