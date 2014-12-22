@@ -273,6 +273,9 @@ namespace OneScript.Scripting.Compiler.Lexics
         public const char StringQuote = '"';
         public const char DateQuote = '\'';
         public const char EndOperator = ';';
+        public const char Underscore = '_';
+        public const char QuestionMark = '?';
+        public const char Preprocessor = '#';
 
         public static bool IsOperatorChar(char symbol)
         {

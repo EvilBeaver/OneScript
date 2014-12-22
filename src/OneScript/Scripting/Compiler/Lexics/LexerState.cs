@@ -24,17 +24,4 @@ namespace OneScript.Scripting.Compiler.Lexics
         }
     }
 
-    class FixedParserState : LexerState
-    {
-        Lexem _lex;
-        public FixedParserState(Lexem lex)
-        {
-            _lex = lex;
-        }
-
-        public override Lexem ReadNextLexem(SourceCodeIterator iterator)
-        {
-            return _lex;
-        }
-    }
 }

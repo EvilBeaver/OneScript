@@ -18,6 +18,23 @@ namespace OneScript.Scripting.Compiler.Lexics
         private LexerState _operatorState = new OperatorLexerState();
         private LexerState _dateState = new DateLexerState();
         private Preprocessor _preprocessor = new Preprocessor();
+        private FixedParserState _fixedState = new FixedParserState();
+        private PreprocessorDirectiveLexerState _directiveState = new PreprocessorDirectiveLexerState();
+
+        private class FixedParserState : LexerState
+        {
+            Lexem _lex;
+
+            public void SetOutput(Lexem lex)
+            {
+                _lex = lex;
+            }
+
+            public override Lexem ReadNextLexem(SourceCodeIterator iterator)
+            {
+                return _lex;
+            }
+        }
 
         public Lexer()
         {
@@ -152,7 +169,7 @@ namespace OneScript.Scripting.Compiler.Lexics
         private LexerState SelectState()
         {
             char cs = _iterator.CurrentSymbol;
-            if (Char.IsLetter(cs) || cs == '_')
+            if (Char.IsLetter(cs) || cs == SpecialChars.Underscore)
             {
                 _state = _wordState;
             }
@@ -174,21 +191,15 @@ namespace OneScript.Scripting.Compiler.Lexics
             }
             else if (cs == SpecialChars.EndOperator)
             {
-                _iterator.MoveNext();
-                _state = new FixedParserState(new Lexem()
-                {
-                    Type = LexemType.EndOperator,
-                    Token = Token.Semicolon
-                });
+                SetFixedState(LexemType.EndOperator, Token.Semicolon);
             }
-            else if (cs == '?')
+            else if (cs == SpecialChars.QuestionMark)
             {
-                _iterator.MoveNext();
-                _state = new FixedParserState(new Lexem()
-                {
-                    Type = LexemType.Operator,
-                    Token = Token.Question
-                });
+                SetFixedState(LexemType.Operator, Token.Question);
+            }
+            else if(cs == SpecialChars.Preprocessor)
+            {
+                _state = _directiveState;
             }
             else
             {
@@ -201,6 +212,19 @@ namespace OneScript.Scripting.Compiler.Lexics
             }
 
             return _state;
+        }
+
+        private void SetFixedState(LexemType lexemType, Token token)
+        {
+            _iterator.MoveNext();
+            _fixedState.SetOutput(new Lexem()
+            {
+                Type = lexemType,
+                Token = token
+            });
+
+            _state = _fixedState;
+
         }
 
         public SourceCodeIterator GetIterator()

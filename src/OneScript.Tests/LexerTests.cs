@@ -274,6 +274,23 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
+        public void Preprocessor_Lexem_ProcessedCorrectly()
+        {
+            string code = "#Если #КонецЕсли";
+
+            var iterator = new SourceCodeIterator(code);
+            var wordParser = new PreprocessorDirectiveLexerState();
+            Lexem lex;
+            iterator.MoveToContent();
+            lex = wordParser.ReadNextLexem(iterator);
+
+            Assert.AreEqual(LexemType.PreprocessorDirective, lex.Type);
+            Assert.AreEqual("Если", lex.Content);
+            Assert.AreEqual(Token.If, lex.Token);
+
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(SyntaxErrorException))]
         public void Unclosed_String_Literal()
         {

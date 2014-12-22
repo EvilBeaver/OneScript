@@ -81,6 +81,7 @@
     <Compile Include="Scripting\Compiler\CompilerErrorEventArgs.cs" />
     <Compile Include="Scripting\Compiler\CompilerException.cs" />
     <Compile Include="Scripting\Compiler\Lexics\DateLexerState.cs" />
+    <Compile Include="Scripting\Compiler\Lexics\PreprocessorDirectiveLexerState.cs" />
     <Compile Include="Scripting\ICompilerContext.cs" />
     <Compile Include="Scripting\Compiler\IModuleBuilder.cs" />
     <Compile Include="Scripting\Compiler\ISourceCodeIndexer.cs" />
