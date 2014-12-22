@@ -119,6 +119,12 @@ namespace OneScript.Scripting.Compiler.Lexics
                 {
                     if (_preprocessor.Solve(_iterator))
                     {
+                        if(_iterator.CurrentSymbol == '#')
+                        {
+                            Preprocess();
+                            return;
+                        }
+
                         SelectState();
                         return;
                     }
@@ -224,6 +230,17 @@ namespace OneScript.Scripting.Compiler.Lexics
         }
 
         public event EventHandler<LexerErrorEventArgs> UnexpectedCharacterFound;
+        public event EventHandler<PreprocessorUnknownTokenEventArgs> UnknownPreprocessorToken
+        {
+            add
+            {
+                _preprocessor.UnknownDirective += value;
+            }
+            remove
+            {
+                _preprocessor.UnknownDirective -= value;
+            }
+        }
 
         public const int OUT_OF_TEXT = -1;
     }

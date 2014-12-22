@@ -24,6 +24,8 @@ namespace OneScript.Scripting.Compiler
         WordLexerState _wordExtractor = new WordLexerState();
         int _level = 0;
 
+        public event EventHandler<PreprocessorUnknownTokenEventArgs> UnknownDirective;
+
         public void Define(string param)
         {
             _definitions.Add(param);
@@ -51,7 +53,22 @@ namespace OneScript.Scripting.Compiler
             switch(_currentState)
             {
                 case PreprocessorState.Off:
-                    result = SolveIfBlock(iterator);
+
+                    var lex = NextLexem(iterator);
+                    if(lex.Token == Token.If)
+                        result = SolveIfBlock(iterator);
+                    else
+                    {
+                        if(lex.Token == Token.NotAToken)
+                        {
+                            // возможно, расширение препроцессора (например, #Область из 8.3)
+                            HandleUnknownDirective(lex, iterator);
+                            result = true;
+                        }
+                        else
+                            throw PreprocessorError(iterator, "Ожидается директива: " + Token.If);
+                    }
+
                     break;
                 case PreprocessorState.IfBlock:
                 case PreprocessorState.ElseIfBlock:
@@ -72,13 +89,30 @@ namespace OneScript.Scripting.Compiler
 
         }
 
+        private void HandleUnknownDirective(Lexem lex, SourceCodeIterator iterator)
+        {
+            if(UnknownDirective != null)
+            {
+                var args = new PreprocessorUnknownTokenEventArgs()
+                {
+                    Iterator = iterator,
+                    Lexem = lex
+                };
+
+                UnknownDirective(this, args);
+                if (args.IsHandled)
+                    return;
+
+            }
+
+            throw PreprocessorError(iterator, "Неизвестная директива: " + lex.Content);
+
+        }
+
         private bool SolveIfBlock(SourceCodeIterator iterator)
         {
             _level++;
-            var lex = NextLexem(iterator);
             
-            CheckExpectedToken(iterator, lex.Token, Token.If);
-
             _currentState = PreprocessorState.IfBlock;
             var solved = SolveExpression(iterator);
             if(solved)
@@ -127,6 +161,7 @@ namespace OneScript.Scripting.Compiler
                 return EndPreprocessing();
             }
         }
+        
         private bool TryEndPreprocessing(SourceCodeIterator iterator)
         {
             var lex = NextLexem(iterator);
@@ -180,7 +215,6 @@ namespace OneScript.Scripting.Compiler
             return new SyntaxErrorException(iterator.GetPositionInfo(), message);
         }
 
-        
         private Lexem NextLexem(SourceCodeIterator iterator)
         {
             if(iterator.MoveNext() && iterator.MoveToContent())
@@ -341,5 +375,12 @@ namespace OneScript.Scripting.Compiler
             }
             _level = 0;
         }
+    }
+
+    public class PreprocessorUnknownTokenEventArgs : EventArgs
+    {
+        public bool IsHandled { get; set; }
+        public SourceCodeIterator Iterator { get; set; }
+        public Lexem Lexem { get; set; }
     }
 }

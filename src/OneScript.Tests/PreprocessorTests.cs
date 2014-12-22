@@ -174,6 +174,30 @@ namespace OneScript.Tests
             Assert.IsTrue(lex.Token == Token.Semicolon && lex.Type == LexemType.EndOperator);
         }
 
+        [TestMethod]
+        public void Folded_Preprocessor_Items()
+        {
+            var pp = new Preprocessor();
+            pp.Define("Сервер");
+            pp.Define("Клиент");
+            pp.Define("ВебКлиент");
+
+            var code = @"
+            #Если Сервер Тогда
+                #Если ВебКлиент Тогда
+                    Б
+                #КонецЕсли
+                Х
+            #Иначе
+                В
+            #КонецЕсли";
+
+            var preprocessed = GetPreprocessedContent(pp, code);
+
+            Assert.AreEqual("БХВ", preprocessed);
+
+        }
+
         private string GetPreprocessedContent(Preprocessor pp, string code)
         {
             var iterator = new SourceCodeIterator(code);
