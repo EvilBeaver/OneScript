@@ -30,20 +30,23 @@ namespace OneScript.Tests
             pp.Define("Сервер");
             pp.Define("Клиент");
 
-            var iterator = new SourceCodeIterator(@"
+            var code = @"
             #Если Сервер и Клиент Тогда
                 F;
-            #КонецЕсли");
-            iterator.MoveToContent();
-            Assert.IsTrue(pp.Solve(iterator));
-            iterator.MoveToContent();
-            Assert.IsTrue(iterator.CurrentSymbol == 'F');
-            iterator.MoveNext();
-            iterator.MoveNext();
-            iterator.MoveToContent();
-            Assert.IsTrue(pp.Solve(iterator));
-            Assert.IsFalse(iterator.MoveNext());
-            pp.End();
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            var lex = pp.NextLexem();
+
+            Assert.AreEqual(LexemType.Identifier, lex.Type);
+            Assert.AreEqual("F", lex.Content);
+
+            lex = pp.NextLexem();
+            Assert.AreEqual(LexemType.EndOperator, lex.Type);
+
+            lex = pp.NextLexem();
+            Assert.AreEqual(LexemType.EndOfText, lex.Type);
         }
 
         [TestMethod]
@@ -51,23 +54,19 @@ namespace OneScript.Tests
         {
             var pp = new Preprocessor();
             pp.Define("Сервер");
-            pp.Define("Клиент");
-
-            var iterator = new SourceCodeIterator(@"
-            #Если Сервер и Не Клиент Тогда
+            
+            var code = @"
+            #Если Сервер и Клиент Тогда
                 F;
-            #КонецЕсли");
-            iterator.MoveToContent();
-            Assert.IsFalse(pp.Solve(iterator));
-            iterator.MoveToContent();
-            while (iterator.CurrentSymbol != '#')
-            {
-                iterator.MoveNext();
-            }
-            iterator.MoveToContent();
-            Assert.IsTrue(pp.Solve(iterator));
-            Assert.IsFalse(iterator.MoveNext());
-            pp.End();
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            var lex = pp.NextLexem();
+
+            Assert.AreEqual(Token.EndOfText, lex.Token);
+            Assert.AreEqual(LexemType.EndOfText, lex.Type);
+
         }
 
         [TestMethod]
@@ -78,7 +77,7 @@ namespace OneScript.Tests
             pp.Define("Клиент");
             pp.Define("ВебКлиент");
 
-            var iterator = new SourceCodeIterator(@"
+            var code = @"
             #Если Сервер и Не Клиент Тогда
                 А
             #ИначеЕсли ВебКлиент Тогда
@@ -87,26 +86,17 @@ namespace OneScript.Tests
                 Х
             #Иначе
                 В
-            #КонецЕсли");
-            iterator.MoveToContent();
-            Assert.IsFalse(pp.Solve(iterator));
-            Assert.IsTrue(iterator.CurrentSymbol == 'А');
-            iterator.MoveNext();
-            iterator.MoveToContent();
-            Assert.IsTrue(pp.Solve(iterator));
-            Assert.IsTrue(iterator.CurrentSymbol == 'Б');
-            iterator.MoveNext();
-            iterator.MoveToContent();
-            Assert.IsFalse(pp.Solve(iterator));
-            Assert.IsTrue(iterator.CurrentSymbol == 'Х');
-            iterator.MoveNext();
-            iterator.MoveToContent();
-            Assert.IsFalse(pp.Solve(iterator));
-            Assert.IsTrue(iterator.CurrentSymbol == 'В');
-            iterator.MoveNext();
-            iterator.MoveToContent();
-            Assert.IsTrue(pp.Solve(iterator));
-            pp.End();
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            Lexem lex;
+            lex = pp.NextLexem();
+            Assert.IsTrue(lex.Content == "Б");
+            lex = pp.NextLexem();
+            
+            Assert.AreEqual(Token.EndOfText, lex.Token);
+            Assert.AreEqual(LexemType.EndOfText, lex.Type);
         }
 
         [TestMethod]
@@ -143,38 +133,6 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
-        public void Preprocessable_Lexer_Skips_Lexems_Correctly()
-        {
-            string code = @"
-            F = 1;
-            #Если Клиент Тогда
-                К = 1; // cccc
-                M = 2;
-            #КонецЕсли
-            X = 0;";
-
-            Lexer lexer = new Lexer();
-            lexer.Code = code;
-
-            Lexem lex = lexer.NextLexem();
-            Assert.IsTrue(lex.Content == "F");
-            lex = lexer.NextLexem();
-            Assert.IsTrue(lex.Content == "=" && lex.Type == LexemType.Operator);
-            lex = lexer.NextLexem();
-            Assert.IsTrue(lex.Type == LexemType.NumberLiteral);
-            lex = lexer.NextLexem();
-            Assert.IsTrue(lex.Token == Token.Semicolon && lex.Type == LexemType.EndOperator);
-            lex = lexer.NextLexem();
-            Assert.IsTrue(lex.Content == "X" && lex.Type == LexemType.Identifier);
-            lex = lexer.NextLexem();
-            Assert.IsTrue(lex.Content == "=" && lex.Type == LexemType.Operator);
-            lex = lexer.NextLexem();
-            Assert.IsTrue(lex.Type == LexemType.NumberLiteral);
-            lex = lexer.NextLexem();
-            Assert.IsTrue(lex.Token == Token.Semicolon && lex.Type == LexemType.EndOperator);
-        }
-
-        [TestMethod]
         public void Folded_Preprocessor_Items()
         {
             var pp = new Preprocessor();
@@ -200,30 +158,18 @@ namespace OneScript.Tests
 
         private string GetPreprocessedContent(Preprocessor pp, string code)
         {
-            var iterator = new SourceCodeIterator(code);
+            pp.Code = code;
+            Lexem lex = Lexem.Empty();
 
-            var builder = new StringBuilder();
-            while (iterator.MoveToContent())
+            StringBuilder builder = new StringBuilder();
+
+            while (lex.Type != LexemType.EndOfText)
             {
-                if (iterator.CurrentSymbol == '#')
-                {
-                    if (pp.Solve(iterator))
-                    {
-                        while (iterator.CurrentSymbol != '#')
-                        {
-                            if (Char.IsLetterOrDigit(iterator.CurrentSymbol))
-                                builder.Append(iterator.CurrentSymbol);
-                            
-                            if (!iterator.MoveNext())
-                                break;
-                        }
-                        iterator.MoveToContent();
-                    }
-                }
-                else
-                {
-                    iterator.MoveNext();
-                }
+
+                lex = pp.NextLexem();
+
+                builder.Append(lex.Content);
+
             }
             return builder.ToString().Trim();
         }

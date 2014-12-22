@@ -6,23 +6,16 @@ using System.Text;
 
 namespace OneScript.Scripting.Compiler
 {
-    public class Preprocessor
+    public class Preprocessor : ILexemGenerator
     {
-        enum PreprocessorState
-        {
-            Off,
-            IfBlock,
-            ElseIfBlock,
-            ElseBlock,
-            Solved,
-            RequireEnd
-        };
-
         HashSet<string> _definitions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        PreprocessorState _currentState = PreprocessorState.Off;
-        bool _isExcluding = false;
-        WordLexerState _wordExtractor = new WordLexerState();
-        int _level = 0;
+        Lexer _lexer;
+        string _code;
+
+        public Preprocessor()
+        {
+            _lexer = new Lexer();
+        }
 
         public event EventHandler<PreprocessorUnknownTokenEventArgs> UnknownDirective;
 
@@ -39,54 +32,6 @@ namespace OneScript.Scripting.Compiler
         public void Undef(string param)
         {
             _definitions.Remove(param);
-        }
-
-        public bool Solve(SourceCodeIterator iterator)
-        {
-            System.Diagnostics.Debug.Assert(iterator.CurrentSymbol == '#');
-
-            if (_isExcluding && _level > 1)
-                return false;
-
-            bool result;
-
-            switch(_currentState)
-            {
-                case PreprocessorState.Off:
-
-                    var lex = NextLexem(iterator);
-                    if(lex.Token == Token.If)
-                        result = SolveIfBlock(iterator);
-                    else
-                    {
-                        if(lex.Token == Token.NotAToken)
-                        {
-                            // возможно, расширение препроцессора (например, #Область из 8.3)
-                            HandleUnknownDirective(lex, iterator);
-                            result = true;
-                        }
-                        else
-                            throw PreprocessorError(iterator, "Ожидается директива: " + Token.If);
-                    }
-
-                    break;
-                case PreprocessorState.IfBlock:
-                case PreprocessorState.ElseIfBlock:
-                    result = DispatchElseVariants(iterator);
-                    break;
-                case PreprocessorState.Solved:
-                    result = SkipAllBranches(iterator);
-                    break;
-                case PreprocessorState.RequireEnd:
-                    result = TryEndPreprocessing(iterator);
-                    break;
-                default:
-                    throw PreprocessorError(iterator, "Ожидается директива: " + Token.EndIf);
-            }
-
-            iterator.MoveToContent();
-            return result;
-
         }
 
         private void HandleUnknownDirective(Lexem lex, SourceCodeIterator iterator)
@@ -109,122 +54,9 @@ namespace OneScript.Scripting.Compiler
 
         }
 
-        private bool SolveIfBlock(SourceCodeIterator iterator)
-        {
-            _level++;
-            
-            _currentState = PreprocessorState.IfBlock;
-            var solved = SolveExpression(iterator);
-            if(solved)
-            {
-                _currentState = PreprocessorState.Solved;
-                _isExcluding = false;
-            }
-            else
-            {
-                _isExcluding = true;
-            }
-
-            return !_isExcluding;
-        }
-
-        private bool DispatchElseVariants(SourceCodeIterator iterator)
-        {
-            var lex = NextLexem(iterator);
-
-            CheckExpectedToken(iterator, lex.Token, Token.ElseIf, Token.Else, Token.EndIf);
-            if(lex.Token == Token.ElseIf)
-            {
-                _currentState = PreprocessorState.ElseIfBlock;
-                var solved = SolveExpression(iterator);
-                if (solved)
-                {
-                    _currentState = PreprocessorState.Solved;
-                    _isExcluding = false;
-                }
-                else
-                {
-                    _isExcluding = true;
-                }
-
-                return !_isExcluding;
-            }
-            else if(lex.Token == Token.Else)
-            {
-                _isExcluding = false;
-                _currentState = PreprocessorState.RequireEnd;
-                return true;
-
-            }
-            else
-            {
-                return EndPreprocessing();
-            }
-        }
-        
-        private bool TryEndPreprocessing(SourceCodeIterator iterator)
-        {
-            var lex = NextLexem(iterator);
-            CheckExpectedToken(iterator, lex.Token, Token.EndIf);
-
-            return EndPreprocessing();
-        }
-
-        private bool SkipAllBranches(SourceCodeIterator iterator)
-        {
-            var lex = NextLexem(iterator);
-            if(lex.Token == Token.EndIf)
-            {
-                return EndPreprocessing();
-            }
-            else if(lex.Token == Token.ElseIf)
-            {
-                SolveExpression(iterator);
-            }
-            return false;
-        }
-
-        private bool EndPreprocessing()
-        {
-            if (--_level == 0)
-            {
-                _currentState = PreprocessorState.Off;
-                _isExcluding = false;
-            }
-
-            return !_isExcluding;
-
-        }
-
-        private void CheckExpectedToken(SourceCodeIterator iterator, Token real, params Token[] expected)
-        {
-            if (!expected.Contains(real))
-            {
-                var sb = new StringBuilder();
-                foreach (var item in expected)
-                {
-                    sb.Append(item);
-                    sb.Append('/');
-                }
-                throw PreprocessorError(iterator, "Ожидается директива препроцессора: " + sb.ToString());
-            }
-        }
-
         private static SyntaxErrorException PreprocessorError(SourceCodeIterator iterator, string message)
         {
             return new SyntaxErrorException(iterator.GetPositionInfo(), message);
-        }
-
-        private Lexem NextLexem(SourceCodeIterator iterator)
-        {
-            if(iterator.MoveNext() && iterator.MoveToContent())
-            {
-                return _wordExtractor.ReadNextLexem(iterator);
-            }
-            else
-            {
-                throw PreprocessorError(iterator, "Непредусмотренное завершение текста");
-            }
         }
 
         private bool SolveExpression(SourceCodeIterator iterator)
@@ -246,7 +78,7 @@ namespace OneScript.Scripting.Compiler
                     throw PreprocessorError(iterator, "Непредусмотренное завершение текста модуля");
                 }
 
-                lex = _wordExtractor.ReadNextLexem(iterator);
+                lex = _lexer.NextLexem();
                 if (lex.Token == Token.Then)
                 {
                     iterator.MoveToContent();
@@ -367,13 +199,48 @@ namespace OneScript.Scripting.Compiler
             
         }
 
-        public void End()
+
+        public string Code
         {
-            if(_currentState != PreprocessorState.Off)
+            get
             {
-                throw new SyntaxErrorException(new CodePositionInfo(), "Ожидается директива #КонецЕсли/#EndIf");
+                return _code;
             }
-            _level = 0;
+            set
+            {
+                _code = value;
+                _lexer.Code = _code;
+            }
+        }
+
+        public int CurrentColumn
+        {
+            get { return _lexer.CurrentColumn; }
+        }
+
+        public int CurrentLine
+        {
+            get { return _lexer.CurrentLine; }
+        }
+
+        public CodePositionInfo GetCodePosition()
+        {
+            return _lexer.GetCodePosition();
+        }
+
+        public Lexem NextLexem()
+        {
+            var lexem = _lexer.NextLexem();
+            if (lexem.Type == LexemType.PreprocessorDirective)
+                return Preprocess(ref lexem);
+
+            return lexem;
+
+        }
+
+        private Lexem Preprocess(ref Lexem directive)
+        {
+            throw new NotImplementedException();
         }
     }
 

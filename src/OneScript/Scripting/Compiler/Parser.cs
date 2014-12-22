@@ -8,7 +8,7 @@ namespace OneScript.Scripting.Compiler
 {
     public class Parser
     {
-        private Lexer _lexer;
+        private ILexemGenerator _lexer;
         private Lexem _lastExtractedLexem;
         private IModuleBuilder _builder;
         private bool _wereErrorsInBuild;
@@ -21,11 +21,12 @@ namespace OneScript.Scripting.Compiler
             _builder = builder;
         }
 
-        public bool Build(Lexer lexer)
+        public bool Build(ILexemGenerator lexer)
         {
             _lexer = lexer;
             _lastExtractedLexem = default(Lexem);
-            _lexer.UnexpectedCharacterFound += _lexer_UnexpectedCharacterFound;
+            // TODO: обработка нераспознанных символов
+            //_lexer.UnexpectedCharacterFound += _lexer_UnexpectedCharacterFound;
             _wereErrorsInBuild = false;
             _blockEndings = new Stack<Token[]>();
 
@@ -700,7 +701,7 @@ namespace OneScript.Scripting.Compiler
         private bool ReportError(ScriptException compilerException)
         {
             _wereErrorsInBuild = true;
-            ScriptException.AppendCodeInfo(compilerException, _lexer.GetIterator().GetPositionInfo());
+            ScriptException.AppendCodeInfo(compilerException, _lexer.GetCodePosition());
 
             if (CompilerError == null) 
                 return false;
@@ -708,7 +709,7 @@ namespace OneScript.Scripting.Compiler
             var eventArgs = new CompilerErrorEventArgs
             {
                 Exception = compilerException, 
-                LexerState = _lexer
+                LexemGenerator = _lexer
             };
 
             CompilerError(this, eventArgs);

@@ -9,7 +9,7 @@ namespace OneScript.Scripting.Compiler
     public class Compiler
     {
         private readonly IModuleBuilder _builder;
-        private Lexer _lexer;
+        private ILexemGenerator _lexer;
 
         public Compiler(IModuleBuilder builder)
         {
@@ -18,7 +18,7 @@ namespace OneScript.Scripting.Compiler
 
         public void SetCode(string code)
         {
-            _lexer = new Lexer {Code = code};
+            _lexer = new Preprocessor() {Code = code};
         }
 
         public bool Compile()

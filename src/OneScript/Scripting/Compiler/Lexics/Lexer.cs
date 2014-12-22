@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Scripting.Compiler.Lexics
 {
-    public class Lexer
+    public class Lexer : ILexemGenerator
     {
         private string _code;
         private SourceCodeIterator _iterator;
@@ -17,7 +17,6 @@ namespace OneScript.Scripting.Compiler.Lexics
         private LexerState _stringState = new StringLexerState();
         private LexerState _operatorState = new OperatorLexerState();
         private LexerState _dateState = new DateLexerState();
-        private Preprocessor _preprocessor = new Preprocessor();
         private FixedParserState _fixedState = new FixedParserState();
         private PreprocessorDirectiveLexerState _directiveState = new PreprocessorDirectiveLexerState();
 
@@ -69,16 +68,6 @@ namespace OneScript.Scripting.Compiler.Lexics
             }
         }
 
-        public void DefinePreprocessorToken(string token)
-        {
-            _preprocessor.Define(token);
-        }
-
-        public void UndefPreprocessorToken(string token)
-        {
-            _preprocessor.Undef(token);
-        }
-
         public Lexem NextLexem()
         {
             _state = _emptyState;
@@ -88,11 +77,6 @@ namespace OneScript.Scripting.Compiler.Lexics
                 if (_iterator.MoveToContent())
                 {
                     SelectState();
-
-                    // TODO: это условие - промежуточный шаг рефакторинга препроцессора
-                    // нужно для прохождения тестов.
-                    if (_state is PreprocessorDirectiveLexerState)
-                        Preprocess();
 
                     Lexem lex;
                     try
@@ -124,44 +108,6 @@ namespace OneScript.Scripting.Compiler.Lexics
                 {
                     return Lexem.EndOfText();
                 }
-            }
-        }
-
-        private void Preprocess()
-        {
-            try
-            {
-                while (_iterator.Position != Lexer.OUT_OF_TEXT)
-                {
-                    if (_preprocessor.Solve(_iterator))
-                    {
-                        if(_iterator.CurrentSymbol == '#')
-                        {
-                            Preprocess();
-                            return;
-                        }
-
-                        SelectState();
-                        return;
-                    }
-                    else
-                    {
-                        while (_iterator.CurrentSymbol != '#')
-                        {
-                            SelectState();
-                            _state.ReadNextLexem(_iterator);
-                            if (!_iterator.MoveToContent())
-                            {
-                                _state = _emptyState;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SyntaxErrorException exc)
-            {
-                if(!HandleError(exc))
-                    throw;
             }
         }
 
@@ -231,6 +177,11 @@ namespace OneScript.Scripting.Compiler.Lexics
             return _iterator;
         }
 
+        public CodePositionInfo GetCodePosition()
+        {
+            return _iterator.GetPositionInfo();
+        }
+
         private bool HandleError(SyntaxErrorException exc)
         {
             if (UnexpectedCharacterFound != null)
@@ -253,17 +204,6 @@ namespace OneScript.Scripting.Compiler.Lexics
         }
 
         public event EventHandler<LexerErrorEventArgs> UnexpectedCharacterFound;
-        public event EventHandler<PreprocessorUnknownTokenEventArgs> UnknownPreprocessorToken
-        {
-            add
-            {
-                _preprocessor.UnknownDirective += value;
-            }
-            remove
-            {
-                _preprocessor.UnknownDirective -= value;
-            }
-        }
 
         public const int OUT_OF_TEXT = -1;
     }

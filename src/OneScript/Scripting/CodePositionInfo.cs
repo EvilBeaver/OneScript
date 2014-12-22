@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Scripting
 {
-    class CodePositionInfo
+    public class CodePositionInfo
     {
         public CodePositionInfo()
         {
