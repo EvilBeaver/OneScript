@@ -87,19 +87,18 @@ namespace OneScript.Scripting.Compiler.Lexics
             {
                 if (_iterator.MoveToContent())
                 {
-                    if (_iterator.CurrentSymbol != '#')
-                    {
-                        SelectState();
-                    }
-                    else
-                    {
+                    SelectState();
+
+                    // TODO: это условие - промежуточный шаг рефакторинга препроцессора
+                    // нужно для прохождения тестов.
+                    if (_state is PreprocessorDirectiveLexerState)
                         Preprocess();
-                    }
 
                     Lexem lex;
                     try
                     {
                         lex = _state.ReadNextLexem(_iterator);
+                        //TODO: комментарии должны отсекаться где-то не на этом уровне абстракции
                         if (lex.Type == LexemType.NotALexem) //комментарии
                         {
                             _state = _emptyState;
