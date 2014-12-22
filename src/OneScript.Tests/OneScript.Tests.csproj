@@ -50,7 +50,16 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ParserTests\AssignmentNode.cs" />
+    <Compile Include="ParserTests\CallNode.cs" />
+    <Compile Include="ParserTests\CodeBatchNode.cs" />
+    <Compile Include="ParserTests\ConditionNode.cs" />
+    <Compile Include="ParserTests\ExpressionNode.cs" />
     <Compile Include="ParserTests\Builder.cs" />
+    <Compile Include="ParserTests\IndexedAccessNode.cs" />
+    <Compile Include="ParserTests\MethodNode.cs" />
+    <Compile Include="ParserTests\PropertyAccessNode.cs" />
+    <Compile Include="ParserTests\TestASTNodeBase.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TypeSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
