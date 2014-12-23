@@ -161,7 +161,7 @@ namespace OneScript.Scripting.Compiler
             if (_lastExtractedLexem.Token != Token.OpenPar)
                 throw CompilerException.TokenExpected("(");
 
-            IASTNode methodNode = _builder.BeginMethod(identifier, isFunction);
+            var methodNode = _builder.BeginMethod(identifier, isFunction);
             try
             {
                 var parameters = new List<ASTMethodParameter>();
@@ -227,8 +227,9 @@ namespace OneScript.Scripting.Compiler
                     NextLexem();
                 }
 
-                _builder.SetMethodSignature(methodNode, parameters.ToArray(), isExported);
-
+                methodNode.Parameters = parameters;
+                methodNode.IsExported = isExported;
+                
             }
             catch (CompilerException exc)
             {

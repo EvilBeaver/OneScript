@@ -1,13 +1,14 @@
 using OneScript.Scripting.Compiler;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace OneScript.Tests
 {
-    class MethodNode : TestASTNodeBase
+    class MethodNode : TestASTNodeBase, IASTMethodNode
     {
         public CodeBatchNode _body;
         public string _name;
-        public ASTMethodParameter[] _parameters;
+        public IList<ASTMethodParameter> _parameters;
         public bool _isExported;
         public bool _isFunction;
 
@@ -42,6 +43,66 @@ namespace OneScript.Tests
                 return false;
 
             return true;
+        }
+
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+            }
+        }
+
+        public bool IsFunction
+        {
+            get
+            {
+                return _isFunction;
+            }
+            set
+            {
+                _isFunction = value;
+            }
+        }
+
+        public bool IsExported
+        {
+            get
+            {
+                return _isExported;
+            }
+            set
+            {
+                _isExported = value;
+            }
+        }
+
+        public IList<ASTMethodParameter> Parameters
+        {
+            get
+            {
+                return _parameters;
+            }
+            set
+            {
+                _parameters = value;
+            }
+        }
+
+        public IASTNode Body
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+            set
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }
