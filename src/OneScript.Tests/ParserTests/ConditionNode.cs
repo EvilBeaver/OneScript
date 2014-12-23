@@ -2,7 +2,7 @@ using OneScript.Scripting.Compiler;
 
 namespace OneScript.Tests
 {
-    class ConditionNode : TestASTNodeBase, IASTIfNode
+    class ConditionNode : TestASTNodeBase, IASTConditionNode
     {
         private IASTNode _condition;
 

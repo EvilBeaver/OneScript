@@ -169,7 +169,7 @@ namespace OneScript.Tests
             }
         }
 
-        public IASTIfNode IfStatement()
+        public IASTConditionNode IfStatement()
         {
             return new ConditionNode();
         }

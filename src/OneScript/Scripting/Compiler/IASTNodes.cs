@@ -9,7 +9,7 @@ namespace OneScript.Scripting.Compiler
     {
     }
 
-    public interface IASTIfNode : IASTNode
+    public interface IASTConditionNode : IASTNode
     {
         IASTNode Condition { get; set; }
         IASTNode TruePart { get; set; }

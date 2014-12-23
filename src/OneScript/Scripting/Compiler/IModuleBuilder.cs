@@ -44,7 +44,7 @@ namespace OneScript.Scripting.Compiler
         
         void EndBatch(IASTNode batch);
 
-        IASTIfNode IfStatement();
+        IASTConditionNode IfStatement();
 
     }
 }
