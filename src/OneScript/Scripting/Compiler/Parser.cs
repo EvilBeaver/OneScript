@@ -104,6 +104,7 @@ namespace OneScript.Scripting.Compiler
                     bodyDefined = true;
                     PushEndTokens(Token.EndOfText);
                     BuildCodeBatch();
+                    PopEndTokens();
                 }
                 else
                 {
@@ -244,6 +245,8 @@ namespace OneScript.Scripting.Compiler
             _isInMethodScope = true;
             BuildCodeBatch();            
             _isInMethodScope = false;
+            
+            PopEndTokens();
 
             _builder.EndMethod(methodNode);
 
@@ -347,43 +350,39 @@ namespace OneScript.Scripting.Compiler
             return batch;
         }
 
-        private bool BuildStatement()
+        private void BuildStatement()
         {
             Debug.Assert(_lastExtractedLexem.Type == LexemType.Identifier);
 
             if(LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token))
             {
-                return BuildComplexStatement();
+                BuildComplexStatement();
             }
             else if(LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
             {
-                return BuildSimpleStatement();
+                BuildSimpleStatement();
             }
             else
             {
-                ReportErrorOrThrow(CompilerException.UnexpectedOperation());
-                return false;
+                throw CompilerException.UnexpectedOperation();
             }
         }
 
-        private bool BuildComplexStatement()
+        private void BuildComplexStatement()
         {
-            bool success;
             switch(_lastExtractedLexem.Token)
             {
                 case Token.VarDef:
                     throw new NotImplementedException();
                 case Token.If:
-                    success = BuildIfStatement();
+                    BuildIfStatement();
                     break;
                 default:
                     throw new NotImplementedException();
             }
-
-            return success;
         }
 
-        private bool BuildSimpleStatement()
+        private void BuildSimpleStatement()
         {
             Debug.Assert(LanguageDef.IsUserSymbol(ref _lastExtractedLexem));
 
@@ -415,11 +414,9 @@ namespace OneScript.Scripting.Compiler
                     break;
                 
                 default:
-                    ReportErrorOrThrow(CompilerException.UnexpectedOperation());
-                    return false;
+                    throw CompilerException.UnexpectedOperation();
             }
 
-            return true;
         }
 
         private void BuildAccessChainLeftHand(string identifier)
@@ -456,7 +453,7 @@ namespace OneScript.Scripting.Compiler
             if(_lastExtractedLexem.Token == stopToken)
                 return subNode;
 
-            var endTokens = PopEndTokens();
+            var endTokens = _blockEndings.Peek();
 
             // здесь нужно добавить проверку на допустимый конецблока.
             if (endTokens.Contains(_lastExtractedLexem.Token))
@@ -680,9 +677,22 @@ namespace OneScript.Scripting.Compiler
             return arguments.ToArray();
         }
 
-        private bool BuildIfStatement()
+        private void BuildIfStatement()
         {
-            throw new NotImplementedException();
+            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.If);
+
+            NextLexem();
+
+            var ifBlock = _builder.BeginConditionStatement();
+            ifBlock.Condition = BuildExpression(Token.Then);
+
+            NextLexem();
+            PushEndTokens(Token.Else, Token.ElseIf, Token.EndIf);
+            BuildCodeBatch();
+            PopEndTokens();
+
+            _builder.EndConditionStatement(ifBlock);
+
         }
 
         #region Helper methods
