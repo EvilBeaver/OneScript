@@ -25,6 +25,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript", "OneScript\OneS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Tests", "OneScript.Tests\OneScript.Tests.csproj", "{E124C0FC-B6DA-4959-B419-0847D4436B8D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D14BF321-348C-46B8-B96A-43A22BA7AC10}"
+	ProjectSection(SolutionItems) = preProject
+		GlobalAssemblyInfo.cs = GlobalAssemblyInfo.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +91,7 @@ Global
 		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Release|x86.ActiveCfg = Release|x86
 		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}.Release|x86.Build.0 = Release|x86
 		{618F7216-6576-410D-818C-C79BB6BEEA0C}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{618F7216-6576-410D-818C-C79BB6BEEA0C}.Debug|Any CPU.Build.0 = Debug|Win32
 		{618F7216-6576-410D-818C-C79BB6BEEA0C}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{618F7216-6576-410D-818C-C79BB6BEEA0C}.Debug|Win32.ActiveCfg = Debug|Win32
 		{618F7216-6576-410D-818C-C79BB6BEEA0C}.Debug|x86.ActiveCfg = Debug|Win32

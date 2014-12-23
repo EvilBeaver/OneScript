@@ -80,7 +80,16 @@ namespace ScriptEngine
 
             var compiler = new Compiler.Compiler();
             ModuleImage compiledImage;
-            compiledImage = compiler.Compile(parser, _currentContext);
+            try
+            {
+                compiledImage = compiler.Compile(parser, _currentContext);
+            }
+            catch (ScriptException e)
+            {
+                e.ModuleName = source.SourceDescription;
+                throw;
+            }
+
             foreach (var item in _predefinedVariables)
             {
                 var varDef = _scope.GetVariable(item);
@@ -93,6 +102,13 @@ namespace ScriptEngine
                     });
                 }
             }
+
+            var mi = new ModuleInformation();
+            mi.CodeIndexer = parser.GetCodeIndexer();
+            // пока у модулей нет собственных имен, будет совпадать с источником модуля
+            mi.ModuleName = source.SourceDescription;
+            mi.Origin = source.SourceDescription;
+            compiledImage.ModuleInfo = mi;
 
             return new ModuleHandle()
             {

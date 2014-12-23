@@ -59,6 +59,7 @@
       <Word>КонецЦикла</Word>
       <Word>Возврат</Word>
       <Word>Продолжить</Word>
+      <Word>Прервать</Word>
       <Word>Попытка</Word>
       <Word>Исключение</Word>
       <Word>ВызватьИсключение</Word>
@@ -101,6 +102,7 @@
       <Word>EndDo</Word>
       <Word>Return</Word>
       <Word>Continue</Word>
+      <Word>Break</Word>
       <Word>Try</Word>
       <Word>Exception</Word>
       <Word>Raise</Word>

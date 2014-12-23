@@ -1,12 +1,17 @@
-﻿using System;
+﻿#if !__MonoCS__
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    [ContextClass("BasicArray")]
-    public class SafeArrayWrapper : ContextIValueImpl, ICollectionContext, IObjectWrapper
+    /// <summary>
+    /// Вспомогательный класс для работы с объектами COMSafeArray, получаемыми из COM-объектов.
+    /// На данный момент класс не является полноценной заменой для COMSafeArray и его нельзя создать вручную.
+    /// </summary>
+    [ContextClass("SafeArrayWrapper")]
+    public class SafeArrayWrapper : AutoContext<SafeArrayWrapper>, ICollectionContext, IObjectWrapper
     {
         private object[] _array;
 
@@ -20,7 +25,8 @@ namespace ScriptEngine.Machine.Contexts
             _array = safearray;
         }
 
-        public int Count()
+        [ContextMethod("Количество", "Count")]
+		public int Count()
         {
             return _array.Length;
         }
@@ -70,3 +76,4 @@ namespace ScriptEngine.Machine.Contexts
         }
     }
 }
+#endif

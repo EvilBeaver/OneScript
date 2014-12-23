@@ -54,6 +54,8 @@ namespace ScriptEngine.Machine
         LineNum,
         MakeRawValue,
         MakeBool,
+        PushTmp,
+        PopTmp,
 
         // built-in functions
         Question,
@@ -61,6 +63,8 @@ namespace ScriptEngine.Machine
         Number,
         Str,
         Date,
+        Type,
+        ValType,
         StrLen,
         TrimL,
         TrimR,
@@ -102,8 +106,10 @@ namespace ScriptEngine.Machine
         Round,
         Pow,
         Sqrt,
+        Format,
         ExceptionInfo,
-        ExceptionDescr
+        ExceptionDescr,
+        ModuleInfo
     }
 
     [Serializable]
@@ -128,7 +134,8 @@ namespace ScriptEngine.Machine
         Boolean,
         Type,
         Object,
-        NotAValidValue // default argument value
+        NotAValidValue, // default argument value
+        GenericValue
     }
 
     [Serializable]
@@ -172,7 +179,7 @@ namespace ScriptEngine.Machine
         public const int UNDEFINED_VALUE_INDEX = -1;
     }
 
-    public struct TypeDescriptor
+    public struct TypeDescriptor : IEquatable<TypeDescriptor>
     {
         public int ID;
         public string Name;
@@ -184,11 +191,20 @@ namespace ScriptEngine.Machine
 
         public static TypeDescriptor FromDataType(DataType srcType)
         {
-            return new TypeDescriptor()
-            {
-                ID = (int)srcType,
-                Name = Enum.GetName(typeof(DataType), srcType)
-            };
+            System.Diagnostics.Debug.Assert(
+                   srcType == DataType.Boolean
+                || srcType == DataType.Date
+                || srcType == DataType.Number
+                || srcType == DataType.String
+                || srcType == DataType.Undefined
+                || srcType == DataType.Type);
+
+            return TypeManager.GetTypeById((int)srcType);
+        }
+
+        public bool Equals(TypeDescriptor other)
+        {
+            return other.ID == this.ID;
         }
     }
 

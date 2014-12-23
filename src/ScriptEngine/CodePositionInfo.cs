@@ -7,6 +7,7 @@ namespace ScriptEngine
 {
     class CodePositionInfo
     {
+        public string ModuleName { get; set; }
         public int LineNumber { get; set; }
         public string Code { get; set; }
     }

@@ -34,8 +34,11 @@ namespace ScriptEngine.Machine
     {
         Type GetImplementingClass(int typeId);
         TypeDescriptor GetTypeByName(string name);
+        TypeDescriptor GetTypeById(int id);
         TypeDescriptor GetTypeByFrameworkType(Type type);
-        void RegisterType(string name, Type implementingClass);
+        TypeDescriptor RegisterType(string name, Type implementingClass);
+        TypeDescriptor GetTypeDescriptorFor(IValue typeTypeValue);
+        void RegisterAliasFor(TypeDescriptor td, string alias);
         bool IsKnownType(Type type);
         Type NewInstanceHandler { get; set; }
     }
@@ -56,9 +59,46 @@ namespace ScriptEngine.Machine
         {
             foreach (var item in Enum.GetValues(typeof(DataType)))
             {
-                var td = TypeDescriptor.FromDataType((DataType)item);
+                DataType typeEnum = (DataType)item;
+                string alias;
+                switch (typeEnum)
+                {
+                    case DataType.Undefined:
+                        alias = "Неопределено";
+                        break;
+                    case DataType.Boolean:
+                        alias = "Булево";
+                        break;
+                    case DataType.String:
+                        alias = "Строка";
+                        break;
+                    case DataType.Date:
+                        alias = "Дата";
+                        break;
+                    case DataType.Number:
+                        alias = "Число";
+                        break;
+                    case DataType.Type:
+                        alias = "Тип";
+                        break;
+                    case DataType.Object:
+                        alias = "Object";
+                        break;
+                    default:
+                        continue;
+                }
+
+                var td = new TypeDescriptor()
+                {
+                    Name = alias,
+                    ID = (int)typeEnum
+                };
+
                 RegisterType(td, typeof(DataType));
+
             }
+
+            RegisterType("Null", typeof(NullValueImpl));
         }
 
         #region ITypeManager Members
@@ -75,7 +115,12 @@ namespace ScriptEngine.Machine
             return _knownTypes[ktIndex].Descriptor;
         }
 
-        public void RegisterType(string name, Type implementingClass)
+        public TypeDescriptor GetTypeById(int id)
+        {
+            return _knownTypes[id].Descriptor;
+        }
+
+        public TypeDescriptor RegisterType(string name, Type implementingClass)
         {
             if (_knownTypesIndexes.ContainsKey(name))
             {
@@ -83,7 +128,7 @@ namespace ScriptEngine.Machine
                 if (GetImplementingClass(td.ID) != implementingClass)
                     throw new InvalidOperationException("Name already registered");
 
-                return;
+                return td;
             }
             else
             {
@@ -95,18 +140,24 @@ namespace ScriptEngine.Machine
                 };
 
                 RegisterType(typeDesc, implementingClass);
+                return typeDesc;
             }
 
         }
 
         private void RegisterType(TypeDescriptor td, Type implementingClass)
         {
-            _knownTypesIndexes.Add(td.Name, _knownTypes.Count);
+            _knownTypesIndexes.Add(td.Name, td.ID);
             _knownTypes.Add(new KnownType()
                 {
                     Descriptor = td,
                     SystemType = implementingClass
                 });
+        }
+
+        public void RegisterAliasFor(TypeDescriptor td, string alias)
+        {
+            _knownTypesIndexes[alias] = td.ID;
         }
 
         public TypeDescriptor GetTypeByFrameworkType(Type type)
@@ -142,6 +193,19 @@ namespace ScriptEngine.Machine
             }
         }
 
+        public TypeDescriptor GetTypeDescriptorFor(IValue typeTypeValue)
+        {
+            if (typeTypeValue.DataType != DataType.Type)
+                throw RuntimeException.InvalidArgumentType();
+
+            var ttVal = typeTypeValue.GetRawValue() as TypeTypeValue;
+
+            System.Diagnostics.Debug.Assert(ttVal != null, "value must be of type TypeTypeValue");
+
+            return ttVal.Value;
+
+        }
+
         #endregion
 
     }
@@ -165,15 +229,20 @@ namespace ScriptEngine.Machine
             return _instance.GetTypeByName(name);
         }
 
-        public static void RegisterType(string name, Type implementingClass)
+        public static TypeDescriptor RegisterType(string name, Type implementingClass)
         {
-            _instance.RegisterType(name, implementingClass);
+            return _instance.RegisterType(name, implementingClass);
         }
 
-        public static int GetTypeIDByName(string name)
+        public static void RegisterAliasFor(TypeDescriptor td, string alias)
         {
-            var type = _instance.GetTypeByName(name);
-            return type.ID;
+            _instance.RegisterAliasFor(td, alias);
+        }
+
+        public static TypeDescriptor GetTypeById(int id)
+        {
+            var type = _instance.GetTypeById(id);
+            return type;
         }
 
         public static bool IsKnownType(Type type)
@@ -184,6 +253,11 @@ namespace ScriptEngine.Machine
         public static TypeDescriptor GetTypeByFrameworkType(Type type)
         {
             return _instance.GetTypeByFrameworkType(type);
+        }
+
+        public static TypeDescriptor GetTypeDescriptorFor(IValue typeTypeValue)
+        {
+            return _instance.GetTypeDescriptorFor(typeTypeValue);
         }
 
         public static Type NewInstanceHandler
@@ -204,7 +278,7 @@ namespace ScriptEngine.Machine
             Type clrType;
             try
             {
-                typeId = TypeManager.GetTypeIDByName(typeName);
+                typeId = TypeManager.GetTypeByName(typeName).ID;
                 clrType = TypeManager.GetImplementingClass(typeId);
             }
             catch (KeyNotFoundException)

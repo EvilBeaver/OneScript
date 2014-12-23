@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using ScriptEngine.HostedScript;
 
 namespace oscript
 {
@@ -29,7 +30,8 @@ namespace oscript
 
                 int offset = (int)output.Length;
 
-                var engine = new ScriptEngine.HostedScriptEngine();
+                var engine = new HostedScriptEngine();
+                engine.Initialize();
                 var source = engine.Loader.FromFile(_codePath);
                 var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 var persistor = new ScriptEngine.Compiler.ModulePersistor(formatter);

@@ -9,17 +9,18 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ScriptEngine</RootNamespace>
     <AssemblyName>ScriptEngine</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <ProductVersion>12.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -27,29 +28,34 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>False</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>1591</NoWarn>
+    <DocumentationFile>bin\x86\Release\ScriptEngine.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CustomMarshalers" />
@@ -62,6 +68,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="CodePositionInfo.cs" />
     <Compile Include="CompilerService.cs" />
     <Compile Include="Compiler\Compiler.cs" />
@@ -77,15 +86,29 @@
     <Compile Include="Environment\CodeSources.cs" />
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
+    <Compile Include="Environment\ModuleInformation.cs" />
     <Compile Include="Machine\Contexts\AttachedScriptsFactory.cs" />
+    <Compile Include="Machine\Contexts\EnumerationContext.cs" />
+    <Compile Include="Machine\Contexts\EnumerationValue.cs" />
+    <Compile Include="Machine\Contexts\GlobalContextAttribute.cs" />
+    <Compile Include="Machine\Contexts\GlobalContextBase.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
+    <Compile Include="Machine\Contexts\LibraryContextBase.cs" />
+    <Compile Include="Machine\Contexts\ScriptInformationContext.cs" />
+    <Compile Include="Machine\Contexts\SelfAwareEnumValue.cs" />
     <Compile Include="Machine\Contexts\ReflectableSDO.cs" />
     <Compile Include="Machine\Contexts\ReflectedMethodInfo.cs" />
     <Compile Include="Machine\Contexts\ReflectedParamInfo.cs" />
     <Compile Include="Machine\Contexts\ReflectedPropertyInfo.cs" />
     <Compile Include="Machine\Contexts\SafeArrayWrapper.cs" />
     <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
+    <Compile Include="Machine\Contexts\SystemEnumAttribute.cs" />
+    <Compile Include="Machine\GenericIValueComparer.cs" />
+    <Compile Include="Machine\GlobalInstancesManager.cs" />
+    <Compile Include="Machine\NullValueImpl.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
+    <Compile Include="Machine\TypeTypeValue.cs" />
+    <Compile Include="Machine\ValueFormatter.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />
     <Compile Include="Machine\Contexts\AutoContext.cs" />
@@ -100,7 +123,6 @@
     <Compile Include="Compiler\Tokens.cs" />
     <Compile Include="Environment\ICodeSource.cs" />
     <Compile Include="Machine\IReflectableContext.cs" />
-    <Compile Include="Environment\AttachedScriptsFactory.cs" />
     <Compile Include="Machine\Contexts\COMWrapperContext.cs" />
     <Compile Include="Machine\Contexts\ContextPropertyMapper.cs" />
     <Compile Include="Machine\Contexts\DispatchUtility.cs" />
@@ -135,6 +157,9 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

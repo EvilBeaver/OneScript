@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("Соответствие", "Map")]
-    class MapImpl : AutoContext<MapImpl>, ICollectionContext
+    public class MapImpl : AutoContext<MapImpl>, ICollectionContext
     {
-        private Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>();
+        private Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>(new GenericIValueComparer());
 
         public override bool IsIndexed
         {

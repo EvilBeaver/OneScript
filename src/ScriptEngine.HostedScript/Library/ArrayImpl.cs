@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("Массив", "Array")]
-    class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext
+    public class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext
     {
         private List<IValue> _values;
 
         public ArrayImpl()
         {
             _values = new List<IValue>();
+        }
+
+        public ArrayImpl(IEnumerable<IValue> values)
+        {
+            _values = new List<IValue>(values);
         }
 
         public override bool IsIndexed
@@ -136,13 +140,39 @@ namespace ScriptEngine.Machine.Library
             _values[index] = value;
         }
 
+        private static void FillArray(ArrayImpl currentArray, int bound)
+        {
+            for (int i = 0; i < bound; i++)
+            {
+                currentArray._values.Add(ValueFactory.Create());
+            }
+        }
+
+        private static IValue CloneArray(ArrayImpl cloneable)
+        {
+            ArrayImpl clone = new ArrayImpl();
+            foreach (var item in cloneable._values)
+            {
+                if (item.DataType == DataType.Undefined)
+                    clone._values.Add(ValueFactory.Create());
+                else
+                    clone._values.Add(item);
+            }
+            return clone;
+        }
+
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor()
         {
             return new ArrayImpl();
         }
 
-        [ScriptConstructor]
+        /// <summary>
+        /// Позволяет задать измерения массива при его создании
+        /// </summary>
+        /// <param name="dimensions">Числовые размерности массива. Например, "Массив(2,3)", создает двумерный массив 2х3.</param>
+        /// <returns></returns>
+        [ScriptConstructor(Name="С заданным количеством измерений")]
         public static IRuntimeContextInstance Constructor(IValue[] dimensions)
         {
             ArrayImpl cloneable = null;
@@ -164,27 +194,6 @@ namespace ScriptEngine.Machine.Library
 
             return cloneable;
 
-        }
-
-        private static void FillArray(ArrayImpl currentArray, int bound)
-        {
-            for (int i = 0; i < bound; i++)
-            {
-                currentArray._values.Add(ValueFactory.Create());
-            }
-        }
-        
-        private static IValue CloneArray(ArrayImpl cloneable)
-        {
-            ArrayImpl clone = new ArrayImpl();
-            foreach (var item in cloneable._values)
-            {
-                if (item.DataType == DataType.Undefined)
-                    clone._values.Add(ValueFactory.Create());
-                else
-                    clone._values.Add(item);
-            }
-            return clone;
         }
 
     }

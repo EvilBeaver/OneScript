@@ -22,7 +22,12 @@ namespace ScriptEngine.Machine
             return SimpleConstantValue.Boolean(value);
         }
 
-        public static IValue Create(double value)
+        public static IValue Create(decimal value)
+        {
+            return SimpleConstantValue.Number(value);
+        }
+
+        public static IValue Create(int value)
         {
             return SimpleConstantValue.Number(value);
         }
@@ -35,6 +40,11 @@ namespace ScriptEngine.Machine
         public static IValue CreateInvalidValueMarker()
         {
             return new InvalidValue();
+        }
+
+        public static IValue CreateNullValue()
+        {
+            return NullValueImpl.Instance;
         }
 
         public static IValue Create(IRuntimeContextInstance instance)
@@ -83,7 +93,7 @@ namespace ScriptEngine.Machine
 
                     try
                     {
-                        result = ValueFactory.Create(Double.Parse(presentation, numStyle, numInfo));
+                        result = ValueFactory.Create(Decimal.Parse(presentation, numStyle, numInfo));
                     }
                     catch (FormatException)
                     {
@@ -95,6 +105,13 @@ namespace ScriptEngine.Machine
                     break;
                 case DataType.Undefined:
                     result = ValueFactory.Create();
+                    break;
+                case DataType.GenericValue:
+                    if (string.Compare(presentation, "null", true) == 0)
+                        result = ValueFactory.CreateNullValue();
+                    else
+                        throw new NotImplementedException("constant type is not supported");
+
                     break;
                 default:
                     throw new NotImplementedException("constant type is not supported");
@@ -118,7 +135,7 @@ namespace ScriptEngine.Machine
                 get { throw new NotImplementedException(); }
             }
 
-            public double AsNumber()
+            public decimal AsNumber()
             {
                 throw new NotImplementedException();
             }
@@ -134,11 +151,6 @@ namespace ScriptEngine.Machine
             }
 
             public string AsString()
-            {
-                throw new NotImplementedException();
-            }
-
-            public TypeDescriptor AsType()
             {
                 throw new NotImplementedException();
             }

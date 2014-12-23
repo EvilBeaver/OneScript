@@ -16,6 +16,11 @@ namespace ScriptEngine.Compiler
         private bool _isMethodsDefined = false;
         private bool _isStatementsDefined = false;
         private bool _isFunctionProcessed = false;
+        private bool _isInTryBlock = false;
+
+        // Флаг указывающий, что при следующем NextToken() должен быть считан текущий элемент
+        //    без считывания нового
+        private bool _backOneToken = false;
 
         private Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
@@ -62,7 +67,6 @@ namespace ScriptEngine.Compiler
             BuildModule();
             CheckForwardedDeclarations();
 
-            _module.Source = _parser.GetCodeIndexer();
             return _module;
         }
 
@@ -653,7 +657,9 @@ namespace ScriptEngine.Compiler
             _nestedLoops.Push(loopRecord);
 
             NextToken();
+            bool savedTryFlag = SetTryBlockFlag(false);
             BuildCodeBatch();
+            SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
 
             AddCommand(OperationCode.Jmp, loopBegin);
@@ -679,6 +685,7 @@ namespace ScriptEngine.Compiler
             NextToken();
             BuildExpression(Token.Loop);
             AddCommand(OperationCode.MakeRawValue, 0);
+            AddCommand(OperationCode.PushTmp, 0);
             var lastIdx = _module.Code.Count;
             AddCommand(OperationCode.Jmp, lastIdx + 4);
             // increment
@@ -693,12 +700,14 @@ namespace ScriptEngine.Compiler
             _nestedLoops.Push(loopRecord);
             NextToken();
             PushStructureToken(Token.EndLoop);
+            bool savedTryFlag = SetTryBlockFlag(false);
             BuildCodeBatch();
+            SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
 
             // jmp to start
             AddCommand(OperationCode.Jmp, indexLoopBegin);
-            var indexLoopEnd = AddCommand(OperationCode.Nop, 0);
+            var indexLoopEnd = AddCommand(OperationCode.PopTmp, 1);
             
             var cmd = _module.Code[conditionIndex];
             cmd.Argument = indexLoopEnd;
@@ -721,7 +730,9 @@ namespace ScriptEngine.Compiler
 
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, 0);
             NextToken();
+            bool savedTryFlag = SetTryBlockFlag(false);
             BuildCodeBatch();
+            SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
             AddCommand(OperationCode.Jmp, conditionIndex);
             
@@ -746,6 +757,8 @@ namespace ScriptEngine.Compiler
             }
 
             var loopInfo = _nestedLoops.Peek();
+            if(_isInTryBlock)
+                AddCommand(OperationCode.EndTry, 0);
             var idx = AddCommand(OperationCode.Jmp, -1);
             loopInfo.breakStatements.Add(idx);
             NextToken();
@@ -759,6 +772,8 @@ namespace ScriptEngine.Compiler
             }
 
             var loopInfo = _nestedLoops.Peek();
+            if(_isInTryBlock)
+                AddCommand(OperationCode.EndTry, 0);
             AddCommand(OperationCode.Jmp, loopInfo.startPoint);
             NextToken();
         }
@@ -795,11 +810,12 @@ namespace ScriptEngine.Compiler
         private void BuildTryExceptStatement()
         {
             var beginTryIndex = AddCommand(OperationCode.BeginTry, -1);
+            bool savedTryFlag = SetTryBlockFlag(true);
             PushStructureToken(Token.Exception);
             NextToken();
             BuildCodeBatch();
             PopStructureToken();
-
+            SetTryBlockFlag(savedTryFlag);
             var jmpIndex = AddCommand(OperationCode.Jmp, -1);
 
             CorrectCommandArgument(beginTryIndex, _module.Code.Count);
@@ -850,6 +866,13 @@ namespace ScriptEngine.Compiler
             {
                 CorrectCommandArgument(breakCmdIndex, endLoopIndex);
             }
+        }
+
+        private bool SetTryBlockFlag(bool isInTry)
+        {
+            bool current = _isInTryBlock;
+            _isInTryBlock = isInTry;
+            return current;
         }
 
         private void BuildSimpleStatement()
@@ -1178,30 +1201,83 @@ namespace ScriptEngine.Compiler
         private void BuildNewObjectCreation()
         {
             NextToken();
-            if (!IsUserSymbol(ref _lastExtractedLexem))
+            if(_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                // создание по имени класса
+                NextToken();
+                if(_lastExtractedLexem.Type != LexemType.StringLiteral && !IsUserSymbol(ref _lastExtractedLexem))
+                {
+                    throw CompilerException.IdentifierExpected();
+                }
+
+                NewObjectDynamicConstructor();
+
+            }
+            else if (IsUserSymbol(ref _lastExtractedLexem))
+            {
+                NewObjectStaticConstructor();
+            }
+            else
             {
                 throw CompilerException.IdentifierExpected();
             }
 
-            var name = _lastExtractedLexem.Content;
-            NextToken();
-            bool[] argsPassed;
-            if (_lastExtractedLexem.Token == Token.OpenPar)
-                argsPassed = PushFactArguments();
-            else if (_lastExtractedLexem.Token == Token.Semicolon)
-                argsPassed = new bool[0];
-            else
-                throw CompilerException.ExpressionSyntax();
+        }
 
+        private void NewObjectDynamicConstructor()
+        {
+            try
+            {
+                BuildExpression(Token.Comma);
+            }
+            catch(ExtraClosedParenthesis)
+            {
+            }
+
+            bool[] argsPassed;
+            if(_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                if (_lastExtractedLexem.Token != Token.Comma)
+                    throw CompilerException.TokenExpected(",");
+
+                argsPassed = PushFactArguments();
+            }
+            else
+            {
+                argsPassed = new bool[0];
+            }
+
+            AddCommand(OperationCode.NewInstance, argsPassed.Length);
+
+        }
+
+        private void NewObjectStaticConstructor()
+        {
+            var name = _lastExtractedLexem.Content;
             var cDef = new ConstDefinition()
             {
-                Type=DataType.String,
+                Type = DataType.String,
                 Presentation = name
             };
 
             AddCommand(OperationCode.PushConst, GetConstNumber(ref cDef));
-            AddCommand(OperationCode.NewInstance, argsPassed.Length);
 
+            NextToken();
+            bool[] argsPassed;
+            if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                // Отрабатываем только в тех случаях, если явно указана скобка.
+                // В остальных случаях дальнейшую обработку отдаём наружу
+                argsPassed = PushFactArguments();
+            }
+            else
+            {
+                argsPassed = new bool[0];
+                if(_lastExtractedLexem.Token == Token.ClosePar)
+                    BackOneToken();
+            }
+
+            AddCommand(OperationCode.NewInstance, argsPassed.Length);
         }
 
         private void BuildExpression(Token stopToken)
@@ -1277,7 +1353,8 @@ namespace ScriptEngine.Compiler
                 || lex.Type == LexemType.NumberLiteral
                 || lex.Type == LexemType.BooleanLiteral
                 || lex.Type == LexemType.DateLiteral
-                || lex.Type == LexemType.UndefinedLiteral;
+                || lex.Type == LexemType.UndefinedLiteral
+                || lex.Type == LexemType.NullLiteral;
         }
 
         private OperationCode BuiltInFunctionCode(Token token)
@@ -1294,6 +1371,10 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Str;
                 case Token.Date:
                     return OperationCode.Date;
+                case Token.Type:
+                    return OperationCode.Type;
+                case Token.ValType:
+                    return OperationCode.ValType;
                 case Token.StrLen:
                     return OperationCode.StrLen;
                 case Token.TrimL:
@@ -1376,10 +1457,14 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Pow;
                 case Token.Sqrt:
                     return OperationCode.Sqrt;
+                case Token.Format:
+                    return OperationCode.Format;
                 case Token.ExceptionInfo:
                     return OperationCode.ExceptionInfo;
                 case Token.ExceptionDescr:
                     return OperationCode.ExceptionDescr;
+                case Token.ModuleInfo:
+                    return OperationCode.ModuleInfo;
                 default:
                     throw new ArgumentException("Token is not a built-in function");
             }
@@ -1401,6 +1486,9 @@ namespace ScriptEngine.Compiler
                     break;
                 case LexemType.StringLiteral:
                     constType = DataType.String;
+                    break;
+                case LexemType.NullLiteral:
+                    constType = DataType.GenericValue;
                     break;
             }
 
@@ -1450,7 +1538,10 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
-                _lastExtractedLexem = _parser.NextLexem();
+                if (!_backOneToken)
+                    _lastExtractedLexem = _parser.NextLexem();
+
+                _backOneToken = false;
             }
             else
             {
@@ -1517,6 +1608,13 @@ namespace ScriptEngine.Compiler
         private void Assert(bool condition)
         {
             System.Diagnostics.Debug.Assert(condition);
+        }
+
+        public void BackOneToken()
+        {
+            if (_backOneToken)
+                throw new Exception("Недопустим возврат на 2 и более шагов назад!");
+            _backOneToken = true;
         }
     }
 }

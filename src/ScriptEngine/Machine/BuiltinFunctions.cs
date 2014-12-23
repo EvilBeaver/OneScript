@@ -36,6 +36,8 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.Str, SingleDefaultParamInfo);
             map.Add(OperationCode.Number, SingleDefaultParamInfo);
             map.Add(OperationCode.Date, DateFunctionParamInfo);
+            map.Add(OperationCode.Type, SingleDefaultParamInfo);
+            map.Add(OperationCode.ValType, SingleDefaultParamInfo);
             // string
             map.Add(OperationCode.StrLen, SingleDefaultParamInfo);
             map.Add(OperationCode.TrimL, SingleDefaultParamInfo);
@@ -79,10 +81,12 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.Round, RoundParamsInfo);
             map.Add(OperationCode.Pow, TwoDefaultParamsInfo);
             map.Add(OperationCode.Sqrt, SingleDefaultParamInfo);
+            map.Add(OperationCode.Format, TwoDefaultParamsInfo);
             // special
             map.Add(OperationCode.Question, QuestionParamInfo);
             map.Add(OperationCode.ExceptionInfo, NoParamsInfo);
             map.Add(OperationCode.ExceptionDescr, NoParamsInfo);
+            map.Add(OperationCode.ModuleInfo, NoParamsInfo);
 
             _paramInfoGenerators = map;
         }

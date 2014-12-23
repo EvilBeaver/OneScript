@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.Machine.Library
+namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("КлючИЗначение", "KeyAndValue")]
-    class KeyAndValueImpl : AutoContext<KeyAndValueImpl>
+    public class KeyAndValueImpl : AutoContext<KeyAndValueImpl>
     {
         private IValue _key;
         private IValue _value;

@@ -48,7 +48,7 @@ namespace ScriptEngine.Machine.Contexts
             get { return _type; }
         }
 
-        public double AsNumber()
+        public decimal AsNumber()
         {
             throw RuntimeException.ConvertToNumberException();
         }
@@ -66,11 +66,6 @@ namespace ScriptEngine.Machine.Contexts
         public string AsString()
         {
             return ToString();
-        }
-
-        public TypeDescriptor AsType()
-        {
-            throw new NotImplementedException();
         }
 
         public IRuntimeContextInstance AsObject()
@@ -189,6 +184,7 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Method)]
     public class ScriptConstructorAttribute : Attribute
     {
+        public string Name { get; set; }
         public bool ParametrizeWithClassName { get; set; }
     }
 }

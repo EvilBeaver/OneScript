@@ -46,6 +46,7 @@ namespace TestApp
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var hostedScript = new HostedScriptEngine();
+            hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
             using (var writer = new StringWriter())
             {
@@ -70,6 +71,7 @@ namespace TestApp
             var host = new Host(result);
 
             var hostedScript = new HostedScriptEngine();
+            hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
 
             Process process = null;
@@ -95,6 +97,11 @@ namespace TestApp
             result.AppendText("\nDuration: " + sw.Elapsed.ToString());
             
         }
+        
+        private static string GetFileDialogFilter()
+        {
+            return "Поддерживаемые файлы|*.os;*.txt|Все файлы|*.*";
+        }
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
@@ -104,11 +111,11 @@ namespace TestApp
         private void Open_Execute(object sender, ExecutedRoutedEventArgs e)
         {
             var dlg = new Microsoft.Win32.OpenFileDialog();
-            dlg.Filter = "Текстовый файл|*.txt|Все файлы|*.*";
+            dlg.Filter = GetFileDialogFilter();
             dlg.Multiselect = false;
             if (dlg.ShowDialog() == true)
             {
-                using (var fs = new System.IO.StreamReader(dlg.FileName))
+                using (var fs = ScriptEngine.Environment.FileOpener.OpenReader(dlg.FileName))
                 {
                     txtCode.Text = fs.ReadToEnd();
                     _currentDocPath = dlg.FileName;
@@ -143,7 +150,15 @@ namespace TestApp
         private bool AskForFilenameAndSave()
         {
             var dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.Filter = "Текстовый файл|*.txt";
+            dlg.Filter = GetFileDialogFilter();
+            dlg.AddExtension = true;
+            dlg.DefaultExt = ".os";
+            if (!String.IsNullOrEmpty(_currentDocPath))
+            {
+                dlg.InitialDirectory = System.IO.Path.GetDirectoryName(_currentDocPath);
+                dlg.FileName = System.IO.Path.GetFileName(_currentDocPath);
+            }
+
             if (dlg.ShowDialog() == true)
             {
                 var filename = dlg.FileName;

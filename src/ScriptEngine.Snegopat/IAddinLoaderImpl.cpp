@@ -101,7 +101,8 @@ ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromScriptFile(String^ path, addinNames
 			
 			String^ thisName = L"ÝòîòÎáúåêò";
 			compiler->DefineVariable(thisName, SymbolType::ContextProperty);
-			LoadedModuleHandle mh = m_engine->LoadModuleImage(compiler->CreateModule(src));
+			ScriptEngine::ModuleHandle mHandle = compiler->CreateModule(src);
+			LoadedModuleHandle mh = m_engine->LoadModuleImage(mHandle);
 
 			scriptObject = gcnew ScriptDrivenAddin(mh);
 			scriptObject->AddProperty(thisName, scriptObject);
@@ -326,6 +327,8 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 	if(pos != std::wstring::npos)
 	{
 		String^ path = gcnew String(wsUri.substr(pos+1).c_str());
+		String^ protocol = gcnew String(wsUri.substr(0, pos+1).c_str());
+		path = System::IO::Path::GetFullPath(path);
 		String^ extension = System::IO::Path::GetExtension(path)->ToLower();
 		ScriptDrivenAddin^ scriptObject;
 		addinNames names;
@@ -350,7 +353,7 @@ HRESULT __stdcall  IAddinLoaderImpl::load(
 
 			*displayName = names.displayName;
 			*uniqueName = names.uniqueName;
-			*fullPath = SysAllocString(uri);
+			*fullPath = stringToBSTR(protocol+path);
 
 			IAddinImpl* snegopatAddin = new IAddinImpl(scriptObject);
 			m_engine->InitializeSDO(scriptObject);

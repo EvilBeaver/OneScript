@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !__MonoCS__
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -30,9 +31,6 @@ namespace ScriptEngine.Machine.Contexts
             GatherMethods();
 
         }
-
-        protected virtual object fuck(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, System.Globalization.CultureInfo culture)
-        { return null; }
 
         protected virtual object InvokeInternal(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, System.Globalization.CultureInfo culture)
         {
@@ -222,7 +220,7 @@ namespace ScriptEngine.Machine.Contexts
             get { return _instance.SystemType; }
         }
 
-        public double AsNumber()
+        public decimal AsNumber()
         {
             return _instance.AsNumber();
         }
@@ -240,11 +238,6 @@ namespace ScriptEngine.Machine.Contexts
         public string AsString()
         {
             return _instance.AsString();
-        }
-
-        public TypeDescriptor AsType()
-        {
-            return _instance.AsType();
         }
 
         public IRuntimeContextInstance AsObject()
@@ -348,3 +341,4 @@ namespace ScriptEngine.Machine.Contexts
     }
 
 }
+#endif

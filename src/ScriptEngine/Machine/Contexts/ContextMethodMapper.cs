@@ -87,7 +87,7 @@ namespace ScriptEngine.Machine.Contexts
             
             foreach (var item in methods)
             {
-                const int MAX_ARG_SUPPORTED = 4;
+                const int MAX_ARG_SUPPORTED = 8;
                 var parameters = item.Method.GetParameters();
                 var paramTypes = parameters.Select(x=>x.ParameterType).ToList();
                 var isFunc = item.Method.ReturnType != typeof(void);
@@ -225,6 +225,76 @@ namespace ScriptEngine.Machine.Contexts
             });
         }
 
+        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3, T4, T5>(System.Reflection.MethodInfo target)
+        {
+            var method = (Action<TInstance, T1, T2, T3, T4, T5>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2, T3, T4, T5>), target);
+
+            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            {
+                method(inst, 
+                    ConvertParam<T1>(args[0]),
+                    ConvertParam<T2>(args[1]),
+                    ConvertParam<T3>(args[2]),
+                    ConvertParam<T4>(args[3]),
+                    ConvertParam<T5>(args[4]));
+                return null;
+            });
+        }
+
+        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3, T4, T5, T6>(System.Reflection.MethodInfo target)
+        {
+            var method = (Action<TInstance, T1, T2, T3, T4, T5, T6>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2, T3, T4, T5, T6>), target);
+
+            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            {
+                method(inst,
+                    ConvertParam<T1>(args[0]),
+                    ConvertParam<T2>(args[1]),
+                    ConvertParam<T3>(args[2]),
+                    ConvertParam<T4>(args[3]),
+                    ConvertParam<T5>(args[4]),
+                    ConvertParam<T6>(args[5]));
+                return null;
+            });
+        }
+
+        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3, T4, T5, T6, T7>(System.Reflection.MethodInfo target)
+        {
+            var method = (Action<TInstance, T1, T2, T3, T4, T5, T6, T7>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2, T3, T4, T5, T6, T7>), target);
+
+            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            {
+                method(inst,
+                    ConvertParam<T1>(args[0]),
+                    ConvertParam<T2>(args[1]),
+                    ConvertParam<T3>(args[2]),
+                    ConvertParam<T4>(args[3]),
+                    ConvertParam<T5>(args[4]),
+                    ConvertParam<T6>(args[5]),
+                    ConvertParam<T7>(args[6]));
+                return null;
+            });
+        }
+
+        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3, T4, T5, T6, T7, T8>(System.Reflection.MethodInfo target)
+        {
+            var method = (Action<TInstance, T1, T2, T3, T4, T5, T6, T7, T8>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2, T3, T4, T5, T6, T7, T8>), target);
+
+            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            {
+                method(inst,
+                    ConvertParam<T1>(args[0]),
+                    ConvertParam<T2>(args[1]),
+                    ConvertParam<T3>(args[2]),
+                    ConvertParam<T4>(args[3]),
+                    ConvertParam<T5>(args[4]),
+                    ConvertParam<T6>(args[5]),
+                    ConvertParam<T7>(args[6]),
+                    ConvertParam<T8>(args[7]));
+                return null;
+            });
+        }
+
         private ContextCallableDelegate<TInstance> CreateFunction<TRet>(System.Reflection.MethodInfo target)
         {
             var method = (Func<TInstance, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, TRet>), target);
@@ -280,6 +350,76 @@ namespace ScriptEngine.Machine.Contexts
                     ConvertParam<T2>(args[1]),
                     ConvertParam<T3>(args[2]), 
                     ConvertParam<T4>(args[3])));
+            });
+
+        }
+
+        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, T4, T5, TRet>(System.Reflection.MethodInfo target)
+        {
+            var method = (Func<TInstance, T1, T2, T3, T4, T5, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, T4, T5, TRet>), target);
+
+            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            {
+                return ConvertReturnValue(method(inst,
+                    ConvertParam<T1>(args[0]),
+                    ConvertParam<T2>(args[1]),
+                    ConvertParam<T3>(args[2]),
+                    ConvertParam<T4>(args[3]),
+                    ConvertParam<T5>(args[4])));
+            });
+
+        }
+
+        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, T4, T5, T6, TRet>(System.Reflection.MethodInfo target)
+        {
+            var method = (Func<TInstance, T1, T2, T3, T4, T5, T6, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, T4, T5, T6, TRet>), target);
+
+            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            {
+                return ConvertReturnValue(method(inst,
+                    ConvertParam<T1>(args[0]),
+                    ConvertParam<T2>(args[1]),
+                    ConvertParam<T3>(args[2]),
+                    ConvertParam<T4>(args[3]),
+                    ConvertParam<T5>(args[4]),
+                    ConvertParam<T6>(args[5])));
+            });
+
+        }
+
+        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, T4, T5, T6, T7, TRet>(System.Reflection.MethodInfo target)
+        {
+            var method = (Func<TInstance, T1, T2, T3, T4, T5, T6, T7, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, T4, T5, T6, T7, TRet>), target);
+
+            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            {
+                return ConvertReturnValue(method(inst,
+                    ConvertParam<T1>(args[0]),
+                    ConvertParam<T2>(args[1]),
+                    ConvertParam<T3>(args[2]),
+                    ConvertParam<T4>(args[3]),
+                    ConvertParam<T5>(args[4]),
+                    ConvertParam<T6>(args[5]),
+                    ConvertParam<T7>(args[6])));
+            });
+
+        }
+
+        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, TRet>(System.Reflection.MethodInfo target)
+        {
+            var method = (Func<TInstance, T1, T2, T3, T4, T5, T6, T7, T8, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, T4, T5, T6, T7, T8, TRet>), target);
+
+            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            {
+                return ConvertReturnValue(method(inst,
+                    ConvertParam<T1>(args[0]),
+                    ConvertParam<T2>(args[1]),
+                    ConvertParam<T3>(args[2]),
+                    ConvertParam<T4>(args[3]),
+                    ConvertParam<T5>(args[4]),
+                    ConvertParam<T6>(args[5]),
+                    ConvertParam<T7>(args[6]),
+                    ConvertParam<T8>(args[7])));
             });
 
         }

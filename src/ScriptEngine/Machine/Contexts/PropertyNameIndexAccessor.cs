@@ -8,9 +8,12 @@ namespace ScriptEngine.Machine.Contexts
     public abstract class PropertyNameIndexAccessor : ContextIValueImpl
     {
         public PropertyNameIndexAccessor()
-            : base(TypeManager.GetTypeByName("Object"))
         {
 
+        }
+
+        public PropertyNameIndexAccessor(TypeDescriptor type):base(type)
+        {
         }
 
         public override bool IsIndexed

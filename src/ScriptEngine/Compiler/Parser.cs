@@ -151,6 +151,7 @@ namespace ScriptEngine.Compiler
         NumberLiteral,
         BooleanLiteral,
         UndefinedLiteral,
+        NullLiteral,
         EndOperator,
         EndOfText
     }
@@ -216,6 +217,15 @@ namespace ScriptEngine.Compiler
                         lex = new Lexem()
                         {
                             Type = LexemType.UndefinedLiteral,
+                            Content = content
+                        };
+
+                    }
+                    else if (String.Compare(content, "null", true) == 0)
+                    {
+                        lex = new Lexem()
+                        {
+                            Type = LexemType.NullLiteral,
                             Content = content
                         };
 

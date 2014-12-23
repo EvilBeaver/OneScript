@@ -28,9 +28,15 @@ namespace ScriptEngine
 
         public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
         {
+            if(!Utils.IsValidIdentifier(identifier))
+            {
+                throw new ArgumentException("Invalid identifier", "identifier");
+            }
+
             if (_globalScope == null)
             {
                 _globalScope = new SymbolScope();
+                TypeManager.RegisterType("__globalPropertiesHolder", typeof(PropertyBag));
                 _injectedProperties = new PropertyBag();
                 _symbolScopes.PushScope(_globalScope);
                 RegisterObject(_injectedProperties);

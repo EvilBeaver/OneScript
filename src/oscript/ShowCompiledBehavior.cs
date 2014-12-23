@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine;
+using ScriptEngine.HostedScript;
 
 namespace oscript
 {
@@ -18,6 +19,7 @@ namespace oscript
         public override int Execute()
         {
             var hostedScript = new HostedScriptEngine();
+            hostedScript.Initialize();
             var source = hostedScript.Loader.FromFile(_path);
             var compiler = hostedScript.GetCompilerService();
             var writer = new ScriptEngine.Compiler.ModuleWriter(compiler);

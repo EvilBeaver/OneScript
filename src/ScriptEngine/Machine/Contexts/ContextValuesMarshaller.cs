@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -31,7 +32,7 @@ namespace ScriptEngine.Machine
             {
                 valueObj = (int)value.AsNumber();
             }
-            else if (type == typeof(double))
+            else if (type == typeof(double) || type == typeof(decimal))
             {
                 valueObj = value.AsNumber();
             }
@@ -43,7 +44,7 @@ namespace ScriptEngine.Machine
             {
                 valueObj = value.AsBoolean();
             }
-            else if (type.IsAssignableFrom(typeof(IRuntimeContextInstance)))
+            else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
                 valueObj = value.AsObject();
             }
@@ -78,9 +79,13 @@ namespace ScriptEngine.Machine
             {
                 return ValueFactory.Create((int)objParam);
             }
+            else if (type == typeof(decimal))
+            {
+                return ValueFactory.Create((decimal)objParam);
+            }
             else if (type == typeof(double))
             {
-                return ValueFactory.Create((double)objParam);
+                return ValueFactory.Create((decimal)(double)objParam);
             }
             else if (type == typeof(DateTime))
             {
@@ -104,5 +109,39 @@ namespace ScriptEngine.Machine
 
         }
 
+		public static object ConvertToCLRObject(IValue val)
+		{
+			object result;
+			if (val == null)
+				return val;
+			
+			switch (val.DataType)
+			{
+			case Machine.DataType.Boolean:
+				result = val.AsBoolean();
+				break;
+			case Machine.DataType.Date:
+				result = val.AsDate();
+				break;
+			case Machine.DataType.Number:
+				result = val.AsNumber();
+				break;
+			case Machine.DataType.String:
+				result = val.AsString();
+				break;
+			case Machine.DataType.Undefined:
+				result = null;
+				break;
+			case Machine.DataType.Object:
+				result = val.AsObject();
+				if (result is IObjectWrapper)
+					result = ((IObjectWrapper)result).UnderlyingObject;
+				break;
+			default:
+				throw new RuntimeException("Тип не поддерживает преобразование в CLR-объект");
+			}
+			
+			return result;
+		}
     }
 }

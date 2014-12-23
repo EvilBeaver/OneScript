@@ -28,6 +28,7 @@ namespace oscript
             }
 
             var hostedScript = new HostedScriptEngine();
+            hostedScript.Initialize();
             var source = hostedScript.Loader.FromFile(_path);
             var process = hostedScript.CreateProcess(this, source);
 
@@ -43,7 +44,7 @@ namespace oscript
 
         public void ShowExceptionInfo(Exception exc)
         {
-            Console.WriteLine(exc.ToString());
+            Console.WriteLine(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)

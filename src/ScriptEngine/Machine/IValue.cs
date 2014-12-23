@@ -10,11 +10,10 @@ namespace ScriptEngine.Machine
         DataType DataType { get; }
         TypeDescriptor SystemType { get; }
         
-        double AsNumber();
+        decimal AsNumber();
         DateTime AsDate();
         bool AsBoolean();
         string AsString();
-        TypeDescriptor AsType();
         IRuntimeContextInstance AsObject();
         IValue GetRawValue();
         

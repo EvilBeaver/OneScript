@@ -120,6 +120,15 @@ namespace ScriptEngine.Machine
         {
         }
 
+        public override string Message
+        {
+            get
+            {
+                string innerMessage = InnerException == null? "" : "\n" + InnerException.Message;
+                return base.Message + innerMessage;
+            }
+        }
+
     }
 
     public class WrongStackConditionException : RuntimeException
@@ -155,7 +164,7 @@ namespace ScriptEngine.Machine
 
     }
 
-    public class ScriptInterruptionException : RuntimeException
+    public class ScriptInterruptionException : ApplicationException
     {
         public ScriptInterruptionException(int exitCode) : base("Script interrupted")
         {

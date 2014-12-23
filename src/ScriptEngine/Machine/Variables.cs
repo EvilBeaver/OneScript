@@ -74,7 +74,7 @@ namespace ScriptEngine.Machine
             get { return Value.SystemType; }
         }
 
-        public double AsNumber()
+        public decimal AsNumber()
         {
             return Value.AsNumber();
         }
@@ -92,11 +92,6 @@ namespace ScriptEngine.Machine
         public string AsString()
         {
             return Value.AsString();
-        }
-
-        public TypeDescriptor AsType()
-        {
-            return Value.AsType();
         }
 
         public IRuntimeContextInstance AsObject()
@@ -207,7 +202,7 @@ namespace ScriptEngine.Machine
                 get { return Value.SystemType; }
             }
 
-            public double AsNumber()
+            public decimal AsNumber()
             {
                 return Value.AsNumber();
             }
@@ -225,11 +220,6 @@ namespace ScriptEngine.Machine
             public string AsString()
             {
                 return Value.AsString();
-            }
-
-            public TypeDescriptor AsType()
-            {
-                return Value.AsType();
             }
 
             public IRuntimeContextInstance AsObject()
