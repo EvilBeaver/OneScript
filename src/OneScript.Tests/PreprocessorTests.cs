@@ -70,7 +70,7 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
-        public void Preprocessof_IfElse()
+        public void Preprocessor_IfElse()
         {
             var pp = new Preprocessor();
             pp.Define("Сервер");
@@ -152,8 +152,101 @@ namespace OneScript.Tests
 
             var preprocessed = GetPreprocessedContent(pp, code);
 
-            Assert.AreEqual("БХВ", preprocessed);
+            Assert.AreEqual("БХ", preprocessed, "1");
 
+            pp.Undef("ВебКлиент");
+            preprocessed = GetPreprocessedContent(pp, code);
+            Assert.AreEqual("Х", preprocessed, "2");
+
+            pp.Undef("Сервер");
+            preprocessed = GetPreprocessedContent(pp, code);
+            Assert.AreEqual("В", preprocessed, "3");
+        }
+
+        [TestMethod]
+        public void Preprocessor_Branching()
+        {
+            string code = @"
+            Привет,
+            #Если ТыВидишь Тогда
+            ты видишь
+                #Если Картошка Тогда
+                    картошку
+                #ИначеЕсли Морковка Тогда
+                    морковку
+                #ИначеЕсли Капуста Тогда
+                    капусту
+                #Иначе
+                    шоколадку
+                #КонецЕсли
+            тогда ты молодец
+            #Иначе
+            тут ничего нет
+            #КонецЕсли";
+
+            var pp = new Preprocessor();
+            
+            var preprocessed = GetPreprocessedContent(pp, code);
+            Assert.AreEqual("Привет,тутничегонет", preprocessed);
+
+            pp.Define("ТыВидишь");
+            preprocessed = GetPreprocessedContent(pp, code);
+            Assert.AreEqual("Привет,тывидишьшоколадкутогдатымолодец", preprocessed);
+
+            pp.Define("Морковка");
+            preprocessed = GetPreprocessedContent(pp, code);
+            Assert.AreEqual("Привет,тывидишьморковкутогдатымолодец", preprocessed);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SyntaxErrorException))]
+        public void Preprocessor_Unclosed_IfBlock()
+        {
+            var pp = new Preprocessor();
+            pp.Define("Сервер");
+
+            var code = @"
+            #Если Сервер и Клиент Тогда
+                F;
+            ";
+
+            pp.Code = code;
+
+            pp.NextLexem();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SyntaxErrorException))]
+        public void Preprocessor_IfElse_Without_If()
+        {
+            var pp = new Preprocessor();
+            pp.Define("Сервер");
+
+            var code = @"
+            #ИначеЕсли Сервер Тогда
+                F;
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            pp.NextLexem();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SyntaxErrorException))]
+        public void Preprocessor_Else_Without_If()
+        {
+            var pp = new Preprocessor();
+            pp.Define("Сервер");
+
+            var code = @"
+            #Иначе
+                F;
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            pp.NextLexem();
         }
 
         private string GetPreprocessedContent(Preprocessor pp, string code)

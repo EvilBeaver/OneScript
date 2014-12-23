@@ -281,12 +281,18 @@ namespace OneScript.Tests
             var iterator = new SourceCodeIterator(code);
             var wordParser = new PreprocessorDirectiveLexerState();
             Lexem lex;
+            
             iterator.MoveToContent();
             lex = wordParser.ReadNextLexem(iterator);
-
             Assert.AreEqual(LexemType.PreprocessorDirective, lex.Type);
             Assert.AreEqual("Если", lex.Content);
             Assert.AreEqual(Token.If, lex.Token);
+            
+            iterator.MoveToContent();
+            lex = wordParser.ReadNextLexem(iterator);
+            Assert.AreEqual(LexemType.PreprocessorDirective, lex.Type);
+            Assert.AreEqual("КонецЕсли", lex.Content);
+            Assert.AreEqual(Token.EndIf, lex.Token);
 
         }
 

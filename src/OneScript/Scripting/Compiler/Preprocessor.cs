@@ -12,6 +12,16 @@ namespace OneScript.Scripting.Compiler
         Lexer _lexer;
         string _code;
 
+        Lexem _lastExtractedLexem;
+
+        Stack<PreprocessorBlock> _blocks = new Stack<PreprocessorBlock>();
+
+        private class PreprocessorBlock
+        {
+            public bool OutputIsOn;
+            public bool IsSolved;
+        }
+
         public Preprocessor()
         {
             _lexer = new Lexer();
@@ -34,29 +44,78 @@ namespace OneScript.Scripting.Compiler
             _definitions.Remove(param);
         }
 
-        private void HandleUnknownDirective(Lexem lex, SourceCodeIterator iterator)
+        private bool OutputIsOn()
+        {
+            if (_blocks.Count > 0)
+                return _blocks.Peek().OutputIsOn;
+            else
+                return true;
+        }
+
+        private void PushBlock(bool isOn)
+        {
+            var block = new PreprocessorBlock();
+            block.OutputIsOn = isOn;
+            if (block.OutputIsOn)
+                block.IsSolved = true;
+            _blocks.Push(block);
+        }
+
+        private bool BlockIsSolved()
+        {
+            if(_blocks.Count == 0)
+                throw PreprocessorError("Ожидается директива #Если");
+
+            return _blocks.Peek().IsSolved;
+        }
+
+        private void MarkAsSolved()
+        {
+            _blocks.Peek().IsSolved = true;
+        }
+
+        private void SetOutput(bool output)
+        {
+            _blocks.Peek().OutputIsOn = output;
+        }
+
+        private void PopBlock()
+        {
+            if(_blocks.Count > 0)
+                _blocks.Pop();
+        }
+
+        private int BlockLevel()
+        {
+            return _blocks.Count;
+        }
+
+        private void HandleUnknownDirective(Lexem lex)
         {
             if(UnknownDirective != null)
             {
                 var args = new PreprocessorUnknownTokenEventArgs()
                 {
-                    Iterator = iterator,
+                    Iterator = _lexer.GetIterator(),
                     Lexem = lex
                 };
 
                 UnknownDirective(this, args);
                 if (args.IsHandled)
+                {
+                    _lastExtractedLexem = args.Lexem;
                     return;
+                }
 
             }
 
-            throw PreprocessorError(iterator, "Неизвестная директива: " + lex.Content);
+            throw PreprocessorError("Неизвестная директива: " + lex.Content);
 
         }
 
-        private static SyntaxErrorException PreprocessorError(SourceCodeIterator iterator, string message)
+        private SyntaxErrorException PreprocessorError(string message)
         {
-            return new SyntaxErrorException(iterator.GetPositionInfo(), message);
+            return new SyntaxErrorException(_lexer.GetCodePosition(), message);
         }
 
         private bool SolveExpression(SourceCodeIterator iterator)
@@ -75,7 +134,7 @@ namespace OneScript.Scripting.Compiler
             {
                 if(!iterator.MoveToContent())
                 {
-                    throw PreprocessorError(iterator, "Непредусмотренное завершение текста модуля");
+                    throw PreprocessorError("Непредусмотренное завершение текста модуля");
                 }
 
                 lex = _lexer.NextLexem();
@@ -95,7 +154,7 @@ namespace OneScript.Scripting.Compiler
                 }
                 else
                 {
-                    throw PreprocessorError(iterator, "Ошибка в выражении препроцессора");
+                    throw PreprocessorError("Ошибка в выражении препроцессора");
                 } 
             }
 
@@ -103,7 +162,7 @@ namespace OneScript.Scripting.Compiler
             {
                 var oper = operators.Pop();
                 if (oper == Token.OpenPar)
-                    throw PreprocessorError(iterator, "Ошибка в выражении препроцессора");
+                    throw PreprocessorError("Ошибка в выражении препроцессора");
 
                 orderedOperators.Add(oper);
                 expressionResult.Add(null);
@@ -230,18 +289,110 @@ namespace OneScript.Scripting.Compiler
 
         public Lexem NextLexem()
         {
-            var lexem = _lexer.NextLexem();
-            if (lexem.Type == LexemType.PreprocessorDirective)
-                return Preprocess(ref lexem);
+            MoveNext();
 
-            return lexem;
+            if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                return Preprocess(_lastExtractedLexem);
 
+            return _lastExtractedLexem;
         }
 
-        private Lexem Preprocess(ref Lexem directive)
+        private void MoveNext()
         {
-            throw new NotImplementedException();
+            _lastExtractedLexem = _lexer.NextLexem();
         }
+
+        private Lexem Preprocess(Lexem directive)
+        {
+            if(directive.Token == Token.If)
+            {
+                var enterBlock = SolveExpression(_lexer.GetIterator());
+                PushBlock(enterBlock);
+
+                if (enterBlock)
+                    return NextLexem();
+
+                SkipTillNextDirective();
+
+                return Preprocess(_lastExtractedLexem);
+
+            }
+            else if(directive.Token == Token.ElseIf)
+            {
+                if (BlockIsSolved())
+                {
+                    SkipTillNextDirective();
+                    return Preprocess(_lastExtractedLexem);
+                }
+                else
+                {
+                    var enterBlock = SolveExpression(_lexer.GetIterator());
+                    if (enterBlock)
+                    {
+                        MarkAsSolved();
+                        return NextLexem();
+                    }
+                    else
+                    {
+                        SkipTillNextDirective();
+                        return Preprocess(_lastExtractedLexem);
+                    }
+                }
+
+            }
+            else if(directive.Token == Token.Else)
+            {
+                SetOutput(!BlockIsSolved());
+
+                if (OutputIsOn())
+                    return NextLexem();
+                else
+                {
+                    SkipTillNextDirective();
+                    if (_lastExtractedLexem.Token != Token.EndIf)
+                        throw PreprocessorError("Ожидается директива препроцессора #КонецЕсли");
+
+                    return Preprocess(_lastExtractedLexem);
+                }
+            }
+            else if(directive.Token == Token.EndIf)
+            {
+                PopBlock();
+                return NextLexem();
+            }
+
+            HandleUnknownDirective(_lastExtractedLexem);
+            
+            return _lastExtractedLexem;
+        }
+
+        private void SkipTillNextDirective()
+        {
+            int currentLevel = BlockLevel();
+            MoveNext();
+
+            while (true)
+            {
+                while (_lastExtractedLexem.Type != LexemType.PreprocessorDirective)
+                {
+                    if (_lastExtractedLexem.Token == Token.EndOfText)
+                        throw PreprocessorError("Ожидается директива препроцессора #КонецЕсли");
+
+                    MoveNext();
+                }
+
+                if (_lastExtractedLexem.Token == Token.If)
+                    PushBlock(false);
+                else if (_lastExtractedLexem.Token == Token.EndIf && BlockLevel() > currentLevel)
+                    PopBlock();
+                else if (BlockLevel() == currentLevel)
+                    break;
+
+                MoveNext();
+
+            }
+        }
+
     }
 
     public class PreprocessorUnknownTokenEventArgs : EventArgs
