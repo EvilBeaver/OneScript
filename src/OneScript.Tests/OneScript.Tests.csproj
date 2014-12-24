@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ByteCodeBuilderTests.cs" />
     <Compile Include="ParserTests\AssignmentNode.cs" />
     <Compile Include="ParserTests\CallNode.cs" />
     <Compile Include="ParserTests\CodeBatchNode.cs" />

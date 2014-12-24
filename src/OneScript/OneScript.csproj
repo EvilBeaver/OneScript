@@ -76,6 +76,7 @@
     <Compile Include="Scripting\Compiler\CompilerFactory.cs" />
     <Compile Include="Scripting\Compiler\IASTNodes.cs" />
     <Compile Include="Scripting\CodePositionInfo.cs" />
+    <Compile Include="Scripting\Runtime\CodeGeneration\ByteCodeModuleBuilder.cs" />
     <Compile Include="Scripting\Runtime\Commands.cs" />
     <Compile Include="Scripting\Compiler\CompilerContext.cs" />
     <Compile Include="Scripting\Compiler\CompilerErrorEventArgs.cs" />
