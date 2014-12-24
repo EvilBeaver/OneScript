@@ -176,7 +176,7 @@ namespace OneScript.Tests
 
         public void EndConditionStatement(IASTConditionNode node)
         {
-
+            CodeNode.Children.Add((TestASTNodeBase)node);
         }
     }
 }

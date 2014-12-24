@@ -403,7 +403,13 @@ namespace OneScript.Tests
 
             lexer.Code = code;
             Assert.IsTrue(parser.Build(lexer));
-            Assert.IsTrue(builder.CodeNode.Equals(null));
+
+            Assert.IsInstanceOfType(builder.topNode, typeof(ConditionNode));
+
+            var cond = builder.topNode as ConditionNode;
+
+            Assert.AreEqual(1, ((CodeBatchNode)cond.TruePart).Children.Count);
+            Assert.AreEqual(2, ((CodeBatchNode)cond.FalsePart).Children.Count);
 
         }
     }

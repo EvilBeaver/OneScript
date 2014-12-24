@@ -688,8 +688,18 @@ namespace OneScript.Scripting.Compiler
 
             NextLexem();
             PushEndTokens(Token.Else, Token.ElseIf, Token.EndIf);
-            BuildCodeBatch();
+            ifBlock.TruePart = BuildCodeBatch();
             PopEndTokens();
+
+            if(_lastExtractedLexem.Token == Token.Else)
+            {
+                NextLexem();
+                PushEndTokens(Token.EndIf);
+                ifBlock.FalsePart = BuildCodeBatch();
+                PopEndTokens();
+            }
+
+            NextLexem(); // endif
 
             _builder.EndConditionStatement(ifBlock);
 

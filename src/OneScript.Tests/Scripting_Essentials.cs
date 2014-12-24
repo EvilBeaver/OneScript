@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Scripting;
 using OneScript.Core;
+using OneScript.Scripting.Runtime;
 
 namespace OneScript.Tests
 {

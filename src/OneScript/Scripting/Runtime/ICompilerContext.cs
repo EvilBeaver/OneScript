@@ -1,5 +1,5 @@
 ﻿using System;
-namespace OneScript.Scripting
+namespace OneScript.Scripting.Runtime
 {
     public interface ICompilerContext
     {
