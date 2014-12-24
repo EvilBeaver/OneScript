@@ -103,8 +103,10 @@ namespace OneScript.Scripting.Compiler
                 {
                     bodyDefined = true;
                     PushEndTokens(Token.EndOfText);
+                    _builder.BeginModuleBody();
                     BuildCodeBatch();
                     PopEndTokens();
+                    _builder.EndModuleBody();
                 }
                 else
                 {

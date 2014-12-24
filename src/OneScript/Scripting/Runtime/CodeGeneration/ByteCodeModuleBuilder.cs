@@ -9,6 +9,8 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
     public class ByteCodeModuleBuilder : IModuleBuilder
     {
         ModuleImage _module;
+        SymbolScope _moduleLevelScope;
+        IList<SymbolBinding> _currentVariableList;
 
         public ByteCodeModuleBuilder()
         {
@@ -48,11 +50,22 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
                 throw new InvalidOperationException("Symbol scope is not defined");
         }
 
+        public void UseOwnContext()
+        {
+            if(SymbolsContext != null)
+                throw new InvalidOperationException("Symbol scope is already set");
+
+            SymbolsContext = new CompilerContext();
+        }
+
         #region IModuleBuilder members
 
         public void BeginModule()
         {
-            throw new NotImplementedException();
+            NewScope();
+
+            _moduleLevelScope = SymbolsContext.TopScope;
+            _currentVariableList = _module.VariableRefs;
         }
 
         public void CompleteModule()
@@ -62,12 +75,32 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
 
         public void DefineExportVariable(string symbolicName)
         {
-            throw new NotImplementedException();
+            var definition = SymbolsContext.DefineVariable(symbolicName);
+
+            _currentVariableList.Add(definition);
+            if (SymbolsContext.TopScope == _moduleLevelScope)
+            {
+                _module.Variables.Add(new VariableDefinition()
+                {
+                    Name = symbolicName,
+                    IsExported = true
+                });
+            }
         }
 
         public void DefineVariable(string symbolicName)
         {
-            throw new NotImplementedException();
+            var definition = SymbolsContext.DefineVariable(symbolicName);
+
+            _currentVariableList.Add(definition);
+            if (SymbolsContext.TopScope == _moduleLevelScope)
+            {
+                _module.Variables.Add(new VariableDefinition()
+                    {
+                        Name = symbolicName,
+                        IsExported = false
+                    });
+            }
         }
 
         public IASTNode SelectOrUseVariable(string identifier)
@@ -130,14 +163,28 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
             throw new NotImplementedException();
         }
 
+        public void BeginModuleBody()
+        {
+            NewScope();
+
+            _currentVariableList = _module.VariableRefs;
+        }
+
+        public void EndModuleBody()
+        {
+            NewScope();
+
+            _currentVariableList = _module.VariableRefs;
+        }
+
         public IASTNode BeginBatch()
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public void EndBatch(IASTNode batch)
         {
-            throw new NotImplementedException();
+            
         }
 
         public IASTConditionNode BeginConditionStatement()

@@ -39,6 +39,7 @@ namespace OneScript.Scripting.Runtime
         public int VariableFrameSize;
         public bool IsExported;
         public MethodSignatureData Signature;
+        public IList<SymbolScope> Locals;
     }
 
     public struct VariableDefinition

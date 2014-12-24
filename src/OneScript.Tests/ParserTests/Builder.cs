@@ -150,6 +150,16 @@ namespace OneScript.Tests
             _methods.Add((MethodNode)methodNode);
         }
 
+        public void BeginModuleBody()
+        {
+            
+        }
+
+        public void EndModuleBody()
+        {
+
+        }
+
         public IASTNode BeginBatch()
         {
             var node = new CodeBatchNode();

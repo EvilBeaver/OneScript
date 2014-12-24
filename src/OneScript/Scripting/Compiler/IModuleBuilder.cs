@@ -40,6 +40,10 @@ namespace OneScript.Scripting.Compiler
 
         void EndMethod(IASTMethodNode methodNode);
 
+        void BeginModuleBody();
+
+        void EndModuleBody();
+
         IASTNode BeginBatch();
         
         void EndBatch(IASTNode batch);
