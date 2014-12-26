@@ -43,6 +43,8 @@ namespace ScriptEngine.HostedScript.Library
             else
             {
                 enc = Encoding.GetEncoding(encoding);
+                if (enc.WebName == "utf-8" && append == true)
+                    enc = new UTF8Encoding(false);
             }
 
             _writer = new StreamWriter(path, append, enc);
