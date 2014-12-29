@@ -705,8 +705,7 @@ namespace ScriptEngine.Machine
 
         private void CallFunc(int arg)
         {
-            MethodCallImpl(arg, true);
-            _currentFrame.DiscardReturnValue = false;
+            _currentFrame.DiscardReturnValue = MethodCallImpl(arg, true);
         }
 
         private void CallProc(int arg)
@@ -807,11 +806,11 @@ namespace ScriptEngine.Machine
                     PushFrame();
                     SetFrame(frame);
 
-                    needsDiscarding = methInfo.IsFunction;
+                    needsDiscarding = methInfo.IsFunction && !asFunc;
                 }
                 else
                 {
-                    needsDiscarding = false;
+                    needsDiscarding = _currentFrame.DiscardReturnValue;
                     CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
                 }
 
