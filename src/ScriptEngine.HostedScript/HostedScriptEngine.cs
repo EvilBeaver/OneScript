@@ -1,6 +1,8 @@
-﻿using ScriptEngine.Environment;
+﻿using System;
+using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript
 {
@@ -28,6 +30,8 @@ namespace ScriptEngine.HostedScript
             if (!_isInitialized)
             {
                 _engine.Initialize(_env);
+                TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
+
                 _isInitialized = true;
             }
         }
@@ -58,13 +62,14 @@ namespace ScriptEngine.HostedScript
         public CompilerService GetCompilerService()
         {
             Initialize();
-            return _engine.GetCompilerService();
+            var compilerSvc = _engine.GetCompilerService();
+            compilerSvc.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
+            return compilerSvc;
         }
 
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {
-            var compilerSvc = _engine.GetCompilerService();
-            return CreateProcess(host, src, compilerSvc);
+            return CreateProcess(host, src, GetCompilerService());
         }
 
         public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
