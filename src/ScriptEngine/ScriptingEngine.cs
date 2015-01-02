@@ -72,8 +72,10 @@ namespace ScriptEngine
 
         internal IRuntimeContextInstance NewObject(LoadedModule module)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
-            scriptContext.Initialize(_machine);
+            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module, "Сценарий");
+            scriptContext.AddProperty("ЭтотОбъект", scriptContext);
+            scriptContext.InitOwnData();
+            InitializeSDO(scriptContext);
 
             return scriptContext;
         }
@@ -90,7 +92,8 @@ namespace ScriptEngine
 
         public void ExecuteModule(LoadedModuleHandle module)
         {
-            NewObject(module);
+            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module.Module);
+            InitializeSDO(scriptContext);
         }
 
         public MachineInstance Machine

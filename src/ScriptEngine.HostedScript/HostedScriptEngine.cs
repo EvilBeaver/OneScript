@@ -73,12 +73,6 @@ namespace ScriptEngine.HostedScript
             return InitProcess(host, src, ref module);
         }
 
-        public Process CreateProcess(IHostApplication host, ModuleHandle moduleHandle)
-        {
-            var module = _engine.LoadModuleImage(moduleHandle);
-            return InitProcess(host, null, ref module);
-        }
-
         public Process CreateProcess(IHostApplication host, ModuleHandle moduleHandle, ICodeSource src)
         {
             var module = _engine.LoadModuleImage(moduleHandle);

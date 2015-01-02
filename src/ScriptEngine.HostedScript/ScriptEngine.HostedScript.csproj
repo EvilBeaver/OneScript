@@ -72,6 +72,7 @@
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
     <Compile Include="Library\MiscGlobalFunctions.cs" />
+    <Compile Include="Library\Net\TCPServer.cs" />
     <Compile Include="Library\SystemGlobalContext.cs" />
     <Compile Include="Library\GuidWrapper.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />

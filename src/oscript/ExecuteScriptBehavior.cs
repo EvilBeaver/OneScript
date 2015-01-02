@@ -29,8 +29,10 @@ namespace oscript
 
             var hostedScript = new HostedScriptEngine();
             hostedScript.Initialize();
+            var compiler = hostedScript.GetCompilerService();
+            compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
             var source = hostedScript.Loader.FromFile(_path);
-            var process = hostedScript.CreateProcess(this, source);
+            var process = hostedScript.CreateProcess(this, source, compiler);
 
             return process.Start();
         }
