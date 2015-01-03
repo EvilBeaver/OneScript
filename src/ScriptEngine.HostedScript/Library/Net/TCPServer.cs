@@ -9,6 +9,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.Net
 {
+    [ContextClass("TCPСервер", "TCPServer")]
     public class TCPServer : AutoContext<TCPServer>
     {
         private TcpListener _listener;
@@ -18,9 +19,23 @@ namespace ScriptEngine.HostedScript.Library.Net
             _listener = new TcpListener(IPAddress.Any, port);
         }
 
-        public void Listen(string handler)
+        [ContextMethod("Запустить", "Start")]
+        public void Start()
         {
-            
+            _listener.Start();
+        }
+
+        [ContextMethod("Остановить", "Stop")]
+        public void Stop()
+        {
+            _listener.Stop();
+        }
+
+        [ContextMethod("ОжидатьСоединения","WaitForConnection")]
+        public TCPClient WaitForConnection()
+        {
+            var client = _listener.AcceptTcpClient();
+            return new TCPClient(client);
         }
 
         [ScriptConstructor]
