@@ -41,23 +41,55 @@ namespace ScriptEngine.HostedScript.Library.Net
         }
 
         [ContextMethod("ПрочитатьДвоичныеДанные", "ReadBinaryData")]
-        public BinaryDataContext ReadBinaryData()
+        public BinaryDataContext ReadBinaryData(int len = 0)
         {
             using (var stream = _client.GetStream())
             {
+                bool useLimit = len > 0;
+                
                 MemoryStream ms = new MemoryStream();
                 byte[] readBuffer = new byte[1024];
                 do
                 {
-                    int numberOfBytesRead = stream.Read(readBuffer, 0, readBuffer.Length);
+                    int portion = useLimit ? Math.Min(len, readBuffer.Length) : readBuffer.Length;
+
+                    int numberOfBytesRead = stream.Read(readBuffer, 0, portion);
                     ms.Write(readBuffer, 0, numberOfBytesRead);
-                    
+                    if(useLimit)
+                        len -= numberOfBytesRead;
+
                 } while (stream.DataAvailable);
 
                 var data = ms.ToArray();
 
                 return new BinaryDataContext(data);
 
+            }
+        }
+
+        [ContextMethod("ОтправитьСтроку","SendString")]
+        public void SendString(string data, string encoding = null)
+        {
+            if(data == String.Empty)
+                return;
+
+            var enc = GetEncodingByName(encoding);
+            byte[] bytes = enc.GetBytes(data);
+            using (var stream = _client.GetStream())
+            {
+                stream.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+        [ContextMethod("ОтправитьДвоичныеДанные", "SendBinaryData")]
+        public void SendString(BinaryDataContext data)
+        {
+            if (data.Buffer.Length == 0)
+                return;
+
+            using (var stream = _client.GetStream())
+            {
+                stream.Write(data.Buffer, 0, data.Buffer.Length);
             }
         }
 
