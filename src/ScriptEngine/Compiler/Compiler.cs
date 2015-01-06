@@ -1453,6 +1453,24 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Integer;
                 case Token.Round:
                     return OperationCode.Round;
+                case Token.Log:
+                    return OperationCode.Log;
+                case Token.Log10:
+                    return OperationCode.Log10;
+                case Token.Sin:
+                    return OperationCode.Sin;
+                case Token.Cos:
+                    return OperationCode.Cos;
+                case Token.Tan:
+                    return OperationCode.Tan;
+                case Token.ASin:
+                    return OperationCode.ASin;
+                case Token.ACos:
+                    return OperationCode.ACos;
+                case Token.ATan:
+                    return OperationCode.ATan;
+                case Token.Exp:
+                    return OperationCode.Exp;
                 case Token.Pow:
                     return OperationCode.Pow;
                 case Token.Sqrt:

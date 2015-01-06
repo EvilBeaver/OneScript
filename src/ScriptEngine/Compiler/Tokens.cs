@@ -158,6 +158,15 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("текущаядата", Token.CurrentDate);
             _stringToToken.Add("цел", Token.Integer);
             _stringToToken.Add("окр", Token.Round);
+            _stringToToken.Add("log", Token.Log);
+            _stringToToken.Add("log10", Token.Log10);
+            _stringToToken.Add("sin", Token.Sin);
+            _stringToToken.Add("cos", Token.Cos);
+            _stringToToken.Add("tan", Token.Tan);
+            _stringToToken.Add("asin", Token.ASin);
+            _stringToToken.Add("acos", Token.ACos);
+            _stringToToken.Add("atan", Token.ATan);
+            _stringToToken.Add("exp", Token.Exp);
             _stringToToken.Add("pow", Token.Pow);
             _stringToToken.Add("sqrt", Token.Sqrt);
             _stringToToken.Add("формат", Token.Format);
@@ -343,6 +352,15 @@ namespace ScriptEngine.Compiler
         CurrentDate,
         Integer,
         Round,
+        Log,
+        Log10,
+        Sin,
+        Cos,
+        Tan,
+        ASin,
+        ACos,
+        ATan,
+        Exp,
         Pow,
         Sqrt,
         Format,

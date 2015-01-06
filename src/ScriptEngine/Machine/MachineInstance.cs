@@ -459,6 +459,15 @@ namespace ScriptEngine.Machine
                 CurrentDate,
                 Integer,
                 Round,
+                Log,
+                Log10,
+                Sin,
+                Cos,
+                Tan,
+                ASin,
+                ACos,
+                ATan,
+                Exp,
                 Pow,
                 Sqrt,
                 Format,
@@ -1872,6 +1881,70 @@ namespace ScriptEngine.Machine
                 result = (Math.Sign(num) * round * scale);
 
             _operationStack.Push(ValueFactory.Create(result));
+            NextInstruction();
+        }
+
+        private void Log(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Log((double) num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Log10(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Log10((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Sin(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Sin((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Cos(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Cos((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Tan(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Tan((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void ASin(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Asin((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void ACos(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Acos((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void ATan(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Atan((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Exp(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Exp((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
 
