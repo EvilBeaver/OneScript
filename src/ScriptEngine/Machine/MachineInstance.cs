@@ -470,6 +470,8 @@ namespace ScriptEngine.Machine
                 Exp,
                 Pow,
                 Sqrt,
+                Min,
+                Max,
                 Format,
                 ExceptionInfo,
                 ExceptionDescr,
@@ -1962,6 +1964,39 @@ namespace ScriptEngine.Machine
             var num = (double)_operationStack.Pop().AsNumber();
             var root = Math.Sqrt(num);
             _operationStack.Push(ValueFactory.Create((decimal)root));
+            NextInstruction();
+        }
+
+        private void Min(int argCount)
+        {
+            System.Diagnostics.Debug.Assert(argCount > 0);
+
+            IValue min = _operationStack.Pop();
+            while (--argCount > 0)
+            {
+                var current = _operationStack.Pop();
+                if (current.CompareTo(min) < 0)
+                    min = current;
+            }
+
+            _operationStack.Push(BreakVariableLink(min));
+
+            NextInstruction();
+        }
+
+        private void Max(int argCount)
+        {
+            System.Diagnostics.Debug.Assert(argCount > 0);
+
+            IValue max = _operationStack.Pop();
+            while (--argCount > 0)
+            {
+                var current = _operationStack.Pop();
+                if (current.CompareTo(max) > 0)
+                    max = current;
+            }
+
+            _operationStack.Push(BreakVariableLink(max));
             NextInstruction();
         }
 

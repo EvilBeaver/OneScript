@@ -99,6 +99,19 @@ namespace ScriptEngine.Machine
 
         public int CompareTo(IValue other)
         {
+            if (other.DataType != this.DataType)
+            {
+                if (this.DataType == DataType.Boolean && other.DataType == DataType.Number
+                    || this.DataType == DataType.Number && other.DataType == DataType.Boolean)
+                {
+                    return AsNumber().CompareTo(other.AsNumber());
+                }
+                else
+                {
+                    throw RuntimeException.ComparisonNotSupportedException();
+                }
+            }
+            
             switch (other.DataType)
             {
                 case Machine.DataType.Boolean:
@@ -106,11 +119,10 @@ namespace ScriptEngine.Machine
                 case Machine.DataType.Date:
                     return AsDate().CompareTo(other.AsDate());
                 case Machine.DataType.Undefined:
-                    return DataType == Machine.DataType.Undefined ? 0 : -1;
+                    return 0;
                 default:
                     return AsNumber().CompareTo(other.AsNumber());
             }
-
         }
 
         public override string ToString()
@@ -260,7 +272,10 @@ namespace ScriptEngine.Machine
 
         public int CompareTo(IValue other)
         {
-            return _value.CompareTo(other.AsString());
+            if(other.DataType == DataType.String)
+                return _value.CompareTo(other.AsString());
+
+            throw RuntimeException.ComparisonNotSupportedException();
         }
 
         #endregion

@@ -169,6 +169,8 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("exp", Token.Exp);
             _stringToToken.Add("pow", Token.Pow);
             _stringToToken.Add("sqrt", Token.Sqrt);
+            _stringToToken.Add("мин", Token.Min);
+            _stringToToken.Add("макс", Token.Max);
             _stringToToken.Add("формат", Token.Format);
             _stringToToken.Add("информацияобошибке", Token.ExceptionInfo);
             _stringToToken.Add("описаниеошибки", Token.ExceptionDescr);
@@ -363,6 +365,8 @@ namespace ScriptEngine.Compiler
         Exp,
         Pow,
         Sqrt,
+        Min,
+        Max,
         Format,
 
         ExceptionInfo,

@@ -1327,9 +1327,17 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(Token.OpenPar);
             }
 
-            var parameters = BuiltinFunctions.ParametersInfo(funcId);
             var passedArgs = PushFactArguments();
-            CheckFactArguments(parameters, passedArgs);
+            if (funcId == OperationCode.Min || funcId == OperationCode.Max)
+            {
+                if (passedArgs.Length == 0)
+                    throw CompilerException.TooLittleArgumentsPassed();
+            }
+            else
+            {
+                var parameters = BuiltinFunctions.ParametersInfo(funcId);
+                CheckFactArguments(parameters, passedArgs);
+            }
 
             AddCommand(funcId, passedArgs.Length);
 
@@ -1475,6 +1483,10 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Pow;
                 case Token.Sqrt:
                     return OperationCode.Sqrt;
+                case Token.Min:
+                    return OperationCode.Min;
+                case Token.Max:
+                    return OperationCode.Max;
                 case Token.Format:
                     return OperationCode.Format;
                 case Token.ExceptionInfo:

@@ -115,6 +115,8 @@ namespace ScriptEngine.Machine
         Exp,
         Pow,
         Sqrt,
+        Min,
+        Max,
         Format,
         ExceptionInfo,
         ExceptionDescr,
