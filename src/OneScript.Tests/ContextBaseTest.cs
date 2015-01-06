@@ -53,7 +53,7 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
-        public void Acces_Properties_By_Index()
+        public void Access_Properties_By_Index()
         {
             var ctx = new CtxTest2();
             Assert.IsTrue(ctx.GetPropCount() == 1);

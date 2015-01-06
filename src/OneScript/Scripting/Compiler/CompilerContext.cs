@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OneScript.Scripting.Compiler
 {
-    public class CompilerContext : ICompilerContext
+    public class CompilerContext
     {
         List<SymbolScope> _attachedScopes = new List<SymbolScope>();
 

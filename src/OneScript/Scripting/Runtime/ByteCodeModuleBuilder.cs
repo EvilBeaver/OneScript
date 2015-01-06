@@ -1,28 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using OneScript.Scripting.Compiler;
 
-namespace OneScript.Scripting.Runtime.CodeGeneration
+namespace OneScript.Scripting.Runtime
 {
     public class ByteCodeModuleBuilder : IModuleBuilder
     {
-        ModuleImage _module;
         SymbolScope _moduleLevelScope;
         IList<SymbolBinding> _currentVariableList;
 
         public ByteCodeModuleBuilder()
         {
-            _module = new ModuleImage();
-        }
-
-        public ModuleImage Module
-        {
-            get
-            {
-                return _module;
-            }
         }
 
         public CompilerContext SymbolsContext { get; set; }
@@ -50,38 +38,11 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
                 throw new InvalidOperationException("Symbol scope is not defined");
         }
 
-        private int AddCommand(OperationCode opCode, int argument)
-        {
-            int commandAddress = _module.Code.Count;
-            _module.Code.Add(new Command
-            {
-                Code = opCode,
-                Argument = argument
-            });
-
-            return commandAddress;
-        }
-
-        private int GetVariableRefNumber(ref SymbolBinding binding)
-        {
-            var idx = _module.VariableRefs.IndexOf(binding);
-            if (idx < 0)
-            {
-                idx = _module.VariableRefs.Count;
-                _module.VariableRefs.Add(binding);
-            }
-
-            return idx;
-        }
-
         #region IModuleBuilder members
 
         public void BeginModule()
         {
-            NewScope();
-
-            _moduleLevelScope = SymbolsContext.TopScope;
-            _currentVariableList = _module.VariableRefs;
+            throw new NotImplementedException();   
         }
 
         public void CompleteModule()
@@ -91,41 +52,17 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
 
         public void DefineExportVariable(string symbolicName)
         {
-            var definition = SymbolsContext.DefineVariable(symbolicName);
-
-            _currentVariableList.Add(definition);
-            if (SymbolsContext.TopScope == _moduleLevelScope)
-            {
-                _module.Variables.Add(new VariableDefinition()
-                {
-                    Name = symbolicName,
-                    IsExported = true
-                });
-            }
+            throw new NotImplementedException();
         }
 
         public void DefineVariable(string symbolicName)
         {
-            var definition = SymbolsContext.DefineVariable(symbolicName);
-
-            _currentVariableList.Add(definition);
-            if (SymbolsContext.TopScope == _moduleLevelScope)
-            {
-                _module.Variables.Add(new VariableDefinition()
-                    {
-                        Name = symbolicName,
-                        IsExported = false
-                    });
-            }
+            throw new NotImplementedException();
         }
 
         public IASTNode SelectOrUseVariable(string identifier)
         {
-            var variable = SymbolsContext.GetVariable(identifier);
-            var idx = GetVariableRefNumber(ref variable);
-            AddCommand(OperationCode.PushVar, idx);
-
-            return null;
+            throw new NotImplementedException();
         }
 
         public void BuildAssignment(IASTNode acceptor, IASTNode source)
@@ -185,16 +122,12 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
 
         public void BeginModuleBody()
         {
-            NewScope();
-
-            _currentVariableList = _module.VariableRefs;
+            throw new NotImplementedException();
         }
 
         public void EndModuleBody()
         {
-            NewScope();
-
-            _currentVariableList = _module.VariableRefs;
+            throw new NotImplementedException();
         }
 
         public IASTNode BeginBatch()
@@ -204,7 +137,7 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
 
         public void EndBatch(IASTNode batch)
         {
-            
+            throw new NotImplementedException();
         }
 
         public IASTConditionNode BeginConditionStatement()
