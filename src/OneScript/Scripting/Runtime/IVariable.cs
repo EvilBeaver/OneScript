@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using OneScript.Core;
 
-namespace OneScript.Core
+namespace OneScript.Scripting.Runtime
 {
     public interface IVariable : IEquatable<IValue>
     {

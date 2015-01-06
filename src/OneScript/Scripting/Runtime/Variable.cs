@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using OneScript.Core;
 
-namespace OneScript.Core
+namespace OneScript.Scripting.Runtime
 {
     public class Variable : IVariable
     {
@@ -23,7 +21,7 @@ namespace OneScript.Core
             set
             {
                 if (value == null)
-                    throw new ArgumentNullException("value-set");
+                    throw new ArgumentNullException("value");
 
                 _val = value;
             }

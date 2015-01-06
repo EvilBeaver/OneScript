@@ -43,8 +43,8 @@ namespace OneScript.Tests
             SymbolScope newScope = builder.NewScope();
             builder.SymbolsContext.DefineVariable("Тест");
 
-            Assert.ReferenceEquals(newScope, builder.SymbolsContext.TopScope);
-            Assert.ReferenceEquals(newScope, builder.ExitScope());
+            Assert.AreSame(newScope, builder.SymbolsContext.TopScope);
+            Assert.AreSame(newScope, builder.ExitScope());
             Assert.IsTrue(newScope.IsVarDefined("Тест"));
         }
 
@@ -71,7 +71,7 @@ namespace OneScript.Tests
         {
             var builder = new ByteCodeModuleBuilder();
             Assert.IsNull(builder.SymbolsContext);
-            builder.UseOwnContext();
+            SetBuilderContext(builder);
             Assert.IsNotNull(builder.SymbolsContext);
         }
 
@@ -79,7 +79,7 @@ namespace OneScript.Tests
         public void Register_Module_Variable()
         {
             var builder = new ByteCodeModuleBuilder();
-            builder.UseOwnContext();
+            SetBuilderContext(builder);
             builder.BeginModule();
 
             builder.DefineVariable("Тест");
@@ -96,7 +96,7 @@ namespace OneScript.Tests
         public void Register_Module_ExportVariable()
         {
             var builder = new ByteCodeModuleBuilder();
-            builder.UseOwnContext();
+            SetBuilderContext(builder);
             builder.BeginModule();
 
             builder.DefineExportVariable("Тест");
@@ -112,10 +112,10 @@ namespace OneScript.Tests
         public void Add_Statements_To_Module_Body()
         {
             var builder = new ByteCodeModuleBuilder();
-            builder.UseOwnContext();
+            SetBuilderContext(builder);
             builder.BeginModule();
 
-            var one = new Lexem()
+            var one = new Lexem
             {
                 Content = "1",
                 Type = LexemType.NumberLiteral
@@ -138,6 +138,14 @@ namespace OneScript.Tests
             Assert.IsTrue(module.Methods[0].Locals.Count == 1);
             Assert.IsTrue(module.Methods[0].Name == "$entry");
 
+        }
+
+        public void SetBuilderContext(ByteCodeModuleBuilder builder)
+        {
+            if (builder.SymbolsContext != null)
+                throw new InvalidOperationException("Symbol scope is already set");
+
+            builder.SymbolsContext = new CompilerContext();
         }
     }
 }

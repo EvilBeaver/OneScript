@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using OneScript.Core;
 
-namespace OneScript.Core
+namespace OneScript.Scripting.Runtime
 {
-    class ContextPropertyReference : IVariable
+    class ContextPropertyVariable : IVariable
     {
         IRuntimeContextInstance _ctx;
         int _index;
 
-        public ContextPropertyReference(IRuntimeContextInstance context, int propertyIndex)
+        public ContextPropertyVariable(IRuntimeContextInstance context, int propertyIndex)
         {
             _ctx = context;
             _index = propertyIndex;

@@ -50,12 +50,28 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
                 throw new InvalidOperationException("Symbol scope is not defined");
         }
 
-        public void UseOwnContext()
+        private int AddCommand(OperationCode opCode, int argument)
         {
-            if(SymbolsContext != null)
-                throw new InvalidOperationException("Symbol scope is already set");
+            int commandAddress = _module.Code.Count;
+            _module.Code.Add(new Command
+            {
+                Code = opCode,
+                Argument = argument
+            });
 
-            SymbolsContext = new CompilerContext();
+            return commandAddress;
+        }
+
+        private int GetVariableRefNumber(ref SymbolBinding binding)
+        {
+            var idx = _module.VariableRefs.IndexOf(binding);
+            if (idx < 0)
+            {
+                idx = _module.VariableRefs.Count;
+                _module.VariableRefs.Add(binding);
+            }
+
+            return idx;
         }
 
         #region IModuleBuilder members
@@ -105,7 +121,11 @@ namespace OneScript.Scripting.Runtime.CodeGeneration
 
         public IASTNode SelectOrUseVariable(string identifier)
         {
-            throw new NotImplementedException();
+            var variable = SymbolsContext.GetVariable(identifier);
+            var idx = GetVariableRefNumber(ref variable);
+            AddCommand(OperationCode.PushVar, idx);
+
+            return null;
         }
 
         public void BuildAssignment(IASTNode acceptor, IASTNode source)
