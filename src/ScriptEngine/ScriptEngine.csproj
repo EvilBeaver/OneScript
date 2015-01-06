@@ -127,7 +127,7 @@
     <Compile Include="Machine\Contexts\ContextPropertyMapper.cs" />
     <Compile Include="Machine\Contexts\DispatchUtility.cs" />
     <Compile Include="Machine\Contexts\ContextDiscoverer.cs" />
-    <Compile Include="Environment\ModuleHandle.cs" />
+    <Compile Include="Environment\ScriptModuleHandle.cs" />
     <Compile Include="Machine\BuiltinFunctions.cs" />
     <Compile Include="Machine\Core.cs" />
     <Compile Include="Machine\ExecutionFrame.cs" />

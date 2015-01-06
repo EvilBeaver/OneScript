@@ -1,6 +1,5 @@
 ﻿using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Library;
 using System;
 using System.Collections.Generic;
 using System.IO;

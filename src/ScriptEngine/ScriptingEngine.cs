@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Library;
 
 namespace ScriptEngine
 {
@@ -63,7 +59,7 @@ namespace ScriptEngine
             return new CompilerService(_symbolsContext);
         }
 
-        public LoadedModuleHandle LoadModuleImage(ModuleHandle moduleImage)
+        public LoadedModuleHandle LoadModuleImage(ScriptModuleHandle moduleImage)
         {
             var handle = new LoadedModuleHandle();
             handle.Module = new LoadedModule(moduleImage.Module);

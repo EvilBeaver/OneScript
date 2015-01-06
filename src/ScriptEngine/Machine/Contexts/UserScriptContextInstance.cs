@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Library;
 
 namespace ScriptEngine.Machine.Contexts
 {

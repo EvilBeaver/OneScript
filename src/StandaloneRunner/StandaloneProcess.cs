@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 
 namespace StandaloneRunner
@@ -107,9 +104,9 @@ namespace StandaloneRunner
 
     class BinaryCodeSource : ScriptEngine.Environment.ICodeSource
     {
-        private ScriptEngine.ModuleHandle _mh;
+        private ScriptModuleHandle _mh;
 
-        public BinaryCodeSource(ScriptEngine.ModuleHandle mh)
+        public BinaryCodeSource(ScriptModuleHandle mh)
         {
             _mh = mh;
         }
