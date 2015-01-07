@@ -24,47 +24,44 @@ namespace ScriptEngine.HostedScript.Library.Net
         public string ReadString(string encoding = null)
         {
             var enc = GetEncodingByName(encoding);
-            using (var stream = _client.GetStream())
+            var stream = _client.GetStream();
+            
+            byte[] readBuffer = new byte[1024];
+            StringBuilder completeMessage = new StringBuilder();
+
+            do
             {
-                byte[] readBuffer = new byte[1024];
-                StringBuilder completeMessage = new StringBuilder();
+                int numberOfBytesRead = stream.Read(readBuffer, 0, readBuffer.Length);
+                completeMessage.Append(enc.GetString(readBuffer, 0, numberOfBytesRead));
+            } while (stream.DataAvailable);
 
-                do
-                {
-                    int numberOfBytesRead = stream.Read(readBuffer, 0, readBuffer.Length);
-                    completeMessage.Append(enc.GetString(readBuffer, 0, numberOfBytesRead));
-                } while (stream.DataAvailable);
+            return completeMessage.ToString();
 
-                return completeMessage.ToString();
-
-            }
         }
 
         [ContextMethod("ПрочитатьДвоичныеДанные", "ReadBinaryData")]
         public BinaryDataContext ReadBinaryData(int len = 0)
         {
-            using (var stream = _client.GetStream())
-            {
-                bool useLimit = len > 0;
+            var stream = _client.GetStream();
+            
+            bool useLimit = len > 0;
                 
-                MemoryStream ms = new MemoryStream();
-                byte[] readBuffer = new byte[1024];
-                do
-                {
-                    int portion = useLimit ? Math.Min(len, readBuffer.Length) : readBuffer.Length;
+            MemoryStream ms = new MemoryStream();
+            byte[] readBuffer = new byte[1024];
+            do
+            {
+                int portion = useLimit ? Math.Min(len, readBuffer.Length) : readBuffer.Length;
 
-                    int numberOfBytesRead = stream.Read(readBuffer, 0, portion);
-                    ms.Write(readBuffer, 0, numberOfBytesRead);
-                    if(useLimit)
-                        len -= numberOfBytesRead;
+                int numberOfBytesRead = stream.Read(readBuffer, 0, portion);
+                ms.Write(readBuffer, 0, numberOfBytesRead);
+                if(useLimit)
+                    len -= numberOfBytesRead;
 
-                } while (stream.DataAvailable);
+            } while (stream.DataAvailable);
 
-                var data = ms.ToArray();
+            var data = ms.ToArray();
 
-                return new BinaryDataContext(data);
-
-            }
+            return new BinaryDataContext(data);
         }
 
         [ContextMethod("ОтправитьСтроку","SendString")]
@@ -75,10 +72,10 @@ namespace ScriptEngine.HostedScript.Library.Net
 
             var enc = GetEncodingByName(encoding);
             byte[] bytes = enc.GetBytes(data);
-            using (var stream = _client.GetStream())
-            {
-                stream.Write(bytes, 0, bytes.Length);
-            }
+            var stream = _client.GetStream();
+            
+            stream.Write(bytes, 0, bytes.Length);
+            stream.Flush();
         }
 
         [ContextMethod("ОтправитьДвоичныеДанные", "SendBinaryData")]
@@ -87,10 +84,16 @@ namespace ScriptEngine.HostedScript.Library.Net
             if (data.Buffer.Length == 0)
                 return;
 
-            using (var stream = _client.GetStream())
-            {
-                stream.Write(data.Buffer, 0, data.Buffer.Length);
-            }
+            var stream = _client.GetStream();
+            stream.Write(data.Buffer, 0, data.Buffer.Length);
+            stream.Flush();
+
+        }
+
+        [ContextProperty("Активно","IsActive")]
+        public bool IsActive
+        {
+            get { return _client.Connected; }
         }
 
         private static Encoding GetEncodingByName(string encoding)
