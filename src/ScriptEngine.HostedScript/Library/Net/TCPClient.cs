@@ -96,6 +96,13 @@ namespace ScriptEngine.HostedScript.Library.Net
             get { return _client.Connected; }
         }
 
+        [ContextProperty("ТаймаутОтправки", "WriteTimeout")]
+        public int WriteTimeout
+        {
+            get { return _client.GetStream().WriteTimeout; }
+            set { _client.GetStream().WriteTimeout = value; }
+        }
+
         private static Encoding GetEncodingByName(string encoding)
         {
             Encoding enc;
