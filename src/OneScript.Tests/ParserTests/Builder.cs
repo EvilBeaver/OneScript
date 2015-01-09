@@ -73,9 +73,12 @@ namespace OneScript.Tests
             return ReadVariable(identifier);
         }
 
-        public void BuildAssignment(IASTNode acceptor, IASTNode source)
+        public IASTNode BuildAssignment(IASTNode acceptor, IASTNode source)
         {
-            CodeNode.Add(new AssignmentNode(acceptor, source));
+            var node = new AssignmentNode(acceptor, source);
+            CodeNode.Add(node);
+
+            return node;
         }
 
         public IASTNode ReadLiteral(Lexem lexem)

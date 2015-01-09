@@ -15,6 +15,8 @@ namespace OneScript.Scripting.Runtime
     {
         Nop,
         PushVar,
-        PushConst
+        PushConst,
+        PushLocal,
+        Assign
     }
 }

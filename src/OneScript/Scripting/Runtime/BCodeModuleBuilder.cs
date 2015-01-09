@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using OneScript.Scripting.Compiler;
@@ -7,6 +8,13 @@ namespace OneScript.Scripting.Runtime
 {
     public class BCodeModuleBuilder : IModuleBuilder
     {
+        private const int INVALID_INDEX = -1;
+
+        private int CurrentMethodIndex 
+        {
+            get { return Module.Methods.Count - 1; }
+        }
+
         public CompiledModule Module { get; private set; }
 
         public CompilerContext SymbolsContext { get; set; }
@@ -65,22 +73,89 @@ namespace OneScript.Scripting.Runtime
 
         public IASTNode SelectOrUseVariable(string identifier)
         {
-            throw new NotImplementedException();
+            SymbolBinding symbol;
+            if (!SymbolsContext.TryGetVariable(identifier, out symbol))
+            {
+                symbol = SymbolsContext.DefineVariable(identifier);
+            }
+
+            PushVariable(ref symbol);
+            
+            return null;
+
         }
 
-        public void BuildAssignment(IASTNode acceptor, IASTNode source)
+        private int PushVariable(ref SymbolBinding symbol)
         {
-            throw new NotImplementedException();
+            int cmdAddress;
+
+            if (SymbolsContext.GetScope(symbol.Context) == SymbolsContext.TopScope)
+            {
+                var method = Module.Methods[CurrentMethodIndex];
+                var refIdx = method.LocalRefs.Count;
+                method.LocalRefs.Add(symbol);
+                cmdAddress = AddCommand(OperationCode.PushLocal, refIdx);
+            }
+            else
+            {
+                var refIdx = Module.VariableRefs.Count;
+                Module.VariableRefs.Add(symbol);
+                cmdAddress = AddCommand(OperationCode.PushVar, refIdx);
+            }
+
+            return cmdAddress;
+        }
+
+        private int AddCommand(OperationCode operationCode)
+        {
+            return AddCommand(operationCode, 0);
+        }
+
+        private int AddCommand(OperationCode operationCode, int arg)
+        {
+            var command = new Command()
+            {
+                Code = operationCode,
+                Argument = arg
+            };
+
+            var idx = Module.Code.Count;
+            Module.Code.Add(command);
+
+            return idx;
+        }
+
+        public IASTNode BuildAssignment(IASTNode acceptor, IASTNode source)
+        {
+            AddCommand(OperationCode.Assign);
+            return null;
         }
 
         public IASTNode ReadLiteral(Lexem lexem)
         {
-            throw new NotImplementedException();
+            var constDef = ConstDefinition.CreateFromLiteral(ref lexem);
+            AddCommand(OperationCode.PushConst, GetConstNumber(ref constDef));
+
+            return null;
+        }
+
+        private int GetConstNumber(ref ConstDefinition cDef)
+        {
+            var idx = Module.Constants.IndexOf(cDef);
+            if (idx >= 0) 
+                return idx;
+
+            idx = Module.Constants.Count;
+            Module.Constants.Add(cDef);
+            return idx;
         }
 
         public IASTNode ReadVariable(string identifier)
         {
-            throw new NotImplementedException();
+            var symbol = SymbolsContext.GetVariable(identifier);
+            PushVariable(ref symbol);
+
+            return null;
         }
 
         public IASTNode BinaryOperation(Token operationToken, IASTNode leftHandedNode, IASTNode rightHandedNode)
@@ -143,7 +218,7 @@ namespace OneScript.Scripting.Runtime
 
         public IASTNode BeginBatch()
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         public void EndBatch(IASTNode batch)

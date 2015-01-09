@@ -9,7 +9,7 @@ namespace OneScript.Scripting.Runtime
     {
         public MethodDef()
         {
-            VariableRefs = new List<SymbolBinding>();
+            LocalRefs = new List<SymbolBinding>();
         }
 
         public string Name { get; set; }
@@ -20,6 +20,6 @@ namespace OneScript.Scripting.Runtime
 
         public int EntryPoint { get; set; }
 
-        public List<SymbolBinding> VariableRefs { get; private set; }
+        public List<SymbolBinding> LocalRefs { get; private set; }
     }
 }

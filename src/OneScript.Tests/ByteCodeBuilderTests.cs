@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OneScript.Scripting;
 using OneScript.Scripting.Compiler;
 using OneScript.Scripting.Runtime;
 
@@ -107,14 +108,81 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
-        public void Use_Module_Variable_Creates_Reference()
+        public void Use_Variable_Creates_Reference()
+        {
+            var builder = GetBuilder();
+            builder.DefineVariable("test");
+            builder.BeginModuleBody();
+            builder.SelectOrUseVariable("test");
+            builder.SelectOrUseVariable("test2");
+            var moduleRefs = builder.Module.VariableRefs;
+            var methodRefs = builder.Module.Methods[0].LocalRefs;
+            
+            Assert.AreEqual("test", moduleRefs[0].Name);
+            Assert.AreEqual(1, methodRefs.Count);
+            Assert.AreEqual("test2", methodRefs[0].Name);
+        }
+
+        [TestMethod]
+        public void Use_Variable_Creates_Code_PushVar()
+        {
+            var builder = GetBuilder();
+            builder.DefineVariable("test");
+            builder.DefineVariable("test2");
+            builder.BeginModuleBody();
+            builder.SelectOrUseVariable("test2");
+            builder.SelectOrUseVariable("test");
+            var compiledModule = builder.Module;
+            Assert.IsTrue(compiledModule.EntryMethodIndex == 0);
+            Assert.IsTrue(compiledModule.Methods[0].EntryPoint == 0);
+            Assert.AreEqual(OperationCode.PushVar, compiledModule.Code[0].Code);
+            Assert.AreEqual(0, compiledModule.Code[0].Argument);
+            Assert.AreEqual(OperationCode.PushVar, compiledModule.Code[1].Code);
+            Assert.AreEqual(1, compiledModule.Code[1].Argument);
+        }
+
+        [TestMethod]
+        public void ReadingConstant_Creates_Const_Record()
         {
             var builder = GetBuilder();
             builder.BeginModuleBody();
-            builder.SelectOrUseVariable("test");
-            var refs = builder.Module.Methods[0].VariableRefs;
+            builder.ReadLiteral(new Lexem()
+            {
+                Type = LexemType.NumberLiteral,
+                Content = "123"
+            });
 
-            Assert.AreEqual("test", refs[0].Name);
+            var module = builder.Module;
+            Assert.AreEqual(1, module.Constants.Count);
+            Assert.AreEqual(ConstType.Number, module.Constants[0].Type);
+            Assert.AreEqual("123", module.Constants[0].Presentation);
+            Assert.AreEqual(OperationCode.PushConst, module.Code[0].Code);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        public void ReadVariable_Throws_When_Var_Undefined()
+        {
+            var builder = GetBuilder();
+            builder.ReadVariable("test");
+        }
+
+        [TestMethod]
+        public void Read_Variable_Creates_Code_PushVar()
+        {
+            var builder = GetBuilder();
+            builder.DefineVariable("test");
+            builder.DefineVariable("test2");
+            builder.BeginModuleBody();
+            builder.ReadVariable("test2");
+            builder.ReadVariable("test");
+            var compiledModule = builder.Module;
+            Assert.IsTrue(compiledModule.EntryMethodIndex == 0);
+            Assert.IsTrue(compiledModule.Methods[0].EntryPoint == 0);
+            Assert.AreEqual(OperationCode.PushVar, compiledModule.Code[0].Code);
+            Assert.AreEqual(0, compiledModule.Code[0].Argument);
+            Assert.AreEqual(OperationCode.PushVar, compiledModule.Code[1].Code);
+            Assert.AreEqual(1, compiledModule.Code[1].Argument);
         }
 
         private BCodeModuleBuilder GetBuilder()

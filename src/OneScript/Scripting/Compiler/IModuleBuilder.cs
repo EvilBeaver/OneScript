@@ -18,7 +18,7 @@ namespace OneScript.Scripting.Compiler
 
         IASTNode SelectOrUseVariable(string identifier);
 
-        void BuildAssignment(IASTNode acceptor, IASTNode source);
+        IASTNode BuildAssignment(IASTNode acceptor, IASTNode source);
 
         IASTNode ReadLiteral(Lexem lexem);
 
