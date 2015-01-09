@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using OneScript.Scripting.Compiler;
 
 namespace OneScript.Scripting.Runtime
 {
-    public class ByteCodeModuleBuilder : IModuleBuilder
+    public class BCodeModuleBuilder : IModuleBuilder
     {
-        SymbolScope _moduleLevelScope;
-        IList<SymbolBinding> _currentVariableList;
-
-        public ByteCodeModuleBuilder()
-        {
-        }
+        public CompiledModule Module { get; private set; }
 
         public CompilerContext SymbolsContext { get; set; }
 
@@ -42,22 +38,29 @@ namespace OneScript.Scripting.Runtime
 
         public void BeginModule()
         {
-            throw new NotImplementedException();   
+            Module = new CompiledModule();
+            NewScope();
         }
 
         public void CompleteModule()
         {
-            throw new NotImplementedException();
+            ExitScope();
         }
 
         public void DefineExportVariable(string symbolicName)
         {
-            throw new NotImplementedException();
+            CheckEmptyScope();
+
+            SymbolsContext.DefineVariable(symbolicName);
+            Module.Variables.Add(VariableDef.CreateExported(symbolicName));
         }
 
         public void DefineVariable(string symbolicName)
         {
-            throw new NotImplementedException();
+            CheckEmptyScope();
+
+            SymbolsContext.DefineVariable(symbolicName);
+            Module.Variables.Add(VariableDef.CreateGlobal(symbolicName));
         }
 
         public IASTNode SelectOrUseVariable(string identifier)
@@ -122,12 +125,20 @@ namespace OneScript.Scripting.Runtime
 
         public void BeginModuleBody()
         {
-            throw new NotImplementedException();
+            NewScope();
+
+            var entryMethod = new MethodDef();
+            entryMethod.Name = "$entry";
+            entryMethod.Signature = MethodSignatureData.CreateProcedure(0);
+            entryMethod.EntryPoint = Module.Code.Count;
+            int index = Module.Methods.Count;
+            Module.EntryMethodIndex = index;
+            Module.Methods.Add(entryMethod);
         }
 
         public void EndModuleBody()
         {
-            throw new NotImplementedException();
+            ExitScope();
         }
 
         public IASTNode BeginBatch()

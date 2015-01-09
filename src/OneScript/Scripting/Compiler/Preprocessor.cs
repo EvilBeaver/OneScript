@@ -96,7 +96,7 @@ namespace OneScript.Scripting.Compiler
             {
                 var args = new PreprocessorUnknownTokenEventArgs()
                 {
-                    Iterator = _lexer.GetIterator(),
+                    Lexer = _lexer,
                     Lexem = lex
                 };
 
@@ -398,7 +398,7 @@ namespace OneScript.Scripting.Compiler
     public class PreprocessorUnknownTokenEventArgs : EventArgs
     {
         public bool IsHandled { get; set; }
-        public SourceCodeIterator Iterator { get; set; }
+        public Lexer Lexer { get; set; }
         public Lexem Lexem { get; set; }
     }
 }

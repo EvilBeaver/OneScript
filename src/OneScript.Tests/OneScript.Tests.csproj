@@ -75,6 +75,7 @@
     <Compile Include="Scripting_Essentials.cs" />
     <Compile Include="ParserTests\ParserTests.cs" />
     <Compile Include="CompilerTest.cs" />
+    <Compile Include="VariableDefTest.cs" />
     <Compile Include="VariableTest.cs" />
   </ItemGroup>
   <ItemGroup>

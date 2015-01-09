@@ -35,7 +35,7 @@ namespace OneScript.Scripting.Compiler
 
         void _lexer_UnexpectedCharacterFound(object sender, LexerErrorEventArgs e)
         {
-            // синтаксические ошибки пока не обрабатываются.
+            // TODO: синтаксические ошибки пока не обрабатываются.
         }
 
         public event EventHandler<CompilerErrorEventArgs> CompilerError;

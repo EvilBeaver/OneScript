@@ -110,20 +110,21 @@ namespace OneScript.Tests
         {
             string code = @"А = 1;
             Б = 2;
+            // comment
             В = 7-11;
             Г = 8";
 
             var iterator = new SourceCodeIterator(code);
-            while(iterator.CurrentLine<3)
+            while(iterator.CurrentLine<4)
             {
                 if (!iterator.MoveNext())
-                    Assert.Fail("Code is less than 3 lines");
+                    Assert.Fail("Code is less than 4 lines");
             }
 
-            Assert.IsTrue(iterator.CurrentLine == 3);
+            Assert.IsTrue(iterator.CurrentLine == 4);
             Assert.IsTrue(iterator.CurrentSymbol == '\n');
             iterator.MoveNext();
-            Assert.IsTrue(iterator.LineOfCode(3).Trim() == "В = 7-11;");
+            Assert.IsTrue(iterator.LineOfCode(4).Trim() == "В = 7-11;");
 
         }
 
