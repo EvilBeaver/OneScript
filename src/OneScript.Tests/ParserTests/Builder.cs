@@ -17,7 +17,10 @@ namespace OneScript.Tests
         {
             get
             {
-                return _mainCode.Children[0];
+                if (_mainCode.Children.Count > 0)
+                    return _mainCode.Children[0];
+                else
+                    return null;
             }
         }
 

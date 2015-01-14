@@ -32,6 +32,29 @@ namespace OneScript.Tests
         }
 
         [TestMethod]
+        public void Empty_Code_Batch()
+        {
+            var builder = ParseCode("Если Истина Тогда КонецЕсли");
+            Assert.IsTrue(builder.topNode is ConditionNode);
+
+            var ifNode = builder.topNode as ConditionNode;
+            var trueBatch = ifNode.TruePart as CodeBatchNode;
+
+            Assert.IsNotNull(trueBatch);
+            Assert.AreEqual(0, trueBatch.Children.Count);
+
+        }
+
+        [TestMethod]
+        public void Empty_Module()
+        {
+            var builder = ParseCode("");
+            Assert.IsNull(builder.topNode);
+            Assert.AreEqual(0, builder.Variables.Count);
+            Assert.AreEqual(0, builder.Methods.Count);
+        }
+
+        [TestMethod]
         public void Expression_Straight_Priority()
         {
             var expectedTree = new BinExpressionNode();
@@ -392,6 +415,10 @@ namespace OneScript.Tests
         {
             var code = @"Если А=Б Тогда
                              А = 1;
+                         ИначеЕсли Б Тогда
+                             X=1;
+                         ИначеЕсли Б Тогда
+                             X=1;
                          Иначе
                             Б = 2;
                             Г = 4;  
@@ -409,8 +436,30 @@ namespace OneScript.Tests
             var cond = builder.topNode as ConditionNode;
 
             Assert.AreEqual(1, ((CodeBatchNode)cond.TruePart).Children.Count);
-            Assert.AreEqual(2, ((CodeBatchNode)cond.FalsePart).Children.Count);
+            Assert.IsInstanceOfType(cond.FalsePart, typeof(ConditionNode));
 
+            var elif = cond.FalsePart as ConditionNode;
+            Assert.IsInstanceOfType(elif.FalsePart, typeof(ConditionNode));
+            elif = elif.FalsePart as ConditionNode;
+            Assert.IsInstanceOfType(elif.FalsePart, typeof(CodeBatchNode));
+            var elseNode = elif.FalsePart as CodeBatchNode;
+            Assert.AreEqual(2, elseNode.Children.Count);
+
+
+        }
+
+        [TestMethod]
+        public void LogicalExpression_With_Single_Variable()
+        {
+            var builder = ParseCode("Если А Тогда ; КонецЕсли");
+            
+            var ifNode = builder.topNode as ConditionNode;
+            Assert.IsNotNull(ifNode);
+
+            var operand = ifNode.Condition as OperandNode;
+            Assert.IsNotNull(ifNode);
+
+            Assert.AreEqual("А", operand.content);
         }
     }
 

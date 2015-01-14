@@ -691,15 +691,30 @@ namespace OneScript.Scripting.Compiler
             NextLexem();
             PushEndTokens(Token.Else, Token.ElseIf, Token.EndIf);
             ifBlock.TruePart = BuildCodeBatch();
-            PopEndTokens();
+            
+            var currentIf = ifBlock;
+            while (_lastExtractedLexem.Token == Token.ElseIf)
+            {
+                var elseif = _builder.BeginConditionStatement();
+                
+                NextLexem();
+                elseif.Condition = BuildExpression(Token.Then);
+                NextLexem();
+                elseif.TruePart = BuildCodeBatch();
+                currentIf.FalsePart = elseif;
+                currentIf = elseif;
+            }
 
             if(_lastExtractedLexem.Token == Token.Else)
             {
+                PopEndTokens();
                 NextLexem();
                 PushEndTokens(Token.EndIf);
-                ifBlock.FalsePart = BuildCodeBatch();
-                PopEndTokens();
+                currentIf.FalsePart = BuildCodeBatch();
+
             }
+
+            PopEndTokens();
 
             NextLexem(); // endif
 

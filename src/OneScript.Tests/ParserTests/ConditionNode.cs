@@ -6,8 +6,8 @@ namespace OneScript.Tests
     {
         private IASTNode _condition;
 
-        CodeBatchNode _truePart;
-        CodeBatchNode _falsePart;
+        TestASTNodeBase _truePart;
+        TestASTNodeBase _falsePart;
 
         protected override bool EqualsInternal(IASTNode other)
         {
@@ -38,7 +38,7 @@ namespace OneScript.Tests
             }
             set
             {
-                _truePart = (CodeBatchNode)value;
+                _truePart = (TestASTNodeBase)value;
             }
         }
 
@@ -50,7 +50,7 @@ namespace OneScript.Tests
             }
             set
             {
-                _falsePart = (CodeBatchNode)value;
+                _falsePart = (TestASTNodeBase)value;
             }
         }
     }
