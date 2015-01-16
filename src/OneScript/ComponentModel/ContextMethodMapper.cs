@@ -35,7 +35,7 @@ namespace OneScript.ComponentModel
             switch (mode)
             {
                 case NameRetrievalMode.PreferAlias:
-                    if (def.Alias != "")
+                    if (def.Alias != null)
                         return def.Alias;
                     else
                         return def.Name;
@@ -154,10 +154,19 @@ namespace OneScript.ComponentModel
                     var scriptMethInfo = new MethodDefinition();
                     scriptMethInfo.IsFunction = isFunc;
                     scriptMethInfo.Name = item.Binding.Name == null ? item.Method.Name : item.Binding.Name;
-                    scriptMethInfo.Alias = item.Binding.Alias == null ? item.Method.Name : item.Binding.Alias;
+
+                    if (item.Binding.Alias != null)
+                    {
+                        scriptMethInfo.Alias = item.Binding.Alias;
+                    }
+                    else if (scriptMethInfo.Name != item.Method.Name)
+                    {
+                        scriptMethInfo.Alias = item.Method.Name;
+                    }
+
                     scriptMethInfo.Params = paramDefs;
                     _nameIndexes.Add(scriptMethInfo.Name, _methodPtrs.Count);
-                    if(scriptMethInfo.Alias != scriptMethInfo.Name)
+                    if(!String.IsNullOrEmpty(scriptMethInfo.Alias))
                         _nameIndexes.Add(scriptMethInfo.Alias, _methodPtrs.Count);
 
                     _methodPtrs.Add(new InternalMethInfo()

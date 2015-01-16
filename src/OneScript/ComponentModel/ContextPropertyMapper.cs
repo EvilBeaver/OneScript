@@ -18,7 +18,15 @@ namespace OneScript.ComponentModel
         {
             var attrib = (ContextPropertyAttribute)propInfo.GetCustomAttributes(typeof(ContextPropertyAttribute), false)[0];
             _name = attrib.Name == null ? propInfo.Name : attrib.Name;
-            _alias = attrib.Alias == null ? propInfo.Name : attrib.Alias;
+
+            if (attrib.Alias != null)
+            {
+                _alias = attrib.Alias;
+            }
+            else if(_name != propInfo.Name)
+            {
+                _alias = propInfo.Name;
+            }
 
             Func<TInstance, IValue> cantReadAction = (inst) => { throw ContextAccessException.PropIsNotReadable(_name); };
             Action<TInstance, IValue> cantWriteAction = (inst, val) => { throw ContextAccessException.PropIsNotWritable(_name); };
@@ -141,7 +149,7 @@ namespace OneScript.ComponentModel
             for (int i = 0; i < _properties.Count; i++)
             {
                 _nameIndices.Add(_properties[i].Name, i);
-                if (_properties[i].Name != _properties[i].Alias)
+                if (!String.IsNullOrEmpty(_properties[i].Alias))
                     _nameIndices.Add(_properties[i].Alias, i);
             }
 

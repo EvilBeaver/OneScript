@@ -30,6 +30,11 @@ namespace OneScript.Tests
 
             index = ctx.FindProperty("BooleanAutoName");
             Assert.IsTrue(ctx.GetPropertyName(index) == "BooleanAutoName");
+            Assert.IsTrue(ctx.GetPropertyName(index, NameRetrievalMode.Default) == "BooleanAutoName");
+            Assert.IsTrue(ctx.GetPropertyName(index, NameRetrievalMode.Name) == "BooleanAutoName");
+            Assert.IsTrue(ctx.GetPropertyName(index, NameRetrievalMode.PreferAlias) == "BooleanAutoName");
+            Assert.IsTrue(ctx.GetPropertyName(index, NameRetrievalMode.OnlyAlias) == null);
+            
             ctx.SetPropertyValue(index, ValueFactory.Create(true));
             Assert.IsTrue(ctx.GetPropertyValue(index).Type == BasicTypes.Boolean);
             Assert.IsTrue(ctx.GetPropertyValue(index).AsBoolean() == true);
@@ -71,6 +76,12 @@ namespace OneScript.Tests
             Assert.IsTrue(ctx.GetParametersCount(index) == 0);
             Assert.IsTrue(ctx.HasReturnValue(index) == true);
             Assert.IsTrue(ctx.CallAsFunction(index, new IValue[0]).AsNumber() == 0);
+
+            Assert.AreEqual("SimpleFunction", ctx.GetMethodName(index));
+            Assert.AreEqual("SimpleFunction", ctx.GetMethodName(index, NameRetrievalMode.Default));
+            Assert.AreEqual("SimpleFunction", ctx.GetMethodName(index, NameRetrievalMode.Name));
+            Assert.AreEqual("SimpleFunction", ctx.GetMethodName(index, NameRetrievalMode.PreferAlias));
+            Assert.AreEqual(null, ctx.GetMethodName(index, NameRetrievalMode.OnlyAlias));
 
             index = ctx.FindMethod("Функция");
             Assert.IsTrue(ctx.GetParametersCount(index) == 3);

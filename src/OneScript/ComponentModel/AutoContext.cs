@@ -35,7 +35,7 @@ namespace OneScript.ComponentModel
             switch(mode)
             {
                 case NameRetrievalMode.PreferAlias:
-                    if (def.Alias != "")
+                    if (def.Alias != null)
                         return def.Alias;
                     else
                         return def.Name;

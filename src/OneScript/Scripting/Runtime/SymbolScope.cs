@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OneScript.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -131,6 +132,44 @@ namespace OneScript.Scripting.Runtime
         public MethodSignatureData GetMethodUsageData(int methodNumber)
         {
             return _methodsData[methodNumber];
+        }
+
+        public static SymbolScope ExtractFromContext(IRuntimeContextInstance context)
+        {
+            var scope = new SymbolScope();
+
+            ReadProperties(scope, context);
+            ReadMethods(scope, context);
+
+            return scope;
+        }
+
+        private static void ReadProperties(SymbolScope scope, IRuntimeContextInstance context)
+        {
+            var propCount = context.GetPropCount();
+            for (int i = 0; i < propCount; i++)
+            {
+                var index = scope.DefineVariable(context.GetPropertyName(i, NameRetrievalMode.Name));
+                var alias = context.GetPropertyName(i, NameRetrievalMode.OnlyAlias);
+                if(!String.IsNullOrWhiteSpace(alias))
+                    scope.SetVariableAlias(index, alias);
+            }
+        }
+
+        private static void ReadMethods(SymbolScope scope, IRuntimeContextInstance context)
+        {
+            int count = context.GetMethodsCount();
+            if (count == 0)
+                return;
+
+            var methods = MethodSignatureExtractor.Extract(context);
+            for (int i = 0; i < count; i++)
+            {
+                var index = scope.DefineMethod(context.GetMethodName(i, NameRetrievalMode.Name), methods[i]);
+                var alias = context.GetMethodName(i, NameRetrievalMode.OnlyAlias);
+                if (!String.IsNullOrWhiteSpace(alias))
+                    scope.SetMethodAlias(index, alias);
+            }
         }
     }
 }

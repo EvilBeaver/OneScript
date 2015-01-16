@@ -251,5 +251,29 @@ namespace OneScript.Tests
             Assert.IsTrue(scope.GetMethodNumber("func_alias") == 1);
             Assert.AreSame(scope.GetMethodUsageData(1), func);
         }
+
+        [TestMethod]
+        public void Scope_Is_Extracted_From_Context()
+        {
+            var obj = new ImportedMembersClass();
+
+            var scope = SymbolScope.ExtractFromContext(obj);
+
+            Assert.IsTrue(scope.IsVarDefined("ЧисловоеЗначение"));
+            Assert.IsTrue(scope.IsVarDefined("IntProperty"));
+
+            Assert.IsTrue(scope.IsVarDefined("БулевоСвойство"));
+            Assert.IsTrue(scope.IsVarDefined("BooleanProperty"));
+            
+            Assert.IsTrue(scope.IsVarDefined("ReadOnlyString"));
+
+            Assert.IsTrue(scope.IsMethodDefined("Процедура"));
+            Assert.IsTrue(scope.IsMethodDefined("Proc"));
+
+            Assert.IsTrue(scope.IsMethodDefined("Функция"));
+            Assert.IsTrue(scope.IsMethodDefined("Func"));
+
+        }
+
     }
 }
