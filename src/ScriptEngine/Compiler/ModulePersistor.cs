@@ -1,4 +1,5 @@
-﻿using ScriptEngine.Machine;
+﻿using ScriptEngine.Environment;
+using ScriptEngine.Machine;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,21 +18,21 @@ namespace ScriptEngine.Compiler
             _formatter = format;
 	    }
 
-        public void Save(ModuleHandle module, Stream output)
+        public void Save(ScriptModuleHandle module, Stream output)
         {
             _formatter.Serialize(output, FromHandle(module));
         }
 
-        public ModuleHandle Read(Stream input)
+        public ScriptModuleHandle Read(Stream input)
         {
             var moduleImage = (ModuleImage)_formatter.Deserialize(input);
-            return new ModuleHandle()
+            return new ScriptModuleHandle()
             {
                 Module = moduleImage
             };
         }
 
-        private ModuleImage FromHandle(ModuleHandle module)
+        private ModuleImage FromHandle(ScriptModuleHandle module)
         {
             return module.Module;
         }

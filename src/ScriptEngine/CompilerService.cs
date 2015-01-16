@@ -58,7 +58,7 @@ namespace ScriptEngine
             }
         }
 
-        public ModuleHandle CreateModule(ICodeSource source)
+        public ScriptModuleHandle CreateModule(ICodeSource source)
         {
             try
             {
@@ -71,7 +71,7 @@ namespace ScriptEngine
             }
         }
 
-        private ModuleHandle Compile(ICodeSource source)
+        private ScriptModuleHandle Compile(ICodeSource source)
         {
             RegisterScopeIfNeeded();
 
@@ -110,7 +110,7 @@ namespace ScriptEngine
             mi.Origin = source.SourceDescription;
             compiledImage.ModuleInfo = mi;
 
-            return new ModuleHandle()
+            return new ScriptModuleHandle()
             {
                 Module = compiledImage
             };

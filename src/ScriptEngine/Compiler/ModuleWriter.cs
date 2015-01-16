@@ -23,7 +23,7 @@ namespace ScriptEngine.Compiler
 
         }
 
-        public void Write(TextWriter output, ModuleHandle module)
+        public void Write(TextWriter output, ScriptModuleHandle module)
         {
             WriteImage(output, module.Module);
         }

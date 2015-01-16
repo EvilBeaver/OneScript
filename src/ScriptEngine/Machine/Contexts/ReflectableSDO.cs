@@ -1,4 +1,5 @@
-﻿#if !__MonoCS__
+﻿using ScriptEngine.Environment;
+#if !__MonoCS__
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Library;
 
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {

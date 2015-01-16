@@ -7,6 +7,7 @@
 using namespace System;
 using namespace System::Reflection;
 using namespace ScriptEngine;
+using namespace ScriptEngine::Environment;
 using namespace ScriptEngine::Machine;
 using namespace ScriptEngine::Machine::Contexts;
 
