@@ -4,39 +4,25 @@ chcp 866 > nul
 
 setlocal
 set pathdir=%~dp0
-set success=1
 
-set logfile=failtests.log
-del /Q /F %logfile%
-echo . > %logfile%
+rem echo сами тесты %CD%
+rem echo скрипты тестирования %pathdir%
 
-for %%I in (*.os) do (
-if NOT "%%~nI"=="start" (
-if NOT "%%~nI"=="testrunner" (
-	echo ---
-	echo - файл теста -   %%I
-	echo ---
+@echo on
+"%ProgramFiles(x86)%\OneScript\oscript.exe" %pathdir%\start.os -runall %1 %2 %3 %4 %5
+@echo off
 
-	rem call %1 start.os -run %%I %2 %3 %4 %5
-
-	rem @call "%pathdir%\..\install\built\oscript.exe" "%pathdir%\start.os" -run %%I %1 %2 %3 %4 %5
-	@call "%ProgramFiles(x86)%\OneScript\oscript.exe" "%pathdir%\start.os" -run %%I %1 %2 %3 %4 %5
-	
-	
-	if NOT %ERRORLEVEL%==0 (
-		set success=%ERRORLEVEL%
-		echo        Упал тест "%%~nI" >> %logfile%
-	)
-)
-)
-)
-
-if NOT "%success%"=="0" GOTO bad_exit
-
+rem echo Код возврата %ERRORLEVEL%
+if %ERRORLEVEL%==2 GOTO pending_exit
+if NOT %ERRORLEVEL%==0 GOTO bad_exit
 
 :success_exit
 
 exit /B 0
+
+:pending_exit
+
+exit /B 2
 
 :bad_exit
 if "-1"=="%success%" GOTO success_exit
