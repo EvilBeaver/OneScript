@@ -42,15 +42,6 @@ namespace OneScript.Scripting.Compiler
         IASTNode ExceptBlock { get; set; }
     }
 
-    public interface IASTMethodNode
-    {
-        string Name { get; set; }
-        bool IsFunction { get; set; }
-        bool IsExported { get; set; }
-        IList<ASTMethodParameter> Parameters { get; set; }
-        IASTNode Body { get; set; }
-    }
-
     public struct ASTMethodParameter
     {
         public string Name;

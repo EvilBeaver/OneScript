@@ -116,11 +116,11 @@ namespace OneScript.Tests
             builder.SelectOrUseVariable("test");
             builder.SelectOrUseVariable("test2");
             var moduleRefs = builder.Module.VariableRefs;
-            var methodRefs = builder.Module.Methods[0].LocalRefs;
+            var locals = builder.Module.Methods[0].Locals;
             
             Assert.AreEqual("test", moduleRefs[0].Name);
-            Assert.AreEqual(1, methodRefs.Count);
-            Assert.AreEqual("test2", methodRefs[0].Name);
+            Assert.AreEqual(1, locals.Count);
+            Assert.AreEqual("test2", locals[0].Name);
         }
 
         [TestMethod]

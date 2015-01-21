@@ -103,10 +103,8 @@ namespace OneScript.Scripting.Compiler
                 {
                     bodyDefined = true;
                     PushEndTokens(Token.EndOfText);
-                    _builder.BeginModuleBody();
                     BuildCodeBatch();
                     PopEndTokens();
-                    _builder.EndModuleBody();
                 }
                 else
                 {
@@ -230,9 +228,8 @@ namespace OneScript.Scripting.Compiler
                     NextLexem();
                 }
 
-                methodNode.Parameters = parameters;
-                methodNode.IsExported = isExported;
-                
+                _builder.SetMethodSignature(methodNode, parameters.ToArray(), isExported);
+
             }
             catch (CompilerException exc)
             {

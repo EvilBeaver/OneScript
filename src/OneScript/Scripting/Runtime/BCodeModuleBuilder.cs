@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using OneScript.Scripting.Compiler;
+using System.Linq;
 
 namespace OneScript.Scripting.Runtime
 {
@@ -91,8 +92,8 @@ namespace OneScript.Scripting.Runtime
             if (SymbolsContext.GetScope(symbol.Context) == SymbolsContext.TopScope)
             {
                 var method = Module.Methods[CurrentMethodIndex];
-                var refIdx = method.LocalRefs.Count;
-                method.LocalRefs.Add(symbol);
+                var refIdx = method.Locals.Count;
+                method.Locals.Add(VariableDef.CreateLocal(symbol.Name));
                 cmdAddress = AddCommand(OperationCode.PushLocal, refIdx);
             }
             else
@@ -187,12 +188,25 @@ namespace OneScript.Scripting.Runtime
             throw new NotImplementedException();
         }
 
-        public IASTMethodNode BeginMethod(string identifier, bool isFunction)
+        public IASTNode BeginMethod(string identifier, bool isFunction)
+        {
+            NewScope();
+
+            var astMethod = new BCodeMethodNode();
+            astMethod.Name = identifier;
+            astMethod.EntryPoint = Module.Code.Count;
+            astMethod.IsFunction = isFunction;
+
+            return astMethod;
+
+        }
+
+        public void SetMethodSignature(IASTNode methodNode, ASTMethodParameter[] parameters, bool isExported)
         {
             throw new NotImplementedException();
         }
 
-        public void EndMethod(IASTMethodNode methodNode)
+        public void EndMethod(IASTNode methodNode)
         {
             throw new NotImplementedException();
         }
@@ -209,6 +223,7 @@ namespace OneScript.Scripting.Runtime
             Module.EntryMethodIndex = index;
             Module.Methods.Add(entryMethod);
         }
+
 
         public void EndModuleBody()
         {
@@ -237,5 +252,49 @@ namespace OneScript.Scripting.Runtime
         #endregion
 
         
+    }
+
+    class BCodeMethodNode : IASTNode
+    {
+        
+        private List<ASTMethodParameter> _params;
+
+        public BCodeMethodNode()
+        {
+            _params = new List<ASTMethodParameter>();
+
+        }
+
+        public int EntryPoint { get; set; }
+
+        public string Name { get; set; }
+        
+        public bool IsFunction { get; set; }
+        
+        public bool IsExported { get; set; }
+        
+        public IList<ASTMethodParameter> Parameters
+        {
+            get
+            {
+                return _params;
+            }
+            set
+            {
+                _params = new List<ASTMethodParameter>(value);
+            }
+        }
+
+        public IASTNode Body
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

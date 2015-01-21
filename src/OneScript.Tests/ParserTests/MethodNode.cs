@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace OneScript.Tests
 {
-    class MethodNode : TestASTNodeBase, IASTMethodNode
+    class MethodNode : TestASTNodeBase, IASTNode
     {
         public CodeBatchNode _body;
         public string _name;

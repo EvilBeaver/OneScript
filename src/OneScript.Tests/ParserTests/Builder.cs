@@ -145,25 +145,23 @@ namespace OneScript.Tests
         }
 
 
-        public IASTMethodNode BeginMethod(string identifier, bool isFunction)
+        public IASTNode BeginMethod(string identifier, bool isFunction)
         {
             var methodNode = new MethodNode(identifier, isFunction);
             return methodNode;
         }
 
-        public void EndMethod(IASTMethodNode methodNode)
+        public void SetMethodSignature(IASTNode methodNode, ASTMethodParameter[] parameters, bool isExported)
+        {
+            var method = methodNode as MethodNode;
+            method._parameters = parameters;
+            method._isExported = isExported;
+
+        }
+
+        public void EndMethod(IASTNode methodNode)
         {
             _methods.Add((MethodNode)methodNode);
-        }
-
-        public void BeginModuleBody()
-        {
-            
-        }
-
-        public void EndModuleBody()
-        {
-
         }
 
         public IASTNode BeginBatch()
