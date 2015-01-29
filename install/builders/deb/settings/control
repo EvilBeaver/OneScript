@@ -1,0 +1,12 @@
+Package: onescript-engine
+Version: $BUILD_NUMBER
+Provides: onescript
+Maintainer: Alexey Lustin <alustin@sivlerbulleters.org>
+Architecture: all
+Section: misc
+Description: 1Script execution endgine.
+ Cross-platform exetion engine.
+ for junior DevOps.
+ who use 1S:Enterprise Platform.
+Depends: cli-mono
+Origin: https://bitbucket.org/EvilBeaver/1script/ 
