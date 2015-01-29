@@ -10,7 +10,7 @@ RUN mkdir -p ~/oscript-deb-core/DEBIAN
 RUN mkdir -p ~/oscript-deb-core/usr/bin
 RUN mkdir -p ~/oscript-deb-core/usr/lib/oscript
 
-ADD ./../../dist/ /workspace/
+ADD ./../../../dist/ /workspace/
 
 ADD ./settings /settings
 
