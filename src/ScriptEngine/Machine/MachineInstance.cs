@@ -459,8 +459,19 @@ namespace ScriptEngine.Machine
                 CurrentDate,
                 Integer,
                 Round,
+                Log,
+                Log10,
+                Sin,
+                Cos,
+                Tan,
+                ASin,
+                ACos,
+                ATan,
+                Exp,
                 Pow,
                 Sqrt,
+                Min,
+                Max,
                 Format,
                 ExceptionInfo,
                 ExceptionDescr,
@@ -705,8 +716,7 @@ namespace ScriptEngine.Machine
 
         private void CallFunc(int arg)
         {
-            MethodCallImpl(arg, true);
-            _currentFrame.DiscardReturnValue = false;
+            _currentFrame.DiscardReturnValue = MethodCallImpl(arg, true);
         }
 
         private void CallProc(int arg)
@@ -807,11 +817,11 @@ namespace ScriptEngine.Machine
                     PushFrame();
                     SetFrame(frame);
 
-                    needsDiscarding = methInfo.IsFunction;
+                    needsDiscarding = methInfo.IsFunction && !asFunc;
                 }
                 else
                 {
-                    needsDiscarding = false;
+                    needsDiscarding = _currentFrame.DiscardReturnValue;
                     CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
                 }
 
@@ -1876,6 +1886,70 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void Log(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Log((double) num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Log10(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Log10((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Sin(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Sin((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Cos(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Cos((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Tan(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Tan((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void ASin(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Asin((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void ACos(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Acos((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void ATan(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Atan((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+        private void Exp(int arg)
+        {
+            var num = _operationStack.Pop().AsNumber();
+            var result = Math.Exp((double)num);
+            _operationStack.Push(ValueFactory.Create((decimal)result));
+            NextInstruction();
+        }
+
         private void Pow(int arg)
         {
             var powPower = (double)_operationStack.Pop().AsNumber();
@@ -1890,6 +1964,39 @@ namespace ScriptEngine.Machine
             var num = (double)_operationStack.Pop().AsNumber();
             var root = Math.Sqrt(num);
             _operationStack.Push(ValueFactory.Create((decimal)root));
+            NextInstruction();
+        }
+
+        private void Min(int argCount)
+        {
+            System.Diagnostics.Debug.Assert(argCount > 0);
+
+            IValue min = _operationStack.Pop();
+            while (--argCount > 0)
+            {
+                var current = _operationStack.Pop();
+                if (current.CompareTo(min) < 0)
+                    min = current;
+            }
+
+            _operationStack.Push(BreakVariableLink(min));
+
+            NextInstruction();
+        }
+
+        private void Max(int argCount)
+        {
+            System.Diagnostics.Debug.Assert(argCount > 0);
+
+            IValue max = _operationStack.Pop();
+            while (--argCount > 0)
+            {
+                var current = _operationStack.Pop();
+                if (current.CompareTo(max) > 0)
+                    max = current;
+            }
+
+            _operationStack.Push(BreakVariableLink(max));
             NextInstruction();
         }
 

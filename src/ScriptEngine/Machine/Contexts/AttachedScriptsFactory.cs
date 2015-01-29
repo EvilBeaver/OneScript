@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -16,7 +17,7 @@ namespace ScriptEngine.Machine.Contexts
             _engine = engine;
         }
 
-        public ModuleHandle AttachByPath(CompilerService compiler, string path, string typeName)
+        public ScriptModuleHandle AttachByPath(CompilerService compiler, string path, string typeName)
         {
             if (!Utils.IsValidIdentifier(typeName))
                 throw RuntimeException.InvalidArgumentValue();
@@ -28,7 +29,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        public ModuleHandle AttachFromString(CompilerService compiler, string text, string typeName)
+        public ScriptModuleHandle AttachFromString(CompilerService compiler, string text, string typeName)
         {
             ThrowIfTypeExist(typeName);
 
@@ -45,7 +46,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private ModuleHandle LoadAndRegister(Type type, CompilerService compiler, string typeName, Environment.ICodeSource code)
+        private ScriptModuleHandle LoadAndRegister(Type type, CompilerService compiler, string typeName, Environment.ICodeSource code)
         {
             compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
 

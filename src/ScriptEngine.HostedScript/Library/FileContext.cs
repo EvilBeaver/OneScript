@@ -15,10 +15,20 @@ namespace ScriptEngine.HostedScript.Library
 
         public FileContext(string name)
         {
+            RefreshEntry(name);
+        }
+
+        private void RefreshEntry(string name)
+        {
             if (Directory.Exists(name))
                 _fsEntry = new DirectoryInfo(name);
             else
                 _fsEntry = new FileInfo(name);
+        }
+
+        private void RefreshEntry()
+        {
+            RefreshEntry(_fsEntry.FullName);
         }
 
         [ContextProperty("Имя","Name")]
@@ -82,7 +92,8 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Существует","Exists")]
         public bool Exists()
         {
-            _fsEntry.Refresh();
+            RefreshEntry();
+
             return _fsEntry.Exists;
         }
 
@@ -142,12 +153,14 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЭтоКаталог", "IsDirectory")]
         public bool IsDirectory()
         {
+            RefreshEntry();
             return _fsEntry is DirectoryInfo;
         }
 
         [ContextMethod("ЭтоФайл", "IsFile")]
         public bool IsFile()
         {
+            RefreshEntry();
             return _fsEntry is FileInfo;
         }
 

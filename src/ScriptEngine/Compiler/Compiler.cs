@@ -1327,9 +1327,17 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(Token.OpenPar);
             }
 
-            var parameters = BuiltinFunctions.ParametersInfo(funcId);
             var passedArgs = PushFactArguments();
-            CheckFactArguments(parameters, passedArgs);
+            if (funcId == OperationCode.Min || funcId == OperationCode.Max)
+            {
+                if (passedArgs.Length == 0)
+                    throw CompilerException.TooLittleArgumentsPassed();
+            }
+            else
+            {
+                var parameters = BuiltinFunctions.ParametersInfo(funcId);
+                CheckFactArguments(parameters, passedArgs);
+            }
 
             AddCommand(funcId, passedArgs.Length);
 
@@ -1453,10 +1461,32 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Integer;
                 case Token.Round:
                     return OperationCode.Round;
+                case Token.Log:
+                    return OperationCode.Log;
+                case Token.Log10:
+                    return OperationCode.Log10;
+                case Token.Sin:
+                    return OperationCode.Sin;
+                case Token.Cos:
+                    return OperationCode.Cos;
+                case Token.Tan:
+                    return OperationCode.Tan;
+                case Token.ASin:
+                    return OperationCode.ASin;
+                case Token.ACos:
+                    return OperationCode.ACos;
+                case Token.ATan:
+                    return OperationCode.ATan;
+                case Token.Exp:
+                    return OperationCode.Exp;
                 case Token.Pow:
                     return OperationCode.Pow;
                 case Token.Sqrt:
                     return OperationCode.Sqrt;
+                case Token.Min:
+                    return OperationCode.Min;
+                case Token.Max:
+                    return OperationCode.Max;
                 case Token.Format:
                     return OperationCode.Format;
                 case Token.ExceptionInfo:

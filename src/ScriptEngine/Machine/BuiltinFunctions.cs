@@ -77,8 +77,18 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.DayOfWeek, SingleDefaultParamInfo);
             map.Add(OperationCode.AddMonth, TwoDefaultParamsInfo);
             map.Add(OperationCode.CurrentDate, NoParamsInfo);
+            // number
             map.Add(OperationCode.Integer, SingleDefaultParamInfo);
             map.Add(OperationCode.Round, RoundParamsInfo);
+            map.Add(OperationCode.Log, SingleDefaultParamInfo);
+            map.Add(OperationCode.Log10, SingleDefaultParamInfo);
+            map.Add(OperationCode.Sin, SingleDefaultParamInfo);
+            map.Add(OperationCode.Cos, SingleDefaultParamInfo);
+            map.Add(OperationCode.Tan, SingleDefaultParamInfo);
+            map.Add(OperationCode.ASin, SingleDefaultParamInfo);
+            map.Add(OperationCode.ACos, SingleDefaultParamInfo);
+            map.Add(OperationCode.ATan, SingleDefaultParamInfo);
+            map.Add(OperationCode.Exp, SingleDefaultParamInfo);
             map.Add(OperationCode.Pow, TwoDefaultParamsInfo);
             map.Add(OperationCode.Sqrt, SingleDefaultParamInfo);
             map.Add(OperationCode.Format, TwoDefaultParamsInfo);
