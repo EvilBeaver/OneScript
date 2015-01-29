@@ -1,8 +1,15 @@
-FROM ubuntu
+FROM ubuntu:latest
 
 MAINTAINER alustin@silverbulleters.org
 
-RUN apt-get install dpkg debconf debhelper lintian unzip md5deep fakeroot
+RUN apt-get update && apt-get install -y \
+	dpkg\
+	debconf\
+	debhelper\
+	lintian\
+	unzip\
+	md5deep\
+	fakeroot
 
 RUN mkdir ~/oscript-deb-core
 
