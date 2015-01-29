@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-docker build -t ubuntu/dpkg ./builders/deb/
+docker build -t ubuntu/dpkg ${PWD}/builders/deb/
 
 
 docker run ubuntu/dpkg lintian /workspace/oscript-deb-core.deb
