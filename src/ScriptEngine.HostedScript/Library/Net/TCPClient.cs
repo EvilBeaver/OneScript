@@ -103,6 +103,13 @@ namespace ScriptEngine.HostedScript.Library.Net
             set { _client.GetStream().WriteTimeout = value; }
         }
 
+        [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
+        public int WriteTimeout
+        {
+            get { return _client.GetStream().ReadTimeout; }
+            set { _client.GetStream().ReadTimeout = value; }
+        }
+
         private static Encoding GetEncodingByName(string encoding)
         {
             Encoding enc;
