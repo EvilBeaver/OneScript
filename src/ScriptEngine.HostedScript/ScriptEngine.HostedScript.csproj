@@ -74,7 +74,7 @@
     <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\Net\TCPClient.cs" />
     <Compile Include="Library\Net\TCPServer.cs" />
-    <Compile Include="Library\ProcessStartupContext.cs" />
+    <Compile Include="Library\ProcessContext.cs" />
     <Compile Include="Library\StdTextReadStream.cs" />
     <Compile Include="Library\SystemGlobalContext.cs" />
     <Compile Include="Library\GuidWrapper.cs" />

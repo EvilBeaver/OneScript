@@ -217,14 +217,23 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="redirectOutput">Перехватывать стандартные потоки stdout и stderr</param>
         /// <param name="redirectInput">Перехватывать стандартный поток stdin</param>
         [ContextMethod("СоздатьПроцесс", "CreateProcess")]
-        public void RunApp(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false)
+        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false)
         {
             var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
+            sInfo.UseShellExecute = false;
+            if (redirectInput)
+                sInfo.RedirectStandardInput = true;
+
+            if(redirectOutput)
+            {
+                sInfo.RedirectStandardOutput = true;
+                sInfo.RedirectStandardError = true;
+            }
 
             var p = new System.Diagnostics.Process();
             p.StartInfo = sInfo;
-            
 
+            return new ProcessContext(p);
 
         }
 
