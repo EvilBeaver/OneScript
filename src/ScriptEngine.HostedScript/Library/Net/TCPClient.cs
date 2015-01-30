@@ -104,7 +104,7 @@ namespace ScriptEngine.HostedScript.Library.Net
         }
 
         [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
-        public int WriteTimeout
+        public int ReadTimeout
         {
             get { return _client.GetStream().ReadTimeout; }
             set { _client.GetStream().ReadTimeout = value; }
