@@ -5,7 +5,7 @@ Maintainer: Alexey Lustin <alustin@sivlerbulleters.org>
 Architecture: all
 Section: misc
 Description: 1Script execution endgine.
- Cross-platform exetion engine.
+ Cross-platform execution engine.
  for junior DevOps.
  who use 1S:Enterprise Platform.
 Depends: cli-mono
