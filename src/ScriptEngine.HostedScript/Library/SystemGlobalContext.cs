@@ -237,6 +237,15 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
+        [ContextMethod("КаталогПрограммы","ProgramDirectory")]
+        public string ProgramDirectory()
+        {
+            var asm = System.Reflection.Assembly.GetExecutingAssembly();
+            var filename = asm.Location;
+
+            return System.IO.Path.GetDirectoryName(filename);
+        }
+
         private static System.Diagnostics.ProcessStartInfo PrepareProcessStartupInfo(string cmdLine, string currentDir)
         {
             var sInfo = new System.Diagnostics.ProcessStartInfo();
