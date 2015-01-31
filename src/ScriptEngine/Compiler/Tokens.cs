@@ -132,6 +132,7 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("кодсимвола", Token.ChrCode);
             _stringToToken.Add("пустаястрока", Token.EmptyStr);
             _stringToToken.Add("стрзаменить", Token.StrReplace);
+            _stringToToken.Add("стрчисловхождений", Token.StrEntryCount);
 
             _stringToToken.Add("год", Token.Year);
             _stringToToken.Add("месяц", Token.Month);
@@ -329,6 +330,7 @@ namespace ScriptEngine.Compiler
         ChrCode,
         EmptyStr,
         StrReplace,
+        StrEntryCount,
         Year,
         Month,
         Day,

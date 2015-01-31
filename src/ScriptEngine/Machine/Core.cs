@@ -79,6 +79,7 @@ namespace ScriptEngine.Machine
         ChrCode,
         EmptyStr,
         StrReplace,
+        StrEntryCount,
         Year,
         Month,
         Day,

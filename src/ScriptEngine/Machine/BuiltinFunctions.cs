@@ -53,6 +53,7 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.ChrCode, SingleDefaultParamInfo);
             map.Add(OperationCode.EmptyStr, SingleDefaultParamInfo);
             map.Add(OperationCode.StrReplace, StrReplaceParamInfo);
+            map.Add(OperationCode.StrEntryCount, TwoDefaultParamsInfo);
             // date
             map.Add(OperationCode.Year, SingleDefaultParamInfo);
             map.Add(OperationCode.Month, SingleDefaultParamInfo);

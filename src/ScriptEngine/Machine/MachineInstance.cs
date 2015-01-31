@@ -434,6 +434,7 @@ namespace ScriptEngine.Machine
                 ChrCode,
                 EmptyStr,
                 StrReplace,
+                StrEntryCount,
                 Year,
                 Month,
                 Day,
@@ -1610,6 +1611,28 @@ namespace ScriptEngine.Machine
 
             var result = sourceString.Replace(searchVal, newVal);
             _operationStack.Push(ValueFactory.Create(result));
+            NextInstruction();
+        }
+
+        private void StrEntryCount(int arg)
+        {
+            var what = _operationStack.Pop().AsString();
+            var where = _operationStack.Pop().AsString();
+
+            var pos = where.IndexOf(what);
+            var entryCount = 0;
+            while(pos >= 0)
+            {
+                entryCount++;
+                var nextIndex = pos + what.Length;
+                if (nextIndex >= where.Length)
+                    break;
+
+                pos = where.IndexOf(what, nextIndex);
+            }
+
+            _operationStack.Push(ValueFactory.Create(entryCount));
+
             NextInstruction();
         }
 
