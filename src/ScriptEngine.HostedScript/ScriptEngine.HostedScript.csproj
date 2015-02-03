@@ -76,6 +76,7 @@
     <Compile Include="Library\Net\TCPServer.cs" />
     <Compile Include="Library\ProcessContext.cs" />
     <Compile Include="Library\StdTextReadStream.cs" />
+    <Compile Include="Library\StdTextWriteStream.cs" />
     <Compile Include="Library\SystemGlobalContext.cs" />
     <Compile Include="Library\GuidWrapper.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />

@@ -15,13 +15,14 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Процесс", "Process")]
     public class ProcessContext : AutoContext<ProcessContext>, IDisposable
     {
-        private System.Diagnostics.Process p;
+        private System.Diagnostics.Process _p;
         private StdTextReadStream _stdOutContext;
         private StdTextReadStream _stdErrContext;
+        private StdTextWriteStream _stdInContext;
 
         public ProcessContext(System.Diagnostics.Process p)
         {
-            this.p = p;
+            this._p = p;
         }
 
         [ContextProperty("ПотокВывода", "StdOut")]
@@ -30,7 +31,7 @@ namespace ScriptEngine.HostedScript.Library
             get
             {
                 if(_stdOutContext == null)
-                    _stdOutContext = new StdTextReadStream(p.StandardOutput);
+                    _stdOutContext = new StdTextReadStream(_p.StandardOutput);
                 return _stdOutContext;
             }
         }
@@ -41,15 +42,26 @@ namespace ScriptEngine.HostedScript.Library
             get
             {
                 if (_stdErrContext == null)
-                    _stdErrContext = new StdTextReadStream(p.StandardError);
+                    _stdErrContext = new StdTextReadStream(_p.StandardError);
                 return _stdErrContext;
+            }
+        }
+
+        [ContextProperty("ПотокВвода", "StdIn")]
+        public StdTextWriteStream StdIn
+        {
+            get
+            {
+                if (_stdInContext == null)
+                    _stdInContext = new StdTextWriteStream(_p.StandardInput);
+                return _stdInContext;
             }
         }
 
         [ContextMethod("Запустить", "Start")]
         public void Start()
         {
-            p.Start();
+            _p.Start();
         }
 
         [ContextProperty("Завершен","HasExited")]
@@ -57,7 +69,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return p.HasExited;
+                return _p.HasExited;
             }
         }
 
@@ -66,14 +78,29 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return p.ExitCode;
+                return _p.ExitCode;
             }
         }
 
         [ContextMethod("ОжидатьЗавершения", "WaitForExit")]
         public void WaitForExit()
         {
-            p.WaitForExit();
+            _p.WaitForExit();
+        }
+
+        [ContextProperty("Идентификатор", "ProcessId")]
+        public int ProcessId
+        {
+            get
+            {
+                return _p.Id;
+            }
+        }
+
+        [ContextMethod("Завершить","Stop")]
+        public void Stop()
+        {
+            _p.Kill();
         }
 
         public void Dispose()
@@ -90,7 +117,13 @@ namespace ScriptEngine.HostedScript.Library
                 _stdErrContext = null;
             }
 
-            p.Dispose();
+            if(_stdInContext != null)
+            {
+                _stdInContext.Dispose();
+                _stdInContext = null;
+            }
+
+            _p.Dispose();
         }
     }
 }

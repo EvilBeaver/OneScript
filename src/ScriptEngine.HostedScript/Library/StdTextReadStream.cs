@@ -39,6 +39,12 @@ namespace ScriptEngine.HostedScript.Library
             return _reader.ReadLine();
         }
 
+        [ContextMethod("Закрыть", "Close")]
+        public void Close()
+        {
+            _reader.Close();
+        }
+
         public void Dispose()
         {
             _reader.Dispose();

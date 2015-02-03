@@ -237,6 +237,43 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
+        /// <summary>
+        /// Выполняет поиск процесса по PID среди запущенных в операционной системе
+        /// </summary>
+        /// <param name="PID">Идентификатор процесса</param>
+        /// <returns>Процесс. Если не найден - Неопределено</returns>
+        [ContextMethod("НайтиПроцессПоИдентификатору", "FindProcessById")]
+        public IValue FindProcessById(int PID)
+        {
+            System.Diagnostics.Process process;
+            try
+            {
+                process = System.Diagnostics.Process.GetProcessById(PID);
+            }
+            catch (ArgumentException)
+            {
+                return ValueFactory.Create();
+            }
+
+            return ValueFactory.Create(new ProcessContext(process));
+
+        }
+
+        /// <summary>
+        /// Выполняет поиск процессов с определенным именем
+        /// </summary>
+        /// <param name="name">Имя процесса</param>
+        /// <returns>Массив объектов Процесс.</returns>
+        [ContextMethod("НайтиПроцессыПоИмени", "FindProcessesByName")]
+        public IValue FindProcessesByName(string name)
+        {
+            var processes = System.Diagnostics.Process.GetProcessesByName(name);
+            var contextWrappers = processes.Select(x => new ProcessContext(x));
+
+            return new ArrayImpl(contextWrappers);
+
+        }
+
         [ContextMethod("КаталогПрограммы","ProgramDirectory")]
         public string ProgramDirectory()
         {
