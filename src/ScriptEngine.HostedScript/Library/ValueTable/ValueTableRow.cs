@@ -168,5 +168,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
             return _methods.FindMethod(name);
         }
+
+        protected override IEnumerable<KeyValuePair<string, int>> GetProperties()
+        {
+            return Owner().Columns
+                .Select(x=>
+                    {
+                        var column = x as ValueTableColumn;
+                        return new KeyValuePair<string, int>(column.Name, column.ID);
+                    });
+        }
     }
 }

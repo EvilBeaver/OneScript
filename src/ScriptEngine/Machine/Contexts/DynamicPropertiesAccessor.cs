@@ -34,7 +34,7 @@ namespace ScriptEngine.Machine.Contexts
             _propHolder.ClearProperties();
         }
 
-        protected IEnumerable<KeyValuePair<string, int>> GetProperties()
+        protected virtual IEnumerable<KeyValuePair<string, int>> GetProperties()
         {
             return _propHolder.GetProperties();
         }
