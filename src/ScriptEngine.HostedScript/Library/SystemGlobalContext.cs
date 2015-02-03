@@ -194,35 +194,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗапуститьПриложение", "RunApp")]
         public void RunApp(string cmdLine, string currentDir = null, bool wait = false, [ByRef] IVariable retCode = null)
         {
-            var sInfo = new System.Diagnostics.ProcessStartInfo();
-
-            var enumArgs = Utils.SplitCommandLine(cmdLine);
-
-            bool fNameRead = false;
-            StringBuilder argsBuilder = new StringBuilder();
-
-            foreach (var item in enumArgs)
-            {
-                if(!fNameRead)
-                {
-                    sInfo.FileName = item;
-                    fNameRead = true;
-                }
-                else
-                {
-                    argsBuilder.Append(' ');
-                    argsBuilder.Append(item);
-                }
-            }
-
-            if(argsBuilder.Length > 0)
-            {
-                argsBuilder.Remove(0, 1);
-            }
-
-            sInfo.Arguments = argsBuilder.ToString();
-            if(currentDir != null)
-                sInfo.WorkingDirectory = currentDir;
+            var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
 
             var p = new System.Diagnostics.Process();
             p.StartInfo = sInfo;
@@ -235,6 +207,114 @@ namespace ScriptEngine.HostedScript.Library
                     retCode.Value = ValueFactory.Create(p.ExitCode);
             }
 
+        }
+
+        /// <summary>
+        /// Создает процесс, которым можно манипулировать из скрипта
+        /// </summary>
+        /// <param name="cmdLine">Командная строка запуска</param>
+        /// <param name="currentDir">Текущая директория запускаемого процесса (необязательно)</param>
+        /// <param name="redirectOutput">Перехватывать стандартные потоки stdout и stderr</param>
+        /// <param name="redirectInput">Перехватывать стандартный поток stdin</param>
+        [ContextMethod("СоздатьПроцесс", "CreateProcess")]
+        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false)
+        {
+            var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
+            sInfo.UseShellExecute = false;
+            if (redirectInput)
+                sInfo.RedirectStandardInput = true;
+
+            if(redirectOutput)
+            {
+                sInfo.RedirectStandardOutput = true;
+                sInfo.RedirectStandardError = true;
+            }
+
+            var p = new System.Diagnostics.Process();
+            p.StartInfo = sInfo;
+
+            return new ProcessContext(p);
+
+        }
+
+        /// <summary>
+        /// Выполняет поиск процесса по PID среди запущенных в операционной системе
+        /// </summary>
+        /// <param name="PID">Идентификатор процесса</param>
+        /// <returns>Процесс. Если не найден - Неопределено</returns>
+        [ContextMethod("НайтиПроцессПоИдентификатору", "FindProcessById")]
+        public IValue FindProcessById(int PID)
+        {
+            System.Diagnostics.Process process;
+            try
+            {
+                process = System.Diagnostics.Process.GetProcessById(PID);
+            }
+            catch (ArgumentException)
+            {
+                return ValueFactory.Create();
+            }
+
+            return ValueFactory.Create(new ProcessContext(process));
+
+        }
+
+        /// <summary>
+        /// Выполняет поиск процессов с определенным именем
+        /// </summary>
+        /// <param name="name">Имя процесса</param>
+        /// <returns>Массив объектов Процесс.</returns>
+        [ContextMethod("НайтиПроцессыПоИмени", "FindProcessesByName")]
+        public IValue FindProcessesByName(string name)
+        {
+            var processes = System.Diagnostics.Process.GetProcessesByName(name);
+            var contextWrappers = processes.Select(x => new ProcessContext(x));
+
+            return new ArrayImpl(contextWrappers);
+
+        }
+
+        [ContextMethod("КаталогПрограммы","ProgramDirectory")]
+        public string ProgramDirectory()
+        {
+            var asm = System.Reflection.Assembly.GetExecutingAssembly();
+            var filename = asm.Location;
+
+            return System.IO.Path.GetDirectoryName(filename);
+        }
+
+        private static System.Diagnostics.ProcessStartInfo PrepareProcessStartupInfo(string cmdLine, string currentDir)
+        {
+            var sInfo = new System.Diagnostics.ProcessStartInfo();
+
+            var enumArgs = Utils.SplitCommandLine(cmdLine);
+
+            bool fNameRead = false;
+            StringBuilder argsBuilder = new StringBuilder();
+
+            foreach (var item in enumArgs)
+            {
+                if (!fNameRead)
+                {
+                    sInfo.FileName = item;
+                    fNameRead = true;
+                }
+                else
+                {
+                    argsBuilder.Append(' ');
+                    argsBuilder.Append(item);
+                }
+            }
+
+            if (argsBuilder.Length > 0)
+            {
+                argsBuilder.Remove(0, 1);
+            }
+
+            sInfo.Arguments = argsBuilder.ToString();
+            if (currentDir != null)
+                sInfo.WorkingDirectory = currentDir;
+            return sInfo;
         }
 
         /// <summary>
