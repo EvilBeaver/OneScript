@@ -50,6 +50,9 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -97,6 +100,10 @@
     <Compile Include="Library\ValueTable\ValueTableColumnCollection.cs" />
     <Compile Include="Library\ValueTable\ValueTableRow.cs" />
     <Compile Include="Library\Xml\XmlWriterImpl.cs" />
+    <Compile Include="Library\Zip\ZipFileEntriesCollection.cs" />
+    <Compile Include="Library\Zip\ZipFileEntryContext.cs" />
+    <Compile Include="Library\Zip\ZipReader.cs" />
+    <Compile Include="Library\Zip\ZipRestoreFilePathsModeEnum.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\StructureImpl.cs" />
@@ -107,7 +114,9 @@
       <Name>ScriptEngine</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

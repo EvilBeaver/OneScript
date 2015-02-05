@@ -29,6 +29,8 @@ namespace ScriptEngine.Machine.Contexts
             _nameIndexes.Add(name, id);
             _values.Add(val);
             
+            val.ValuePresentation = name;
+            
         }
 
         public TypeDescriptor ValuesType

@@ -76,3 +76,4 @@ src/ScriptEngine.Snegopat/Snegopat_i.c
 /dist
 /install/build
 *.os.xml
+src/packages/
