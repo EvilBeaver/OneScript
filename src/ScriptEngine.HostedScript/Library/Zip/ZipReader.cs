@@ -9,9 +9,10 @@ using System.Text;
 namespace ScriptEngine.HostedScript.Library.Zip
 {
     [ContextClass("ЧтениеZipФайла", "ZipFileReader")]
-    public class ZipReader : AutoContext<ZipReader>
+    public class ZipReader : AutoContext<ZipReader>, IDisposable
     {
         ZipFile _zip;
+        ZipFileEntriesCollection _entriesWrapper;
 
         public ZipReader(string filename)
         {
@@ -24,6 +25,33 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
             _zip.ExtractExistingFile = ExtractExistingFileAction.OverwriteSilently;
             _zip.ExtractAll(where);
+        }
+
+        [ContextMethod("Извлечь", "Extract")]
+        public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null)
+        {
+            var realEntry = entry.GetZipEntry();
+            _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
+            realEntry.Password = password;
+            realEntry.Extract(destination);
+        }
+
+        [ContextMethod("Закрыть", "Close")]
+        public void Close()
+        {
+            Dispose();
+        }
+
+        [ContextProperty("Элементы", "Elements")]
+        public ZipFileEntriesCollection Elements
+        {
+            get
+            {
+                if (_entriesWrapper == null)
+                    _entriesWrapper = new ZipFileEntriesCollection(_zip.Entries);
+
+                return _entriesWrapper;
+            }
         }
 
         private static bool FlattenPathsOnExtraction(SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths)
@@ -42,6 +70,12 @@ namespace ScriptEngine.HostedScript.Library.Zip
         public static ZipReader ConstructByName(IValue filename)
         {
             return new ZipReader(filename.AsString());
+        }
+
+        public void Dispose()
+        {
+            _zip.Dispose();
+            _entriesWrapper = null;
         }
     }
 }

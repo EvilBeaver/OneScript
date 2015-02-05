@@ -100,6 +100,8 @@
     <Compile Include="Library\ValueTable\ValueTableColumnCollection.cs" />
     <Compile Include="Library\ValueTable\ValueTableRow.cs" />
     <Compile Include="Library\Xml\XmlWriterImpl.cs" />
+    <Compile Include="Library\Zip\ZipFileEntriesCollection.cs" />
+    <Compile Include="Library\Zip\ZipFileEntryContext.cs" />
     <Compile Include="Library\Zip\ZipReader.cs" />
     <Compile Include="Library\Zip\ZipRestoreFilePathsModeEnum.cs" />
     <Compile Include="Process.cs" />
