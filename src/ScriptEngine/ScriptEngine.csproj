@@ -87,6 +87,7 @@
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
     <Compile Include="Environment\ModuleInformation.cs" />
+    <Compile Include="Machine\Contexts\ContextClassAttribute.cs" />
     <Compile Include="Machine\Contexts\AttachedScriptsFactory.cs" />
     <Compile Include="Machine\Contexts\EnumerationContext.cs" />
     <Compile Include="Machine\Contexts\EnumerationValue.cs" />
