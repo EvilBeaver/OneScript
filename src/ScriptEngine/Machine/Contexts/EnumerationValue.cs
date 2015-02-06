@@ -90,7 +90,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual bool Equals(IValue other)
         {
-            return other == this;
+            return other.GetRawValue() == this;
         }
     }
 }

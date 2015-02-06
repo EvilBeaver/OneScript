@@ -37,13 +37,13 @@ namespace ScriptEngine.HostedScript.Library.Zip
         public static ZipRestoreFilePathsModeEnum CreateInstance()
         {
             ZipRestoreFilePathsModeEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеРежимВосстановленияПутейФайловZIPXML", typeof(ZipRestoreFilePathsModeEnum));
+            var type = TypeManager.RegisterType("ПеречислениеРежимВосстановленияПутейФайловZIP", typeof(ZipRestoreFilePathsModeEnum));
             var enumValueType = TypeManager.RegisterType("РежимВосстановленияПутейФайловZIP", typeof(SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>));
 
             instance = new ZipRestoreFilePathsModeEnum(type, enumValueType);
 
-            instance.AddValue(RESTORE_PATHS_NAME, new SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>(instance, 0));
-            instance.AddValue(DONT_RESTORE_PATHS_NAME, new SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>(instance, 1));
+            instance.AddValue(RESTORE_PATHS_NAME, new SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>(instance));
+            instance.AddValue(DONT_RESTORE_PATHS_NAME, new SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>(instance));
 
             return instance;
         }
