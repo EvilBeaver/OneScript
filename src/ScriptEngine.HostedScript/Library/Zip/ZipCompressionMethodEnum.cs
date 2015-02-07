@@ -10,22 +10,45 @@ namespace ScriptEngine.HostedScript.Library.Zip
     [SystemEnum("МетодСжатияZIP", "ZIPCompressionMethod")]
     public class ZipCompressionMethodEnum : EnumerationContext
     {
+        private const string EV_COPY_NAME = "Копирование";
+        private const string EV_DEFLATE_NAME = "Сжатие";
+
         private ZipCompressionMethodEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
         }
         
+        [EnumValue(EV_COPY_NAME)]
+        public EnumerationValue Copy
+        {
+            get
+            {
+                return this[EV_COPY_NAME];
+            }
+        }
+
+        [EnumValue(EV_DEFLATE_NAME)]
+        public EnumerationValue Deflate
+        {
+            get
+            {
+                return this[EV_DEFLATE_NAME];
+            }
+        }
+
         public static ZipCompressionMethodEnum CreateInstance()
         {
             ZipCompressionMethodEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеМетодСжатияZIP", typeof(ZipStorePathModeEnum));
-            var enumValueType = TypeManager.RegisterType("МетодСжатияZIP", typeof(SelfAwareEnumValue<ZipStorePathModeEnum>));
 
-            instance = new ZipCompressionMethodEnum(type, enumValueType);
+            TypeDescriptor enumType;
+            TypeDescriptor enumValType;
 
-            instance.AddValue("Копирование", new SelfAwareEnumValue<ZipCompressionMethodEnum>(instance));
-            instance.AddValue("Сжатие", new SelfAwareEnumValue<ZipCompressionMethodEnum>(instance));
-            
+            EnumContextHelper.RegisterEnumType<ZipCompressionMethodEnum>(out enumType, out enumValType);
+
+            instance = new ZipCompressionMethodEnum(enumType, enumValType);
+
+            EnumContextHelper.RegisterValues<ZipCompressionMethodEnum>(instance);
+
             return instance;
         }
     }

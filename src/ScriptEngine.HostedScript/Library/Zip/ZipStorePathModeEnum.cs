@@ -20,41 +20,45 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         }
 
-        public SelfAwareEnumValue<ZipStorePathModeEnum> DontStorePath
+        [EnumValue(DONT_SAVE)]
+        public EnumerationValue DontStorePath
         {
             get
             {
-                return (SelfAwareEnumValue<ZipStorePathModeEnum>)this[DONT_SAVE];
+                return this[DONT_SAVE];
             }
         }
 
-        public SelfAwareEnumValue<ZipStorePathModeEnum> StoreRelativePath
+        [EnumValue(SAVE_RELATIVE)]
+        public EnumerationValue StoreRelativePath
         {
             get
             {
-                return (SelfAwareEnumValue<ZipStorePathModeEnum>)this[SAVE_RELATIVE];
+                return this[SAVE_RELATIVE];
             }
         }
 
-        public SelfAwareEnumValue<ZipStorePathModeEnum> StoreFullPath
+        [EnumValue(SAVE_FULL)]
+        public EnumerationValue StoreFullPath
         {
             get
             {
-                return (SelfAwareEnumValue<ZipStorePathModeEnum>)this[SAVE_FULL];
+                return this[SAVE_FULL];
             }
         }
 
         public static ZipStorePathModeEnum CreateInstance()
         {
             ZipStorePathModeEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеРежимСохраненияПутейZIP", typeof(ZipStorePathModeEnum));
-            var enumValueType = TypeManager.RegisterType("РежимСохраненияПутейZIP", typeof(SelfAwareEnumValue<ZipStorePathModeEnum>));
 
-            instance = new ZipStorePathModeEnum(type, enumValueType);
+            TypeDescriptor enumType;
+            TypeDescriptor enumValType;
 
-            instance.AddValue(DONT_SAVE, new SelfAwareEnumValue<ZipStorePathModeEnum>(instance));
-            instance.AddValue(SAVE_RELATIVE, new SelfAwareEnumValue<ZipStorePathModeEnum>(instance));
-            instance.AddValue(SAVE_FULL, new SelfAwareEnumValue<ZipStorePathModeEnum>(instance));
+            EnumContextHelper.RegisterEnumType<ZipStorePathModeEnum>(out enumType, out enumValType);
+
+            instance = new ZipStorePathModeEnum(enumType, enumValType);
+
+            EnumContextHelper.RegisterValues<ZipStorePathModeEnum>(instance);
 
             return instance;
         }
