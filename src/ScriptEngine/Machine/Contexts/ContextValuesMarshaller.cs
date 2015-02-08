@@ -2,7 +2,7 @@
 
 namespace ScriptEngine.Machine.Contexts
 {
-    static class ContextValuesMarshaller
+    public static class ContextValuesMarshaller
     {
         public static T ConvertParam<T>(IValue value)
         {

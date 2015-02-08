@@ -100,7 +100,9 @@
     <Compile Include="Library\ValueTable\ValueTableColumnCollection.cs" />
     <Compile Include="Library\ValueTable\ValueTableRow.cs" />
     <Compile Include="Library\Xml\XmlWriterImpl.cs" />
+    <Compile Include="Library\Zip\ZipCompressionLevelEnum.cs" />
     <Compile Include="Library\Zip\ZipCompressionMethodEnum.cs" />
+    <Compile Include="Library\Zip\ZipEncryptionMethodEnum.cs" />
     <Compile Include="Library\Zip\ZipFileEntriesCollection.cs" />
     <Compile Include="Library\Zip\ZipFileEntryContext.cs" />
     <Compile Include="Library\Zip\ZipReader.cs" />
