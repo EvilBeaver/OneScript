@@ -46,7 +46,14 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                valueObj = default(T);
+                try
+                {
+                    valueObj = CastToCLRObject<T>(value);
+                }
+                catch (InvalidCastException)
+                {
+                    throw RuntimeException.InvalidArgumentType();
+                }
             }
 
             try
@@ -139,5 +146,22 @@ namespace ScriptEngine.Machine.Contexts
 			
 			return result;
 		}
+
+        public static T CastToCLRObject<T>(IValue val)
+        {
+            var rawValue = val.GetRawValue();
+            object objectRef;
+            if (rawValue.DataType == DataType.GenericValue)
+            {
+                objectRef = rawValue;
+            }
+            else
+            {
+                objectRef = ConvertToCLRObject(rawValue);
+            }
+
+            return (T)objectRef;
+
+        }
     }
 }

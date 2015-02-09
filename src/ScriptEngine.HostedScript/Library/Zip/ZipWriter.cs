@@ -38,6 +38,12 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip.Encryption = MakeZipEncryption(encryptionMethod);
         }
 
+        [ContextMethod("Добавить", "Add")]
+        public void Add(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode, IValue recurseSubdirectories)
+        {
+            throw new NotImplementedException();
+        }
+
         [ContextMethod("Записать", "Write")]
         public void Write()
         {

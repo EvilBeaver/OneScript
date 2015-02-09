@@ -108,6 +108,7 @@
     <Compile Include="Library\Zip\ZipReader.cs" />
     <Compile Include="Library\Zip\ZipRestoreFilePathsModeEnum.cs" />
     <Compile Include="Library\Zip\ZipStorePathModeEnum.cs" />
+    <Compile Include="Library\Zip\ZIPSubDirProcessingModeEnum.cs" />
     <Compile Include="Library\Zip\ZipWriter.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
