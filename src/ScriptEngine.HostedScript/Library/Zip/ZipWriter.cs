@@ -35,13 +35,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip.Comment = comment;
             _zip.CompressionMethod = MakeZipCompressionMethod(compressionMethod);
             _zip.CompressionLevel = MakeZipCompressionLevel(compressionLevel);
-            _zip.Encryption = MakeZipEncryption(encryptionMethod);
-        }
-
-        [ContextMethod("Добавить", "Add")]
-        public void Add(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode, IValue recurseSubdirectories)
-        {
-            throw new NotImplementedException();
+            // Zlib падает с NullReferenceException, если задать шифрование
+            //_zip.Encryption = MakeZipEncryption(encryptionMethod);
         }
 
         [ContextMethod("Записать", "Write")]
@@ -52,6 +47,127 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip.Save(_filename);
             _zip.Dispose();
             _zip = null;
+        }
+
+        [ContextMethod("Добавить", "Add")]
+        public void Add(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode = null, SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories = null)
+        {
+            CheckIfOpened();
+
+            var pathIsMasked = file.IndexOfAny(new[] { '*', '?' }) >= 0;
+
+            var recursiveFlag = GetRecursiveFlag(recurseSubdirectories);
+            var searchOption = recursiveFlag ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
+
+            if(pathIsMasked)
+            {
+                AddFilesByMask(file, searchOption, storePathMode);
+            }
+            else if (System.IO.Directory.Exists(file))
+            {
+                AddDirectory(file, searchOption, storePathMode);
+            }
+            else if (System.IO.File.Exists(file))
+            {
+                AddSingleFile(file, storePathMode);
+            }
+            
+        }
+
+        private void AddDirectory(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        {
+            IEnumerable<string> filesToAdd;
+            string path = file;
+            string allFilesMask;
+
+            if (System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
+                allFilesMask = "*";
+            else
+                allFilesMask = "*.*";
+
+            filesToAdd = System.IO.Directory.EnumerateFiles(file, allFilesMask, searchOption);
+            AddEnumeratedFiles(filesToAdd, path, storePathMode);
+        }
+
+        private void AddSingleFile(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        {
+            _zip.AddFile(file, "");
+        }
+
+        private void AddFilesByMask(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        {
+            // надо разделить на каталог и маску
+            var pathEnd = file.LastIndexOfAny(new[] { '\\', '/' });
+            string path;
+            string mask;
+            IEnumerable<string> filesToAdd;
+
+            if (pathEnd > 1)
+            {
+                path = file.Substring(0, pathEnd);
+                var maskLen = file.Length - pathEnd - 1;
+                if (maskLen > 0)
+                    mask = file.Substring(pathEnd + 1, maskLen);
+                else
+                {
+                    // маска была не в конце пути
+                    // 1С такое откидывает
+                    return;
+                }
+
+                // несуществующие пути или пути к файлам, вместо папок 1С откидывает
+                if (!System.IO.Directory.Exists(path))
+                    return;
+            }
+            else if (pathEnd == 0)
+            {
+                path = "";
+                mask = file.Substring(1);
+            }
+            else
+            {
+                path = "";
+                mask = file;
+            }
+
+            filesToAdd = System.IO.Directory.EnumerateFiles(path, mask, searchOption);
+            AddEnumeratedFiles(filesToAdd, path, storePathMode);
+
+        }
+
+        private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, string path, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        {
+            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
+            if (storePathMode == null)
+                storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
+
+            foreach (var item in filesToAdd)
+            {
+                string pathInArchive;
+                if (storePathMode == storeModeEnum.StoreRelativePath)
+                    pathInArchive = GetRelativePath(path, item);
+                else if (storePathMode == storeModeEnum.StoreFullPath)
+                    pathInArchive = null;
+                else
+                    pathInArchive = "";
+
+                _zip.AddFile(item, pathInArchive);
+            }
+        }
+
+        private static string GetRelativePath(string archiveRoot, string item)
+        {
+            var dir = System.IO.Path.GetDirectoryName(item);
+            var pathInArchive = dir.Substring(archiveRoot.Length).TrimStart(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+            return pathInArchive;
+        }
+
+        private static bool GetRecursiveFlag(SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories)
+        {
+            if (recurseSubdirectories == null)
+                return false;
+            else
+                return recurseSubdirectories == ((ZIPSubDirProcessingModeEnum)recurseSubdirectories.Owner).Recurse;
         }
 
         private CompressionMethod MakeZipCompressionMethod(SelfAwareEnumValue<ZipCompressionMethodEnum> compressionMethod)

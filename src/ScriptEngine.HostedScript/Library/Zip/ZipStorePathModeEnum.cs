@@ -10,7 +10,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
     [SystemEnum("РежимСохраненияПутейZIP", "ZIPStorePathsMode")]
     public class ZipStorePathModeEnum : EnumerationContext
     {
-        const string DONT_SAVE = "НеСохранять";
+        const string DONT_SAVE = "НеСохранятьПути";
         const string SAVE_RELATIVE = "СохранятьОтносительныеПути";
         const string SAVE_FULL = "СохранятьПолныеПути";
 
