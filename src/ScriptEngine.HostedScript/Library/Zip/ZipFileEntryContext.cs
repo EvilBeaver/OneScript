@@ -85,7 +85,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
             get
             {
                 var filename = _entry.FileName;
-                return System.IO.Path.GetDirectoryName(filename);
+                var dir = System.IO.Path.GetDirectoryName(filename);
+                if (dir != String.Empty && !dir.EndsWith(new string(new []{System.IO.Path.DirectorySeparatorChar})))
+                    return dir + System.IO.Path.DirectorySeparatorChar;
+                else
+                    return dir;
             }
         }
 

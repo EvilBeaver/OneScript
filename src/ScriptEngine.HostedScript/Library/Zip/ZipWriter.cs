@@ -31,6 +31,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             _filename = filename;
             _zip = new ZipFile();
+            _zip.AlternateEncoding = Encoding.UTF8;
+            _zip.AlternateEncodingUsage = ZipOption.Always;
             _zip.Password = password;
             _zip.Comment = comment;
             _zip.CompressionMethod = MakeZipCompressionMethod(compressionMethod);
@@ -91,7 +93,18 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         private void AddSingleFile(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
-            _zip.AddFile(file, "");
+            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
+            if (storePathMode == null)
+                storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
+
+            string pathInArchive;
+            if (storePathMode == storeModeEnum.StoreFullPath)
+                pathInArchive = null;
+            else
+                pathInArchive = "";
+
+            
+            _zip.AddFile(file, pathInArchive);
         }
 
         private void AddFilesByMask(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
