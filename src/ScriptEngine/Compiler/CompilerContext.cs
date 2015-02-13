@@ -145,10 +145,11 @@ namespace ScriptEngine.Compiler
         {
             if (_scopeStack.Count > 0)
             {
-                if (!HasSymbol(x => x.IsVarDefined(name)))
+                var idx = TopIndex();
+                var scope = GetScope(idx);
+                if (!scope.IsVarDefined(name))
                 {
-                    var idx = TopIndex();
-                    var num = _scopeStack[idx].DefineVariable(name);
+                    var num = scope.DefineVariable(name);
                     return new SymbolBinding()
                     {
                         ContextIndex = idx,
