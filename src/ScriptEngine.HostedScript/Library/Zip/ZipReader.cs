@@ -14,14 +14,33 @@ namespace ScriptEngine.HostedScript.Library.Zip
         ZipFile _zip;
         ZipFileEntriesCollection _entriesWrapper;
 
-        public ZipReader(string filename)
+        public ZipReader()
+        {
+        }
+	    
+        public ZipReader(string filename, string password = null)
+        {
+            Open(filename, password);
+        }
+
+        private void CheckIfOpened()
+        {
+            if(_zip == null)
+                throw new RuntimeException("Архив не открыт");
+        }
+
+        [ContextMethod("Открыть","Open")]
+        private void Open(string filename, string password)
         {
             _zip = ZipFile.Read(filename);
+            _zip.Password = password;
         }
+
 
         [ContextMethod("ИзвлечьВсе","ExtractAll")]
         public void ExtractAll(string where, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null)
         {
+            CheckIfOpened();
             _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
             _zip.ExtractExistingFile = ExtractExistingFileAction.OverwriteSilently;
             _zip.ExtractAll(where);
@@ -30,6 +49,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ContextMethod("Извлечь", "Extract")]
         public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null)
         {
+            CheckIfOpened();
             var realEntry = entry.GetZipEntry();
             _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
             realEntry.Password = password;
@@ -47,6 +67,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
+                CheckIfOpened();
+
                 if (_entriesWrapper == null)
                     _entriesWrapper = new ZipFileEntriesCollection(_zip.Entries);
 
@@ -67,15 +89,28 @@ namespace ScriptEngine.HostedScript.Library.Zip
         }
 
         [ScriptConstructor]
+        public static ZipReader Construct()
+        {
+            return new ZipReader();
+        }
+
+        [ScriptConstructor(Name="По имени файла")]
         public static ZipReader ConstructByName(IValue filename)
         {
             return new ZipReader(filename.AsString());
         }
 
+        [ScriptConstructor(Name="По имени файла и паролю")]
+        public static ZipReader ConstructByNameAndPassword(IValue filename, IValue password)
+        {
+            return new ZipReader(filename.AsString(), password.AsString());
+        }
+
         public void Dispose()
         {
-            _zip.Dispose();
             _entriesWrapper = null;
+            _zip.Dispose();
+            _zip = null;
         }
     }
 }

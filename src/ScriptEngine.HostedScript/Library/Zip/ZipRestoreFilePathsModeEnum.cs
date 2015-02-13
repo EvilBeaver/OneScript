@@ -18,33 +18,37 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
         }
 
-        public SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> Restore
+        [EnumValue(RESTORE_PATHS_NAME)]
+        public EnumerationValue Restore
         {
             get
             {
-                return (SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>)this[RESTORE_PATHS_NAME];
+                return this[RESTORE_PATHS_NAME];
             }
         }
 
-        public SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> DoNotRestore
+        [EnumValue(DONT_RESTORE_PATHS_NAME)]
+        public EnumerationValue DoNotRestore
         {
             get
             {
-                return (SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>)this[DONT_RESTORE_PATHS_NAME];
+                return this[DONT_RESTORE_PATHS_NAME];
             }
         }
 
         public static ZipRestoreFilePathsModeEnum CreateInstance()
         {
             ZipRestoreFilePathsModeEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеРежимВосстановленияПутейФайловZIPXML", typeof(ZipRestoreFilePathsModeEnum));
-            var enumValueType = TypeManager.RegisterType("РежимВосстановленияПутейФайловZIP", typeof(SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>));
 
-            instance = new ZipRestoreFilePathsModeEnum(type, enumValueType);
+            TypeDescriptor enumType;
+            TypeDescriptor enumValType;
 
-            instance.AddValue(RESTORE_PATHS_NAME, new SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>(instance, 0));
-            instance.AddValue(DONT_RESTORE_PATHS_NAME, new SelfAwareEnumValue<ZipRestoreFilePathsModeEnum>(instance, 1));
+            EnumContextHelper.RegisterEnumType<ZipRestoreFilePathsModeEnum>(out enumType, out enumValType);
 
+            instance = new ZipRestoreFilePathsModeEnum(enumType, enumValType);
+
+            EnumContextHelper.RegisterValues<ZipRestoreFilePathsModeEnum>(instance);
+            
             return instance;
         }
     }

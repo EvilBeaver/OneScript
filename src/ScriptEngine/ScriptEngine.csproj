@@ -87,9 +87,12 @@
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
     <Compile Include="Environment\ModuleInformation.cs" />
+    <Compile Include="Machine\Contexts\EnumContextHelper.cs" />
+    <Compile Include="Machine\Contexts\ContextClassAttribute.cs" />
     <Compile Include="Machine\Contexts\AttachedScriptsFactory.cs" />
     <Compile Include="Machine\Contexts\EnumerationContext.cs" />
     <Compile Include="Machine\Contexts\EnumerationValue.cs" />
+    <Compile Include="Machine\Contexts\EnumValueAttribute.cs" />
     <Compile Include="Machine\Contexts\GlobalContextAttribute.cs" />
     <Compile Include="Machine\Contexts\GlobalContextBase.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
