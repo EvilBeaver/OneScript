@@ -101,8 +101,10 @@
 
 Функция ШтатныйВыводOscript()
 	
+	СИ = Новый СистемнаяИнформация;
+	
 	Текст = 
-	"1Script Execution Engine. Version 1.0.9.0
+	"1Script Execution Engine. Version " + СИ.Версия + "
 	|
 	|Usage:
 	|
