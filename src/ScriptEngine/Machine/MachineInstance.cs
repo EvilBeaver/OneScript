@@ -1178,8 +1178,16 @@ namespace ScriptEngine.Machine
                         }
                         else
                         {
-                            success = false;
-                            break; // no match
+                            if (parameters[i].IsOptional)
+                            {
+                                argsToPass.Add(null);
+                                success = true;
+                            }
+                            else
+                            {
+                                success = false;
+                                break; // no match
+                            }
                         }
                     }
                 }
