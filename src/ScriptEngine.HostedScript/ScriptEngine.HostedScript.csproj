@@ -80,7 +80,7 @@
     <Compile Include="Library\Http\HttpRequestBodyString.cs" />
     <Compile Include="Library\Http\HttpRequestBodyUnknown.cs" />
     <Compile Include="Library\Http\HttpRequestContext.cs" />
-    <Compile Include="Library\Http\HttpRequestFileBody.cs" />
+    <Compile Include="Library\Http\HttpRequestBodyFile.cs" />
     <Compile Include="Library\Http\InternetProxyContext.cs" />
     <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\Net\TCPClient.cs" />
