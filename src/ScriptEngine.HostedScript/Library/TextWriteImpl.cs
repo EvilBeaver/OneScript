@@ -23,7 +23,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public TextWriteImpl(string path, IValue encoding, bool append)
         {
-            Open(path, encoding, append);
+            Open(path, encoding, null, append);
         }
 
         /// <summary>
@@ -31,9 +31,10 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="path">Путь к файлу</param>
         /// <param name="encoding">Кодировка (необязательный). По умолчанию используется utf-8</param>
+        /// <param name="lineDelimiter">Разделитель строк (необязательный). В текущей релизации параметр игнорируется</param>
         /// <param name="append">Признак добавления в конец файла. (необязательный)</param>
         [ContextMethod("Открыть", "Open")]
-        public void Open(string path, IValue encoding = null, bool append = false)
+        public void Open(string path, IValue encoding = null, string lineDelimiter = null, bool append = false)
         {
             Encoding enc;
             if (encoding == null)
@@ -98,7 +99,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="encoding">Кодировка в виде строки</param>
         /// <param name="append">Признак добавления в конец файла (необязательный)</param>
         [ScriptConstructor(Name = "По имени файла и кодировке")]
-        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding, IValue append)
+        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding, IValue lineDelimiter, IValue append)
         {
             return new TextWriteImpl(path.AsString(), encoding, append.AsBoolean());
         }
