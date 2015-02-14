@@ -16,12 +16,12 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
-        public TextWriteImpl(string path, string encoding)
+        public TextWriteImpl(string path, IValue encoding)
         {
             Open(path, encoding);
         }
 
-        public TextWriteImpl(string path, string encoding, bool append)
+        public TextWriteImpl(string path, IValue encoding, bool append)
         {
             Open(path, encoding, append);
         }
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="encoding">Кодировка (необязательный). По умолчанию используется utf-8</param>
         /// <param name="append">Признак добавления в конец файла. (необязательный)</param>
         [ContextMethod("Открыть", "Open")]
-        public void Open(string path, string encoding = null, bool append = false)
+        public void Open(string path, IValue encoding = null, bool append = false)
         {
             Encoding enc;
             if (encoding == null)
@@ -42,7 +42,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
-                enc = Encoding.GetEncoding(encoding);
+                enc = TextEncodingEnum.GetEncoding(encoding);
                 if (enc.WebName == "utf-8" && append == true)
                     enc = new UTF8Encoding(false);
             }
@@ -88,7 +88,7 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name = "")]
         public static IRuntimeContextInstance Constructor(IValue path, IValue encoding)
         {
-            return new TextWriteImpl(path.AsString(), encoding.AsString());
+            return new TextWriteImpl(path.AsString(), encoding);
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name = "По имени файла и кодировке")]
         public static IRuntimeContextInstance Constructor(IValue path, IValue encoding, IValue append)
         {
-            return new TextWriteImpl(path.AsString(), encoding.AsString(), append.AsBoolean());
+            return new TextWriteImpl(path.AsString(), encoding, append.AsBoolean());
         }
 
         /// <summary>
