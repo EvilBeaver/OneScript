@@ -12,6 +12,8 @@ namespace ScriptEngine.HostedScript.Library.Http
     public class HttpConnectionContext : AutoContext<HttpConnectionContext>
     {
         WebRequest _webRequest;
+        NetworkCredential _creds;
+        InternetProxyContext _proxy;
 
         public HttpConnectionContext(string host,
             int port = 0,
@@ -27,8 +29,8 @@ namespace ScriptEngine.HostedScript.Library.Http
             _webRequest = WebRequest.Create(uriBuilder.Uri);
             if(user != null || password != null)
             {
-                var creds = new NetworkCredential(user, password);
-                _webRequest.Credentials = creds;
+                _creds = new NetworkCredential(user, password);
+                _webRequest.Credentials = _creds;
             }
             else
             {
@@ -36,13 +38,88 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
 
             if (proxy != null)
+            {
                 _webRequest.Proxy = proxy.GetProxy();
-
+                _proxy = proxy;
+            }
             _webRequest.Timeout = timeout;
             
         }
 
+        [ContextProperty("Пользователь","User")]
+        public string User 
+        { 
+            get
+            {
+                if (_creds == null)
+                    return "";
 
+                return _creds.UserName;
+            }
+        }
+
+        [ContextProperty("Пароль", "Password")]
+        public string Password
+        {
+            get
+            {
+                if (_creds == null)
+                    return "";
+
+                return _creds.Password;
+            }
+        }
+
+        [ContextProperty("Сервер", "Host")]
+        public string Host
+        {
+            get
+            {
+                return _webRequest.RequestUri.Host;
+            }
+        }
+
+        [ContextProperty("Порт", "Port")]
+        public int Port
+        {
+            get
+            {
+                return _webRequest.RequestUri.Port;
+            }
+        }
+
+        [ContextProperty("Прокси", "Proxy")]
+        public IValue Proxy
+        {
+            get
+            {
+                if (_proxy == null)
+                    return ValueFactory.Create();
+
+                return _proxy;
+            }
+        }
+
+        [ContextProperty("Таймаут", "Timeout")]
+        public int Timeout
+        {
+            get
+            {
+                return _webRequest.Timeout;
+            }
+        }
+
+        [ContextMethod("Получить", "Get")]
+        public HttpResponseContext Get(HttpRequestContext request, [ByRef] IVariable output = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        [ContextMethod("Записать", "Put")]
+        public HttpResponseContext Put(HttpRequestContext request)
+        {
+            throw new NotImplementedException();
+        }
         
         [ScriptConstructor]
         public static HttpConnectionContext Constructor(IValue host, 

@@ -1,4 +1,5 @@
-﻿using ScriptEngine.Machine.Contexts;
+﻿using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,18 +11,28 @@ namespace ScriptEngine.HostedScript.Library.Http
     [ContextClass("ИнтернетПрокси", "InternetProxy")]
     public class InternetProxyContext : AutoContext<InternetProxyContext>
     {
-        WebProxy _proxy;
+        IWebProxy _proxy;
         NetworkCredential _creds;
         bool _isDefault;
         ArrayImpl _bypassProxyOnAddresses;
+        bool _bypassLocal;
 
         public InternetProxyContext(bool useDefault)
         {
             _isDefault = useDefault;
             if (useDefault)
-                _proxy = (WebProxy)WebRequest.GetSystemWebProxy();
+            {
+                _proxy = WebRequest.GetSystemWebProxy();
+                _creds = (NetworkCredential)_proxy.Credentials;
+                if (_creds == null)
+                    _creds = new NetworkCredential();
+            }
             else
+            {
                 _proxy = new WebProxy();
+                _bypassLocal = ((WebProxy)_proxy).BypassProxyOnLocal;
+                _creds = new NetworkCredential();
+            }
 
             _bypassProxyOnAddresses = new ArrayImpl();
         }
@@ -30,11 +41,12 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             if (!_isDefault)
             {
-                _proxy.Credentials = _creds;
+                var wp = (WebProxy)_proxy;
+                wp.Credentials = _creds;
+                wp.BypassList = _bypassProxyOnAddresses.Select(x => x.AsString()).ToArray();
+                wp.BypassProxyOnLocal = _bypassLocal;
             }
-
-            _proxy.BypassList = _bypassProxyOnAddresses.Select(x => x.AsString()).ToArray();
-
+            
             return _proxy;
         }
 
@@ -82,12 +94,24 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             get
             {
-                return _proxy.BypassProxyOnLocal;
+                return _bypassLocal;
             }
             set
             {
-                _proxy.BypassProxyOnLocal = value;
+                _bypassLocal = value;
             }
+        }
+
+        [ScriptConstructor]
+        public static InternetProxyContext Constructor()
+        {
+            return Constructor(ValueFactory.Create(false));
+        }
+
+        [ScriptConstructor]
+        public static InternetProxyContext Constructor(IValue useDefault)
+        {
+            return new InternetProxyContext(useDefault.AsBoolean());
         }
     }
 }

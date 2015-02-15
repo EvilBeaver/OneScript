@@ -9,11 +9,11 @@ namespace ScriptEngine.HostedScript.Library.Http
 {
     interface IHttpRequestBody : IDisposable
     {
-        public IValue GetAsString();
-        public IValue GetAsBinary();
-        public IValue GetAsFilename();
+        IValue GetAsString();
+        IValue GetAsBinary();
+        IValue GetAsFilename();
 
-        public Stream GetDataStream();
+        Stream GetDataStream();
     }
 
 }
