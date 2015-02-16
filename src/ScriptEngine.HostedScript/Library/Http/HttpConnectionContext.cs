@@ -120,7 +120,11 @@ namespace ScriptEngine.HostedScript.Library.Http
         public HttpResponseContext Get(HttpRequestContext request, string output = null)
         {
             var response = (HttpWebResponse)_webRequest.GetResponse();
-            return new HttpResponseContext(response);
+            var responseContext = new HttpResponseContext(response);
+            if (output != null)
+                responseContext.WriteOut(output);
+
+            return responseContext;
         }
 
         [ContextMethod("Записать", "Put")]

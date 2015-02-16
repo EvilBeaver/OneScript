@@ -14,6 +14,9 @@ namespace ScriptEngine.HostedScript.Library.Http
     {
         private MapImpl _headers = new MapImpl();
         private byte[] _body;
+        
+        private string _defaultCharset;
+        private string _filename;
 
         public HttpResponseContext(HttpWebResponse response)
         {
@@ -25,6 +28,8 @@ namespace ScriptEngine.HostedScript.Library.Http
             using(response)
             {
                 StatusCode = (int)response.StatusCode;
+                _defaultCharset = response.CharacterSet;
+
                 ProcessHeaders(response.Headers);
                 ProcessResponseBody(response);
             }
@@ -65,10 +70,32 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextProperty("КодСостояния", "StatusCode", CanWrite = false)]
         public int StatusCode { get; set; }
 
-        [ContextMethod(" ", "Alias")]
-        public void Alias()
+        [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
+        public string GetBodyAsString(IValue encoding)
         {
+            Encoding enc;
+            if (encoding == null)
+                enc = Encoding.GetEncoding(_defaultCharset);
+            else
+                enc = TextEncodingEnum.GetEncoding(encoding);
 
+            return enc.GetString(_body);
+
+        }
+
+        [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
+        public BinaryDataContext GetBodyAsBinaryData()
+        {
+            return new BinaryDataContext(_body);
+        }
+
+        internal void WriteOut(string output)
+        {
+            _filename = output;
+            using(var fs = new FileStream(_filename, FileMode.OpenOrCreate))
+            {
+                fs.Write(_body, 0, _body.Length);
+            }
         }
     }
 }
