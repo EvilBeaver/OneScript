@@ -11,9 +11,12 @@ namespace ScriptEngine.HostedScript.Library.Http
     [ContextClass("HTTPСоединение", "HTTPConnection")]
     public class HttpConnectionContext : AutoContext<HttpConnectionContext>
     {
-        WebRequest _webRequest;
+        HttpWebRequest _webRequest;
         NetworkCredential _creds;
         InternetProxyContext _proxy;
+
+        const string HTTP_SCHEME = "http";
+        const string HTTPS_SCHEME = "https";
 
         public HttpConnectionContext(string host,
             int port = 0,
@@ -26,7 +29,11 @@ namespace ScriptEngine.HostedScript.Library.Http
             if (port != 0)
                 uriBuilder.Port = port;
 
-            _webRequest = WebRequest.Create(uriBuilder.Uri);
+            if (uriBuilder.Scheme != HTTP_SCHEME && uriBuilder.Scheme != HTTPS_SCHEME)
+                throw RuntimeException.InvalidArgumentValue();
+
+            _webRequest = (HttpWebRequest)WebRequest.Create(uriBuilder.Uri);
+            
             if(user != null || password != null)
             {
                 _creds = new NetworkCredential(user, password);
@@ -110,9 +117,10 @@ namespace ScriptEngine.HostedScript.Library.Http
         }
 
         [ContextMethod("Получить", "Get")]
-        public HttpResponseContext Get(HttpRequestContext request, [ByRef] IVariable output = null)
+        public HttpResponseContext Get(HttpRequestContext request, string output = null)
         {
-            throw new NotImplementedException();
+            var response = (HttpWebResponse)_webRequest.GetResponse();
+            return new HttpResponseContext(response);
         }
 
         [ContextMethod("Записать", "Put")]
