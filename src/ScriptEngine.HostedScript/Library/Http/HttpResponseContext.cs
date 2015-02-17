@@ -71,22 +71,37 @@ namespace ScriptEngine.HostedScript.Library.Http
         public int StatusCode { get; set; }
 
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
-        public string GetBodyAsString(IValue encoding)
+        public IValue GetBodyAsString(IValue encoding = null)
         {
+            if (_body == null)
+                return ValueFactory.Create();
+
             Encoding enc;
             if (encoding == null)
                 enc = Encoding.GetEncoding(_defaultCharset);
             else
                 enc = TextEncodingEnum.GetEncoding(encoding);
 
-            return enc.GetString(_body);
+            return ValueFactory.Create(enc.GetString(_body));
 
         }
 
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
-        public BinaryDataContext GetBodyAsBinaryData()
+        public IValue GetBodyAsBinaryData()
         {
+            if (_body == null)
+                return ValueFactory.Create();
+
             return new BinaryDataContext(_body);
+        }
+
+        [ContextMethod("ПолучитьИмяФайлаТела", "GetBodyFileName")]
+        public IValue GetBodyFileName()
+        {
+            if (_filename == null)
+                return ValueFactory.Create();
+
+            return ValueFactory.Create(_filename);
         }
 
         internal void WriteOut(string output)
@@ -95,6 +110,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             using(var fs = new FileStream(_filename, FileMode.OpenOrCreate))
             {
                 fs.Write(_body, 0, _body.Length);
+                _body = null;
             }
         }
     }

@@ -49,7 +49,8 @@ namespace ScriptEngine.HostedScript.Library.Http
                 _webRequest.Proxy = proxy.GetProxy();
                 _proxy = proxy;
             }
-            _webRequest.Timeout = timeout;
+            if(timeout > 0)
+                _webRequest.Timeout = timeout;
             
         }
 

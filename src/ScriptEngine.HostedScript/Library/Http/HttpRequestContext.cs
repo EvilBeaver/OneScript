@@ -15,6 +15,12 @@ namespace ScriptEngine.HostedScript.Library.Http
         IHttpRequestBody _body;
         static IHttpRequestBody _emptyBody = new HttpRequestBodyUnknown();
 
+        public HttpRequestContext()
+        {
+            ResourceAddress = "";
+            Headers = new MapImpl();
+        }
+
         public void Close()
         {
             SetBody(_emptyBody);
@@ -69,17 +75,15 @@ namespace ScriptEngine.HostedScript.Library.Http
         }
 
         [ScriptConstructor]
-        public HttpRequestContext Constructor()
+        public static HttpRequestContext Constructor()
         {
             return new HttpRequestContext();
         }
 
         [ScriptConstructor(Name = "По адресу ресурса и заголовкам")]
-        public HttpRequestContext Constructor(IValue resource, IValue headers = null)
+        public static HttpRequestContext Constructor(IValue resource, IValue headers = null)
         {
             var ctx = new HttpRequestContext();
-            ctx.ResourceAddress = resource.AsString();
-            ctx.Headers = (MapImpl)null;
             return ctx;
         }
 
