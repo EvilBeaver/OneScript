@@ -89,21 +89,19 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("Получить", "Get")]
         public HttpResponseContext Get(HttpRequestContext request, string output = null)
         {
-            var webRequest = CreateRequest(request.ResourceAddress);
-            webRequest.Method = "GET";
-
-            var response = (HttpWebResponse)webRequest.GetResponse();
-            var responseContext = new HttpResponseContext(response);
-            if (output != null)
-                responseContext.WriteOut(output);
-
-            return responseContext;
+            return GetResponse(request, "GET", output);
         }
 
         [ContextMethod("Записать", "Put")]
         public HttpResponseContext Put(HttpRequestContext request)
         {
-            throw new NotImplementedException();
+            return GetResponse(request, "PUT");
+        }
+
+        [ContextMethod("ОтправитьДляОбработки", "Post")]
+        public HttpResponseContext Post(HttpRequestContext request, string output = null)
+        {
+            return GetResponse(request, "POST");
         }
 
         private HttpWebRequest CreateRequest(string resource)
@@ -119,12 +117,78 @@ namespace ScriptEngine.HostedScript.Library.Http
             if(User != "" || Password != "")
                 request.Credentials = new NetworkCredential(User, Password);
 
-            request.Proxy = _proxy.GetProxy();
+            if(_proxy != null)
+                request.Proxy = _proxy.GetProxy();
+
             if (Timeout > 0)
                 request.Timeout = Timeout;
 
             return request;
             
+        }
+
+        private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null)
+        {
+            var webRequest = CreateRequest(request.ResourceAddress);
+            webRequest.Method = method;
+            SetRequestHeaders(request, webRequest);
+            SetRequestBody(request, webRequest);
+
+            HttpWebResponse response;
+
+            try
+            {
+                response = (HttpWebResponse)webRequest.GetResponse();
+            }
+            catch (WebException ex)
+            {
+                if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response != null)
+                    response = (HttpWebResponse)ex.Response;
+                else
+                    throw;
+            }
+
+            var responseContext = new HttpResponseContext(response);
+            if (output != null)
+                responseContext.WriteOut(output);
+
+            return responseContext;
+
+        }
+
+        private static void SetRequestBody(HttpRequestContext request, HttpWebRequest webRequest)
+        {
+            var stream = request.Body;
+            if (stream == null)
+            {
+                webRequest.ContentLength = -1;
+                return; // тело не установлено
+            }
+
+            using(stream)
+            {
+                if (stream.CanSeek)
+                    webRequest.ContentLength = stream.Length;
+
+                using(var requestStream = webRequest.GetRequestStream())
+                {
+                    stream.CopyTo(requestStream);
+                }
+            }
+        }
+
+        private static void SetRequestHeaders(HttpRequestContext request, HttpWebRequest webRequest)
+        {
+            foreach (var item in request.Headers.Select(x => x.GetRawValue() as KeyAndValueImpl))
+            {
+                System.Diagnostics.Trace.Assert(item != null);
+
+                var key = item.Key.AsString();
+                var value = item.Value.AsString();
+
+                webRequest.Headers.Set(key, value);
+
+            }
         }
 
         [ScriptConstructor]

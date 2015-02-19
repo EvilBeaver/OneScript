@@ -27,7 +27,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         public System.IO.Stream GetDataStream()
         {
-            throw new RuntimeException("Тело запроса не было установлено");
+            return null;
         }
     }
 }

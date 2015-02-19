@@ -61,21 +61,26 @@ namespace ScriptEngine.HostedScript.Library.Http
 
             using (var stream = response.GetResponseStream())
             {
+                const int CHUNK_SIZE = 0x10000;
                 var mustRead = response.ContentLength;
+                if (mustRead < 0) // TODO: Сделать чтение, если Content-Lenght не указан
+                    throw new NotImplementedException("Чтение без указания Content-Lenght пока не реализовано");
+
                 _body = new byte[mustRead];
                 int offset = 0;
-                const int CHUNK_SIZE = 0x10000;
-
+                
                 while (mustRead > 0)
                 {
                     int portion = Math.Min(CHUNK_SIZE, (int)mustRead);
                     var read = stream.Read(_body, offset, portion);
+                    
                     if (read == 0)
                         break;
 
                     mustRead -= read;
                     offset += read;
                 }
+
             }
         }
 

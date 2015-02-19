@@ -19,6 +19,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             ResourceAddress = "";
             Headers = new MapImpl();
+            _body = _emptyBody;
         }
 
         public void Close()
