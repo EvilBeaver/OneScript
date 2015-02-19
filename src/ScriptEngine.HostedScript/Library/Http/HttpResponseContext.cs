@@ -13,6 +13,8 @@ namespace ScriptEngine.HostedScript.Library.Http
     public class HttpResponseContext : AutoContext<HttpResponseContext>
     {
         private MapImpl _headers = new MapImpl();
+        // TODO: Нельзя выделить массив размером больше чем 2GB
+        // поэтому функционал сохранения в файл не должен использовать промежуточный буфер _body
         private byte[] _body;
         
         private string _defaultCharset;
@@ -21,6 +23,12 @@ namespace ScriptEngine.HostedScript.Library.Http
         public HttpResponseContext(HttpWebResponse response)
         {
             RetrieveResponseData(response);
+        }
+
+        public HttpResponseContext(HttpWebResponse response, string dumpToFile)
+        {
+            throw new NotImplementedException();
+            //RetrieveResponseData(response, dumpToFile);
         }
 
         private void RetrieveResponseData(HttpWebResponse response)
@@ -51,10 +59,23 @@ namespace ScriptEngine.HostedScript.Library.Http
                 return;
             }
 
-            _body = new byte[response.ContentLength];
-            using(var stream = response.GetResponseStream())
+            using (var stream = response.GetResponseStream())
             {
-                stream.Read(_body, 0, _body.Length);
+                var mustRead = response.ContentLength;
+                _body = new byte[mustRead];
+                int offset = 0;
+                const int CHUNK_SIZE = 0x10000;
+
+                while (mustRead > 0)
+                {
+                    int portion = Math.Min(CHUNK_SIZE, (int)mustRead);
+                    var read = stream.Read(_body, offset, portion);
+                    if (read == 0)
+                        break;
+
+                    mustRead -= read;
+                    offset += read;
+                }
             }
         }
 
@@ -107,7 +128,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         internal void WriteOut(string output)
         {
             _filename = output;
-            using(var fs = new FileStream(_filename, FileMode.OpenOrCreate))
+            using(var fs = new FileStream(_filename, FileMode.Create))
             {
                 fs.Write(_body, 0, _body.Length);
                 _body = null;
