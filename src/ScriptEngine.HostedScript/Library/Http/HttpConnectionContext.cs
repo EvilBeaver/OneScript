@@ -11,9 +11,8 @@ namespace ScriptEngine.HostedScript.Library.Http
     [ContextClass("HTTPСоединение", "HTTPConnection")]
     public class HttpConnectionContext : AutoContext<HttpConnectionContext>
     {
-        HttpWebRequest _webRequest;
-        NetworkCredential _creds;
         InternetProxyContext _proxy;
+        Uri _hostUri;
 
         const string HTTP_SCHEME = "http";
         const string HTTPS_SCHEME = "https";
@@ -32,68 +31,41 @@ namespace ScriptEngine.HostedScript.Library.Http
             if (uriBuilder.Scheme != HTTP_SCHEME && uriBuilder.Scheme != HTTPS_SCHEME)
                 throw RuntimeException.InvalidArgumentValue();
 
-            _webRequest = (HttpWebRequest)WebRequest.Create(uriBuilder.Uri);
-            
-            if(user != null || password != null)
-            {
-                _creds = new NetworkCredential(user, password);
-                _webRequest.Credentials = _creds;
-            }
-            else
-            {
-                _webRequest.Credentials = CredentialCache.DefaultCredentials;
-            }
+            _hostUri = uriBuilder.Uri;
 
-            if (proxy != null)
-            {
-                _webRequest.Proxy = proxy.GetProxy();
-                _proxy = proxy;
-            }
-            if(timeout > 0)
-                _webRequest.Timeout = timeout;
+            Host = _hostUri.Host;
+            Port = _hostUri.Port;
+
+            User = user == null ? String.Empty : user;
+            Password = password == null ? String.Empty : password;
+            Timeout = timeout;
+            _proxy = proxy;
             
         }
 
         [ContextProperty("Пользователь","User")]
         public string User 
         { 
-            get
-            {
-                if (_creds == null)
-                    return "";
-
-                return _creds.UserName;
-            }
+            get; private set;
         }
 
         [ContextProperty("Пароль", "Password")]
         public string Password
         {
-            get
-            {
-                if (_creds == null)
-                    return "";
-
-                return _creds.Password;
-            }
+            get; private set;
+            
         }
 
         [ContextProperty("Сервер", "Host")]
         public string Host
         {
-            get
-            {
-                return _webRequest.RequestUri.Host;
-            }
+            get; private set;
         }
 
         [ContextProperty("Порт", "Port")]
         public int Port
         {
-            get
-            {
-                return _webRequest.RequestUri.Port;
-            }
+            get; private set;
         }
 
         [ContextProperty("Прокси", "Proxy")]
@@ -111,16 +83,16 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextProperty("Таймаут", "Timeout")]
         public int Timeout
         {
-            get
-            {
-                return _webRequest.Timeout;
-            }
+            get; private set;
         }
 
         [ContextMethod("Получить", "Get")]
         public HttpResponseContext Get(HttpRequestContext request, string output = null)
         {
-            var response = (HttpWebResponse)_webRequest.GetResponse();
+            var webRequest = CreateRequest(request.ResourceAddress);
+            webRequest.Method = "GET";
+
+            var response = (HttpWebResponse)webRequest.GetResponse();
             var responseContext = new HttpResponseContext(response);
             if (output != null)
                 responseContext.WriteOut(output);
@@ -133,7 +105,28 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             throw new NotImplementedException();
         }
-        
+
+        private HttpWebRequest CreateRequest(string resource)
+        {
+            var uriBuilder = new UriBuilder(_hostUri);
+            if(Port != 0)
+                uriBuilder.Port = Port;
+            uriBuilder.Scheme = "http";
+
+            var resourceUri = new Uri(uriBuilder.Uri, resource);
+
+            var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
+            if(User != "" || Password != "")
+                request.Credentials = new NetworkCredential(User, Password);
+
+            request.Proxy = _proxy.GetProxy();
+            if (Timeout > 0)
+                request.Timeout = Timeout;
+
+            return request;
+            
+        }
+
         [ScriptConstructor]
         public static HttpConnectionContext Constructor(IValue host, 
             IValue port = null, 
@@ -144,7 +137,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             return new HttpConnectionContext(host.AsString(),
                 ContextValuesMarshaller.ConvertParam<int>(port),
-                ContextValuesMarshaller.ConvertParam<string>(port),
+                ContextValuesMarshaller.ConvertParam<string>(user),
                 ContextValuesMarshaller.ConvertParam<string>(password),
                 ContextValuesMarshaller.ConvertParam<InternetProxyContext>(proxy),
                 ContextValuesMarshaller.ConvertParam<int>(timeout)

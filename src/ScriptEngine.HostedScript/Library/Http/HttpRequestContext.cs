@@ -32,6 +32,14 @@ namespace ScriptEngine.HostedScript.Library.Http
             _body = newBody;
         }
 
+        public Stream Body
+        {
+            get
+            {
+                return _body.GetDataStream();
+            }
+        }
+
         [ContextProperty("АдресРесурса", "ResourceAddress")]
         public string ResourceAddress { get; set; }
 
@@ -84,6 +92,16 @@ namespace ScriptEngine.HostedScript.Library.Http
         public static HttpRequestContext Constructor(IValue resource, IValue headers = null)
         {
             var ctx = new HttpRequestContext();
+            ctx.ResourceAddress = resource.AsString();
+            if (headers != null)
+            {
+                var headersMap = headers.AsObject() as MapImpl;
+                if (headersMap == null)
+                    throw RuntimeException.InvalidArgumentType();
+
+                ctx.Headers = headersMap;
+            }
+
             return ctx;
         }
 

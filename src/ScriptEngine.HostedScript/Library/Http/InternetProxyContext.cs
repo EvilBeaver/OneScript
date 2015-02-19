@@ -23,8 +23,10 @@ namespace ScriptEngine.HostedScript.Library.Http
             if (useDefault)
             {
                 _proxy = WebRequest.GetSystemWebProxy();
-                _creds = (NetworkCredential)_proxy.Credentials;
-                if (_creds == null)
+                _creds = (NetworkCredential)System.Net.CredentialCache.DefaultCredentials;
+                if (_creds != null)
+                    _proxy.Credentials = _creds;
+                else
                     _creds = new NetworkCredential();
             }
             else
