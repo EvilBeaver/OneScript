@@ -82,7 +82,12 @@ namespace ScriptEngine.HostedScript.Library.Http
 
             Encoding enc;
             if (encoding == null)
+            {
+                if (String.IsNullOrEmpty(_defaultCharset))
+                    _defaultCharset = "utf-8";
+
                 enc = Encoding.GetEncoding(_defaultCharset);
+            }
             else
                 enc = TextEncodingEnum.GetEncoding(encoding);
 

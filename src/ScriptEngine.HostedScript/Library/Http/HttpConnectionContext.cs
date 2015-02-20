@@ -101,7 +101,13 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("ОтправитьДляОбработки", "Post")]
         public HttpResponseContext Post(HttpRequestContext request, string output = null)
         {
-            return GetResponse(request, "POST");
+            return GetResponse(request, "POST", output);
+        }
+
+        [ContextMethod("Удалить", "Delete")]
+        public HttpResponseContext Delete(HttpRequestContext request, string output = null)
+        {
+            return GetResponse(request, "DELETE");
         }
 
         private HttpWebRequest CreateRequest(string resource)
@@ -109,8 +115,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             var uriBuilder = new UriBuilder(_hostUri);
             if(Port != 0)
                 uriBuilder.Port = Port;
-            uriBuilder.Scheme = "http";
-
+            
             var resourceUri = new Uri(uriBuilder.Uri, resource);
 
             var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
@@ -131,6 +136,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             var webRequest = CreateRequest(request.ResourceAddress);
             webRequest.Method = method;
+            webRequest.KeepAlive = false;
             SetRequestHeaders(request, webRequest);
             SetRequestBody(request, webRequest);
 
@@ -169,7 +175,18 @@ namespace ScriptEngine.HostedScript.Library.Http
 
                 using(var requestStream = webRequest.GetRequestStream())
                 {
-                    stream.CopyTo(requestStream);
+                    const int CHUNK_SIZE = 4096;
+                    byte[] buf = new byte[CHUNK_SIZE];
+                    
+                    while(true)
+                    {
+                        int bytesRead = stream.Read(buf, 0, CHUNK_SIZE);
+                        if (bytesRead == 0)
+                            break;
+
+                        requestStream.Write(buf, 0, bytesRead);
+
+                    }
                 }
             }
         }
@@ -182,8 +199,74 @@ namespace ScriptEngine.HostedScript.Library.Http
 
                 var key = item.Key.AsString();
                 var value = item.Value.AsString();
+
+                switch(key.ToUpperInvariant())
+                {
+                    case "CONTENT-TYPE":
+                        webRequest.ContentType = value;
+                        break;
+                    case "CONTENT-LENGTH":
+                        try
+                        {
+                            webRequest.ContentLength = Int32.Parse(value);
+                        }
+                        catch (FormatException)
+                        {
+                            throw new RuntimeException("Заголовок Content-Length задан неправильно");
+                        }
+                        break;
+                    case "ACCEPT":
+                        webRequest.Accept = value;
+                        break;
+                    case "EXPECT":
+                        webRequest.Expect = value;
+                        break;
+                    case "TRANSFER-ENCODING":
+                        webRequest.TransferEncoding = value;
+                        break;
+                    case "CONNECTION":
+                        webRequest.Connection = value;
+                        break;
+                    case "DATE":
+                        try 
+	                    {	        
+		                    webRequest.Date = DateTime.Parse(value);
+	                    }
+	                    catch (FormatException)
+	                    {
+		                    throw new RuntimeException("Заголовок Date задан неправильно");
+	                    }
+                        break;
+                    case "HOST":
+                        webRequest.Host = value;
+                        break;
+                    case "IF-MODIFIED-SINCE":
+                        try
+                        {
+                            webRequest.IfModifiedSince = DateTime.Parse(value);
+                        }
+                        catch (FormatException)
+                        {
+                            throw new RuntimeException("Заголовок If-Modified-Since задан неправильно");
+                        }
+                        break;
+                    case "RANGE":
+                        throw new NotImplementedException();
+                    case "REFERER":
+                        webRequest.Referer = value;
+                        break;
+                    case "USER-AGENT":
+                        webRequest.UserAgent = value;
+                        break;
+                    case "PROXY-CONNECTION":
+                        throw new NotImplementedException();
+                    default:
+                        webRequest.Headers.Set(key, value);
+                        break;
+                           
+                }
                 
-                webRequest.Headers.Set(key, value);
+                
 
             }
         }
