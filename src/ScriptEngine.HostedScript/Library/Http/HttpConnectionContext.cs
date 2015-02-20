@@ -148,10 +148,8 @@ namespace ScriptEngine.HostedScript.Library.Http
                     throw;
             }
 
-            var responseContext = new HttpResponseContext(response);
-            if (output != null)
-                responseContext.WriteOut(output);
-
+            var responseContext = new HttpResponseContext(response, output);
+            
             return responseContext;
 
         }
@@ -161,7 +159,6 @@ namespace ScriptEngine.HostedScript.Library.Http
             var stream = request.Body;
             if (stream == null)
             {
-                webRequest.ContentLength = -1;
                 return; // тело не установлено
             }
 
@@ -185,7 +182,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
                 var key = item.Key.AsString();
                 var value = item.Value.AsString();
-
+                
                 webRequest.Headers.Set(key, value);
 
             }

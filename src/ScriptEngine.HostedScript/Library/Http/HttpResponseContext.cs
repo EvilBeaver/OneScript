@@ -10,28 +10,27 @@ using System.Text;
 namespace ScriptEngine.HostedScript.Library.Http
 {
     [ContextClass("HTTPОтвет", "HTTPResponse")]
-    public class HttpResponseContext : AutoContext<HttpResponseContext>
+    public class HttpResponseContext : AutoContext<HttpResponseContext>, IDisposable
     {
         private MapImpl _headers = new MapImpl();
         // TODO: Нельзя выделить массив размером больше чем 2GB
         // поэтому функционал сохранения в файл не должен использовать промежуточный буфер _body
-        private byte[] _body;
+        private HttpResponseBody _body;
         
         private string _defaultCharset;
         private string _filename;
 
         public HttpResponseContext(HttpWebResponse response)
         {
-            RetrieveResponseData(response);
+            RetrieveResponseData(response, null);
         }
 
         public HttpResponseContext(HttpWebResponse response, string dumpToFile)
         {
-            throw new NotImplementedException();
-            //RetrieveResponseData(response, dumpToFile);
+            RetrieveResponseData(response, dumpToFile);
         }
 
-        private void RetrieveResponseData(HttpWebResponse response)
+        private void RetrieveResponseData(HttpWebResponse response, string dumpToFile)
         {
             using(response)
             {
@@ -39,7 +38,7 @@ namespace ScriptEngine.HostedScript.Library.Http
                 _defaultCharset = response.CharacterSet;
 
                 ProcessHeaders(response.Headers);
-                ProcessResponseBody(response);
+                ProcessResponseBody(response, dumpToFile);
             }
         }
 
@@ -51,37 +50,16 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
         }
 
-        private void ProcessResponseBody(HttpWebResponse response)
+        private void ProcessResponseBody(HttpWebResponse response, string dumpToFile)
         {
             if (response.ContentLength == 0)
             {
-                _body = new byte[0];
+                _body = null;
                 return;
             }
+            _filename = dumpToFile;
+            _body = new HttpResponseBody(response, dumpToFile);
 
-            using (var stream = response.GetResponseStream())
-            {
-                const int CHUNK_SIZE = 0x10000;
-                var mustRead = response.ContentLength;
-                if (mustRead < 0) // TODO: Сделать чтение, если Content-Lenght не указан
-                    throw new NotImplementedException("Чтение без указания Content-Lenght пока не реализовано");
-
-                _body = new byte[mustRead];
-                int offset = 0;
-                
-                while (mustRead > 0)
-                {
-                    int portion = Math.Min(CHUNK_SIZE, (int)mustRead);
-                    var read = stream.Read(_body, offset, portion);
-                    
-                    if (read == 0)
-                        break;
-
-                    mustRead -= read;
-                    offset += read;
-                }
-
-            }
         }
 
         [ContextProperty("Заголовки", "Headers")]
@@ -108,8 +86,11 @@ namespace ScriptEngine.HostedScript.Library.Http
             else
                 enc = TextEncodingEnum.GetEncoding(encoding);
 
-            return ValueFactory.Create(enc.GetString(_body));
-
+            using(var reader = new StreamReader(_body.OpenReadStream(), enc))
+            {
+                return ValueFactory.Create(reader.ReadToEnd());
+            }
+            
         }
 
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
@@ -118,7 +99,12 @@ namespace ScriptEngine.HostedScript.Library.Http
             if (_body == null)
                 return ValueFactory.Create();
 
-            return new BinaryDataContext(_body);
+            using (var stream = _body.OpenReadStream())
+            {
+                var data = new byte[stream.Length];
+                stream.Read(data, 0, data.Length);
+                return new BinaryDataContext(data);
+            }
         }
 
         [ContextMethod("ПолучитьИмяФайлаТела", "GetBodyFileName")]
@@ -130,14 +116,16 @@ namespace ScriptEngine.HostedScript.Library.Http
             return ValueFactory.Create(_filename);
         }
 
-        internal void WriteOut(string output)
+        [ContextMethod("Закрыть", "Close")]
+        public void Close()
         {
-            _filename = output;
-            using(var fs = new FileStream(_filename, FileMode.Create))
-            {
-                fs.Write(_body, 0, _body.Length);
-                _body = null;
-            }
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (_body != null)
+                _body.Dispose();
         }
     }
 }
