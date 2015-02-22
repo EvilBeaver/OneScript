@@ -16,6 +16,7 @@ namespace ScriptEngine.Machine
         TypeDescriptor GetTypeDescriptorFor(IValue typeTypeValue);
         void RegisterAliasFor(TypeDescriptor td, string alias);
         bool IsKnownType(Type type);
+        bool IsKnownType(string typeName);
         Type NewInstanceHandler { get; set; }
     }
 
@@ -147,6 +148,12 @@ namespace ScriptEngine.Machine
             return _knownTypes.Any(x => x.SystemType == type);
         }
 
+        public bool IsKnownType(string typeName)
+        {
+            var nameToUpper = typeName.ToUpperInvariant();
+            return _knownTypes.Any(x => x.Descriptor.Name.ToUpperInvariant() == nameToUpper);
+        }
+
         public Type NewInstanceHandler 
         { 
             get
@@ -224,6 +231,11 @@ namespace ScriptEngine.Machine
         public static bool IsKnownType(Type type)
         {
             return _instance.IsKnownType(type);
+        }
+
+        public static bool IsKnownType(string typeName)
+        {
+            return _instance.IsKnownType(typeName);
         }
 
         public static TypeDescriptor GetTypeByFrameworkType(Type type)

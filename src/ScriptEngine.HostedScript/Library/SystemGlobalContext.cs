@@ -74,11 +74,27 @@ namespace ScriptEngine.HostedScript.Library
         /// <example>ПодключитьСценарий("C:\file.os", "МойОбъект");
         /// А = Новый МойОбъект();</example>
         /// </param>
-        [ContextMethod("ПодключитьСценарий", "LoadScript")]
-        public void LoadScript(string path, string typeName)
+        [ContextMethod("ПодключитьСценарий", "AttachScript")]
+        public void AttachScript(string path, string typeName)
         {
             var compiler = EngineInstance.GetCompilerService();
             EngineInstance.AttachedScriptsFactory.AttachByPath(compiler, path, typeName);
+        }
+
+        /// <summary>
+        /// Создает экземпляр объекта на основании стороннего файла сценария.
+        /// Загруженный сценарий возвращается, как самостоятельный объект. 
+        /// Экспортные свойства и методы скрипта доступны для вызова.
+        /// </summary>
+        /// <param name="path">Путь к подключаемому сценарию</param>
+        /// <example>УправлениеКонфигуратором = ЗагрузитьСценарий("C:\config-manager.os");
+        /// УправлениеКонфигуратором.ВыгрузитьБазуДанных();</example>
+        /// </param>
+        [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
+        public IRuntimeContextInstance LoadScript(string path)
+        {
+            var compiler = EngineInstance.GetCompilerService();
+            return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path);
         }
 
         /// <summary>
