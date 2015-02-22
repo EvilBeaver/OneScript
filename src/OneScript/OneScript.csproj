@@ -90,8 +90,8 @@
     <Compile Include="Compiler\ISourceCodeIndexer.cs" />
     <Compile Include="Runtime\MachineMemory.cs" />
     <Compile Include="Runtime\MemoryAttachedContext.cs" />
-    <Compile Include="Runtime\MethodSignatureData.cs" />
-    <Compile Include="Runtime\MethodSignatureExtractor.cs" />
+    <Compile Include="ComponentModel\MethodSignatureData.cs" />
+    <Compile Include="ComponentModel\MethodSignatureExtractor.cs" />
     <Compile Include="Compiler\Lexics\NumberLexerState.cs" />
     <Compile Include="Compiler\Lexics\OperatorLexerState.cs" />
     <Compile Include="Compiler\Parser.cs" />
@@ -99,7 +99,7 @@
     <Compile Include="Compiler\ScriptLiterals.cs" />
     <Compile Include="Compiler\Lexics\StringLexerState.cs" />
     <Compile Include="Runtime\SymbolBinding.cs" />
-    <Compile Include="Runtime\SymbolScope.cs" />
+    <Compile Include="Compiler\SymbolScope.cs" />
     <Compile Include="Compiler\Lexics\WordLexerState.cs" />
     <Compile Include="Compiler\Lexics\LanguageDef.cs" />
     <Compile Include="Compiler\Lexem.cs" />

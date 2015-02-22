@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Core;
 using OneScript.Runtime;
+using OneScript.ComponentModel;
 
 namespace OneScript.Tests
 {
