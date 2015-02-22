@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using OneScript.Compiler;
 using OneScript.ComponentModel;
+using System.Linq;
 
 namespace OneScript.Runtime
 {
@@ -66,8 +67,22 @@ namespace OneScript.Runtime
         {
             CheckEmptyScope();
 
-            SymbolsContext.DefineVariable(symbolicName);
-            Module.Variables.Add(VariableDef.CreateGlobal(symbolicName));
+            if (CurrentMethodIndex == INVALID_INDEX)
+            {
+                SymbolsContext.DefineVariable(symbolicName);
+                Module.Variables.Add(VariableDef.CreateGlobal(symbolicName));
+            }
+            else
+            {
+                var currentMethod = Module.Methods[CurrentMethodIndex];
+                DefineLocalVariable(currentMethod, symbolicName);
+            }
+        }
+
+        private void DefineLocalVariable(MethodDef method, string symbolicName)
+        {
+            var symbol = SymbolsContext.DefineVariable(symbolicName);
+            method.Locals.Add(VariableDef.CreateLocal(symbol.Name));
         }
 
         public IASTNode SelectOrUseVariable(string identifier)
@@ -75,7 +90,7 @@ namespace OneScript.Runtime
             SymbolBinding symbol;
             if (!SymbolsContext.TryGetVariable(identifier, out symbol))
             {
-                symbol = SymbolsContext.DefineVariable(identifier);
+                DefineVariable(identifier);
             }
 
             PushVariable(ref symbol);
@@ -90,10 +105,7 @@ namespace OneScript.Runtime
 
             if (SymbolsContext.GetScope(symbol.Context) == SymbolsContext.TopScope)
             {
-                var method = Module.Methods[CurrentMethodIndex];
-                var refIdx = method.Locals.Count;
-                method.Locals.Add(VariableDef.CreateLocal(symbol.Name));
-                cmdAddress = AddCommand(OperationCode.PushLocal, refIdx);
+                cmdAddress = AddCommand(OperationCode.PushLocal, symbol.IndexInContext);
             }
             else
             {
@@ -189,6 +201,9 @@ namespace OneScript.Runtime
 
         public IASTNode BeginMethod(string identifier, bool isFunction)
         {
+            if (SymbolsContext.IsMethodDefined(identifier))
+                throw new CompilerException(String.Format("Метод уже определен {0}", identifier));
+
             NewScope();
 
             var astMethod = new BCodeMethodNode();
@@ -202,12 +217,40 @@ namespace OneScript.Runtime
 
         public void SetMethodSignature(IASTNode methodNode, ASTMethodParameter[] parameters, bool isExported)
         {
-            throw new NotImplementedException();
+            var bCodeMethod = methodNode as BCodeMethodNode;
+            bCodeMethod.IsExported = isExported;
+            bCodeMethod.Parameters = parameters;
+
+            MethodSignatureData signature;
+            var mpList = parameters.Select(x => new MethodParameter()
+                {
+                    IsByValue = x.ByValue,
+                    IsOptional = x.IsOptional
+                });
+            var pl = new ParametersList(mpList.ToArray());
+
+            if (bCodeMethod.IsFunction)
+                signature = MethodSignatureData.CreateFunction(pl);
+            else
+                signature = MethodSignatureData.CreateProcedure(pl);
+
+            var methodDef = new MethodDef();
+            methodDef.Name = bCodeMethod.Name;
+            methodDef.EntryPoint = Module.Code.Count;
+            methodDef.Signature = signature;
+            Module.Methods.Add(methodDef);
+            foreach (var param in parameters)
+            {
+                DefineLocalVariable(methodDef, param.Name);
+            }
+
+            NewScope();
+
         }
 
         public void EndMethod(IASTNode methodNode)
         {
-            throw new NotImplementedException();
+            ExitScope();
         }
 
         public void BeginModuleBody()
@@ -231,12 +274,12 @@ namespace OneScript.Runtime
 
         public IASTNode BeginBatch()
         {
-            throw new NotImplementedException();
+            return null;// throw new NotImplementedException();
         }
 
         public void EndBatch(IASTNode batch)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public IASTConditionNode BeginConditionStatement()
@@ -253,47 +296,4 @@ namespace OneScript.Runtime
         
     }
 
-    class BCodeMethodNode : IASTNode
-    {
-        
-        private List<ASTMethodParameter> _params;
-
-        public BCodeMethodNode()
-        {
-            _params = new List<ASTMethodParameter>();
-
-        }
-
-        public int EntryPoint { get; set; }
-
-        public string Name { get; set; }
-        
-        public bool IsFunction { get; set; }
-        
-        public bool IsExported { get; set; }
-        
-        public IList<ASTMethodParameter> Parameters
-        {
-            get
-            {
-                return _params;
-            }
-            set
-            {
-                _params = new List<ASTMethodParameter>(value);
-            }
-        }
-
-        public IASTNode Body
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-    }
 }

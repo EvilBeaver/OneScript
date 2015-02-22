@@ -118,7 +118,7 @@ namespace OneScript.Compiler
         }
 
 
-        public object GetScope(int number)
+        public SymbolScope GetScope(int number)
         {
             return _attachedScopes[number];
         }

@@ -50,6 +50,7 @@
     <Compile Include="ComponentModel\ContextMethodAttribute.cs" />
     <Compile Include="ComponentModel\ContextPropertyAttribute.cs" />
     <Compile Include="Core\BooleanValue.cs" />
+    <Compile Include="Runtime\BCodeMethodNode.cs" />
     <Compile Include="Runtime\CompiledModule.cs" />
     <Compile Include="Runtime\Commands.cs" />
     <Compile Include="Runtime\ContextPropertyVariable.cs" />

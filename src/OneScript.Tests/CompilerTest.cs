@@ -69,7 +69,7 @@ namespace OneScript.Tests
             var module = builder.Module;
             Assert.AreEqual(2, module.Methods.Count);
             Assert.AreEqual("А", module.Methods[0].Name);
-            Assert.AreEqual("Б", module.Methods[1].Name);
+            Assert.AreEqual("В", module.Methods[1].Name);
 
         }
     }

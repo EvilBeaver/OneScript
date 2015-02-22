@@ -144,6 +144,39 @@ namespace OneScript.Compiler
             }
         }
 
+        private void DefineMethodVariables()
+        {
+            System.Diagnostics.Debug.Assert(_isInMethodScope);
+
+            var endToken = _blockEndings.Peek()[0];
+
+            while (true)
+            {
+                try
+                {
+                    if (_lastExtractedLexem.Token != Token.VarDef)
+                        break;
+
+                    BuildVariableDefinition(false);
+
+                    if (_lastExtractedLexem.Token == endToken)
+                        break;
+
+                    if (_lastExtractedLexem.Token != Token.Semicolon)
+                        throw CompilerException.SemicolonExpected();
+
+                    NextLexem();
+                }
+                catch (ScriptException e)
+                {
+                    if (!ReportError(e))
+                        throw;
+
+                    SkipToNextStatement();
+                }
+            }
+        }
+
         private void BuildMethod()
         {
             Debug.Assert(_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function);
@@ -166,11 +199,9 @@ namespace OneScript.Compiler
             try
             {
                 var parameters = new List<ASTMethodParameter>();
-                do
+                NextLexem();
+                while (_lastExtractedLexem.Token != Token.ClosePar)
                 {
-
-                    NextLexem();
-
                     bool byValParam = _lastExtractedLexem.Token == Token.ByValParam;
                     if (byValParam)
                         NextLexem();
@@ -214,10 +245,11 @@ namespace OneScript.Compiler
 
                     parameters.Add(paramData);
 
-                    if (_lastExtractedLexem.Token != Token.ClosePar && _lastExtractedLexem.Token != Token.Comma)
+                    if (_lastExtractedLexem.Token == Token.Comma)
+                        NextLexem();
+                    else if(_lastExtractedLexem.Token != Token.ClosePar)
                         throw CompilerException.TokenExpected(")");
-
-                } while (_lastExtractedLexem.Token != Token.ClosePar);
+                }
 
                 NextLexem(); // убрали закрывающую скобку
 
@@ -242,6 +274,7 @@ namespace OneScript.Compiler
             PushEndTokens(isFunction ? Token.EndFunction : Token.EndProcedure);
 
             _isInMethodScope = true;
+            DefineMethodVariables();
             BuildCodeBatch();            
             _isInMethodScope = false;
             
