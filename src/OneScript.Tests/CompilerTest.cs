@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OneScript.Scripting.Compiler;
-using OneScript.Scripting.Runtime;
+using OneScript.Compiler;
+using OneScript.Runtime;
 
 namespace OneScript.Tests
 {
@@ -22,7 +22,7 @@ namespace OneScript.Tests
 
             string code = "Процедура А(Б,В) Перем Г; КонецПроцедуры";
 
-            var compiler = new Compiler(builder);
+            var compiler = new CompilerEngine(builder);
             compiler.SetCode(code);
             Assert.IsTrue(compiler.Compile());
 
@@ -61,7 +61,7 @@ namespace OneScript.Tests
             КонецФункции";
 
             var builder = PrepareBuilder();
-            var compiler = new Compiler(builder);
+            var compiler = new CompilerEngine(builder);
             compiler.SetCode(code);
 
             compiler.Compile();

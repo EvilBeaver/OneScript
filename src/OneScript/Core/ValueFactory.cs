@@ -138,9 +138,9 @@ namespace OneScript.Core
         private static IValue ParseAsBoolean(string presentation)
         {
             IValue result;
-            if (OneScript.Scripting.Compiler.Lexics.LanguageDef.IsBooleanTrueString(presentation))
+            if (OneScript.Compiler.Lexics.LanguageDef.IsBooleanTrueString(presentation))
                 result = ValueFactory.Create(true);
-            else if (OneScript.Scripting.Compiler.Lexics.LanguageDef.IsBooleanFalseString(presentation))
+            else if (OneScript.Compiler.Lexics.LanguageDef.IsBooleanFalseString(presentation))
                 result = ValueFactory.Create(false);
             else
                 throw TypeConversionException.ConvertToBooleanException();

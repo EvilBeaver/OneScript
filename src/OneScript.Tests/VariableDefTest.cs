@@ -1,5 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OneScript.Scripting.Runtime;
+using OneScript.Runtime;
 
 namespace OneScript.Tests
 {
