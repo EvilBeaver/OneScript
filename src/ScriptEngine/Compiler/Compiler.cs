@@ -85,7 +85,8 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException exc)
             {
-                AppendCodeInfo(_parser.CurrentLine, exc);
+                if(exc.LineNumber == 0)
+                    AppendCodeInfo(_parser.CurrentLine, exc);
                 throw;
             }
 
@@ -303,6 +304,7 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.IdentifierExpected();
             }
 
+            int definitionLine = _parser.CurrentLine;
             MethodInfo method = new MethodInfo();
             method.Name = _lastExtractedLexem.Content;
             method.IsFunction = _isFunctionProcessed;
@@ -411,7 +413,18 @@ namespace ScriptEngine.Compiler
             descriptor.EntryPoint = entryPoint;
             descriptor.Signature = method;
             descriptor.VariableFrameSize = methodCtx.VariableCount;
-            var binding = _ctx.DefineMethod(method);
+            SymbolBinding binding;
+            try
+            {
+                binding = _ctx.DefineMethod(method);
+            }
+            catch (CompilerException)
+            {
+                var exc = new CompilerException("Метод с таким именем уже определен: " + method.Name);
+                exc.LineNumber = definitionLine;
+                exc.Code = _parser.GetCodeLine(exc.LineNumber);
+                throw exc;
+            }
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(descriptor);
 
