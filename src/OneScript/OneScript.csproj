@@ -50,8 +50,8 @@
     <Compile Include="ComponentModel\ContextMethodAttribute.cs" />
     <Compile Include="ComponentModel\ContextPropertyAttribute.cs" />
     <Compile Include="Core\BooleanValue.cs" />
-    <Compile Include="Runtime\BCodeMethodNode.cs" />
-    <Compile Include="Runtime\CompiledModule.cs" />
+    <Compile Include="Core\MethodParameter.cs" />
+    <Compile Include="Core\ParametersList.cs" />
     <Compile Include="Runtime\Commands.cs" />
     <Compile Include="Runtime\ContextPropertyVariable.cs" />
     <Compile Include="Core\DataType.cs" />
@@ -60,7 +60,6 @@
     <Compile Include="Core\GenericValue.cs" />
     <Compile Include="Core\IRefCountable.cs" />
     <Compile Include="Runtime\ILoadedModule.cs" />
-    <Compile Include="Runtime\IVariable.cs" />
     <Compile Include="Core\NullValue.cs" />
     <Compile Include="Core\NumericValue.cs" />
     <Compile Include="Core\StringValue.cs" />
@@ -71,16 +70,15 @@
     <Compile Include="Core\TypeTypeValue.cs" />
     <Compile Include="Core\UndefinedValue.cs" />
     <Compile Include="Core\ValueMarshaler.cs" />
-    <Compile Include="Runtime\MethodDef.cs" />
-    <Compile Include="Runtime\Variable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Runtime\IVariable.cs" />
+    <Compile Include="Runtime\Variable.cs" />
     <Compile Include="ScriptEngine.cs" />
     <Compile Include="Core\ValueFactory.cs" />
     <Compile Include="Compiler\CompilerEngine.cs" />
     <Compile Include="Compiler\CompilerFactory.cs" />
     <Compile Include="Compiler\IASTNodes.cs" />
     <Compile Include="Compiler\CodePositionInfo.cs" />
-    <Compile Include="Runtime\BCodeModuleBuilder.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\CompilerErrorEventArgs.cs" />
     <Compile Include="Compiler\CompilerException.cs" />
@@ -91,7 +89,7 @@
     <Compile Include="Compiler\ISourceCodeIndexer.cs" />
     <Compile Include="Runtime\MachineMemory.cs" />
     <Compile Include="Runtime\MemoryAttachedContext.cs" />
-    <Compile Include="ComponentModel\MethodSignatureData.cs" />
+    <Compile Include="Core\MethodSignatureData.cs" />
     <Compile Include="ComponentModel\MethodSignatureExtractor.cs" />
     <Compile Include="Compiler\Lexics\NumberLexerState.cs" />
     <Compile Include="Compiler\Lexics\OperatorLexerState.cs" />

@@ -9,7 +9,8 @@ namespace OneScript.Compiler
     {
         Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        Dictionary<int, MethodSignatureData> _methodsData = new Dictionary<int, MethodSignatureData>();
+        int _methodsCounter = 0;
+        int _varCounter = 0;
 
         public static int InvalidIndex
         {
@@ -30,6 +31,7 @@ namespace OneScript.Compiler
 
             int newIndex = VariableCount;
             _variableNumbers.Add(name, newIndex);
+            _varCounter++;
 
             return newIndex;
         }
@@ -56,11 +58,11 @@ namespace OneScript.Compiler
         {
             get
             {
-                return _variableNumbers.Count;
+                return _varCounter;
             }
         }
 
-        public int DefineMethod(string name, MethodSignatureData methodUsageData)
+        public int DefineMethod(string name)
         {
             if(IsMethodDefined(name))
             {
@@ -74,8 +76,8 @@ namespace OneScript.Compiler
             
             int newIndex = MethodCount;
             _methodsNumbers.Add(name, newIndex);
-            _methodsData.Add(newIndex, methodUsageData);
-
+            _methodsCounter++;
+            
             return newIndex;
         }
 
@@ -124,13 +126,8 @@ namespace OneScript.Compiler
         {
             get
             {
-                return _methodsData.Count;
+                return _methodsCounter;
             }
-        }
-
-        public MethodSignatureData GetMethodUsageData(int methodNumber)
-        {
-            return _methodsData[methodNumber];
         }
 
         public static SymbolScope ExtractFromContext(IRuntimeContextInstance context)
@@ -164,7 +161,7 @@ namespace OneScript.Compiler
             var methods = MethodSignatureExtractor.Extract(context);
             for (int i = 0; i < count; i++)
             {
-                var index = scope.DefineMethod(context.GetMethodName(i, NameRetrievalMode.Name), methods[i]);
+                var index = scope.DefineMethod(context.GetMethodName(i, NameRetrievalMode.Name));
                 var alias = context.GetMethodName(i, NameRetrievalMode.OnlyAlias);
                 if (!String.IsNullOrWhiteSpace(alias))
                     scope.SetMethodAlias(index, alias);

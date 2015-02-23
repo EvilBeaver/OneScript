@@ -1,4 +1,4 @@
-﻿using OneScript.ComponentModel;
+﻿using OneScript.Core;
 using OneScript.Runtime;
 using System;
 using System.Collections.Generic;
@@ -77,11 +77,11 @@ namespace OneScript.Compiler
             
         }
 
-        public SymbolBinding DefineMethod(string name, MethodSignatureData methodUsageData)
+        public SymbolBinding DefineMethod(string name)
         {
             if(!IsMethodDefined(name))
             {
-                int index = TopScope.DefineMethod(name, methodUsageData);
+                int index = TopScope.DefineMethod(name);
                 var binding = new SymbolBinding();
                 binding.Name = name;
                 binding.Context = _attachedScopes.Count - 1;

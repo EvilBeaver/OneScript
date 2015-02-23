@@ -50,7 +50,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ByteCodeBuilderTests.cs" />
     <Compile Include="ParserTests\AssignmentNode.cs" />
     <Compile Include="ParserTests\CallNode.cs" />
     <Compile Include="ParserTests\CodeBatchNode.cs" />
@@ -74,7 +73,6 @@
     <Compile Include="PreprocessorTests.cs" />
     <Compile Include="Scripting_Essentials.cs" />
     <Compile Include="ParserTests\ParserTests.cs" />
-    <Compile Include="CompilerTest.cs" />
     <Compile Include="VariableDefTest.cs" />
     <Compile Include="VariableTest.cs" />
   </ItemGroup>

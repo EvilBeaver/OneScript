@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Compiler;
 using OneScript.ComponentModel;
+using OneScript.Core;
 
 namespace OneScript.Tests
 {
@@ -29,8 +30,8 @@ namespace OneScript.Tests
         public void SymbolScope_MethodRegistered()
         {
             var scope = new SymbolScope();
-            int idx = scope.DefineMethod("NewMethod", MethodSignatureData.CreateProcedure(0));
-            int idx2 = scope.DefineMethod("NewMethod2", MethodSignatureData.CreateProcedure(0));
+            int idx = scope.DefineMethod("NewMethod");
+            int idx2 = scope.DefineMethod("NewMethod2");
             Assert.IsTrue(idx == 0);
             Assert.IsTrue(idx2 == 1);
             Assert.IsTrue(scope.IsMethodDefined("NewMethod"));
@@ -51,7 +52,7 @@ namespace OneScript.Tests
                 () => scope.DefineVariable("4 k44"), typeof(ArgumentException)));
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(
-                () => scope.DefineMethod("4 k44", MethodSignatureData.CreateProcedure(0)), typeof(ArgumentException)));
+                () => scope.DefineMethod("4 k44"), typeof(ArgumentException)));
         }
 
         [TestMethod]
@@ -59,13 +60,13 @@ namespace OneScript.Tests
         {
             var scope = new SymbolScope();
             scope.DefineVariable("myVar");
-            scope.DefineMethod("myMethod", MethodSignatureData.CreateProcedure(0));
+            scope.DefineMethod("myMethod");
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(
                 () => scope.DefineVariable("MyVar"), typeof(ArgumentException)));
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(
-                () => scope.DefineMethod("MyMethod", MethodSignatureData.CreateProcedure(0)), typeof(ArgumentException)));
+                () => scope.DefineMethod("MyMethod"), typeof(ArgumentException)));
         }
 
         [TestMethod]
@@ -138,7 +139,7 @@ namespace OneScript.Tests
             var scope2 = new SymbolScope();
 
             ctx.PushScope(scope1);
-            var globalBind = ctx.DefineMethod("Global", MethodSignatureData.CreateProcedure(0));
+            var globalBind = ctx.DefineMethod("Global");
             Assert.IsTrue(globalBind.Name == "Global");
             Assert.IsTrue(globalBind.Context == 0);
             Assert.IsTrue(globalBind.IndexInContext == 0);
@@ -148,7 +149,7 @@ namespace OneScript.Tests
             ctx.PushScope(scope2);
             Assert.IsTrue(ctx.TopScope == scope2);
 
-            var localBind = ctx.DefineMethod("Local", MethodSignatureData.CreateProcedure(0));
+            var localBind = ctx.DefineMethod("Local");
 
             Assert.IsTrue(localBind.Name == "Local");
             Assert.IsTrue(localBind.Context == 1);
@@ -169,12 +170,12 @@ namespace OneScript.Tests
             var scope2 = new SymbolScope();
 
             ctx.PushScope(scope1);
-            ctx.DefineMethod("Global", MethodSignatureData.CreateProcedure(0));
+            ctx.DefineMethod("Global");
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(
                 () =>
                 {
-                    ctx.DefineMethod("Global", MethodSignatureData.CreateFunction(1));
+                    ctx.DefineMethod("Global");
                 }, typeof(CompilerException)));
 
             ctx.PushScope(scope2);
@@ -182,7 +183,7 @@ namespace OneScript.Tests
             Assert.IsTrue(TestHelpers.ExceptionThrown(
                 () =>
                 {
-                    ctx.DefineMethod("Global", MethodSignatureData.CreateFunction(1));
+                    ctx.DefineMethod("Global");
                 }, typeof(CompilerException)));
                 
         }
@@ -206,7 +207,7 @@ namespace OneScript.Tests
         {
             var scope = new SymbolScope();
             int varIndex = scope.DefineVariable("Var");
-            int methodIndex = scope.DefineMethod("Method", MethodSignatureData.CreateProcedure(0));
+            int methodIndex = scope.DefineMethod("Method");
 
             scope.SetVariableAlias(varIndex, "VarAlias");
             scope.SetMethodAlias(methodIndex, "MethodAlias");
@@ -224,7 +225,7 @@ namespace OneScript.Tests
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(() =>
             {
-                scope.DefineMethod("MethodAlias", MethodSignatureData.CreateProcedure(0));
+                scope.DefineMethod("MethodAlias");
             }, typeof(ArgumentException)));
 
         }
@@ -232,23 +233,20 @@ namespace OneScript.Tests
         [TestMethod]
         public void Get_Method_Data_By_Name_Alias_And_Index()
         {
-            var proc = MethodSignatureData.CreateProcedure(1);
-            var func = MethodSignatureData.CreateFunction(1);
             var scope = new SymbolScope();
 
-            scope.DefineMethod("proc_name", proc);
+            scope.DefineMethod("proc_name");
             scope.SetMethodAlias(0, "proc_alias");
 
-            scope.DefineMethod("func_name", func);
+            scope.DefineMethod("func_name");
             scope.SetMethodAlias(1, "func_alias");
 
             Assert.IsTrue(scope.GetMethodNumber("proc_name") == 0);
             Assert.IsTrue(scope.GetMethodNumber("proc_alias") == 0);
-            Assert.AreSame(scope.GetMethodUsageData(0), proc);
-
+            
             Assert.IsTrue(scope.GetMethodNumber("func_name") == 1);
             Assert.IsTrue(scope.GetMethodNumber("func_alias") == 1);
-            Assert.AreSame(scope.GetMethodUsageData(1), func);
+            
         }
 
         [TestMethod]
