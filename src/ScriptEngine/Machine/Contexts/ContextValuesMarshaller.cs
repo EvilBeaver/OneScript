@@ -8,7 +8,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             object valueObj;
             var type = typeof(T);
-            if (value == null)
+            if (value == null || value.DataType == DataType.NotAValidValue)
             {
                 valueObj = default(T);
             }
