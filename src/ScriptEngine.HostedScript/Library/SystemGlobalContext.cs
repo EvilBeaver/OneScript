@@ -299,6 +299,18 @@ namespace ScriptEngine.HostedScript.Library
             return System.IO.Path.GetDirectoryName(filename);
         }
 
+        [ContextMethod("КраткоеПредставлениеОшибки", "BriefErrorDescription")]
+        public string BriefErrorDescription(ExceptionInfoContext errInfo)
+        {
+            return errInfo.Description;
+        }
+
+        [ContextMethod("ПодробноеПредставлениеОшибки", "DetailErrorDescription")]
+        public string DetailErrorDescription(ExceptionInfoContext errInfo)
+        {
+            return errInfo.DetailedDescription;
+        }
+
         private static System.Diagnostics.ProcessStartInfo PrepareProcessStartupInfo(string cmdLine, string currentDir)
         {
             var sInfo = new System.Diagnostics.ProcessStartInfo();

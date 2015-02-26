@@ -9,10 +9,10 @@ namespace ScriptEngine.Machine.Contexts
     /// Класс позволяет узнать информацию о произошедшем исключении.
     /// </summary>
     [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
-    class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
+    public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
-        Exception _exc;
-        public ExceptionInfoContext(Exception source)
+        ScriptException _exc;
+        public ExceptionInfoContext(ScriptException source)
         {
             if (source == null)
                 throw new ArgumentNullException();
@@ -24,9 +24,19 @@ namespace ScriptEngine.Machine.Contexts
         /// Содержит краткое описание ошибки. Эквивалент Exception.Message в C#
         /// </summary>
         [ContextProperty("Описание", "Description")]
-        public string Message 
+        public string Description 
         { 
-            get { return _exc.Message; } 
+            get { return _exc.ErrorDescription; } 
+        }
+
+        public string MessageWithoutCodeFragment
+        {
+            get { return _exc.MessageWithoutCodeFragment; }
+        }
+
+        public string DetailedDescription
+        {
+            get { return _exc.Message; }
         }
 
         /// <summary>
@@ -38,7 +48,16 @@ namespace ScriptEngine.Machine.Contexts
             get 
             {
                 if (_exc.InnerException != null)
-                    return new ExceptionInfoContext(_exc.InnerException);
+                {
+                    ScriptException inner;
+                    inner = _exc.InnerException as ScriptException;
+                    if(inner == null)
+                    {
+                        inner = new ExternalSystemException(_exc.InnerException);
+                    }
+                    
+                    return new ExceptionInfoContext(inner);
+                }
                 else
                     return ValueFactory.Create();
             }
@@ -58,7 +77,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string ToString()
         {
-            return Message;
+            return Description;
         }
 
     }

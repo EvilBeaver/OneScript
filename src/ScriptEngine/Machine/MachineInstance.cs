@@ -2062,7 +2062,7 @@ namespace ScriptEngine.Machine
             if (_currentFrame.LastException != null)
             {
                 var excInfo = new ExceptionInfoContext(_currentFrame.LastException);
-                _operationStack.Push(ValueFactory.Create(excInfo.Message));
+                _operationStack.Push(ValueFactory.Create(excInfo.MessageWithoutCodeFragment));
             }
             else
             {

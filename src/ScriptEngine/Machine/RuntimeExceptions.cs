@@ -116,19 +116,9 @@ namespace ScriptEngine.Machine
     public class ExternalSystemException : RuntimeException
     {
         public ExternalSystemException(Exception reason)
-            : base("Внешнее исключение", reason)
+            : base("Внешнее исключение: " + reason.Message, reason)
         {
         }
-
-        public override string Message
-        {
-            get
-            {
-                string innerMessage = InnerException == null? "" : "\n" + InnerException.Message;
-                return base.Message + innerMessage;
-            }
-        }
-
     }
 
     public class WrongStackConditionException : RuntimeException
