@@ -23,19 +23,16 @@ namespace ScriptEngine.HostedScript.Library.Net
         [ContextMethod("ПрочитатьСтроку","ReadString")]
         public string ReadString(string encoding = null)
         {
+            const int NO_LIMIT = 0;
+            var memStream = ReadAllData(_client.GetStream(), NO_LIMIT);
             var enc = GetEncodingByName(encoding);
-            var stream = _client.GetStream();
-            
-            byte[] readBuffer = new byte[1024];
-            StringBuilder completeMessage = new StringBuilder();
+            if (memStream.Length == 0)
+                return "";
 
-            do
+            using(var reader = new StreamReader(memStream, enc))
             {
-                int numberOfBytesRead = stream.Read(readBuffer, 0, readBuffer.Length);
-                completeMessage.Append(enc.GetString(readBuffer, 0, numberOfBytesRead));
-            } while (stream.DataAvailable);
-
-            return completeMessage.ToString();
+                return reader.ReadToEnd();
+            }
 
         }
 
@@ -43,25 +40,34 @@ namespace ScriptEngine.HostedScript.Library.Net
         public BinaryDataContext ReadBinaryData(int len = 0)
         {
             var stream = _client.GetStream();
-            
-            bool useLimit = len > 0;
-                
-            MemoryStream ms = new MemoryStream();
-            byte[] readBuffer = new byte[1024];
-            do
-            {
-                int portion = useLimit ? Math.Min(len, readBuffer.Length) : readBuffer.Length;
-
-                int numberOfBytesRead = stream.Read(readBuffer, 0, portion);
-                ms.Write(readBuffer, 0, numberOfBytesRead);
-                if(useLimit)
-                    len -= numberOfBytesRead;
-
-            } while (stream.DataAvailable);
-
+            var ms = ReadAllData(stream, len);
             var data = ms.ToArray();
 
             return new BinaryDataContext(data);
+        }
+
+        private MemoryStream ReadAllData(NetworkStream source, int limit)
+        {
+            const int BUF_SIZE = 1024;
+            byte[] readBuffer = new byte[BUF_SIZE];
+
+            bool useLimit = limit > 0;
+            var ms = new MemoryStream();
+
+            while (source.DataAvailable)
+            {
+                int portion = useLimit ? Math.Min(limit, BUF_SIZE) : BUF_SIZE;
+                int numberOfBytesRead = source.Read(readBuffer, 0, portion);
+                ms.Write(readBuffer, 0, numberOfBytesRead);
+                if (useLimit)
+                    limit -= numberOfBytesRead;
+            }
+            
+            if(ms.Length > 0)
+                ms.Position = 0;
+
+            return ms;
+
         }
 
         [ContextMethod("ОтправитьСтроку","SendString")]
