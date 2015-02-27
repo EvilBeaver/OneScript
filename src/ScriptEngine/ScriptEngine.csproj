@@ -106,6 +106,7 @@
     <Compile Include="Machine\Contexts\SafeArrayWrapper.cs" />
     <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
     <Compile Include="Machine\Contexts\SystemEnumAttribute.cs" />
+    <Compile Include="Machine\Contexts\UnmanagedRCWComContext.cs" />
     <Compile Include="Machine\GenericIValueComparer.cs" />
     <Compile Include="Machine\GlobalInstancesManager.cs" />
     <Compile Include="Machine\NullValueImpl.cs" />
