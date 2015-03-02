@@ -10,6 +10,12 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("COMОбъект", "COMObject")]
     abstract public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper
     {
+        public COMWrapperContext()
+            : base(TypeManager.GetTypeByFrameworkType(typeof(COMWrapperContext)))
+        {
+
+        }
+        
         public static COMWrapperContext Create(string progId, IValue[] arguments)
         {
             var type = Type.GetTypeFromProgID(progId, true);
