@@ -82,5 +82,18 @@ namespace ScriptEngine.Machine.Contexts
             PropertyInfo pi = _nameMapper.GetProperty(propNum);
             return pi.CanWrite;
         }
+
+        public override IValue GetPropValue(int propNum)
+        {
+            var pi = _nameMapper.GetProperty(propNum);
+            var result = pi.GetGetMethod().Invoke(_instance, null);
+            return CreateIValue(result);
+        }
+
+        public override void SetPropValue(int propNum, IValue newVal)
+        {
+            var pi = _nameMapper.GetProperty(propNum);
+            pi.GetSetMethod().Invoke(_instance, new[] { MarshalIValue(newVal) });
+        }
     }
 }
