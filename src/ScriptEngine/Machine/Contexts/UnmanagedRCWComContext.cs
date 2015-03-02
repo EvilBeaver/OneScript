@@ -17,12 +17,6 @@ namespace ScriptEngine.Machine.Contexts
         private Dictionary<int, MemberInfo> _membersCache = new Dictionary<int, MemberInfo>();
         private Dictionary<int, MethodInfo> _methodBinding = new Dictionary<int, MethodInfo>();
 
-        public UnmanagedRCWComContext(Type progIdType, IValue[] arguments)
-        {
-            var args = MarshalArguments(arguments);
-            _instance = Activator.CreateInstance(progIdType, args);
-        }
-
         public UnmanagedRCWComContext(object instance)
         {
             _instance = instance;
@@ -46,12 +40,6 @@ namespace ScriptEngine.Machine.Contexts
                 _instance = null;
                 throw;
             }
-        }
-
-        private object[] MarshalArguments(IValue[] arguments)
-        {
-            var args = arguments.Select(x => MarshalIValue(x)).ToArray();
-            return args;
         }
 
         protected override void Dispose(bool manualDispose)

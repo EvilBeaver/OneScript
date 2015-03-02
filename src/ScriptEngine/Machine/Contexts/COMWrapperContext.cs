@@ -19,13 +19,16 @@ namespace ScriptEngine.Machine.Contexts
         public static COMWrapperContext Create(string progId, IValue[] arguments)
         {
             var type = Type.GetTypeFromProgID(progId, true);
+
+            object instance = Activator.CreateInstance(type, MarshalArguments(arguments));
+
             if(TypeIsRuntimeCallableWrapper(type))
             {
-                return new UnmanagedRCWComContext(type, arguments);
+                return new UnmanagedRCWComContext(instance);
             }
             else
             {
-                throw new NotImplementedException();
+                return new ManagedCOMWrapperContext(instance);
             }
         }
 
@@ -44,6 +47,12 @@ namespace ScriptEngine.Machine.Contexts
         private static bool TypeIsRuntimeCallableWrapper(Type type)
         {
             return type.FullName == "System.__ComObject"; // string, cause it's hidden type
+        }
+
+        protected static object[] MarshalArguments(IValue[] arguments)
+        {
+            var args = arguments.Select(x => MarshalIValue(x)).ToArray();
+            return args;
         }
 
         public static object MarshalIValue(IValue val)
