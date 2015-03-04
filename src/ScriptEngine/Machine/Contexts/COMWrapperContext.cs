@@ -60,6 +60,20 @@ namespace ScriptEngine.Machine.Contexts
             return ContextValuesMarshaller.ConvertToCLRObject(val);
         }
 
+        protected static object[] MarshalArgumentsStrict(IValue[] arguments, Type[] argumentsTypes)
+        {
+            if (argumentsTypes.Length < arguments.Length)
+                throw RuntimeException.TooManyArgumentsPassed();
+
+            object[] marshalledArgs = new object[arguments.Length];
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                marshalledArgs[i] = ContextValuesMarshaller.ConvertParam(arguments[i], argumentsTypes[i]);
+            }
+
+            return marshalledArgs;
+        }
+
         public static IValue CreateIValue(object objParam)
         {
             if (objParam == null)

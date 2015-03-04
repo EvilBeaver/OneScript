@@ -17,9 +17,6 @@ namespace ScriptEngine.Machine.Contexts
         public ManagedCOMWrapperContext(object instance)
         {
             _instanceType = instance.GetType();
-            if (!_instanceType.IsCOMObject)
-                throw new ArgumentException("Instance must be a COM-object");
-            
             _instance = instance;
             _nameMapper = new ComReflectionNameToIdMapper(_instanceType);
         }
@@ -94,6 +91,99 @@ namespace ScriptEngine.Machine.Contexts
         {
             var pi = _nameMapper.GetProperty(propNum);
             pi.GetSetMethod().Invoke(_instance, new[] { MarshalIValue(newVal) });
+        }
+
+        public override IValue GetIndexedValue(IValue index)
+        {
+            if (!IsIndexed)
+                throw RuntimeException.IndexedAccessIsNotSupportedException();
+
+            var member = _instanceType.GetMethod("get_Item", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance);
+
+            if (member == null) // set only?
+                throw RuntimeException.IndexedAccessIsNotSupportedException();
+
+            object retValue = member.Invoke(_instance, MarshalArgumentsStrict(new[] { index }, GetMethodParametersTypes(member)));
+
+            return CreateIValue(retValue);
+
+        }
+        
+        public override void SetIndexedValue(IValue index, IValue value)
+        {
+            if (!IsIndexed)
+                throw RuntimeException.IndexedAccessIsNotSupportedException();
+
+            var member = _instanceType.GetMethod("set_Item", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance);
+
+            if (member == null) // get only?
+                throw RuntimeException.IndexedAccessIsNotSupportedException();
+
+            object retValue = member.Invoke(_instance, MarshalArgumentsStrict(new[] { index, value }, GetMethodParametersTypes(member)));
+
+        }
+
+        public override int FindMethod(string name)
+        {
+            return _nameMapper.FindMethod(name);
+        }
+
+        public override MethodInfo GetMethodInfo(int methodNumber)
+        {
+            var methodInfo = _nameMapper.GetMethod(methodNumber);
+            return GetReflectableMethod(methodInfo);
+        }
+
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        {
+            var method = _nameMapper.GetMethod(methodNumber);
+            method.Invoke(_instance, MarshalArgumentsStrict(arguments, GetMethodParametersTypes(method)));
+        }
+
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        {
+            var method = _nameMapper.GetMethod(methodNumber);
+            var result = method.Invoke(_instance, MarshalArgumentsStrict(arguments, GetMethodParametersTypes(method)));
+            retValue = CreateIValue(result);
+        }
+
+        private MethodInfo GetReflectableMethod(System.Reflection.MethodInfo reflectionMethod)
+        {
+            MethodInfo methodInfo;
+
+            methodInfo = new MethodInfo();
+            methodInfo.Name = reflectionMethod.Name;
+
+            var reflectedMethod = reflectionMethod as System.Reflection.MethodInfo;
+
+            if (reflectedMethod != null)
+            {
+                methodInfo.IsFunction = reflectedMethod.ReturnType != typeof(void);
+                var reflectionParams = reflectedMethod.GetParameters();
+                FillMethodInfoParameters(ref methodInfo, reflectionParams);
+            }
+
+            return methodInfo;
+        }
+        
+        private static Type[] GetMethodParametersTypes(System.Reflection.MethodInfo method)
+        {
+            return method.GetParameters()
+                .Select(x => x.ParameterType)
+                .ToArray();
+        }
+
+        private static void FillMethodInfoParameters(ref MethodInfo methodInfo, System.Reflection.ParameterInfo[] reflectionParams)
+        {
+            methodInfo.Params = new ParameterDefinition[reflectionParams.Length];
+            for (int i = 0; i < reflectionParams.Length; i++)
+            {
+                var reflectedParam = reflectionParams[i];
+                var param = new ParameterDefinition();
+                param.HasDefaultValue = reflectedParam.IsOptional;
+                param.IsByValue = !reflectedParam.IsOut;
+                methodInfo.Params[i] = param;
+            }
         }
     }
 }
