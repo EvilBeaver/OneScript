@@ -17,7 +17,7 @@ IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 	
 	IntPtr handle = IntPtr(pDesigner); 
 	Object^ managedObject = System::Runtime::InteropServices::Marshal::GetObjectForIUnknown(handle);
-	IRuntimeContextInstance^ designerWrapper = gcnew Contexts::COMWrapperContext(managedObject);
+	IRuntimeContextInstance^ designerWrapper = Contexts::COMWrapperContext::Create(managedObject);
 
 	env->InjectGlobalProperty((IValue^)designerWrapper, L"Designer", true);
 	env->InjectGlobalProperty((IValue^)designerWrapper, L"Конфигуратор", true);
@@ -218,7 +218,7 @@ ScriptDrivenAddin^ IAddinLoaderImpl::LoadFromDialog(String^ path, addinNames* na
 		}
 
 		scriptObject->AddProperty(thisProp, scriptObject);
-		scriptObject->AddProperty(formProp, gcnew COMWrapperContext(form));
+		scriptObject->AddProperty(formProp, COMWrapperContext::Create(form));
 		scriptObject->InitOwnData();
 
 		String^ title = safe_cast<String^>(form->GetType()->InvokeMember(L"Заголовок", System::Reflection::BindingFlags::GetProperty, nullptr, form, nullptr));
