@@ -54,13 +54,12 @@ namespace ScriptEngine.HostedScript.Library
         {
             // примитивная реализация "в лоб"
             var fn = Path.GetRandomFileName();
-            if (ext != null)
+            if (ext != null && !String.IsNullOrWhiteSpace(ext))
             {
-                if (ext[0] == '.')
+                if(ext[0] == '.')
                     fn += ext;
                 else
                     fn += "." + ext;
-
             }
 
             return Path.Combine(TempFilesDir(), fn);
