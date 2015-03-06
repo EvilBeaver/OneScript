@@ -8,6 +8,9 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.Zip
 {
+    /// <summary>
+    /// Описание элемента, находящегося в Zip архиве.
+    /// </summary>
     [ContextClass("ЭлементZipФайла", "ZipFileEntry")]
     public class ZipFileEntryContext : AutoContext<ZipFileEntryContext>
     {

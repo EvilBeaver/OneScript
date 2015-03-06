@@ -9,6 +9,9 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.Http
 {
+    /// <summary>
+    /// Ответ от HTTP-сервера
+    /// </summary>
     [ContextClass("HTTPОтвет", "HTTPResponse")]
     public class HttpResponseContext : AutoContext<HttpResponseContext>, IDisposable
     {
@@ -62,6 +65,9 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         }
 
+        /// <summary>
+        /// Соответствие. Заголовки ответа сервера.
+        /// </summary>
         [ContextProperty("Заголовки", "Headers")]
         public MapImpl Headers
         {
@@ -71,9 +77,17 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
         }
 
+        /// <summary>
+        /// Код состояния HTTP ответа. Число.
+        /// </summary>
         [ContextProperty("КодСостояния", "StatusCode", CanWrite = false)]
         public int StatusCode { get; set; }
 
+        /// <summary>
+        /// Получает ответ сервера в виде строки
+        /// </summary>
+        /// <param name="encoding">КодировкаТекста или Строка. Кодировка полученного текста. По умолчанию принимается кодировка из заголовка Content-Type</param>
+        /// <returns></returns>
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
         public IValue GetBodyAsString(IValue encoding = null)
         {
@@ -98,6 +112,10 @@ namespace ScriptEngine.HostedScript.Library.Http
             
         }
 
+        /// <summary>
+        /// Интерпретировать ответ, как ДвоичныеДанные
+        /// </summary>
+        /// <returns>ДвоичныеДанные</returns>
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
         public IValue GetBodyAsBinaryData()
         {
@@ -112,6 +130,10 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
         }
 
+        /// <summary>
+        /// Получить файл, в который записан ответ сервера.
+        /// </summary>
+        /// <returns>Строка. Имя файла с ответом. Если ответ не записывался в файл - возвращает Неопределено.</returns>
         [ContextMethod("ПолучитьИмяФайлаТела", "GetBodyFileName")]
         public IValue GetBodyFileName()
         {
@@ -121,6 +143,9 @@ namespace ScriptEngine.HostedScript.Library.Http
             return ValueFactory.Create(_filename);
         }
 
+        /// <summary>
+        /// Закрыть HTTP ответ и освободить ресурсы
+        /// </summary>
         [ContextMethod("Закрыть", "Close")]
         public void Close()
         {

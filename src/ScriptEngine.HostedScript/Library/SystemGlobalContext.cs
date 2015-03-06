@@ -290,6 +290,10 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
+        /// <summary>
+        /// Каталог исполняемых файлов OneScript
+        /// </summary>
+        /// <returns></returns>
         [ContextMethod("КаталогПрограммы","ProgramDirectory")]
         public string ProgramDirectory()
         {
@@ -355,6 +359,11 @@ namespace ScriptEngine.HostedScript.Library
             return DateTime.Now;
         }
 
+        /// <summary>
+        /// Проверяет заполненность значения по принципу, заложенному в 1С:Предприятии
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         [ContextMethod("ЗначениеЗаполнено","IsValueFilled")]
         public bool IsValueFilled(IValue value)
         {
@@ -381,6 +390,13 @@ namespace ScriptEngine.HostedScript.Library
             
         }
 
+        /// <summary>
+        /// Заполняет одноименные значения свойств одного объекта из другого
+        /// </summary>
+        /// <param name="acceptor">Объект-приемник</param>
+        /// <param name="source">Объект-источник</param>
+        /// <param name="filledProperties">Заполняемые свойства (строка, через запятую)</param>
+        /// <param name="ignoredProperties">Игнорируемые свойства (строка, через запятую)</param>
         [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
         public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
         {

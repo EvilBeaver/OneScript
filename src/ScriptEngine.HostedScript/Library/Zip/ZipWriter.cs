@@ -9,6 +9,9 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.Zip
 {
+    /// <summary>
+    /// Объект записи ZIP-архивов.
+    /// </summary>
     [ContextClass("ЗаписьZipФайла", "ZipFileWriter")]
     public class ZipWriter : AutoContext<ZipWriter>
     {
@@ -20,6 +23,15 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         }
 
+        /// <summary>
+        /// Открыть архив для записи.
+        /// </summary>
+        /// <param name="filename">Имя файла будущего архива</param>
+        /// <param name="password">Пароль на архив</param>
+        /// <param name="comment">Комментарий к архиву</param>
+        /// <param name="compressionMethod">МетодСжатияZIP (Сжатие/Копирование)</param>
+        /// <param name="compressionLevel">УровеньСжатияZIP (Минимальный/Оптимальный/Максимальный)</param>
+        /// <param name="encryptionMethod">МетодШифрованияZIP (в текущей реализации не поддерживается)</param>
         [ContextMethod("Открыть", "Open")]
         public void Open(
             string filename, 
@@ -41,6 +53,9 @@ namespace ScriptEngine.HostedScript.Library.Zip
             //_zip.Encryption = MakeZipEncryption(encryptionMethod);
         }
 
+        /// <summary>
+        /// Записывает и закрывает файл архива.
+        /// </summary>
         [ContextMethod("Записать", "Write")]
         public void Write()
         {
@@ -51,6 +66,12 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip = null;
         }
 
+        /// <summary>
+        /// Добавление файла к архиву.
+        /// </summary>
+        /// <param name="file">Имя файла, помещаемого в архив, или маска.</param>
+        /// <param name="storePathMode">РежимСохраненияПутейZIP (НеСохранятьПути/СохранятьОтносительныеПути/СохранятьПолныеПути)</param>
+        /// <param name="recurseSubdirectories">РежимОбработкиПодкаталоговZIP (НеОбрабатывать/ОбрабатыватьРекурсивно)</param>
         [ContextMethod("Добавить", "Add")]
         public void Add(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode = null, SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories = null)
         {
@@ -238,7 +259,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 throw new RuntimeException("Архив не открыт");
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name="Формирование неинициализированного объекта")]
         public static ZipWriter Construct()
         {
             return new ZipWriter();
