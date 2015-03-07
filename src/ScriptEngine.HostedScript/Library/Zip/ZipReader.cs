@@ -8,6 +8,9 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.Zip
 {
+    /// <summary>
+    /// Объект чтения ZIP файлов.
+    /// </summary>
     [ContextClass("ЧтениеZipФайла", "ZipFileReader")]
     public class ZipReader : AutoContext<ZipReader>, IDisposable
     {
@@ -29,14 +32,24 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 throw new RuntimeException("Архив не открыт");
         }
 
+        /// <summary>
+        /// Открывает архив для чтения.
+        /// </summary>
+        /// <param name="filename">Имя ZIP файла, который требуется открыть для чтения.</param>
+        /// <param name="password">Пароль к файлу, если он зашифрован.</param>
         [ContextMethod("Открыть","Open")]
-        private void Open(string filename, string password)
+        private void Open(string filename, string password = null)
         {
             _zip = ZipFile.Read(filename);
             _zip.Password = password;
         }
 
 
+        /// <summary>
+        /// Извлечение всех файлов из архива
+        /// </summary>
+        /// <param name="where">Строка. Каталог в который извлекаются файлы</param>
+        /// <param name="restorePaths">РежимВосстановленияПутейФайловZIP</param>
         [ContextMethod("ИзвлечьВсе","ExtractAll")]
         public void ExtractAll(string where, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null)
         {
@@ -46,6 +59,13 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip.ExtractAll(where);
         }
 
+        /// <summary>
+        /// Извлечение элемента из архива
+        /// </summary>
+        /// <param name="entry">ЭлементZipФайла. Извлекаемый элемент.</param>
+        /// <param name="destination">Каталог, в который извлекается элемент.</param>
+        /// <param name="restorePaths">РежимВосстановленияПутейФайлов</param>
+        /// <param name="password">Пароль элемента (если отличается от пароля к архиву)</param>
         [ContextMethod("Извлечь", "Extract")]
         public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null)
         {
@@ -56,12 +76,18 @@ namespace ScriptEngine.HostedScript.Library.Zip
             realEntry.Extract(destination);
         }
 
+        /// <summary>
+        /// Закрыть архив и освободить объект.
+        /// </summary>
         [ContextMethod("Закрыть", "Close")]
         public void Close()
         {
             Dispose();
         }
 
+        /// <summary>
+        /// Коллекция элементов архива.
+        /// </summary>
         [ContextProperty("Элементы", "Elements")]
         public ZipFileEntriesCollection Elements
         {
@@ -88,7 +114,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             return flattenFlag;
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name="Создание неинициализированного объекта")]
         public static ZipReader Construct()
         {
             return new ZipReader();

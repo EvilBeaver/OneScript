@@ -8,6 +8,9 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.Http
 {
+    /// <summary>
+    /// Данные и заголоки HTTP запроса.
+    /// </summary>
     [ContextClass("HTTPЗапрос", "HTTPRequest")]
     public class HttpRequestContext : AutoContext<HttpRequestContext>
     {
@@ -41,12 +44,22 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
         }
 
+        /// <summary>
+        /// Относительный путь к ресурсу на сервере (не включает имя сервера)
+        /// </summary>
         [ContextProperty("АдресРесурса", "ResourceAddress")]
         public string ResourceAddress { get; set; }
 
+        /// <summary>
+        /// Соответствие. Заголовки запроса к http-серверу
+        /// </summary>
         [ContextProperty("Заголовки", "Headers")]
         public MapImpl Headers { get; set; }
 
+        /// <summary>
+        /// Установить файл на диске в качестве тела запроса. Файл открывается на чтение и остается открытым до завершения запроса.
+        /// </summary>
+        /// <param name="filename"></param>
         [ContextMethod("УстановитьИмяФайлаТела", "SetBodyFileName")]
         public void SetBodyFileName(string filename)
         {
@@ -59,6 +72,10 @@ namespace ScriptEngine.HostedScript.Library.Http
             return _body.GetAsFilename();
         }
 
+        /// <summary>
+        /// Установить тело запроса из объекта ДвоичныеДанные
+        /// </summary>
+        /// <param name="data"></param>
         [ContextMethod("УстановитьТелоИзДвоичныхДанных", "SetBodyFromBinary")]
         public void SetBodyFromBinary(BinaryDataContext data)
         {
@@ -71,6 +88,11 @@ namespace ScriptEngine.HostedScript.Library.Http
             return _body.GetAsBinary();
         }
 
+        /// <summary>
+        /// Установить строку в качестве содержимого запроса
+        /// </summary>
+        /// <param name="data">Строка с данными</param>
+        /// <param name="encoding">КодировкаТекста или Строка. Кодировка в которой отправляются данные.</param>
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
         public void SetBodyFromString(string data, IValue encoding = null)
         {

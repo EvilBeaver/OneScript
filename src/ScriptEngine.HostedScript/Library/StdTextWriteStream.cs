@@ -8,6 +8,10 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript.Library
 {
+    /// <summary>
+    /// Стандартный поток ввода текста. Используется для взаимодействия с работающими процессами.
+    /// Методы работают подобно одноименным методам объекта ЗаписьТекста.
+    /// </summary>
     [ContextClass("ПотокВводаТекста", "TextInputStream")]
     public class StdTextWriteStream : AutoContext<StdTextWriteStream>, IDisposable
     {

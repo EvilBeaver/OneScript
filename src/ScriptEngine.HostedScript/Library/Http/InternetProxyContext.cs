@@ -8,6 +8,10 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.Http
 {
+    /// <summary>
+    /// Параметры прокси-сервера для доступа в Интернет.
+    /// В текущей реализации поддерживается только HTTP прокси. Стандартные методы объекта ИнтернетПрокси из 1С:Предприятие для FTP и SOCKS не реализованы.
+    /// </summary>
     [ContextClass("ИнтернетПрокси", "InternetProxy")]
     public class InternetProxyContext : AutoContext<InternetProxyContext>
     {
@@ -104,13 +108,13 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name="Ручная настройка прокси")]
         public static InternetProxyContext Constructor()
         {
             return Constructor(ValueFactory.Create(false));
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name="Конструктор для системных настроек прокси")]
         public static InternetProxyContext Constructor(IValue useDefault)
         {
             return new InternetProxyContext(useDefault.AsBoolean());

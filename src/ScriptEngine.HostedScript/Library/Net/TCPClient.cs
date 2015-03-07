@@ -10,6 +10,9 @@ using System.IO;
 
 namespace ScriptEngine.HostedScript.Library.Net
 {
+    /// <summary>
+    /// Соединение по протоколу TCP. Позволяет отправлять и принимать данные с использованием TCP сокета.
+    /// </summary>
     [ContextClass("TCPСоединение","TCPConnection")]
     public class TCPClient : AutoContext<TCPClient>, IDisposable
     {
@@ -20,6 +23,12 @@ namespace ScriptEngine.HostedScript.Library.Net
             this._client = client;
         }
 
+        /// <summary>
+        /// Прочитать данные из сокета в виде строки.
+        /// </summary>
+        /// <param name="encoding">КодировкаТекста или Строка. Указывает в какой кодировке интерпретировать входящий поток байт.
+        /// Значение по умолчанию: utf-8</param>
+        /// <returns>Строка. Данные прочитанные из сокета</returns>
         [ContextMethod("ПрочитатьСтроку","ReadString")]
         public string ReadString(string encoding = null)
         {
@@ -36,6 +45,12 @@ namespace ScriptEngine.HostedScript.Library.Net
 
         }
 
+        /// <summary>
+        /// Читает сырые байты из сокета.
+        /// </summary>
+        /// <param name="len">Количество байт, которые требуется прочитать. 0 - читать до конца потока.
+        /// Значение по умолчанию: 0</param>
+        /// <returns>ДвоичныеДанные</returns>
         [ContextMethod("ПрочитатьДвоичныеДанные", "ReadBinaryData")]
         public BinaryDataContext ReadBinaryData(int len = 0)
         {
@@ -70,6 +85,11 @@ namespace ScriptEngine.HostedScript.Library.Net
 
         }
 
+        /// <summary>
+        /// Отправка строки на удаленный хост
+        /// </summary>
+        /// <param name="data">Строка. Данные для отправки</param>
+        /// <param name="encoding">КодировкаТекста или Строка. Кодировка в которой нужно записать данные в поток. По умолчанию utf-8</param>
         [ContextMethod("ОтправитьСтроку","SendString")]
         public void SendString(string data, string encoding = null)
         {
@@ -84,6 +104,10 @@ namespace ScriptEngine.HostedScript.Library.Net
             stream.Flush();
         }
 
+        /// <summary>
+        /// Отправка сырых двоичных данных на удаленный хост.
+        /// </summary>
+        /// <param name="data">ДвоичныеДанные которые нужно отправить.</param>
         [ContextMethod("ОтправитьДвоичныеДанные", "SendBinaryData")]
         public void SendString(BinaryDataContext data)
         {
@@ -96,12 +120,20 @@ namespace ScriptEngine.HostedScript.Library.Net
 
         }
 
+        /// <summary>
+        /// Признак активности соединения.
+        /// Данный признак не является надежным признаком существования соединения. 
+        /// Он говорит лишь о том, что на момент получения значения данного свойства соединение было активно.
+        /// </summary>
         [ContextProperty("Активно","IsActive")]
         public bool IsActive
         {
             get { return _client.Connected; }
         }
 
+        /// <summary>
+        /// Таймаут, в течение которого система ожидает отправки данных. Если таймаут не установлен, то скрипт будет ждать начала отправки бесконечно.
+        /// </summary>
         [ContextProperty("ТаймаутОтправки", "WriteTimeout")]
         public int WriteTimeout
         {
@@ -109,6 +141,9 @@ namespace ScriptEngine.HostedScript.Library.Net
             set { _client.GetStream().WriteTimeout = value; }
         }
 
+        /// <summary>
+        /// Таймаут чтения данных. Если таймаут не установлен, то скрипт будет ждать начала приема данных бесконечно.
+        /// </summary>
         [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
         public int ReadTimeout
         {
@@ -131,6 +166,9 @@ namespace ScriptEngine.HostedScript.Library.Net
             return enc;
         }
 
+        /// <summary>
+        /// Закрывает соединение с удаленным хостом.
+        /// </summary>
         [ContextMethod("Закрыть","Close")]
         public void Close()
         {

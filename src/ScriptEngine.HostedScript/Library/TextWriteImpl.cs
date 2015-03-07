@@ -64,6 +64,8 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Записать", "Write")]
         public void Write(string what)
         {
+            ThrowIfNotOpened();
+            
             _writer.Write(what);
         }
 
@@ -74,7 +76,15 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗаписатьСтроку", "WriteLine")]
         public void WriteLine(string what)
         {
+            ThrowIfNotOpened();
+
             _writer.WriteLine(what);
+        }
+
+        public void ThrowIfNotOpened()
+        {
+            if (_writer == null)
+                throw new RuntimeException("Файл не открыт");
         }
 
         public void Dispose()
