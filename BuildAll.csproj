@@ -6,7 +6,7 @@
     <OutputPathForDist>$(MSBuildProjectDirectory)\install\build\</OutputPathForDist>
     <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
     <Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
-    <InstallerStandartPath>"C:\Program Files (x86)\Inno Setup 5\iscc.exe"</InstallerStandartPath>
+    <InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
 
     <Major>1</Major>
     <Minor>0</Minor>
@@ -15,6 +15,11 @@
     
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(ReleaseNumber)' != '' ">
+    <!-- CI Build Number -->
+    <Build>$(ReleaseNumber)</Build>
+  </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(BUILD_NUMBER)' != '' ">
     <!-- CI Build Number -->
     <Revision>$(BUILD_NUMBER)</Revision>
@@ -53,10 +58,7 @@
   
 
   <Target Name="Configure">
-    <GitVersion LocalPath="$(MSBuildProjectDirectory)">
-      <Output TaskParameter="CommitHash" PropertyName="CommitHash" />
-    </GitVersion>
-
+    
     <!--CI server will be generate build numbaer and regenerate all AssemblyInfo without commit-->
     <CallTarget Targets="VersionGenerate" Condition=" '$(BUILD_NUMBER)' != '' "/>
 
@@ -152,17 +154,9 @@
       <Output TaskParameter="Include" ItemName="ZipFiles" />
     </CreateItem>
 
-    <GitBranch>
-      <Output TaskParameter="Branch" PropertyName="GitBranch" />
-    </GitBranch>
-
-    <Message Text="Current GIT branch $(GitBranch)"/>
-  
-    <!--$(GitBranch.Replace('\','-').Replace('/','-'))-->
-    
     <Zip Files="@(ZipFiles)"
          WorkingDirectory="$(OutputPathForDist)"
-         ZipFileName="$(DistPath)OneScript-latest.zip" />
+         ZipFileName="$(DistPath)OneScript-$(Major).$(Minor).$(Build)-bin.zip" />
    
   </Target>  
   
