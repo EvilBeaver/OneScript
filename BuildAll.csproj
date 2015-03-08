@@ -144,10 +144,10 @@
   
   
   <Target Name="CreateZipForUpdateDll">
-    <CreateItem Include="$(DistPath)\*.zip">
+    <CreateItem Include="$(DistPath)\*.zip;$(OutputPathForDist)\StandaloneRunner.exe">
       <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
     </CreateItem>
-
+	
     <Delete Files="@(RemoveUnnessesaryFiles)" />
 
     <CreateItem Include="$(OutputPathForDist)\*.*" Exclude="$(DefaultExclude)" >
