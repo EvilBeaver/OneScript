@@ -40,6 +40,7 @@ namespace ScriptEngine.Environment
     class FileBasedSource : ICodeSource
     {
         string _path;
+        string _code;
 
         public FileBasedSource(string path)
         {
@@ -48,10 +49,15 @@ namespace ScriptEngine.Environment
 
         private string GetCodeString()
         {
-            using (var reader = FileOpener.OpenReader(_path))
+            if (_code == null)
             {
-                return reader.ReadToEnd();
+                using (var reader = FileOpener.OpenReader(_path))
+                {
+                    _code = reader.ReadToEnd();
+                }
             }
+
+            return _code;
         }
 
         #region ICodeSource Members

@@ -50,6 +50,9 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -71,7 +74,22 @@
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
+    <Compile Include="Library\Http\HttpConnectionContext.cs" />
+    <Compile Include="Library\Http\HttpRequestBody.cs" />
+    <Compile Include="Library\Http\HttpRequestBodyBinary.cs" />
+    <Compile Include="Library\Http\HttpRequestBodyString.cs" />
+    <Compile Include="Library\Http\HttpRequestBodyUnknown.cs" />
+    <Compile Include="Library\Http\HttpRequestContext.cs" />
+    <Compile Include="Library\Http\HttpRequestBodyFile.cs" />
+    <Compile Include="Library\Http\HttpResponseBody.cs" />
+    <Compile Include="Library\Http\HttpResponseContext.cs" />
+    <Compile Include="Library\Http\InternetProxyContext.cs" />
     <Compile Include="Library\MiscGlobalFunctions.cs" />
+    <Compile Include="Library\Net\TCPClient.cs" />
+    <Compile Include="Library\Net\TCPServer.cs" />
+    <Compile Include="Library\ProcessContext.cs" />
+    <Compile Include="Library\StdTextReadStream.cs" />
+    <Compile Include="Library\StdTextWriteStream.cs" />
     <Compile Include="Library\SystemGlobalContext.cs" />
     <Compile Include="Library\GuidWrapper.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />
@@ -80,6 +98,7 @@
     <Compile Include="Library\Reflector.cs" />
     <Compile Include="Library\SymbolsEnum.cs" />
     <Compile Include="Library\SystemEnvironmentContext.cs" />
+    <Compile Include="Library\TextEncodingEnum.cs" />
     <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Library\TextWriteImpl.cs" />
     <Compile Include="Library\Xml\XmlGlobalFunctions.cs" />
@@ -92,6 +111,16 @@
     <Compile Include="Library\ValueTable\ValueTableColumnCollection.cs" />
     <Compile Include="Library\ValueTable\ValueTableRow.cs" />
     <Compile Include="Library\Xml\XmlWriterImpl.cs" />
+    <Compile Include="Library\Zip\ZipCompressionLevelEnum.cs" />
+    <Compile Include="Library\Zip\ZipCompressionMethodEnum.cs" />
+    <Compile Include="Library\Zip\ZipEncryptionMethodEnum.cs" />
+    <Compile Include="Library\Zip\ZipFileEntriesCollection.cs" />
+    <Compile Include="Library\Zip\ZipFileEntryContext.cs" />
+    <Compile Include="Library\Zip\ZipReader.cs" />
+    <Compile Include="Library\Zip\ZipRestoreFilePathsModeEnum.cs" />
+    <Compile Include="Library\Zip\ZipStorePathModeEnum.cs" />
+    <Compile Include="Library\Zip\ZIPSubDirProcessingModeEnum.cs" />
+    <Compile Include="Library\Zip\ZipWriter.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\StructureImpl.cs" />
@@ -102,7 +131,9 @@
       <Name>ScriptEngine</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

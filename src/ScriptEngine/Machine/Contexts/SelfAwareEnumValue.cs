@@ -5,11 +5,10 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class SelfAwareEnumValue : EnumerationValue
+    public class SelfAwareEnumValue<TOwner> : EnumerationValue where TOwner : EnumerationContext
     {
-        public SelfAwareEnumValue(EnumerationContext owner) : base(owner)
+        public SelfAwareEnumValue(TOwner owner) : base(owner)
         {
         }
-
     }
 }

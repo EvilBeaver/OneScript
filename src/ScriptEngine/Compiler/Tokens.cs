@@ -132,6 +132,7 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("кодсимвола", Token.ChrCode);
             _stringToToken.Add("пустаястрока", Token.EmptyStr);
             _stringToToken.Add("стрзаменить", Token.StrReplace);
+            _stringToToken.Add("стрчисловхождений", Token.StrEntryCount);
 
             _stringToToken.Add("год", Token.Year);
             _stringToToken.Add("месяц", Token.Month);
@@ -158,8 +159,19 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("текущаядата", Token.CurrentDate);
             _stringToToken.Add("цел", Token.Integer);
             _stringToToken.Add("окр", Token.Round);
+            _stringToToken.Add("log", Token.Log);
+            _stringToToken.Add("log10", Token.Log10);
+            _stringToToken.Add("sin", Token.Sin);
+            _stringToToken.Add("cos", Token.Cos);
+            _stringToToken.Add("tan", Token.Tan);
+            _stringToToken.Add("asin", Token.ASin);
+            _stringToToken.Add("acos", Token.ACos);
+            _stringToToken.Add("atan", Token.ATan);
+            _stringToToken.Add("exp", Token.Exp);
             _stringToToken.Add("pow", Token.Pow);
             _stringToToken.Add("sqrt", Token.Sqrt);
+            _stringToToken.Add("мин", Token.Min);
+            _stringToToken.Add("макс", Token.Max);
             _stringToToken.Add("формат", Token.Format);
             _stringToToken.Add("информацияобошибке", Token.ExceptionInfo);
             _stringToToken.Add("описаниеошибки", Token.ExceptionDescr);
@@ -318,6 +330,7 @@ namespace ScriptEngine.Compiler
         ChrCode,
         EmptyStr,
         StrReplace,
+        StrEntryCount,
         Year,
         Month,
         Day,
@@ -343,8 +356,19 @@ namespace ScriptEngine.Compiler
         CurrentDate,
         Integer,
         Round,
+        Log,
+        Log10,
+        Sin,
+        Cos,
+        Tan,
+        ASin,
+        ACos,
+        ATan,
+        Exp,
         Pow,
         Sqrt,
+        Min,
+        Max,
         Format,
 
         ExceptionInfo,

@@ -1,20 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.Machine
+namespace ScriptEngine.Machine.Contexts
 {
-    static class ContextValuesMarshaller
+    public static class ContextValuesMarshaller
     {
         public static T ConvertParam<T>(IValue value)
         {
-            object valueObj;
             var type = typeof(T);
-            if (value == null)
+            object valueObj = ConvertParam(value, type);
+            if (valueObj == null)
             {
-                valueObj = default(T);
+                return default(T);
+            }
+            
+            try
+            {
+                return (T)valueObj;
+            }
+            catch (InvalidCastException)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+           
+        }
+
+        public static object ConvertParam(IValue value, Type type)
+        {
+            object valueObj;
+            if (value == null || value.DataType == DataType.NotAValidValue)
+            {
+                return null;
             }
             else if (type == typeof(IValue))
             {
@@ -50,17 +65,10 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                valueObj = default(T);
+                valueObj = CastToCLRObject(value);
             }
 
-            try
-            {
-                return (T)valueObj;
-            }
-            catch (InvalidCastException)
-            {
-                throw RuntimeException.InvalidArgumentType();
-            }
+            return valueObj;
         }
 
         public static IValue ConvertReturnValue<TRet>(TRet param)
@@ -143,5 +151,27 @@ namespace ScriptEngine.Machine
 			
 			return result;
 		}
+
+        public static T CastToCLRObject<T>(IValue val)
+        {
+            return (T)CastToCLRObject(val);
+        }
+
+        public static object CastToCLRObject(IValue val)
+        {
+            var rawValue = val.GetRawValue();
+            object objectRef;
+            if (rawValue.DataType == DataType.GenericValue)
+            {
+                objectRef = rawValue;
+            }
+            else
+            {
+                objectRef = ConvertToCLRObject(rawValue);
+            }
+
+            return objectRef;
+
+        }
     }
 }

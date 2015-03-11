@@ -8,51 +8,48 @@ using System.Text;
 namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("COMОбъект", "COMObject")]
-    public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper
+    abstract public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper
     {
-        private Type _dispatchedType;
-        private object _instance;
-        private bool? _isIndexed;
-        private Dictionary<string, int> _dispIdCache = new Dictionary<string,int>(StringComparer.InvariantCultureIgnoreCase);
-        private Dictionary<int, MemberInfo> _membersCache = new Dictionary<int, MemberInfo>();
-        private Dictionary<int, MethodInfo> _methodBinding = new Dictionary<int, MethodInfo>();
+        public COMWrapperContext()
+            : base(TypeManager.GetTypeByFrameworkType(typeof(COMWrapperContext)))
+        {
 
-        private const uint E_DISP_MEMBERNOTFOUND = 0x80020003;
+        }
         
-        public COMWrapperContext(string progId, IValue[] arguments)
+        public static COMWrapperContext Create(string progId, IValue[] arguments)
         {
             var type = Type.GetTypeFromProgID(progId, true);
-            var args = MarshalArguments(arguments);
-            _instance = Activator.CreateInstance(type, args);
-            InitByInstance();
+
+            object instance = Activator.CreateInstance(type, MarshalArguments(arguments));
+
+            if(TypeIsRuntimeCallableWrapper(type))
+            {
+                return new UnmanagedRCWComContext(instance);
+            }
+            else
+            {
+                return new ManagedCOMWrapperContext(instance);
+            }
         }
 
-        private void InitByInstance()
+        public static COMWrapperContext Create(object instance)
         {
-            if (!DispatchUtility.ImplementsIDispatch(_instance))
+            if(TypeIsRuntimeCallableWrapper(instance.GetType()))
             {
-                _instance = null;
-                throw new RuntimeException("Объект не реализует IDispatch.");
+                return new UnmanagedRCWComContext(instance);
             }
-
-            try
+            else
             {
-                _dispatchedType = DispatchUtility.GetType(_instance, false);
-            }
-            catch
-            {
-                _instance = null;
-                throw;
+                throw new NotImplementedException();
             }
         }
 
-        public COMWrapperContext(object instance)
+        private static bool TypeIsRuntimeCallableWrapper(Type type)
         {
-            _instance = instance;
-            InitByInstance();
+            return type.FullName == "System.__ComObject"; // string, cause it's hidden type
         }
 
-        private object[] MarshalArguments(IValue[] arguments)
+        protected static object[] MarshalArguments(IValue[] arguments)
         {
             var args = arguments.Select(x => MarshalIValue(x)).ToArray();
             return args;
@@ -60,7 +57,21 @@ namespace ScriptEngine.Machine.Contexts
 
         public static object MarshalIValue(IValue val)
         {
-			return ContextValuesMarshaller.ConvertToCLRObject(val);
+            return ContextValuesMarshaller.ConvertToCLRObject(val);
+        }
+
+        protected static object[] MarshalArgumentsStrict(IValue[] arguments, Type[] argumentsTypes)
+        {
+            if (argumentsTypes.Length < arguments.Length)
+                throw RuntimeException.TooManyArgumentsPassed();
+
+            object[] marshalledArgs = new object[arguments.Length];
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                marshalledArgs[i] = ContextValuesMarshaller.ConvertParam(arguments[i], argumentsTypes[i]);
+            }
+
+            return marshalledArgs;
         }
 
         public static IValue CreateIValue(object objParam)
@@ -95,7 +106,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (DispatchUtility.ImplementsIDispatch(objParam))
             {
-                var ctx = new COMWrapperContext(objParam);
+                var ctx = COMWrapperContext.Create(objParam);
                 return ValueFactory.Create(ctx);
             }
             else if (type.IsArray)
@@ -105,14 +116,6 @@ namespace ScriptEngine.Machine.Contexts
             else
             {
                 throw new RuntimeException("Тип " + type + " невозможно преобразовать в один из поддерживаемых типов");
-            }
-        }
-
-        public object UnderlyingObject
-        {
-            get
-            {
-                return _instance;
             }
         }
 
@@ -133,43 +136,8 @@ namespace ScriptEngine.Machine.Contexts
             return new CollectionEnumerator(GetEnumerator());
         }
 
-        #region IEnumerable<IValue> Members
-
-        public IEnumerator<IValue> GetEnumerator()
-        {
-            var comType = _instance.GetType();
-            System.Collections.IEnumerator comEnumerator;
-
-            try
-            {
-
-                comEnumerator = (System.Collections.IEnumerator)comType.InvokeMember("[DispId=-4]",
-                                        BindingFlags.InvokeMethod, 
-                                        null, 
-                                        _instance, 
-                                        new object[0]);
-            }
-            catch (TargetInvocationException e)
-            {
-                uint hr = (uint)System.Runtime.InteropServices.Marshal.GetHRForException(e.InnerException);
-                if (hr == E_DISP_MEMBERNOTFOUND)
-                {
-                    throw RuntimeException.IteratorIsNotDefined();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            while (comEnumerator.MoveNext())
-            {
-                yield return CreateIValue(comEnumerator.Current);
-            }
-
-        }
-
-        #endregion
+        public abstract IEnumerator<IValue> GetEnumerator();
+        public abstract object UnderlyingObject { get; }
 
         #region IEnumerable Members
 
@@ -184,21 +152,11 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IDisposable Members
 
-        private void Dispose(bool manualDispose)
+        protected virtual void Dispose(bool manualDispose)
         {
             if (manualDispose)
             {
                 GC.SuppressFinalize(this);
-                _membersCache.Clear();
-                _methodBinding.Clear();
-                _dispIdCache.Clear();
-
-                if (_instance != null)
-                {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(_instance);
-                    _instance = null;
-                }
-
             }
 
         }
@@ -223,293 +181,10 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override bool IsIndexed
-        {
-            get
-            {
-                if (_isIndexed == null)
-                {
-                    try
-                    {
-
-                        var comValue = _instance.GetType().InvokeMember("[DispId=0]",
-                                                BindingFlags.InvokeMethod|BindingFlags.GetProperty,
-                                                null,
-                                                _instance,
-                                                new object[0]);
-                        _isIndexed = true;
-                    }
-                    catch (TargetInvocationException e)
-                    {
-                        uint hr = (uint)System.Runtime.InteropServices.Marshal.GetHRForException(e.InnerException);
-                        if (hr == E_DISP_MEMBERNOTFOUND)
-                        {
-                            _isIndexed = false;
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                }
-
-                return (bool)_isIndexed;
-            }
-        }
-
-        public override int FindProperty(string name)
-        {
-            int dispId;
-            if (!_dispIdCache.TryGetValue(name, out dispId))
-            {
-                if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
-                {
-                    if (_dispatchedType != null)
-                    {
-                        var memberInfo = _dispatchedType.GetMember(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                        if (memberInfo.Length == 0 || !(memberInfo[0].MemberType == MemberTypes.Property))
-                        {
-                            throw RuntimeException.PropNotFoundException(name);
-                        }
-                        else
-                        {
-                            _membersCache.Add(dispId, memberInfo[0]);
-                            _dispIdCache.Add(name, dispId);
-                        }
-                    }
-                    else
-                    {
-                        _dispIdCache.Add(name, dispId);
-                    }
-                }
-                else
-                {
-                    throw RuntimeException.PropNotFoundException(name);
-                }
-            }
-
-            return dispId;
-        }
-
-        public override bool IsPropReadable(int propNum)
-        {
-            if (_dispatchedType != null)
-            {
-                var propInfo = (PropertyInfo)_membersCache[propNum];
-                return propInfo.CanRead;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        public override bool IsPropWritable(int propNum)
-        {
-            if (_dispatchedType != null)
-            {
-                var propInfo = (PropertyInfo)_membersCache[propNum];
-                return propInfo.CanWrite;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        public override IValue GetPropValue(int propNum)
-        {
-            try
-            {
-                try
-                {
-                    var result = DispatchUtility.Invoke(_instance, propNum, null);
-                    return CreateIValue(result);
-                }
-                catch (System.Reflection.TargetInvocationException e)
-                {
-                    throw e.InnerException;
-                }
-            }
-            catch (System.MissingMemberException)
-            {
-                throw RuntimeException.PropNotFoundException("dispid["+propNum.ToString()+"]");
-            }
-            catch (System.MemberAccessException)
-            {
-                throw RuntimeException.PropIsNotReadableException("dispid[" + propNum.ToString() + "]");
-            }
-        }
-
-        public override void SetPropValue(int propNum, IValue newVal)
-        {
-            try
-            {
-                try
-                {
-                    DispatchUtility.InvokeSetProperty(_instance, propNum, MarshalIValue(newVal));
-                }
-                catch (System.Reflection.TargetInvocationException e)
-                {
-                    throw e.InnerException;
-                }
-            }
-            catch (System.MissingMemberException)
-            {
-                throw RuntimeException.PropNotFoundException("dispid[" + propNum.ToString() + "]");
-            }
-            catch (System.MemberAccessException)
-            {
-                throw RuntimeException.PropIsNotWritableException("dispid[" + propNum.ToString() + "]");
-            }
-        }
-
-        public override int FindMethod(string name)
-        {
-            int dispId;
-            if (!_dispIdCache.TryGetValue(name, out dispId))
-            {
-                if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
-                {
-                    if (_dispatchedType != null)
-                    {
-                        var memberInfo = _dispatchedType.GetMember(name);
-                        if (memberInfo.Length == 0 || !(memberInfo[0].MemberType == MemberTypes.Method || memberInfo[0].MemberType == MemberTypes.Property))
-                        {
-                            throw RuntimeException.MethodNotFoundException(name);
-                        }
-                        else
-                        {
-                            _membersCache.Add(dispId, memberInfo[0]);
-                            _dispIdCache.Add(name, dispId);
-                        }
-                    }
-                    else
-                    {
-                        _dispIdCache.Add(name, dispId);
-                    }
-                }
-                else
-                {
-                    throw RuntimeException.MethodNotFoundException(name);
-                }
-            }
-
-            return dispId;
-        }
-
-        public override MethodInfo GetMethodInfo(int methodNumber)
-        {
-            return GetMethodDescription(methodNumber);
-        }
-
-        private MethodInfo GetMethodDescription(int methodNumber)
-        {
-            if (_dispatchedType != null)
-                return GetReflectableMethod(methodNumber);
-            else
-                return new MethodInfo();
-        }
-
-        private MethodInfo GetReflectableMethod(int methodNumber)
-        {
-            MethodInfo methodInfo;
-            if (!_methodBinding.TryGetValue(methodNumber, out methodInfo))
-            {
-                var memberInfo = _membersCache[methodNumber];
-
-                methodInfo = new MethodInfo();
-                methodInfo.Name = memberInfo.Name;
-
-                var reflectedMethod = memberInfo as System.Reflection.MethodInfo;
-
-                if (reflectedMethod != null)
-                {
-                    methodInfo.IsFunction = reflectedMethod.ReturnType != typeof(void);
-                    var reflectionParams = reflectedMethod.GetParameters();
-                    FillMethodInfoParameters(ref methodInfo, reflectionParams);
-                }
-                else
-                {
-                    var reflectedProperty = memberInfo as System.Reflection.PropertyInfo;
-                    if (reflectedProperty != null)
-                    {
-                        var reflectionParams = reflectedProperty.GetIndexParameters();
-                        if (reflectionParams.Length == 0)
-                        {
-                            throw RuntimeException.IndexedAccessIsNotSupportedException();
-                        }
-
-                        methodInfo.IsFunction = reflectedProperty.CanRead;
-                        FillMethodInfoParameters(ref methodInfo, reflectionParams);
-                    }
-                    else
-                    {
-                        throw RuntimeException.IndexedAccessIsNotSupportedException();
-                    }
-                }
-
-                _methodBinding.Add(methodNumber, methodInfo);
-            }
-            return methodInfo;
-        }
-
-        private static void FillMethodInfoParameters(ref MethodInfo methodInfo, System.Reflection.ParameterInfo[] reflectionParams)
-        {
-            methodInfo.Params = new ParameterDefinition[reflectionParams.Length];
-            for (int i = 0; i < reflectionParams.Length; i++)
-            {
-                var reflectedParam = reflectionParams[i];
-                var param = new ParameterDefinition();
-                param.HasDefaultValue = reflectedParam.IsOptional;
-                param.IsByValue = !reflectedParam.IsOut;
-                methodInfo.Params[i] = param;
-            }
-        }
-
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
-        {
-            try
-            {
-                try
-                {
-                    DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
-                }
-                catch (System.Reflection.TargetInvocationException e)
-                {
-                    throw e.InnerException;
-                }
-            }
-            catch (System.MissingMemberException)
-            {
-                throw RuntimeException.MethodNotFoundException("dispid[" + methodNumber.ToString() + "]");
-            }
-        }
-
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
-        {
-            try
-            {
-                try
-                {
-                    var result = DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
-                    retValue = CreateIValue(result);
-                }
-                catch (System.Reflection.TargetInvocationException e)
-                {
-                    throw e.InnerException;
-                }
-            }
-            catch (System.MissingMemberException)
-            {
-                throw RuntimeException.MethodNotFoundException("dispid[" + methodNumber.ToString() + "]");
-            }
-        }
-
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor(IValue[] args)
         {
-            return new COMWrapperContext(args[0].AsString(), args.Skip(1).ToArray());
+            return COMWrapperContext.Create(args[0].AsString(), args.Skip(1).ToArray());
         }
 
     }

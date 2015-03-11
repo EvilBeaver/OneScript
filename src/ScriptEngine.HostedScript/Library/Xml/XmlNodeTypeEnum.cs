@@ -62,22 +62,6 @@ namespace ScriptEngine.HostedScript.Library.Xml
             instance.AddValue("Сущность", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Entity));
             instance.AddValue("Текст", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Text));
 
-            instance["Атрибут"].ValuePresentation = "Атрибут";                
-            instance["ИнструкцияОбработки"].ValuePresentation = "ИнструкцияОбработки";
-            instance["Комментарий"].ValuePresentation = "Комментарий";
-            instance["КонецСущности"].ValuePresentation = "КонецСущности";
-            instance["КонецЭлемента"].ValuePresentation = "КонецЭлемента";
-            instance["НачалоЭлемента"].ValuePresentation = "НачалоЭлемента";
-            instance["Ничего"].ValuePresentation = "Ничего";
-            instance["Нотация"].ValuePresentation = "Нотация";
-            instance["Объявление"].ValuePresentation = "Объявление";
-            instance["ОпределениеТипаДокумента"].ValuePresentation = "ОпределениеТипаДокумента";
-            instance["ПробельныеСимволы"].ValuePresentation = "ПробельныеСимволы";
-            instance["СекцияCDATA"].ValuePresentation = "СекцияCDATA";
-            instance["СсылкаНаСущность"].ValuePresentation = "СсылкаНаСущность";
-            instance["Сущность"].ValuePresentation = "Сущность";
-            instance["Текст"].ValuePresentation = "Текст";
-
             return instance;
         }
    }

@@ -1,8 +1,8 @@
 ﻿using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Library;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -41,7 +41,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("КаталогВременныхФайлов", "TempFilesDir")]
         public string TempFilesDir()
         {
-            return System.IO.Path.GetTempPath();
+            return Path.GetTempPath();
         }
 
         /// <summary>
@@ -53,17 +53,16 @@ namespace ScriptEngine.HostedScript.Library
         public string GetTempFilename(string ext = null)
         {
             // примитивная реализация "в лоб"
-            var fn = System.IO.Path.GetRandomFileName();
-            if (ext != null)
+            var fn = Path.GetRandomFileName();
+            if (ext != null && !String.IsNullOrWhiteSpace(ext))
             {
-                if (ext[0] == '.')
+                if(ext[0] == '.')
                     fn += ext;
                 else
                     fn += "." + ext;
-
             }
 
-            return fn;
+            return Path.Combine(TempFilesDir(), fn);
 
         }
 

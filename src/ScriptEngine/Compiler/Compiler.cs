@@ -85,7 +85,8 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException exc)
             {
-                AppendCodeInfo(_parser.CurrentLine, exc);
+                if(exc.LineNumber == 0)
+                    AppendCodeInfo(_parser.CurrentLine, exc);
                 throw;
             }
 
@@ -303,6 +304,7 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.IdentifierExpected();
             }
 
+            int definitionLine = _parser.CurrentLine;
             MethodInfo method = new MethodInfo();
             method.Name = _lastExtractedLexem.Content;
             method.IsFunction = _isFunctionProcessed;
@@ -411,7 +413,18 @@ namespace ScriptEngine.Compiler
             descriptor.EntryPoint = entryPoint;
             descriptor.Signature = method;
             descriptor.VariableFrameSize = methodCtx.VariableCount;
-            var binding = _ctx.DefineMethod(method);
+            SymbolBinding binding;
+            try
+            {
+                binding = _ctx.DefineMethod(method);
+            }
+            catch (CompilerException)
+            {
+                var exc = new CompilerException("Метод с таким именем уже определен: " + method.Name);
+                exc.LineNumber = definitionLine;
+                exc.Code = _parser.GetCodeLine(exc.LineNumber);
+                throw exc;
+            }
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(descriptor);
 
@@ -1327,9 +1340,17 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(Token.OpenPar);
             }
 
-            var parameters = BuiltinFunctions.ParametersInfo(funcId);
             var passedArgs = PushFactArguments();
-            CheckFactArguments(parameters, passedArgs);
+            if (funcId == OperationCode.Min || funcId == OperationCode.Max)
+            {
+                if (passedArgs.Length == 0)
+                    throw CompilerException.TooLittleArgumentsPassed();
+            }
+            else
+            {
+                var parameters = BuiltinFunctions.ParametersInfo(funcId);
+                CheckFactArguments(parameters, passedArgs);
+            }
 
             AddCommand(funcId, passedArgs.Length);
 
@@ -1403,6 +1424,8 @@ namespace ScriptEngine.Compiler
                     return OperationCode.EmptyStr;
                 case Token.StrReplace:
                     return OperationCode.StrReplace;
+                case Token.StrEntryCount:
+                    return OperationCode.StrEntryCount;
                 case Token.Year:
                     return OperationCode.Year;
                 case Token.Month:
@@ -1453,10 +1476,32 @@ namespace ScriptEngine.Compiler
                     return OperationCode.Integer;
                 case Token.Round:
                     return OperationCode.Round;
+                case Token.Log:
+                    return OperationCode.Log;
+                case Token.Log10:
+                    return OperationCode.Log10;
+                case Token.Sin:
+                    return OperationCode.Sin;
+                case Token.Cos:
+                    return OperationCode.Cos;
+                case Token.Tan:
+                    return OperationCode.Tan;
+                case Token.ASin:
+                    return OperationCode.ASin;
+                case Token.ACos:
+                    return OperationCode.ACos;
+                case Token.ATan:
+                    return OperationCode.ATan;
+                case Token.Exp:
+                    return OperationCode.Exp;
                 case Token.Pow:
                     return OperationCode.Pow;
                 case Token.Sqrt:
                     return OperationCode.Sqrt;
+                case Token.Min:
+                    return OperationCode.Min;
+                case Token.Max:
+                    return OperationCode.Max;
                 case Token.Format:
                     return OperationCode.Format;
                 case Token.ExceptionInfo:

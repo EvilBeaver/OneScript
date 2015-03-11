@@ -357,25 +357,31 @@ namespace ScriptEngine.Compiler
     {
         public override Lexem ReadNextLexem(ParseIterator iterator)
         {
+            var numbers = new StringBuilder();
+
             while (iterator.MoveNext())
             {
                 var cs = iterator.CurrentSymbol;
                 if (cs == SpecialChars.DateQuote)
                 {
+                    iterator.GetContents(1, 1);
+                    iterator.MoveNext();
+
                     var lex = new Lexem()
                     {
                         Type = LexemType.DateLiteral,
-                        Content = iterator.GetContents(1, 1).content
+                        Content = numbers.ToString()
                     };
-
-                    iterator.MoveNext();
 
                     return lex;
                 }
-                else if(!Char.IsDigit(cs))
+                else if(Char.IsDigit(cs))
                 {
-                    throw CreateExceptionOnCurrentLine("Незавершенный литерал даты", iterator);
+                    numbers.Append(cs);
                 }
+
+                if (numbers.Length > 14)
+                    throw CreateExceptionOnCurrentLine("Некорректный литерал даты", iterator);
             }
 
             throw CreateExceptionOnCurrentLine("Незавершенный литерал даты", iterator);

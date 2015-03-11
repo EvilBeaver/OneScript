@@ -11,9 +11,9 @@
 [assembly: System.Reflection.AssemblyCompany("BeaverSoft")]
 [assembly: System.Reflection.AssemblyCopyright("Copyright (c) 2014 BeaverSoft")]
 [assembly: System.Reflection.AssemblyConfiguration("Commit 2a614c0")]
-[assembly: System.Reflection.AssemblyVersion("1.0.8.0")]
-[assembly: System.Reflection.AssemblyFileVersion("1.0.8.0")]
-[assembly: System.Reflection.AssemblyInformationalVersion("1.0.8.0")]
+[assembly: System.Reflection.AssemblyVersion("1.0.9.0")]
+[assembly: System.Reflection.AssemblyFileVersion("1.0.9.0")]
+[assembly: System.Reflection.AssemblyInformationalVersion("1.0.9.0")]
 
 
 
@@ -25,11 +25,11 @@ internal sealed partial class ThisAssembly {
     
     internal const string AssemblyConfiguration = "Commit 2a614c0";
     
-    internal const string AssemblyVersion = "1.0.8.0";
+    internal const string AssemblyVersion = "1.0.9.0";
     
-    internal const string AssemblyFileVersion = "1.0.8.0";
+    internal const string AssemblyFileVersion = "1.0.9.0";
     
-    internal const string AssemblyInformationalVersion = "1.0.8.0";
+    internal const string AssemblyInformationalVersion = "1.0.9.0";
     
     private ThisAssembly() {
     }

@@ -69,15 +69,34 @@ namespace ScriptEngine
             }
         }
 
+        public string ErrorDescription
+        {
+            get
+            {
+                return base.Message;
+            }
+        }
+
+        public string MessageWithoutCodeFragment
+        {
+            get
+            {
+                return String.Format("{{Модуль {0} / Ошибка в строке: {1} / {2}}}",
+                    this.ModuleName,
+                    this.LineNumber,
+                    base.Message);
+            }
+        }
+
         public override string Message
         {
             get
             {
-                return String.Format("{{Модуль {0} / Ошибка в строке: {1} / {2}}}\n  {3}",
-                    _codePosition.ModuleName,
-                    _codePosition.LineNumber,
-                    base.Message,
-                    _codePosition.Code);
+                var sb = new StringBuilder(MessageWithoutCodeFragment);
+                sb.AppendLine("    ");
+                sb.Append(Code);
+
+                return sb.ToString();
             }
         }
     }

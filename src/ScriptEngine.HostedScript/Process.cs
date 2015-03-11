@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript
         {
             try
             {
-                _engine.ExecuteModule(_module);
+                _engine.NewObject(_module);
                 return 0;
             }
             catch (ScriptInterruptionException e)
