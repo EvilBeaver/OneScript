@@ -69,14 +69,14 @@ namespace ScriptEngine.HostedScript.Library.Net
             bool useLimit = limit > 0;
             var ms = new MemoryStream();
 
-            while (source.DataAvailable)
+            do
             {
                 int portion = useLimit ? Math.Min(limit, BUF_SIZE) : BUF_SIZE;
                 int numberOfBytesRead = source.Read(readBuffer, 0, portion);
                 ms.Write(readBuffer, 0, numberOfBytesRead);
                 if (useLimit)
                     limit -= numberOfBytesRead;
-            }
+            } while (source.DataAvailable);
             
             if(ms.Length > 0)
                 ms.Position = 0;
@@ -128,7 +128,13 @@ namespace ScriptEngine.HostedScript.Library.Net
         [ContextProperty("Активно","IsActive")]
         public bool IsActive
         {
-            get { return _client.Connected; }
+            get 
+            {
+                const int POLL_INTERVAL = 500;
+                var socket = _client.Client;
+                
+                return !((socket.Poll(POLL_INTERVAL, SelectMode.SelectRead) && (socket.Available == 0)) || !socket.Connected);
+            }
         }
 
         /// <summary>

@@ -67,7 +67,7 @@
     
   </Target>
   
-  <Target Name="Build" DependsOnTargets="CleanAll;Configure;Compile;CreateInstall" >
+  <Target Name="Build" DependsOnTargets="CleanAll;Configure;Compile" >
     <CallTarget Targets="ContinueBuild" />
   </Target>
   
