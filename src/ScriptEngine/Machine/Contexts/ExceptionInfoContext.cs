@@ -47,7 +47,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             get 
             {
-                if (_exc.InnerException != null)
+                if (!(_exc is ExternalSystemException) && _exc.InnerException != null)
                 {
                     ScriptException inner;
                     inner = _exc.InnerException as ScriptException;
