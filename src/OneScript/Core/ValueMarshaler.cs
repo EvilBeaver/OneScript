@@ -30,10 +30,6 @@ namespace OneScript.Core
             {
                 valueObj = value;
             }
-            //else if (type == typeof(IVariable))
-            //{
-            //    valueObj = value;
-            //}
             else if (type == typeof(string))
             {
                 valueObj = value.AsString();

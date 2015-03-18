@@ -158,7 +158,6 @@ namespace OneScript.Compiler
             if (count == 0)
                 return;
 
-            var methods = MethodSignatureExtractor.Extract(context);
             for (int i = 0; i < count; i++)
             {
                 var index = scope.DefineMethod(context.GetMethodName(i, NameRetrievalMode.Name));
