@@ -25,17 +25,10 @@ namespace OneScript.Compiler
         {
             _lexer = lexer;
             _lastExtractedLexem = default(Lexem);
-            // TODO: обработка нераспознанных символов
-            //_lexer.UnexpectedCharacterFound += _lexer_UnexpectedCharacterFound;
             _wereErrorsInBuild = false;
             _blockEndings = new Stack<Token[]>();
 
             return BuildModule();
-        }
-
-        void _lexer_UnexpectedCharacterFound(object sender, LexerErrorEventArgs e)
-        {
-            // TODO: синтаксические ошибки пока не обрабатываются.
         }
 
         public event EventHandler<CompilerErrorEventArgs> CompilerError;
