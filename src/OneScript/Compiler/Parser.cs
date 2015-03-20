@@ -95,9 +95,7 @@ namespace OneScript.Compiler
                 else if (LanguageDef.IsIdentifier(ref _lastExtractedLexem) || _lastExtractedLexem.Token == Token.Semicolon)
                 {
                     bodyDefined = true;
-                    PushEndTokens(Token.EndOfText);
-                    BuildCodeBatch();
-                    PopEndTokens();
+                    BuildModuleBody();
                 }
                 else
                 {
@@ -279,6 +277,13 @@ namespace OneScript.Compiler
 
         }
 
+        private void BuildModuleBody()
+        {
+            PushEndTokens(Token.EndOfText);
+            BuildCodeBatch();
+            PopEndTokens();
+        }
+
         private void BuildVariableDefinition(bool allowExports)
         {
             Debug.Assert(_lastExtractedLexem.Token == Token.VarDef);
@@ -398,7 +403,7 @@ namespace OneScript.Compiler
             switch(_lastExtractedLexem.Token)
             {
                 case Token.VarDef:
-                    throw new NotImplementedException();
+                    throw CompilerException.LateVarDefinition();
                 case Token.If:
                     BuildIfStatement();
                     break;
@@ -537,65 +542,93 @@ namespace OneScript.Compiler
             }
             else if(LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
             {
-                var identifier = _lastExtractedLexem.Content;
-                NextLexem();
-                if(_lastExtractedLexem.Token == Token.Dot)
-                {
-                    // это цепочка разыменований
-                    var target = _builder.ReadVariable(identifier);
-                    primary = BuildContinuationRightHand(target);
-                }
-                else if(_lastExtractedLexem.Token == Token.OpenPar)
-                {
-                    // это вызов функции
-                    IASTNode[] args = BuildArgumentList();
-                    primary = _builder.BuildFunctionCall(null, identifier, args);
-
-                }
-                else if(_lastExtractedLexem.Token == Token.OpenBracket)
-                {
-                    var target = _builder.ReadVariable(identifier);
-                    primary = BuildContinuationRightHand(target);
-                }
-                else
-                {
-                    primary = _builder.ReadVariable(identifier);
-                }
+                primary = ProcessPrimaryIdentifier();
             }
             else if(_lastExtractedLexem.Token == Token.Minus)
             {
-                NextLexem();
-                if(!(LanguageDef.IsLiteral(ref _lastExtractedLexem)
-                    ||LanguageDef.IsIdentifier(ref _lastExtractedLexem)
-                    ||_lastExtractedLexem.Token == Token.OpenPar))
-                {
-                    throw CompilerException.ExpressionExpected();
-                }
-
-                var subNode = BuildPrimaryNode();
-                primary = _builder.UnaryOperation(Token.Minus, subNode);
+                primary = ProcessPrimaryUnaryMinus();
             }
             else if(_lastExtractedLexem.Token == Token.Not)
             {
-                NextLexem();
-                var subNode = BuildPrimaryNode();
-                primary = _builder.UnaryOperation(Token.Not, subNode);
+                primary = ProcessUnaryBoolean();
             }
             else if (_lastExtractedLexem.Token == Token.OpenPar)
             {
-                NextLexem(); // съели открывающую скобку
-                var firstSubNode = BuildPrimaryNode();
-                primary = BuildOperation(0, firstSubNode);
-                
-                if (_lastExtractedLexem.Token != Token.ClosePar)
-                    throw CompilerException.TokenExpected(")");
-                NextLexem(); // съели закрывающую скобку
+                primary = ProcessSubexpression();
             }
             else
             {
                 throw CompilerException.ExpressionSyntax();
             }
 
+            return primary;
+        }
+
+        private IASTNode ProcessPrimaryIdentifier()
+        {
+            IASTNode primary;
+            var identifier = _lastExtractedLexem.Content;
+            NextLexem();
+            if (_lastExtractedLexem.Token == Token.Dot)
+            {
+                // это цепочка разыменований
+                var target = _builder.ReadVariable(identifier);
+                primary = BuildContinuationRightHand(target);
+            }
+            else if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                // это вызов функции
+                IASTNode[] args = BuildArgumentList();
+                primary = _builder.BuildFunctionCall(null, identifier, args);
+
+            }
+            else if (_lastExtractedLexem.Token == Token.OpenBracket)
+            {
+                var target = _builder.ReadVariable(identifier);
+                primary = BuildContinuationRightHand(target);
+            }
+            else
+            {
+                primary = _builder.ReadVariable(identifier);
+            }
+            return primary;
+        }
+
+        private IASTNode ProcessPrimaryUnaryMinus()
+        {
+            IASTNode primary;
+            NextLexem();
+            if (!(LanguageDef.IsLiteral(ref _lastExtractedLexem)
+                || LanguageDef.IsIdentifier(ref _lastExtractedLexem)
+                || _lastExtractedLexem.Token == Token.OpenPar))
+            {
+                throw CompilerException.ExpressionExpected();
+            }
+
+            var subNode = BuildPrimaryNode();
+            primary = _builder.UnaryOperation(Token.Minus, subNode);
+            return primary;
+        }
+
+        private IASTNode ProcessSubexpression()
+        {
+            IASTNode primary;
+            NextLexem(); // съели открывающую скобку
+            var firstSubNode = BuildPrimaryNode();
+            primary = BuildOperation(0, firstSubNode);
+
+            if (_lastExtractedLexem.Token != Token.ClosePar)
+                throw CompilerException.TokenExpected(")");
+            NextLexem(); // съели закрывающую скобку
+            return primary;
+        }
+
+        private IASTNode ProcessUnaryBoolean()
+        {
+            IASTNode primary;
+            NextLexem();
+            var subNode = BuildPrimaryNode();
+            primary = _builder.UnaryOperation(Token.Not, subNode);
             return primary;
         }
 

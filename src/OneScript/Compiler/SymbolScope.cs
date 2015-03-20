@@ -7,10 +7,8 @@ namespace OneScript.Compiler
 {
     public class SymbolScope
     {
-        Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        int _methodsCounter = 0;
-        int _varCounter = 0;
+        IndexedNamesCollection _variables = new IndexedNamesCollection();
+        IndexedNamesCollection _methods = new IndexedNamesCollection();
 
         public static int InvalidIndex
         {
@@ -29,22 +27,24 @@ namespace OneScript.Compiler
                 throw new ArgumentException("Некорректное имя (" + name + ")");
             }
 
-            int newIndex = VariableCount;
-            _variableNumbers.Add(name, newIndex);
-            _varCounter++;
-
+            int newIndex = _variables.RegisterName(name);
             return newIndex;
+        }
+
+        public IEnumerable<string> GetVariableSymbols()
+        {
+            return _variables;
         }
 
         public bool IsVarDefined(string name)
         {
-            return _variableNumbers.ContainsKey(name);
+            return _variables.HasName(name);
         }
 
         public int GetVariableNumber(string name)
         {
             int idx;
-            if (_variableNumbers.TryGetValue(name, out idx))
+            if (_variables.TryGetIdOfName(name, out idx))
             {
                 return idx;
             }
@@ -58,8 +58,13 @@ namespace OneScript.Compiler
         {
             get
             {
-                return _varCounter;
+                return _variables.Count;
             }
+        }
+
+        public IEnumerable<string> GetMethodSymbols()
+        {
+            return _methods;
         }
 
         public int DefineMethod(string name)
@@ -73,10 +78,8 @@ namespace OneScript.Compiler
             {
                 throw new ArgumentException("Некорректное имя (" + name + ")");
             }
-            
-            int newIndex = MethodCount;
-            _methodsNumbers.Add(name, newIndex);
-            _methodsCounter++;
+
+            int newIndex = _methods.RegisterName(name);
             
             return newIndex;
         }
@@ -89,7 +92,7 @@ namespace OneScript.Compiler
             if(!Utils.IsValidIdentifier(alias))
                 throw new ArgumentException("Некорректное имя (" + alias + ")");
 
-            _methodsNumbers.Add(alias, methodNumber);
+            _methods.RegisterAlias(methodNumber, alias);
         }
 
         public void SetVariableAlias(int variableNumber, string alias)
@@ -100,19 +103,19 @@ namespace OneScript.Compiler
             if (!Utils.IsValidIdentifier(alias))
                 throw new ArgumentException("Некорректное имя (" + alias + ")");
 
-            _variableNumbers.Add(alias, variableNumber);
+            _variables.RegisterAlias(variableNumber, alias);
             
         }
 
         public bool IsMethodDefined(string name)
         {
-            return _methodsNumbers.ContainsKey(name);
+            return _methods.HasName(name);
         }
 
         public int GetMethodNumber(string name)
         {
             int idx;
-            if (_methodsNumbers.TryGetValue(name, out idx))
+            if (_methods.TryGetIdOfName(name, out idx))
             {
                 return idx;
             }
@@ -126,7 +129,7 @@ namespace OneScript.Compiler
         {
             get
             {
-                return _methodsCounter;
+                return _methods.Count;
             }
         }
 

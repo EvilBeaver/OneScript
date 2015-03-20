@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using OneScript.Compiler;
 
-namespace OneScript.Runtime
+namespace OneScript
 {
     public interface ILoadedModule
     {

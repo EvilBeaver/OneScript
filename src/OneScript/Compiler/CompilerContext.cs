@@ -11,7 +11,6 @@ namespace OneScript.Compiler
     {
         List<SymbolScope> _attachedScopes = new List<SymbolScope>();
 
-        
         public SymbolScope TopScope
         {
             get
