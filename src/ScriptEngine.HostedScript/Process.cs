@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript
 {
@@ -38,7 +39,7 @@ namespace ScriptEngine.HostedScript
             }
             finally
             {
-                //AttachedScriptsFactory.Dispose();
+                _engine.Dispose();
                 _engine = null;
             }
         }

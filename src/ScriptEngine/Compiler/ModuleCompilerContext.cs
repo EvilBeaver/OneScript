@@ -10,16 +10,21 @@ namespace ScriptEngine.Compiler
     {
         private CompilerContext _outerCtx;
         private CompilerContext _moduleCtx;
-        private readonly int OUTER_CTX_SIZE;
+        private int OUTER_CTX_SIZE;
         private int _localScopesCount = 0;
 
         public ModuleCompilerContext(CompilerContext outerContext)
         {
             _outerCtx = outerContext;
             _moduleCtx = new CompilerContext();
-            OUTER_CTX_SIZE = _outerCtx.TopIndex()+1;
+            Rebase();
         }
         
+        public void Rebase()
+        {
+            OUTER_CTX_SIZE = _outerCtx.TopIndex() + 1;
+        }
+
         #region ICompilerContext Members
 
         public SymbolBinding DefineMethod(MethodInfo method)

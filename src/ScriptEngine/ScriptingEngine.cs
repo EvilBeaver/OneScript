@@ -36,7 +36,7 @@ namespace ScriptEngine
         public void Initialize(RuntimeEnvironment environment)
         {
             _symbolsContext = environment.SymbolsContext;
-
+            _machine.Cleanup();
             foreach (var item in environment.AttachedContexts)
             {
                 _machine.AttachContext(item, false);
