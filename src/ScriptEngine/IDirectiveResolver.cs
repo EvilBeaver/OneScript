@@ -7,6 +7,6 @@ namespace ScriptEngine
 {
     interface IDirectiveResolver
     {
-        public bool Resolve(string directive, string value);
+        bool Resolve(string directive, string value);
     }
 }

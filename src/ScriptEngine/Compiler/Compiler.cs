@@ -287,7 +287,8 @@ namespace ScriptEngine.Compiler
         private void HandleDirective()
         {
             var directive = _lastExtractedLexem.Content;
-            var value = _parser.ReadLineToEnd();
+            var value = _parser.ReadLineToEnd().Trim();
+            NextToken();
 
             if (DirectiveHandler == null || !DirectiveHandler(directive, value))
                 throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));

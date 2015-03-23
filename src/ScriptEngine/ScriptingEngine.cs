@@ -11,7 +11,6 @@ namespace ScriptEngine
         private MachineInstance _machine = new MachineInstance();
         private ScriptSourceFactory _scriptFactory;
         private AttachedScriptsFactory _attachedScriptsFactory;
-        private CompilerContext _symbolsContext;
 
         public ScriptingEngine()
         {
@@ -33,17 +32,27 @@ namespace ScriptEngine
             ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm);
         }
 
-        public void Initialize(RuntimeEnvironment environment)
+        public RuntimeEnvironment Environment { get; set; }
+
+        public void Initialize()
         {
-            _symbolsContext = environment.SymbolsContext;
+            SetDefaultEnvironmentIfNeeded();
+
+            var symbolsContext = Environment.SymbolsContext;
             _machine.Cleanup();
-            foreach (var item in environment.AttachedContexts)
+            foreach (var item in Environment.AttachedContexts)
             {
                 _machine.AttachContext(item, false);
             }
 
             _attachedScriptsFactory = new AttachedScriptsFactory(this);
             AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
+        }
+
+        private void SetDefaultEnvironmentIfNeeded()
+        {
+            if (Environment == null)
+                Environment = new RuntimeEnvironment();
         }
 
         public ICodeSourceFactory Loader
@@ -56,7 +65,7 @@ namespace ScriptEngine
 
         public CompilerService GetCompilerService()
         {
-            return new CompilerService(_symbolsContext);
+            return new CompilerService(Environment.SymbolsContext);
         }
 
         public LoadedModuleHandle LoadModuleImage(ScriptModuleHandle moduleImage)

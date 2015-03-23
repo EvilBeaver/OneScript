@@ -23,13 +23,14 @@ namespace ScriptEngine.HostedScript
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
+            _engine.Environment = _env;
         }
 
         public void Initialize()
         {
             if (!_isInitialized)
             {
-                _engine.Initialize(_env);
+                _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
 
                 _isInitialized = true;
@@ -61,7 +62,6 @@ namespace ScriptEngine.HostedScript
 
         public CompilerService GetCompilerService()
         {
-            Initialize();
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
             return compilerSvc;

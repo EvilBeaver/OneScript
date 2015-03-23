@@ -79,6 +79,7 @@ namespace ScriptEngine
             parser.Code = source.Code;
 
             var compiler = new Compiler.Compiler();
+            compiler.DirectiveHandler = ImportPackage;
             ModuleImage compiledImage;
             try
             {
@@ -114,6 +115,11 @@ namespace ScriptEngine
             {
                 Module = compiledImage
             };
+        }
+
+        private bool ImportPackage(string directive, string value)
+        {
+            throw new NotImplementedException();
         }
     }
 }
