@@ -978,7 +978,7 @@ namespace ScriptEngine.Machine
                     {
                         argValues[i] = BreakVariableLink(argValue);
                     }
-                    else
+                    else if (i < methodInfo.Params.Length)
                     {
                         if (methodInfo.Params[i].IsByValue)
                             argValues[i] = BreakVariableLink(argValue);
