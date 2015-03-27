@@ -67,6 +67,7 @@
     </Compile>
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
+    <Compile Include="LibraryLoader.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
     <Compile Include="Library\BinaryDataContext.cs" />
     <Compile Include="Library\CLREnumValueWrapper.cs" />
