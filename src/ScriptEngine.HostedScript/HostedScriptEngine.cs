@@ -74,6 +74,8 @@ namespace ScriptEngine.HostedScript
 
         public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
         {
+            compilerSvc.DirectiveResolver = new LibraryLoader(_env);
+
             var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
             return InitProcess(host, src, ref module);
         }

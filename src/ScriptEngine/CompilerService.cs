@@ -79,7 +79,7 @@ namespace ScriptEngine
             parser.Code = source.Code;
 
             var compiler = new Compiler.Compiler();
-            compiler.DirectiveHandler = ImportPackage;
+            compiler.DirectiveHandler = ResolveDirective;
             ModuleImage compiledImage;
             try
             {
@@ -117,9 +117,18 @@ namespace ScriptEngine
             };
         }
 
-        private bool ImportPackage(string directive, string value)
+        private bool ResolveDirective(string directive, string value)
         {
-            throw new NotImplementedException();
+            if (DirectiveResolver != null)
+            {
+                var isResolved = DirectiveResolver.Resolve(directive, value);
+                _currentContext.Rebase(); // костыль
+                return isResolved;
+            }
+            else
+                return false;
         }
+
+        public IDirectiveResolver DirectiveResolver { get; set; }
     }
 }

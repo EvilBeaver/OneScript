@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ScriptEngine
 {
-    interface IDirectiveResolver
+    public interface IDirectiveResolver
     {
         bool Resolve(string directive, string value);
     }
