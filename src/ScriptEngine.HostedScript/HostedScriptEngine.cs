@@ -23,6 +23,9 @@ namespace ScriptEngine.HostedScript
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
+            var libLoader = new LibraryLoader(_engine, _env);
+            libLoader.LibraryRoot = LibraryRoot;
+            _engine.DirectiveResolver = libLoader;
             _engine.Environment = _env;
         }
 
@@ -67,6 +70,8 @@ namespace ScriptEngine.HostedScript
             return compilerSvc;
         }
 
+        public string LibraryRoot { get; set; }
+
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {
             return CreateProcess(host, src, GetCompilerService());
@@ -74,8 +79,6 @@ namespace ScriptEngine.HostedScript
 
         public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
         {
-            compilerSvc.DirectiveResolver = new LibraryLoader(_env);
-
             var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
             return InitProcess(host, src, ref module);
         }

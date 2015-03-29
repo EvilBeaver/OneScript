@@ -7,7 +7,7 @@ namespace ScriptEngine.Compiler
 {
     public class CompilerException : ScriptException
     {
-        internal CompilerException(string msg)
+        public CompilerException(string msg)
             : base(new CodePositionInfo(), msg)
         {
 

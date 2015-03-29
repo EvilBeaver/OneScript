@@ -63,9 +63,13 @@ namespace ScriptEngine
             }
         }
 
+        public IDirectiveResolver DirectiveResolver { get; set; }
+
         public CompilerService GetCompilerService()
         {
-            return new CompilerService(Environment.SymbolsContext);
+            var cs = new CompilerService(Environment.SymbolsContext);
+            cs.DirectiveResolver = DirectiveResolver;
+            return cs;
         }
 
         public LoadedModuleHandle LoadModuleImage(ScriptModuleHandle moduleImage)
