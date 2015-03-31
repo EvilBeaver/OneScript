@@ -23,7 +23,7 @@ namespace ScriptEngine.HostedScript
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
-            var libLoader = new LibraryLoader(_engine, _env);
+            var libLoader = new LibraryResolver(_engine, _env);
             libLoader.LibraryRoot = LibraryRoot;
             _engine.DirectiveResolver = libLoader;
             _engine.Environment = _env;
