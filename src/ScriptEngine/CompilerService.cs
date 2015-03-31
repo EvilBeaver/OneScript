@@ -121,9 +121,7 @@ namespace ScriptEngine
         {
             if (DirectiveResolver != null)
             {
-                var isResolved = DirectiveResolver.Resolve(directive, value);
-                _currentContext.Rebase(); // костыль
-                return isResolved;
+                return DirectiveResolver.Resolve(directive, value);
             }
             else
                 return false;
