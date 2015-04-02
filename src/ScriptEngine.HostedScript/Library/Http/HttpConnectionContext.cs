@@ -147,8 +147,17 @@ namespace ScriptEngine.HostedScript.Library.Http
             var resourceUri = new Uri(uriBuilder.Uri, resource);
 
             var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
-            if(User != "" || Password != "")
+            if (User != "" || Password != "")
+            {
                 request.Credentials = new NetworkCredential(User, Password);
+                // Авторизация на сервере 1С:Предприятие, например, не работает без явного указания заголовка.
+                // http://blog.kowalczyk.info/article/at3/Forcing-basic-http-authentication-for-HttpWebReq.html
+                string authInfo = User + ":" + Password;
+                // Для 1С работает только UTF-8, хотя стандарт требует ISO-8859-1
+                var basicAuthEncoding = Encoding.GetEncoding("UTF-8");
+                authInfo = Convert.ToBase64String(basicAuthEncoding.GetBytes(authInfo));
+                request.Headers["Authorization"] = "Basic " + authInfo;
+            }
 
             if(_proxy != null)
                 request.Proxy = _proxy.GetProxy();
