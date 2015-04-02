@@ -16,11 +16,9 @@ namespace ScriptEngine.Environment
 
 			var reader = new StreamReader(input, enc, true);
 
-#if __MonoCS__
 			bool skipFirstLine = IsLinuxScript (input);
 			if(skipFirstLine)
 				reader.ReadLine();
-#endif
 			return reader;
 
         }
@@ -69,8 +67,6 @@ namespace ScriptEngine.Environment
             return enc;
         }
 
-#if __MonoCS__
-
 		static bool IsLinuxScript (FileStream input)
 		{
 			byte[] buf = new byte[2];
@@ -83,7 +79,6 @@ namespace ScriptEngine.Environment
 			input.Position = 0;
 			return skipLine;
 		}
-#endif
 
     }
 }
