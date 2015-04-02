@@ -150,6 +150,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             if (User != "" || Password != "")
             {
                 request.Credentials = new NetworkCredential(User, Password);
+                //request.PreAuthenticate = true;
                 // Авторизация на сервере 1С:Предприятие, например, не работает без явного указания заголовка.
                 // http://blog.kowalczyk.info/article/at3/Forcing-basic-http-authentication-for-HttpWebReq.html
                 string authInfo = User + ":" + Password;
