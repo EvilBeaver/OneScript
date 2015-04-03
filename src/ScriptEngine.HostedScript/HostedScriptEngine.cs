@@ -23,13 +23,17 @@ namespace ScriptEngine.HostedScript
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
+            var libLoader = new LibraryResolver(_engine, _env);
+            libLoader.LibraryRoot = LibraryRoot;
+            _engine.DirectiveResolver = libLoader;
+            _engine.Environment = _env;
         }
 
         public void Initialize()
         {
             if (!_isInitialized)
             {
-                _engine.Initialize(_env);
+                _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
 
                 _isInitialized = true;
@@ -61,11 +65,12 @@ namespace ScriptEngine.HostedScript
 
         public CompilerService GetCompilerService()
         {
-            Initialize();
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
             return compilerSvc;
         }
+
+        public string LibraryRoot { get; set; }
 
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {
@@ -74,28 +79,28 @@ namespace ScriptEngine.HostedScript
 
         public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
         {
+            SetGlobalEnvironment(host, src);
             var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
             return InitProcess(host, src, ref module);
         }
 
-        public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle)
-        {
-            var module = _engine.LoadModuleImage(moduleHandle);
-            return InitProcess(host, null, ref module);
-        }
-
         public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle, ICodeSource src)
         {
+            SetGlobalEnvironment(host, src);
             var module = _engine.LoadModuleImage(moduleHandle);
             return InitProcess(host, src, ref module);
+        }
+
+        private void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
+        {
+            _globalCtx.ApplicationHost = host;
+            _globalCtx.CodeSource = src;
+            _globalCtx.InitInstance();
         }
 
         private Process InitProcess(IHostApplication host, ICodeSource src, ref LoadedModuleHandle module)
         {
             Initialize();
-            _globalCtx.ApplicationHost = host;
-            _globalCtx.CodeSource = src;
-            _globalCtx.InitInstance();
             var process = new Process(host, module, _engine);
             return process;
         }

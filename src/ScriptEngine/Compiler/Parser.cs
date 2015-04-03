@@ -17,6 +17,7 @@ namespace ScriptEngine.Compiler
         ParserState _stringState = new StringParserState();
         ParserState _operatorState = new OperatorParserState();
         ParserState _dateState = new DateParserState();
+        ParserState _directiveState = new DirectiveParserState();
 
         public string Code 
         { 
@@ -81,10 +82,14 @@ namespace ScriptEngine.Compiler
                         _iterator.MoveNext();
                         return new Lexem() { Type = LexemType.Identifier, Token = Token.Question };
                     }
+                    else if(cs == SpecialChars.Directive)
+                    {
+                        _state = _directiveState;
+                    }
                     else
                     {
                         var cp = _iterator.GetPositionInfo(_iterator.CurrentLine);
-                        throw new ParserException(cp, string.Format("Неизвестный символ {0}",cs));
+                        throw new ParserException(cp, string.Format("Неизвестный символ {0}", cs));
                     }
 
                     var lex = _state.ReadNextLexem(_iterator);
@@ -109,6 +114,19 @@ namespace ScriptEngine.Compiler
         internal SourceCodeIndexer GetCodeIndexer()
         {
             return _iterator.GetCodeIndexer();
+        }
+
+        internal string ReadLineToEnd()
+        {
+            _iterator.MoveToContent();
+            while (_iterator.MoveNext())
+            {
+                if (_iterator.CurrentSymbol == '\n')
+                {
+                    return _iterator.GetContents().content;
+                }
+            }
+            return _iterator.GetContents().content;
         }
     }
 
@@ -153,7 +171,8 @@ namespace ScriptEngine.Compiler
         UndefinedLiteral,
         NullLiteral,
         EndOperator,
-        EndOfText
+        EndOfText,
+        Directive
     }
 
     abstract class ParserState
@@ -521,6 +540,30 @@ namespace ScriptEngine.Compiler
                 }
             }
         }
+    }
+
+    class DirectiveParserState : ParserState
+    {
+        public override Lexem ReadNextLexem(ParseIterator iterator)
+        {
+            System.Diagnostics.Debug.Assert(iterator.CurrentSymbol == SpecialChars.Directive);
+            iterator.MoveNext();
+            if (!iterator.MoveToContent())
+                throw CreateExceptionOnCurrentLine("Ожидается директива", iterator);
+
+
+            var wps = new WordParserState();
+            var lex = wps.ReadNextLexem(iterator);
+            if (lex.Type == LexemType.Identifier && lex.Token == Token.NotAToken)
+            {
+                lex.Type = LexemType.Directive;
+            }
+            else
+                throw CreateExceptionOnCurrentLine("Ожидается директива", iterator);
+
+            return lex;
+        }
+
     }
 
 }
