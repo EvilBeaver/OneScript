@@ -210,6 +210,7 @@ namespace ScriptEngine.Compiler
         public const char StringQuote = '"';
         public const char DateQuote = '\'';
         public const char EndOperator = ';';
+        public const char Directive = '#';
 
         public static bool IsOperatorChar(char symbol)
         {

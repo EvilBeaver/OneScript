@@ -25,6 +25,9 @@ namespace ScriptEngine.HostedScript.Library
             this._p = p;
         }
 
+        /// <summary>
+        /// ПотокВыводаТекста. Стандартный поток вывода (stdout)
+        /// </summary>
         [ContextProperty("ПотокВывода", "StdOut")]
         public StdTextReadStream StdOut
         {
@@ -36,6 +39,9 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        /// <summary>
+        /// ПотокВыводаТекста. Стандартный поток вывода ошибок (stderr)
+        /// </summary>
         [ContextProperty("ПотокОшибок", "StdErr")]
         public StdTextReadStream StdErr
         {
@@ -47,6 +53,9 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        /// <summary>
+        /// ПотокВводаТекста. Стандартный поток ввода (stdin)
+        /// </summary>
         [ContextProperty("ПотокВвода", "StdIn")]
         public StdTextWriteStream StdIn
         {
@@ -58,12 +67,18 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        /// <summary>
+        /// Запустить процесс на выполнение.
+        /// </summary>
         [ContextMethod("Запустить", "Start")]
         public void Start()
         {
             _p.Start();
         }
 
+        /// <summary>
+        /// Флаг указывает, что процесс завершен (или нет)
+        /// </summary>
         [ContextProperty("Завершен","HasExited")]
         public bool HasExited
         {
@@ -73,6 +88,9 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        /// <summary>
+        /// Код возврата завершенного процесса.
+        /// </summary>
         [ContextProperty("КодВозврата", "ExitCode")]
         public int ExitCode
         {
@@ -82,12 +100,18 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        /// <summary>
+        /// Приостановить выполнение скрипта и ожидать завершения процесса.
+        /// </summary>
         [ContextMethod("ОжидатьЗавершения", "WaitForExit")]
         public void WaitForExit()
         {
             _p.WaitForExit();
         }
 
+        /// <summary>
+        /// PID процесса
+        /// </summary>
         [ContextProperty("Идентификатор", "ProcessId")]
         public int ProcessId
         {

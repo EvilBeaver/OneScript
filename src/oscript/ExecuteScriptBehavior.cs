@@ -44,7 +44,13 @@ namespace oscript
 
         public void ShowExceptionInfo(Exception exc)
         {
-            Console.WriteLine(exc.Message);
+            if(exc is RuntimeException)
+            {
+                var rte = (RuntimeException)exc;
+                Console.WriteLine(rte.MessageWithoutCodeFragment);
+            }
+            else
+                Console.WriteLine(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)

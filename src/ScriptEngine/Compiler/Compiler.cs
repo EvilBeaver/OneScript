@@ -51,6 +51,8 @@ namespace ScriptEngine.Compiler
             public List<int> breakStatements;
         }
 
+        public CompilerDirectiveHandler DirectiveHandler { get; set; }
+
         public Compiler()
         {
             
@@ -61,7 +63,6 @@ namespace ScriptEngine.Compiler
             _module = new ModuleImage();
             _ctx = context;
             _parser = parser;
-
             _parser.Start();
 
             BuildModule();
@@ -110,7 +111,10 @@ namespace ScriptEngine.Compiler
                         throw;
                     }
 
-                    var methInfo = _module.Methods[methN.CodeIndex].Signature;
+                    var scope = _ctx.GetScope(methN.ContextIndex);
+
+                    var methInfo = scope.GetMethod(methN.CodeIndex);
+                    System.Diagnostics.Debug.Assert(methInfo.Name == item.identifier);
                     if (item.asFunction && !methInfo.IsFunction)
                     {
                         var exc = CompilerException.UseProcAsFunction();
@@ -145,25 +149,37 @@ namespace ScriptEngine.Compiler
 
         private void DispatchModuleBuild()
         {
-            if (_lastExtractedLexem.Type == LexemType.Identifier)
+            bool isCodeEntered = false;
+
+            while (_lastExtractedLexem.Type != LexemType.EndOfText)
             {
-                if (_lastExtractedLexem.Token == Token.VarDef)
+                if (_lastExtractedLexem.Type == LexemType.Identifier)
                 {
-                    BuildVariableDefinitions();
+                    if (_lastExtractedLexem.Token == Token.VarDef)
+                    {
+                        isCodeEntered = true;
+                        BuildVariableDefinitions();
+                    }
+                    else if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
+                    {
+                        isCodeEntered = true;
+                        _isMethodsDefined = true;
+                        BuildSingleMethod();
+                    }
+                    else
+                    {
+                        isCodeEntered = true;
+                        BuildModuleBody();
+                    }
                 }
-                else if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
+                else if(_lastExtractedLexem.Type == LexemType.Directive && !isCodeEntered)
                 {
-                    _isMethodsDefined = true;
-                    BuildMethods();
+                    HandleDirective();
                 }
                 else
                 {
-                    BuildModuleBody();
+                    throw CompilerException.UnexpectedOperation();
                 }
-            }
-            else if (_lastExtractedLexem.Type != LexemType.EndOfText)
-            {
-                throw CompilerException.UnexpectedOperation();
             }
         }
 
@@ -226,14 +242,6 @@ namespace ScriptEngine.Compiler
                 }
             }
 
-            if (!_inMethodScope)
-                DispatchModuleBuild();
-        }
-
-        private void BuildMethods()
-        {
-            BuildSingleMethod();
-            DispatchModuleBuild();
         }
 
         private void BuildModuleBody()
@@ -276,6 +284,17 @@ namespace ScriptEngine.Compiler
                 _module.MethodRefs.Add(bodyBinding);
                 _module.EntryMethodIndex = entryRefNumber;
             }
+        }
+
+        private void HandleDirective()
+        {
+            var directive = _lastExtractedLexem.Content;
+            var value = _parser.ReadLineToEnd().Trim();
+            NextToken();
+
+            if (DirectiveHandler == null || !DirectiveHandler(directive, value))
+                throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
+
         }
 
         private void BuildSingleMethod()
@@ -1662,4 +1681,6 @@ namespace ScriptEngine.Compiler
             _backOneToken = true;
         }
     }
+
+    public delegate bool CompilerDirectiveHandler(string directive, string value);
 }

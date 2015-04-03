@@ -72,8 +72,8 @@ namespace ScriptEngine.HostedScript.Library
                 else
                     path = ((DirectoryInfo)_fsEntry).Parent.FullName;
 
-                if (!path.EndsWith("\\")) 
-                    path += "\\";
+                if (path.Length > 0 && path[path.Length-1] != System.IO.Path.DirectorySeparatorChar)
+                    path += System.IO.Path.DirectorySeparatorChar;
 
                 return path;
 

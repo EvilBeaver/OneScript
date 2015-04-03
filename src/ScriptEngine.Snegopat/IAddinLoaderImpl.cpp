@@ -28,8 +28,8 @@ IAddinLoaderImpl::IAddinLoaderImpl(IDispatch* pDesigner) : RefCountable()
 
 	LibraryAttachedContext^ stdLib = gcnew LibraryAttachedContext(m_engine);
 	env->InjectObject(stdLib);
-
-	m_engine->Initialize(env);
+	m_engine->Environment = env;
+	m_engine->Initialize();
 
 }
 

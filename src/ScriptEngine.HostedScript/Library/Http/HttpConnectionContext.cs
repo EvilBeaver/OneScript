@@ -8,6 +8,12 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.Http
 {
+    /// <summary>
+    /// Объект доступа к протоколу HTTP/HTTPS.
+    /// Использует семантику методов, реализованных в платформе 1С:Предприятие 8.2.18 и старше.
+    /// Синтаксис методов, применявшийся в более младших версиях не поддерживается.
+    /// Средства работы с HTTP находятся в статусе experimental.
+    /// </summary>
     [ContextClass("HTTPСоединение", "HTTPConnection")]
     public class HttpConnectionContext : AutoContext<HttpConnectionContext>
     {
@@ -86,26 +92,48 @@ namespace ScriptEngine.HostedScript.Library.Http
             get; private set;
         }
 
+        /// <summary>
+        /// Получить данные методом GET
+        /// </summary>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <param name="output">Строка. Имя файла, в который нужно записать ответ. Необязательный параметр.</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Получить", "Get")]
         public HttpResponseContext Get(HttpRequestContext request, string output = null)
         {
             return GetResponse(request, "GET", output);
         }
 
+        /// <summary>
+        /// Передача данных методом PUT
+        /// </summary>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Записать", "Put")]
         public HttpResponseContext Put(HttpRequestContext request)
         {
             return GetResponse(request, "PUT");
         }
 
+        /// <summary>
+        /// Передача данных методом POST
+        /// </summary>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <param name="output">Строка. Имя файла, в который нужно записать ответ. Необязательный параметр.</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("ОтправитьДляОбработки", "Post")]
         public HttpResponseContext Post(HttpRequestContext request, string output = null)
         {
             return GetResponse(request, "POST", output);
         }
 
+        /// <summary>
+        /// Удалить данные методом DELETE
+        /// </summary>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Удалить", "Delete")]
-        public HttpResponseContext Delete(HttpRequestContext request, string output = null)
+        public HttpResponseContext Delete(HttpRequestContext request)
         {
             return GetResponse(request, "DELETE");
         }
@@ -119,8 +147,18 @@ namespace ScriptEngine.HostedScript.Library.Http
             var resourceUri = new Uri(uriBuilder.Uri, resource);
 
             var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
-            if(User != "" || Password != "")
+            if (User != "" || Password != "")
+            {
                 request.Credentials = new NetworkCredential(User, Password);
+                //request.PreAuthenticate = true;
+                // Авторизация на сервере 1С:Предприятие, например, не работает без явного указания заголовка.
+                // http://blog.kowalczyk.info/article/at3/Forcing-basic-http-authentication-for-HttpWebReq.html
+                string authInfo = User + ":" + Password;
+                // Для 1С работает только UTF-8, хотя стандарт требует ISO-8859-1
+                var basicAuthEncoding = Encoding.GetEncoding("UTF-8");
+                authInfo = Convert.ToBase64String(basicAuthEncoding.GetBytes(authInfo));
+                request.Headers["Authorization"] = "Basic " + authInfo;
+            }
 
             if(_proxy != null)
                 request.Proxy = _proxy.GetProxy();
@@ -271,6 +309,17 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
         }
 
+        /// <summary>
+        /// Стандартный конструктор. Поддержка клиентских сертификатов HTTPS в текущей версии не реализована.
+        /// Для доступа к серверу по протоколу HTTPS указывайте схему https:// в URL.
+        /// </summary>
+        /// <param name="host">Адрес сервера (можно указать URL-схему http или https)</param>
+        /// <param name="port">Порт сервера</param>
+        /// <param name="user">Пользователь</param>
+        /// <param name="password">Пароль</param>
+        /// <param name="proxy">ИнтернетПрокси. Настройки прокси-сервера</param>
+        /// <param name="timeout">Таймаут ожидания.</param>
+        /// <returns></returns>
         [ScriptConstructor]
         public static HttpConnectionContext Constructor(IValue host, 
             IValue port = null, 
