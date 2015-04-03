@@ -66,7 +66,7 @@ namespace ScriptEngine.HostedScript
             var loaderscript = Path.Combine(LibraryRoot, "package-loader.os");
             if(File.Exists(loaderscript))
             {
-                _loader = LibraryLoader.Create(_engine, _env);
+                _loader = LibraryLoader.Create(_engine, _env, loaderscript);
             }
             else
             {

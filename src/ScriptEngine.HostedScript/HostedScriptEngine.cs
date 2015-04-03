@@ -79,22 +79,28 @@ namespace ScriptEngine.HostedScript
 
         public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
         {
+            SetGlobalEnvironment(host, src);
             var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
             return InitProcess(host, src, ref module);
         }
 
         public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle, ICodeSource src)
         {
+            SetGlobalEnvironment(host, src);
             var module = _engine.LoadModuleImage(moduleHandle);
             return InitProcess(host, src, ref module);
+        }
+
+        private void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
+        {
+            _globalCtx.ApplicationHost = host;
+            _globalCtx.CodeSource = src;
+            _globalCtx.InitInstance();
         }
 
         private Process InitProcess(IHostApplication host, ICodeSource src, ref LoadedModuleHandle module)
         {
             Initialize();
-            _globalCtx.ApplicationHost = host;
-            _globalCtx.CodeSource = src;
-            _globalCtx.InitInstance();
             var process = new Process(host, module, _engine);
             return process;
         }

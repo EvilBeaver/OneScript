@@ -15,13 +15,19 @@ namespace ScriptEngine.HostedScript
         private ScriptingEngine _engine;
         bool _customized;
 
-        private Action<IValue[]>[] _callableMethods = new Action<IValue[]>[0]; // TODO: Сделать инициализацию
+        private enum MethodNumbers
+        {
+            AddClass,
+            AddProperty,
+            LastNotAMethod
+        }
 
         private LibraryLoader(LoadedModuleHandle moduleHandle, RuntimeEnvironment _env, ScriptingEngine _engine): base(moduleHandle)
         {
             this._env = _env;
             this._engine = _engine;
             this._customized = true;
+
             _engine.InitializeSDO(this);
 
         }
@@ -33,11 +39,21 @@ namespace ScriptEngine.HostedScript
             this._engine = _engine;
             this._customized = false;
         }
+        
+        #region Static part
+
+        private static ContextMethodsMapper<LibraryLoader> _methods = new ContextMethodsMapper<LibraryLoader>();
 
         public static LibraryLoader Create(ScriptingEngine engine, RuntimeEnvironment env, string processingScript)
         {
             var code = engine.Loader.FromFile(processingScript);
             var compiler = engine.GetCompilerService();
+            for (int i = 0; i < _methods.Count; i++)
+            {
+                var mi = _methods.GetMethodInfo(i);
+                compiler.DefineMethod(mi);
+            }
+
             var module = compiler.CreateModule(code);
             var loadedModule = engine.LoadModuleImage(module);
 
@@ -50,6 +66,28 @@ namespace ScriptEngine.HostedScript
             return new LibraryLoader(env, engine);
         }
 
+        #endregion
+
+        [ContextMethod("ДобавитьКласс","AddClass")]
+        public void AddClass(string file, string className)
+        {
+            if (!Utils.IsValidIdentifier(className))
+                throw RuntimeException.InvalidArgumentValue();
+
+            var compiler = _engine.GetCompilerService();
+            _engine.AttachedScriptsFactory.AttachByPath(compiler, file, className);
+        }
+
+        [ContextMethod("ДобавитьМодуль", "AddModule")]
+        public void AddModule(string file, string moduleName)
+        {
+            if (!Utils.IsValidIdentifier(moduleName))
+                throw RuntimeException.InvalidArgumentValue();
+
+            var compiler = _engine.GetCompilerService();
+            var instance = (IValue)_engine.AttachedScriptsFactory.LoadFromPath(compiler, file);
+            _env.InjectGlobalProperty(instance, moduleName, true);
+        }
 
         protected override int GetVariableCount()
         {
@@ -58,7 +96,7 @@ namespace ScriptEngine.HostedScript
 
         protected override int GetMethodCount()
         {
-            return _callableMethods.Length;
+            return _methods.Count;
         }
 
         protected override void UpdateState()
@@ -68,22 +106,22 @@ namespace ScriptEngine.HostedScript
 
         protected override int FindOwnMethod(string name)
         {
-            throw new NotImplementedException();
+            return _methods.FindMethod(name);
         }
 
         protected override MethodInfo GetOwnMethod(int index)
         {
-            throw new NotImplementedException();
+            return _methods.GetMethodInfo(index);
         }
 
         protected override void CallOwnProcedure(int index, IValue[] arguments)
         {
-            throw new NotImplementedException();
+            _methods.GetMethod(index)(this, arguments);
         }
 
         protected override IValue CallOwnFunction(int index, IValue[] arguments)
         {
-            throw new NotImplementedException();
+            return _methods.GetMethod(index)(this, arguments);
         }
 
         public bool ProcessLibrary(string libraryPath)
@@ -92,8 +130,34 @@ namespace ScriptEngine.HostedScript
             {
                 return DefaultProcessing(libraryPath);
             }
+            else
+            {
+                return CustomizedProcessing(libraryPath);
+            }
+        }
 
-            throw new NotImplementedException();
+        private bool CustomizedProcessing(string libraryPath)
+        {
+            var libPathValue = ValueFactory.Create(libraryPath);
+            var defaultLoading = Variable.Create(ValueFactory.Create(true));
+            var cancelLoading = Variable.Create(ValueFactory.Create(false));
+
+            int eventIdx = GetScriptMethod("ПриЗагрузкеБиблиотеки", "OnLibraryLoad");
+            if(eventIdx == -1)
+            {
+                return DefaultProcessing(libraryPath);
+            }
+
+            CallScriptMethod(eventIdx, new[] { libPathValue, defaultLoading, cancelLoading });
+
+            if (cancelLoading.AsBoolean()) // Отказ = Ложь
+                return false;
+
+            if (defaultLoading.AsBoolean())
+                return DefaultProcessing(libraryPath);
+
+            return true;
+
         }
 
         private bool DefaultProcessing(string libraryPath)
@@ -107,9 +171,7 @@ namespace ScriptEngine.HostedScript
             foreach (var file in files)
             {
                 hasFiles = true;
-                var compiler = _engine.GetCompilerService();
-                var instance = (IValue)_engine.AttachedScriptsFactory.LoadFromPath(compiler, file.Path);
-                _env.InjectGlobalProperty(instance, file.Name, true);
+                AddModule(file.Path, file.Name);
             }
 
             return hasFiles;

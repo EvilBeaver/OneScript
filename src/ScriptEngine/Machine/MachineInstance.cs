@@ -771,7 +771,7 @@ namespace ScriptEngine.Machine
 
                 if (sdo.MethodDefinedInScript(methodRef.CodeIndex))
                 {
-                    var methDescr = _module.Methods[methodRef.CodeIndex];
+                    var methDescr = _module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
                     var frame = new ExecutionFrame();
                     frame.MethodName = methInfo.Name;
                     frame.Locals = new IVariable[methDescr.VariableFrameSize];

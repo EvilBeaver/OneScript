@@ -125,6 +125,14 @@ namespace ScriptEngine.Compiler
             }
         }
 
+        public int MethodCount
+        {
+            get
+            {
+                return _methods.Count;
+            }
+        }
+
         public bool IsDynamicScope 
         { 
             get; 

@@ -13,6 +13,7 @@ namespace ScriptEngine.Machine.Contexts
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
+        private MethodInfo[] _attachableMethods;
 
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
@@ -71,6 +72,11 @@ namespace ScriptEngine.Machine.Contexts
             return index >= VARIABLE_COUNT;
         }
 
+        internal int GetMethodDescriptorIndex(int indexInContext)
+        {
+            return indexInContext - METHOD_COUNT;
+        }
+
         public void Initialize(MachineInstance runner)
         {
             _machine = runner;
@@ -80,6 +86,38 @@ namespace ScriptEngine.Machine.Contexts
                 _machine.AttachContext(this, true);
                 _machine.ExecuteModuleBody();
             });
+        }
+
+        protected int GetScriptMethod(string methodName, string alias = null)
+        {
+            int index = -1;
+
+            for (int i = 0; i < _module.Methods.Length; i++)
+            {
+                var item = _module.Methods[i];
+                if (StringComparer.OrdinalIgnoreCase.Compare(item.Signature.Name, methodName) == 0
+                    || (alias != null && StringComparer.OrdinalIgnoreCase.Compare(item.Signature.Name, alias) == 0))
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        protected IValue CallScriptMethod(int methodIndex, IValue[] parameters)
+        {
+            IValue returnValue = null;
+
+            _machine.StateConsistentOperation(() =>
+            {
+                _machine.SetModule(_module);
+                _machine.AttachContext(this, true);
+                returnValue = _machine.ExecuteMethod(methodIndex, parameters);
+            });
+
+            return returnValue;
         }
 
         #region Own Members Call
@@ -138,8 +176,20 @@ namespace ScriptEngine.Machine.Contexts
             UpdateState();
 
             variables = _state;
+            methods = AttachMethods();
+            instance = this;
+
+            _machine = machine;
+
+        }
+
+        private MethodInfo[] AttachMethods()
+        {
+            if (_attachableMethods != null)
+                return _attachableMethods;
+
             int totalMethods = METHOD_COUNT + _module.Methods.Length;
-            methods = new MethodInfo[totalMethods];
+            _attachableMethods = new MethodInfo[totalMethods];
 
             var moduleMethods = _module.Methods.Select(x => x.Signature).ToArray();
 
@@ -147,18 +197,15 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (MethodDefinedInScript(i))
                 {
-                    methods[i] = moduleMethods[i];
+                    _attachableMethods[i] = moduleMethods[i - METHOD_COUNT];
                 }
                 else
                 {
-                    methods[i] = GetOwnMethod(i);
+                    _attachableMethods[i] = GetOwnMethod(i);
                 }
             }
-            
-            instance = this;
 
-            _machine = machine;
-
+            return _attachableMethods;
         }
 
         #endregion

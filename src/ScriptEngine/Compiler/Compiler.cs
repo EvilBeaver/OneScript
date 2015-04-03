@@ -63,7 +63,6 @@ namespace ScriptEngine.Compiler
             _module = new ModuleImage();
             _ctx = context;
             _parser = parser;
-
             _parser.Start();
 
             BuildModule();
@@ -112,7 +111,10 @@ namespace ScriptEngine.Compiler
                         throw;
                     }
 
-                    var methInfo = _module.Methods[methN.CodeIndex].Signature;
+                    var scope = _ctx.GetScope(methN.ContextIndex);
+
+                    var methInfo = scope.GetMethod(methN.CodeIndex);
+                    System.Diagnostics.Debug.Assert(methInfo.Name == item.identifier);
                     if (item.asFunction && !methInfo.IsFunction)
                     {
                         var exc = CompilerException.UseProcAsFunction();
