@@ -128,17 +128,14 @@
   <!--aditional tasks-->
 
   <Target Name="xUnitTest">
-    <ItemGroup>
-      <TestFiles Include="$(MSBuildProjectDirectory)\tests\*.os" Exclude="$(MSBuildProjectDirectory)\tests\testrunner.os"/>
-    </ItemGroup>
-
+    
     <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
       <Output TaskParameter="Include" ItemName="RemoveXMLTestResult" />
     </CreateItem>
     
     <Delete Files="@(RemoveXMLTestResult)" />
 
-    <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="$(OutputPathForDist)\oscript.exe $(MSBuildProjectDirectory)\tests\testrunner.os -run %(TestFiles.FullPath) xddReportPath ." IgnoreExitCode="true"/>
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="$(OutputPathForDist)\oscript.exe $(MSBuildProjectDirectory)\tests\testrunner.os -runall . xddReportPath ." IgnoreExitCode="true"/>
     
   </Target>
   
