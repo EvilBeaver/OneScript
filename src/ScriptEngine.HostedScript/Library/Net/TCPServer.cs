@@ -46,8 +46,15 @@ namespace ScriptEngine.HostedScript.Library.Net
         /// </summary>
         /// <returns>TCPСоединение. Объект, позволяющий обмениваться данными с удаленным хостом.</returns>
         [ContextMethod("ОжидатьСоединения","WaitForConnection")]
-        public TCPClient WaitForConnection()
+        public TCPClient WaitForConnection(int timeout = 0)
         {
+            if (0 != timeout && !_listener.Pending())
+            {
+                System.Threading.Thread.Sleep(timeout);
+                if (!_listener.Pending())
+                      return null;
+            }
+
             var client = _listener.AcceptTcpClient();
             return new TCPClient(client);
         }
