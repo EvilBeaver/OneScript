@@ -44,6 +44,7 @@ namespace ScriptEngine.HostedScript.Library.Net
         /// Приостановить выполнение скрипта и ожидать соединений по сети.
         /// После получения соединения выполнение продолжается
         /// </summary>
+        /// <param name="timeout">Значение таймаута в миллисекундах.</param>
         /// <returns>TCPСоединение. Объект, позволяющий обмениваться данными с удаленным хостом.</returns>
         [ContextMethod("ОжидатьСоединения","WaitForConnection")]
         public TCPClient WaitForConnection(int timeout = 0)
