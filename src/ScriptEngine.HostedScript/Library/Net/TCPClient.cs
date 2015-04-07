@@ -185,5 +185,17 @@ namespace ScriptEngine.HostedScript.Library.Net
         {
             Close();
         }
+
+        /// <summary>
+        /// Подключение к удаленному TCP-сокету
+        /// </summary>
+        /// <param name="host">адрес машины</param>
+        /// <param name="port">порт сокета</param>
+        [ScriptConstructor]
+        public static TCPClient Constructor(IValue host, IValue port)
+        {
+            var client = new TcpClient(host.AsString(), (int)port.AsNumber());
+            return new TCPClient(client);
+        }
     }
 }
