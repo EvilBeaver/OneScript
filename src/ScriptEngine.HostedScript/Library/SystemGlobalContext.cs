@@ -22,11 +22,7 @@ namespace ScriptEngine.HostedScript.Library
         public SystemGlobalContext()
         {
             RegisterProperty("АргументыКоманднойСтроки", new Func<IValue>(()=>(IValue)CommandLineArguments));
-        }
-
-        public void RegisterProperty(string name, IValue value)
-        {
-            RegisterProperty(name, () => value);
+            RegisterProperty("CommandLineArguments", new Func<IValue>(() => (IValue)CommandLineArguments));
         }
 
         private void RegisterProperty(string name, Func<IValue> getter)

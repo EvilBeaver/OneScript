@@ -40,7 +40,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public override int FindMethod(string name)
         {
-            if (name.ToLower() == "количество")
+            if (name.ToLower() == "количество" || name.ToLower() == "count")
             {
                 return 0;
             }
