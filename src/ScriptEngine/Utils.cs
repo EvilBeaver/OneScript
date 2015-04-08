@@ -35,7 +35,7 @@ namespace ScriptEngine
 
                 return !inQuotes && c == ' ';
             })
-            .Select(arg => arg.Trim().TrimMatchingQuotes('\"'))
+            .Select(arg => arg.Trim())
             .Where(arg => !string.IsNullOrEmpty(arg));
         }
 
