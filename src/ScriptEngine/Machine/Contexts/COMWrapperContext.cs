@@ -22,26 +22,31 @@ namespace ScriptEngine.Machine.Contexts
 
             object instance = Activator.CreateInstance(type, MarshalArguments(arguments));
 
-            if(TypeIsRuntimeCallableWrapper(type))
-            {
-                return new UnmanagedRCWComContext(instance);
-            }
-            else
-            {
-                return new ManagedCOMWrapperContext(instance);
-            }
+            return InitByInstance(type, instance);
         }
 
         public static COMWrapperContext Create(object instance)
         {
-            if(TypeIsRuntimeCallableWrapper(instance.GetType()))
+            return InitByInstance(instance.GetType(), instance);
+        }
+
+        private static COMWrapperContext InitByInstance(Type type, object instance)
+        {
+            if (TypeIsRuntimeCallableWrapper(type))
             {
                 return new UnmanagedRCWComContext(instance);
             }
-            else
+            else if (IsObjectType(type))
             {
-                throw new NotImplementedException();
+                return new ManagedCOMWrapperContext(instance);
             }
+            else
+                throw new ArgumentException(String.Format("Can't create COM wrapper for type {0}", type.ToString()));
+        }
+
+        private static bool IsObjectType(Type type)
+        {
+            return !type.IsPrimitive && !type.IsValueType;
         }
 
         private static bool TypeIsRuntimeCallableWrapper(Type type)
@@ -104,15 +109,24 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((bool)objParam);
             }
-            else if (DispatchUtility.ImplementsIDispatch(objParam))
-            {
-                var ctx = COMWrapperContext.Create(objParam);
-                return ValueFactory.Create(ctx);
-            }
             else if (type.IsArray)
             {
                 return new SafeArrayWrapper(objParam);
             }
+            else if (IsObjectType(type))
+            {
+                COMWrapperContext ctx;
+                try
+                {
+                    ctx = COMWrapperContext.Create(objParam);
+                }
+                catch (ArgumentException e)
+                {
+                    throw new RuntimeException("Тип " + type + " невозможно преобразовать в один из поддерживаемых типов", e);
+                }
+                return ValueFactory.Create(ctx);
+            }
+            
             else
             {
                 throw new RuntimeException("Тип " + type + " невозможно преобразовать в один из поддерживаемых типов");

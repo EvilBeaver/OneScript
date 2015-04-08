@@ -8,7 +8,6 @@ namespace ScriptEngine.Machine.Contexts
 {
     class UnmanagedRCWComContext : COMWrapperContext
     {
-        private Type _dispatchedType;
         private object _instance;
 
         private const uint E_DISP_MEMBERNOTFOUND = 0x80020003;
