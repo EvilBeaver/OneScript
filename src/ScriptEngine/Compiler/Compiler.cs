@@ -915,31 +915,365 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.LineNum, _parser.CurrentLine);
             switch (_lastExtractedLexem.Token)
             {
-                case Token.OpenPar:
-                    BuildProcedureCall(identifier);
-                    break;
-                case Token.OpenBracket:
-
-                    BuildIndexedAccess(identifier);
-                    NextToken();
-                    BuildRefAssignment();
-                    break;
-                case Token.Dot:
-                    // build resolve chain
-                    BuildPushVariable(identifier);
-                    BuildRefAssignment();
-                    break;
                 case Token.Equal:
                     NextToken();
                     BuildExpression(Token.Semicolon);
-
                     BuildLoadVariable(identifier);
-
+                    break;
+                case Token.OpenPar:
+                    BuildProcedureCall(identifier);
+                    break;
+                case Token.Dot:
+                case Token.OpenBracket:
+                    // access chain
+                    BuildAccessChainLeftHand(identifier);
                     break;
                 default:
                     throw CompilerException.UnexpectedOperation();
             }
         }
+
+        #region v2.0 Copy-Paste
+
+        private void BuildAccessChainLeftHand(string identifier)
+        {
+            BuildPushVariable(identifier);
+            
+            string ident;
+            BuildContinuationLeftHand(out ident);
+
+            if (ident == null)
+            {
+                // это присваивание
+                if (_lastExtractedLexem.Token != Token.Equal)
+                    throw CompilerException.UnexpectedOperation();
+
+                NextToken(); // перешли к выражению
+                BuildExpression(Token.Semicolon);
+                AddCommand(OperationCode.AssignRef, 0);
+
+            }
+            else
+            {
+                // это вызов
+                System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
+                var args = BuildArgumentList();
+                BuildMethodCall(ident, args, false);
+            }
+        }
+
+        private void BuildExpression(Token stopToken)
+        {
+            BuildPrimaryNode();
+            BuildOperation(0);
+            if (_lastExtractedLexem.Token == stopToken)
+                return;
+
+            var endTokens = _tokenStack.Peek();
+
+            if (endTokens.Contains(_lastExtractedLexem.Token))
+                return;
+            else if (_lastExtractedLexem.Token == Token.EndOfText)
+                throw CompilerException.UnexpectedEndOfText();
+            else
+                throw CompilerException.ExpressionSyntax();
+        }
+
+        private void BuildOperation(int acceptablePriority)
+        {
+            var currentOp = _lastExtractedLexem.Token;
+            var opPriority = GetBinaryPriority(currentOp);
+            while (LanguageDef.IsBinaryOperator(currentOp) && opPriority >= acceptablePriority)
+            {
+                NextToken();
+                BuildPrimaryNode();
+
+                var newOp = _lastExtractedLexem.Token;
+                int newPriority = GetBinaryPriority(newOp);
+
+                if (newPriority > opPriority)
+                {
+                    BuildOperation(newPriority);
+                }
+
+                var opCode = TokenToOperationCode(currentOp);
+                AddCommand(opCode, 0);
+
+                currentOp = _lastExtractedLexem.Token;
+                opPriority = GetBinaryPriority(currentOp);
+
+            }
+        }
+
+        private static OperationCode TokenToOperationCode(Token stackOp)
+        {
+            OperationCode opCode;
+            switch (stackOp)
+            {
+                case Token.Equal:
+                    opCode = OperationCode.Equals;
+                    break;
+                case Token.NotEqual:
+                    opCode = OperationCode.NotEqual;
+                    break;
+                case Token.Plus:
+                    opCode = OperationCode.Add;
+                    break;
+                case Token.Minus:
+                    opCode = OperationCode.Sub;
+                    break;
+                case Token.Multiply:
+                    opCode = OperationCode.Mul;
+                    break;
+                case Token.Division:
+                    opCode = OperationCode.Div;
+                    break;
+                case Token.Modulo:
+                    opCode = OperationCode.Mod;
+                    break;
+                case Token.UnaryMinus:
+                    opCode = OperationCode.Neg;
+                    break;
+                case Token.And:
+                    opCode = OperationCode.And;
+                    break;
+                case Token.Or:
+                    opCode = OperationCode.Or;
+                    break;
+                case Token.Not:
+                    opCode = OperationCode.Not;
+                    break;
+                case Token.LessThan:
+                    opCode = OperationCode.Less;
+                    break;
+                case Token.LessOrEqual:
+                    opCode = OperationCode.LessOrEqual;
+                    break;
+                case Token.MoreThan:
+                    opCode = OperationCode.Greater;
+                    break;
+                case Token.MoreOrEqual:
+                    opCode = OperationCode.GreaterOrEqual;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return opCode;
+        }
+
+
+        private static int GetBinaryPriority(Token newOp)
+        {
+            int newPriority;
+            if (LanguageDef.IsBinaryOperator(newOp))
+                newPriority = LanguageDef.GetPriority(newOp);
+            else
+                newPriority = -1;
+
+            return newPriority;
+        }
+
+        private void BuildPrimaryNode()
+        {
+            if (LanguageDef.IsLiteral(ref _lastExtractedLexem))
+            {
+                BuildPushConstant();
+                NextToken();
+            }
+            else if (LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+            {
+                ProcessPrimaryIdentifier();
+            }
+            else if (_lastExtractedLexem.Token == Token.Minus)
+            {
+                ProcessPrimaryUnaryMinus();
+            }
+            else if (_lastExtractedLexem.Token == Token.Not)
+            {
+                ProcessUnaryBoolean();
+            }
+            else if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                ProcessSubexpression();
+            }
+            else
+            {
+                throw CompilerException.ExpressionSyntax();
+            }
+        }
+
+        private void ProcessPrimaryIdentifier()
+        {
+            var identifier = _lastExtractedLexem.Content;
+            NextToken();
+            if (_lastExtractedLexem.Token == Token.Dot || _lastExtractedLexem.Token == Token.OpenBracket)
+            {
+                BuildPushVariable(identifier);
+                BuildContinuationRightHand();
+            }
+            else if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                // это вызов функции
+                bool[] args = BuildArgumentList();
+                BuildMethodCall(identifier, args, true);
+            }
+            else
+            {
+                BuildPushVariable(identifier);
+            }
+        }
+
+        private void ProcessPrimaryUnaryMinus()
+        {
+            NextToken();
+            if (!(LanguageDef.IsLiteral(ref _lastExtractedLexem)
+                || LanguageDef.IsIdentifier(ref _lastExtractedLexem)
+                || _lastExtractedLexem.Token == Token.OpenPar))
+            {
+                throw CompilerException.ExpressionExpected();
+            }
+
+            BuildPrimaryNode();
+            AddCommand(OperationCode.Neg, 0);
+        }
+
+        private void ProcessSubexpression()
+        {
+            NextToken(); // съели открывающую скобку
+            BuildPrimaryNode();
+            BuildOperation(0);
+
+            if (_lastExtractedLexem.Token != Token.ClosePar)
+                throw CompilerException.TokenExpected(")");
+
+            NextToken(); // съели закрывающую скобку
+        }
+
+        private void ProcessUnaryBoolean()
+        {
+            NextToken();
+            BuildPrimaryNode();
+            AddCommand(OperationCode.Not, 0);
+        }
+
+        private void BuildContinuationRightHand()
+        {
+            string dummy;
+            BuildContinuationInternal(false, out dummy);
+        }
+
+        private void BuildContinuationLeftHand(out string lastIdentifier)
+        {
+            BuildContinuationInternal(true, out lastIdentifier);
+        }
+
+        private void BuildContinuationInternal(bool interruptOnCall, out string lastIdentifier)
+        {
+            lastIdentifier = null;
+            while (true)
+            {
+                if (_lastExtractedLexem.Token == Token.Dot)
+                {
+                    NextToken();
+                    if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                        throw CompilerException.IdentifierExpected();
+
+                    string identifier = _lastExtractedLexem.Content;
+                    NextToken();
+                    if (_lastExtractedLexem.Token == Token.Dot || _lastExtractedLexem.Token == Token.OpenBracket)
+                    {
+                        ResolveProperty(identifier);
+                    }
+                    else if (_lastExtractedLexem.Token == Token.OpenPar)
+                    {
+                        if (interruptOnCall)
+                        {
+                            lastIdentifier = identifier;
+                            return;
+                        }
+                        else
+                        {
+                            var args = BuildArgumentList();
+                            AddCommand(OperationCode.ArgNum, args.Length);
+                            AddCommand(OperationCode.ResolveMethodFunc, 0);
+                        }
+                    }
+                    else
+                    {
+                        ResolveProperty(identifier);
+                    }
+                }
+                else if (_lastExtractedLexem.Token == Token.OpenBracket)
+                {
+                    NextToken();
+                    if (_lastExtractedLexem.Token == Token.CloseBracket)
+                        throw CompilerException.ExpressionExpected();
+
+                    BuildExpression(Token.CloseBracket);
+                    System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.CloseBracket);
+                    NextToken();
+
+                    AddCommand(OperationCode.PushIndexed, 0);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+        }
+
+        private void ResolveProperty(string identifier)
+        {
+            var name = _lastExtractedLexem.Content;
+            var cDef = new ConstDefinition();
+            cDef.Type = DataType.String;
+            cDef.Presentation = name;
+            var identifierConstIndex = GetConstNumber(ref cDef);
+            AddCommand(OperationCode.ResolveProp, identifierConstIndex);
+        }
+
+        private bool[] BuildArgumentList()
+        {
+            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
+
+            PushStructureToken(Token.ClosePar);
+            List<bool> arguments = new List<bool>();
+            
+            NextToken();
+            while (_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    AddCommand(OperationCode.PushDefaultArg, 0);
+                    arguments.Add(false);
+                    NextToken();
+                    continue;
+                }
+
+                BuildExpression(Token.Comma);
+                arguments.Add(true);
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    NextToken();
+                    if (_lastExtractedLexem.Token == Token.ClosePar)
+                    {
+                        // список аргументов кончился
+                        AddCommand(OperationCode.PushDefaultArg, 0);
+                        arguments.Add(false);
+                    }
+                }
+            }
+
+            if (_lastExtractedLexem.Token != Token.ClosePar)
+                throw CompilerException.TokenExpected(")");
+
+            NextToken(); // съели закрывающую скобку
+
+            return arguments.ToArray();
+        }
+
+        #endregion
 
         private void BuildLoadVariable(string identifier)
         {
@@ -1312,7 +1646,7 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
         }
 
-        private void BuildExpression(Token stopToken)
+        private void BuildExpression__(Token stopToken)
         {
             var builder = new ExpressionBuilder(this);
             builder.Build(stopToken);
@@ -1335,18 +1669,6 @@ namespace ScriptEngine.Compiler
             else
             {
                 return PushSimpleVariable(varNum.binding);
-            }
-        }
-
-        private void BuildPushVariable(VariableBinding varBinding)
-        {
-            if (varBinding.type == SymbolType.ContextProperty)
-            {
-                PushReference(varBinding.binding);
-            }
-            else
-            {
-                PushSimpleVariable(varBinding.binding);
             }
         }
 
@@ -1379,7 +1701,7 @@ namespace ScriptEngine.Compiler
 
         private bool IsUserSymbol(ref Lexem lex)
         {
-            return lex.Type == LexemType.Identifier && lex.Token == Token.NotAToken;
+            return LanguageDef.IsUserSymbol(ref lex);
         }
 
         private bool IsValidIdentifier(ref Lexem lex)
@@ -1389,12 +1711,7 @@ namespace ScriptEngine.Compiler
 
         private bool IsLiteral(ref Lexem lex)
         {
-            return lex.Type == LexemType.StringLiteral
-                || lex.Type == LexemType.NumberLiteral
-                || lex.Type == LexemType.BooleanLiteral
-                || lex.Type == LexemType.DateLiteral
-                || lex.Type == LexemType.UndefinedLiteral
-                || lex.Type == LexemType.NullLiteral;
+            return LanguageDef.IsLiteral(ref lex);
         }
 
         private OperationCode BuiltInFunctionCode(Token token)

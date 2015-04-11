@@ -122,6 +122,11 @@ namespace ScriptEngine.Compiler
             return new CompilerException("Оператор \"ВызватьИсключение\" без параметров может использоваться только в блоке \"Исключение\"");
         }
 
+        public static CompilerException ExpressionExpected()
+        {
+            return new CompilerException("Ожидается выражение");
+        }
+
     }
 
     public class ExtraClosedParenthesis : CompilerException
