@@ -8,6 +8,8 @@ namespace ScriptEngine.Compiler
 {
     partial class Compiler
     {
+        private const bool LEGACY_EXPRESSION_BUILDER = false;
+
         private Parser _parser;
         private ICompilerContext _ctx;
         private ModuleImage _module;
@@ -260,6 +262,7 @@ namespace ScriptEngine.Compiler
                 _ctx.PopScope();
                 throw;
             }
+            PopStructureToken();
 
             var localCtx = _ctx.PopScope();
             
@@ -426,7 +429,7 @@ namespace ScriptEngine.Compiler
             {
                 _ctx.PopScope();
             }
-            PopStructureToken();
+            var pop = PopStructureToken();
 
             var descriptor = new MethodDescriptor();
             descriptor.EntryPoint = entryPoint;
@@ -957,12 +960,16 @@ namespace ScriptEngine.Compiler
             {
                 // это вызов
                 System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
-                var args = BuildArgumentList();
-                BuildMethodCall(ident, args, false);
+                var args = PrepareMethodArguments();
+                var cDef = new ConstDefinition();
+                cDef.Type = DataType.String;
+                cDef.Presentation = ident;
+                int lastIdentifierConst = GetConstNumber(ref cDef);
+                AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
             }
         }
 
-        private void BuildExpression(Token stopToken)
+        private void BuildExpressionNewGen(Token stopToken)
         {
             BuildPrimaryNode();
             BuildOperation(0);
@@ -985,6 +992,14 @@ namespace ScriptEngine.Compiler
             var opPriority = GetBinaryPriority(currentOp);
             while (LanguageDef.IsBinaryOperator(currentOp) && opPriority >= acceptablePriority)
             {
+                bool isLogical = LanguageDef.IsLogicalOperator(currentOp);
+                int logicalCmdIndex = -1;
+
+                if (isLogical)
+                {
+                    logicalCmdIndex = AddCommand(TokenToOperationCode(currentOp), 0);
+                }
+
                 NextToken();
                 BuildPrimaryNode();
 
@@ -996,8 +1011,23 @@ namespace ScriptEngine.Compiler
                     BuildOperation(newPriority);
                 }
 
-                var opCode = TokenToOperationCode(currentOp);
-                AddCommand(opCode, 0);
+                if (isLogical)
+                {
+                    currentOp = _lastExtractedLexem.Token;
+                    newPriority = GetBinaryPriority(currentOp);
+                    if(LanguageDef.IsLogicalOperator(currentOp) && opPriority < newPriority)
+                    {
+                        BuildOperation(newPriority);
+                    }
+
+                    AddCommand(OperationCode.MakeBool, 0);
+                    CorrectCommandArgument(logicalCmdIndex, _module.Code.Count);
+                }
+                else
+                {
+                    var opCode = TokenToOperationCode(currentOp);
+                    AddCommand(opCode, 0);
+                }
 
                 currentOp = _lastExtractedLexem.Token;
                 opPriority = GetBinaryPriority(currentOp);
@@ -1096,6 +1126,14 @@ namespace ScriptEngine.Compiler
             {
                 ProcessSubexpression();
             }
+            else if(_lastExtractedLexem.Token == Token.NewObject)
+            {
+                BuildNewObjectCreation();
+            }
+            else if (LanguageDef.IsBuiltInFunction(_lastExtractedLexem.Token))
+            {
+                BuildBuiltinFunction();
+            }
             else
             {
                 throw CompilerException.ExpressionSyntax();
@@ -1114,7 +1152,7 @@ namespace ScriptEngine.Compiler
             else if (_lastExtractedLexem.Token == Token.OpenPar)
             {
                 // это вызов функции
-                bool[] args = BuildArgumentList();
+                bool[] args = PrepareMethodArguments();
                 BuildMethodCall(identifier, args, true);
             }
             else
@@ -1194,8 +1232,12 @@ namespace ScriptEngine.Compiler
                         else
                         {
                             var args = BuildArgumentList();
+                            var cDef = new ConstDefinition();
+                            cDef.Type = DataType.String;
+                            cDef.Presentation = lastIdentifier;
+                            int lastIdentifierConst = GetConstNumber(ref cDef);
                             AddCommand(OperationCode.ArgNum, args.Length);
-                            AddCommand(OperationCode.ResolveMethodFunc, 0);
+                            AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
                         }
                     }
                     else
@@ -1225,10 +1267,9 @@ namespace ScriptEngine.Compiler
 
         private void ResolveProperty(string identifier)
         {
-            var name = _lastExtractedLexem.Content;
             var cDef = new ConstDefinition();
             cDef.Type = DataType.String;
-            cDef.Presentation = name;
+            cDef.Presentation = identifier;
             var identifierConstIndex = GetConstNumber(ref cDef);
             AddCommand(OperationCode.ResolveProp, identifierConstIndex);
         }
@@ -1269,6 +1310,7 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(")");
 
             NextToken(); // съели закрывающую скобку
+            PopStructureToken();
 
             return arguments.ToArray();
         }
@@ -1422,23 +1464,7 @@ namespace ScriptEngine.Compiler
         private void BuildProcedureCall(string identifier)
         {
             var args = PrepareMethodArguments();
-            NextToken();
-            if (_lastExtractedLexem.Token == Token.Semicolon)
-            {
-                BuildMethodCall(identifier, args, false);
-            }
-            else
-            {
-                if (_lastExtractedLexem.Token == Token.OpenBracket || _lastExtractedLexem.Token == Token.Dot)
-                {
-                    BuildMethodCall(identifier, args, true);
-                    BuildRefAssignment();
-                }
-                else
-                {
-                    throw CompilerException.SemicolonExpected();
-                }
-            }
+            BuildMethodCall(identifier, args, false);
         }
 
         private void BuildFunctionCall(string identifier)
@@ -1449,7 +1475,7 @@ namespace ScriptEngine.Compiler
 
         private bool[] PrepareMethodArguments()
         {
-            var argsPassed = PushFactArguments();
+            var argsPassed = BuildArgumentList();
             AddCommand(OperationCode.ArgNum, argsPassed.Length);
             return argsPassed;
         }
@@ -1592,21 +1618,17 @@ namespace ScriptEngine.Compiler
 
         private void NewObjectDynamicConstructor()
         {
-            try
-            {
-                BuildExpression(Token.Comma);
-            }
-            catch(ExtraClosedParenthesis)
-            {
-            }
-
+            PushStructureToken(Token.ClosePar);
+            BuildExpression(Token.Comma);
+            PopStructureToken();
+            
             bool[] argsPassed;
             if(_lastExtractedLexem.Token != Token.ClosePar)
             {
                 if (_lastExtractedLexem.Token != Token.Comma)
                     throw CompilerException.TokenExpected(",");
 
-                argsPassed = PushFactArguments();
+                argsPassed = BuildArgumentList();
             }
             else
             {
@@ -1634,22 +1656,29 @@ namespace ScriptEngine.Compiler
             {
                 // Отрабатываем только в тех случаях, если явно указана скобка.
                 // В остальных случаях дальнейшую обработку отдаём наружу
-                argsPassed = PushFactArguments();
+                argsPassed = BuildArgumentList();
             }
             else
             {
                 argsPassed = new bool[0];
-                if(_lastExtractedLexem.Token == Token.ClosePar)
-                    BackOneToken();
+                //if (_lastExtractedLexem.Token == Token.ClosePar)
+                    //BackOneToken();
             }
 
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
         }
 
-        private void BuildExpression__(Token stopToken)
+        private void BuildExpression(Token stopToken)
         {
-            var builder = new ExpressionBuilder(this);
-            builder.Build(stopToken);
+            if (LEGACY_EXPRESSION_BUILDER)
+            {
+                var builder = new ExpressionBuilder(this);
+                builder.Build(stopToken);
+            }
+            else
+            {
+                BuildExpressionNewGen(stopToken);
+            }
         }
 
         private void BuildPushConstant()
@@ -1681,7 +1710,7 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(Token.OpenPar);
             }
 
-            var passedArgs = PushFactArguments();
+            var passedArgs = BuildArgumentList();
             if (funcId == OperationCode.Min || funcId == OperationCode.Max)
             {
                 if (passedArgs.Length == 0)
@@ -1937,7 +1966,8 @@ namespace ScriptEngine.Compiler
 
         private Token[] PopStructureToken()
         {
-            return _tokenStack.Pop();
+            var tok = _tokenStack.Pop();
+            return tok;
         }
 
         private void CheckStructureToken(Token tok)

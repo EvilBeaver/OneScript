@@ -221,6 +221,11 @@ namespace ScriptEngine.Compiler
                 || token == Token.NotEqual;
         }
 
+        public static bool IsLogicalOperator(Token token)
+        {
+            return token == Token.And || token == Token.Or;
+        }
+
         public static bool IsLiteral(ref Lexem lex)
         {
             return lex.Type == LexemType.StringLiteral
