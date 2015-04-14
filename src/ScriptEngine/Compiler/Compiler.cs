@@ -929,7 +929,8 @@ namespace ScriptEngine.Compiler
                 case Token.Dot:
                 case Token.OpenBracket:
                     // access chain
-                    BuildAccessChainLeftHand(identifier);
+                    BuildPushVariable(identifier);
+                    BuildAccessChainLeftHand();
                     break;
                 default:
                     throw CompilerException.UnexpectedOperation();
@@ -938,10 +939,8 @@ namespace ScriptEngine.Compiler
 
         #region v2.0 Copy-Paste
 
-        private void BuildAccessChainLeftHand(string identifier)
+        private void BuildAccessChainLeftHand()
         {
-            BuildPushVariable(identifier);
-            
             string ident;
             BuildContinuationLeftHand(out ident);
 
@@ -965,7 +964,17 @@ namespace ScriptEngine.Compiler
                 cDef.Type = DataType.String;
                 cDef.Presentation = ident;
                 int lastIdentifierConst = GetConstNumber(ref cDef);
-                AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
+                
+                if (_lastExtractedLexem.Token == Token.Dot || _lastExtractedLexem.Token == Token.OpenBracket)
+                {
+                    AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
+                    BuildAccessChainLeftHand();
+                }
+                else
+                {
+                    AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
+                }
+
             }
         }
 
@@ -1125,14 +1134,17 @@ namespace ScriptEngine.Compiler
             else if (_lastExtractedLexem.Token == Token.OpenPar)
             {
                 ProcessSubexpression();
+                BuildContinuationRightHand();
             }
             else if(_lastExtractedLexem.Token == Token.NewObject)
             {
                 BuildNewObjectCreation();
+                BuildContinuationRightHand();
             }
             else if (LanguageDef.IsBuiltInFunction(_lastExtractedLexem.Token))
             {
                 BuildBuiltinFunction();
+                BuildContinuationRightHand();
             }
             else
             {
@@ -1154,6 +1166,7 @@ namespace ScriptEngine.Compiler
                 // это вызов функции
                 bool[] args = PrepareMethodArguments();
                 BuildMethodCall(identifier, args, true);
+                BuildContinuationRightHand();
             }
             else
             {
@@ -1218,11 +1231,7 @@ namespace ScriptEngine.Compiler
 
                     string identifier = _lastExtractedLexem.Content;
                     NextToken();
-                    if (_lastExtractedLexem.Token == Token.Dot || _lastExtractedLexem.Token == Token.OpenBracket)
-                    {
-                        ResolveProperty(identifier);
-                    }
-                    else if (_lastExtractedLexem.Token == Token.OpenPar)
+                    if (_lastExtractedLexem.Token == Token.OpenPar)
                     {
                         if (interruptOnCall)
                         {
@@ -1234,7 +1243,7 @@ namespace ScriptEngine.Compiler
                             var args = BuildArgumentList();
                             var cDef = new ConstDefinition();
                             cDef.Type = DataType.String;
-                            cDef.Presentation = lastIdentifier;
+                            cDef.Presentation = identifier;
                             int lastIdentifierConst = GetConstNumber(ref cDef);
                             AddCommand(OperationCode.ArgNum, args.Length);
                             AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
@@ -1595,13 +1604,7 @@ namespace ScriptEngine.Compiler
             NextToken();
             if(_lastExtractedLexem.Token == Token.OpenPar)
             {
-                // создание по имени класса
-                NextToken();
-                if(_lastExtractedLexem.Type != LexemType.StringLiteral && !IsUserSymbol(ref _lastExtractedLexem))
-                {
-                    throw CompilerException.IdentifierExpected();
-                }
-
+                // создание по строковому имени класса
                 NewObjectDynamicConstructor();
 
             }
@@ -1618,25 +1621,11 @@ namespace ScriptEngine.Compiler
 
         private void NewObjectDynamicConstructor()
         {
-            PushStructureToken(Token.ClosePar);
-            BuildExpression(Token.Comma);
-            PopStructureToken();
-            
-            bool[] argsPassed;
-            if(_lastExtractedLexem.Token != Token.ClosePar)
-            {
-                if (_lastExtractedLexem.Token != Token.Comma)
-                    throw CompilerException.TokenExpected(",");
+            var argsPassed = BuildArgumentList();
+            if (argsPassed.Length == 0)
+                throw CompilerException.ExpressionExpected();
 
-                argsPassed = BuildArgumentList();
-            }
-            else
-            {
-                argsPassed = new bool[0];
-            }
-
-            AddCommand(OperationCode.NewInstance, argsPassed.Length);
-
+            AddCommand(OperationCode.NewInstance, argsPassed.Length-1);
         }
 
         private void NewObjectStaticConstructor()
@@ -1661,6 +1650,7 @@ namespace ScriptEngine.Compiler
             else
             {
                 argsPassed = new bool[0];
+                // TODO: разобраться с костылем про BackOneToken()
                 //if (_lastExtractedLexem.Token == Token.ClosePar)
                     //BackOneToken();
             }
