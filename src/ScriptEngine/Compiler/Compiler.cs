@@ -1191,6 +1191,7 @@ namespace ScriptEngine.Compiler
         {
             NextToken();
             BuildPrimaryNode();
+            BuildOperation(GetBinaryPriority(Token.Not));
             AddCommand(OperationCode.Not, 0);
         }
 
