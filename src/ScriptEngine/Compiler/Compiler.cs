@@ -8,8 +8,6 @@ namespace ScriptEngine.Compiler
 {
     partial class Compiler
     {
-        private const bool LEGACY_EXPRESSION_BUILDER = false;
-
         private Parser _parser;
         private ICompilerContext _ctx;
         private ModuleImage _module;
@@ -19,10 +17,6 @@ namespace ScriptEngine.Compiler
         private bool _isStatementsDefined = false;
         private bool _isFunctionProcessed = false;
         private bool _isInTryBlock = false;
-
-        // Флаг указывающий, что при следующем NextToken() должен быть считан текущий элемент
-        //    без считывания нового
-        private bool _backOneToken = false;
 
         private Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
@@ -35,7 +29,6 @@ namespace ScriptEngine.Compiler
             public bool asFunction;
             public int codeLine;
             public int commandIndex;
-
         }
 
         private struct NestedLoopInfo
@@ -841,7 +834,6 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.Return, 0);
         }
 
-
         private void BuildTryExceptStatement()
         {
             var beginTryIndex = AddCommand(OperationCode.BeginTry, -1);
@@ -937,8 +929,6 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        #region v2.0 Copy-Paste
-
         private void BuildAccessChainLeftHand()
         {
             string ident;
@@ -959,7 +949,7 @@ namespace ScriptEngine.Compiler
             {
                 // это вызов
                 System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
-                var args = PrepareMethodArguments();
+                var args = PushMethodArgumentsBeforeCall();
                 var cDef = new ConstDefinition();
                 cDef.Type = DataType.String;
                 cDef.Presentation = ident;
@@ -978,7 +968,7 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void BuildExpressionNewGen(Token stopToken)
+        private void BuildExpression(Token stopToken)
         {
             BuildPrimaryNode();
             BuildOperation(0);
@@ -1100,7 +1090,6 @@ namespace ScriptEngine.Compiler
             return opCode;
         }
 
-
         private static int GetBinaryPriority(Token newOp)
         {
             int newPriority;
@@ -1163,9 +1152,7 @@ namespace ScriptEngine.Compiler
             }
             else if (_lastExtractedLexem.Token == Token.OpenPar)
             {
-                // это вызов функции
-                bool[] args = PrepareMethodArguments();
-                BuildMethodCall(identifier, args, true);
+                BuildFunctionCall(identifier);
                 BuildContinuationRightHand();
             }
             else
@@ -1324,8 +1311,6 @@ namespace ScriptEngine.Compiler
             return arguments.ToArray();
         }
 
-        #endregion
-
         private void BuildLoadVariable(string identifier)
         {
             try
@@ -1357,132 +1342,19 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.PushIndexed, 0);
         }
 
-        private void BuildResolveChain(out int lastIdentifierConst)
-        {
-            lastIdentifierConst = -1;
-            while (_lastExtractedLexem.Token == Token.Dot)
-            {
-                NextToken();
-                if (IsValidIdentifier(ref _lastExtractedLexem))
-                {
-                    var name = _lastExtractedLexem.Content;
-                    var cDef = new ConstDefinition();
-                    cDef.Type = DataType.String;
-                    cDef.Presentation = name;
-                    lastIdentifierConst = GetConstNumber(ref cDef);
-                    NextToken();
-                    if (_lastExtractedLexem.Token == Token.OpenPar)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        AddCommand(OperationCode.ResolveProp, lastIdentifierConst);
-                        break;
-                    }
-                }
-                else
-                {
-                    throw CompilerException.IdentifierExpected();
-                }
-            }
-            
-        }
-
-        private void ProcessResolvedItem(int identifierId, Token stopToken)
-        {
-            if (_lastExtractedLexem.Token == Token.OpenPar)
-            {
-                Assert(identifierId >= 0);
-                PrepareMethodArguments();
-                NextToken();
-                
-                if (_lastExtractedLexem.Token == Token.Dot)
-                {
-                    AddCommand(OperationCode.ResolveMethodFunc, identifierId);
-                    int lastId;
-                    BuildResolveChain(out lastId);
-                    ProcessResolvedItem(lastId, stopToken);
-                }
-                else if (_lastExtractedLexem.Type == LexemType.Operator || _lastExtractedLexem.Token == stopToken)
-                {
-                    AddCommand(OperationCode.ResolveMethodFunc, identifierId);
-                }
-            }
-        }
-
-        private void BuildRefAssignment()
-        {
-            bool hasAction = false;
-            if (_lastExtractedLexem.Token == Token.Dot)
-            {
-                int identifier;
-                BuildResolveChain(out identifier);
-                if (_lastExtractedLexem.Token == Token.OpenPar)
-                {
-                    Assert(identifier >= 0);
-                    hasAction = true;
-                    PrepareMethodArguments();
-                    NextToken();
-
-                    if (_lastExtractedLexem.Token == Token.Semicolon)
-                    {
-                        AddCommand(OperationCode.ResolveMethodProc, identifier);
-                        return;// no ref assignment happens.
-                    }
-                    else
-                    {
-                        if (_lastExtractedLexem.Token == Token.OpenBracket || _lastExtractedLexem.Token == Token.Dot)
-                        {
-                            AddCommand(OperationCode.ResolveMethodFunc, identifier);
-                        }
-                        else
-                        {
-                            throw CompilerException.UnexpectedOperation();
-                        }
-                    }
-                }
-
-                BuildRefAssignment(); // multiple indexer/resolver [][].[][].[]
-                return;
-
-            }
-            else if (_lastExtractedLexem.Token == Token.OpenBracket)
-            {
-                NextToken();
-                BuildExpression(Token.CloseBracket);
-                AddCommand(OperationCode.PushIndexed, 0);
-                NextToken();
-                BuildRefAssignment(); // multiple indexer/resolver [][].[][].[]
-                return;
-            }
-
-            if (_lastExtractedLexem.Token == Token.Equal)
-            {
-                NextToken();
-                BuildExpression(Token.Semicolon);
-                AddCommand(OperationCode.AssignRef, 0);
-            }
-            else if(!hasAction)//_lastExtractedLexem.Token != Token.Semicolon)
-            {
-                throw CompilerException.UnexpectedOperation();
-            }
-
-        }
-
         private void BuildProcedureCall(string identifier)
         {
-            var args = PrepareMethodArguments();
+            var args = PushMethodArgumentsBeforeCall();
             BuildMethodCall(identifier, args, false);
         }
 
         private void BuildFunctionCall(string identifier)
         {
-            var args = PrepareMethodArguments();
+            bool[] args = PushMethodArgumentsBeforeCall();
             BuildMethodCall(identifier, args, true);
         }
 
-        private bool[] PrepareMethodArguments()
+        private bool[] PushMethodArgumentsBeforeCall()
         {
             var argsPassed = BuildArgumentList();
             AddCommand(OperationCode.ArgNum, argsPassed.Length);
@@ -1522,7 +1394,6 @@ namespace ScriptEngine.Compiler
                 forwarded.asFunction = asFunction;
                 forwarded.codeLine = _parser.CurrentLine;
                 forwarded.factArguments = argsPassed;
-                //AddCommand(OperationCode.ArgNum, forwarded.factArguments.Length);
 
                 var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
                 int callAddr = forwarded.commandIndex = AddCommand(opCode, -1);
@@ -1559,44 +1430,6 @@ namespace ScriptEngine.Compiler
                     throw CompilerException.TooLittleArgumentsPassed();
                 }
             }
-        }
-
-        private bool[] PushFactArguments()
-        {
-            Assert(_lastExtractedLexem.Token == Token.OpenPar);
-
-            List<bool> argsPassed = new List<bool>();
-            NextToken();
-            if (_lastExtractedLexem.Token == Token.ClosePar)
-                return argsPassed.ToArray();
-
-            while (true)
-            {
-                try
-                {
-                    BuildExpression(Token.Comma);
-                    argsPassed.Add(true);
-                    NextToken();
-                    while (_lastExtractedLexem.Token == Token.Comma)
-                    {
-                        AddCommand(OperationCode.PushDefaultArg, 0);
-                        argsPassed.Add(false);
-                        NextToken();
-                    }
-
-                    if (_lastExtractedLexem.Token == Token.ClosePar)
-                    {
-                        return argsPassed.ToArray();
-                    }
-                    
-                }
-                catch (ExtraClosedParenthesis)
-                {
-                    argsPassed.Add(true);
-                    return argsPassed.ToArray();
-                }
-            }
-
         }
 
         private void BuildNewObjectCreation()
@@ -1656,19 +1489,6 @@ namespace ScriptEngine.Compiler
             }
 
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
-        }
-
-        private void BuildExpression(Token stopToken)
-        {
-            if (LEGACY_EXPRESSION_BUILDER)
-            {
-                var builder = new ExpressionBuilder(this);
-                builder.Build(stopToken);
-            }
-            else
-            {
-                BuildExpressionNewGen(stopToken);
-            }
         }
 
         private void BuildPushConstant()
@@ -1938,10 +1758,7 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
-                if (!_backOneToken)
-                    _lastExtractedLexem = _parser.NextLexem();
-
-                _backOneToken = false;
+                _lastExtractedLexem = _parser.NextLexem();
             }
             else
             {
@@ -2009,13 +1826,6 @@ namespace ScriptEngine.Compiler
         private void Assert(bool condition)
         {
             System.Diagnostics.Debug.Assert(condition);
-        }
-
-        public void BackOneToken()
-        {
-            if (_backOneToken)
-                throw new Exception("Недопустим возврат на 2 и более шагов назад!");
-            _backOneToken = true;
         }
     }
 
