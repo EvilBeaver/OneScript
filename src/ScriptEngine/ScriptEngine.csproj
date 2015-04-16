@@ -58,7 +58,6 @@
     <DocumentationFile>bin\x86\Release\ScriptEngine.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CustomMarshalers" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -77,7 +76,6 @@
     <Compile Include="Compiler\ModuleCompilerContext.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\CompilerExceptions.cs" />
-    <Compile Include="Compiler\ExpressionBuilder.cs" />
     <Compile Include="Compiler\ICompilerContext.cs" />
     <Compile Include="Compiler\ModulePersistor.cs" />
     <Compile Include="Compiler\ParseIterator.cs" />
