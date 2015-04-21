@@ -14,6 +14,7 @@ namespace ScriptEngine.HostedScript.Library
         private const string ENCODING_OEM = "OEM";
         private const string ENCODING_UTF16 = "UTF16";
         private const string ENCODING_UTF8 = "UTF8";
+        private const string ENCODING_UTF8NoBOM = "UTF8NoBOM";
         private const string ENCODING_SYSTEM = "Системная";
 
         private TextEncodingEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
@@ -54,6 +55,15 @@ namespace ScriptEngine.HostedScript.Library
             get
             {
                 return this[ENCODING_UTF8];
+            }
+        }
+
+        [EnumValue(ENCODING_UTF8NoBOM)]
+        public EnumerationValue Utf8NoBOM
+        {
+            get
+            {
+                return this[ENCODING_UTF8NoBOM];
             }
         }
 
@@ -106,6 +116,8 @@ namespace ScriptEngine.HostedScript.Library
                     enc = new UnicodeEncoding(false, true);
                 else if (encValue == encodingEnum.Utf8)
                     enc = new UTF8Encoding(true);
+                else if (encValue == encodingEnum.Utf8NoBOM)
+                    enc = new UTF8Encoding(false);
                 else if (encValue == encodingEnum.System)
                     enc = Encoding.Default;
                 else
