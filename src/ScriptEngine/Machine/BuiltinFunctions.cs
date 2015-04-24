@@ -94,7 +94,6 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.Sqrt, SingleDefaultParamInfo);
             map.Add(OperationCode.Format, TwoDefaultParamsInfo);
             // special
-            map.Add(OperationCode.Question, QuestionParamInfo);
             map.Add(OperationCode.ExceptionInfo, NoParamsInfo);
             map.Add(OperationCode.ExceptionDescr, NoParamsInfo);
             map.Add(OperationCode.ModuleInfo, NoParamsInfo);
@@ -127,11 +126,6 @@ namespace ScriptEngine.Machine
                 optionalParam,
                 optionalParam
             };
-        }
-
-        private static ParameterDefinition[] QuestionParamInfo()
-        {
-            return MandatoryParamInfo(3);
         }
 
         private static ParameterDefinition[] MandatoryParamInfo(int amount)

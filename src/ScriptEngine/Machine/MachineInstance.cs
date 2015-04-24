@@ -413,7 +413,6 @@ namespace ScriptEngine.Machine
                 PopTmp,
 
                 //built-ins
-                Question,
                 Bool,
                 Number,
                 Str,
@@ -1343,23 +1342,6 @@ namespace ScriptEngine.Machine
         #endregion
 
         #region Built-in functions
-
-        private void Question(int arg)
-        {
-            var falseVal = BreakVariableLink(_operationStack.Pop());
-            var trueVal = BreakVariableLink(_operationStack.Pop());
-            var condition = _operationStack.Pop().AsBoolean();
-
-            if (condition)
-            {
-                _operationStack.Push(trueVal);
-            }
-            else
-            {
-                _operationStack.Push(falseVal);
-            }
-            NextInstruction();
-        }
 
         private void Bool(int arg)
         {

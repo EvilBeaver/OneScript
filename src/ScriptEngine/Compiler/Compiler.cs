@@ -1135,12 +1135,15 @@ namespace ScriptEngine.Compiler
                 BuildBuiltinFunction();
                 BuildContinuationRightHand();
             }
+            else if (_lastExtractedLexem.Token == Token.Question)
+            {
+                BuildQuestionOperator();
+            }
             else
             {
                 throw CompilerException.ExpressionSyntax();
             }
         }
-
         private void ProcessPrimaryIdentifier()
         {
             var identifier = _lastExtractedLexem.Content;
@@ -1269,6 +1272,39 @@ namespace ScriptEngine.Compiler
             cDef.Presentation = identifier;
             var identifierConstIndex = GetConstNumber(ref cDef);
             AddCommand(OperationCode.ResolveProp, identifierConstIndex);
+        }
+
+        private void BuildQuestionOperator()
+        {
+            Assert(_lastExtractedLexem.Token == Token.Question);
+            NextToken();
+            if (_lastExtractedLexem.Token != Token.OpenPar)
+                throw CompilerException.UnexpectedOperation();
+
+            NextToken();
+            BuildExpression(Token.Comma);
+            if (_lastExtractedLexem.Token != Token.Comma)
+                throw CompilerException.UnexpectedOperation();
+            
+            AddCommand(OperationCode.MakeBool, 0);
+            var addrOfCondition = AddCommand(OperationCode.JmpFalse, -1);
+
+            NextToken();
+            BuildExpression(Token.Comma); // построили true-part
+            if (_lastExtractedLexem.Token != Token.Comma)
+                throw CompilerException.UnexpectedOperation();
+
+            var endOfTruePart = AddCommand(OperationCode.Jmp, -1); // уход в конец оператора
+            
+            CorrectCommandArgument(addrOfCondition, AddCommand(OperationCode.Nop, 0)); // отметили, куда переходить по false
+            NextToken();
+            BuildExpression(Token.ClosePar); // построили false-part
+            
+            var endOfFalsePart = AddCommand(OperationCode.Nop, 0);
+            CorrectCommandArgument(endOfTruePart, endOfFalsePart);
+            
+            NextToken();
+
         }
 
         private bool[] BuildArgumentList()
@@ -1558,8 +1594,6 @@ namespace ScriptEngine.Compiler
         {
             switch (token)
             {
-                case Token.Question:
-                    return OperationCode.Question;
                 case Token.Bool:
                     return OperationCode.Bool;
                 case Token.Number:

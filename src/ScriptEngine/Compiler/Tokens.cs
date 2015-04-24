@@ -347,13 +347,13 @@ namespace ScriptEngine.Compiler
         StringQuote,
         DateQuote,
         Semicolon,
+        Question,
         
         // modifiers
         ByValParam,
 
         // built-in functions
         // must be declared last
-        Question,
         Bool,
         Number,
         Str,

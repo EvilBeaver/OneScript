@@ -58,7 +58,6 @@ namespace ScriptEngine.Machine
         PopTmp,
 
         // built-in functions
-        Question,
         Bool,
         Number,
         Str,
