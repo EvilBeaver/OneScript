@@ -195,6 +195,29 @@ namespace ScriptEngine.Compiler
 
     class WordParserState : ParserState
     {
+        HashSet<string> _booleanOperators = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> _booleanLiterals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> _undefined = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        public WordParserState()
+        {
+            _booleanOperators.Add("и");
+            _booleanOperators.Add("или");
+            _booleanOperators.Add("не");
+            _booleanOperators.Add("and");
+            _booleanOperators.Add("or");
+            _booleanOperators.Add("not");
+
+            _booleanLiterals.Add("истина");
+            _booleanLiterals.Add("ложь");
+            _booleanLiterals.Add("true");
+            _booleanLiterals.Add("false");
+
+            _undefined.Add("неопределено");
+            _undefined.Add("undefined");
+                
+        }
+
         public override Lexem ReadNextLexem(ParseIterator iterator)
         {
             bool isEndOfText = false;
@@ -211,9 +234,7 @@ namespace ScriptEngine.Compiler
                     
                     Lexem lex;
 
-                    if(String.Compare(content, "и", true) == 0
-                            || String.Compare(content, "или", true) == 0
-                            || String.Compare(content, "не", true) == 0)
+                    if(_booleanOperators.Contains(content))
                     {
                         lex = new Lexem()
                         {
@@ -222,8 +243,7 @@ namespace ScriptEngine.Compiler
                             Content = content
                         };
                     }
-                    else if (String.Compare(content, "истина", true) == 0
-                        || String.Compare(content, "ложь", true) == 0)
+                    else if (_booleanLiterals.Contains(content))
                     {
                         lex = new Lexem()
                         {
@@ -231,7 +251,7 @@ namespace ScriptEngine.Compiler
                             Content = content
                         };
                     }
-                    else if (String.Compare(content, "неопределено", true) == 0)
+                    else if (_undefined.Contains(content))
                     {
                         lex = new Lexem()
                         {

@@ -59,9 +59,9 @@ namespace ScriptEngine.Machine
             {
                 case DataType.Boolean:
 
-                    if (string.Compare(presentation, "истина", true) == 0)
+                    if (string.Compare(presentation, "истина", true) == 0 || string.Compare(presentation, "true", true) == 0)
                         result = ValueFactory.Create(true);
-                    else if (string.Compare(presentation, "ложь", true) == 0)
+                    else if (string.Compare(presentation, "ложь", true) == 0 || string.Compare(presentation, "false", true) == 0)
                         result = ValueFactory.Create(false);
                     else
                         throw RuntimeException.ConvertToBooleanException();
