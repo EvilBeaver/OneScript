@@ -166,6 +166,46 @@ namespace ScriptEngine.HostedScript.Library
             System.IO.Directory.SetCurrentDirectory(path);
         }
 
+        /// <summary>
+        /// Получает разделитель пути в соответствии с текущей операционной системой
+        /// </summary>
+        [ContextMethod("ПолучитьРазделительПути","GetPathSeparator")]
+        public string GetPathSeparator()
+        {
+            return new string(new char[]{Path.DirectorySeparatorChar});
+        }
+
+        /// <summary>
+        /// Получает маску "все файлы" для текущей операционной системы.
+        /// В Windows маска принимает значение "*.*", в nix - "*".
+        /// </summary>
+        [ContextMethod("ПолучитьМаскуВсеФайлы", "GetAllFilesMask")]
+        public string GetAllFilesMask()
+        {
+            var platform = System.Environment.OSVersion.Platform;
+            if (platform == PlatformID.Win32NT || platform == PlatformID.Win32Windows)
+                return "*.*";
+            else
+                return "*";
+        }
+
+        /// <summary>
+        /// Объединяет компоненты файлового пути, с учетом разделителей, принятых в данной ОС.
+        /// При этом корректно, без дублирования, обрабатываются уже существующие разделители пути.
+        /// </summary>
+        /// <param name="path1">Первая часть пути</param>
+        /// <param name="path2">Вторая часть пути</param>
+        /// <param name="path3">Третья часть пути (необязательно)</param>
+        /// <returns>Объединенный путь.</returns>
+        [ContextMethod("ОбъединитьПути", "CombinePath")]
+        public string CombinePath(string path1, string path2, string path3 = null)
+        {
+            if (path3 == null)
+                return Path.Combine(path1, path2);
+            else
+                return Path.Combine(path1, path2, path3);
+        }
+
         private static ContextMethodsMapper<FileOperations> _methods = new ContextMethodsMapper<FileOperations>();
         
         public static IAttachableContext CreateInstance()
