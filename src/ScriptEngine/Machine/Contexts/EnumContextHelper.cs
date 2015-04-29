@@ -22,7 +22,7 @@ namespace ScriptEngine.Machine.Contexts
 
             foreach (var enumProperty in values)
             {
-                instance.AddValue(enumProperty.GetName(), new SelfAwareEnumValue<T>(instance));
+                instance.AddValue(enumProperty.GetName(), enumProperty.GetAlias(), new SelfAwareEnumValue<T>(instance));
             }
         }
 

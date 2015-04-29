@@ -25,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
         }
         
-        [EnumValue(EV_MINIMAL_NAME)]
+        [EnumValue(EV_MINIMAL_NAME, "Minimum")]
         public EnumerationValue Minimal
         {
             get
@@ -34,7 +34,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(EV_OPTIMAL_NAME)]
+        [EnumValue(EV_OPTIMAL_NAME, "Optimal")]
         public EnumerationValue Optimal
         {
             get
@@ -43,7 +43,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(EV_MAXIMAL_NAME)]
+        [EnumValue(EV_MAXIMAL_NAME, "Maximum")]
         public EnumerationValue Maximal
         {
             get

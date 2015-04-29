@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
         }
         
-        [EnumValue(EV_COPY_NAME)]
+        [EnumValue(EV_COPY_NAME, "Copy")]
         public EnumerationValue Copy
         {
             get
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(EV_DEFLATE_NAME)]
+        [EnumValue(EV_DEFLATE_NAME, "Deflate")]
         public EnumerationValue Deflate
         {
             get

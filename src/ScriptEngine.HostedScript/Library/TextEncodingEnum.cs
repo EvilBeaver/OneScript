@@ -73,7 +73,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [EnumValue(ENCODING_SYSTEM)]
+        [EnumValue(ENCODING_SYSTEM, "System")]
         public EnumerationValue System
         {
             get

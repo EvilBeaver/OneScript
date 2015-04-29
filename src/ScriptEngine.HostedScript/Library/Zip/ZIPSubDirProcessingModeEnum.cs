@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
         }
 
-        [EnumValue(EV_DONT_RECURSE)]
+        [EnumValue(EV_DONT_RECURSE, "DontProcess")]
         public EnumerationValue DontRecurse
         {
             get
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(EV_RECURSE)]
+        [EnumValue(EV_RECURSE, "ProcessRecursively")]
         public EnumerationValue Recurse
         {
             get

@@ -15,15 +15,22 @@ namespace ScriptEngine.Machine.Contexts
     public class EnumValueAttribute : Attribute
     {
         string _name;
+        string _alias;
 
-        public EnumValueAttribute(string name)
+        public EnumValueAttribute(string name, string alias = null)
         {
             _name = name;
+            _alias = alias;
         }
 
         public string GetName()
         {
             return _name;
+        }
+
+        public string GetAlias()
+        {
+            return _alias;
         }
     }
 }

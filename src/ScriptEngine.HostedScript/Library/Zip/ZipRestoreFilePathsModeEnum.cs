@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
         }
 
-        [EnumValue(RESTORE_PATHS_NAME)]
+        [EnumValue(RESTORE_PATHS_NAME, "Restore")]
         public EnumerationValue Restore
         {
             get
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(DONT_RESTORE_PATHS_NAME)]
+        [EnumValue(DONT_RESTORE_PATHS_NAME, "DontRestore")]
         public EnumerationValue DoNotRestore
         {
             get

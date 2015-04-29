@@ -26,7 +26,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         }
 
-        [EnumValue(DONT_SAVE)]
+        [EnumValue(DONT_SAVE, "DontStorePath")]
         public EnumerationValue DontStorePath
         {
             get
@@ -35,7 +35,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(SAVE_RELATIVE)]
+        [EnumValue(SAVE_RELATIVE, "StoreRelativePath")]
         public EnumerationValue StoreRelativePath
         {
             get
@@ -44,7 +44,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(SAVE_FULL)]
+        [EnumValue(SAVE_FULL, "StoreFullPath")]
         public EnumerationValue StoreFullPath
         {
             get

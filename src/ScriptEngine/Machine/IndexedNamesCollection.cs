@@ -26,11 +26,15 @@ namespace ScriptEngine.Machine
             return _names[id];
         }
 
-        public int RegisterName(string name)
+        public int RegisterName(string name, string alias = null)
         {
+            System.Diagnostics.Debug.Assert(name != null);
+
             int id = _names.Count;
             _nameIndexes.Add(name, id);
             _names.Add(name);
+            if (alias != null)
+                _nameIndexes.Add(alias, id);
 
             return id;
         }
