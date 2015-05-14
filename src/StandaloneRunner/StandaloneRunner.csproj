@@ -39,6 +39,8 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -48,6 +50,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -68,12 +71,12 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
-      <Project>{f09a46bd-5737-45e7-ba60-a47c9f7821a9}</Project>
+      <Project>{F09A46BD-5737-45E7-BA60-A47C9F7821A9}</Project>
       <Name>ScriptEngine.HostedScript</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
-      <Project>{f062d1d9-d307-492a-a56b-ff3c55f8f6c0}</Project>
+      <Project>{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}</Project>
       <Name>ScriptEngine</Name>
       <Private>False</Private>
     </ProjectReference>
@@ -88,7 +91,8 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)StandaloneRunner.exe" "$(SolutionDir)oscript\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)StandaloneRunner.exe" "$(SolutionDir)oscript\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp --force --update "$(TargetDir)StandaloneRunner.exe" "$(SolutionDir)oscript/"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

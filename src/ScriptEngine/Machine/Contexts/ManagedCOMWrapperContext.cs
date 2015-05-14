@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+#if !__MonoCS__
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -193,3 +194,4 @@ namespace ScriptEngine.Machine.Contexts
         }
     }
 }
+#endif
