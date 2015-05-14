@@ -105,7 +105,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (type == typeof(double))
             {
-                return ValueFactory.Create((decimal)objParam);
+                return ValueFactory.Create((decimal)(double)objParam);
             }
             else if (type == typeof(DateTime))
             {
