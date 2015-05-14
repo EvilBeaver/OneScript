@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="SetupProject1" Language="1033" Version="1.0.0.0" Manufacturer="" UpgradeCode="525fd963-d484-448d-bbd8-5fa06234288e">
+	<Product Id="0B8916C9-DB9D-4DF0-BBA9-D93D0AE6A55A" Name="OneScript Engine" Language="1049" Version="$(var.ProductVersion)" Manufacturer="OneScript Team" UpgradeCode="525fd963-d484-448d-bbd8-5fa06234288e">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
+		<MediaTemplate EmbedCab="yes" />
 
 		<Feature Id="ProductFeature" Title="SetupProject1" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
@@ -14,7 +14,7 @@
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
-				<Directory Id="INSTALLFOLDER" Name="SetupProject1" />
+				<Directory Id="INSTALLFOLDER" Name="OneScript" />
 			</Directory>
 		</Directory>
 	</Fragment>
