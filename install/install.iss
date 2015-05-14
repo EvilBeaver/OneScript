@@ -1,6 +1,6 @@
 #include <ISPPBuiltins.iss>
 #define AppName "OneScript execution engine"
-#define FSFriendlyName "OneScript execution engine"
+#define FSFriendlyName "OneScript"
 #define MainExe "TestApp.exe"
 
 #define VerMajor
@@ -16,25 +16,31 @@ DefaultDirName="{pf}\{#FSFriendlyName}"
 DefaultGroupName="{#FSFriendlyName}"
 OutputBaseFilename="OneScript-{#VerMajor}.{#VerMinor}.{#VerRelease}-setup"
 DisableProgramGroupPage=yes
-UninstallDisplayIcon="{app}\{#MainExe}"
+UninstallDisplayIcon="{app}\bin\{#MainExe}"
 Compression=lzma2
 SolidCompression=yes
 
+
+[InstallDelete]
+Type: files; Name: {app}\*.dll
+Type: files; Name: {app}\*.exe
+
 [Files]
-Source: "build\*"; DestDir: "{app}"
+Source: "build\*"; DestDir: "{app}\bin"
+Source: "examples\*.os"; DestDir: "{app}\examples"
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
 Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: VCRedistNeedsInstall
 
 [Icons]
-Name: "{group}\{#FSFriendlyName}"; Filename: "{app}\{#MainExe}"
+Name: "{group}\{#FSFriendlyName}"; Filename: "{app}\bin\{#MainExe}"
 
 [Registry]
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app};"; Check: NeedsAddPath(ExpandConstant('{app}'))
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}\bin;"; Check: NeedsAddPath(ExpandConstant('{app}\bin'))
 
 [Run]
 Filename: {tmp}\dotNetFx40_Full_setup.exe; Parameters: "/q:a /c:""install /l /q"""; Check: not IsRequiredDotNetDetected; StatusMsg: Microsoft .NET Framework 4.0 is being installed. Please wait..
 Filename: {tmp}\vcredist_x86.exe; Parameters: "/q /norestart"; StatusMsg: MS Redistributable C++ Runtime is being installed. Please wait..
-Filename: "{app}\{#MainExe}"; Description: "Launch application"; Flags: postinstall nowait skipifsilent unchecked
+Filename: "{app}\bin\{#MainExe}"; Description: "Launch application"; Flags: postinstall nowait skipifsilent unchecked
 
 [Code]
 
