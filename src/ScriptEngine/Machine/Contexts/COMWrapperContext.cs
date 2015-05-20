@@ -85,6 +85,34 @@ namespace ScriptEngine.Machine.Contexts
             return marshalledArgs;
         }
 
+        protected static object[] MarshalArgumentsStrict(System.Reflection.MethodInfo method, IValue[] arguments)
+        {
+            var parameters = method.GetParameters();
+
+            object[] marshalledArgs = new object[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if(i < arguments.Length)
+                {
+                    if (IsMissedArg(arguments[i]) && parameters[i].IsOptional)
+                        marshalledArgs[i] = Type.Missing;
+                    else
+                        marshalledArgs[i] = ContextValuesMarshaller.ConvertParam(arguments[i], parameters[i].ParameterType);
+                }
+                else
+                {
+                    marshalledArgs[i] = Type.Missing;
+                }
+            }
+
+            return marshalledArgs;
+        }
+
+        private static bool IsMissedArg(IValue arg)
+        {
+            return arg == null || arg.DataType == DataType.NotAValidValue;
+        }
+
         public static IValue CreateIValue(object objParam)
         {
             if (objParam == null)

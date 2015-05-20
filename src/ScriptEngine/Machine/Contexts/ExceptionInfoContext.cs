@@ -53,7 +53,8 @@ namespace ScriptEngine.Machine.Contexts
         {
             get 
             {
-                if (!(_exc is ExternalSystemException) && _exc.InnerException != null)
+                bool isExternal = _exc is ExternalSystemException;
+                if (!isExternal && _exc.InnerException != null)
                 {
                     ScriptException inner;
                     inner = _exc.InnerException as ScriptException;
@@ -62,6 +63,11 @@ namespace ScriptEngine.Machine.Contexts
                         inner = new ExternalSystemException(_exc.InnerException);
                     }
                     
+                    return new ExceptionInfoContext(inner);
+                }
+                else if(_exc.InnerException != null && _exc.InnerException is System.Reflection.TargetInvocationException)
+                {
+                    var inner = new ExternalSystemException(_exc.InnerException.InnerException);
                     return new ExceptionInfoContext(inner);
                 }
                 else
