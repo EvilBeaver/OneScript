@@ -126,7 +126,8 @@ namespace ScriptEngine.HostedScript.Library
             else
             {
                 var entries = System.IO.Directory.EnumerateFileSystemEntries(path, mask)
-                    .AsParallel();
+                    .AsParallel()
+                    .ToArray();
                 foreach (var item in entries)
                 {
                     System.IO.FileInfo finfo = new System.IO.FileInfo(item);
