@@ -131,10 +131,10 @@ namespace ScriptEngine.HostedScript.Library
                 foreach (var item in entries)
                 {
                     System.IO.FileInfo finfo = new System.IO.FileInfo(item);
-                    if (finfo.Attributes == System.IO.FileAttributes.Directory)
+                    if (finfo.Attributes.HasFlag(System.IO.FileAttributes.Directory))
                     {
                         //recursively delete directory
-                        System.IO.Directory.Delete(item, true);
+                        DeleteDirectory(item, true);
                     }
                     else
                     {
@@ -142,6 +142,26 @@ namespace ScriptEngine.HostedScript.Library
                     }
                 }
             }
+        }
+
+        public static void DeleteDirectory(string path, bool recursive)
+        {
+            if (recursive)
+            {
+                var subfolders = Directory.GetDirectories(path);
+                foreach (var s in subfolders)
+                {
+                    DeleteDirectory(s, recursive);
+                }
+            }
+
+            var files = Directory.GetFiles(path);
+            foreach (var f in files)
+            {
+                File.Delete(f);
+            }
+
+            Directory.Delete(path);
         }
 
         /// <summary>
