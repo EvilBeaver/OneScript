@@ -42,7 +42,7 @@ namespace ScriptEngine.HostedScript
                 if (keyValue.Length != 2)
                     continue;
 
-                conf._values[keyValue[0]] = keyValue[1];
+                conf._values[keyValue[0].Trim()] = keyValue[1].Trim();
             }
 
             return conf;

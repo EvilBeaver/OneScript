@@ -31,6 +31,8 @@ namespace ScriptEngine.HostedScript
 
             _env.InjectObject(_globalCtx, false);
             _engine.Environment = _env;
+            
+            InitLibrariesByDefault();
 
         }
 
@@ -39,7 +41,7 @@ namespace ScriptEngine.HostedScript
             var libLoader = new LibraryResolver(_engine, _env);
             _engine.DirectiveResolver = libLoader;
 
-            libLoader.SystemLibraryDir = systemLibrary;
+            libLoader.LibraryRoot = systemLibrary;
             libLoader.SearchDirectories.Clear();
             if (searchDirs != null)
             {
@@ -51,9 +53,6 @@ namespace ScriptEngine.HostedScript
         {
             if (!_isInitialized)
             {
-                if (_engine.DirectiveResolver == null)
-                    InitLibrariesByDefault();
-
                 _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
 
@@ -83,8 +82,14 @@ namespace ScriptEngine.HostedScript
             var config = KeyValueConfig.Read(configFile);
 
             string sysDir = config[SYSTEM_LIB_KEY];
-            string additionalDirsList = config[ADDITIONAL_LIB_KEY];
+            if(sysDir != null && !System.IO.Path.IsPathRooted(sysDir))
+            {
+                var confDir = System.IO.Path.GetDirectoryName(configFile);
+                sysDir = System.IO.Path.GetFullPath(
+                    System.IO.Path.Combine(confDir, sysDir));
+            }
 
+            string additionalDirsList = config[ADDITIONAL_LIB_KEY];
             string[] addDirs = null;
             if(additionalDirsList != null)
             {

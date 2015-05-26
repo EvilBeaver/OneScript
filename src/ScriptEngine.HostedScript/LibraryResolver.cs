@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript
         private ScriptingEngine _engine;
         private List<Library> _libs;
         private LibraryLoader _defaultLoader;
-        private string _systemLibraryDir;
+        private string _libraryRoot;
 
         #region Private classes
 
@@ -52,19 +52,19 @@ namespace ScriptEngine.HostedScript
             this.SearchDirectories = new List<string>();
         }
 
-        public string SystemLibraryDir
+        public string LibraryRoot
         {
             get
             {
-                if (_systemLibraryDir == null)
-                    _systemLibraryDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                if (_libraryRoot == null)
+                    _libraryRoot = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-                return _systemLibraryDir;
+                return _libraryRoot;
             }
 
             set
             {
-                _systemLibraryDir = value;
+                _libraryRoot = value;
             }
         }
 
@@ -86,7 +86,7 @@ namespace ScriptEngine.HostedScript
         private void CreateDefaultLoader()
         {
 
-            var loaderscript = Path.Combine(SystemLibraryDir, PREDEFINED_LOADER_FILE);
+            var loaderscript = Path.Combine(LibraryRoot, PREDEFINED_LOADER_FILE);
             if (File.Exists(loaderscript))
             {
                 _defaultLoader = LibraryLoader.Create(_engine, _env, loaderscript);
@@ -156,7 +156,7 @@ namespace ScriptEngine.HostedScript
         {
             if (SearchDirectories.Count == 0)
             {
-                var libraryPath = Path.Combine(SystemLibraryDir, value);
+                var libraryPath = Path.Combine(LibraryRoot, value);
                 return LoadByPath(libraryPath);
             }
             else
@@ -188,7 +188,7 @@ namespace ScriptEngine.HostedScript
 
             var newLib = new Library() { id = id, state = ProcessingState.Discovered };
 
-            var customLoaderFile = Path.Combine(libraryPath, PREDEFINED_LOADER_FILE);
+            var customLoaderFile = Path.Combine(LibraryRoot, PREDEFINED_LOADER_FILE);
             if (File.Exists(customLoaderFile))
                 newLib.customLoader = LibraryLoader.Create(_engine, _env, customLoaderFile);
 
