@@ -70,6 +70,7 @@
     </Compile>
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
+    <Compile Include="KeyValueConfig.cs" />
     <Compile Include="LibraryLoader.cs" />
     <Compile Include="LibraryResolver.cs" />
     <Compile Include="Library\ArrayImpl.cs" />

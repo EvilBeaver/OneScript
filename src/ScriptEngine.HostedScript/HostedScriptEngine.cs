@@ -9,6 +9,7 @@ using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System.Collections.Generic;
 
 namespace ScriptEngine.HostedScript
 {
@@ -29,21 +30,69 @@ namespace ScriptEngine.HostedScript
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
-            var libLoader = new LibraryResolver(_engine, _env);
-            libLoader.LibraryRoot = LibraryRoot;
-            _engine.DirectiveResolver = libLoader;
             _engine.Environment = _env;
+
+        }
+
+        public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
+        {
+            var libLoader = new LibraryResolver(_engine, _env);
+            _engine.DirectiveResolver = libLoader;
+
+            libLoader.SystemLibraryDir = systemLibrary;
+            libLoader.SearchDirectories.Clear();
+            if (searchDirs != null)
+            {
+                libLoader.SearchDirectories.AddRange(searchDirs);
+            }
         }
 
         public void Initialize()
         {
             if (!_isInitialized)
             {
+                if (_engine.DirectiveResolver == null)
+                    InitLibrariesByDefault();
+
                 _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
 
                 _isInitialized = true;
             }
+        }
+
+        private void InitLibrariesByDefault()
+        {
+            var assemblyPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var configFile = System.IO.Path.Combine(assemblyPath, "oscript.config");
+            if(System.IO.File.Exists(configFile))
+            {
+                InitLibrariesFromConfig(configFile);
+            }
+            else
+            {
+                InitExternalLibraries(null, null);
+            }
+        }
+
+        private void InitLibrariesFromConfig(string configFile)
+        {
+            const string SYSTEM_LIB_KEY = "lib.system";
+            const string ADDITIONAL_LIB_KEY = "lib.additional";
+
+            var config = KeyValueConfig.Read(configFile);
+
+            string sysDir = config[SYSTEM_LIB_KEY];
+            string additionalDirsList = config[ADDITIONAL_LIB_KEY];
+
+            string[] addDirs = null;
+            if(additionalDirsList != null)
+            {
+                addDirs = additionalDirsList.Split(';');
+            }
+
+            InitExternalLibraries(sysDir, addDirs);
+
         }
 
         public void AttachAssembly(System.Reflection.Assembly asm)
@@ -75,8 +124,6 @@ namespace ScriptEngine.HostedScript
             compilerSvc.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
             return compilerSvc;
         }
-
-        public string LibraryRoot { get; set; }
 
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {

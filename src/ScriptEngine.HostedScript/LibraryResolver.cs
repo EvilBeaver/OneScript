@@ -18,12 +18,13 @@ namespace ScriptEngine.HostedScript
     {
         private const string USE_DIRECTIVE_RU = "использовать";
         private const string USE_DIRECTIVE_EN = "use";
+        private const string PREDEFINED_LOADER_FILE = "package-loader.os";
 
         private RuntimeEnvironment _env;
         private ScriptingEngine _engine;
         private List<Library> _libs;
-        private LibraryLoader _loader;
-        private string _libraryRoot;
+        private LibraryLoader _defaultLoader;
+        private string _systemLibraryDir;
 
         #region Private classes
 
@@ -31,6 +32,7 @@ namespace ScriptEngine.HostedScript
         {
             public string id;
             public ProcessingState state;
+            public LibraryLoader customLoader;
         }
 
         private enum ProcessingState
@@ -46,37 +48,52 @@ namespace ScriptEngine.HostedScript
             _env = env;
             _engine = engine;
             _libs = new List<Library>();
+
+            this.SearchDirectories = new List<string>();
         }
 
-        public string LibraryRoot 
+        public string SystemLibraryDir
         {
             get
             {
-                if (_libraryRoot == null)
-                    _libraryRoot = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                if (_systemLibraryDir == null)
+                    _systemLibraryDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-                return _libraryRoot;
+                return _systemLibraryDir;
             }
 
             set
             {
-                _libraryRoot = value;
+                _systemLibraryDir = value;
             }
         }
 
-        private void CreateLoader()
-        {
-            if (_loader != null)
-                return;
+        public List<string> SearchDirectories { get; private set; }
 
-            var loaderscript = Path.Combine(LibraryRoot, "package-loader.os");
-            if(File.Exists(loaderscript))
+        private LibraryLoader DefaultLoader
+        {
+            get 
             {
-                _loader = LibraryLoader.Create(_engine, _env, loaderscript);
+                if (_defaultLoader == null)
+                    CreateDefaultLoader();
+
+                return _defaultLoader;
+                
+            }
+            set { _defaultLoader = value; }
+        }
+
+        private void CreateDefaultLoader()
+        {
+
+            var loaderscript = Path.Combine(SystemLibraryDir, PREDEFINED_LOADER_FILE);
+            if (File.Exists(loaderscript))
+            {
+                _defaultLoader = LibraryLoader.Create(_engine, _env, loaderscript);
             }
             else
             {
-                _loader = LibraryLoader.Create(_engine, _env);
+                _defaultLoader = LibraryLoader.Create(_engine, _env);
             }
         }
 
@@ -101,8 +118,6 @@ namespace ScriptEngine.HostedScript
         {
             if (String.IsNullOrWhiteSpace(value))
                 throw new ArgumentException("Ошибка в имени библиотеки", "value");
-
-            CreateLoader();
 
             bool loaded;
             if (IsQuoted(value))
@@ -139,8 +154,24 @@ namespace ScriptEngine.HostedScript
 
         private bool LoadByName(string value)
         {
-            var libraryPath = Path.Combine(LibraryRoot, value);
-            return LoadByPath(libraryPath);
+            if (SearchDirectories.Count == 0)
+            {
+                var libraryPath = Path.Combine(SystemLibraryDir, value);
+                return LoadByPath(libraryPath);
+            }
+            else
+            {
+                foreach (var path in SearchDirectories)
+                {
+                    if(!Directory.Exists(path))
+                        continue;
+
+                    var libraryPath = Path.Combine(path, value);
+                    if (LoadByPath(libraryPath))
+                        return true;
+                }
+                return false;
+            }
         }
 
         private bool LoadLibraryInternal(string libraryPath)
@@ -156,9 +187,14 @@ namespace ScriptEngine.HostedScript
             }
 
             var newLib = new Library() { id = id, state = ProcessingState.Discovered };
+
+            var customLoaderFile = Path.Combine(libraryPath, PREDEFINED_LOADER_FILE);
+            if (File.Exists(customLoaderFile))
+                newLib.customLoader = LibraryLoader.Create(_engine, _env, customLoaderFile);
+
             _libs.Add(newLib);
 
-            bool hasFiles = ProcessLibrary(libraryPath);
+            bool hasFiles = ProcessLibrary(newLib);
 
             newLib.state = ProcessingState.Processed;
 
@@ -170,9 +206,15 @@ namespace ScriptEngine.HostedScript
             return Path.GetFullPath(libraryPath);
         }
 
-        private bool ProcessLibrary(string libraryPath)
+        private bool ProcessLibrary(Library lib)
         {
-            return _loader.ProcessLibrary(libraryPath);
+            LibraryLoader loader;
+            if (lib.customLoader != null)
+                loader = lib.customLoader;
+            else
+                loader = this.DefaultLoader;
+
+            return loader.ProcessLibrary(lib.id);
         }
 
     }
