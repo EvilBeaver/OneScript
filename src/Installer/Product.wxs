@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="0B8916C9-DB9D-4DF0-BBA9-D93D0AE6A55A" Name="OneScript Engine" Language="1049" Version="$(var.ProductVersion)" Manufacturer="OneScript Team" UpgradeCode="525fd963-d484-448d-bbd8-5fa06234288e">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of OneScript is already installed." />
+		<MediaTemplate EmbedCab="yes" />
+		
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="OneScript">
+          <Directory Id="BinFolder" Name="bin"/>
+        </Directory>
+      </Directory>
+    </Directory>
+    
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <UIRef Id="WixUI_InstallDir"/>
+
+    <DirectoryRef Id="BinFolder">
+      <Component Id="Engine" Guid="4A83F6D9-5F9A-4628-9861-BF3AD53D0E50">
+        <File Source="$(var.ScriptEngine.TargetPath)"></File>
+      </Component>
+
+      <Component Id="HostedLib" Guid="A98FCBE4-04BB-44EA-809F-A375CE5B11D3">
+        <File Source="$(var.ScriptEngine.HostedScript.TargetPath)"></File>
+        <File Source="$(var.ScriptEngine.HostedScript.TargetDir)Ionic.Zip.dll"></File>
+      </Component>
+
+      <Component Id="ConsoleApp" Guid="D42B2795-B9DF-490F-B469-AB06E25085D7">
+        <File Source="$(var.oscript.TargetPath)"></File>
+      </Component>
+
+      <Component Id="TestApp" Guid="9C435D24-3B33-42DA-AE7F-D5604B11DC05">
+        <File Source="$(var.TestApp.TargetPath)"></File>
+        <File Source="$(var.TestApp.TargetDir)ICSharpCode.AvalonEdit.dll"></File>
+      </Component>
+
+    </DirectoryRef>
+    
+    <Feature Id="FullPackage" Title="Full package" Level="1">
+      <ComponentRef Id="Engine"/>
+      <ComponentRef Id="HostedLib"/>
+      <ComponentRef Id="ConsoleApp"/>
+      <ComponentRef Id="TestApp"/>
+    </Feature>
+    
+  </Product>
+
+</Wix>
