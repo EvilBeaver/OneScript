@@ -188,7 +188,7 @@ namespace ScriptEngine.HostedScript
 
             var newLib = new Library() { id = id, state = ProcessingState.Discovered };
 
-            var customLoaderFile = Path.Combine(LibraryRoot, PREDEFINED_LOADER_FILE);
+            var customLoaderFile = Path.Combine(libraryPath, PREDEFINED_LOADER_FILE);
             if (File.Exists(customLoaderFile))
                 newLib.customLoader = LibraryLoader.Create(_engine, _env, customLoaderFile);
 

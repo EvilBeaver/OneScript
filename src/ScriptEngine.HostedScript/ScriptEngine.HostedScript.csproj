@@ -96,6 +96,7 @@
     <Compile Include="Library\ProcessContext.cs" />
     <Compile Include="Library\StdTextReadStream.cs" />
     <Compile Include="Library\StdTextWriteStream.cs" />
+    <Compile Include="Library\SystemConfigAccessor.cs" />
     <Compile Include="Library\SystemGlobalContext.cs" />
     <Compile Include="Library\GuidWrapper.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />
@@ -138,7 +139,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="oscript.config">
+    <None Include="oscript.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />

@@ -233,8 +233,6 @@ namespace ScriptEngine.HostedScript.Library
                 return Path.Combine(path1, path2, path3);
         }
 
-        private static ContextMethodsMapper<FileOperations> _methods = new ContextMethodsMapper<FileOperations>();
-        
         public static IAttachableContext CreateInstance()
         {
             return new FileOperations();

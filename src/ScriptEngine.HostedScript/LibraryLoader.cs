@@ -54,6 +54,8 @@ namespace ScriptEngine.HostedScript
         {
             var code = engine.Loader.FromFile(processingScript);
             var compiler = engine.GetCompilerService();
+            compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
+            
             for (int i = 0; i < _methods.Count; i++)
             {
                 var mi = _methods.GetMethodInfo(i);
@@ -97,7 +99,30 @@ namespace ScriptEngine.HostedScript
 
         protected override int GetVariableCount()
         {
-            return 0;
+            return 1;
+        }
+
+        protected override int FindOwnProperty(string name)
+        {
+            if(StringComparer.OrdinalIgnoreCase.Compare(name, "ЭтотОбъект") == 0)
+            {
+                return 0;
+            }
+
+            return base.FindOwnProperty(name);
+        }
+
+        protected override bool IsOwnPropReadable(int index)
+        {
+            return true;
+        }
+
+        protected override IValue GetOwnPropValue(int index)
+        {
+            if (index == 0)
+                return this;
+            else
+                throw new ArgumentException(String.Format("Неверный индекс свойства {0}", index), "index");
         }
 
         protected override int GetMethodCount()

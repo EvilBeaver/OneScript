@@ -62,9 +62,8 @@ namespace ScriptEngine.HostedScript
 
         private void InitLibrariesByDefault()
         {
-            var assemblyPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var configFile = System.IO.Path.Combine(assemblyPath, "oscript.config");
-            if(System.IO.File.Exists(configFile))
+            var configFile = ConfigFilePath();
+            if(configFile != null)
             {
                 InitLibrariesFromConfig(configFile);
             }
@@ -72,6 +71,16 @@ namespace ScriptEngine.HostedScript
             {
                 InitExternalLibraries(null, null);
             }
+        }
+
+        public static string ConfigFilePath()
+        {
+            var assemblyPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var configFile = System.IO.Path.Combine(assemblyPath, "oscript.cfg");
+            if (System.IO.File.Exists(configFile))
+                return configFile;
+            else
+                return null;
         }
 
         private void InitLibrariesFromConfig(string configFile)
