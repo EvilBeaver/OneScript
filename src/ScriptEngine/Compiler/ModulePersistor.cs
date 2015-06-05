@@ -42,7 +42,7 @@ namespace ScriptEngine.Compiler
             moduleImage.ModuleInfo = new ModuleInformation()
             {
                 CodeIndexer = new CompiledCodeIndexer(),
-                ModuleName = "<имя модуля недоступно>",
+                ModuleName = System.IO.Path.GetFileName(path),
                 Origin = path
             };
 
