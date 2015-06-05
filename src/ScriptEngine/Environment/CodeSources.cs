@@ -50,7 +50,7 @@ namespace ScriptEngine.Environment
 
         public FileBasedSource(string path)
         {
-            _path = path;
+            _path = System.IO.Path.GetFullPath(path);
         }
 
         private string GetCodeString()

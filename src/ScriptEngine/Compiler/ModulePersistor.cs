@@ -29,18 +29,28 @@ namespace ScriptEngine.Compiler
             _formatter.Serialize(output, FromHandle(module));
         }
 
+        private ModuleImage FromHandle(ScriptModuleHandle module)
+        {
+            return module.Module;
+        }
+
         public ScriptModuleHandle Read(Stream input)
         {
             var moduleImage = (ModuleImage)_formatter.Deserialize(input);
+
+            string path = System.Reflection.Assembly.GetEntryAssembly().Location;
+            moduleImage.ModuleInfo = new ModuleInformation()
+            {
+                CodeIndexer = new CompiledCodeIndexer(),
+                ModuleName = "<имя модуля недоступно>",
+                Origin = path
+            };
+
             return new ScriptModuleHandle()
             {
                 Module = moduleImage
             };
         }
 
-        private ModuleImage FromHandle(ScriptModuleHandle module)
-        {
-            return module.Module;
-        }
     }
 }
