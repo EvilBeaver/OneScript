@@ -61,6 +61,20 @@ namespace ScriptEngine.HostedScript.Library
             return retValue;
         }
 
+        [ContextMethod("МетодСуществует", "MethodExists")]
+        public bool MethodExists(IRuntimeContextInstance target, string methodName)
+        {
+            try
+            {
+                var idx = target.FindMethod(methodName);
+                return idx >= 0;
+            }
+            catch (RuntimeException)
+            {
+                return false;
+            }
+        }
+
         [ScriptConstructor]
         public static IRuntimeContextInstance CreateNew()
         {
