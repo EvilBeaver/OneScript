@@ -94,6 +94,7 @@
     <Compile Include="Library\Net\TCPClient.cs" />
     <Compile Include="Library\Net\TCPServer.cs" />
     <Compile Include="Library\ProcessContext.cs" />
+    <Compile Include="Library\SortDirectionEnum.cs" />
     <Compile Include="Library\StdTextReadStream.cs" />
     <Compile Include="Library\StdTextWriteStream.cs" />
     <Compile Include="Library\SystemConfigAccessor.cs" />
