@@ -14,21 +14,6 @@ namespace ScriptEngine.HostedScript.Library.ValueList
     public class ValueListImpl : AutoContext<ValueListImpl>, ICollectionContext
     {
         List<ValueListItem> _items = new List<ValueListItem>();
-
-        [ContextMethod("Добавить", "Add")]
-        public ValueListItem Add(IValue value, string presentation = null, bool check = false, IValue picture = null)
-        {
-            var newIndex = _items.Count;
-            var newItem = new ValueListItem();
-            newItem.Value = value;
-            newItem.Presentation = presentation;
-            newItem.Check = check;
-            newItem.Picture = picture;
-
-            _items.Add(newItem);
-            return newItem;
-        }
-
         public override bool IsIndexed
         {
             get
@@ -66,6 +51,88 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         {
             int numericIndex = (int)index.AsNumber();
             return _items[numericIndex];
+        }
+
+        [ContextMethod("Добавить", "Add")]
+        public ValueListItem Add(IValue value, string presentation = null, bool check = false, IValue picture = null)
+        {
+            var newItem = CreateNewListItem(value, presentation, check, picture);
+
+            _items.Add(newItem);
+            return newItem;
+        }
+
+        [ContextMethod("Вставить", "Insert")]
+        public ValueListItem Insert(int index, IValue value, string presentation = null, bool check = false, IValue picture = null)
+        {
+            var newItem = CreateNewListItem(value, presentation, check, picture);
+            _items.Insert(index, newItem);
+            
+            return newItem;
+        }
+
+        private static ValueListItem CreateNewListItem(IValue value, string presentation, bool check, IValue picture)
+        {
+            var newItem = new ValueListItem();
+            newItem.Value = value;
+            newItem.Presentation = presentation;
+            newItem.Check = check;
+            newItem.Picture = picture;
+            return newItem;
+        }
+
+        [ContextMethod("ВыгрузитьЗначения", "UnloadValues")]
+        public ArrayImpl UnloadValues()
+        {
+            return new ArrayImpl(_items.Select(x=>x.Value));
+        }
+
+        [ContextMethod("ЗагрузитьЗначения", "LoadValues")]
+        public void LoadValues(ArrayImpl source)
+        {
+            Clear();
+            _items.AddRange(source.Select(x => new ValueListItem() { Value = x }));
+        }
+
+        [ContextMethod("Очистить", "Clear")]
+        public void Clear()
+        {
+            _items.Clear();
+        }
+
+        [ContextMethod("ЗаполнитьПометки", "FillChecks")]
+        public void FillChecks(bool check)
+        {
+            foreach (var item in _items)
+            {
+                item.Check = check;
+            }
+        }
+
+        [ContextMethod("Индекс", "Index")]
+        public int Index(ValueListItem item)
+        {
+            return _items.IndexOf(item);
+        }
+
+        [ContextMethod("НайтиПоЗначению", "FindByValue")]
+        public IValue FindByValue(IValue val)
+        {
+            var item = _items.FirstOrDefault(x => x.Value.Equals(val));
+            if(item == null)
+                return ValueFactory.Create();
+
+            return item;
+        }
+
+        [ContextMethod("НайтиПоЗначению", "FindByValue")]
+        public IValue FindByValue(IValue val)
+        {
+            var item = _items.FirstOrDefault(x => x.Value.Equals(val));
+            if (item == null)
+                return ValueFactory.Create();
+
+            return item;
         }
 
         #region Collection Context
