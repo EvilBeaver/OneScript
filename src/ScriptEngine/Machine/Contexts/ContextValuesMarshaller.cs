@@ -146,13 +146,17 @@ namespace ScriptEngine.Machine.Contexts
 			case Machine.DataType.Undefined:
 				result = null;
 				break;
-			case Machine.DataType.Object:
-				result = val.AsObject();
+			default:
+                if (val.DataType == DataType.Object)
+                    result = val.AsObject();
+
+				result = val.GetRawValue();
 				if (result is IObjectWrapper)
 					result = ((IObjectWrapper)result).UnderlyingObject;
-				break;
-			default:
-				throw new RuntimeException("Тип не поддерживает преобразование в CLR-объект");
+				else
+				    throw new ValueMarshallingException("Тип не поддерживает преобразование в CLR-объект");
+
+                break;
 			}
 			
 			return result;

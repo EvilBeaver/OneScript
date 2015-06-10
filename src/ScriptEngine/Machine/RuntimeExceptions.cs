@@ -127,7 +127,7 @@ namespace ScriptEngine.Machine
         }
     }
 
-    public class WrongStackConditionException : RuntimeException
+    public class WrongStackConditionException : ApplicationException
     {
         public WrongStackConditionException()
             : base("Внутренняя ошибка: неверное состояние стека")
@@ -170,4 +170,14 @@ namespace ScriptEngine.Machine
         public int ExitCode { get; private set; }
     }
 
+    public class ValueMarshallingException : RuntimeException
+    {
+        public ValueMarshallingException() : this("Неклассифицированная ошибка маршаллинга значений")
+        {
+        }
+
+        public ValueMarshallingException(string message) : base(message)
+        {
+        }
+    }
 }

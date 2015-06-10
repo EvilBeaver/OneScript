@@ -22,7 +22,16 @@ namespace ScriptEngine.Machine
 
         public int GetHashCode(IValue obj)
         {
-            var CLR_obj = ContextValuesMarshaller.ConvertToCLRObject(obj);
+            object CLR_obj;
+            try
+            {
+                CLR_obj = ContextValuesMarshaller.ConvertToCLRObject(obj);
+            }
+            catch (ValueMarshallingException)
+            {
+                CLR_obj = obj;
+            }
+
             return CLR_obj.GetHashCode();
         }
     }
