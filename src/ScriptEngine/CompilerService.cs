@@ -93,7 +93,9 @@ namespace ScriptEngine
             }
             catch (ScriptException e)
             {
-                e.ModuleName = source.SourceDescription;
+                if(e.ModuleName == null)
+                    e.ModuleName = source.SourceDescription;
+
                 throw;
             }
 
