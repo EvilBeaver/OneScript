@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -184,6 +190,18 @@ namespace ScriptEngine.HostedScript.Library.Net
         public void Dispose()
         {
             Close();
+        }
+
+        /// <summary>
+        /// Подключение к удаленному TCP-сокету
+        /// </summary>
+        /// <param name="host">адрес машины</param>
+        /// <param name="port">порт сокета</param>
+        [ScriptConstructor]
+        public static TCPClient Constructor(IValue host, IValue port)
+        {
+            var client = new TcpClient(host.AsString(), (int)port.AsNumber());
+            return new TCPClient(client);
         }
     }
 }

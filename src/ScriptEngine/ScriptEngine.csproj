@@ -14,8 +14,6 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -58,7 +56,6 @@
     <DocumentationFile>bin\x86\Release\ScriptEngine.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CustomMarshalers" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -73,11 +70,12 @@
     </Compile>
     <Compile Include="CodePositionInfo.cs" />
     <Compile Include="CompilerService.cs" />
+    <Compile Include="Compiler\CompiledCodeIndexer.cs" />
     <Compile Include="Compiler\Compiler.cs" />
+    <Compile Include="Compiler\ISourceCodeIndexer.cs" />
     <Compile Include="Compiler\ModuleCompilerContext.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\CompilerExceptions.cs" />
-    <Compile Include="Compiler\ExpressionBuilder.cs" />
     <Compile Include="Compiler\ICompilerContext.cs" />
     <Compile Include="Compiler\ModulePersistor.cs" />
     <Compile Include="Compiler\ParseIterator.cs" />
@@ -87,6 +85,7 @@
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
     <Compile Include="Environment\ModuleInformation.cs" />
+    <Compile Include="IDirectiveResolver.cs" />
     <Compile Include="Machine\ComReflectionNameToIdMapper.cs" />
     <Compile Include="Machine\Contexts\EnumContextHelper.cs" />
     <Compile Include="Machine\Contexts\ContextClassAttribute.cs" />
@@ -166,7 +165,8 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp --force --update "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner/"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

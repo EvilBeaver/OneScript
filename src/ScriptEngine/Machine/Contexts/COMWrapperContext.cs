@@ -1,4 +1,10 @@
-﻿#if !__MonoCS__
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+#if !__MonoCS__
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,26 +28,31 @@ namespace ScriptEngine.Machine.Contexts
 
             object instance = Activator.CreateInstance(type, MarshalArguments(arguments));
 
-            if(TypeIsRuntimeCallableWrapper(type))
-            {
-                return new UnmanagedRCWComContext(instance);
-            }
-            else
-            {
-                return new ManagedCOMWrapperContext(instance);
-            }
+            return InitByInstance(type, instance);
         }
 
         public static COMWrapperContext Create(object instance)
         {
-            if(TypeIsRuntimeCallableWrapper(instance.GetType()))
+            return InitByInstance(instance.GetType(), instance);
+        }
+
+        private static COMWrapperContext InitByInstance(Type type, object instance)
+        {
+            if (TypeIsRuntimeCallableWrapper(type))
             {
                 return new UnmanagedRCWComContext(instance);
             }
-            else
+            else if (IsObjectType(type))
             {
-                throw new NotImplementedException();
+                return new ManagedCOMWrapperContext(instance);
             }
+            else
+                throw new ArgumentException(String.Format("Can't create COM wrapper for type {0}", type.ToString()));
+        }
+
+        private static bool IsObjectType(Type type)
+        {
+            return !type.IsPrimitive && !type.IsValueType;
         }
 
         private static bool TypeIsRuntimeCallableWrapper(Type type)
@@ -74,6 +85,34 @@ namespace ScriptEngine.Machine.Contexts
             return marshalledArgs;
         }
 
+        protected static object[] MarshalArgumentsStrict(System.Reflection.MethodInfo method, IValue[] arguments)
+        {
+            var parameters = method.GetParameters();
+
+            object[] marshalledArgs = new object[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if(i < arguments.Length)
+                {
+                    if (IsMissedArg(arguments[i]) && parameters[i].IsOptional)
+                        marshalledArgs[i] = Type.Missing;
+                    else
+                        marshalledArgs[i] = ContextValuesMarshaller.ConvertParam(arguments[i], parameters[i].ParameterType);
+                }
+                else
+                {
+                    marshalledArgs[i] = Type.Missing;
+                }
+            }
+
+            return marshalledArgs;
+        }
+
+        private static bool IsMissedArg(IValue arg)
+        {
+            return arg == null || arg.DataType == DataType.NotAValidValue;
+        }
+
         public static IValue CreateIValue(object objParam)
         {
             if (objParam == null)
@@ -94,7 +133,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (type == typeof(double))
             {
-                return ValueFactory.Create((decimal)objParam);
+                return ValueFactory.Create((decimal)(double)objParam);
             }
             else if (type == typeof(DateTime))
             {
@@ -104,15 +143,24 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((bool)objParam);
             }
-            else if (DispatchUtility.ImplementsIDispatch(objParam))
-            {
-                var ctx = COMWrapperContext.Create(objParam);
-                return ValueFactory.Create(ctx);
-            }
             else if (type.IsArray)
             {
                 return new SafeArrayWrapper(objParam);
             }
+            else if (IsObjectType(type))
+            {
+                COMWrapperContext ctx;
+                try
+                {
+                    ctx = COMWrapperContext.Create(objParam);
+                }
+                catch (ArgumentException e)
+                {
+                    throw new RuntimeException("Тип " + type + " невозможно преобразовать в один из поддерживаемых типов", e);
+                }
+                return ValueFactory.Create(ctx);
+            }
+            
             else
             {
                 throw new RuntimeException("Тип " + type + " невозможно преобразовать в один из поддерживаемых типов");

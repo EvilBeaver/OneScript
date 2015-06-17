@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,8 +13,8 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class EnumerationContext : PropertyNameIndexAccessor
     {
-        private Dictionary<string, int> _nameIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private List<EnumerationValue> _values = new List<EnumerationValue>();
+        IndexedNamesCollection _nameIds = new IndexedNamesCollection();
         private TypeDescriptor _valuesType;
 
         public EnumerationContext(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) : base(typeRepresentation)
@@ -18,19 +24,24 @@ namespace ScriptEngine.Machine.Contexts
 
         public void AddValue(string name, EnumerationValue val)
         {
+            AddValue(name, null, val);
+        }
+
+        public void AddValue(string name, string alias, EnumerationValue val)
+        {
+            System.Diagnostics.Debug.Assert(name != null);
             System.Diagnostics.Debug.Assert(val != null);
 
-            if(!ScriptEngine.Utils.IsValidIdentifier(name))
-            {
+            if (!ScriptEngine.Utils.IsValidIdentifier(name))
                 throw new ArgumentException("Name must be a valid identifier", "name");
-            }
 
-            int id = _values.Count;
-            _nameIndexes.Add(name, id);
-            _values.Add(val);
-            
+            if(alias != null && !ScriptEngine.Utils.IsValidIdentifier(alias))
+                throw new ArgumentException("Name must be a valid identifier", "alias");
+
+            _nameIds.RegisterName(name, alias);
             val.ValuePresentation = name;
-            
+            _values.Add(val);
+
         }
 
         public TypeDescriptor ValuesType
@@ -58,10 +69,8 @@ namespace ScriptEngine.Machine.Contexts
         public override int FindProperty(string name)
         {
             int id;
-            if (_nameIndexes.TryGetValue(name, out id))
-            {
+            if (_nameIds.TryGetIdOfName(name, out id))
                 return id;
-            }
             else
                 return base.FindProperty(name);
         }

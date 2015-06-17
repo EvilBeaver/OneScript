@@ -1,4 +1,10 @@
-﻿#if !__MonoCS__
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+#if !__MonoCS__
 #region Using Directives
 
 using System;
@@ -34,21 +40,6 @@ namespace ScriptEngine.Machine.Contexts
 		public static bool ImplementsIDispatch(object obj)
 		{
 			bool result = obj is IDispatchInfo;
-			return result;
-		}
-
-		/// <summary>
-		/// Gets a Type that can be used with reflection.
-		/// </summary>
-		/// <param name="obj">An object that implements IDispatch.</param>
-		/// <param name="throwIfNotFound">Whether an exception should be thrown if a Type can't be obtained.</param>
-		/// <returns>A .NET Type that can be used with reflection.</returns>
-		/// <exception cref="InvalidCastException">If <paramref name="obj"/> doesn't implement IDispatch.</exception>
-		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-		public static Type GetType(object obj, bool throwIfNotFound)
-		{
-			RequireReference(obj, "obj");
-			Type result = GetType((IDispatchInfo)obj, throwIfNotFound);
 			return result;
 		}
 
@@ -152,39 +143,6 @@ namespace ScriptEngine.Machine.Contexts
 		}
 
 		/// <summary>
-		/// Gets a Type that can be used with reflection.
-		/// </summary>
-		/// <param name="dispatch">An object that implements IDispatch.</param>
-		/// <param name="throwIfNotFound">Whether an exception should be thrown if a Type can't be obtained.</param>
-		/// <returns>A .NET Type that can be used with reflection.</returns>
-		private static Type GetType(IDispatchInfo dispatch, bool throwIfNotFound)
-		{
-			RequireReference(dispatch, "dispatch");
-
-			Type result = null;
-			int typeInfoCount;
-			int hr = dispatch.GetTypeInfoCount(out typeInfoCount);
-			if (hr == S_OK && typeInfoCount > 0)
-			{
-				// Type info isn't usually culture-aware for IDispatch, so we might as well pass
-				// the default locale instead of looking up the current thread's LCID each time
-				// (via CultureInfo.CurrentCulture.LCID).
-				dispatch.GetTypeInfo(0, LOCALE_SYSTEM_DEFAULT, out result);
-			}
-
-			if (result == null && throwIfNotFound)
-			{
-				// If the GetTypeInfoCount called failed, throw an exception for that.
-				Marshal.ThrowExceptionForHR(hr);
-
-				// Otherwise, throw the same exception that Type.GetType would throw.
-				throw new TypeLoadException();
-			}
-
-			return result;
-		}
-
-		/// <summary>
 		/// Tries to get the DISPID for the requested member name.
 		/// </summary>
 		/// <param name="dispatch">An object that implements IDispatch.</param>
@@ -266,8 +224,7 @@ namespace ScriptEngine.Machine.Contexts
 			/// <remarks>
 			/// http://msdn.microsoft.com/en-us/library/cc1ec9aa-6c40-4e70-819c-a7c6dd6b8c99(VS.85)
 			/// </remarks>
-			void GetTypeInfo(int typeInfoIndex, int lcid, [MarshalAs(UnmanagedType.CustomMarshaler,
-				MarshalTypeRef = typeof(System.Runtime.InteropServices.CustomMarshalers.TypeToTypeInfoMarshaler))] out Type typeInfo);
+			void GetTypeInfo(int typeInfoIndex, int lcid, out IntPtr typeInfo);
 
 			/// <summary>
 			/// Gets the DISPID of the specified member name.

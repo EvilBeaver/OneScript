@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -18,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
         }
 
-        [EnumValue(RESTORE_PATHS_NAME)]
+        [EnumValue(RESTORE_PATHS_NAME, "Restore")]
         public EnumerationValue Restore
         {
             get
@@ -27,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(DONT_RESTORE_PATHS_NAME)]
+        [EnumValue(DONT_RESTORE_PATHS_NAME, "DontRestore")]
         public EnumerationValue DoNotRestore
         {
             get

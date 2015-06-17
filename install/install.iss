@@ -1,6 +1,6 @@
 #include <ISPPBuiltins.iss>
 #define AppName "OneScript execution engine"
-#define FSFriendlyName "OneScript execution engine"
+#define FSFriendlyName "OneScript"
 #define MainExe "TestApp.exe"
 
 #define VerMajor
@@ -16,27 +16,56 @@ DefaultDirName="{pf}\{#FSFriendlyName}"
 DefaultGroupName="{#FSFriendlyName}"
 OutputBaseFilename="OneScript-{#VerMajor}.{#VerMinor}.{#VerRelease}-setup"
 DisableProgramGroupPage=yes
-UninstallDisplayIcon="{app}\{#MainExe}"
+UninstallDisplayIcon="{app}\bin\{#MainExe}"
 Compression=lzma2
 SolidCompression=yes
 
+
+[InstallDelete]
+Type: files; Name: {app}\*.dll
+Type: files; Name: {app}\*.exe
+
 [Files]
-Source: "build\*"; DestDir: "{app}"
+Source: "build\*"; DestDir: "{app}\bin"; Excludes: "oscript.cfg"
+Source: "build\oscript.cfg"; DestDir: "{app}\bin";  Flags: onlyifdoesntexist
+Source: "examples\*.os"; DestDir: "{app}\examples"   
+Source: "..\oscript-library\src\*.*"; DestDir: "{app}\lib"; Flags: recursesubdirs
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
-Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall;
+Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: VCRedistNeedsInstall
 
 [Icons]
-Name: "{group}\{#FSFriendlyName}"; Filename: "{app}\{#MainExe}"
+Name: "{group}\{#FSFriendlyName}"; Filename: "{app}\bin\{#MainExe}"
 
 [Registry]
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app};"; Check: NeedsAddPath(ExpandConstant('{app}'))
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}\bin;"; Check: NeedsAddPath(ExpandConstant('{app}\bin'))
 
 [Run]
 Filename: {tmp}\dotNetFx40_Full_setup.exe; Parameters: "/q:a /c:""install /l /q"""; Check: not IsRequiredDotNetDetected; StatusMsg: Microsoft .NET Framework 4.0 is being installed. Please wait..
 Filename: {tmp}\vcredist_x86.exe; Parameters: "/q /norestart"; StatusMsg: MS Redistributable C++ Runtime is being installed. Please wait..
-Filename: "{app}\{#MainExe}"; Description: "Launch application"; Flags: postinstall nowait skipifsilent unchecked
+Filename: "{app}\bin\{#MainExe}"; Description: "Launch application"; Flags: postinstall nowait skipifsilent unchecked
 
 [Code]
+
+#IFDEF UNICODE
+  #DEFINE AW "W"
+#ELSE
+  #DEFINE AW "A"
+#ENDIF
+type
+  INSTALLSTATE = Longint;
+const
+  INSTALLSTATE_INVALIDARG = -2;  // An invalid parameter was passed to the function.
+  INSTALLSTATE_UNKNOWN = -1;     // The product is neither advertised or installed.
+  INSTALLSTATE_ADVERTISED = 1;   // The product is advertised but not installed.
+  INSTALLSTATE_ABSENT = 2;       // The product is installed for a different user.
+  INSTALLSTATE_DEFAULT = 5;      // The product is installed for the current user.
+
+  // Microsoft Visual C++ 2012 x86 Minimum Runtime - 11.0.61030.0 (Update 4) 
+  VC_2012_REDIST_MIN_UPD4_X86 = '{BD95A8CD-1D9F-35AD-981A-3E7925026EBB}';
+  VC_2012_REDIST_MIN_UPD4_X64 = '{CF2BEA3C-26EA-32F8-AA9B-331F7E34BA97}';
+  // Microsoft Visual C++ 2012 x86 Additional Runtime - 11.0.61030.0 (Update 4) 
+  VC_2012_REDIST_ADD_UPD4_X86 = '{B175520C-86A2-35A7-8619-86DC379688B9}';
+  VC_2012_REDIST_ADD_UPD4_X64 = '{37B8F9C7-03FB-3253-8781-2517C99D7C00}';
 
 function NeedsAddPath(Param: string): boolean;
 var
@@ -121,4 +150,23 @@ begin
     end;
     
     result := true;
+end;
+
+function MsiQueryProductState(szProduct: string): INSTALLSTATE; 
+  external 'MsiQueryProductState{#AW}@msi.dll stdcall';
+
+function VCVersionInstalled(const ProductID: string): Boolean;
+begin
+  Result := MsiQueryProductState(ProductID) = INSTALLSTATE_DEFAULT;
+end;
+
+function VCRedistNeedsInstall: Boolean;
+begin
+  // here the Result must be True when you need to install your VCRedist
+  // or False when you don't need to, so now it's upon you how you build
+  // this statement, the following won't install your VC redist only when
+  // the Visual C++ 2010 Redist (x86) and Visual C++ 2010 SP1 Redist(x86)
+  // are installed for the current user
+  Result := not (VCVersionInstalled(VC_2012_REDIST_MIN_UPD4_X86) and 
+    VCVersionInstalled(VC_2012_REDIST_ADD_UPD4_X86));
 end;

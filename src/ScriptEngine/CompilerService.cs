@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -79,6 +85,7 @@ namespace ScriptEngine
             parser.Code = source.Code;
 
             var compiler = new Compiler.Compiler();
+            compiler.DirectiveHandler = ResolveDirective;
             ModuleImage compiledImage;
             try
             {
@@ -86,7 +93,9 @@ namespace ScriptEngine
             }
             catch (ScriptException e)
             {
-                e.ModuleName = source.SourceDescription;
+                if(e.ModuleName == null)
+                    e.ModuleName = source.SourceDescription;
+
                 throw;
             }
 
@@ -115,5 +124,17 @@ namespace ScriptEngine
                 Module = compiledImage
             };
         }
+
+        private bool ResolveDirective(string directive, string value)
+        {
+            if (DirectiveResolver != null)
+            {
+                return DirectiveResolver.Resolve(directive, value);
+            }
+            else
+                return false;
+        }
+
+        public IDirectiveResolver DirectiveResolver { get; set; }
     }
 }

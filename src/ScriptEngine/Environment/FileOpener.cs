@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,11 +22,9 @@ namespace ScriptEngine.Environment
 
 			var reader = new StreamReader(input, enc, true);
 
-#if __MonoCS__
 			bool skipFirstLine = IsLinuxScript (input);
 			if(skipFirstLine)
 				reader.ReadLine();
-#endif
 			return reader;
 
         }
@@ -69,8 +73,6 @@ namespace ScriptEngine.Environment
             return enc;
         }
 
-#if __MonoCS__
-
 		static bool IsLinuxScript (FileStream input)
 		{
 			byte[] buf = new byte[2];
@@ -83,7 +85,6 @@ namespace ScriptEngine.Environment
 			input.Position = 0;
 			return skipLine;
 		}
-#endif
 
     }
 }

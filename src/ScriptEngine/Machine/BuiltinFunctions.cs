@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -94,7 +100,6 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.Sqrt, SingleDefaultParamInfo);
             map.Add(OperationCode.Format, TwoDefaultParamsInfo);
             // special
-            map.Add(OperationCode.Question, QuestionParamInfo);
             map.Add(OperationCode.ExceptionInfo, NoParamsInfo);
             map.Add(OperationCode.ExceptionDescr, NoParamsInfo);
             map.Add(OperationCode.ModuleInfo, NoParamsInfo);
@@ -127,11 +132,6 @@ namespace ScriptEngine.Machine
                 optionalParam,
                 optionalParam
             };
-        }
-
-        private static ParameterDefinition[] QuestionParamInfo()
-        {
-            return MandatoryParamInfo(3);
         }
 
         private static ParameterDefinition[] MandatoryParamInfo(int amount)

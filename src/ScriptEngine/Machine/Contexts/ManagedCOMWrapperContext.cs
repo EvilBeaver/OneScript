@@ -1,4 +1,11 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+#if !__MonoCS__
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -90,7 +97,9 @@ namespace ScriptEngine.Machine.Contexts
         public override void SetPropValue(int propNum, IValue newVal)
         {
             var pi = _nameMapper.GetProperty(propNum);
-            pi.GetSetMethod().Invoke(_instance, new[] { MarshalIValue(newVal) });
+            
+            var setMethod = pi.GetSetMethod();
+            setMethod.Invoke(_instance, MarshalArgumentsStrict(new[] { newVal }, new[] { pi.PropertyType }));
         }
 
         public override IValue GetIndexedValue(IValue index)
@@ -137,13 +146,13 @@ namespace ScriptEngine.Machine.Contexts
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             var method = _nameMapper.GetMethod(methodNumber);
-            method.Invoke(_instance, MarshalArgumentsStrict(arguments, GetMethodParametersTypes(method)));
+            method.Invoke(_instance, MarshalArgumentsStrict(method, arguments));
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
             var method = _nameMapper.GetMethod(methodNumber);
-            var result = method.Invoke(_instance, MarshalArgumentsStrict(arguments, GetMethodParametersTypes(method)));
+            var result = method.Invoke(_instance, MarshalArgumentsStrict(method, arguments));
             retValue = CreateIValue(result);
         }
 
@@ -187,3 +196,4 @@ namespace ScriptEngine.Machine.Contexts
         }
     }
 }
+#endif

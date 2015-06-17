@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -140,13 +146,17 @@ namespace ScriptEngine.Machine.Contexts
 			case Machine.DataType.Undefined:
 				result = null;
 				break;
-			case Machine.DataType.Object:
-				result = val.AsObject();
+			default:
+                if (val.DataType == DataType.Object)
+                    result = val.AsObject();
+
+				result = val.GetRawValue();
 				if (result is IObjectWrapper)
 					result = ((IObjectWrapper)result).UnderlyingObject;
-				break;
-			default:
-				throw new RuntimeException("Тип не поддерживает преобразование в CLR-объект");
+				else
+				    throw new ValueMarshallingException("Тип не поддерживает преобразование в CLR-объект");
+
+                break;
 			}
 			
 			return result;

@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -19,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
         }
         
-        [EnumValue(EV_MINIMAL_NAME)]
+        [EnumValue(EV_MINIMAL_NAME, "Minimum")]
         public EnumerationValue Minimal
         {
             get
@@ -28,7 +34,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(EV_OPTIMAL_NAME)]
+        [EnumValue(EV_OPTIMAL_NAME, "Optimal")]
         public EnumerationValue Optimal
         {
             get
@@ -37,7 +43,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        [EnumValue(EV_MAXIMAL_NAME)]
+        [EnumValue(EV_MAXIMAL_NAME, "Maximum")]
         public EnumerationValue Maximal
         {
             get

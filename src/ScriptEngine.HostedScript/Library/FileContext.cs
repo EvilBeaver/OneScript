@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -72,8 +78,8 @@ namespace ScriptEngine.HostedScript.Library
                 else
                     path = ((DirectoryInfo)_fsEntry).Parent.FullName;
 
-                if (!path.EndsWith("\\")) 
-                    path += "\\";
+                if (path.Length > 0 && path[path.Length-1] != System.IO.Path.DirectorySeparatorChar)
+                    path += System.IO.Path.DirectorySeparatorChar;
 
                 return path;
 

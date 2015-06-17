@@ -1,4 +1,11 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+#if !__MonoCS__
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,7 +15,6 @@ namespace ScriptEngine.Machine.Contexts
 {
     class UnmanagedRCWComContext : COMWrapperContext
     {
-        private Type _dispatchedType;
         private object _instance;
 
         private const uint E_DISP_MEMBERNOTFOUND = 0x80020003;
@@ -29,16 +35,6 @@ namespace ScriptEngine.Machine.Contexts
             {
                 _instance = null;
                 throw new RuntimeException("Объект не реализует IDispatch.");
-            }
-
-            try
-            {
-                _dispatchedType = DispatchUtility.GetType(_instance, false);
-            }
-            catch
-            {
-                _instance = null;
-                throw;
             }
         }
 
@@ -140,23 +136,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
                 {
-                    if (_dispatchedType != null)
-                    {
-                        var memberInfo = _dispatchedType.GetMember(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                        if (memberInfo.Length == 0 || !(memberInfo[0].MemberType == MemberTypes.Property))
-                        {
-                            throw RuntimeException.PropNotFoundException(name);
-                        }
-                        else
-                        {
-                            _membersCache.Add(dispId, memberInfo[0]);
-                            _dispIdCache.Add(name, dispId);
-                        }
-                    }
-                    else
-                    {
-                        _dispIdCache.Add(name, dispId);
-                    }
+                    _dispIdCache.Add(name, dispId);
                 }
                 else
                 {
@@ -169,28 +149,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool IsPropReadable(int propNum)
         {
-            if (_dispatchedType != null)
-            {
-                var propInfo = (PropertyInfo)_membersCache[propNum];
-                return propInfo.CanRead;
-            }
-            else
-            {
-                return true;
-            }
+            return true;
         }
 
         public override bool IsPropWritable(int propNum)
         {
-            if (_dispatchedType != null)
-            {
-                var propInfo = (PropertyInfo)_membersCache[propNum];
-                return propInfo.CanWrite;
-            }
-            else
-            {
-                return true;
-            }
+            return true;
         }
 
         public override IValue GetPropValue(int propNum)
@@ -247,23 +211,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
                 {
-                    if (_dispatchedType != null)
-                    {
-                        var memberInfo = _dispatchedType.GetMember(name);
-                        if (memberInfo.Length == 0 || !(memberInfo[0].MemberType == MemberTypes.Method || memberInfo[0].MemberType == MemberTypes.Property))
-                        {
-                            throw RuntimeException.MethodNotFoundException(name);
-                        }
-                        else
-                        {
-                            _membersCache.Add(dispId, memberInfo[0]);
-                            _dispIdCache.Add(name, dispId);
-                        }
-                    }
-                    else
-                    {
-                        _dispIdCache.Add(name, dispId);
-                    }
+                    _dispIdCache.Add(name, dispId);
                 }
                 else
                 {
@@ -281,66 +229,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private MethodInfo GetMethodDescription(int methodNumber)
         {
-            if (_dispatchedType != null)
-                return GetReflectableMethod(methodNumber);
-            else
-                return new MethodInfo();
-        }
-
-        private MethodInfo GetReflectableMethod(int methodNumber)
-        {
-            MethodInfo methodInfo;
-            if (!_methodBinding.TryGetValue(methodNumber, out methodInfo))
-            {
-                var memberInfo = _membersCache[methodNumber];
-
-                methodInfo = new MethodInfo();
-                methodInfo.Name = memberInfo.Name;
-
-                var reflectedMethod = memberInfo as System.Reflection.MethodInfo;
-
-                if (reflectedMethod != null)
-                {
-                    methodInfo.IsFunction = reflectedMethod.ReturnType != typeof(void);
-                    var reflectionParams = reflectedMethod.GetParameters();
-                    FillMethodInfoParameters(ref methodInfo, reflectionParams);
-                }
-                else
-                {
-                    var reflectedProperty = memberInfo as System.Reflection.PropertyInfo;
-                    if (reflectedProperty != null)
-                    {
-                        var reflectionParams = reflectedProperty.GetIndexParameters();
-                        if (reflectionParams.Length == 0)
-                        {
-                            throw RuntimeException.IndexedAccessIsNotSupportedException();
-                        }
-
-                        methodInfo.IsFunction = reflectedProperty.CanRead;
-                        FillMethodInfoParameters(ref methodInfo, reflectionParams);
-                    }
-                    else
-                    {
-                        throw RuntimeException.IndexedAccessIsNotSupportedException();
-                    }
-                }
-
-                _methodBinding.Add(methodNumber, methodInfo);
-            }
-            return methodInfo;
-        }
-
-        private static void FillMethodInfoParameters(ref MethodInfo methodInfo, System.Reflection.ParameterInfo[] reflectionParams)
-        {
-            methodInfo.Params = new ParameterDefinition[reflectionParams.Length];
-            for (int i = 0; i < reflectionParams.Length; i++)
-            {
-                var reflectedParam = reflectionParams[i];
-                var param = new ParameterDefinition();
-                param.HasDefaultValue = reflectedParam.IsOptional;
-                param.IsByValue = !reflectedParam.IsOut;
-                methodInfo.Params[i] = param;
-            }
+            return new MethodInfo();
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
@@ -384,3 +273,4 @@ namespace ScriptEngine.Machine.Contexts
 
     }
 }
+#endif

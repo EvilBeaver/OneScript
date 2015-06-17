@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -14,6 +20,7 @@ namespace ScriptEngine.HostedScript.Library
         private const string ENCODING_OEM = "OEM";
         private const string ENCODING_UTF16 = "UTF16";
         private const string ENCODING_UTF8 = "UTF8";
+        private const string ENCODING_UTF8NoBOM = "UTF8NoBOM";
         private const string ENCODING_SYSTEM = "Системная";
 
         private TextEncodingEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
@@ -57,7 +64,16 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [EnumValue(ENCODING_SYSTEM)]
+        [EnumValue(ENCODING_UTF8NoBOM)]
+        public EnumerationValue Utf8NoBOM
+        {
+            get
+            {
+                return this[ENCODING_UTF8NoBOM];
+            }
+        }
+
+        [EnumValue(ENCODING_SYSTEM, "System")]
         public EnumerationValue System
         {
             get
@@ -106,6 +122,8 @@ namespace ScriptEngine.HostedScript.Library
                     enc = new UnicodeEncoding(false, true);
                 else if (encValue == encodingEnum.Utf8)
                     enc = new UTF8Encoding(true);
+                else if (encValue == encodingEnum.Utf8NoBOM)
+                    enc = new UTF8Encoding(false);
                 else if (encValue == encodingEnum.System)
                     enc = Encoding.Default;
                 else

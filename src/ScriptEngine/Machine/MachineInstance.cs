@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Machine.Contexts;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -413,7 +419,6 @@ namespace ScriptEngine.Machine
                 PopTmp,
 
                 //built-ins
-                Question,
                 Bool,
                 Number,
                 Str,
@@ -771,7 +776,7 @@ namespace ScriptEngine.Machine
 
                 if (sdo.MethodDefinedInScript(methodRef.CodeIndex))
                 {
-                    var methDescr = _module.Methods[methodRef.CodeIndex];
+                    var methDescr = _module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
                     var frame = new ExecutionFrame();
                     frame.MethodName = methInfo.Name;
                     frame.Locals = new IVariable[methDescr.VariableFrameSize];
@@ -978,7 +983,7 @@ namespace ScriptEngine.Machine
                     {
                         argValues[i] = BreakVariableLink(argValue);
                     }
-                    else
+                    else if (i < methodInfo.Params.Length)
                     {
                         if (methodInfo.Params[i].IsByValue)
                             argValues[i] = BreakVariableLink(argValue);
@@ -1343,23 +1348,6 @@ namespace ScriptEngine.Machine
         #endregion
 
         #region Built-in functions
-
-        private void Question(int arg)
-        {
-            var falseVal = BreakVariableLink(_operationStack.Pop());
-            var trueVal = BreakVariableLink(_operationStack.Pop());
-            var condition = _operationStack.Pop().AsBoolean();
-
-            if (condition)
-            {
-                _operationStack.Push(trueVal);
-            }
-            else
-            {
-                _operationStack.Push(falseVal);
-            }
-            NextInstruction();
-        }
 
         private void Bool(int arg)
         {

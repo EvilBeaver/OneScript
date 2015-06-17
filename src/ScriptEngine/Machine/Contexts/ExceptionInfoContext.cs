@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,7 +53,8 @@ namespace ScriptEngine.Machine.Contexts
         {
             get 
             {
-                if (_exc.InnerException != null)
+                bool isExternal = _exc is ExternalSystemException;
+                if (!isExternal && _exc.InnerException != null)
                 {
                     ScriptException inner;
                     inner = _exc.InnerException as ScriptException;
@@ -56,6 +63,11 @@ namespace ScriptEngine.Machine.Contexts
                         inner = new ExternalSystemException(_exc.InnerException);
                     }
                     
+                    return new ExceptionInfoContext(inner);
+                }
+                else if(_exc.InnerException != null && _exc.InnerException is System.Reflection.TargetInvocationException)
+                {
+                    var inner = new ExternalSystemException(_exc.InnerException.InnerException);
                     return new ExceptionInfoContext(inner);
                 }
                 else

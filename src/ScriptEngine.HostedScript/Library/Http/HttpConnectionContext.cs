@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -147,8 +153,18 @@ namespace ScriptEngine.HostedScript.Library.Http
             var resourceUri = new Uri(uriBuilder.Uri, resource);
 
             var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
-            if(User != "" || Password != "")
+            if (User != "" || Password != "")
+            {
                 request.Credentials = new NetworkCredential(User, Password);
+                //request.PreAuthenticate = true;
+                // Авторизация на сервере 1С:Предприятие, например, не работает без явного указания заголовка.
+                // http://blog.kowalczyk.info/article/at3/Forcing-basic-http-authentication-for-HttpWebReq.html
+                string authInfo = User + ":" + Password;
+                // Для 1С работает только UTF-8, хотя стандарт требует ISO-8859-1
+                var basicAuthEncoding = Encoding.GetEncoding("UTF-8");
+                authInfo = Convert.ToBase64String(basicAuthEncoding.GetBytes(authInfo));
+                request.Headers["Authorization"] = "Basic " + authInfo;
+            }
 
             if(_proxy != null)
                 request.Proxy = _proxy.GetProxy();

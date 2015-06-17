@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -44,10 +50,18 @@ namespace ScriptEngine.HostedScript.Library.Net
         /// Приостановить выполнение скрипта и ожидать соединений по сети.
         /// После получения соединения выполнение продолжается
         /// </summary>
+        /// <param name="timeout">Значение таймаута в миллисекундах.</param>
         /// <returns>TCPСоединение. Объект, позволяющий обмениваться данными с удаленным хостом.</returns>
         [ContextMethod("ОжидатьСоединения","WaitForConnection")]
-        public TCPClient WaitForConnection()
+        public TCPClient WaitForConnection(int timeout = 0)
         {
+            if (0 != timeout && !_listener.Pending())
+            {
+                System.Threading.Thread.Sleep(timeout);
+                if (!_listener.Pending())
+                      return null;
+            }
+
             var client = _listener.AcceptTcpClient();
             return new TCPClient(client);
         }

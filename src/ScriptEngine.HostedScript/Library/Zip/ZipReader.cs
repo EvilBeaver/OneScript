@@ -1,4 +1,10 @@
-﻿using Ionic.Zip;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using Ionic.Zip;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
@@ -38,7 +44,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="filename">Имя ZIP файла, который требуется открыть для чтения.</param>
         /// <param name="password">Пароль к файлу, если он зашифрован.</param>
         [ContextMethod("Открыть","Open")]
-        private void Open(string filename, string password = null)
+        public void Open(string filename, string password = null)
         {
             _zip = ZipFile.Read(filename);
             _zip.Password = password;
@@ -135,8 +141,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
         public void Dispose()
         {
             _entriesWrapper = null;
-            _zip.Dispose();
-            _zip = null;
+            if (_zip != null)
+            {
+                _zip.Dispose();
+                _zip = null;
+            }
         }
     }
 }

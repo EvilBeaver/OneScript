@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,6 +39,22 @@ namespace ScriptEngine.Machine.Contexts
             get
             {
                 return _origin;
+            }
+        }
+
+        [ContextProperty("Каталог", "Path")]
+        public string Path
+        {
+            get
+            {
+                if (System.IO.File.Exists(_origin) || System.IO.Directory.Exists(_origin))
+                {
+                    return System.IO.Path.GetDirectoryName(_origin);
+                }
+                else
+                {
+                    throw new RuntimeException("Источник сценария не является файловым");
+                }
             }
         }
 
