@@ -26,8 +26,10 @@ Type: files; Name: {app}\*.dll
 Type: files; Name: {app}\*.exe
 
 [Files]
-Source: "build\*"; DestDir: "{app}\bin"
-Source: "examples\*.os"; DestDir: "{app}\examples"
+Source: "build\*"; DestDir: "{app}\bin"; Excludes: "oscript.cfg"
+Source: "build\oscript.cfg"; DestDir: "{app}\bin";  Flags: onlyifdoesntexist
+Source: "examples\*.os"; DestDir: "{app}\examples"   
+Source: "..\oscript-library\src\*.*"; DestDir: "{app}\lib"; Flags: recursesubdirs
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
 Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: VCRedistNeedsInstall
 
