@@ -1580,12 +1580,31 @@ namespace ScriptEngine.Machine
 
         private void ChrCode(int arg)
         {
-            var strChar = _operationStack.Pop().AsString();
+            string strChar;
+            int position;
+
+            if(arg == 2)
+            {
+                position = (int)_operationStack.Pop().AsNumber()-1;
+                strChar = _operationStack.Pop().AsString();
+            }
+            else if(arg == 1)
+            {
+                strChar = _operationStack.Pop().AsString();
+                position = 0;
+            }
+            else
+            {
+                throw new WrongStackConditionException();
+            }
+
             int result;
             if (strChar.Length == 0)
                 result = 0;
+            else if (position >= 0 && position < strChar.Length)
+                result = (int)strChar[position];
             else
-                result = (int)strChar[0];
+                throw RuntimeException.InvalidArgumentValue();
 
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();

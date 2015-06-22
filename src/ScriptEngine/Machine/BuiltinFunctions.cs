@@ -56,7 +56,7 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.UCase, SingleDefaultParamInfo);
             map.Add(OperationCode.LCase, SingleDefaultParamInfo);
             map.Add(OperationCode.Chr, SingleDefaultParamInfo);
-            map.Add(OperationCode.ChrCode, SingleDefaultParamInfo);
+            map.Add(OperationCode.ChrCode, ChrCodeParamsInfo);
             map.Add(OperationCode.EmptyStr, SingleDefaultParamInfo);
             map.Add(OperationCode.StrReplace, StrReplaceParamInfo);
             map.Add(OperationCode.StrEntryCount, TwoDefaultParamsInfo);
@@ -198,5 +198,19 @@ namespace ScriptEngine.Machine
                 };
         }
 
+        private static ParameterDefinition[] ChrCodeParamsInfo()
+        {
+            var optionalParam = new ParameterDefinition()
+            {
+                HasDefaultValue = true,
+                IsByValue = true
+            };
+
+            return new ParameterDefinition[2]
+                {
+                    new ParameterDefinition(),
+                    optionalParam
+                };
+        }
     }
 }
