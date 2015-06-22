@@ -187,16 +187,24 @@ namespace ScriptEngine.HostedScript
             }
 
             var newLib = new Library() { id = id, state = ProcessingState.Discovered };
-
+            bool hasFiles;
+            int newLibIndex = _libs.Count;;
+            
             var customLoaderFile = Path.Combine(libraryPath, PREDEFINED_LOADER_FILE);
             if (File.Exists(customLoaderFile))
                 newLib.customLoader = LibraryLoader.Create(_engine, _env, customLoaderFile);
 
-            _libs.Add(newLib);
-
-            bool hasFiles = ProcessLibrary(newLib);
-
-            newLib.state = ProcessingState.Processed;
+            try
+            {
+                _libs.Add(newLib);
+                hasFiles = ProcessLibrary(newLib);
+                newLib.state = ProcessingState.Processed;
+            }
+            catch (Exception)
+            {
+                _libs.RemoveAt(newLibIndex);
+                throw;
+            }
 
             return hasFiles;
         }
