@@ -212,7 +212,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗапуститьПриложение", "RunApp")]
         public void RunApp(string cmdLine, string currentDir = null, bool wait = false, [ByRef] IVariable retCode = null)
         {
-            var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
+            var sInfo = ProcessContext.PrepareProcessStartupInfo(cmdLine, currentDir);
 
             var p = new System.Diagnostics.Process();
             p.StartInfo = sInfo;
@@ -234,25 +234,11 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="currentDir">Текущая директория запускаемого процесса (необязательно)</param>
         /// <param name="redirectOutput">Перехватывать стандартные потоки stdout и stderr</param>
         /// <param name="redirectInput">Перехватывать стандартный поток stdin</param>
+        /// <param name="encoding">Кодировка стандартных потоков вывода и ошибок</param>
         [ContextMethod("СоздатьПроцесс", "CreateProcess")]
-        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false)
+        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
         {
-            var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
-            sInfo.UseShellExecute = false;
-            if (redirectInput)
-                sInfo.RedirectStandardInput = true;
-
-            if(redirectOutput)
-            {
-                sInfo.RedirectStandardOutput = true;
-                sInfo.RedirectStandardError = true;
-            }
-
-            var p = new System.Diagnostics.Process();
-            p.StartInfo = sInfo;
-
-            return new ProcessContext(p);
-
+            return ProcessContext.Create(cmdLine, currentDir, redirectOutput, redirectInput, encoding);
         }
 
         /// <summary>
@@ -315,40 +301,6 @@ namespace ScriptEngine.HostedScript.Library
         public string DetailErrorDescription(ExceptionInfoContext errInfo)
         {
             return errInfo.DetailedDescription;
-        }
-
-        private static System.Diagnostics.ProcessStartInfo PrepareProcessStartupInfo(string cmdLine, string currentDir)
-        {
-            var sInfo = new System.Diagnostics.ProcessStartInfo();
-
-            var enumArgs = Utils.SplitCommandLine(cmdLine);
-
-            bool fNameRead = false;
-            StringBuilder argsBuilder = new StringBuilder();
-
-            foreach (var item in enumArgs)
-            {
-                if (!fNameRead)
-                {
-                    sInfo.FileName = item;
-                    fNameRead = true;
-                }
-                else
-                {
-                    argsBuilder.Append(' ');
-                    argsBuilder.Append(item);
-                }
-            }
-
-            if (argsBuilder.Length > 0)
-            {
-                argsBuilder.Remove(0, 1);
-            }
-
-            sInfo.Arguments = argsBuilder.ToString();
-            if (currentDir != null)
-                sInfo.WorkingDirectory = currentDir;
-            return sInfo;
         }
 
         /// <summary>

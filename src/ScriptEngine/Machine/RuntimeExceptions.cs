@@ -86,6 +86,11 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Неверный тип аргумента");
         }
 
+        public static RuntimeException InvalidArgumentType(string argName)
+        {
+            return new RuntimeException(String.Format("Неверный тип аргумента '{0}'", argName));
+        }
+
         public static RuntimeException InvalidArgumentValue()
         {
             return new RuntimeException("Неверное значение аргумента");
