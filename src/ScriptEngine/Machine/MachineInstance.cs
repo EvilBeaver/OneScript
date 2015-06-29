@@ -1298,7 +1298,9 @@ namespace ScriptEngine.Machine
             if (arg < 0)
             {
                 if (_currentFrame.LastException == null)
-                    throw new ApplicationException("Некорректное состояние стека исключений");
+                    // Если в блоке Исключение была еще одна Попытка, то она затерла lastException
+                    // 1С в этом случае бросает новое пустое исключение
+                    throw new RuntimeException("");
 
                 throw _currentFrame.LastException;
             }
