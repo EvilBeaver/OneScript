@@ -8,5 +8,5 @@ Description: 1Script execution endgine.
  Cross-platform execution engine.
  for junior DevOps.
  who use 1S:Enterprise Platform.
-Depends: cli-mono
+Depends: mono-сomplete
 Origin: https://bitbucket.org/EvilBeaver/1script/ 
