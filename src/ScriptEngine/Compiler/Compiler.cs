@@ -922,7 +922,7 @@ namespace ScriptEngine.Compiler
                     BuildLoadVariable(identifier);
                     break;
                 case Token.OpenPar:
-                    BuildProcedureCall(identifier);
+                    ProcessCallOnLeftHand(identifier);
                     break;
                 case Token.Dot:
                 case Token.OpenBracket:
@@ -933,6 +933,21 @@ namespace ScriptEngine.Compiler
                 default:
                     throw CompilerException.UnexpectedOperation();
             }
+        }
+
+        private void ProcessCallOnLeftHand(string identifier)
+        {
+            var args = PushMethodArgumentsBeforeCall();
+            if(IsContinuationToken(ref _lastExtractedLexem))
+            {
+                BuildMethodCall(identifier, args, true);
+                BuildAccessChainLeftHand();
+            }
+            else
+            {
+                BuildMethodCall(identifier, args, false);
+            }
+
         }
 
         private void BuildAccessChainLeftHand()
@@ -960,8 +975,8 @@ namespace ScriptEngine.Compiler
                 cDef.Type = DataType.String;
                 cDef.Presentation = ident;
                 int lastIdentifierConst = GetConstNumber(ref cDef);
-                
-                if (_lastExtractedLexem.Token == Token.Dot || _lastExtractedLexem.Token == Token.OpenBracket)
+
+                if (IsContinuationToken(ref _lastExtractedLexem))
                 {
                     AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
                     BuildAccessChainLeftHand();
@@ -972,6 +987,11 @@ namespace ScriptEngine.Compiler
                 }
 
             }
+        }
+
+        private bool IsContinuationToken(ref Lexem lex)
+        {
+            return lex.Token == Token.Dot || lex.Token == Token.OpenBracket;
         }
 
         private void BuildExpression(Token stopToken)
@@ -1154,7 +1174,7 @@ namespace ScriptEngine.Compiler
         {
             var identifier = _lastExtractedLexem.Content;
             NextToken();
-            if (_lastExtractedLexem.Token == Token.Dot || _lastExtractedLexem.Token == Token.OpenBracket)
+            if (IsContinuationToken(ref _lastExtractedLexem))
             {
                 BuildPushVariable(identifier);
                 BuildContinuationRightHand();
