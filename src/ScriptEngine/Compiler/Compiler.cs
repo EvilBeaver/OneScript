@@ -1430,15 +1430,17 @@ namespace ScriptEngine.Compiler
             {
                 var methBinding = _ctx.GetMethod(identifier);
                 var scope = _ctx.GetScope(methBinding.ContextIndex);
-                var methInfo = scope.GetMethod(methBinding.CodeIndex);
-                if (asFunction && !methInfo.IsFunction)
-                {
-                    throw CompilerException.UseProcAsFunction();
-                }
                 
                 // dynamic scope checks signatures only at runtime
-                if(!scope.IsDynamicScope)
+                if (!scope.IsDynamicScope)
+                {
+                    var methInfo = scope.GetMethod(methBinding.CodeIndex);
+                    if (asFunction && !methInfo.IsFunction)
+                    {
+                        throw CompilerException.UseProcAsFunction();
+                    }
                     CheckFactArguments(methInfo, argsPassed);
+                }
                 
                 int callAddr;
                 

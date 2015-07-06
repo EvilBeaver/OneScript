@@ -284,7 +284,7 @@ namespace ScriptEngine.Machine
                 typeId = TypeManager.GetTypeByName(typeName).ID;
                 clrType = TypeManager.GetImplementingClass(typeId);
             }
-            catch (KeyNotFoundException)
+            catch (RuntimeException e)
             {
                 if (NewInstanceHandler != null)
                 {
@@ -292,7 +292,7 @@ namespace ScriptEngine.Machine
                 }
                 else
                 {
-                    throw new RuntimeException("Конструктор не найден (" + typeName + ")");
+                    throw new RuntimeException("Конструктор не найден (" + typeName + ")", e);
                 }
             }
 

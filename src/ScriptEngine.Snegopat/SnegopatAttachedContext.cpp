@@ -106,6 +106,7 @@ void SnegopatAttachedContext::InsertMethod(String^ name)
 	int index = m_methods->Count;
 	int mNum = m_DesignerWrapper->FindMethod(name);
 	MethodInfo mi = m_DesignerWrapper->GetMethodInfo(mNum);
+	mi.Name = name;
 	m_methods->Add(mi);
 	m_methDispIdMap->Add(index, mNum);
 	m_methIndexes->Add(name, index);
