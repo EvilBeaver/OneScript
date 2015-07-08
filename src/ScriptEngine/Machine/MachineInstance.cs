@@ -1486,7 +1486,11 @@ namespace ScriptEngine.Machine
             if (len > str.Length)
                 len = str.Length;
             else if (len < 0)
-                throw RuntimeException.InvalidArgumentValue();
+            {
+                _operationStack.Push(ValueFactory.Create(""));
+                NextInstruction();
+                return;
+            }
 
             _operationStack.Push(ValueFactory.Create(str.Substring(0, len)));
             NextInstruction();
@@ -1499,8 +1503,12 @@ namespace ScriptEngine.Machine
 
             if (len > str.Length)
                 len = str.Length;
-            else if(len < 0)
-                throw RuntimeException.InvalidArgumentValue();
+            else if (len < 0)
+            {
+                _operationStack.Push(ValueFactory.Create(""));
+                NextInstruction();
+                return;
+            }
 
             int startIdx = str.Length - len;
             _operationStack.Push(ValueFactory.Create(str.Substring(startIdx, len)));
