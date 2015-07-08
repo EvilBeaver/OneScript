@@ -446,6 +446,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         private class RowComparator : IComparer<ValueTableRow>
         {
             List<ValueTableSortRule> Rules;
+            GenericIValueComparer _comparer = new GenericIValueComparer();
 
             public RowComparator(List<ValueTableSortRule> Rules)
             {
@@ -460,7 +461,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 IValue xValue = x.Get(Rule.Column);
                 IValue yValue = y.Get(Rule.Column);
 
-                int result = xValue.CompareTo(yValue) * Rule.direction;
+                int result = _comparer.Compare(xValue, yValue) * Rule.direction;
 
                 return result;
             }
