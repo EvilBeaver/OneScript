@@ -7,7 +7,7 @@
 #define VerMinor
 #define VerRelease
 #define Build
-#expr ParseVersion("build\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
+#expr ParseVersion("build\bin\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
 
 [Setup]
 AppName={#AppName}
@@ -19,17 +19,15 @@ DisableProgramGroupPage=yes
 UninstallDisplayIcon="{app}\bin\{#MainExe}"
 Compression=lzma2
 SolidCompression=yes
-
+VersionInfoVersion={#VerMajor}.{#VerMinor}.{#VerRelease}.{#Build}
 
 [InstallDelete]
 Type: files; Name: {app}\*.dll
 Type: files; Name: {app}\*.exe
 
 [Files]
-Source: "build\*"; DestDir: "{app}\bin"; Excludes: "oscript.cfg"
-Source: "build\oscript.cfg"; DestDir: "{app}\bin";  Flags: onlyifdoesntexist
-Source: "examples\*.os"; DestDir: "{app}\examples"   
-Source: "..\oscript-library\src\*.*"; DestDir: "{app}\lib"; Flags: recursesubdirs
+Source: "build\*"; DestDir: "{app}"; Excludes: "build\bin\oscript.cfg"; Flags: recursesubdirs
+Source: "build\bin\oscript.cfg"; DestDir: "{app}\bin";  Flags: onlyifdoesntexist
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
 Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: VCRedistNeedsInstall
 
