@@ -152,7 +152,7 @@
     
     <Delete Files="@(RemoveXMLTestResult)" />
 
-    <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="$(OutputPathForBuild)\oscript.exe $(MSBuildProjectDirectory)\tests\testrunner.os -runall . xddReportPath ." IgnoreExitCode="true"/>
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="$(OutputPathForBuild)\bin\oscript.exe $(MSBuildProjectDirectory)\tests\testrunner.os -runall . xddReportPath ." IgnoreExitCode="true"/>
     
   </Target>
   
