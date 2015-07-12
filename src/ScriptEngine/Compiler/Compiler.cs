@@ -1654,6 +1654,8 @@ namespace ScriptEngine.Compiler
                     return OperationCode.UCase;
                 case Token.LCase:
                     return OperationCode.LCase;
+                case Token.TCase:
+                    return OperationCode.TCase;
                 case Token.Chr:
                     return OperationCode.Chr;
                 case Token.ChrCode:

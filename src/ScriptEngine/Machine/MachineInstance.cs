@@ -435,6 +435,7 @@ namespace ScriptEngine.Machine
                 StrPos,
                 UCase,
                 LCase,
+                TCase,
                 Chr,
                 ChrCode,
                 EmptyStr,
@@ -1575,6 +1576,47 @@ namespace ScriptEngine.Machine
         private void LCase(int arg)
         {
             var result = _operationStack.Pop().AsString().ToLower();
+            _operationStack.Push(ValueFactory.Create(result));
+            NextInstruction();
+        }
+
+        private void TCase(int arg)
+        {
+            var argValue = _operationStack.Pop().AsString();
+
+            char[] array = argValue.ToCharArray();
+	        // Handle the first letter in the string.
+            bool inWord = false;
+            if (array.Length >= 1)
+	        {
+	            if (char.IsLetter(array[0]))
+                    inWord = true;
+
+                if(char.IsLower(array[0]))
+	            {
+		            array[0] = char.ToUpper(array[0]);
+	            }
+	        }
+	        // Scan through the letters, checking for spaces.
+	        // ... Uppercase the lowercase letters following spaces.
+            for (int i = 1; i < array.Length; i++)
+	        {
+                if (inWord && Char.IsLetter(array[i]))
+                    array[i] = Char.ToLower(array[i]);
+                else if (Char.IsSeparator(array[i]) || Char.IsPunctuation(array[i]))
+                    inWord = false;
+                else if(!inWord && Char.IsLetter(array[i]))
+                {
+                    inWord = true;
+                    if (char.IsLower(array[i]))
+                    {
+                        array[i] = char.ToUpper(array[i]);
+                    }
+                }
+	        }
+	        
+            var result = new string(array);
+
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
         }

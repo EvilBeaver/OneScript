@@ -80,6 +80,7 @@ namespace ScriptEngine.Machine
         StrPos,
         UCase,
         LCase,
+        TCase,
         Chr,
         ChrCode,
         EmptyStr,

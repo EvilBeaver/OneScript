@@ -55,6 +55,7 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.StrPos, TwoDefaultParamsInfo);
             map.Add(OperationCode.UCase, SingleDefaultParamInfo);
             map.Add(OperationCode.LCase, SingleDefaultParamInfo);
+            map.Add(OperationCode.TCase, SingleDefaultParamInfo);
             map.Add(OperationCode.Chr, SingleDefaultParamInfo);
             map.Add(OperationCode.ChrCode, ChrCodeParamsInfo);
             map.Add(OperationCode.EmptyStr, SingleDefaultParamInfo);

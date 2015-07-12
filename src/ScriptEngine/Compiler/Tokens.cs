@@ -158,6 +158,7 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("найти", Token.StrPos);
             _stringToToken.Add("врег", Token.UCase);
             _stringToToken.Add("нрег", Token.LCase);
+            _stringToToken.Add("трег", Token.TCase);
             _stringToToken.Add("символ", Token.Chr);
             _stringToToken.Add("кодсимвола", Token.ChrCode);
             _stringToToken.Add("пустаястрока", Token.EmptyStr);
@@ -216,6 +217,7 @@ namespace ScriptEngine.Compiler
             _stringToToken.Add("find", Token.StrPos);
             _stringToToken.Add("upper", Token.UCase);
             _stringToToken.Add("lower", Token.LCase);
+            _stringToToken.Add("title", Token.TCase);
             _stringToToken.Add("char", Token.Chr);
             _stringToToken.Add("charcode", Token.ChrCode);
             _stringToToken.Add("isblankstring", Token.EmptyStr);
@@ -448,6 +450,7 @@ namespace ScriptEngine.Compiler
         StrPos,
         UCase,
         LCase,
+        TCase,
         Chr,
         ChrCode,
         EmptyStr,
