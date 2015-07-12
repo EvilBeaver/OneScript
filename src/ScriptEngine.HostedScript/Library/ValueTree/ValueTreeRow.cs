@@ -27,7 +27,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _owner = new WeakReference(owner);
             _parent = parent;
             _level = level;
-            _rows = new ValueTreeRowCollection(owner, parent, level + 1);
+            _rows = new ValueTreeRowCollection(owner, this, level + 1);
         }
 
         public int Count()
@@ -127,12 +127,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return new CollectionEnumerator(GetEnumerator());
         }
 
+        private static ContextPropertyMapper<ValueTreeRow> _properties = new ContextPropertyMapper<ValueTreeRow>();
+
         public override int FindProperty(string name)
         {
             ValueTreeColumn C = Owner().Columns.FindColumnByName(name);
 
             if (C == null)
-                throw RuntimeException.PropNotFoundException(name);
+            {
+                return _properties.FindProperty(name);
+            }
 
             return C.ID;
         }
@@ -140,13 +144,26 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         public override IValue GetPropValue(int propNum)
         {
             ValueTreeColumn C = Owner().Columns.FindColumnById(propNum);
+            if (C == null)
+            {
+                var Prop = _properties.GetProperty(propNum);
+                return Prop.Getter(this);
+            }
             return TryValue(C);
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
         {
             ValueTreeColumn C = Owner().Columns.FindColumnById(propNum);
-            _data[C] = newVal;
+            if (C == null)
+            {
+                var Prop = _properties.GetProperty(propNum);
+                Prop.Setter(this, newVal);
+            }
+            else
+            {
+                _data[C] = newVal;
+            }
         }
 
         private ValueTreeColumn GetColumnByIIndex(IValue index)

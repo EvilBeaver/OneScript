@@ -17,7 +17,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext
     {
         private List<ValueTreeColumn> _columns = new List<ValueTreeColumn>();
-        private int _internal_counter = 0; // Нарастающий счётчик определителей колонок
+        private int _internal_counter = 3; // Нарастающий счётчик определителей колонок
+                                           // Начальное значение установлено в ненулевое для предопределённых полей строки дерева Родитель и Строки
 
         public ValueTreeColumnCollection()
         {
