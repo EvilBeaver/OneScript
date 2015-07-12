@@ -100,7 +100,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         [ContextMethod("ЗагрузитьКолонку", "LoadColumn")]
         public void LoadColumn(IValue Values, IValue ColumnIndex)
         {
-            ValueTreeColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
             var row_iterator = _rows.GetEnumerator();
             var array_iterator = (Values as ArrayImpl).GetEnumerator();
 
