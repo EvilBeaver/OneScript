@@ -111,6 +111,11 @@
     <Compile Include="Library\TextWriteImpl.cs" />
     <Compile Include="Library\ValueList\ValueListImpl.cs" />
     <Compile Include="Library\ValueList\ValueListItem.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeRow.cs" />
+    <Compile Include="Library\ValueTree\ValueTree.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeColumn.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeColumnCollection.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeRowCollection.cs" />
     <Compile Include="Library\Xml\XmlGlobalFunctions.cs" />
     <Compile Include="Library\Xml\XmlNodeTypeEnum.cs" />
     <Compile Include="Library\Xml\XmlReaderImpl.cs" />
