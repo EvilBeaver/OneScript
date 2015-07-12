@@ -75,6 +75,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _columns.Remove(GetColumnByIIndex(Column));
         }
 
+        internal void CopyFrom(ValueTreeColumnCollection src)
+        {
+            _columns.Clear();
+            foreach (ValueTreeColumn column in src._columns)
+            {
+                _columns.Add(new ValueTreeColumn(this, ++_internal_counter, column));
+            }
+        }
+
         public ValueTreeColumn FindColumnByName(string Name)
         {
             var Comparer = StringComparer.OrdinalIgnoreCase;

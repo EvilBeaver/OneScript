@@ -355,6 +355,23 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             throw new NotSupportedException();
         }
 
+        internal void CopyFrom(ValueTreeRowCollection src)
+        {
+            _rows.Clear();
+            ValueTreeColumnCollection Columns = Owner().Columns;
+
+            foreach (ValueTreeRow row in src._rows)
+            {
+                ValueTreeRow new_row = Add();
+                foreach (ValueTreeColumn Column in Columns)
+                {
+                    new_row.Set(Column, row.Get(ValueFactory.Create(Column.Name)));
+                }
+                new_row.Rows.CopyFrom(row.Rows);
+            }
+        }
+
+
         public IEnumerator<IValue> GetEnumerator()
         {
             foreach (var item in _rows)

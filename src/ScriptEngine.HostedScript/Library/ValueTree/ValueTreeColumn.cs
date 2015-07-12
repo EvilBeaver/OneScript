@@ -38,6 +38,17 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         }
 
+        public ValueTreeColumn(ValueTreeColumnCollection Owner, int id, ValueTreeColumn src)
+        {
+            _name = src._name;
+            _title = src._title;
+            _valueType = src._valueType;
+            _width = src._width;
+
+            _owner = new WeakReference(Owner);
+            _id = id;
+        }
+
         public int ID
         {
             get { return _id; }
@@ -81,5 +92,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             get { return Width; }
             set { _width = value; } // TOOD: Проверить неотрицательность значения
         }
+
     }
 }

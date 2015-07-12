@@ -39,13 +39,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         [ContextMethod("Скопировать", "Copy")]
         public ValueTree Copy(IValue Rows = null, string ColumnNames = null)
         {
-            /*
-            ValueTree Result = CopyColumns(ColumnNames);
-            List<ValueTreeColumn> columns = Columns.GetProcessingColumnList(ColumnNames);
-
-            return Result;
-            */
-            throw new NotImplementedException();
+            ValueTree result = new ValueTree();
+            result._columns.CopyFrom(_columns);
+            result._rows.CopyFrom(_rows);
+            return result;
         }
 
 
