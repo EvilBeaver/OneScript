@@ -76,6 +76,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _columns.Remove(GetColumnByIIndex(Column));
         }
 
+        [ContextMethod("Получить", "Get")]
+        public ValueTreeColumn Get(int index)
+        {
+            if (index >= 0 && index < _columns.Count)
+            {
+                return _columns[index];
+            }
+            throw RuntimeException.InvalidArgumentValue();
+        }
+
         internal void CopyFrom(ValueTreeColumnCollection src)
         {
             _columns.Clear();
