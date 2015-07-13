@@ -92,6 +92,32 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _columns.Clear();
         }
 
+        [ContextMethod("Сдвинуть", "Move")]
+        public void Move(IValue column, int Offset)
+        {
+            ValueTreeColumn Column = GetColumnByIIndex(column);
+            int index_source = _columns.IndexOf(Column);
+
+            int index_dest = (index_source + Offset) % _columns.Count();
+            while (index_dest < 0)
+            {
+                index_dest += _columns.Count();
+            }
+
+
+            if (index_source < index_dest)
+            {
+                _columns.Insert(index_dest + 1, Column);
+                _columns.RemoveAt(index_source);
+            }
+            else
+            {
+                _columns.RemoveAt(index_source);
+                _columns.Insert(index_dest, Column);
+            }
+
+        }
+
         internal void CopyFrom(ValueTreeColumnCollection src)
         {
             _columns.Clear();
