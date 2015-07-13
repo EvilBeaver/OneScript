@@ -289,11 +289,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
                 ValueTreeSortRule Desc = new ValueTreeSortRule();
                 Desc.Column = this.Columns.FindColumnByName(description[0]);
+                if (Desc.Column == null)
+                    throw RuntimeException.PropNotFoundException(description[0]);
 
                 if (description.Count() > 1)
                 {
                     if (String.Compare(description[1], "DESC", true) == 0 || String.Compare(description[1], "УБЫВ", true) == 0)
                         Desc.direction = -1;
+                    else
+                        Desc.direction = 1;
                 }
                 else
                     Desc.direction = 1;
@@ -341,9 +345,22 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         }
 
         [ContextMethod("Сортировать", "Sort")]
-        public void Sort(string columns, IValue Comparator = null)
+        public void Sort(string columns, bool SortChildren, IValue Comparator = null)
         {
-            _rows.Sort(new RowComparator(GetSortRules(columns)));
+            Sort(new RowComparator(GetSortRules(columns)), SortChildren);
+        }
+
+        private void Sort(RowComparator Comparator, bool SortChildren)
+        {
+            _rows.Sort(Comparator);
+
+            if (SortChildren)
+            {
+                foreach (var row in _rows)
+                {
+                    row.Rows.Sort(Comparator, SortChildren);
+                }
+            }
         }
 
         [ContextMethod("ВыбратьСтроку", "ChooseRow")]
