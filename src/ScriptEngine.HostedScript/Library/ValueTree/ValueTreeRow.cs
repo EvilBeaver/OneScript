@@ -18,13 +18,13 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     {
         private Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private ValueTreeRow _parent;
-        private WeakReference _owner;
+        private ValueTree _owner;
         private int _level;
         private ValueTreeRowCollection _rows;
 
         public ValueTreeRow(ValueTree owner, ValueTreeRow parent, int level)
         {
-            _owner = new WeakReference(owner);
+            _owner = owner;
             _parent = parent;
             _level = level;
             _rows = new ValueTreeRowCollection(owner, this, level + 1);
@@ -32,8 +32,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public int Count()
         {
-            var Owner = _owner.Target as ValueTree;
-            return Owner.Columns.Count();
+            return _owner.Columns.Count();
         }
 
         [ContextProperty("Родитель", "Parent")]
@@ -56,7 +55,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         [ContextMethod("Владелец", "Owner")]
         public ValueTree Owner()
         {
-            return _owner.Target as ValueTree;
+            return _owner;
         }
 
         private IValue TryValue(ValueTreeColumn Column)

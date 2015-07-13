@@ -19,12 +19,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         private List<ValueTreeRow> _rows = new List<ValueTreeRow>();
         private ValueTreeRow _parent;
-        private WeakReference _owner;
+        private ValueTree _owner;
         private int _level;
 
         public ValueTreeRowCollection(ValueTree owner, ValueTreeRow parent, int level)
         {
-            _owner = new WeakReference(owner);
+            _owner = owner;
             _parent = parent;
             _level = level;
         }
@@ -44,17 +44,14 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         {
             get
             {
-                ValueTree tree = _owner.Target as ValueTree;
-                if (tree == null)
-                    return null;
-                return tree.Columns;
+                return _owner.Columns;
             }
         }
 
         [ContextMethod("Владелец", "Owner")]
         public ValueTree Owner()
         {
-            return _owner.Target as ValueTree;
+            return _owner;
         }
 
         [ContextMethod("Количество", "Count")]

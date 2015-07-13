@@ -20,7 +20,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         private string _name;
         private IValue _valueType;
         private int _width;
-        private WeakReference _owner;
+        private ValueTreeColumnCollection _owner;
 
         // id нужен для правильной работы функции FindProperty.
         // Порядковый номер колонки не может быть использовать из-за своей изменчивости.
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _valueType = Type;
             _width = Width;
 
-            _owner = new WeakReference(Owner);
+            _owner = Owner;
             _id = id;
 
         }
@@ -45,7 +45,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _valueType = src._valueType;
             _width = src._width;
 
-            _owner = new WeakReference(Owner);
+            _owner = Owner;
             _id = id;
         }
 
@@ -67,15 +67,13 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             get { return _name; }
             set
             {
-                ValueTreeColumnCollection Owner = _owner.Target as ValueTreeColumnCollection;
-                if (Owner.FindColumnByName(value) != null)
+                if (_owner.FindColumnByName(value) != null)
                     throw new RuntimeException("Неверное имя колонки!");
 
                 if (_title == _name)
                     _title = value;
 
                 _name = value;
-
             }
         }
 
