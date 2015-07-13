@@ -84,8 +84,8 @@
       <Output TaskParameter="Include" ItemName="RemoveXMLTestResultOnClean" />
     </CreateItem>
     
-	<RemoveDir Directories="$(DistPath)" />
-	<RemoveDir Directories="$(OutputPathForBuild)" />
+	<DeleteTree Directories="$(DistPath)/**/*" Condition="Exists($(DistPath))"/>
+	<DeleteTree Directories="$(OutputPathForBuild)/**/*" Condition="Exists($(OutputPathForBuild))"/>
     <Delete Files="@(RemoveXMLTestResultOnClean)" />
     
     <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForBuild)"/>
