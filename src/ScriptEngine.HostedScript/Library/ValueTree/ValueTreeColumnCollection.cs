@@ -86,6 +86,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             throw RuntimeException.InvalidArgumentValue();
         }
 
+        [ContextMethod("Очистить", "Clear")]
+        public void Clear()
+        {
+            _columns.Clear();
+        }
+
         internal void CopyFrom(ValueTreeColumnCollection src)
         {
             _columns.Clear();
