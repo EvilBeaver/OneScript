@@ -13,6 +13,9 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.ValueTree
 {
+    /// <summary>
+    /// Коллекция колонок дерева значений.
+    /// </summary>
     [ContextClass("КоллекцияКолонокДереваЗначений", "ValueTreeColumnCollection")]
     class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext
     {
@@ -24,6 +27,14 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         {
         }
 
+        /// <summary>
+        /// Добавляет новую колонку.
+        /// </summary>
+        /// <param name="Name">Строка. Имя колонки.</param>
+        /// <param name="Type">ОписаниеТипов. Доступные типы значений для колонки. Необязательный параметр.</param>
+        /// <param name="Title">Строка. Заголовок колонки. Необязательный параметр.</param>
+        /// <param name="Width">Число. Ширина колонки. Необязательный параметр.</param>
+        /// <returns>КолонкаДереваЗначений. Добавленная колонка.</returns>
         [ContextMethod("Добавить", "Add")]
         public ValueTreeColumn Add(string Name, IValue Type = null, string Title = null, int Width = 0)
         {
@@ -36,6 +47,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return column;
         }
 
+        /// <summary>
+        /// Вставляет новую колонку по указанному индексу.
+        /// </summary>
+        /// <param name="index">Число. Индекс новой колонки.</param>
+        /// <param name="Name">Строка. Имя колонки.</param>
+        /// <param name="Type">ОписаниеТипов. Доступные типы значений для колонки. Необязательный параметр.</param>
+        /// <param name="Title">Строка. Заголовок колонки. Необязательный параметр.</param>
+        /// <param name="Width">Число. Ширина колонки. Необязательный параметр.</param>
+        /// <returns>КолонкаДереваЗначений. Добавленная колонка.</returns>
         [ContextMethod("Вставить", "Insert")]
         public ValueTreeColumn Insert(int index, string Name, IValue Type = null, string Title = null, int Width = 0)
         {
@@ -48,18 +68,32 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return column;
         }
 
+        /// <summary>
+        /// Определяет индекс колонки.
+        /// </summary>
+        /// <param name="column">КолонкаДереваЗначений. Колонка.</param>
+        /// <returns>Число. Индекс колонки в коллекции. Если колонка не найдена, возвращается -1.</returns>
         [ContextMethod("Индекс", "IndexOf")]
         public int IndexOf(ValueTreeColumn column)
         {
             return _columns.IndexOf(column);
         }
 
+        /// <summary>
+        /// Возвращает количество колонок.
+        /// </summary>
+        /// <returns>Число. Количество колонокs.</returns>
         [ContextMethod("Количество", "Count")]
         public int Count()
         {
             return _columns.Count;
         }
 
+        /// <summary>
+        /// Ищет колонку по имени.
+        /// </summary>
+        /// <param name="Name">Строка. Имя искомой колонки.</param>
+        /// <returns>КолонкаДереваЗначений, Неопределено. Найденная колонка или Неопределено, если колонка не найдена.</returns>
         [ContextMethod("Найти", "Find")]
         public IValue Find(string Name)
         {
@@ -69,6 +103,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return Column;
         }
 
+        /// <summary>
+        /// Удаляет колонку.
+        /// </summary>
+        /// <param name="column">КолонкаДереваЗначений. Колонка.</param>
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue Column)
         {
@@ -76,6 +114,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _columns.Remove(GetColumnByIIndex(Column));
         }
 
+        /// <summary>
+        /// Получает колонку по индексу.
+        /// </summary>
+        /// <param name="index">Число. Индекс колонки.</param>
+        /// <returns>КолонкаДереваЗначений. Колонка.</returns>
         [ContextMethod("Получить", "Get")]
         public ValueTreeColumn Get(int index)
         {
@@ -86,12 +129,20 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             throw RuntimeException.InvalidArgumentValue();
         }
 
+        /// <summary>
+        /// Удаляет все колонки.
+        /// </summary>
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
             _columns.Clear();
         }
 
+        /// <summary>
+        /// Сдвигает колонку на указанное смещение.
+        /// </summary>
+        /// <param name="column">КолонкаДереваЗначений. Колонка.</param>
+        /// <param name="Offset">Число. Смещение.</param>
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(IValue column, int Offset)
         {

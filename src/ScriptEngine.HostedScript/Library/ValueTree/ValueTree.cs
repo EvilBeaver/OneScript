@@ -13,6 +13,10 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.ValueTree
 {
+    /// <summary>
+    /// Дерево значений.
+    /// Древовидная структура с фунциональностью подобно таблице значений.
+    /// </summary>
     [ContextClass("ДеревоЗначений", "ValueTree")]
     class ValueTree : AutoContext<ValueTree>
     {
@@ -36,9 +40,19 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             get { return _rows;  }
         }
 
+        /// <summary>
+        /// Создаёт копию дерева значений.
+        /// </summary>
+        /// <param name="Rows">Массив. Строки для копирования. Если не указан, копируются все строки. Необязательный параметр.</param>
+        /// <param name="ColumnNames">Строка. Список колонок через запятую, которые должны быть скопированы. Необязательный параметр.</param>
+        /// <returns>ДеревоЗначений. Копия исходного дерева значений.</returns>
         [ContextMethod("Скопировать", "Copy")]
         public ValueTree Copy(IValue Rows = null, string ColumnNames = null)
         {
+
+            // TODO: отрабатывать параметр Rows
+            // TODO: отрабатывать параметр ColumnNames
+
             ValueTree result = new ValueTree();
             result._columns.CopyFrom(_columns);
             result._rows.CopyFrom(_rows);

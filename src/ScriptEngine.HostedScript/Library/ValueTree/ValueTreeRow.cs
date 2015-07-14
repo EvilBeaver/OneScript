@@ -13,6 +13,9 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.ValueTree
 {
+    /// <summary>
+    /// Строка дерева значений.
+    /// </summary>
     [ContextClass("СтрокаДереваЗначений", "ValueTreeRow")]
     class ValueTreeRow : DynamicPropertiesAccessor, ICollectionContext
     {
@@ -52,6 +55,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             get { return _rows; }
         }
 
+        /// <summary>
+        /// Возвращает дерево значений, в которе входит строка.
+        /// </summary>
+        /// <returns>ДеревоЗначений. Владелец строки.</returns>
         [ContextMethod("Владелец", "Owner")]
         public ValueTree Owner()
         {
@@ -66,6 +73,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return ValueFactory.Create(); // TODO: Определять пустое значение для типа колонки
         }
 
+        /// <summary>
+        /// Получает значение по индексу.
+        /// </summary>
+        /// <param name="index">Число. Индекс получаемого параметра.</param>
+        /// <returns>Произвольный. Получаемое значение.</returns>
         [ContextMethod("Получить", "Get")]
         public IValue Get(int index)
         {
@@ -84,6 +96,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return TryValue(C);
         }
 
+        /// <summary>
+        /// Устанавливает значение по индексу.
+        /// </summary>
+        /// <param name="index">Число. Индекс параметра, которому задаётся значение.</param>
+        /// <param name="value">Произвольный. Новое значение.</param>
         [ContextMethod("Установить", "Set")]
         public void Set(int index, IValue Value)
         {
@@ -102,6 +119,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _data[Column] = Value;
         }
 
+        /// <summary>
+        /// Возвращает уровень вложенности строки в дереве.
+        /// Строки верхнего уровня имеют значение 0.
+        /// </summary>
+        /// <returns>Число. Уровень вложенности строки.</returns>
         [ContextMethod("Уровень", "Level")]
         public int Level()
         {

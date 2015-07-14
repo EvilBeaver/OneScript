@@ -13,6 +13,9 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.ValueTree
 {
+    /// <summary>
+    /// Колонка дерева значений.
+    /// </summary>
     [ContextClass("КолонкаДереваЗначений", "ValueTreeColumn")]
     class ValueTreeColumn : AutoContext<ValueTreeColumn>
     {

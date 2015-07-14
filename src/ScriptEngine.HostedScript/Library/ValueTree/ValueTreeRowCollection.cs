@@ -13,6 +13,9 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.ValueTree
 {
+    /// <summary>
+    /// Коллекция строк дерева значений.
+    /// </summary>
     [ContextClass("КоллекцияСтрокДереваЗначений", "ValueTreeRowCollection")]
     class ValueTreeRowCollection : AutoContext<ValueTreeRowCollection>, ICollectionContext
     {
@@ -48,18 +51,30 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             }
         }
 
+        /// <summary>
+        /// Возвращает дерево значений, в которе входит строка.
+        /// </summary>
+        /// <returns>ДеревоЗначений. Владелец строки.</returns>
         [ContextMethod("Владелец", "Owner")]
         public ValueTree Owner()
         {
             return _owner;
         }
 
+        /// <summary>
+        /// Возвращает количество строк.
+        /// </summary>
+        /// <returns>Число. Количество строк.</returns>
         [ContextMethod("Количество", "Count")]
         public int Count()
         {
             return _rows.Count();
         }
 
+        /// <summary>
+        /// Добавляет строку в коллекцию.
+        /// </summary>
+        /// <returns>СтрокаДереваЗначений. Добавленная строка.</returns>
         [ContextMethod("Добавить", "Add")]
         public ValueTreeRow Add()
         {
@@ -68,6 +83,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return row;
         }
 
+        /// <summary>
+        /// Добавляет строку в коллекцию.
+        /// </summary>
+        /// <param name="index">Число. Индекс новой строки.</param>
+        /// <returns>СтрокаДереваЗначений. Добавленная строка.</returns>
         [ContextMethod("Вставить", "Insert")]
         public ValueTreeRow Insert(int index)
         {
@@ -76,6 +96,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return row;
         }
 
+        /// <summary>
+        /// Удаляет строку из коллекции.
+        /// </summary>
+        /// <param name="index">СтрокаДереваЗначений, Число. Удаляемая строка или её индекс.</param>
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue Row)
         {
@@ -94,6 +118,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _rows.RemoveAt(index);
         }
 
+        /// <summary>
+        /// Загружает значения из массива в колонку.
+        /// </summary>
+        /// <param name="Values">Массив. Значения.</param>
+        /// <param name="ColumnIndex">КолонкаДереваЗначений, Число, Строка. Колонка, в которую будут загружены значения, её имя или индекс.</param>
         [ContextMethod("ЗагрузитьКолонку", "LoadColumn")]
         public void LoadColumn(IValue Values, IValue ColumnIndex)
         {
@@ -106,6 +135,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             }
         }
 
+        /// <summary>
+        /// Загружает значения из массива в колонку.
+        /// </summary>
+        /// <param name="Column">КолонкаДереваЗначений, Число, Строка. Колонка, из которой будут выгружены значения, её имя или индекс.</param>
+        /// <returns>Массив. Массив значений.</returns>
         [ContextMethod("ВыгрузитьКолонку", "UnloadColumn")]
         public ArrayImpl UnloadColumn(IValue Column)
         {
@@ -119,8 +153,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return result;
         }
 
-
-
+        /// <summary>
+        /// Определяет индекс строки.
+        /// </summary>
+        /// <param name="column">СтрокаДереваЗначений. Строка.</param>
+        /// <returns>Число. Индекс строки в коллекции. Если строка не найдена, возвращается -1.</returns>
         [ContextMethod("Индекс", "IndexOf")]
         public int IndexOf(IValue Row)
         {
@@ -132,11 +169,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return -1;
         }
 
+        /// <summary>
+        /// Суммирует значения в строках.
+        /// </summary>
+        /// <param name="ColumnIndex">КолонкаДереваЗначений, Строка, Число. Колонка, значения которой будут суммироваться.</param>
+        /// <param name="IncludeChildren">Булево. Если Истина, в расчёт будут включены все вложенные строки.</param>
+        /// <returns>Число. Вычисленная сумма.</returns>
         [ContextMethod("Итог", "Total")]
         public IValue Total(IValue ColumnIndex, bool IncludeChildren = false)
         {
             ValueTreeColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
-            bool has_data = false;
             decimal Result = 0;
 
             foreach (ValueTreeRow row in _rows)
@@ -144,7 +186,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
                 IValue current_value = row.Get(Column);
                 if (current_value.DataType == Machine.DataType.Number)
                 {
-                    has_data = true;
                     Result += current_value.AsNumber();
                 }
 
@@ -153,18 +194,21 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
                     IValue children_total = row.Rows.Total(ColumnIndex, IncludeChildren);
                     if (children_total.DataType == Machine.DataType.Number)
                     {
-                        has_data = true;
                         Result += children_total.AsNumber();
                     }
                 }
             }
 
-            if (has_data)
-                return ValueFactory.Create(Result);
-
-            return ValueFactory.Create();
+            return ValueFactory.Create(Result);
         }
 
+        /// <summary>
+        /// Ищет значение в строках дерева значений.
+        /// </summary>
+        /// <param name="Value">Произвольный. Искомое значение.</param>
+        /// <param name="ColumnNames">Строка. Список колонок через запятую, в которых будет производиться поиск. Необязательный параметр.</param>
+        /// <param name="IncludeChildren">Булево. Если Истина, в поиск будут включены все вложенные строки. Необязательный параметр.</param>
+        /// <returns>СтрокаДереваЗначений, Неопределено. Найденная строка или Неопределено, если строка не найдена.</returns>
         [ContextMethod("Найти", "Find")]
         public IValue Find(IValue Value, string ColumnNames = null, bool IncludeChildren = false)
         {
@@ -204,6 +248,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return true;
         }
 
+        /// <summary>
+        /// Ищет строки, отвечающие критериям отбора.
+        /// </summary>
+        /// <param name="Filter">Структура. Структура, в которой Ключ - это имя колонки, а Значение - искомое значение.</param>
+        /// <param name="IncludeChildren">Булево. Если Истина, в поиск будут включены все вложенные строки. Необязательный параметр.</param>
+        /// <returns>Массив. Найденные строки.</returns>
         [ContextMethod("НайтиСтроки", "FindRows")]
         public ArrayImpl FindRows(IValue Filter, bool IncludeChildren = false)
         {
@@ -232,12 +282,20 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return Result;
         }
 
+        /// <summary>
+        /// Удаляет все строки.
+        /// </summary>
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
             _rows.Clear();
         }
 
+        /// <summary>
+        /// Получает строку по индексу.
+        /// </summary>
+        /// <param name="index">Число. Индекс строки.</param>
+        /// <returns>СтрокаДереваЗначений. Строка.</returns>
         [ContextMethod("Получить", "Get")]
         public ValueTreeRow Get(int index)
         {
@@ -246,6 +304,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return _rows[index];
         }
 
+        /// <summary>
+        /// Сдвигает строку на указанное смещение.
+        /// </summary>
+        /// <param name="column">СтрокаДереваЗначений. Строка.</param>
+        /// <param name="Offset">Число. Смещение.</param>
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(IValue Row, int Offset)
         {
@@ -372,8 +435,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             }
         }
 
+        /// <summary>
+        /// Сортирует строки по указанному правилу.
+        /// </summary>
+        /// <param name="columns">Строка. Правило сортировки: список имён колонок, разделённых запятой. После имени через
+        ///  пробел может указываться направление сортировки: Возр(Asc) - по возрастанию, Убыв(Desc) - по убыванию.</param>
+        /// <param name="SortChildren">Булево. Если Истина, сортировка будет применена также к вложенным строкам.</param>
+        /// <param name="Comparator">СравнениеЗначений. Не используется.</param>
         [ContextMethod("Сортировать", "Sort")]
-        public void Sort(string columns, bool SortChildren, IValue Comparator = null)
+        public void Sort(string columns, bool SortChildren = false, IValue Comparator = null)
         {
             Sort(new RowComparator(GetSortRules(columns)), SortChildren);
         }
@@ -391,6 +461,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             }
         }
 
+        /// <summary>
+        /// Не поддерживается.
+        /// </summary>
         [ContextMethod("ВыбратьСтроку", "ChooseRow")]
         public void ChooseRow(string Title = null, IValue StartRow = null)
         {
