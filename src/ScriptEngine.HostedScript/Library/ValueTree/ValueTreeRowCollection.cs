@@ -166,7 +166,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         }
 
         [ContextMethod("Найти", "Find")]
-        public IValue Find(IValue Value, string ColumnNames = null)
+        public IValue Find(IValue Value, string ColumnNames = null, bool IncludeChildren = false)
         {
             List<ValueTreeColumn> processing_list = Columns.GetProcessingColumnList(ColumnNames);
             foreach (ValueTreeRow row in _rows)
@@ -176,6 +176,14 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
                     IValue current = row.Get(col);
                     if (Value.Equals(current))
                         return row;
+                }
+                if (IncludeChildren)
+                {
+                    IValue children_result = row.Rows.Find(Value, ColumnNames, IncludeChildren);
+                    if (children_result.DataType != Machine.DataType.Undefined)
+                    {
+                        return children_result;
+                    }
                 }
             }
             return ValueFactory.Create();
@@ -197,7 +205,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         }
 
         [ContextMethod("НайтиСтроки", "FindRows")]
-        public ArrayImpl FindRows(IValue Filter)
+        public ArrayImpl FindRows(IValue Filter, bool IncludeChildren = false)
         {
             if (!(Filter is StructureImpl))
                 throw RuntimeException.InvalidArgumentType();
@@ -207,7 +215,18 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             foreach (ValueTreeRow row in _rows)
             {
                 if (CheckFilterCriteria(row, Filter as StructureImpl))
+                {
                     Result.Add(row);
+                }
+                
+                if (IncludeChildren)
+                {
+                    ArrayImpl children_result = row.Rows.FindRows(Filter, IncludeChildren);
+                    foreach (IValue value in children_result)
+                    {
+                        Result.Add(value);
+                    }
+                }
             }
 
             return Result;
