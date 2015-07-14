@@ -344,21 +344,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         }
 
-        [ContextMethod("СкопироватьКолонки", "CopyColumns")]
-        public ValueTree CopyColumns(string ColumnNames = null)
-        {
-            ValueTree Result = new ValueTree();
-
-            List<ValueTreeColumn> columns = Columns.GetProcessingColumnList(ColumnNames);
-
-            foreach (ValueTreeColumn Column in columns)
-            {
-                Result.Columns.Add(Column.Name, Column.ValueType, Column.Title, Column.Width);
-            }
-
-            return Result;
-        }
-
         private struct ValueTreeSortRule
         {
             public ValueTreeColumn Column;
