@@ -133,7 +133,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         }
 
         [ContextMethod("Итог", "Total")]
-        public IValue Total(IValue ColumnIndex)
+        public IValue Total(IValue ColumnIndex, bool IncludeChildren = false)
         {
             ValueTreeColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
             bool has_data = false;
@@ -146,6 +146,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
                 {
                     has_data = true;
                     Result += current_value.AsNumber();
+                }
+
+                if (IncludeChildren)
+                {
+                    IValue children_total = row.Rows.Total(ColumnIndex, IncludeChildren);
+                    if (children_total.DataType == Machine.DataType.Number)
+                    {
+                        has_data = true;
+                        Result += children_total.AsNumber();
+                    }
                 }
             }
 
