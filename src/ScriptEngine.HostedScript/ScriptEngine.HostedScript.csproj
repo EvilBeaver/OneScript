@@ -112,6 +112,11 @@
     <Compile Include="Library\TextWriteImpl.cs" />
     <Compile Include="Library\ValueList\ValueListImpl.cs" />
     <Compile Include="Library\ValueList\ValueListItem.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeRow.cs" />
+    <Compile Include="Library\ValueTree\ValueTree.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeColumn.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeColumnCollection.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeRowCollection.cs" />
     <Compile Include="Library\Xml\XmlGlobalFunctions.cs" />
     <Compile Include="Library\Xml\XmlNodeTypeEnum.cs" />
     <Compile Include="Library\Xml\XmlReaderImpl.cs" />
@@ -158,8 +163,10 @@
     <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp --force --update "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner/"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
+    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
 xcopy "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp --force --update "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner"
+cp --force --update "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
