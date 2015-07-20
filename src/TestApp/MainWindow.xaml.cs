@@ -74,7 +74,7 @@ namespace TestApp
 
             var hostedScript = new HostedScriptEngine();
             hostedScript.Initialize();
-            var src = hostedScript.Loader.FromString(txtCode.Text);
+            var src = new EditedFileSource(txtCode.Text, _currentDocPath);
 
             Process process = null;
             try

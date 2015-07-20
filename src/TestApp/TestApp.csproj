@@ -105,6 +105,7 @@
     <Compile Include="Controls\ImageArray.cs" />
     <Compile Include="Controls\MDConstants.cs" />
     <Compile Include="Controls\ProcedureListWnd.xaml.cs" />
+    <Compile Include="EditedFileSource.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
