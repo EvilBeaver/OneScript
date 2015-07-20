@@ -61,6 +61,11 @@ namespace TestApp
             
         }
 
+        private void Run_Execute(object sender, ExecutedRoutedEventArgs e)
+        {
+            Button_Click_1(sender, null);
+        }
+
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             result.Text = "";

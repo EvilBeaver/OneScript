@@ -5,11 +5,20 @@
         xmlns:v8r="clr-namespace:V8Reader.Core"
         xmlns:ctrl="clr-namespace:V8Reader.Controls" Closing="Window_Closing" Icon="script_badge.ico">
     <Grid>
+        <Grid.Resources>
+            <RoutedUICommand x:Key="TestApp_Run" />
+        </Grid.Resources>
         <Grid.CommandBindings>
             <CommandBinding Command="ApplicationCommands.Open" CanExecute="CommandBinding_CanExecute" Executed="Open_Execute"/>
             <CommandBinding Command="ApplicationCommands.Save" CanExecute="CommandBinding_CanExecute" Executed="Save_Execute"/>
             <CommandBinding Command="ApplicationCommands.SaveAs" CanExecute="CommandBinding_CanExecute" Executed="SaveAs_Execute"/>
+            <CommandBinding Command="{StaticResource ResourceKey=TestApp_Run}" CanExecute="CommandBinding_CanExecute" Executed="Run_Execute"/>
         </Grid.CommandBindings>
+        
+        <Grid.InputBindings>
+            <KeyBinding Key="F5" Command="{StaticResource ResourceKey=TestApp_Run}" />
+        </Grid.InputBindings>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="297*"/>
