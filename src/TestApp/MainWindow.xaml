@@ -53,7 +53,8 @@
         <ctrl:CodeControl Grid.Row="1" x:Name="txtCode" TextChanged="txtCode_TextChanged"></ctrl:CodeControl>
 
         <GridSplitter Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-        <TextBox x:Name="result" Grid.Row="3" FontFamily="Courier New" FontSize="12"/>
+        <TextBox x:Name="result" Grid.Row="3" FontFamily="Courier New" FontSize="12" 
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Auto"/>
 
     </Grid>
 </Window>

@@ -217,6 +217,8 @@ namespace TestApp
         public void Echo(string str)
         {
             _output.AppendText(str + '\n');
+            _output.ScrollToEnd();
+            // TODO: Обновление окна, чтобы не тупило в циклах
         }
 
         public void ShowExceptionInfo(Exception exc)
