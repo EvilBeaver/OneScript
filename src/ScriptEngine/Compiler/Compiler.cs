@@ -1664,6 +1664,10 @@ namespace ScriptEngine.Compiler
                     return OperationCode.EmptyStr;
                 case Token.StrReplace:
                     return OperationCode.StrReplace;
+                case Token.StrGetLine:
+                    return OperationCode.StrGetLine;
+                case Token.StrLineCount:
+                    return OperationCode.StrLineCount;
                 case Token.StrEntryCount:
                     return OperationCode.StrEntryCount;
                 case Token.Year:

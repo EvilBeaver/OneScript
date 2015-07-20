@@ -440,6 +440,8 @@ namespace ScriptEngine.Machine
                 ChrCode,
                 EmptyStr,
                 StrReplace,
+                StrGetLine,
+                StrLineCount,
                 StrEntryCount,
                 Year,
                 Month,
@@ -1678,6 +1680,34 @@ namespace ScriptEngine.Machine
 
             var result = sourceString.Replace(searchVal, newVal);
             _operationStack.Push(ValueFactory.Create(result));
+            NextInstruction();
+        }
+
+        private void StrGetLine(int arg)
+        {
+
+            throw new NotImplementedException();
+
+            NextInstruction();
+        }
+
+        private void StrLineCount(int arg)
+        {
+            var strArg = _operationStack.Pop().AsString();
+            int pos = 0;
+            int lineCount = 1;
+            while (pos >= 0 && pos < strArg.Length)
+            {
+                pos = strArg.IndexOf('\n', pos);
+                if (pos >= 0)
+                {
+                    lineCount++;
+                    pos++;
+                }
+            }
+
+            _operationStack.Push(ValueFactory.Create(lineCount));
+
             NextInstruction();
         }
 
