@@ -1,3 +1,4 @@
+#!/bin/bash
 ../src/oscript/bin/Debug/oscript.exe testrunner.os -runall $@
 
 if [ $? = 0 ]; then
