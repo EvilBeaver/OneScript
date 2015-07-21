@@ -1685,9 +1685,41 @@ namespace ScriptEngine.Machine
 
         private void StrGetLine(int arg)
         {
+            var lineNumber = (int)_operationStack.Pop().AsNumber();
+            var strArg = _operationStack.Pop().AsString();
+            string result = "";
+            if (lineNumber >= 1)
+            {
+                int lineStart = 0;
+                int currentLineNumber = 1;
+                while (true)
+                {
+                    int lineEnd = strArg.IndexOf('\n', lineStart);
+                    if (lineEnd > 0)
+                    {
+                        if (currentLineNumber == lineNumber)
+                        {
+                            if (lineEnd > lineStart)
+                                result = strArg.Substring(lineStart, lineEnd - lineStart);
 
-            throw new NotImplementedException();
+                            break;
+                        }
 
+                        lineStart = lineEnd + 1;
+                        currentLineNumber++;
+                    }
+                    else
+                    {
+                        if (currentLineNumber == lineNumber)
+                        {
+                            result = strArg.Substring(lineStart);
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
         }
 
