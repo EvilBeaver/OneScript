@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using ScriptEngine.HostedScript;
 
+
 namespace TestApp
 {
     /// <summary>
@@ -218,7 +219,7 @@ namespace TestApp
         {
             _output.AppendText(str + '\n');
             _output.ScrollToEnd();
-            // TODO: Обновление окна, чтобы не тупило в циклах
+            System.Windows.Forms.Application.DoEvents();
         }
 
         public void ShowExceptionInfo(Exception exc)
