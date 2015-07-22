@@ -41,6 +41,50 @@ namespace TestApp
             InitializeComponent();
         }
 
+        // Определяем путь к AppData\Local
+        private string localPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        private void SaveLastCode()
+        {
+            string filename = Path.Combine(localPath, "TestApp.os");
+            using (var writer = new StreamWriter(filename, false, Encoding.UTF8))
+            {
+                // первой строкой запишем имя открытого файла
+                writer.Write("//");  // знаки комментария, чтобы сохранить код правильным
+                writer.WriteLine(_currentDocPath);
+                // второй признак изменённости
+                writer.Write("//");
+                writer.WriteLine(_isModified);
+
+                // и потом сам код
+                writer.Write(txtCode.Text);
+            }
+        }
+
+        private void RestoreLastCode()
+        {
+            string filename = Path.Combine(localPath, "TestApp.os");
+            if (!File.Exists(filename))
+            {
+                return;
+            }
+
+            using (var reader = new StreamReader(filename, Encoding.UTF8))
+            {
+                string lastOpened = reader.ReadLine().Substring(2);
+                string wasModified = reader.ReadLine().Substring(2);
+                txtCode.Text = reader.ReadToEnd();
+
+                if (lastOpened != "")
+                {
+                    // был открыт какой-то файл, сделаем вид, что открыли его
+                    _currentDocPath = lastOpened;
+                    IsModified = (wasModified == "True");
+                }
+
+            }
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var hostedScript = new HostedScriptEngine();
@@ -88,6 +132,8 @@ namespace TestApp
                 return;
             }
 
+            SaveLastCode(); // Сохраним набранный текст на случай зависания или вылета
+
             result.AppendText("Script started: " + DateTime.Now.ToString() + "\n");
             sw.Start();
             var returnCode = process.Start();
@@ -109,6 +155,15 @@ namespace TestApp
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
+        }
+
+        private void NewScript_Execute(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (!SaveModified())
+                return;
+            _currentDocPath = "";
+            txtCode.Text = "";
+            IsModified = false;
         }
 
         private void Open_Execute(object sender, ExecutedRoutedEventArgs e)
@@ -190,18 +245,36 @@ namespace TestApp
             IsModified = true;
         }
 
+        private bool SaveModified()
+        {
+            if (!IsModified)
+                return true;
+
+            var answer = MessageBox.Show("Сохранить изменения?", "TestApp", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+            if (answer == MessageBoxResult.Cancel)
+                return false;
+            else if (answer == MessageBoxResult.Yes)
+                return !SaveFile();
+
+            return true;
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (IsModified)
+            if (SaveModified())
             {
-                var answer = MessageBox.Show("Сохранить изменения?", "TestApp", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
-                if (answer == MessageBoxResult.Cancel)
-                    e.Cancel = true;
-                else if (answer == MessageBoxResult.Yes)
-                    e.Cancel = !SaveFile();
+                SaveLastCode();
+            }
+            else
+            {
+                e.Cancel = true;
             }
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            RestoreLastCode();
+        }
     }
 
     class Host : IHostApplication

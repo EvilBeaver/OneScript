@@ -3,12 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="579" Width="807"
         xmlns:v8r="clr-namespace:V8Reader.Core"
-        xmlns:ctrl="clr-namespace:V8Reader.Controls" Closing="Window_Closing" Icon="script_badge.ico">
+        xmlns:ctrl="clr-namespace:V8Reader.Controls" Closing="Window_Closing" Icon="script_badge.ico"
+        Loaded="Window_Loaded" >
     <Grid>
         <Grid.Resources>
             <RoutedUICommand x:Key="TestApp_Run" />
         </Grid.Resources>
         <Grid.CommandBindings>
+            <CommandBinding Command="ApplicationCommands.New" Executed="NewScript_Execute"/>
             <CommandBinding Command="ApplicationCommands.Open" CanExecute="CommandBinding_CanExecute" Executed="Open_Execute"/>
             <CommandBinding Command="ApplicationCommands.Save" CanExecute="CommandBinding_CanExecute" Executed="Save_Execute"/>
             <CommandBinding Command="ApplicationCommands.SaveAs" CanExecute="CommandBinding_CanExecute" Executed="SaveAs_Execute"/>
@@ -41,6 +43,7 @@
                             </Path>
                         </StackPanel>
                     </MenuItem.Header>
+                    <MenuItem Command="ApplicationCommands.New"/>
                     <MenuItem Command="ApplicationCommands.Open"/>
                     <MenuItem Command="ApplicationCommands.Save"/>
                     <MenuItem Command="ApplicationCommands.SaveAs"/>
