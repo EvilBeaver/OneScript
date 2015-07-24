@@ -383,18 +383,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             }
             else
             {
-                var rowsArray = Rows.GetRawValue() as ArrayImpl;
-                if(rowsArray == null)
+                if (Rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(StructureImpl))))
+                    requestedRows = FindRows(Rows).Select(x => x as ValueTableRow);
+                else if (Rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(ArrayImpl))))
+                    requestedRows = GetRowsEnumByArray(Rows);
+                else
                     throw RuntimeException.InvalidArgumentType();
-
-                requestedRows = rowsArray.Select(x =>
-                {
-                    var vtr = x.GetRawValue() as ValueTableRow;
-                    if (vtr == null || vtr.Owner() != this)
-                        throw RuntimeException.InvalidArgumentValue();
-                    
-                    return vtr;
-                });
             }
 
             var columnMap = new Dictionary<ValueTableColumn, ValueTableColumn>();
@@ -414,6 +408,24 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             }
 
             return Result;
+        }
+
+        private IEnumerable<ValueTableRow> GetRowsEnumByArray(IValue Rows)
+        {
+            IEnumerable<ValueTableRow> requestedRows;
+            var rowsArray = Rows.GetRawValue() as ArrayImpl;
+            if (rowsArray == null)
+                throw RuntimeException.InvalidArgumentType();
+
+            requestedRows = rowsArray.Select(x =>
+            {
+                var vtr = x.GetRawValue() as ValueTableRow;
+                if (vtr == null || vtr.Owner() != this)
+                    throw RuntimeException.InvalidArgumentValue();
+
+                return vtr;
+            });
+            return requestedRows;
         }
 
         private struct ValueTableSortRule
