@@ -55,7 +55,6 @@ namespace ScriptEngine.HostedScript
             {
                 _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
-
                 _isInitialized = true;
             }
         }

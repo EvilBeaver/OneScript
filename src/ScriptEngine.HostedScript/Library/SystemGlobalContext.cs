@@ -106,7 +106,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <returns>Объект ИнформацияОСценарии</returns>
         [ContextMethod("СтартовыйСценарий", "EntryScript")]
-        public IRuntimeContextInstance CurrentScript()
+        public IRuntimeContextInstance StartupScript()
         {
             return new ScriptInformationContext(CodeSource);
         }

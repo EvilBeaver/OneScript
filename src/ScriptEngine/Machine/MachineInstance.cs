@@ -108,6 +108,17 @@ namespace ScriptEngine.Machine
                 return null;
         }
 
+        internal ScriptInformationContext CurrentScript
+        {
+            get
+            {
+                if (_module.ModuleInfo != null)
+                    return new ScriptInformationContext(_module.ModuleInfo);
+                else
+                    return null;
+            }
+        }
+
         private IValue GetDefaultArgValue(int methodIndex, int paramIndex)
         {
             var meth = _module.Methods[methodIndex].Signature;
@@ -2194,11 +2205,10 @@ namespace ScriptEngine.Machine
 
         private void ModuleInfo(int arg)
         {
-
-            if (_module.ModuleInfo != null)
+            var currentScript = this.CurrentScript;
+            if (currentScript != null)
             {
-                var infoContext = new ScriptInformationContext(_module.ModuleInfo);
-                _operationStack.Push(infoContext);
+                _operationStack.Push(currentScript);
             }
             else
             {
