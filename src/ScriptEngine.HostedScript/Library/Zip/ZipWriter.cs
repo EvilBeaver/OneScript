@@ -106,7 +106,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         private void AddDirectory(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
             IEnumerable<string> filesToAdd;
-            string path = file;
+            string path = System.IO.Path.GetDirectoryName(file);
             string allFilesMask;
 
             if (System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
