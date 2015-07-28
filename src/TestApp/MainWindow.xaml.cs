@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ScriptEngine.HostedScript;
+using System.Collections.Generic;
 
 
 namespace TestApp
@@ -52,9 +53,22 @@ namespace TestApp
                 // первой строкой запишем имя открытого файла
                 writer.Write("//");  // знаки комментария, чтобы сохранить код правильным
                 writer.WriteLine(_currentDocPath);
-                // второй признак изменённости
+                // второй строкой - признак изменённости
                 writer.Write("//");
                 writer.WriteLine(_isModified);
+
+                args.Text = args.Text.TrimEnd('\r', '\n');
+
+                // запишем аргументы командной строки
+                writer.Write("//");
+                writer.WriteLine(args.LineCount);
+
+                for (var i = 0; i < args.LineCount; ++i )
+                {
+                    string s = args.GetLineText(i).TrimEnd('\r', '\n');
+                    writer.Write("//");
+                    writer.WriteLine(s);
+                }
 
                 // и потом сам код
                 writer.Write(txtCode.Text);
@@ -73,7 +87,29 @@ namespace TestApp
             {
                 string lastOpened = reader.ReadLine().Substring(2);
                 string wasModified = reader.ReadLine().Substring(2);
-                txtCode.Text = reader.ReadToEnd();
+
+                string argsline = reader.ReadLine().Substring(2);
+                string argstail = ""; // если не распознали строку с параметром, здесь будет "хвост" нераспознанной строки
+                int argscount = 0;
+
+                try
+                {
+                    argscount = int.Parse(argsline);
+                }
+                catch (Exception)
+                {
+                    // файл битый. видимо, старой версии или что-нибудь вроде того
+                    argstail = argsline + "\n";
+                }
+
+                args.Text = "";
+                for (int i = 0; i < argscount; ++i )
+                {
+                    string param = reader.ReadLine().Substring(2);
+                    args.Text += param + "\n";
+                }
+
+                txtCode.Text = argstail + reader.ReadToEnd();
 
                 if (lastOpened != "")
                 {
@@ -115,7 +151,16 @@ namespace TestApp
         {
             result.Text = "";
             var sw = new System.Diagnostics.Stopwatch();
-            var host = new Host(result);
+
+            List<string> l_args = new List<string>();
+            for (var i = 0; i < args.LineCount; i++)
+            {
+                string s = args.GetLineText(i);
+                if (s.IndexOf('#') != 0)
+                    l_args.Add(s.Trim());
+            }
+
+            var host = new Host(result, l_args.ToArray());
 
             var hostedScript = new HostedScriptEngine();
             hostedScript.Initialize();
@@ -280,10 +325,15 @@ namespace TestApp
     class Host : IHostApplication
     {
         private TextBox _output;
+        private string[] _arguments;
 
-        public Host(TextBox output)
+        public Host(TextBox output, string [] arguments = null)
         {
             _output = output;
+            if (arguments == null)
+                _arguments = new string[0];
+            else 
+                _arguments = arguments;
         }
 
         #region IHostApplication Members
@@ -308,11 +358,7 @@ namespace TestApp
 
         public string[] GetCommandLineArguments()
         {
-            return new string[]
-            {
-                "привет",
-                "мы тестовые аргументы"
-            };
+            return _arguments;
         }
 
         #endregion

@@ -21,6 +21,12 @@
             <KeyBinding Key="F5" Command="{StaticResource ResourceKey=TestApp_Run}" />
         </Grid.InputBindings>
         
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="297*"></ColumnDefinition>
+            <ColumnDefinition Width="5"></ColumnDefinition>
+            <ColumnDefinition Width="300"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="297*"/>
@@ -52,11 +58,16 @@
             <Button Click="Button_Click" Content="Компилировать"/>
             <Button Content="Выполнить" Margin="5,0,0,0" Click="Button_Click_1"/>
         </ToolBar>
-     
-        <ctrl:CodeControl Grid.Row="1" x:Name="txtCode" TextChanged="txtCode_TextChanged"></ctrl:CodeControl>
+        
+            <ctrl:CodeControl Grid.Row="1" Grid.Column="0" x:Name="txtCode" TextChanged="txtCode_TextChanged"/>
+            <GridSplitter Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+            <TextBox x:Name="args" Grid.Row="1" Grid.Column="2" FontFamily="Courier New" FontSize="12" 
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Auto" AcceptsReturn="True"
+                     Text="#Аргументы командной строки (по одному на строку)"/>
 
-        <GridSplitter Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-        <TextBox x:Name="result" Grid.Row="3" FontFamily="Courier New" FontSize="12" 
+
+        <GridSplitter Grid.Row="2" Grid.ColumnSpan="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+        <TextBox x:Name="result" Grid.Row="3" Grid.ColumnSpan="3" FontFamily="Courier New" FontSize="12" 
                  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Auto"/>
 
     </Grid>
