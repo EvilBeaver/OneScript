@@ -554,7 +554,7 @@ namespace OneScript.Compiler
             }
             else if (_lastExtractedLexem.Token == Token.OpenPar)
             {
-                primary = ProcessSubexpression();
+                primary = BuildContinuationRightHand(ProcessSubexpression());
             }
             else
             {
@@ -579,7 +579,8 @@ namespace OneScript.Compiler
             {
                 // это вызов функции
                 IASTNode[] args = BuildArgumentList();
-                primary = _builder.BuildFunctionCall(null, identifier, args);
+                var call = _builder.BuildFunctionCall(null, identifier, args);
+                primary = BuildContinuationRightHand(call);
 
             }
             else if (_lastExtractedLexem.Token == Token.OpenBracket)
@@ -656,11 +657,7 @@ namespace OneScript.Compiler
 
                     string identifier = _lastExtractedLexem.Content;
                     NextLexem();
-                    if (_lastExtractedLexem.Token == Token.Dot||_lastExtractedLexem.Token == Token.OpenBracket)
-                    {
-                        target = _builder.ResolveProperty(target, identifier);
-                    }
-                    else if (_lastExtractedLexem.Token == Token.OpenPar)
+                    if (_lastExtractedLexem.Token == Token.OpenPar)
                     {
                         if (interruptOnCall)
                         {
@@ -675,7 +672,7 @@ namespace OneScript.Compiler
                     }
                     else
                     {
-                        return _builder.ResolveProperty(target, identifier);
+                        target = _builder.ResolveProperty(target, identifier);
                     }
                 }
                 else if(_lastExtractedLexem.Token == Token.OpenBracket)

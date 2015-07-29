@@ -318,6 +318,9 @@ namespace OneScript.Tests
 
             lexer.Code = "А = Б.В()[Г];";
             Assert.IsTrue(parser.Build(lexer));
+
+            lexer.Code = "А = В().Г();";
+            Assert.IsTrue(parser.Build(lexer));
         }
 
         [TestMethod]
