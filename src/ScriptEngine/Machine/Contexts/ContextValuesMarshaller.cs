@@ -1,16 +1,41 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    static class ContextValuesMarshaller
+    public static class ContextValuesMarshaller
     {
         public static T ConvertParam<T>(IValue value)
         {
-            object valueObj;
             var type = typeof(T);
-            if (value == null)
+            object valueObj = ConvertParam(value, type);
+            if (valueObj == null)
             {
-                valueObj = default(T);
+                return default(T);
+            }
+            
+            try
+            {
+                return (T)valueObj;
+            }
+            catch (InvalidCastException)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+           
+        }
+
+        public static object ConvertParam(IValue value, Type type)
+        {
+            object valueObj;
+            if (value == null || value.DataType == DataType.NotAValidValue)
+            {
+                return null;
             }
             else if (type == typeof(IValue))
             {
@@ -46,17 +71,10 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                valueObj = default(T);
+                valueObj = CastToCLRObject(value);
             }
 
-            try
-            {
-                return (T)valueObj;
-            }
-            catch (InvalidCastException)
-            {
-                throw RuntimeException.InvalidArgumentType();
-            }
+            return valueObj;
         }
 
         public static IValue ConvertReturnValue<TRet>(TRet param)
@@ -128,16 +146,42 @@ namespace ScriptEngine.Machine.Contexts
 			case Machine.DataType.Undefined:
 				result = null;
 				break;
-			case Machine.DataType.Object:
-				result = val.AsObject();
+			default:
+                if (val.DataType == DataType.Object)
+                    result = val.AsObject();
+
+				result = val.GetRawValue();
 				if (result is IObjectWrapper)
 					result = ((IObjectWrapper)result).UnderlyingObject;
-				break;
-			default:
-				throw new RuntimeException("Тип не поддерживает преобразование в CLR-объект");
+				else
+				    throw new ValueMarshallingException("Тип не поддерживает преобразование в CLR-объект");
+
+                break;
 			}
 			
 			return result;
 		}
+
+        public static T CastToCLRObject<T>(IValue val)
+        {
+            return (T)CastToCLRObject(val);
+        }
+
+        public static object CastToCLRObject(IValue val)
+        {
+            var rawValue = val.GetRawValue();
+            object objectRef;
+            if (rawValue.DataType == DataType.GenericValue)
+            {
+                objectRef = rawValue;
+            }
+            else
+            {
+                objectRef = ConvertToCLRObject(rawValue);
+            }
+
+            return objectRef;
+
+        }
     }
 }

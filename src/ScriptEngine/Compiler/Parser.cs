@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +23,7 @@ namespace ScriptEngine.Compiler
         ParserState _stringState = new StringParserState();
         ParserState _operatorState = new OperatorParserState();
         ParserState _dateState = new DateParserState();
+        ParserState _directiveState = new DirectiveParserState();
 
         public string Code 
         { 
@@ -81,10 +88,14 @@ namespace ScriptEngine.Compiler
                         _iterator.MoveNext();
                         return new Lexem() { Type = LexemType.Identifier, Token = Token.Question };
                     }
+                    else if(cs == SpecialChars.Directive)
+                    {
+                        _state = _directiveState;
+                    }
                     else
                     {
                         var cp = _iterator.GetPositionInfo(_iterator.CurrentLine);
-                        throw new ParserException(cp, string.Format("Неизвестный символ {0}",cs));
+                        throw new ParserException(cp, string.Format("Неизвестный символ {0}", cs));
                     }
 
                     var lex = _state.ReadNextLexem(_iterator);
@@ -109,6 +120,19 @@ namespace ScriptEngine.Compiler
         internal SourceCodeIndexer GetCodeIndexer()
         {
             return _iterator.GetCodeIndexer();
+        }
+
+        internal string ReadLineToEnd()
+        {
+            _iterator.MoveToContent();
+            while (_iterator.MoveNext())
+            {
+                if (_iterator.CurrentSymbol == '\n')
+                {
+                    return _iterator.GetContents().content;
+                }
+            }
+            return _iterator.GetContents().content;
         }
     }
 
@@ -153,7 +177,8 @@ namespace ScriptEngine.Compiler
         UndefinedLiteral,
         NullLiteral,
         EndOperator,
-        EndOfText
+        EndOfText,
+        Directive
     }
 
     abstract class ParserState
@@ -176,6 +201,29 @@ namespace ScriptEngine.Compiler
 
     class WordParserState : ParserState
     {
+        HashSet<string> _booleanOperators = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> _booleanLiterals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> _undefined = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        public WordParserState()
+        {
+            _booleanOperators.Add("и");
+            _booleanOperators.Add("или");
+            _booleanOperators.Add("не");
+            _booleanOperators.Add("and");
+            _booleanOperators.Add("or");
+            _booleanOperators.Add("not");
+
+            _booleanLiterals.Add("истина");
+            _booleanLiterals.Add("ложь");
+            _booleanLiterals.Add("true");
+            _booleanLiterals.Add("false");
+
+            _undefined.Add("неопределено");
+            _undefined.Add("undefined");
+                
+        }
+
         public override Lexem ReadNextLexem(ParseIterator iterator)
         {
             bool isEndOfText = false;
@@ -192,9 +240,7 @@ namespace ScriptEngine.Compiler
                     
                     Lexem lex;
 
-                    if(String.Compare(content, "и", true) == 0
-                            || String.Compare(content, "или", true) == 0
-                            || String.Compare(content, "не", true) == 0)
+                    if(_booleanOperators.Contains(content))
                     {
                         lex = new Lexem()
                         {
@@ -203,8 +249,7 @@ namespace ScriptEngine.Compiler
                             Content = content
                         };
                     }
-                    else if (String.Compare(content, "истина", true) == 0
-                        || String.Compare(content, "ложь", true) == 0)
+                    else if (_booleanLiterals.Contains(content))
                     {
                         lex = new Lexem()
                         {
@@ -212,7 +257,7 @@ namespace ScriptEngine.Compiler
                             Content = content
                         };
                     }
-                    else if (String.Compare(content, "неопределено", true) == 0)
+                    else if (_undefined.Contains(content))
                     {
                         lex = new Lexem()
                         {
@@ -330,6 +375,10 @@ namespace ScriptEngine.Compiler
                         Content = ContentBuilder.ToString()
                     };
                     return lex;
+                }
+                else if(cs == '\r')
+                {
+                    continue;
                 }
                 else if (cs == '\n')
                 {
@@ -521,6 +570,30 @@ namespace ScriptEngine.Compiler
                 }
             }
         }
+    }
+
+    class DirectiveParserState : ParserState
+    {
+        public override Lexem ReadNextLexem(ParseIterator iterator)
+        {
+            System.Diagnostics.Debug.Assert(iterator.CurrentSymbol == SpecialChars.Directive);
+            iterator.MoveNext();
+            if (!iterator.MoveToContent())
+                throw CreateExceptionOnCurrentLine("Ожидается директива", iterator);
+
+
+            var wps = new WordParserState();
+            var lex = wps.ReadNextLexem(iterator);
+            if (lex.Type == LexemType.Identifier && lex.Token == Token.NotAToken)
+            {
+                lex.Type = LexemType.Directive;
+            }
+            else
+                throw CreateExceptionOnCurrentLine("Ожидается директива", iterator);
+
+            return lex;
+        }
+
     }
 
 }

@@ -1,0 +1,4 @@
+[submodule "oscript-library"]
+	path = oscript-library
+	url = https://github.com/EvilBeaver/oscript-library.git
+	branch = master

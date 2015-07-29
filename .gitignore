@@ -76,3 +76,6 @@ src/ScriptEngine.Snegopat/Snegopat_i.c
 /dist
 /install/build
 *.os.xml
+/src/packages/DotNetZip.1.9.3/lib/net20
+/src/ipch/*.ipch
+src/ipch/

@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -80,6 +86,11 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Неверный тип аргумента");
         }
 
+        public static RuntimeException InvalidArgumentType(string argName)
+        {
+            return new RuntimeException(String.Format("Неверный тип аргумента '{0}'", argName));
+        }
+
         public static RuntimeException InvalidArgumentValue()
         {
             return new RuntimeException("Неверное значение аргумента");
@@ -116,22 +127,12 @@ namespace ScriptEngine.Machine
     public class ExternalSystemException : RuntimeException
     {
         public ExternalSystemException(Exception reason)
-            : base("Внешнее исключение", reason)
+            : base("Внешнее исключение: " + reason.Message, reason)
         {
         }
-
-        public override string Message
-        {
-            get
-            {
-                string innerMessage = InnerException == null? "" : "\n" + InnerException.Message;
-                return base.Message + innerMessage;
-            }
-        }
-
     }
 
-    public class WrongStackConditionException : RuntimeException
+    public class WrongStackConditionException : ApplicationException
     {
         public WrongStackConditionException()
             : base("Внутренняя ошибка: неверное состояние стека")
@@ -174,4 +175,14 @@ namespace ScriptEngine.Machine
         public int ExitCode { get; private set; }
     }
 
+    public class ValueMarshallingException : RuntimeException
+    {
+        public ValueMarshallingException() : this("Неклассифицированная ошибка маршаллинга значений")
+        {
+        }
+
+        public ValueMarshallingException(string message) : base(message)
+        {
+        }
+    }
 }

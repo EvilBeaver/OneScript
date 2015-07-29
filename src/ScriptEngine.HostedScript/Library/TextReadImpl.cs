@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.IO;
 using System.Text;
 using ScriptEngine.Machine;
@@ -12,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library
         StreamReader _reader;
 
         [ContextMethod("Открыть", "Open")]
-        public void Open(string path, string encoding = null)
+        public void Open(string path, IValue encoding = null)
         {
             if (encoding == null)
             {
@@ -20,7 +26,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
-                var enc = Encoding.GetEncoding(encoding);
+                var enc = TextEncodingEnum.GetEncoding(encoding);
                 _reader = Environment.FileOpener.OpenReader(path, enc);
             }
         }
@@ -63,7 +69,7 @@ namespace ScriptEngine.HostedScript.Library
         public static IRuntimeContextInstance Constructor(IValue path, IValue encoding)
         {
             var reader = new TextReadImpl();
-            reader.Open(path.AsString(), encoding.AsString());
+            reader.Open(path.AsString(), encoding);
             return reader;
         }
 

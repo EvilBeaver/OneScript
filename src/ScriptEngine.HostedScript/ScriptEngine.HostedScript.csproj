@@ -37,6 +37,8 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -48,8 +50,12 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\x86\Release\ScriptEngine.HostedScript.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -64,6 +70,9 @@
     </Compile>
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
+    <Compile Include="KeyValueConfig.cs" />
+    <Compile Include="LibraryLoader.cs" />
+    <Compile Include="LibraryResolver.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
     <Compile Include="Library\BinaryDataContext.cs" />
     <Compile Include="Library\CLREnumValueWrapper.cs" />
@@ -71,9 +80,24 @@
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
+    <Compile Include="Library\Http\HttpConnectionContext.cs" />
+    <Compile Include="Library\Http\HttpRequestBody.cs" />
+    <Compile Include="Library\Http\HttpRequestBodyBinary.cs" />
+    <Compile Include="Library\Http\HttpRequestBodyString.cs" />
+    <Compile Include="Library\Http\HttpRequestBodyUnknown.cs" />
+    <Compile Include="Library\Http\HttpRequestContext.cs" />
+    <Compile Include="Library\Http\HttpRequestBodyFile.cs" />
+    <Compile Include="Library\Http\HttpResponseBody.cs" />
+    <Compile Include="Library\Http\HttpResponseContext.cs" />
+    <Compile Include="Library\Http\InternetProxyContext.cs" />
     <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\Net\TCPClient.cs" />
     <Compile Include="Library\Net\TCPServer.cs" />
+    <Compile Include="Library\ProcessContext.cs" />
+    <Compile Include="Library\SortDirectionEnum.cs" />
+    <Compile Include="Library\StdTextReadStream.cs" />
+    <Compile Include="Library\StdTextWriteStream.cs" />
+    <Compile Include="Library\SystemConfigAccessor.cs" />
     <Compile Include="Library\SystemGlobalContext.cs" />
     <Compile Include="Library\GuidWrapper.cs" />
     <Compile Include="Library\KeyAndValueImpl.cs" />
@@ -82,8 +106,17 @@
     <Compile Include="Library\Reflector.cs" />
     <Compile Include="Library\SymbolsEnum.cs" />
     <Compile Include="Library\SystemEnvironmentContext.cs" />
+    <Compile Include="Library\TextDocumentContext.cs" />
+    <Compile Include="Library\TextEncodingEnum.cs" />
     <Compile Include="Library\TextReadImpl.cs" />
     <Compile Include="Library\TextWriteImpl.cs" />
+    <Compile Include="Library\ValueList\ValueListImpl.cs" />
+    <Compile Include="Library\ValueList\ValueListItem.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeRow.cs" />
+    <Compile Include="Library\ValueTree\ValueTree.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeColumn.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeColumnCollection.cs" />
+    <Compile Include="Library\ValueTree\ValueTreeRowCollection.cs" />
     <Compile Include="Library\Xml\XmlGlobalFunctions.cs" />
     <Compile Include="Library\Xml\XmlNodeTypeEnum.cs" />
     <Compile Include="Library\Xml\XmlReaderImpl.cs" />
@@ -94,24 +127,46 @@
     <Compile Include="Library\ValueTable\ValueTableColumnCollection.cs" />
     <Compile Include="Library\ValueTable\ValueTableRow.cs" />
     <Compile Include="Library\Xml\XmlWriterImpl.cs" />
+    <Compile Include="Library\Zip\ZipCompressionLevelEnum.cs" />
+    <Compile Include="Library\Zip\ZipCompressionMethodEnum.cs" />
+    <Compile Include="Library\Zip\ZipEncryptionMethodEnum.cs" />
+    <Compile Include="Library\Zip\ZipFileEntriesCollection.cs" />
+    <Compile Include="Library\Zip\ZipFileEntryContext.cs" />
+    <Compile Include="Library\Zip\ZipReader.cs" />
+    <Compile Include="Library\Zip\ZipRestoreFilePathsModeEnum.cs" />
+    <Compile Include="Library\Zip\ZipStorePathModeEnum.cs" />
+    <Compile Include="Library\Zip\ZIPSubDirProcessingModeEnum.cs" />
+    <Compile Include="Library\Zip\ZipWriter.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\StructureImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
-      <Project>{f062d1d9-d307-492a-a56b-ff3c55f8f6c0}</Project>
+      <Project>{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}</Project>
       <Name>ScriptEngine</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="oscript.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp --force --update "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner/"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
+xcopy "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp --force --update "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner"
+cp --force --update "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

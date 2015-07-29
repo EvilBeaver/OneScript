@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.IO;
 using System.Text;
 using ScriptEngine.Machine;
@@ -16,14 +22,14 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
-        public TextWriteImpl(string path, string encoding)
+        public TextWriteImpl(string path, IValue encoding)
         {
             Open(path, encoding);
         }
 
-        public TextWriteImpl(string path, string encoding, bool append)
+        public TextWriteImpl(string path, IValue encoding, bool append)
         {
-            Open(path, encoding, append);
+            Open(path, encoding, null, append);
         }
 
         /// <summary>
@@ -31,9 +37,10 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="path">Путь к файлу</param>
         /// <param name="encoding">Кодировка (необязательный). По умолчанию используется utf-8</param>
+        /// <param name="lineDelimiter">Разделитель строк (необязательный). В текущей релизации параметр игнорируется</param>
         /// <param name="append">Признак добавления в конец файла. (необязательный)</param>
         [ContextMethod("Открыть", "Open")]
-        public void Open(string path, string encoding = null, bool append = false)
+        public void Open(string path, IValue encoding = null, string lineDelimiter = null, bool append = false)
         {
             Encoding enc;
             if (encoding == null)
@@ -42,7 +49,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
-                enc = Encoding.GetEncoding(encoding);
+                enc = TextEncodingEnum.GetEncoding(encoding);
                 if (enc.WebName == "utf-8" && append == true)
                     enc = new UTF8Encoding(false);
             }
@@ -63,6 +70,8 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Записать", "Write")]
         public void Write(string what)
         {
+            ThrowIfNotOpened();
+            
             _writer.Write(what);
         }
 
@@ -73,7 +82,15 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗаписатьСтроку", "WriteLine")]
         public void WriteLine(string what)
         {
+            ThrowIfNotOpened();
+
             _writer.WriteLine(what);
+        }
+
+        public void ThrowIfNotOpened()
+        {
+            if (_writer == null)
+                throw new RuntimeException("Файл не открыт");
         }
 
         public void Dispose()
@@ -88,7 +105,7 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name = "")]
         public static IRuntimeContextInstance Constructor(IValue path, IValue encoding)
         {
-            return new TextWriteImpl(path.AsString(), encoding.AsString());
+            return new TextWriteImpl(path.AsString(), encoding);
         }
 
         /// <summary>
@@ -98,9 +115,9 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="encoding">Кодировка в виде строки</param>
         /// <param name="append">Признак добавления в конец файла (необязательный)</param>
         [ScriptConstructor(Name = "По имени файла и кодировке")]
-        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding, IValue append)
+        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding, IValue lineDelimiter, IValue append)
         {
-            return new TextWriteImpl(path.AsString(), encoding.AsString(), append.AsBoolean());
+            return new TextWriteImpl(path.AsString(), encoding, append.AsBoolean());
         }
 
         /// <summary>

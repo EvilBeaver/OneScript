@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -49,10 +55,14 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.StrPos, TwoDefaultParamsInfo);
             map.Add(OperationCode.UCase, SingleDefaultParamInfo);
             map.Add(OperationCode.LCase, SingleDefaultParamInfo);
+            map.Add(OperationCode.TCase, SingleDefaultParamInfo);
             map.Add(OperationCode.Chr, SingleDefaultParamInfo);
-            map.Add(OperationCode.ChrCode, SingleDefaultParamInfo);
+            map.Add(OperationCode.ChrCode, ChrCodeParamsInfo);
             map.Add(OperationCode.EmptyStr, SingleDefaultParamInfo);
             map.Add(OperationCode.StrReplace, StrReplaceParamInfo);
+            map.Add(OperationCode.StrGetLine, TwoDefaultParamsInfo);
+            map.Add(OperationCode.StrLineCount, SingleDefaultParamInfo);
+            map.Add(OperationCode.StrEntryCount, TwoDefaultParamsInfo);
             // date
             map.Add(OperationCode.Year, SingleDefaultParamInfo);
             map.Add(OperationCode.Month, SingleDefaultParamInfo);
@@ -93,7 +103,6 @@ namespace ScriptEngine.Machine
             map.Add(OperationCode.Sqrt, SingleDefaultParamInfo);
             map.Add(OperationCode.Format, TwoDefaultParamsInfo);
             // special
-            map.Add(OperationCode.Question, QuestionParamInfo);
             map.Add(OperationCode.ExceptionInfo, NoParamsInfo);
             map.Add(OperationCode.ExceptionDescr, NoParamsInfo);
             map.Add(OperationCode.ModuleInfo, NoParamsInfo);
@@ -126,11 +135,6 @@ namespace ScriptEngine.Machine
                 optionalParam,
                 optionalParam
             };
-        }
-
-        private static ParameterDefinition[] QuestionParamInfo()
-        {
-            return MandatoryParamInfo(3);
         }
 
         private static ParameterDefinition[] MandatoryParamInfo(int amount)
@@ -197,5 +201,19 @@ namespace ScriptEngine.Machine
                 };
         }
 
+        private static ParameterDefinition[] ChrCodeParamsInfo()
+        {
+            var optionalParam = new ParameterDefinition()
+            {
+                HasDefaultValue = true,
+                IsByValue = true
+            };
+
+            return new ParameterDefinition[2]
+                {
+                    new ParameterDefinition(),
+                    optionalParam
+                };
+        }
     }
 }

@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,7 +36,17 @@ namespace oscript
             var hostedScript = new HostedScriptEngine();
             hostedScript.Initialize();
             var source = hostedScript.Loader.FromFile(_path);
-            var process = hostedScript.CreateProcess(this, source);
+
+            Process process;
+            try
+            {
+                process = hostedScript.CreateProcess(this, source);
+            }
+            catch(Exception e)
+            {
+                this.ShowExceptionInfo(e);
+                return 1;
+            }
 
             return process.Start();
         }
@@ -44,7 +60,13 @@ namespace oscript
 
         public void ShowExceptionInfo(Exception exc)
         {
-            Console.WriteLine(exc.Message);
+            if(exc is ScriptException)
+            {
+                var rte = (ScriptException)exc;
+                Console.WriteLine(rte.MessageWithoutCodeFragment);
+            }
+            else
+                Console.WriteLine(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)

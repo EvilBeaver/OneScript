@@ -1,9 +1,16 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript
 {
@@ -38,7 +45,7 @@ namespace ScriptEngine.HostedScript
             }
             finally
             {
-                //AttachedScriptsFactory.Dispose();
+                _engine.Dispose();
                 _engine = null;
             }
         }

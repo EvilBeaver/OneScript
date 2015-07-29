@@ -1,8 +1,15 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
+using ScriptEngine.Machine;
 
 namespace StandaloneRunner
 {
@@ -23,10 +30,14 @@ namespace StandaloneRunner
                 return process.Start();
                 
             }
+            catch (ScriptInterruptionException e)
+            {
+                return e.ExitCode;
+            }
             catch (Exception e)
             {
-                Console.Write(e.ToString());
-                return -1;
+                this.ShowExceptionInfo(e);
+                return 1;
             }
 
         }
@@ -72,7 +83,13 @@ namespace StandaloneRunner
 
         public void ShowExceptionInfo(Exception exc)
         {
-           Console.WriteLine(exc.ToString());
+            if (exc is RuntimeException)
+            {
+                var rte = (RuntimeException)exc;
+                Console.WriteLine(rte.MessageWithoutCodeFragment);
+            }
+            else
+                Console.WriteLine(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)

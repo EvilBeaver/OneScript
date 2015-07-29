@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,30 +12,6 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class ContextClassAttribute : Attribute
-    {
-        string _name;
-        string _alias;
-
-        public ContextClassAttribute(string typeName, string typeAlias = "")
-        {
-            _name = typeName;
-            _alias = typeAlias;
-        }
-
-        public string GetName()
-        {
-            return _name;
-        }
-
-        public string GetAlias()
-        {
-            return _alias;
-        }
-
-    }
-
     interface ITypeManager
     {
         Type GetImplementingClass(int typeId);
@@ -40,6 +22,7 @@ namespace ScriptEngine.Machine
         TypeDescriptor GetTypeDescriptorFor(IValue typeTypeValue);
         void RegisterAliasFor(TypeDescriptor td, string alias);
         bool IsKnownType(Type type);
+        bool IsKnownType(string typeName);
         Type NewInstanceHandler { get; set; }
     }
 
@@ -111,7 +94,16 @@ namespace ScriptEngine.Machine
 
         public TypeDescriptor GetTypeByName(string name)
         {
-            var ktIndex = _knownTypesIndexes[name];
+            int ktIndex;
+            try
+            {
+                ktIndex = _knownTypesIndexes[name];
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new RuntimeException(String.Format("Тип не зарегистрирован ({0})", name));
+            }
+
             return _knownTypes[ktIndex].Descriptor;
         }
 
@@ -169,6 +161,12 @@ namespace ScriptEngine.Machine
         public bool IsKnownType(Type type)
         {
             return _knownTypes.Any(x => x.SystemType == type);
+        }
+
+        public bool IsKnownType(string typeName)
+        {
+            var nameToUpper = typeName.ToUpperInvariant();
+            return _knownTypes.Any(x => x.Descriptor.Name.ToUpperInvariant() == nameToUpper);
         }
 
         public Type NewInstanceHandler 
@@ -250,6 +248,11 @@ namespace ScriptEngine.Machine
             return _instance.IsKnownType(type);
         }
 
+        public static bool IsKnownType(string typeName)
+        {
+            return _instance.IsKnownType(typeName);
+        }
+
         public static TypeDescriptor GetTypeByFrameworkType(Type type)
         {
             return _instance.GetTypeByFrameworkType(type);
@@ -281,7 +284,7 @@ namespace ScriptEngine.Machine
                 typeId = TypeManager.GetTypeByName(typeName).ID;
                 clrType = TypeManager.GetImplementingClass(typeId);
             }
-            catch (KeyNotFoundException)
+            catch (RuntimeException e)
             {
                 if (NewInstanceHandler != null)
                 {
@@ -289,7 +292,7 @@ namespace ScriptEngine.Machine
                 }
                 else
                 {
-                    throw new RuntimeException("Конструктор не найден (" + typeName + ")");
+                    throw new RuntimeException("Конструктор не найден (" + typeName + ")", e);
                 }
             }
 
