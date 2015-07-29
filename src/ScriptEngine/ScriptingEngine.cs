@@ -40,14 +40,6 @@ namespace ScriptEngine
 
         public RuntimeEnvironment Environment { get; set; }
 
-        public ScriptInformationContext CurrentScript 
-        { 
-            get
-            {
-                return _machine.CurrentScript;
-            }
-        }
-
         public void Initialize()
         {
             SetDefaultEnvironmentIfNeeded();

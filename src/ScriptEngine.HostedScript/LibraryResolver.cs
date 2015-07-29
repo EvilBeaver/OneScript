@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Compiler;
+using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -72,6 +73,33 @@ namespace ScriptEngine.HostedScript
 
         public List<string> SearchDirectories { get; private set; }
 
+        //TODO: Тут совсем ужасно спроектировано взаимодействие слоев и передача контекста
+        // нужно снова заняться версией 2.0 ((
+        private Stack<ICodeSource> _compiledSourcesStack = new Stack<ICodeSource>();
+
+        public ICodeSource Source 
+        { 
+            get
+            {
+                if (_compiledSourcesStack.Count == 0)
+                    return null;
+
+                return _compiledSourcesStack.Peek();
+            }
+            set
+            {
+                if(value == null)
+                {
+                    if (_compiledSourcesStack.Count > 0)
+                        _compiledSourcesStack.Pop();
+                }
+                else
+                {
+                    _compiledSourcesStack.Push(value);
+                }
+            }
+        }
+
         private LibraryLoader DefaultLoader
         {
             get 
@@ -136,15 +164,15 @@ namespace ScriptEngine.HostedScript
         {
             string realPath;
 
-            if (!Path.IsPathRooted(libraryPath) && _engine.CurrentScript != null)
+            if (!Path.IsPathRooted(libraryPath) && Source != null)
             {
-                var currentPath = _engine.CurrentScript.Path;
+                var currentPath = Source.SourceDescription;
                 // Загружаем относительно текущего скрипта, однако,
                 // если CurrentScript не файловый (TestApp или другой хост), то загружаем относительно рабочего каталога.
                 // немного костыльно, ага ((
                 //
                 if (!PathHasInvalidChars(currentPath))
-                    realPath = Path.Combine(_engine.CurrentScript.Path, libraryPath);
+                    realPath = Path.Combine(Path.GetDirectoryName(currentPath), libraryPath);
                 else
                     realPath = libraryPath;
             }
@@ -220,7 +248,7 @@ namespace ScriptEngine.HostedScript
 
             var newLib = new Library() { id = id, state = ProcessingState.Discovered };
             bool hasFiles;
-            int newLibIndex = _libs.Count;;
+            int newLibIndex = _libs.Count;
             
             var customLoaderFile = Path.Combine(libraryPath, PREDEFINED_LOADER_FILE);
             if (File.Exists(customLoaderFile))
