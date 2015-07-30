@@ -319,6 +319,17 @@ namespace TestApp
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             RestoreLastCode();
+            txtCode.editor.Focus();
+        }
+
+        private void FocusParamsWindow(object sender, ExecutedRoutedEventArgs e)
+        {
+            args.Focus();
+        }
+
+        private void FocusCodeWindow(object sender, ExecutedRoutedEventArgs e)
+        {
+            txtCode.editor.Focus();
         }
     }
 

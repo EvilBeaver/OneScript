@@ -8,6 +8,8 @@
     <Grid>
         <Grid.Resources>
             <RoutedUICommand x:Key="TestApp_Run" />
+            <RoutedUICommand x:Key="TestApp_FocusParams" />
+            <RoutedUICommand x:Key="TestApp_FocusCode" />
         </Grid.Resources>
         <Grid.CommandBindings>
             <CommandBinding Command="ApplicationCommands.New" Executed="NewScript_Execute"/>
@@ -15,10 +17,14 @@
             <CommandBinding Command="ApplicationCommands.Save" CanExecute="CommandBinding_CanExecute" Executed="Save_Execute"/>
             <CommandBinding Command="ApplicationCommands.SaveAs" CanExecute="CommandBinding_CanExecute" Executed="SaveAs_Execute"/>
             <CommandBinding Command="{StaticResource ResourceKey=TestApp_Run}" CanExecute="CommandBinding_CanExecute" Executed="Run_Execute"/>
+            <CommandBinding Command="{StaticResource ResourceKey=TestApp_FocusParams}" CanExecute="CommandBinding_CanExecute" Executed="FocusParamsWindow"/>
+            <CommandBinding Command="{StaticResource ResourceKey=TestApp_FocusCode}" CanExecute="CommandBinding_CanExecute" Executed="FocusCodeWindow"/>
         </Grid.CommandBindings>
         
         <Grid.InputBindings>
             <KeyBinding Key="F5" Command="{StaticResource ResourceKey=TestApp_Run}" />
+            <KeyBinding Key="A" Modifiers="Alt" Command="{StaticResource ResourceKey=TestApp_FocusParams}" />
+            <KeyBinding Key="R" Modifiers="Alt" Command="{StaticResource ResourceKey=TestApp_FocusCode}" />
         </Grid.InputBindings>
         
         <Grid.ColumnDefinitions>
