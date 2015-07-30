@@ -149,6 +149,8 @@ namespace TestApp
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            SaveLastCode(); // Сохраним набранный текст на случай зависания или вылета
+
             result.Text = "";
             var sw = new System.Diagnostics.Stopwatch();
 
@@ -176,8 +178,6 @@ namespace TestApp
                 result.Text = exc.Message;
                 return;
             }
-
-            SaveLastCode(); // Сохраним набранный текст на случай зависания или вылета
 
             result.AppendText("Script started: " + DateTime.Now.ToString() + "\n");
             sw.Start();
