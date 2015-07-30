@@ -89,14 +89,29 @@ namespace ScriptEngine.HostedScript.Library
         /// Экспортные свойства и методы скрипта доступны для вызова.
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
+        /// <param name="externalContext">Структура. Внешний контекст загружаемого скрипта (глобальные переменные)</param>
         /// <example>УправлениеКонфигуратором = ЗагрузитьСценарий("C:\config-manager.os");
         /// УправлениеКонфигуратором.ВыгрузитьБазуДанных();</example>
         /// </param>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
-        public IRuntimeContextInstance LoadScript(string path)
+        public IRuntimeContextInstance LoadScript(string path, StructureImpl externalContext = null)
         {
             var compiler = EngineInstance.GetCompilerService();
-            return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path);
+            if(externalContext == null)
+                return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path);
+            else
+            {
+                ExternalContextData extData = new ExternalContextData();
+
+                foreach (var item in externalContext)
+                {
+                    var kv = item as KeyAndValueImpl;
+                    extData.Add(kv.Key.AsString(), kv.Value);
+                }
+
+                return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path, extData);
+
+            }
         }
 
         /// <summary>
