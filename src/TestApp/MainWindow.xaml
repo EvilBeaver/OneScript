@@ -3,13 +3,36 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="579" Width="807"
         xmlns:v8r="clr-namespace:V8Reader.Core"
-        xmlns:ctrl="clr-namespace:V8Reader.Controls" Closing="Window_Closing" Icon="script_badge.ico">
+        xmlns:ctrl="clr-namespace:V8Reader.Controls" Closing="Window_Closing" Icon="script_badge.ico"
+        Loaded="Window_Loaded" >
     <Grid>
+        <Grid.Resources>
+            <RoutedUICommand x:Key="TestApp_Run" />
+            <RoutedUICommand x:Key="TestApp_FocusParams" />
+            <RoutedUICommand x:Key="TestApp_FocusCode" />
+        </Grid.Resources>
         <Grid.CommandBindings>
+            <CommandBinding Command="ApplicationCommands.New" Executed="NewScript_Execute"/>
             <CommandBinding Command="ApplicationCommands.Open" CanExecute="CommandBinding_CanExecute" Executed="Open_Execute"/>
             <CommandBinding Command="ApplicationCommands.Save" CanExecute="CommandBinding_CanExecute" Executed="Save_Execute"/>
             <CommandBinding Command="ApplicationCommands.SaveAs" CanExecute="CommandBinding_CanExecute" Executed="SaveAs_Execute"/>
+            <CommandBinding Command="{StaticResource ResourceKey=TestApp_Run}" CanExecute="CommandBinding_CanExecute" Executed="Run_Execute"/>
+            <CommandBinding Command="{StaticResource ResourceKey=TestApp_FocusParams}" CanExecute="CommandBinding_CanExecute" Executed="FocusParamsWindow"/>
+            <CommandBinding Command="{StaticResource ResourceKey=TestApp_FocusCode}" CanExecute="CommandBinding_CanExecute" Executed="FocusCodeWindow"/>
         </Grid.CommandBindings>
+        
+        <Grid.InputBindings>
+            <KeyBinding Key="F5" Command="{StaticResource ResourceKey=TestApp_Run}" />
+            <KeyBinding Key="A" Modifiers="Alt" Command="{StaticResource ResourceKey=TestApp_FocusParams}" />
+            <KeyBinding Key="R" Modifiers="Alt" Command="{StaticResource ResourceKey=TestApp_FocusCode}" />
+        </Grid.InputBindings>
+        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="297*"></ColumnDefinition>
+            <ColumnDefinition Width="5"></ColumnDefinition>
+            <ColumnDefinition Width="300"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="297*"/>
@@ -32,6 +55,7 @@
                             </Path>
                         </StackPanel>
                     </MenuItem.Header>
+                    <MenuItem Command="ApplicationCommands.New"/>
                     <MenuItem Command="ApplicationCommands.Open"/>
                     <MenuItem Command="ApplicationCommands.Save"/>
                     <MenuItem Command="ApplicationCommands.SaveAs"/>
@@ -40,11 +64,17 @@
             <Button Click="Button_Click" Content="Компилировать"/>
             <Button Content="Выполнить" Margin="5,0,0,0" Click="Button_Click_1"/>
         </ToolBar>
-     
-        <ctrl:CodeControl Grid.Row="1" x:Name="txtCode" TextChanged="txtCode_TextChanged"></ctrl:CodeControl>
+        
+            <ctrl:CodeControl Grid.Row="1" Grid.Column="0" x:Name="txtCode" TextChanged="txtCode_TextChanged"/>
+            <GridSplitter Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+            <TextBox x:Name="args" Grid.Row="1" Grid.Column="2" FontFamily="Courier New" FontSize="12" 
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Auto" AcceptsReturn="True"
+                     Text="#Аргументы командной строки (по одному на строку)"/>
 
-        <GridSplitter Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-        <TextBox x:Name="result" Grid.Row="3" FontFamily="Courier New" FontSize="12"/>
+
+        <GridSplitter Grid.Row="2" Grid.ColumnSpan="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+        <TextBox x:Name="result" Grid.Row="3" Grid.ColumnSpan="3" FontFamily="Courier New" FontSize="12" 
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Auto"/>
 
     </Grid>
 </Window>
