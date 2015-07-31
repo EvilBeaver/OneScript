@@ -319,6 +319,7 @@ namespace TestApp
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             RestoreLastCode();
+            //SetCmdLineVisibility();
             txtCode.editor.Focus();
         }
 
@@ -330,6 +331,28 @@ namespace TestApp
         private void FocusCodeWindow(object sender, ExecutedRoutedEventArgs e)
         {
             txtCode.editor.Focus();
+        }
+
+        private void ToggleCmdLine_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            SetCmdLineVisibility();
+            e.Handled = true;
+        }
+
+        private void SetCmdLineVisibility()
+        {
+            var showCmdlineArgs = (bool)toggleArgs.IsChecked;
+
+            if (showCmdlineArgs)
+            {
+                verticalSplitter.Visibility = Visibility.Visible;
+                args.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                verticalSplitter.Visibility = Visibility.Collapsed;
+                args.Visibility = Visibility.Collapsed;
+            }
         }
     }
 
