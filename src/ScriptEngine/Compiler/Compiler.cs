@@ -399,7 +399,7 @@ namespace ScriptEngine.Compiler
                 }
                 else
                 {
-                    throw CompilerException.UnexpectedOperation();
+                    throw CompilerException.TokenExpected(Token.Comma);
                 }
             }
 
