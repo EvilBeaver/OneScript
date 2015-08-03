@@ -46,6 +46,42 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         /// <summary>
+        /// Имя модуля, вызвавшего исключение.
+        /// </summary>
+        [ContextProperty("ИмяМодуля", "ModuleName")]
+        public string ModuleName
+        {
+            get
+            {
+                return _exc.ModuleName;
+            }
+        }
+
+        /// <summary>
+        /// Номер строки, вызвавшей исключение.
+        /// </summary>
+        [ContextProperty("НомерСтроки", "LineNumber")]
+        public int LineNumber
+        {
+            get
+            {
+                return _exc.LineNumber;
+            }
+        }
+
+        /// <summary>
+        /// Строка исходного кода, вызвавшего исключение.
+        /// </summary>
+        [ContextProperty("ИсходнаяСтрока", "SourceLine")]
+        public string SourceLine
+        {
+            get
+            {
+                return _exc.Code;
+            }
+        }
+
+        /// <summary>
         /// Содержит вложенное исключение, если таковое было. Эквивалент Exception.InnerException в C#
         /// </summary>
         [ContextProperty("Причина", "Cause")]
