@@ -52,12 +52,6 @@ namespace ScriptEngine
             _injectedProperties.Insert(value, identifier, true, !readOnly);
         }
 
-        public void SetGlobalProperty(string propertyName, IValue value)
-        {
-            int propId = _injectedProperties.FindProperty(propertyName);
-            _injectedProperties.SetPropValue(propId, value);
-        }
-
         internal CompilerContext SymbolsContext
         {
             get

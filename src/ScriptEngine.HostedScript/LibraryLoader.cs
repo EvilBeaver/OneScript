@@ -20,14 +20,6 @@ namespace ScriptEngine.HostedScript
         private RuntimeEnvironment _env;
         private ScriptingEngine _engine;
         bool _customized;
-        List<DelayLoadedScriptData> _delayLoadedScripts = new List<DelayLoadedScriptData>();
-
-        private struct DelayLoadedScriptData
-        {
-            public string path;
-            public string identifier;
-            public bool asClass;
-        }
 
         private enum MethodNumbers
         {
@@ -90,12 +82,8 @@ namespace ScriptEngine.HostedScript
             if (!Utils.IsValidIdentifier(className))
                 throw RuntimeException.InvalidArgumentValue();
 
-            _delayLoadedScripts.Add(new DelayLoadedScriptData()
-                {
-                    path = file,
-                    identifier = className,
-                    asClass = true
-                });
+            var compiler = _engine.GetCompilerService();
+            _engine.AttachedScriptsFactory.AttachByPath(compiler, file, className);
         }
 
         [ContextMethod("ДобавитьМодуль", "AddModule")]
@@ -104,14 +92,9 @@ namespace ScriptEngine.HostedScript
             if (!Utils.IsValidIdentifier(moduleName))
                 throw RuntimeException.InvalidArgumentValue();
 
-            _delayLoadedScripts.Add(new DelayLoadedScriptData()
-            {
-                path = file,
-                identifier = moduleName,
-                asClass = false
-            });
-
-            _env.InjectGlobalProperty(null, moduleName, true);
+            var compiler = _engine.GetCompilerService();
+            var instance = (IValue)_engine.AttachedScriptsFactory.LoadFromPath(compiler, file);
+            _env.InjectGlobalProperty(instance, moduleName, true);
         }
 
         protected override int GetVariableCount()
@@ -174,20 +157,14 @@ namespace ScriptEngine.HostedScript
 
         public bool ProcessLibrary(string libraryPath)
         {
-            bool success;
             if(!_customized)
             {
-                success = DefaultProcessing(libraryPath);
+                return DefaultProcessing(libraryPath);
             }
             else
             {
-                success = CustomizedProcessing(libraryPath);
+                return CustomizedProcessing(libraryPath);
             }
-
-            if(success)
-                CompileDelayedModules();
-
-            return success;
         }
 
         private bool CustomizedProcessing(string libraryPath)
@@ -229,27 +206,6 @@ namespace ScriptEngine.HostedScript
             }
 
             return hasFiles;
-        }
-
-        private void CompileDelayedModules()
-        {
-            var ordered = _delayLoadedScripts.OrderBy(x => x.asClass ? 1 : 0);
-
-            foreach (var script in ordered)
-            {
-                var compiler = _engine.GetCompilerService();
-
-                if(script.asClass)
-                {
-                    _engine.AttachedScriptsFactory.AttachByPath(compiler, script.path, script.identifier);
-                }
-                else
-                {
-                    var instance = (IValue)_engine.AttachedScriptsFactory.LoadFromPath(compiler, script.path);
-                    _env.SetGlobalProperty(script.identifier, instance);
-                }
-            }
-
         }
     }
 }
