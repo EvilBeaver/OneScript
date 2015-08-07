@@ -207,5 +207,27 @@ namespace ScriptEngine.HostedScript
 
             return hasFiles;
         }
+
+        private void CompileDelayedModules()
+        {
+            var ordered = _delayLoadedScripts.OrderBy(x => x.asClass ? 1 : 0).ToArray();
+            _delayLoadedScripts.Clear();
+
+            foreach (var script in ordered)
+            {
+                var compiler = _engine.GetCompilerService();
+
+                if(script.asClass)
+                {
+                    _engine.AttachedScriptsFactory.AttachByPath(compiler, script.path, script.identifier);
+                }
+                else
+                {
+                    var instance = (IValue)_engine.AttachedScriptsFactory.LoadFromPath(compiler, script.path);
+                    _env.SetGlobalProperty(script.identifier, instance);
+                }
+            }
+
+        }
     }
 }
