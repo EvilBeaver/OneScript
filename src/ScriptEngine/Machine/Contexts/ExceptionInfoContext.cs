@@ -53,7 +53,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
-                return _exc.ModuleName;
+                return SafeMarshallingNullString(_exc.ModuleName);
             }
         }
 
@@ -77,8 +77,13 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
-                return _exc.Code;
+                return SafeMarshallingNullString(_exc.Code);
             }
+        }
+
+        private string SafeMarshallingNullString(string src)
+        {
+            return src == null ? "" : src;
         }
 
         /// <summary>
@@ -98,7 +103,10 @@ namespace ScriptEngine.Machine.Contexts
                     {
                         inner = new ExternalSystemException(_exc.InnerException);
                     }
-                    
+                    if (inner.ModuleName == null)
+                        inner.ModuleName = _exc.ModuleName;
+                    if (inner.Code == null)
+                        inner.Code = _exc.Code;
                     return new ExceptionInfoContext(inner);
                 }
                 else if(_exc.InnerException != null && _exc.InnerException is System.Reflection.TargetInvocationException)
