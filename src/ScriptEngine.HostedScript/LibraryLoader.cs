@@ -233,7 +233,8 @@ namespace ScriptEngine.HostedScript
 
         private void CompileDelayedModules()
         {
-            var ordered = _delayLoadedScripts.OrderBy(x => x.asClass ? 1 : 0);
+            var ordered = _delayLoadedScripts.OrderBy(x => x.asClass ? 1 : 0).ToArray();
+            _delayLoadedScripts.Clear();
 
             foreach (var script in ordered)
             {
