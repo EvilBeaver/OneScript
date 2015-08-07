@@ -37,7 +37,13 @@
             <RowDefinition Height="100*"/>
         </Grid.RowDefinitions>
 
-        <ToolBar Name="tbMain">
+        <DockPanel>
+
+            <ToolBar DockPanel.Dock="Right">
+                <ToggleButton Command="{StaticResource TestApp_ToggleCmdLine}" Content="args" ToolTip="{Binding Command.Text}" x:Name="toggleArgs"/>
+            </ToolBar>
+
+            <ToolBar Name="tbMain">
             <ToolBar.Resources>
                 <Geometry x:Key="DownArrow">M1,4 L5,4 L3,8 Z</Geometry>
                 <Style x:Key="arrowStyle" TargetType="Path">
@@ -63,10 +69,10 @@
                 </MenuItem>
             </Menu>
             <Button Click="Button_Click" Content="Компилировать"/>
-            <Button Content="Выполнить" Margin="5,0,0,0" Click="Button_Click_1"/>
-            <ToggleButton Command="{StaticResource TestApp_ToggleCmdLine}" Content="#args" ToolTip="{Binding Command.Text}" x:Name="toggleArgs"/>
-        </ToolBar>
-
+                <Button Content="Выполнить" Margin="5,0,0,0" Click="Button_Click_1"/>
+            </ToolBar>
+            
+        </DockPanel>
         <Grid Grid.Row="1" x:Name="contentGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"></ColumnDefinition>
