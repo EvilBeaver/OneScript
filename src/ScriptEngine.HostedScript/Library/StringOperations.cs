@@ -26,11 +26,14 @@ namespace ScriptEngine.HostedScript.Library
         {
             bool result = false;
 
-            if ((!string.IsNullOrEmpty(inputString)) && (!string.IsNullOrEmpty(searchString)))
+            if(!string.IsNullOrEmpty(inputString))
             {
-                result = inputString.StartsWith(searchString);
+                if (!string.IsNullOrEmpty(searchString))
+                {
+                    result = inputString.StartsWith(searchString);
+                }
+                else throw new RuntimeException("Ошибка при вызове метода контекста (СтрНачинаетсяС): Недопустимое значение параметра (параметр номер '2')"); 
             }
-            else throw new ArgumentException();
 
             return result;
         }
@@ -45,11 +48,14 @@ namespace ScriptEngine.HostedScript.Library
         {
             bool result = false;
 
-            if ((!string.IsNullOrEmpty(inputString)) && (!string.IsNullOrEmpty(searchString)))
+            if(!string.IsNullOrEmpty(inputString))
             {
-                result = inputString.EndsWith(searchString);
+                if (!string.IsNullOrEmpty(searchString))
+                {
+                    result = inputString.EndsWith(searchString);
+                }
+                else throw new RuntimeException("Ошибка при вызове метода контекста (СтрЗаканчиваетсяНа): Недопустимое значение параметра (параметр номер '2')"); 
             }
-            else throw new ArgumentException();
 
             return result;
         }
@@ -64,12 +70,22 @@ namespace ScriptEngine.HostedScript.Library
         public ArrayImpl StrSplit(string inputString, string stringDelimiter, bool includeEmpty = true)
         {
             ArrayImpl arrResult = new ArrayImpl();
-            if ((!string.IsNullOrEmpty(inputString)) && (!string.IsNullOrEmpty(stringDelimiter)))
+            string[] arrParsed;
+            if(!string.IsNullOrEmpty(inputString))
             {
-                string[] arr = inputString.Split(new string[] { stringDelimiter }, includeEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
-                arrResult = new ArrayImpl(arr.Select(x => ValueFactory.Create(x)));
+                if(!string.IsNullOrEmpty(stringDelimiter))
+                {
+                    arrParsed = inputString.Split(new string[] { stringDelimiter }, includeEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
+                }
+                else
+                {
+                    arrParsed = new string[] { inputString };
+                }
+            } else
+            {
+                arrParsed = new string[] { string.Empty };
             }
-            else throw new ArgumentException();
+            arrResult = new ArrayImpl(arrParsed.Select(x => ValueFactory.Create(x)));
             return arrResult;
         }
 
