@@ -140,7 +140,7 @@
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\StructureImpl.cs" />
-    <Compile Include="StringOperations.cs" />
+    <Compile Include="Library\StringOperations.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
