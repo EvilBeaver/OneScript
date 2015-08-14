@@ -98,6 +98,18 @@ namespace ScriptEngine.HostedScript.Library
             return arrResult;
         }
 
+        /// <summary>
+        /// Сравнивает строки без учета регистра.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns>-1 первая строка больше, 1 - вторая строка больше. 0 - строки равны</returns>
+        [ContextMethod("СтрСравнить", "StrCompare")]
+        public int StrCompare(string first, string second)
+        {
+            return String.Compare(first, second, true);
+        }
+
         public override int FindMethod(string name)
         {
             if (string.Compare(name, STRTEMPLATE_NAME_RU, true) == 0 || string.Compare(name, STRTEMPLATE_NAME_EN, true) == 0)
