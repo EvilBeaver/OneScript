@@ -16,6 +16,15 @@ namespace ScriptEngine.HostedScript.Library
     [GlobalContext(Category = "Операции с строками")]
     public class StringOperations : GlobalContextBase<StringOperations>
     {
+        readonly int STRTEMPLATE_ID;
+        const string STRTEMPLATE_NAME_RU = "СтрШаблон";
+        const string STRTEMPLATE_NAME_EN = "StrTemplate";
+
+        public StringOperations()
+        {
+            STRTEMPLATE_ID = this.Methods.Count;
+        }
+
         /// <summary>
         /// Определяет, что строка начинается с указанной подстроки.
         /// </summary>
@@ -87,6 +96,109 @@ namespace ScriptEngine.HostedScript.Library
             }
             arrResult = new ArrayImpl(arrParsed.Select(x => ValueFactory.Create(x)));
             return arrResult;
+        }
+
+        public override int FindMethod(string name)
+        {
+            if (string.Compare(name, STRTEMPLATE_NAME_RU, true) == 0 || string.Compare(name, STRTEMPLATE_NAME_EN, true) == 0)
+                return STRTEMPLATE_ID;
+            else
+                return base.FindMethod(name);
+        }
+
+        public override IEnumerable<MethodInfo> GetMethods()
+        {
+            var fullList = new List<MethodInfo>(base.GetMethods());
+            var strTemplateMethodInfo = CreateStrTemplateMethodInfo();
+
+            fullList.Add(strTemplateMethodInfo);
+            return fullList;
+
+        }
+
+        private static MethodInfo CreateStrTemplateMethodInfo()
+        {
+            var strTemplateMethodInfo = new MethodInfo();
+            strTemplateMethodInfo.IsFunction = true;
+            strTemplateMethodInfo.Name = STRTEMPLATE_NAME_RU;
+            strTemplateMethodInfo.Alias = STRTEMPLATE_NAME_EN;
+            strTemplateMethodInfo.Params = new ParameterDefinition[11];
+
+            strTemplateMethodInfo.Params[0] = new ParameterDefinition()
+            {
+                IsByValue = true
+            };
+
+            for (int i = 1; i < strTemplateMethodInfo.Params.Length; i++)
+            {
+                strTemplateMethodInfo.Params[i] = new ParameterDefinition()
+                {
+                    IsByValue = true,
+                    HasDefaultValue = true
+                };
+            }
+            return strTemplateMethodInfo;
+        }
+
+        public override MethodInfo GetMethodInfo(int methodNumber)
+        {
+            if (methodNumber == STRTEMPLATE_ID)
+                return CreateStrTemplateMethodInfo();
+            else
+                return base.GetMethodInfo(methodNumber);
+        }
+
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        {
+            if (methodNumber == STRTEMPLATE_ID)
+                CallStrTemplate(arguments);
+            else
+                base.CallAsProcedure(methodNumber, arguments);
+        }
+
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        {
+            if (methodNumber == STRTEMPLATE_ID)
+                retValue = CallStrTemplate(arguments);
+            else
+                base.CallAsFunction(methodNumber, arguments, out retValue);
+        }
+
+        private IValue CallStrTemplate(IValue[] arguments)
+        {
+            var srcFormat = arguments[0].AsString();
+            if (srcFormat == String.Empty)
+                return ValueFactory.Create("");
+
+            var re = new System.Text.RegularExpressions.Regex(@"(%%)|(%\d+)|(%\D)");
+            int matchCount = 0;
+            int passedArgsCount = arguments.Skip(1).Where(x => x != null).Count();
+            var result = re.Replace(srcFormat, (m) =>
+            {
+                if (m.Groups[1].Success)
+                    return "%";
+                
+                if(m.Groups[2].Success)
+                {
+                    matchCount++;
+                    var number = int.Parse(m.Groups[2].Value.Substring(1));
+                    if (number < 1 || number > 11)
+                        throw new RuntimeException("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
+
+                    if (arguments[number] != null)
+                        return arguments[number].AsString();
+                    else
+                        return "";
+                }
+
+                throw new RuntimeException("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
+
+            });
+
+            if (passedArgsCount > matchCount)
+                throw RuntimeException.TooManyArgumentsPassed();
+
+            return ValueFactory.Create(result);
         }
 
         public static IAttachableContext CreateInstance()
