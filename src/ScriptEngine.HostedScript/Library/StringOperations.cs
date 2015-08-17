@@ -99,6 +99,19 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
+        /// Соединяет массив переданных строк в одну строку с указанным разделителем
+        /// </summary>
+        /// <param name="input">Массив - соединяемые строки</param>
+        /// <param name="delimiter">Разделитель. Если не указан, строки объединяются слитно</param>
+        [ContextMethod("СтрСоединить", "StrConcat")]
+        public string StrConcat(ArrayImpl input, string delimiter = null)
+        {
+            var strings = input.Select(x => x.AsString());
+            
+            return String.Join(delimiter, strings);
+        }
+
+        /// <summary>
         /// Сравнивает строки без учета регистра.
         /// </summary>
         /// <param name="first"></param>
@@ -109,6 +122,81 @@ namespace ScriptEngine.HostedScript.Library
         {
             return String.Compare(first, second, true);
         }
+
+        /// <summary>
+        /// Находит вхождение искомой строки как подстроки в исходной строке
+        /// </summary>
+        /// <param name="haystack">Строка, в которой ищем</param>
+        /// <param name="needle">Строка, которую надо найти</param>
+        /// <param name="direction">значение перечисления НаправлениеПоиска (с конца/с начала)</param>
+        /// <param name="startPos">Начальная позиция, с которой начинать поиск</param>
+        /// <param name="occurance">Указывает номер вхождения искомой подстроки в исходной строке</param>
+        /// <returns>Позицию искомой строки в исходной строке. Возвращает 0, если подстрока не найдена.</returns>
+        [ContextMethod("СтрНайти", "StrFind")]
+        public int StrFind(string haystack, string needle, SelfAwareEnumValue<SearchDirectionEnum> direction = null, int startPos = 0, int occurance = 0)
+        {
+            int len = haystack.Length;
+            if (len == 0 || needle.Length == 0)
+                return 0;
+
+            if (direction == null)
+                direction = GlobalsManager.GetEnum<SearchDirectionEnum>().FromBegin as SelfAwareEnumValue<SearchDirectionEnum>;
+
+            bool fromBegin = direction == GlobalsManager.GetEnum<SearchDirectionEnum>().FromBegin;
+
+            if(startPos == 0)
+            {
+                startPos = fromBegin ? 1 : len;
+            }
+
+            if (startPos < 1 || startPos > len)
+                throw RuntimeException.InvalidArgumentValue();
+
+            if (occurance == 0)
+                occurance = 1;
+
+            int startIndex = startPos - 1;
+            int foundTimes = 0;
+            int index = len + 1;
+
+            if(fromBegin)
+            {
+                while(foundTimes < occurance && index >= 0)
+                {
+                    index = haystack.IndexOf(needle, startIndex);
+                    if (index > 0)
+                    {
+                        startIndex = index + 1;
+                        foundTimes++;
+                    }
+                    if (startIndex >= len)
+                        break;
+                }
+
+            }
+            else
+            {
+                while(foundTimes < occurance && index >= 0)
+                {
+                    index = haystack.LastIndexOf(needle, startIndex);
+                    if (index > 0)
+                    {
+                        startIndex = index - 1;
+                        foundTimes++;
+                    }
+                    if (startIndex < 0)
+                        break;
+                }
+
+            }
+
+            if (foundTimes == occurance)
+                return index + 1;
+            else
+                return 0;
+        }
+
+        #region IRuntimeContextInstance overrides
 
         public override int FindMethod(string name)
         {
@@ -174,7 +262,9 @@ namespace ScriptEngine.HostedScript.Library
                 retValue = CallStrTemplate(arguments);
             else
                 base.CallAsFunction(methodNumber, arguments, out retValue);
-        }
+        } 
+
+        #endregion
 
         private IValue CallStrTemplate(IValue[] arguments)
         {
@@ -218,5 +308,53 @@ namespace ScriptEngine.HostedScript.Library
             return new StringOperations();
         }
 
+    }
+
+
+    [SystemEnum("НаправлениеПоиска", "SearchDirection")]
+    public class SearchDirectionEnum : EnumerationContext
+    {
+        const string FROM_BEGIN = "СНачала";
+        const string FROM_END = "СКонца";
+
+        public SearchDirectionEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
+            : base(typeRepresentation, valuesType)
+        {
+
+        }
+
+        [EnumValue(FROM_BEGIN, "FromBegin")]
+        public EnumerationValue FromBegin 
+        {
+            get
+            {
+                return this[FROM_BEGIN];
+            }
+        }
+
+        [EnumValue(FROM_END, "FromEnd")]
+        public EnumerationValue FromEnd
+        {
+            get
+            {
+                return this[FROM_END];
+            }
+        }
+
+        public static SearchDirectionEnum CreateInstance()
+        {
+            SearchDirectionEnum instance;
+
+            TypeDescriptor enumType;
+            TypeDescriptor enumValType;
+
+            EnumContextHelper.RegisterEnumType<SearchDirectionEnum>(out enumType, out enumValType);
+
+            instance = new SearchDirectionEnum(enumType, enumValType);
+
+            EnumContextHelper.RegisterValues<SearchDirectionEnum>(instance);
+
+            return instance;
+        }
     }
 }
