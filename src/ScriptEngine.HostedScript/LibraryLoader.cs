@@ -114,6 +114,13 @@ namespace ScriptEngine.HostedScript
             _env.InjectGlobalProperty(null, moduleName, true);
         }
 
+        [ContextMethod("ЗагрузитьБиблиотеку", "LoadLibrary")]
+        public void LoadLibrary(string dllPath)
+        {
+            var assembly = System.Reflection.Assembly.LoadFile(dllPath);
+            _engine.AttachAssembly(assembly, _env);
+        }
+
         protected override int GetVariableCount()
         {
             return 1;
