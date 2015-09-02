@@ -55,6 +55,29 @@ namespace oscript
                 {
                     return new CgiBehavior();
                 }
+                else if(cmdLineArgs[0].StartsWith("-encoding="))
+                {
+                    var prefixLen = ("-encoding=").Length;
+                    if(cmdLineArgs[0].Length > prefixLen)
+                    {
+                        var encValue = cmdLineArgs[0].Substring(prefixLen);
+                        Encoding encoding;
+                        try
+                        {
+                            encoding = Encoding.GetEncoding(encValue);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Wrong console encoding");
+                            encoding = null;
+                        }
+
+                        if (encoding != null)
+                            Console.OutputEncoding = encoding;
+
+                        return Select(cmdLineArgs.Skip(1).ToArray());
+                    }
+                }
             }
             
             return new ShowUsageBehavior();
