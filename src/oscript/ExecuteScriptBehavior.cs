@@ -55,7 +55,19 @@ namespace oscript
 
         public void Echo(string text)
         {
-            Console.WriteLine(text);
+            if(Program.ConsoleOutputEncoding == null)
+                Console.WriteLine(text);
+            else
+            {
+                using(var stdout = Console.OpenStandardOutput())
+                {
+                    var enc = Program.ConsoleOutputEncoding;
+                    var bytes = enc.GetBytes(text);
+                    stdout.Write(bytes, 0, bytes.Length);
+                    stdout.WriteByte(13);
+                    stdout.WriteByte(10);
+                }
+            }
         }
 
         public void ShowExceptionInfo(Exception exc)

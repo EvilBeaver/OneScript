@@ -33,5 +33,11 @@ namespace oscript
             return returnCode;
 
         }
+
+        public static Encoding ConsoleOutputEncoding
+        {
+            get;
+            set;
+        }
     }
 }
