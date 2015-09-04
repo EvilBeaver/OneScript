@@ -64,9 +64,8 @@ namespace oscript
                     var enc = Program.ConsoleOutputEncoding;
                     var bytes = enc.GetBytes(text);
                     stdout.Write(bytes, 0, bytes.Length);
-                    stdout.WriteByte(13);
-                    stdout.WriteByte(10);
                 }
+                Console.WriteLine();
             }
         }
 
