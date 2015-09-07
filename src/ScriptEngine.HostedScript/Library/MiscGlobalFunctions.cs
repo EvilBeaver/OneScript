@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -28,9 +29,77 @@ namespace ScriptEngine.HostedScript.Library
             return new BinaryDataContext(bytes);
         }
 
+        /// <summary>
+        /// Кодирует строку для передачи в URL (urlencode)
+        /// </summary>
+        /// <param name="sourceString"></param>
+        /// <param name="codeType"></param>
+        /// <param name="encoding"></param>
+        [ContextMethod("КодироватьСтроку", "EncodeString")]
+        public string EncodeString(string sourceString, SelfAwareEnumValue<StringEncodingMethodEnum> codeType, IValue encoding = null)
+        {
+            if(encoding != null)
+                throw new NotSupportedException("Явное указание кодировки в данной версии не поддерживается");
+
+            var encMethod = GlobalsManager.GetEnum<StringEncodingMethodEnum>();
+            if (codeType == encMethod.URLEncoding)
+                return Uri.EscapeDataString(sourceString);
+            else
+                return Uri.EscapeUriString(sourceString);
+        }
+
+        /// <summary>
+        /// Раскодирует строку из URL формата.
+        /// </summary>
+        /// <param name="encodedString"></param>
+        /// <param name="codeType"></param>
+        /// <param name="encoding"></param>
+        /// <returns></returns>
+        [ContextMethod("РаскодироватьСтроку", "DecodeString")]
+        public string DecodeString(string encodedString, SelfAwareEnumValue<StringEncodingMethodEnum> codeType, IValue encoding = null)
+        {
+            throw new NotImplementedException();
+        }
+
+
         public static MiscGlobalFunctions CreateInstance()
         {
             return new MiscGlobalFunctions();
+        }
+    }
+
+    [SystemEnum("СпособКодированияСтроки", "StringEncodingMethod")]
+    public class StringEncodingMethodEnum : EnumerationContext
+    {
+        private const string EV_SIMPLE = "КодировкаURL";
+        private const string EV_URL = "URLВКодировкеURL";
+
+        public StringEncodingMethodEnum(TypeDescriptor enumType, TypeDescriptor valuesType) : base(enumType, valuesType)
+        {
+
+        }
+
+        [EnumValue(EV_SIMPLE, "URLEncoding")]
+        public EnumerationValue URLEncoding
+        {
+            get
+            {
+                return this[EV_SIMPLE];
+            }
+        }
+
+        [EnumValue(EV_URL, "URLInURLEncoding")]
+        public EnumerationValue URLInURLEncoding
+        {
+            get
+            {
+                return this[EV_URL];
+            }
+        }
+
+        public static StringEncodingMethodEnum CreateInstance()
+        {
+            return EnumContextHelper.CreateEnumInstance<StringEncodingMethodEnum>((t, v) => new StringEncodingMethodEnum(t, v));
         }
     }
 }
