@@ -38,14 +38,86 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("КодироватьСтроку", "EncodeString")]
         public string EncodeString(string sourceString, SelfAwareEnumValue<StringEncodingMethodEnum> codeType, IValue encoding = null)
         {
-            if(encoding != null)
-                throw new NotSupportedException("Явное указание кодировки в данной версии не поддерживается");
-
             var encMethod = GlobalsManager.GetEnum<StringEncodingMethodEnum>();
-            if (codeType == encMethod.URLEncoding)
-                return Uri.EscapeDataString(sourceString);
+            Encoding enc;
+            if (encoding != null)
+                enc = TextEncodingEnum.GetEncoding(encoding);
             else
-                return Uri.EscapeUriString(sourceString);
+                enc = Encoding.UTF8;
+
+            if (codeType == encMethod.URLEncoding)
+                return EncodeStringImpl(sourceString, enc, false);
+            else
+                return EncodeStringImpl(sourceString, enc, true);
+        }
+
+        // http://en.wikipedia.org/wiki/Percent-encoding
+        private string EncodeStringImpl(string sourceString, Encoding enc, bool skipUrlSymbols)
+        {
+            var bytes = enc.GetBytes(sourceString);
+            var builder = new StringBuilder(bytes.Length * 2);
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                byte current = bytes[i];
+                if (IsUnreservedSymbol(current))
+                    builder.Append((char)current);
+                else
+                {
+                    if(skipUrlSymbols && IsUriSpecialChar(current))
+                    {
+                        builder.Append((char)current);
+                    }
+                    else
+                    {
+                        builder.AppendFormat("%{0:X2}", (int)current);
+                    }
+                }
+            }
+
+            return builder.ToString();
+        }
+
+        private bool IsUriSpecialChar(byte symbolByte)
+        {
+            switch(symbolByte)
+            {
+                case 47: // /
+                case 37: // %
+                case 63: // ?
+                case 43: // +
+                case 61: // =
+                case 33: // !
+                case 35: // #
+                case 36: // $
+                case 39: // '
+                case 40: // (
+                case 41: // )
+                case 42: // *
+                case 44: // ,
+                case 58: // :
+                case 59: // ;
+                case 64: // @
+                case 91: // [
+                case 93: // ]
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private bool IsUnreservedSymbol(byte symbolByte)
+        {
+            if (symbolByte >= 65 && symbolByte <= 90 // A-Z
+                || symbolByte >= 97 && symbolByte <= 122 // a-z
+                || symbolByte >= 48 && symbolByte <= 57 // 0-9
+                || symbolByte == 45 // -
+                || symbolByte == 46 // .
+                || symbolByte == 95 // _
+                || symbolByte == 126 // ~
+                )
+                return true;
+            else
+                return false;
         }
 
         /// <summary>
@@ -58,7 +130,10 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("РаскодироватьСтроку", "DecodeString")]
         public string DecodeString(string encodedString, SelfAwareEnumValue<StringEncodingMethodEnum> codeType, IValue encoding = null)
         {
-            throw new NotImplementedException();
+            if (encoding != null)
+                throw new NotSupportedException("Явное указание кодировки в данной версии не поддерживается (только utf-8 согласно RFC 3986)");
+
+            return Uri.UnescapeDataString(encodedString);
         }
 
 
