@@ -343,18 +343,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public static SearchDirectionEnum CreateInstance()
         {
-            SearchDirectionEnum instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            EnumContextHelper.RegisterEnumType<SearchDirectionEnum>(out enumType, out enumValType);
-
-            instance = new SearchDirectionEnum(enumType, enumValType);
-
-            EnumContextHelper.RegisterValues<SearchDirectionEnum>(instance);
-
-            return instance;
+            return EnumContextHelper.CreateEnumInstance<SearchDirectionEnum>((t, v) => new SearchDirectionEnum(t, v));
         }
     }
 }

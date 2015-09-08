@@ -39,18 +39,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public static SortDirectionEnum CreateInstance()
         {
-            SortDirectionEnum instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            EnumContextHelper.RegisterEnumType<SortDirectionEnum>(out enumType, out enumValType);
-
-            instance = new SortDirectionEnum(enumType, enumValType);
-
-            EnumContextHelper.RegisterValues<SortDirectionEnum>(instance);
-
-            return instance;
+            return EnumContextHelper.CreateEnumInstance<SortDirectionEnum>((t,v)=>new SortDirectionEnum(t,v));
         }
     }
 }
