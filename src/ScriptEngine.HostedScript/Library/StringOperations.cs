@@ -164,7 +164,7 @@ namespace ScriptEngine.HostedScript.Library
                 while(foundTimes < occurance && index >= 0)
                 {
                     index = haystack.IndexOf(needle, startIndex);
-                    if (index > 0)
+                    if (index >= 0)
                     {
                         startIndex = index + 1;
                         foundTimes++;
@@ -179,7 +179,7 @@ namespace ScriptEngine.HostedScript.Library
                 while(foundTimes < occurance && index >= 0)
                 {
                     index = haystack.LastIndexOf(needle, startIndex);
-                    if (index > 0)
+                    if (index >= 0)
                     {
                         startIndex = index - 1;
                         foundTimes++;
