@@ -1,5 +1,5 @@
-#include <ISPPBuiltins.iss>
-#define AppName "OneScript execution engine"
+﻿#include <ISPPBuiltins.iss>
+#define AppName "OneScript engine"
 #define FSFriendlyName "OneScript"
 #define MainExe "TestApp.exe"
 
@@ -7,11 +7,12 @@
 #define VerMinor
 #define VerRelease
 #define Build
-#expr ParseVersion("build\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
+#expr ParseVersion("build\bin\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
 
 [Setup]
 AppName={#AppName}
 AppVersion={#VerMajor}.{#VerMinor}.{#VerRelease}
+AppPublisher=1Script Team (Open Source)
 DefaultDirName="{pf}\{#FSFriendlyName}"
 DefaultGroupName="{#FSFriendlyName}"
 OutputBaseFilename="OneScript-{#VerMajor}.{#VerMinor}.{#VerRelease}-setup"
@@ -19,17 +20,39 @@ DisableProgramGroupPage=yes
 UninstallDisplayIcon="{app}\bin\{#MainExe}"
 Compression=lzma2
 SolidCompression=yes
-
+VersionInfoVersion={#VerMajor}.{#VerMinor}.{#VerRelease}.{#Build}
 
 [InstallDelete]
 Type: files; Name: {app}\*.dll
 Type: files; Name: {app}\*.exe
 
-[Files]
-Source: "build\*"; DestDir: "{app}\bin"; Excludes: "oscript.cfg"
-Source: "build\oscript.cfg"; DestDir: "{app}\bin";  Flags: onlyifdoesntexist
-Source: "examples\*.os"; DestDir: "{app}\examples"   
-Source: "..\oscript-library\src\*.*"; DestDir: "{app}\lib"; Flags: recursesubdirs
+[Types]
+Name: "normal"; Description: "Стандартная установка"
+Name: "custom"; Description: "Выборочная установка"; Flags: iscustom
+
+[Components]
+Name: "main"; Description: "Основные файлы"; Types: normal custom; Flags: fixed
+Name: "stdlib"; Description: "Стандартная библиотека скриптов"; Types: normal custom;
+Name: "testapp"; Description: "Тестовая консоль (TestApp)";
+Name: "snegopat"; Description: "Интеграция со 'Снегопатом'";
+
+[Files]              
+Source: "build\bin\oscript.exe"; DestDir: "{app}\bin"; Components: main
+Source: "build\bin\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
+Source: "build\bin\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
+Source: "build\bin\Ionic.Zip.dll"; DestDir: "{app}\bin"; Components: main
+Source: "build\bin\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
+
+Source: "build\examples\*"; DestDir: "{app}\examples"; Components: main
+
+; снегопат
+Source: "build\bin\ScriptEngine.Snegopat.dll"; DestDir: "{app}\bin"; Components: snegopat
+; testapp
+Source: "build\bin\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
+Source: "build\bin\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
+; библиотека
+Source: "build\lib\*"; DestDir: "{app}\lib"; Components: stdlib; Flags: recursesubdirs
+
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
 Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: VCRedistNeedsInstall
 
@@ -41,8 +64,8 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 
 [Run]
 Filename: {tmp}\dotNetFx40_Full_setup.exe; Parameters: "/q:a /c:""install /l /q"""; Check: not IsRequiredDotNetDetected; StatusMsg: Microsoft .NET Framework 4.0 is being installed. Please wait..
-Filename: {tmp}\vcredist_x86.exe; Parameters: "/q /norestart"; StatusMsg: MS Redistributable C++ Runtime is being installed. Please wait..
-Filename: "{app}\bin\{#MainExe}"; Description: "Launch application"; Flags: postinstall nowait skipifsilent unchecked
+Filename: {tmp}\vcredist_x86.exe; Parameters: "/q /norestart"; Components: snegopat; StatusMsg: MS Redistributable C++ Runtime is being installed. Please wait..
+Filename: "{app}\bin\{#MainExe}"; Description: "Launch application"; Components: testapp; Flags: postinstall nowait skipifsilent unchecked
 
 [Code]
 

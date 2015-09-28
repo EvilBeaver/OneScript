@@ -44,18 +44,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         public static ZipCompressionMethodEnum CreateInstance()
         {
-            ZipCompressionMethodEnum instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            EnumContextHelper.RegisterEnumType<ZipCompressionMethodEnum>(out enumType, out enumValType);
-
-            instance = new ZipCompressionMethodEnum(enumType, enumValType);
-
-            EnumContextHelper.RegisterValues<ZipCompressionMethodEnum>(instance);
-
-            return instance;
+            return EnumContextHelper.CreateEnumInstance<ZipCompressionMethodEnum>((t, v) => new ZipCompressionMethodEnum(t, v));
         }
     }
 }

@@ -44,18 +44,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         public static ZipRestoreFilePathsModeEnum CreateInstance()
         {
-            ZipRestoreFilePathsModeEnum instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            EnumContextHelper.RegisterEnumType<ZipRestoreFilePathsModeEnum>(out enumType, out enumValType);
-
-            instance = new ZipRestoreFilePathsModeEnum(enumType, enumValType);
-
-            EnumContextHelper.RegisterValues<ZipRestoreFilePathsModeEnum>(instance);
-            
-            return instance;
+            return EnumContextHelper.CreateEnumInstance<ZipRestoreFilePathsModeEnum>((t, v) => new ZipRestoreFilePathsModeEnum(t, v));
         }
     }
 }

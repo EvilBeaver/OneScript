@@ -85,6 +85,9 @@
     <EmbeddedResource Include="ScriptEngine.dll" />
     <EmbeddedResource Include="ScriptEngine.HostedScript.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Ionic.Zip.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

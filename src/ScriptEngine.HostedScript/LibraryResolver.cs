@@ -5,7 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Compiler;
+using ScriptEngine.Environment;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -70,6 +73,33 @@ namespace ScriptEngine.HostedScript
 
         public List<string> SearchDirectories { get; private set; }
 
+        //TODO: Тут совсем ужасно спроектировано взаимодействие слоев и передача контекста
+        // нужно снова заняться версией 2.0 ((
+        private Stack<ICodeSource> _compiledSourcesStack = new Stack<ICodeSource>();
+
+        public ICodeSource Source 
+        { 
+            get
+            {
+                if (_compiledSourcesStack.Count == 0)
+                    return null;
+
+                return _compiledSourcesStack.Peek();
+            }
+            set
+            {
+                if(value == null)
+                {
+                    if (_compiledSourcesStack.Count > 0)
+                        _compiledSourcesStack.Pop();
+                }
+                else
+                {
+                    _compiledSourcesStack.Push(value);
+                }
+            }
+        }
+
         private LibraryLoader DefaultLoader
         {
             get 
@@ -121,13 +151,43 @@ namespace ScriptEngine.HostedScript
 
             bool loaded;
             if (IsQuoted(value))
-                loaded = LoadByPath(value.Substring(1, value.Length - 2));
+                loaded = LoadByRelativePath(value.Substring(1, value.Length - 2));
             else
                 loaded = LoadByName(value);
 
             if(!loaded)
                 throw new CompilerException(String.Format("Библиотека не найдена {0}", value));
 
+        }
+
+        private bool LoadByRelativePath(string libraryPath)
+        {
+            string realPath;
+
+            if (!Path.IsPathRooted(libraryPath) && Source != null)
+            {
+                var currentPath = Source.SourceDescription;
+                // Загружаем относительно текущего скрипта, однако,
+                // если CurrentScript не файловый (TestApp или другой хост), то загружаем относительно рабочего каталога.
+                // немного костыльно, ага ((
+                //
+                if (!PathHasInvalidChars(currentPath))
+                    realPath = Path.Combine(Path.GetDirectoryName(currentPath), libraryPath);
+                else
+                    realPath = libraryPath;
+            }
+            else
+            {
+                realPath = libraryPath;
+            }
+
+            return LoadByPath(realPath);
+        }
+
+        private static bool PathHasInvalidChars(string path)
+        {
+
+            return (!string.IsNullOrEmpty(path) && path.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0);
         }
 
         private bool IsQuoted(string value)
@@ -187,16 +247,24 @@ namespace ScriptEngine.HostedScript
             }
 
             var newLib = new Library() { id = id, state = ProcessingState.Discovered };
-
+            bool hasFiles;
+            int newLibIndex = _libs.Count;
+            
             var customLoaderFile = Path.Combine(libraryPath, PREDEFINED_LOADER_FILE);
             if (File.Exists(customLoaderFile))
                 newLib.customLoader = LibraryLoader.Create(_engine, _env, customLoaderFile);
 
-            _libs.Add(newLib);
-
-            bool hasFiles = ProcessLibrary(newLib);
-
-            newLib.state = ProcessingState.Processed;
+            try
+            {
+                _libs.Add(newLib);
+                hasFiles = ProcessLibrary(newLib);
+                newLib.state = ProcessingState.Processed;
+            }
+            catch (Exception)
+            {
+                _libs.RemoveAt(newLibIndex);
+                throw;
+            }
 
             return hasFiles;
         }

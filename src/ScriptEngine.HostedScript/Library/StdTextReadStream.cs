@@ -59,9 +59,10 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <returns>Строка</returns>
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
-        public string ReadLine()
+        public IValue ReadLine()
         {
-            return _reader.ReadLine();
+            var readValue = _reader.ReadLine();
+            return readValue == null ? ValueFactory.Create() : ValueFactory.Create(readValue);
         }
 
         /// <summary>

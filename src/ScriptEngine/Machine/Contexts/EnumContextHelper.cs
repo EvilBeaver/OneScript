@@ -40,5 +40,24 @@ namespace ScriptEngine.Machine.Contexts
             enumValueType = TypeManager.RegisterType(enumMetadata.GetName(), typeof(SelfAwareEnumValue<T>));
         }
 
-     }
+        public static T CreateEnumInstance<T>(EnumCreationDelegate<T> creator) where T : EnumerationContext
+        {
+            T instance;
+
+            TypeDescriptor enumType;
+            TypeDescriptor enumValType;
+
+            EnumContextHelper.RegisterEnumType<T>(out enumType, out enumValType);
+
+            instance = creator(enumType, enumValType);
+
+            EnumContextHelper.RegisterValues<T>(instance);
+
+            return instance;
+        }
+
+    }
+
+    public delegate T EnumCreationDelegate<T>(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) where T : EnumerationContext;
+
 }

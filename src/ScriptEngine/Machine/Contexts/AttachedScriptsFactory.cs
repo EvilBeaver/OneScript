@@ -71,14 +71,19 @@ namespace ScriptEngine.Machine.Contexts
 
         public IRuntimeContextInstance LoadFromPath(CompilerService compiler, string path)
         {
+            return LoadFromPath(compiler, path, null);
+        }
+
+        public IRuntimeContextInstance LoadFromPath(CompilerService compiler, string path, ExternalContextData externalContext)
+        {
             var code = _engine.Loader.FromFile(path);
-            return LoadAndCreate(compiler, code);
+            return LoadAndCreate(compiler, code, externalContext);
         }
 
         public IRuntimeContextInstance LoadFromString(CompilerService compiler, string text)
         {
             var code = _engine.Loader.FromString(text);
-            return LoadAndCreate(compiler, code);
+            return LoadAndCreate(compiler, code, null);
         }
 
 
@@ -123,13 +128,21 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private IRuntimeContextInstance LoadAndCreate(CompilerService compiler, Environment.ICodeSource code)
+        private IRuntimeContextInstance LoadAndCreate(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
             compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
+            if(externalContext != null)
+            {
+                foreach (var item in externalContext)
+                {
+                    compiler.DefineVariable(item.Key, SymbolType.ContextProperty);
+                }
+            }
+
             var moduleHandle = compiler.CreateModule(code);
             var loadedHandle = _engine.LoadModuleImage(moduleHandle);
 
-            return _engine.NewObject(loadedHandle.Module);
+            return _engine.NewObject(loadedHandle.Module, externalContext);
 
         }
 

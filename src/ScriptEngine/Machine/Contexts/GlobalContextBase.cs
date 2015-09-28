@@ -16,6 +16,15 @@ namespace ScriptEngine.Machine.Contexts
         private ContextMethodsMapper<T> _methods = new ContextMethodsMapper<T>();
         private ContextPropertyMapper<T> _properties = new ContextPropertyMapper<T>();
 
+        protected ContextMethodsMapper<T> Methods
+        {
+            get { return _methods; }
+        }
+
+        protected ContextPropertyMapper<T> Properties
+        {
+            get { return _properties; }
+        }
 
         #region IRuntimeContextInstance members
 

@@ -46,6 +46,47 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         /// <summary>
+        /// Имя модуля, вызвавшего исключение.
+        /// </summary>
+        [ContextProperty("ИмяМодуля", "ModuleName")]
+        public string ModuleName
+        {
+            get
+            {
+                return SafeMarshallingNullString(_exc.ModuleName);
+            }
+        }
+
+        /// <summary>
+        /// Номер строки, вызвавшей исключение.
+        /// </summary>
+        [ContextProperty("НомерСтроки", "LineNumber")]
+        public int LineNumber
+        {
+            get
+            {
+                return _exc.LineNumber;
+            }
+        }
+
+        /// <summary>
+        /// Строка исходного кода, вызвавшего исключение.
+        /// </summary>
+        [ContextProperty("ИсходнаяСтрока", "SourceLine")]
+        public string SourceLine
+        {
+            get
+            {
+                return SafeMarshallingNullString(_exc.Code);
+            }
+        }
+
+        private string SafeMarshallingNullString(string src)
+        {
+            return src == null ? "" : src;
+        }
+
+        /// <summary>
         /// Содержит вложенное исключение, если таковое было. Эквивалент Exception.InnerException в C#
         /// </summary>
         [ContextProperty("Причина", "Cause")]
@@ -62,7 +103,10 @@ namespace ScriptEngine.Machine.Contexts
                     {
                         inner = new ExternalSystemException(_exc.InnerException);
                     }
-                    
+                    if (inner.ModuleName == null)
+                        inner.ModuleName = _exc.ModuleName;
+                    if (inner.Code == null)
+                        inner.Code = _exc.Code;
                     return new ExceptionInfoContext(inner);
                 }
                 else if(_exc.InnerException != null && _exc.InnerException is System.Reflection.TargetInvocationException)

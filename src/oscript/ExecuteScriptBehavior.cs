@@ -36,7 +36,17 @@ namespace oscript
             var hostedScript = new HostedScriptEngine();
             hostedScript.Initialize();
             var source = hostedScript.Loader.FromFile(_path);
-            var process = hostedScript.CreateProcess(this, source);
+
+            Process process;
+            try
+            {
+                process = hostedScript.CreateProcess(this, source);
+            }
+            catch(Exception e)
+            {
+                this.ShowExceptionInfo(e);
+                return 1;
+            }
 
             return process.Start();
         }
@@ -45,14 +55,25 @@ namespace oscript
 
         public void Echo(string text)
         {
-            Console.WriteLine(text);
+            if(Program.ConsoleOutputEncoding == null)
+                Console.WriteLine(text);
+            else
+            {
+                using(var stdout = Console.OpenStandardOutput())
+                {
+                    var enc = Program.ConsoleOutputEncoding;
+                    var bytes = enc.GetBytes(text);
+                    stdout.Write(bytes, 0, bytes.Length);
+                }
+                Console.WriteLine();
+            }
         }
 
         public void ShowExceptionInfo(Exception exc)
         {
-            if(exc is RuntimeException)
+            if(exc is ScriptException)
             {
-                var rte = (RuntimeException)exc;
+                var rte = (ScriptException)exc;
                 Console.WriteLine(rte.MessageWithoutCodeFragment);
             }
             else

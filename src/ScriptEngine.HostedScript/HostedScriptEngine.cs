@@ -55,7 +55,6 @@ namespace ScriptEngine.HostedScript
             {
                 _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
-
                 _isInitialized = true;
             }
         }
@@ -75,7 +74,12 @@ namespace ScriptEngine.HostedScript
 
         public static string ConfigFilePath()
         {
-            var assemblyPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string asmLocation;
+            asmLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            if(String.IsNullOrEmpty(asmLocation))
+                asmLocation = System.Reflection.Assembly.GetEntryAssembly().Location;
+
+            var assemblyPath = System.IO.Path.GetDirectoryName(asmLocation);
             var configFile = System.IO.Path.Combine(assemblyPath, "oscript.cfg");
             if (System.IO.File.Exists(configFile))
                 return configFile;
