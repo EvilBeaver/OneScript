@@ -1133,7 +1133,7 @@ namespace ScriptEngine.Machine
             for (int i = argCount - 1; i >= 0; i--)
             {
                 var argValue = _operationStack.Pop();
-                argValues[i] = argValue;
+                argValues[i] = BreakVariableLink(argValue);
             }
 
             var typeName = _operationStack.Pop().AsString();
