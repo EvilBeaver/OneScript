@@ -90,9 +90,9 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
         /// <param name="externalContext">Структура. Внешний контекст загружаемого скрипта (глобальные переменные)</param>
-        /// <example>УправлениеКонфигуратором = ЗагрузитьСценарий("C:\config-manager.os");
-        /// УправлениеКонфигуратором.ВыгрузитьБазуДанных();</example>
-        /// </param>
+        /// <example>Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит	
+	    /// // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
+	    /// Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
         public IRuntimeContextInstance LoadScript(string path, StructureImpl externalContext = null)
         {
