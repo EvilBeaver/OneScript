@@ -116,8 +116,11 @@ namespace oscript
                 _isContentEchoed = true;
             }
 
-            if(str!="")
-                Output(str);
+            if (str != "")
+            {
+                Output (str);
+                Console.WriteLine ();
+            }
         }
 
         private void Output(string str)
