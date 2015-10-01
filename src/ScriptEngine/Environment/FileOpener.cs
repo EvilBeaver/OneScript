@@ -21,10 +21,7 @@ namespace ScriptEngine.Environment
             Encoding enc = AssumeEncoding(input);
 
 			var reader = new StreamReader(input, enc, true);
-
-			bool skipFirstLine = IsLinuxScript (input);
-			if(skipFirstLine)
-				reader.ReadLine();
+			
 			return reader;
 
         }
@@ -72,19 +69,6 @@ namespace ScriptEngine.Environment
 
             return enc;
         }
-
-		static bool IsLinuxScript (FileStream input)
-		{
-			byte[] buf = new byte[2];
-			bool skipLine = false;
-			if (input.Read (buf, 0, 2) > 0) {
-				if (buf [0] == 0x23 && buf [1] == 0x21)
-					skipLine = true;
-			}
-
-			input.Position = 0;
-			return skipLine;
-		}
 
     }
 }

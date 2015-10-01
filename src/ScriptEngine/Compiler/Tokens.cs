@@ -16,6 +16,8 @@ namespace ScriptEngine.Compiler
         static Dictionary<Token, int> _priority = new Dictionary<Token, int>();
         static Dictionary<string, Token> _stringToToken = new Dictionary<string, Token>(StringComparer.InvariantCultureIgnoreCase);
 
+        const int BUILTINS_INDEX = (int)Token.ByValParam;
+
         // structure
         static LanguageDef()
         {
@@ -207,7 +209,6 @@ namespace ScriptEngine.Compiler
 
         public static bool IsBuiltInFunction(Token token)
         {
-            const int BUILTINS_INDEX = (int)Token.ByValParam;
             return (int)token > BUILTINS_INDEX;
         }
 
@@ -252,6 +253,18 @@ namespace ScriptEngine.Compiler
         public static bool IsIdentifier(ref Lexem lex)
         {
             return lex.Type == LexemType.Identifier;
+        }
+
+        public static Token[] BuiltInFunctions()
+        {
+            var values = Enum.GetValues(typeof(Token));
+            var result = new Token[values.Length-BUILTINS_INDEX-1];
+            for (int i = BUILTINS_INDEX + 1, j = 0; i < values.Length; i++, j++)
+            {
+                result[j] = (Token)values.GetValue(i);
+            }
+
+            return result;
         }
 
     }

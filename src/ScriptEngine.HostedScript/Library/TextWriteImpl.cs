@@ -55,6 +55,7 @@ namespace ScriptEngine.HostedScript.Library
             }
 
             _writer = new StreamWriter(path, append, enc);
+            _writer.AutoFlush = true;
         }
 
         [ContextMethod("Закрыть","Close")]

@@ -31,31 +31,31 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="arguments">Массив аргументов, передаваемых методу</param>
         /// <returns>Если вызывается функция, то возвращается ее результат. В противном случае возвращается Неопределено.</returns>
         [ContextMethod("ВызватьМетод", "CallMethod")]
-        public IValue CallMethod(IRuntimeContextInstance target, string methodName, IRuntimeContextInstance arguments = null)
+        public IValue CallMethod(IRuntimeContextInstance target, string methodName, ArrayImpl arguments = null)
         {
-            ArrayImpl argArray;
-            if (arguments != null)
+            if (arguments == null)
             {
-                argArray = arguments as ArrayImpl;
-                if (argArray == null)
-                    throw RuntimeException.InvalidArgumentType();
-            }
-            else
-            {
-                argArray = new ArrayImpl();
+                arguments = new ArrayImpl();
             }
 
             var methodIdx = target.FindMethod(methodName);
 
             var methInfo = target.GetMethodInfo(methodIdx);
+
+            if (methInfo.ArgCount < arguments.Count())
+                throw RuntimeException.TooManyArgumentsPassed();
+
+            if (methInfo.ArgCount > arguments.Count())
+                throw RuntimeException.TooLittleArgumentsPassed();
+
             IValue retValue = ValueFactory.Create();
             if (methInfo.IsFunction)
             {
-                target.CallAsFunction(methodIdx, argArray.ToArray(), out retValue);
+                target.CallAsFunction(methodIdx, arguments.ToArray(), out retValue);
             }
             else
             {
-                target.CallAsProcedure(methodIdx, argArray.ToArray());
+                target.CallAsProcedure(methodIdx, arguments.ToArray());
             }
 
             return retValue;

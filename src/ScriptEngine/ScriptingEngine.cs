@@ -85,10 +85,18 @@ namespace ScriptEngine
             return handle;
         }
 
-        internal IRuntimeContextInstance NewObject(LoadedModule module)
+        internal IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new Machine.Contexts.UserScriptContextInstance(module, "Сценарий");
             scriptContext.AddProperty("ЭтотОбъект", scriptContext);
+            if (externalContext != null)
+            {
+                foreach (var item in externalContext)
+                {
+                    scriptContext.AddProperty(item.Key, item.Value);
+                }
+            }
+
             scriptContext.InitOwnData();
             InitializeSDO(scriptContext);
 
@@ -98,6 +106,11 @@ namespace ScriptEngine
         public IRuntimeContextInstance NewObject(LoadedModuleHandle module)
         {
             return NewObject(module.Module); 
+        }
+
+        public IRuntimeContextInstance NewObject(LoadedModuleHandle module, ExternalContextData externalContext)
+        {
+            return NewObject(module.Module, externalContext);
         }
 
         public void InitializeSDO(ScriptDrivenObject sdo)

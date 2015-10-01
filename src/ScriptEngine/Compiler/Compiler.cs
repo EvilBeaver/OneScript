@@ -14,6 +14,8 @@ namespace ScriptEngine.Compiler
 {
     partial class Compiler
     {
+        private static Dictionary<Token, OperationCode> _tokenToOpCode = null;
+
         private Parser _parser;
         private ICompilerContext _ctx;
         private ModuleImage _module;
@@ -399,7 +401,7 @@ namespace ScriptEngine.Compiler
                 }
                 else
                 {
-                    throw CompilerException.UnexpectedOperation();
+                    throw CompilerException.TokenExpected(Token.Comma);
                 }
             }
 
@@ -1620,143 +1622,7 @@ namespace ScriptEngine.Compiler
 
         private OperationCode BuiltInFunctionCode(Token token)
         {
-            switch (token)
-            {
-                case Token.Bool:
-                    return OperationCode.Bool;
-                case Token.Number:
-                    return OperationCode.Number;
-                case Token.Str:
-                    return OperationCode.Str;
-                case Token.Date:
-                    return OperationCode.Date;
-                case Token.Type:
-                    return OperationCode.Type;
-                case Token.ValType:
-                    return OperationCode.ValType;
-                case Token.StrLen:
-                    return OperationCode.StrLen;
-                case Token.TrimL:
-                    return OperationCode.TrimL;
-                case Token.TrimR:
-                    return OperationCode.TrimR;
-                case Token.TrimLR:
-                    return OperationCode.TrimLR;
-                case Token.Left:
-                    return OperationCode.Left;
-                case Token.Right:
-                    return OperationCode.Right;
-                case Token.Mid:
-                    return OperationCode.Mid;
-                case Token.StrPos:
-                    return OperationCode.StrPos;
-                case Token.UCase:
-                    return OperationCode.UCase;
-                case Token.LCase:
-                    return OperationCode.LCase;
-                case Token.TCase:
-                    return OperationCode.TCase;
-                case Token.Chr:
-                    return OperationCode.Chr;
-                case Token.ChrCode:
-                    return OperationCode.ChrCode;
-                case Token.EmptyStr:
-                    return OperationCode.EmptyStr;
-                case Token.StrReplace:
-                    return OperationCode.StrReplace;
-                case Token.StrGetLine:
-                    return OperationCode.StrGetLine;
-                case Token.StrLineCount:
-                    return OperationCode.StrLineCount;
-                case Token.StrEntryCount:
-                    return OperationCode.StrEntryCount;
-                case Token.Year:
-                    return OperationCode.Year;
-                case Token.Month:
-                    return OperationCode.Month;
-                case Token.Day:
-                    return OperationCode.Day;
-                case Token.Hour:
-                    return OperationCode.Hour;
-                case Token.Minute:
-                    return OperationCode.Minute;
-                case Token.Second:
-                    return OperationCode.Second;
-                case Token.BegOfYear:
-                    return OperationCode.BegOfYear;
-                case Token.BegOfMonth:
-                    return OperationCode.BegOfMonth;
-                case Token.BegOfDay:
-                    return OperationCode.BegOfDay;
-                case Token.BegOfHour:
-                    return OperationCode.BegOfHour;
-                case Token.BegOfMinute:
-                    return OperationCode.BegOfMinute;
-                case Token.BegOfQuarter:
-                    return OperationCode.BegOfQuarter;
-                case Token.EndOfYear:
-                    return OperationCode.EndOfYear;
-                case Token.EndOfMonth:
-                    return OperationCode.EndOfMonth;
-                case Token.EndOfDay:
-                    return OperationCode.EndOfDay;
-                case Token.EndOfHour:
-                    return OperationCode.EndOfHour;
-                case Token.EndOfMinute:
-                    return OperationCode.EndOfMinute;
-                case Token.EndOfQuarter:
-                    return OperationCode.EndOfQuarter;
-                case Token.WeekOfYear:
-                    return OperationCode.WeekOfYear;
-                case Token.DayOfYear:
-                    return OperationCode.DayOfYear;
-                case Token.DayOfWeek:
-                    return OperationCode.DayOfWeek;
-                case Token.AddMonth:
-                    return OperationCode.AddMonth;
-                case Token.CurrentDate:
-                    return OperationCode.CurrentDate;
-                case Token.Integer:
-                    return OperationCode.Integer;
-                case Token.Round:
-                    return OperationCode.Round;
-                case Token.Log:
-                    return OperationCode.Log;
-                case Token.Log10:
-                    return OperationCode.Log10;
-                case Token.Sin:
-                    return OperationCode.Sin;
-                case Token.Cos:
-                    return OperationCode.Cos;
-                case Token.Tan:
-                    return OperationCode.Tan;
-                case Token.ASin:
-                    return OperationCode.ASin;
-                case Token.ACos:
-                    return OperationCode.ACos;
-                case Token.ATan:
-                    return OperationCode.ATan;
-                case Token.Exp:
-                    return OperationCode.Exp;
-                case Token.Pow:
-                    return OperationCode.Pow;
-                case Token.Sqrt:
-                    return OperationCode.Sqrt;
-                case Token.Min:
-                    return OperationCode.Min;
-                case Token.Max:
-                    return OperationCode.Max;
-                case Token.Format:
-                    return OperationCode.Format;
-                case Token.ExceptionInfo:
-                    return OperationCode.ExceptionInfo;
-                case Token.ExceptionDescr:
-                    return OperationCode.ExceptionDescr;
-                case Token.ModuleInfo:
-                    return OperationCode.ModuleInfo;
-                default:
-                    throw new ArgumentException("Token is not a built-in function");
-            }
+            return _tokenToOpCode[token];
         }
 
         private static ConstDefinition CreateConstDefinition(ref Lexem lex)
@@ -1892,11 +1758,27 @@ namespace ScriptEngine.Compiler
         #endregion
 
         [System.Diagnostics.Conditional("DEBUG")]
-        private void Assert(bool condition)
+        private static void Assert(bool condition)
         {
             System.Diagnostics.Debug.Assert(condition);
         }
+
+        static Compiler()
+        {
+            _tokenToOpCode = new Dictionary<Token, OperationCode>();
+
+            var tokens  = LanguageDef.BuiltInFunctions();
+            var opCodes = BuiltinFunctions.GetOperationCodes();
+
+            Assert(tokens.Length == opCodes.Length);
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                _tokenToOpCode.Add(tokens[i], opCodes[i]);
+            }
+        }
+
     }
 
     public delegate bool CompilerDirectiveHandler(string directive, string value);
+
 }

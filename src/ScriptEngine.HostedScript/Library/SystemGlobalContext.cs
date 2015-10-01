@@ -89,14 +89,46 @@ namespace ScriptEngine.HostedScript.Library
         /// Экспортные свойства и методы скрипта доступны для вызова.
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
-        /// <example>УправлениеКонфигуратором = ЗагрузитьСценарий("C:\config-manager.os");
-        /// УправлениеКонфигуратором.ВыгрузитьБазуДанных();</example>
-        /// </param>
+        /// <param name="externalContext">Структура. Внешний контекст загружаемого скрипта (глобальные переменные)</param>
+        /// <example>Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит	
+	    /// // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
+	    /// Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
-        public IRuntimeContextInstance LoadScript(string path)
+        public IRuntimeContextInstance LoadScript(string path, StructureImpl externalContext = null)
         {
             var compiler = EngineInstance.GetCompilerService();
-            return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path);
+            if(externalContext == null)
+                return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path);
+            else
+            {
+                ExternalContextData extData = new ExternalContextData();
+
+                foreach (var item in externalContext)
+                {
+                    var kv = item as KeyAndValueImpl;
+                    extData.Add(kv.Key.AsString(), kv.Value);
+                }
+
+                return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path, extData);
+
+            }
+        }
+
+        /// <summary>
+        /// Подключает внешнюю сборку среды .NET (*.dll) и регистрирует классы 1Script, объявленные в этой сборке.
+        /// Публичные классы, отмеченные в dll атрибутом ContextClass, будут импортированы аналогично встроенным классам 1Script.
+        /// Загружаемая сборка должна ссылаться на сборку ScriptEngine.dll
+        /// <example>
+        /// ПодключитьВнешнююКомпоненту("C:\MyAssembly.dll");
+        /// КлассИзКомпоненты = Новый КлассИзКомпоненты(); // тип объявлен внутри компоненты
+        /// </example>
+        /// </summary>
+        /// <param name="dllPath">Путь к внешней компоненте</param>
+        [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
+        public void AttachAddIn(string dllPath)
+        {
+            var assembly = System.Reflection.Assembly.LoadFile(dllPath);
+            EngineInstance.AttachAssembly(assembly);
         }
 
         /// <summary>

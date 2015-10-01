@@ -57,13 +57,28 @@ namespace ScriptEngine.Environment
         {
             if (_code == null)
             {
+                var builder = new StringBuilder();
                 using (var reader = FileOpener.OpenReader(_path))
                 {
-                    _code = reader.ReadToEnd();
+                    var buf = new char[2];
+                    reader.Read(buf, 0, 2);
+                    if (IsLinuxScript(buf))
+                        reader.ReadLine();
+                    else
+                        builder.Append(buf);
+                    
+                    builder.Append(reader.ReadToEnd());
+
+                    _code = builder.ToString();
                 }
             }
 
             return _code;
+        }
+
+        private static bool IsLinuxScript(char[] buf)
+        {
+            return buf[0] == '#' && buf[1] == '!';
         }
 
         #region ICodeSource Members

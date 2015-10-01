@@ -55,18 +55,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         public static ZipStorePathModeEnum CreateInstance()
         {
-            ZipStorePathModeEnum instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            EnumContextHelper.RegisterEnumType<ZipStorePathModeEnum>(out enumType, out enumValType);
-
-            instance = new ZipStorePathModeEnum(enumType, enumValType);
-
-            EnumContextHelper.RegisterValues<ZipStorePathModeEnum>(instance);
-
-            return instance;
+             return EnumContextHelper.CreateEnumInstance<ZipStorePathModeEnum>((t, v) => new ZipStorePathModeEnum(t, v));
         }
     }
 }
