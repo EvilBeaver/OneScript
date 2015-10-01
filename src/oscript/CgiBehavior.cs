@@ -87,7 +87,7 @@ namespace oscript
 
         #region CGIHost
 
-        [ContextMethod("ВывестиЗаголовок")]
+        [ContextMethod("ВывестиЗаголовок", "Header")]
         public void Header(string header, string value)
         {
             if (_isContentEchoed)
