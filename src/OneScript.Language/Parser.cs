@@ -185,7 +185,10 @@ namespace OneScript.Language
             if (_lastExtractedLexem.Token != Token.OpenPar)
                 throw CompilerException.TokenExpected("(");
 
-            var methodNode = _builder.BeginMethod(identifier, isFunction);
+            IASTMethodDefinitionNode methodNode = _builder.BeginMethod();
+            methodNode.Identifier = identifier;
+            methodNode.IsFunction = isFunction;
+            
             try
             {
                 var parameters = new List<ASTMethodParameter>();
@@ -250,7 +253,8 @@ namespace OneScript.Language
                     NextLexem();
                 }
 
-                _builder.SetMethodSignature(methodNode, parameters.ToArray(), isExported);
+                methodNode.Parameters = parameters.ToArray();
+                methodNode.IsExported = isExported;
 
             }
             catch (CompilerException exc)
@@ -425,7 +429,7 @@ namespace OneScript.Language
                     // simple assignment
                     NextLexem();
 
-                    var acceptor = _builder.SelectOrUseVariable(identifier);
+                    var acceptor = _builder.SelectOrCreateVariable(identifier);
                     var source = BuildExpression(Token.Semicolon);
                     
                     _builder.BuildAssignment(acceptor, source);

@@ -4,25 +4,12 @@ using System.Linq;
 
 namespace OneScript.Tests
 {
-    class MethodNode : TestASTNodeBase, IASTNode
+    class MethodNode : TestASTNodeBase, IASTMethodDefinitionNode
     {
         public CodeBatchNode _body;
         public string _name;
-        public IList<ASTMethodParameter> _parameters;
         public bool _isExported;
         public bool _isFunction;
-
-        public MethodNode(string name, bool isFunction)
-        {
-            _name = name;
-            _isFunction = isFunction;
-        }
-
-        public void SetSignature(ASTMethodParameter[] parameters, bool exportFlag)
-        {
-            _parameters = parameters;
-            _isExported = exportFlag;
-        }
 
         protected override bool EqualsInternal(IASTNode other)
         {
@@ -33,7 +20,7 @@ namespace OneScript.Tests
             if (otherMethod._name != this._name)
                 return false;
 
-            if (otherMethod._parameters.SequenceEqual(this._parameters))
+            if (otherMethod.Parameters.SequenceEqual(this.Parameters))
                 return false;
 
             if (otherMethod._body == null && _body != null)
@@ -45,7 +32,7 @@ namespace OneScript.Tests
             return true;
         }
 
-        public string Name
+        public string Identifier
         {
             get
             {
@@ -81,18 +68,8 @@ namespace OneScript.Tests
             }
         }
 
-        public IList<ASTMethodParameter> Parameters
-        {
-            get
-            {
-                return _parameters;
-            }
-            set
-            {
-                _parameters = value;
-            }
-        }
-
+        public ASTMethodParameter[] Parameters { get; set; }
+        
         public IASTNode Body
         {
             get

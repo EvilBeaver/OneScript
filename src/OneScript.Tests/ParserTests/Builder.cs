@@ -71,7 +71,7 @@ namespace OneScript.Tests
             _variables.Add(symbolicName);
         }
 
-        public IASTNode SelectOrUseVariable(string identifier)
+        public IASTNode SelectOrCreateVariable(string identifier)
         {
             return ReadVariable(identifier);
         }
@@ -145,21 +145,13 @@ namespace OneScript.Tests
         }
 
 
-        public IASTNode BeginMethod(string identifier, bool isFunction)
+        public IASTMethodDefinitionNode BeginMethod()
         {
-            var methodNode = new MethodNode(identifier, isFunction);
+            var methodNode = new MethodNode();
             return methodNode;
         }
 
-        public void SetMethodSignature(IASTNode methodNode, ASTMethodParameter[] parameters, bool isExported)
-        {
-            var method = methodNode as MethodNode;
-            method._parameters = parameters;
-            method._isExported = isExported;
-
-        }
-
-        public void EndMethod(IASTNode methodNode)
+        public void EndMethod(IASTMethodDefinitionNode methodNode)
         {
             _methods.Add((MethodNode)methodNode);
         }

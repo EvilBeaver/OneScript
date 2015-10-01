@@ -382,8 +382,13 @@ namespace OneScript.Tests
         [TestMethod]
         public void MethodBuild()
         {
-            var expected = new MethodNode("Название", false);
-            var parameters = new[]
+            var expected = new MethodNode()
+                {
+                    Identifier = "Название",
+                    IsFunction = false
+                };
+
+            expected.Parameters = new[]
             {
                 new ASTMethodParameter() {Name = "А"},
                 new ASTMethodParameter() {ByValue = true, Name = "Б"},
@@ -398,8 +403,6 @@ namespace OneScript.Tests
                     IsOptional = true
                 }
             };
-
-            expected.SetSignature(parameters, false);
 
             var builder = ParseCode(@"Процедура Название(А, Знач Б, Знач В = 123)
                             А = 1;

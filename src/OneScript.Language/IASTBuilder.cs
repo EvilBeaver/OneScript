@@ -16,7 +16,7 @@ namespace OneScript.Language
 
         void DefineVariable(string symbolicName);
 
-        IASTNode SelectOrUseVariable(string identifier);
+        IASTNode SelectOrCreateVariable(string identifier);
 
         IASTNode BuildAssignment(IASTNode acceptor, IASTNode source);
 
@@ -30,17 +30,15 @@ namespace OneScript.Language
 
         IASTNode BuildFunctionCall(IASTNode target, string identifier, IASTNode[] args);
 
+        void BuildProcedureCall(IASTNode target, string identifier, IASTNode[] args);
+
         IASTNode ResolveProperty(IASTNode target, string propertyName);
 
         IASTNode BuildIndexedAccess(IASTNode target, IASTNode expression);
 
-        void BuildProcedureCall(IASTNode target, string ident, IASTNode[] args);
+        IASTMethodDefinitionNode BeginMethod();
 
-        IASTNode BeginMethod(string identifier, bool isFunction);
-
-        void SetMethodSignature(IASTNode methodNode, ASTMethodParameter[] parameters, bool isExported);
-
-        void EndMethod(IASTNode methodNode);
+        void EndMethod(IASTMethodDefinitionNode methodNode);
 
         IASTNode BeginBatch();
         
