@@ -62,7 +62,7 @@ namespace oscript
                     stdin.Read(bytes, 0, len);
                 }
 
-                _post_raw = Encoding.Default.GetString(bytes);
+                _post_raw = Encoding.UTF8.GetString(bytes);
 
                 ParseFormData(_post_raw, _post);
             }
