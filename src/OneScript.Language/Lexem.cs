@@ -41,6 +41,7 @@ namespace OneScript.Language
         NullLiteral,
         PreprocessorDirective,
         EndOperator,
+        Comment,
         EndOfText
     }
 

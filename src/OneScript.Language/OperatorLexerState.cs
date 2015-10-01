@@ -33,25 +33,6 @@ namespace OneScript.Language
                 }
                 
             }
-            else if (iterator.CurrentSymbol == '/')
-            {
-                
-                if (iterator.PeekNext() == '/')
-                {
-                    // это комментарий
-                    while (iterator.MoveNext())
-                    {
-                        if (iterator.CurrentSymbol == '\n')
-                        {
-                            iterator.GetContents();
-                            return Lexem.Empty();
-                        }
-                    }
-                    iterator.GetContents();
-                    return Lexem.EndOfText();
-                }
-                
-            }
 
             var lex = ExtractOperatorContent(iterator);
             

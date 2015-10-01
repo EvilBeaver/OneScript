@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodePositionInfo.cs" />
+    <Compile Include="CommentLexerState.cs" />
     <Compile Include="CompilerEngine.cs" />
     <Compile Include="CompilerErrorEventArgs.cs" />
     <Compile Include="CompilerException.cs" />
@@ -47,6 +48,7 @@
     <Compile Include="ISourceCodeIndexer.cs" />
     <Compile Include="LanguageDef.cs" />
     <Compile Include="Lexem.cs" />
+    <Compile Include="FullSourceLexer.cs" />
     <Compile Include="Lexer.cs" />
     <Compile Include="LexerState.cs" />
     <Compile Include="NumberLexerState.cs" />

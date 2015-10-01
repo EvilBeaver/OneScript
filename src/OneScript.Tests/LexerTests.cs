@@ -532,5 +532,45 @@ namespace OneScript.Tests
             Assert.IsTrue(e.LineNumber == -1);
             Assert.IsTrue(e.ColumnNumber == -1);
         }
+
+        [TestMethod]
+        public void Comments_Are_Retrieved_Correctly()
+        {
+            string code = "а //comment\r\n// another comment";
+            var lexer = new FullSourceLexer();
+            lexer.Code = code;
+            Lexem lex;
+
+            lexer.NextLexem();
+            lex = lexer.NextLexem();
+
+            Assert.AreEqual(LexemType.Comment, lex.Type);
+            Assert.AreEqual(Token.NotAToken, lex.Token);
+            Assert.AreEqual("//comment", lex.Content);
+
+            lex = lexer.NextLexem();
+            Assert.AreEqual(LexemType.Comment, lex.Type);
+            Assert.AreEqual(Token.NotAToken, lex.Token);
+            Assert.AreEqual("// another comment", lex.Content);
+
+        }
+
+        [TestMethod]
+        public void Lexer_Ignores_Comments()
+        {
+            string code = "a //comment\r\n// another comment\r\nvalue";
+            var lexer = new Lexer();
+            lexer.Code = code;
+            Lexem lex;
+
+            lex = lexer.NextLexem();
+
+            Assert.AreEqual(LexemType.Identifier, lex.Type);
+            Assert.AreEqual("a", lex.Content);
+
+            lex = lexer.NextLexem();
+            Assert.AreEqual(LexemType.Identifier, lex.Type);
+            Assert.AreEqual("value", lex.Content);
+        }
     }
 }
