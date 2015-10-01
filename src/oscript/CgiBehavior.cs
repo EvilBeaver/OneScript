@@ -59,6 +59,7 @@ namespace oscript
 
             var request = new WebRequestContext();
             engine.InjectGlobalProperty("ВебЗапрос", request, true);
+            engine.InjectGlobalProperty("WebRequest", request, true);
             engine.InjectObject(this, false);
             engine.Initialize();
 
