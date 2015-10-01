@@ -21,6 +21,7 @@ namespace oscript
         MapImpl _environmentVars = new MapImpl();
         MapImpl _get = new MapImpl();
         MapImpl _post = new MapImpl();
+        string _post_raw = null;
 
         public WebRequestContext()
         {
@@ -61,9 +62,9 @@ namespace oscript
                     stdin.Read(bytes, 0, len);
                 }
 
-                string data = Encoding.Default.GetString(bytes);
+                _post_raw = Encoding.Default.GetString(bytes);
 
-                ParseFormData(data, _post);
+                ParseFormData(_post_raw, _post);
             }
         }
 
@@ -165,6 +166,17 @@ namespace oscript
             get
             {
                 return _environmentVars;
+            }
+        }
+
+        [ContextProperty("RAWDATA")]
+        public IValue RAWDATA
+        {
+            get
+            {
+                if (_post_raw == null)
+                    return ValueFactory.Create ();
+                return ValueFactory.Create (_post_raw);
             }
         }
     }
