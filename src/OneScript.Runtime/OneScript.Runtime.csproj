@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0BB3135F-B45A-496F-A2C9-EE46561E4DA3}</ProjectGuid>
+    <ProjectGuid>{9EFE06CB-13AF-4C75-BED8-AE84955E1CC1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OneScript</RootNamespace>
-    <AssemblyName>OneScript</AssemblyName>
+    <RootNamespace>OneScript.Runtime</RootNamespace>
+    <AssemblyName>OneScript.Runtime</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,52 +32,30 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\TypeConversionException.cs" />
-    <Compile Include="ComponentModel\AutoContext.cs" />
-    <Compile Include="ComponentModel\ComponentBase.cs" />
-    <Compile Include="ComponentModel\ContextAccessException.cs" />
-    <Compile Include="ComponentModel\ContextBase.cs" />
-    <Compile Include="ComponentModel\ContextMethodMapper.cs" />
-    <Compile Include="ComponentModel\ContextPropertyMapper.cs" />
-    <Compile Include="ComponentModel\TypeImporter.cs" />
-    <Compile Include="ComponentModel\TypeConstructorAttribute.cs" />
-    <Compile Include="Core\BasicTypes.cs" />
-    <Compile Include="ComponentModel\ImportedClassAttribute.cs" />
-    <Compile Include="ComponentModel\ContextMethodAttribute.cs" />
-    <Compile Include="ComponentModel\ContextPropertyAttribute.cs" />
-    <Compile Include="Core\BooleanValue.cs" />
-    <Compile Include="Core\DataType.cs" />
-    <Compile Include="Core\DateValue.cs" />
-    <Compile Include="Core\EngineException.cs" />
-    <Compile Include="Core\GenericValue.cs" />
-    <Compile Include="Core\IRefCountable.cs" />
-    <Compile Include="ILoadedModule.cs" />
-    <Compile Include="Core\NullValue.cs" />
-    <Compile Include="Core\NumericValue.cs" />
-    <Compile Include="Core\StringValue.cs" />
-    <Compile Include="Core\IRuntimeContextInstance.cs" />
-    <Compile Include="Core\IValue.cs" />
-    <Compile Include="Core\TypeId.cs" />
-    <Compile Include="Core\TypeManager.cs" />
-    <Compile Include="Core\TypeTypeValue.cs" />
-    <Compile Include="Core\UndefinedValue.cs" />
-    <Compile Include="Core\ValueMarshaler.cs" />
+    <Compile Include="Commands.cs" />
+    <Compile Include="InjectedValue.cs" />
+    <Compile Include="Language\CompilerContext.cs" />
+    <Compile Include="Language\IndexedNamesCollection.cs" />
+    <Compile Include="Language\SymbolBinding.cs" />
+    <Compile Include="Language\SymbolScope.cs" />
+    <Compile Include="OSVMEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScriptEngine.cs" />
-    <Compile Include="Core\ValueFactory.cs" />
-    <Compile Include="Utils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ComponentModel\ComponentModel.cd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj">
       <Project>{3f89d545-7846-4b88-9d86-de67da39c831}</Project>
       <Name>OneScript.Language</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OneScript\OneScript.csproj">
+      <Project>{0bb3135f-b45a-496f-a2c9-ee46561e4da3}</Project>
+      <Name>OneScript</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

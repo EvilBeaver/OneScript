@@ -81,6 +81,10 @@
       <Project>{3f89d545-7846-4b88-9d86-de67da39c831}</Project>
       <Name>OneScript.Language</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OneScript.Runtime\OneScript.Runtime.csproj">
+      <Project>{9efe06cb-13af-4c75-bed8-ae84955e1cc1}</Project>
+      <Name>OneScript.Runtime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OneScript\OneScript.csproj">
       <Project>{0bb3135f-b45a-496f-a2c9-ee46561e4da3}</Project>
       <Name>OneScript</Name>
