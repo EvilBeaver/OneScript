@@ -44,7 +44,7 @@
     <Compile Include="DateLexerState.cs" />
     <Compile Include="IASTNodes.cs" />
     <Compile Include="ILexemGenerator.cs" />
-    <Compile Include="IModuleBuilder.cs" />
+    <Compile Include="IASTBuilder.cs" />
     <Compile Include="ISourceCodeIndexer.cs" />
     <Compile Include="LanguageDef.cs" />
     <Compile Include="Lexem.cs" />

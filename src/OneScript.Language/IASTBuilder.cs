@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Language
 {
-    public interface IModuleBuilder
+    public interface IASTBuilder
     {
 
         void BeginModule();

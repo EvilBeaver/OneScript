@@ -7,10 +7,10 @@ namespace OneScript.Language
 {
     public class CompilerEngine
     {
-        private readonly IModuleBuilder _builder;
+        private readonly IASTBuilder _builder;
         private ILexemGenerator _lexer;
 
-        public CompilerEngine(IModuleBuilder builder)
+        public CompilerEngine(IASTBuilder builder)
         {
             _builder = builder;
         }
@@ -26,7 +26,7 @@ namespace OneScript.Language
             return parser.Build(_lexer);
         }
 
-        public IModuleBuilder GetModuleBuilder()
+        public IASTBuilder GetModuleBuilder()
         {
             return _builder;
         }

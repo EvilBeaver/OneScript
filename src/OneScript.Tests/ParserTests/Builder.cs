@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OneScript.Tests
 {
-    class Builder : IModuleBuilder
+    class Builder : IASTBuilder
     {
 
         List<string> _variables = new List<string>();

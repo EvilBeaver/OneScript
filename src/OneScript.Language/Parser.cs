@@ -9,13 +9,13 @@ namespace OneScript.Language
     {
         private ILexemGenerator _lexer;
         private Lexem _lastExtractedLexem;
-        private IModuleBuilder _builder;
+        private IASTBuilder _builder;
         private bool _wereErrorsInBuild;
         private Stack<Token[]> _blockEndings;
 
         private bool _isInMethodScope = false;
 
-        public Parser(IModuleBuilder builder)
+        public Parser(IASTBuilder builder)
         {
             _builder = builder;
         }

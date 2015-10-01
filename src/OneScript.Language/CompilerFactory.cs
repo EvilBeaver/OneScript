@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OneScript.Language
 {
-    public static class CompilerFactory<T> where T : IModuleBuilder, new()
+    public static class CompilerFactory<T> where T : IASTBuilder, new()
     {
         public static CompilerEngine Create()
         {
