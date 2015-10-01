@@ -1,4 +1,4 @@
-using OneScript.Compiler;
+using OneScript.Language;
 using System;
 using System.Collections.Generic;
 

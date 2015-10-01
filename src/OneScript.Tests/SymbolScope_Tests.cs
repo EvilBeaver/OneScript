@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OneScript.Compiler;
+using OneScript.Language;
 using OneScript.ComponentModel;
 using OneScript.Core;
 

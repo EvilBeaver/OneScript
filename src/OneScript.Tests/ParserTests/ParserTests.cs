@@ -3,8 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using OneScript.Compiler;
-using OneScript.Compiler.Lexics;
+using OneScript.Language;
 
 namespace OneScript.Tests
 {

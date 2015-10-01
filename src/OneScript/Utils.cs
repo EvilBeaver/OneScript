@@ -9,19 +9,7 @@ namespace OneScript
     {
         public static bool IsValidIdentifier(string name)
         {
-            if (name == null || name.Length == 0)
-                return false;
-
-            if (!(Char.IsLetter(name[0]) || name[0] == '_'))
-                return false;
-
-            for (int i = 1; i < name.Length; i++)
-            {
-                if (!(Char.IsLetterOrDigit(name[i]) || name[i] == '_'))
-                    return false;
-            }
-
-            return true;
+            return Language.Utils.IsValidIdentifier(name);
         }
     }
 }

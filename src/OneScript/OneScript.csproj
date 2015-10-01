@@ -37,7 +37,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compiler\IndexedNamesCollection.cs" />
+    <Compile Include="Core\TypeConversionException.cs" />
     <Compile Include="ComponentModel\AutoContext.cs" />
     <Compile Include="ComponentModel\ComponentBase.cs" />
     <Compile Include="ComponentModel\ContextAccessException.cs" />
@@ -51,6 +51,10 @@
     <Compile Include="ComponentModel\ContextMethodAttribute.cs" />
     <Compile Include="ComponentModel\ContextPropertyAttribute.cs" />
     <Compile Include="Core\BooleanValue.cs" />
+    <Compile Include="Language\CompilerContext.cs" />
+    <Compile Include="Language\IndexedNamesCollection.cs" />
+    <Compile Include="Language\SymbolBinding.cs" />
+    <Compile Include="Language\SymbolScope.cs" />
     <Compile Include="Runtime\Commands.cs" />
     <Compile Include="Core\DataType.cs" />
     <Compile Include="Core\DateValue.cs" />
@@ -73,39 +77,16 @@
     <Compile Include="Runtime\OSVMEngine.cs" />
     <Compile Include="ScriptEngine.cs" />
     <Compile Include="Core\ValueFactory.cs" />
-    <Compile Include="Compiler\CompilerEngine.cs" />
-    <Compile Include="Compiler\CompilerFactory.cs" />
-    <Compile Include="Compiler\IASTNodes.cs" />
-    <Compile Include="Compiler\CodePositionInfo.cs" />
-    <Compile Include="Compiler\CompilerContext.cs" />
-    <Compile Include="Compiler\CompilerErrorEventArgs.cs" />
-    <Compile Include="Compiler\CompilerException.cs" />
-    <Compile Include="Compiler\Lexics\DateLexerState.cs" />
-    <Compile Include="Compiler\ILexemGenerator.cs" />
-    <Compile Include="Compiler\Lexics\PreprocessorDirectiveLexerState.cs" />
-    <Compile Include="Compiler\IModuleBuilder.cs" />
-    <Compile Include="Compiler\ISourceCodeIndexer.cs" />
-    <Compile Include="Compiler\Lexics\NumberLexerState.cs" />
-    <Compile Include="Compiler\Lexics\OperatorLexerState.cs" />
-    <Compile Include="Compiler\Parser.cs" />
-    <Compile Include="Compiler\Preprocessor.cs" />
-    <Compile Include="Compiler\ScriptLiterals.cs" />
-    <Compile Include="Compiler\Lexics\StringLexerState.cs" />
-    <Compile Include="Compiler\SymbolBinding.cs" />
-    <Compile Include="Compiler\SymbolScope.cs" />
-    <Compile Include="Compiler\Lexics\WordLexerState.cs" />
-    <Compile Include="Compiler\Lexics\LanguageDef.cs" />
-    <Compile Include="Compiler\Lexem.cs" />
-    <Compile Include="Compiler\Lexics\Lexer.cs" />
-    <Compile Include="Compiler\Lexics\LexerState.cs" />
-    <Compile Include="Compiler\ScriptException.cs" />
-    <Compile Include="Compiler\Lexics\SyntaxErrorException.cs" />
-    <Compile Include="Compiler\Tokens.cs" />
-    <Compile Include="Compiler\Lexics\SourceCodeIterator.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ComponentModel\ComponentModel.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj">
+      <Project>{3f89d545-7846-4b88-9d86-de67da39c831}</Project>
+      <Name>OneScript.Language</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,4 +1,4 @@
-using OneScript.Compiler;
+using OneScript.Language;
 
 namespace OneScript.Tests
 {
