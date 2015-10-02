@@ -68,8 +68,8 @@
     <Compile Include="Core\UndefinedValue.cs" />
     <Compile Include="Core\ValueMarshaler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScriptEngine.cs" />
     <Compile Include="Core\ValueFactory.cs" />
+    <Compile Include="ScriptRuntime.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>

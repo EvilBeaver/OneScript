@@ -7,13 +7,13 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    public class OSVMEngine : ScriptEngine
+    public class OneScriptRuntime : ScriptRuntime
     {
         private List<InjectedValue> _externalProperties = new List<InjectedValue>();
         private CompilerContext _ctx = new CompilerContext();
         private SymbolScope _topScope;
 
-        public OSVMEngine()
+        public OneScriptRuntime()
         {
             _topScope = new SymbolScope();
             _ctx.PushScope(_topScope);
@@ -62,11 +62,6 @@ namespace OneScript.Runtime
                 if (_ctx.IsMethodDefined(name))
                     throw new ArgumentException("Метод (" + name + ") уже определен");
             }
-        }
-
-        public override ILoadedModule CurrentModule
-        {
-            get { throw new NotImplementedException(); }
         }
 
         public override IValue Eval(string expression)

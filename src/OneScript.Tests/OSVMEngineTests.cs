@@ -11,7 +11,7 @@ namespace OneScript.Tests
         [ExpectedException(typeof(ArgumentException))]
         public void Import_Of_Conflicting_Contexts_Is_Not_Allowed()
         {
-            var engine = new OSVMEngine();
+            var engine = new OneScriptRuntime();
 
             var ctx1 = new ImportedMembersClass();
             var ctx2 = new ImportedMembersClass();
