@@ -7,7 +7,7 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    public class OneScriptRuntime : ScriptRuntime
+    public class OneScriptRuntime : AbstractScriptRuntime
     {
         private List<InjectedValue> _externalProperties = new List<InjectedValue>();
         private CompilerContext _ctx = new CompilerContext();

@@ -6,9 +6,9 @@ using System.Text;
 
 namespace OneScript
 {
-    public abstract class ScriptRuntime
+    public abstract class AbstractScriptRuntime
     {
-        public ScriptRuntime()
+        public AbstractScriptRuntime()
         {
         }
 
