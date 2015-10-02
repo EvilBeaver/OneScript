@@ -62,9 +62,4 @@ namespace OneScript.Language
         ASTMethodParameter[] Parameters { get; set; }
     }
 
-    public interface IASTCodeBatchNode
-    {
-        IList<IASTStatementNode> Children { get; }
-    }
-
 }
