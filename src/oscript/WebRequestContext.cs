@@ -21,7 +21,8 @@ namespace oscript
         MapImpl _environmentVars = new MapImpl();
         MapImpl _get = new MapImpl();
         MapImpl _post = new MapImpl();
-        string _post_raw = null;
+        string _post_raw_utf = null;
+        byte[] _post_raw = null;
 
         public WebRequestContext()
         {
@@ -56,15 +57,17 @@ namespace oscript
             int len = Int32.Parse(contentLen);
             if (len > 0)
             {
-                byte[] bytes = new byte[len];
+                _post_raw = new byte[len];
                 using (var stdin = Console.OpenStandardInput())
                 {
-                    stdin.Read(bytes, 0, len);
+                    stdin.Read(_post_raw, 0, len);
                 }
 
-                _post_raw = Encoding.UTF8.GetString(bytes);
+                // TODO: Подумать, где задавать кодировку разбора сырого запроса
+                //       или вообще убрать разбор по-умолчанию, оставив только двоичные данные
+                _post_raw_utf = Encoding.UTF8.GetString(_post_raw);
 
-                ParseFormData(_post_raw, _post);
+                ParseFormData(_post_raw_utf, _post);
             }
         }
 
@@ -176,7 +179,18 @@ namespace oscript
             {
                 if (_post_raw == null)
                     return ValueFactory.Create ();
-                return ValueFactory.Create (_post_raw);
+                return new BinaryDataContext (_post_raw);
+            }
+        }
+
+        [ContextProperty("POSTDATA")]
+        public IValue POSTDATA
+        {
+            get
+            {
+                if (_post_raw_utf == null)
+                    return ValueFactory.Create ();
+                return ValueFactory.Create (_post_raw_utf);
             }
         }
     }
