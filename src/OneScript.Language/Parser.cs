@@ -24,29 +24,14 @@ namespace OneScript.Language
         {
             InitFields(lexer);
 
-            return BuildModule();
+            return Parse(DispatchModuleBuild);
         }
 
         public bool ParseCodeBatch(ILexemGenerator lexer)
         {
             InitFields(lexer);
 
-            try
-            {
-                BuildModuleBody();
-            }
-            catch (ScriptException e)
-            {
-                if (!ReportError(e))
-                    throw;
-            }
-            catch (Exception e)
-            {
-                var newExc = new CompilerException(new CodePositionInfo(), "Внутренняя ошибка компилятора", e);
-                throw newExc;
-            }
-
-            return !_wereErrorsInBuild;
+            return Parse(BuildModuleBody);
         }
 
         private void InitFields(ILexemGenerator lexer)
@@ -59,22 +44,22 @@ namespace OneScript.Language
 
         public event EventHandler<CompilerErrorEventArgs> CompilerError;
 
-        private bool BuildModule()
+        private bool Parse(Action parseAlgorithm)
         {
             try
             {
-                
+
                 _builder.BeginModule();
 
-                DispatchModuleBuild();
+                parseAlgorithm();
 
             }
-            catch(ScriptException e)
+            catch (ScriptException e)
             {
                 if (!ReportError(e))
                     throw;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 var newExc = new CompilerException(new CodePositionInfo(), "Внутренняя ошибка компилятора", e);
                 throw newExc;
