@@ -23,7 +23,7 @@ namespace OneScript.Language
         public bool Compile()
         {
             var parser = new Parser(_builder);
-            return parser.Build(_lexer);
+            return parser.ParseModule(_lexer);
         }
 
         public IASTBuilder GetModuleBuilder()

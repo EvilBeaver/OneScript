@@ -152,7 +152,7 @@ namespace OneScript.Tests
             var lexer = new Lexer();
             lexer.Code = "А = (-2);";
             var parser = new Parser(builder);
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
             var node = builder.topNode as AssignmentNode;
             Assert.IsNotNull(node);
             Assert.IsTrue(node.Right is UnaryExpressionNode);
@@ -163,7 +163,7 @@ namespace OneScript.Tests
             Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, unary));
 
             lexer.Code = "А = -2 + 1;";
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
             var expected = new BinExpressionNode();
             expected.opCode = Token.Plus;
             expected.left = unary;
@@ -174,7 +174,7 @@ namespace OneScript.Tests
             Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, expected));
 
             lexer.Code = "А = Не -2";
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
             var notNode = new UnaryExpressionNode() { opCode = Token.Not, operand = unary };
             node = builder.topNode as AssignmentNode;
             Assert.IsTrue(TestASTNodeBase.CompareTrees((TestASTNodeBase)node.Right, notNode));
@@ -182,7 +182,7 @@ namespace OneScript.Tests
             lexer.Code = "А = -Не 2";
             try
             {
-                parser.Build(lexer);
+                parser.ParseModule(lexer);
             }
             catch(CompilerException e)
             {
@@ -273,7 +273,7 @@ namespace OneScript.Tests
                     bool thrown = false;
                     try
                     {
-                        parser.Build(lexer);
+                        parser.ParseModule(lexer);
                     }
                     catch (CompilerException)
                     {
@@ -304,22 +304,22 @@ namespace OneScript.Tests
             var parser = new Parser(builder);
 
             lexer.Code = "А = Б.В;";
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
 
             lexer.Code = "А = Б.В.Г;";
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
 
             lexer.Code = "А = Б.В().Г;";
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
 
             lexer.Code = "А = Б.В[0][1].X();";
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
 
             lexer.Code = "А = Б.В()[Г];";
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
 
             lexer.Code = "А = В().Г();";
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
         }
 
         [TestMethod]
@@ -433,7 +433,7 @@ namespace OneScript.Tests
             var parser = new Parser(builder);
 
             lexer.Code = code;
-            Assert.IsTrue(parser.Build(lexer));
+            Assert.IsTrue(parser.ParseModule(lexer));
 
             Assert.IsInstanceOfType(builder.topNode, typeof(ConditionNode));
 

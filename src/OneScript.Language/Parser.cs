@@ -20,14 +20,41 @@ namespace OneScript.Language
             _builder = builder;
         }
 
-        public bool Build(ILexemGenerator lexer)
+        public bool ParseModule(ILexemGenerator lexer)
+        {
+            InitFields(lexer);
+
+            return BuildModule();
+        }
+
+        public bool ParseCodeBatch(ILexemGenerator lexer)
+        {
+            InitFields(lexer);
+
+            try
+            {
+                BuildModuleBody();
+            }
+            catch (ScriptException e)
+            {
+                if (!ReportError(e))
+                    throw;
+            }
+            catch (Exception e)
+            {
+                var newExc = new CompilerException(new CodePositionInfo(), "Внутренняя ошибка компилятора", e);
+                throw newExc;
+            }
+
+            return !_wereErrorsInBuild;
+        }
+
+        private void InitFields(ILexemGenerator lexer)
         {
             _lexer = lexer;
             _lastExtractedLexem = default(Lexem);
             _wereErrorsInBuild = false;
             _blockEndings = new Stack<Token[]>();
-
-            return BuildModule();
         }
 
         public event EventHandler<CompilerErrorEventArgs> CompilerError;
