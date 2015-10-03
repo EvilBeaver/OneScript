@@ -182,7 +182,7 @@ namespace OneScript.Tests
 
         public void EndConditionStatement(IASTConditionNode node)
         {
-            CodeNode.Children.Add((TestASTNodeBase)node);
+            StandardPlaceOnTop(node);
         }
 
         public IASTWhileNode BeginWhileStatement()
@@ -192,7 +192,67 @@ namespace OneScript.Tests
 
         public void EndWhileStatement(IASTWhileNode node)
         {
+            StandardPlaceOnTop(node);
+        }
+
+        private void StandardPlaceOnTop(IASTNode node)
+        {
             CodeNode.Children.Add((TestASTNodeBase)node);
+        }
+
+        public IASTForLoopNode BeginForLoopNode()
+        {
+            return new ForLoopNode();
+        }
+
+        public void EndForLoopNode(IASTForLoopNode node)
+        {
+            StandardPlaceOnTop(node);
+        }
+
+        public IASTForEachNode BeginForeEachNode()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void EndForEachNode(IASTForEachNode node)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IASTTryExceptNode BeginTryCatchNode()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void EndTryBlock(IASTTryExceptNode node)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void EndExceptBlock(IASTTryExceptNode node)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BuildBreakStatement()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BuildContinueStatement()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BuildReturnStatement(IASTNode expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BuildRaiseExceptionStatement(IASTNode expression)
+        {
+            throw new NotImplementedException();
         }
     }
 }

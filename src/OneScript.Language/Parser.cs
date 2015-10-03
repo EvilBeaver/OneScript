@@ -431,6 +431,9 @@ namespace OneScript.Language
                 case Token.While:
                     BuildWhileStatement();
                     break;
+                case Token.For:
+                    BuildForStatement();
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -834,6 +837,59 @@ namespace OneScript.Language
                 PopEndTokens();
             }
         }
+
+        void BuildForStatement()
+        {
+            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.For);
+
+            NextLexem();
+
+            if(_lastExtractedLexem.Token == Token.Each)
+            {
+                BuildForEachLoop();
+            }
+            else
+            {
+                BuildSimpleForLoop();
+            }
+        }
+
+        private void BuildForEachLoop()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void BuildSimpleForLoop()
+        {
+            var loopNode = _builder.BeginForLoopNode();
+
+            if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                throw CompilerException.IdentifierExpected();
+
+            loopNode.LoopCounter =_builder.SelectOrCreateVariable(_lastExtractedLexem.Content);
+            NextLexem();
+            if (_lastExtractedLexem.Token != Token.Equal)
+                throw CompilerException.TokenExpected("=");
+            NextLexem();
+            loopNode.InitializerExpression = BuildExpression(Token.To);
+            NextLexem();
+            loopNode.BoundExpression = BuildExpression(Token.Loop);
+            NextLexem();
+
+            try
+            {
+                PushEndTokens(Token.EndLoop);
+                loopNode.Body = BuildCodeBatch();
+                NextLexem();
+                _builder.EndForLoopNode(loopNode);
+            }
+            finally
+            {
+                PopEndTokens();
+            }
+
+        }
+
 
         #region Helper methods
 

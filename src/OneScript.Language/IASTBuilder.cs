@@ -52,9 +52,27 @@ namespace OneScript.Language
 
         void EndWhileStatement(IASTWhileNode node);
 
-        //IASTForLoopNode BeginForLoopNode();
+        IASTForLoopNode BeginForLoopNode();
 
-        //void EndForLoopNode();
+        void EndForLoopNode(IASTForLoopNode node);
+
+        IASTForEachNode BeginForeEachNode();
+        
+        void EndForEachNode(IASTForEachNode node);
+
+        IASTTryExceptNode BeginTryCatchNode();
+
+        void EndTryBlock(IASTTryExceptNode node);
+
+        void EndExceptBlock(IASTTryExceptNode node);
+
+        void BuildBreakStatement();
+
+        void BuildContinueStatement();
+
+        void BuildReturnStatement(IASTNode expression);
+
+        void BuildRaiseExceptionStatement(IASTNode expression);
 
     }
 }

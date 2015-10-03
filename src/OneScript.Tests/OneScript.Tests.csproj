@@ -58,6 +58,7 @@
     <Compile Include="ParserTests\ConditionNode.cs" />
     <Compile Include="ParserTests\ExpressionNode.cs" />
     <Compile Include="ParserTests\Builder.cs" />
+    <Compile Include="ParserTests\ForLoopNode.cs" />
     <Compile Include="ParserTests\IndexedAccessNode.cs" />
     <Compile Include="ParserTests\MethodNode.cs" />
     <Compile Include="ParserTests\PropertyAccessNode.cs" />

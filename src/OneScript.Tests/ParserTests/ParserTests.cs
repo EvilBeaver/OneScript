@@ -482,6 +482,19 @@ namespace OneScript.Tests
             Assert.AreEqual(1, body.Children.Count);
             Assert.IsInstanceOfType(body.Children[0], typeof(AssignmentNode));
         }
+
+        [TestMethod]
+        public void For_Loop_Simple_Test()
+        {
+            var builder = ParseCode("Для Сч = 1+1 По 8-2 Цикл а = 1 КонецЦикла");
+
+            var node = builder.topNode as IASTForLoopNode;
+            Assert.IsNotNull(node);
+            Assert.IsInstanceOfType(node.LoopCounter, typeof(OperandNode));
+            Assert.IsInstanceOfType(node.InitializerExpression, typeof(BinExpressionNode));
+            Assert.IsInstanceOfType(node.BoundExpression, typeof(BinExpressionNode));
+            Assert.IsNotNull(node.Body);
+        }
     }
 
 }

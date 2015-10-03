@@ -28,6 +28,7 @@ namespace OneScript.Language
 
     public interface IASTForLoopNode : IASTStatementNode
     {
+        IASTNode LoopCounter { get; set; }
         IASTNode InitializerExpression { get; set; }
         IASTNode BoundExpression { get; set; }
         IASTNode Body { get; set; }
@@ -40,7 +41,7 @@ namespace OneScript.Language
         IASTNode Body { get; set; }
     }
 
-    public interface IASTTryCatchNode : IASTStatementNode
+    public interface IASTTryExceptNode : IASTStatementNode
     {
         IASTNode TryBlock { get; set; }
         IASTNode ExceptBlock { get; set; }
