@@ -465,6 +465,23 @@ namespace OneScript.Tests
 
             Assert.AreEqual("А", operand.content);
         }
+
+        [TestMethod]
+        public void WhileLoop_ParsedCorrectly()
+        {
+            var builder = ParseCode("Пока а = Истина Цикл а = 1; КонецЦикла");
+
+            var loopNode = builder.topNode as WhileNode;
+            Assert.IsNotNull(loopNode);
+
+            var operand = loopNode.Condition as BinExpressionNode;
+            Assert.IsNotNull(operand);
+
+            var body = loopNode.Body as CodeBatchNode;
+            Assert.IsNotNull(body);
+            Assert.AreEqual(1, body.Children.Count);
+            Assert.IsInstanceOfType(body.Children[0], typeof(AssignmentNode));
+        }
     }
 
 }

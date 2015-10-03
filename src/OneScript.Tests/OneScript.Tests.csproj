@@ -62,6 +62,7 @@
     <Compile Include="ParserTests\MethodNode.cs" />
     <Compile Include="ParserTests\PropertyAccessNode.cs" />
     <Compile Include="ParserTests\TestASTNodeBase.cs" />
+    <Compile Include="ParserTests\WhileNode.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TypeSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

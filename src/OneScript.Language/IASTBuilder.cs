@@ -48,5 +48,13 @@ namespace OneScript.Language
 
         void EndConditionStatement(IASTConditionNode node);
 
+        IASTWhileNode BeginWhileStatement();
+
+        void EndWhileStatement(IASTWhileNode node);
+
+        //IASTForLoopNode BeginForLoopNode();
+
+        //void EndForLoopNode();
+
     }
 }

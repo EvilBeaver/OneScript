@@ -294,9 +294,15 @@ namespace OneScript.Language
 
         private void BuildModuleBody()
         {
-            PushEndTokens(Token.EndOfText);
-            BuildCodeBatch();
-            PopEndTokens();
+            try
+            {
+                PushEndTokens(Token.EndOfText);
+                BuildCodeBatch();
+            }
+            finally
+            {
+                PopEndTokens();
+            }
         }
 
         private void BuildVariableDefinition(bool allowExports)
@@ -421,6 +427,9 @@ namespace OneScript.Language
                     throw CompilerException.LateVarDefinition();
                 case Token.If:
                     BuildIfStatement();
+                    break;
+                case Token.While:
+                    BuildWhileStatement();
                     break;
                 default:
                     throw new NotImplementedException();
@@ -717,26 +726,33 @@ namespace OneScript.Language
             
             List<IASTNode> arguments = new List<IASTNode>();
             PushEndTokens(Token.ClosePar);
-            while(_lastExtractedLexem.Token != Token.ClosePar)
+            try
             {
-                if (_lastExtractedLexem.Token == Token.Comma)
+                while (_lastExtractedLexem.Token != Token.ClosePar)
                 {
-                    arguments.Add(null);
-                    NextLexem();
-                    continue;
-                }
-
-                var argNode = BuildExpression(Token.Comma);
-                arguments.Add(argNode);
-                if (_lastExtractedLexem.Token == Token.Comma)
-                {
-                    NextLexem();
-                    if(_lastExtractedLexem.Token == Token.ClosePar)
+                    if (_lastExtractedLexem.Token == Token.Comma)
                     {
-                        // список аргументов кончился
                         arguments.Add(null);
+                        NextLexem();
+                        continue;
+                    }
+
+                    var argNode = BuildExpression(Token.Comma);
+                    arguments.Add(argNode);
+                    if (_lastExtractedLexem.Token == Token.Comma)
+                    {
+                        NextLexem();
+                        if (_lastExtractedLexem.Token == Token.ClosePar)
+                        {
+                            // список аргументов кончился
+                            arguments.Add(null);
+                        }
                     }
                 }
+            }
+            finally
+            {
+                PopEndTokens();
             }
 
             if (_lastExtractedLexem.Token != Token.ClosePar)
@@ -757,37 +773,66 @@ namespace OneScript.Language
             ifBlock.Condition = BuildExpression(Token.Then);
 
             NextLexem();
-            PushEndTokens(Token.Else, Token.ElseIf, Token.EndIf);
-            ifBlock.TruePart = BuildCodeBatch();
-            
-            var currentIf = ifBlock;
-            while (_lastExtractedLexem.Token == Token.ElseIf)
+            try
             {
-                var elseif = _builder.BeginConditionStatement();
-                
-                NextLexem();
-                elseif.Condition = BuildExpression(Token.Then);
-                NextLexem();
-                elseif.TruePart = BuildCodeBatch();
-                currentIf.FalsePart = elseif;
-                currentIf = elseif;
-            }
+                PushEndTokens(Token.Else, Token.ElseIf, Token.EndIf);
+                ifBlock.TruePart = BuildCodeBatch();
 
-            if(_lastExtractedLexem.Token == Token.Else)
+                var currentIf = ifBlock;
+                while (_lastExtractedLexem.Token == Token.ElseIf)
+                {
+                    var elseif = _builder.BeginConditionStatement();
+
+                    NextLexem();
+                    elseif.Condition = BuildExpression(Token.Then);
+                    NextLexem();
+                    elseif.TruePart = BuildCodeBatch();
+                    currentIf.FalsePart = elseif;
+                    currentIf = elseif;
+                }
+
+                if (_lastExtractedLexem.Token == Token.Else)
+                {
+                    PopEndTokens();
+                    NextLexem();
+                    PushEndTokens(Token.EndIf);
+                    currentIf.FalsePart = BuildCodeBatch();
+
+                }
+            }
+            finally
             {
                 PopEndTokens();
-                NextLexem();
-                PushEndTokens(Token.EndIf);
-                currentIf.FalsePart = BuildCodeBatch();
-
             }
-
-            PopEndTokens();
 
             NextLexem(); // endif
 
             _builder.EndConditionStatement(ifBlock);
 
+        }
+
+        private void BuildWhileStatement()
+        {
+            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.While);
+
+            NextLexem();
+
+            try
+            {
+                PushEndTokens(Token.EndLoop);
+
+                var loopNode = _builder.BeginWhileStatement();
+                loopNode.Condition = BuildExpression(Token.Loop);
+                NextLexem();
+                loopNode.Body = BuildCodeBatch();
+                NextLexem();
+                _builder.EndWhileStatement(loopNode);
+
+            }
+            finally
+            {
+                PopEndTokens();
+            }
         }
 
         #region Helper methods

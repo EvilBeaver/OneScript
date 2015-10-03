@@ -184,5 +184,15 @@ namespace OneScript.Tests
         {
             CodeNode.Children.Add((TestASTNodeBase)node);
         }
+
+        public IASTWhileNode BeginWhileStatement()
+        {
+            return new WhileNode();
+        }
+
+        public void EndWhileStatement(IASTWhileNode node)
+        {
+            CodeNode.Children.Add((TestASTNodeBase)node);
+        }
     }
 }
