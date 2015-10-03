@@ -45,6 +45,7 @@
     <Compile Include="Language\IndexedNamesCollection.cs" />
     <Compile Include="Language\SymbolBinding.cs" />
     <Compile Include="Language\SymbolScope.cs" />
+    <Compile Include="OneScriptEngine.cs" />
     <Compile Include="OneScriptRuntime.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

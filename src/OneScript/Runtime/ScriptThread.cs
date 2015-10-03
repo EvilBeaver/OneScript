@@ -15,6 +15,8 @@ namespace OneScript.Runtime
         private static object _lockHolder = new object();
         private static Dictionary<int, ScriptThread> _threads = new Dictionary<int, ScriptThread>();
 
+        private IScriptEngine _engine;
+
         internal ScriptThread()
         {
         }
@@ -28,6 +30,9 @@ namespace OneScript.Runtime
             IValue result;
             try
             {
+                if (ScriptThread.Current != null)
+                    throw new InvalidOperationException("This thread already running a script");
+
                 ScriptThread.Current = this;
                 result = runner();
             }
@@ -42,6 +47,15 @@ namespace OneScript.Runtime
         public ILoadedModule Module { get { throw new NotImplementedException(); } }
         
         //public ICallStack CallStack { get { throw new NotImplementedException(); } }
+
+        public IScriptEngine CurrentEngineInstance { get { return _engine; } }
+
+        public static ScriptThread Create(IScriptEngine engine)
+        {
+            var thread = new ScriptThread();
+            thread._engine = engine;
+            return thread;
+        }
 
         public static ScriptThread Current 
         { 

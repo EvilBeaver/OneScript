@@ -92,7 +92,7 @@ namespace OneScript.Core
                 throw;
             }
 
-            if(dataType.Alias != null)
+            if(dataType.Alias != null && !string.Equals(dataType.Alias, dataType.Name, StringComparison.Ordinal))
             {
                 try
                 {

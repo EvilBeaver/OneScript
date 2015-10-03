@@ -109,26 +109,26 @@ namespace OneScript.Core
             if (val == null)
                 return val;
 
-            if(val.Type == BasicTypes.Boolean)
+            if (val.Type == BasicTypes.Boolean)
                 result = val.AsBoolean();
-            else if(val.Type == BasicTypes.Date)
+            else if (val.Type == BasicTypes.Date)
                 result = val.AsDate();
-            else if(val.Type == BasicTypes.Number)
+            else if (val.Type == BasicTypes.Number)
                 result = val.AsNumber();
             else if (val.Type == BasicTypes.String)
                 result = val.AsString();
             else if (val.Type == BasicTypes.Undefined || val.Type == BasicTypes.Null)
                 result = null;
-            else if(val.Type == BasicTypes.Type)
-                throw new NotImplementedException(); // TODO
+            else if (val.Type == BasicTypes.Type)
+                result = ((TypeTypeValue)val).ReferencedType;
             else if (val.Type.IsObject)
-                 result = val.AsObject();
+                result = val.AsObject();
             else
-                    //result = val.GetRawValue();
-                    //if (result is IObjectWrapper)
-                    //    result = ((IObjectWrapper)result).UnderlyingObject;
-                    //else
-                 throw new EngineException("Тип не поддерживает преобразование в CLR-объект");
+                //result = val.GetRawValue();
+                //if (result is IObjectWrapper)
+                //    result = ((IObjectWrapper)result).UnderlyingObject;
+                //else
+                throw new EngineException("Тип не поддерживает преобразование в CLR-объект");
 
             return result;
         }

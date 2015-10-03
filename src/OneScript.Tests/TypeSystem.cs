@@ -36,6 +36,7 @@ namespace OneScript.Tests
             Assert.IsFalse(BasicTypes.Boolean.IsObject);
             Assert.IsFalse(BasicTypes.Undefined.IsObject);
             Assert.IsFalse(BasicTypes.Type.IsObject);
+            Assert.IsFalse(BasicTypes.Null.IsObject);
         }
         
         [TestMethod]
@@ -60,6 +61,10 @@ namespace OneScript.Tests
             type1 = BasicTypes.Undefined;
             type2 = BasicTypes.Undefined;
             Assert.AreSame(type1, type2);
+
+            type1 = BasicTypes.Null;
+            type2 = BasicTypes.Null;
+            Assert.AreSame(type1, type2);
         }
 
         [TestMethod]
@@ -71,6 +76,7 @@ namespace OneScript.Tests
             Assert.AreEqual("Булево", BasicTypes.Boolean.Name);
             Assert.AreEqual("Неопределено", BasicTypes.Undefined.Name);
             Assert.AreEqual("Тип", BasicTypes.Type.Name);
+            Assert.AreEqual("Null", BasicTypes.Null.Name);
 
             Assert.AreEqual("Number", BasicTypes.Number.Alias);
             Assert.AreEqual("String", BasicTypes.String.Alias);
@@ -78,6 +84,7 @@ namespace OneScript.Tests
             Assert.AreEqual("Boolean", BasicTypes.Boolean.Alias);
             Assert.AreEqual("Undefined", BasicTypes.Undefined.Alias);
             Assert.AreEqual("Type", BasicTypes.Type.Alias);
+            Assert.AreEqual("Null", BasicTypes.Null.Alias);
         }
 
         [TestMethod]

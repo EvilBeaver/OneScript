@@ -67,6 +67,7 @@
     <Compile Include="Core\TypeTypeValue.cs" />
     <Compile Include="Core\UndefinedValue.cs" />
     <Compile Include="Core\ValueMarshaler.cs" />
+    <Compile Include="IScriptEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ValueFactory.cs" />
     <Compile Include="AbstractScriptRuntime.cs" />
