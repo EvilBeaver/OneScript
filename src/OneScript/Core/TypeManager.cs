@@ -22,6 +22,7 @@ namespace OneScript.Core
             RegisterType(BasicTypes.Boolean);
             RegisterType(BasicTypes.Undefined);
             RegisterType(BasicTypes.Type);
+            RegisterType(BasicTypes.Null);
         }
 
         public DataType RegisterSimpleType(string name)
