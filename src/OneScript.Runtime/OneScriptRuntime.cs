@@ -12,9 +12,11 @@ namespace OneScript.Runtime
         private List<InjectedValue> _externalProperties = new List<InjectedValue>();
         private CompilerContext _ctx = new CompilerContext();
         private SymbolScope _topScope;
+        private TypeManager _typeManager;
 
         public OneScriptRuntime()
         {
+            _typeManager = new TypeManager();
             _topScope = new SymbolScope();
             _ctx.PushScope(_topScope);
         }
@@ -62,6 +64,11 @@ namespace OneScript.Runtime
                 if (_ctx.IsMethodDefined(name))
                     throw new ArgumentException("Метод (" + name + ") уже определен");
             }
+        }
+
+        public DataType RegisterType(string name, string alias, DataTypeConstructor constructor = null)
+        {
+            return _typeManager.RegisterType(name, alias, constructor);
         }
 
         public override IValue Eval(string expression)

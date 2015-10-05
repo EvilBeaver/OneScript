@@ -16,6 +16,8 @@ namespace OneScript
 
         abstract public void InjectObject(IRuntimeContextInstance context);
 
+        abstract public DataType RegisterType(string name, string alias, DataTypeConstructor constructor = null);
+
         abstract public IValue Eval(string expression);
 
         abstract public void Execute(ILoadedModule module);
