@@ -56,11 +56,11 @@ namespace OneScript.Language
 
         void EndForLoopNode(IASTForLoopNode node);
 
-        IASTForEachNode BeginForeEachNode();
+        IASTForEachNode BeginForEachNode();
         
         void EndForEachNode(IASTForEachNode node);
 
-        IASTTryExceptNode BeginTryCatchNode();
+        IASTTryExceptNode BeginTryExceptNode();
 
         void EndTryBlock(IASTTryExceptNode node);
 

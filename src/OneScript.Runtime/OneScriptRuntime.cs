@@ -66,7 +66,7 @@ namespace OneScript.Runtime
             }
         }
 
-        public DataType RegisterType(string name, string alias, DataTypeConstructor constructor = null)
+        public override DataType RegisterType(string name, string alias, DataTypeConstructor constructor = null)
         {
             return _typeManager.RegisterType(name, alias, constructor);
         }

@@ -66,6 +66,7 @@ namespace OneScript.Language
             }
             finally
             {
+                System.Diagnostics.Debug.Assert(_blockEndings.Count == 0);
                 _builder.CompleteModule();
             }
 
@@ -433,6 +434,9 @@ namespace OneScript.Language
                     break;
                 case Token.For:
                     BuildForStatement();
+                    break;
+                case Token.Try:
+                    BuildTryExceptStatement();
                     break;
                 default:
                     throw new NotImplementedException();
@@ -819,23 +823,12 @@ namespace OneScript.Language
             System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.While);
 
             NextLexem();
-
-            try
-            {
-                PushEndTokens(Token.EndLoop);
-
-                var loopNode = _builder.BeginWhileStatement();
-                loopNode.Condition = BuildExpression(Token.Loop);
-                NextLexem();
-                loopNode.Body = BuildCodeBatch();
-                NextLexem();
-                _builder.EndWhileStatement(loopNode);
-
-            }
-            finally
-            {
-                PopEndTokens();
-            }
+            var loopNode = _builder.BeginWhileStatement();
+            loopNode.Condition = BuildExpression(Token.Loop);
+            NextLexem();
+            loopNode.Body = BuildCodeBatchTillToken(Token.EndLoop);
+            NextLexem();
+            _builder.EndWhileStatement(loopNode);
         }
 
         void BuildForStatement()
@@ -856,7 +849,23 @@ namespace OneScript.Language
 
         private void BuildForEachLoop()
         {
-            throw new NotImplementedException();
+            var loopNode = _builder.BeginForEachNode();
+
+            NextLexem(); // Each
+
+            if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                throw CompilerException.IdentifierExpected();
+
+            loopNode.ItemIdentifier = _builder.SelectOrCreateVariable(_lastExtractedLexem.Content);
+            NextLexem();
+            ExpectToken(Token.In);
+            NextLexem();
+            loopNode.CollectionExpression = BuildExpression(Token.Loop);
+            NextLexem();
+            loopNode.Body = BuildCodeBatchTillToken(Token.EndLoop);
+            NextLexem();
+            _builder.EndForEachNode(loopNode);
+            
         }
 
         private void BuildSimpleForLoop()
@@ -866,30 +875,50 @@ namespace OneScript.Language
             if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
                 throw CompilerException.IdentifierExpected();
 
-            loopNode.LoopCounter =_builder.SelectOrCreateVariable(_lastExtractedLexem.Content);
+            loopNode.LoopCounter = _builder.SelectOrCreateVariable(_lastExtractedLexem.Content);
             NextLexem();
             if (_lastExtractedLexem.Token != Token.Equal)
                 throw CompilerException.TokenExpected("=");
+
             NextLexem();
             loopNode.InitializerExpression = BuildExpression(Token.To);
             NextLexem();
             loopNode.BoundExpression = BuildExpression(Token.Loop);
             NextLexem();
+            loopNode.Body = BuildCodeBatchTillToken(Token.EndLoop);
+            NextLexem();
+            _builder.EndForLoopNode(loopNode);
 
+        }
+
+        private void BuildTryExceptStatement()
+        {
+            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.For);
+
+            var node = _builder.BeginTryExceptNode();
+            NextLexem();
+
+            node.TryBlock = BuildCodeBatchTillToken(Token.Exception);
+            _builder.EndTryBlock(node);
+            NextLexem();
+            node.ExceptBlock = BuildCodeBatchTillToken(Token.EndTry);
+            _builder.EndExceptBlock(node);
+            NextLexem();
+
+        }
+
+        private IASTNode BuildCodeBatchTillToken(Token stopToken)
+        {
             try
             {
-                PushEndTokens(Token.EndLoop);
-                loopNode.Body = BuildCodeBatch();
-                NextLexem();
-                _builder.EndForLoopNode(loopNode);
+                PushEndTokens(stopToken);
+                return BuildCodeBatch();
             }
             finally
             {
                 PopEndTokens();
             }
-
         }
-
 
         #region Helper methods
 
@@ -951,6 +980,12 @@ namespace OneScript.Language
         Token[] PopEndTokens()
         {
             return _blockEndings.Pop();
+        }
+
+        private void ExpectToken(Token tok)
+        {
+            if(_lastExtractedLexem.Token != tok)
+                throw CompilerException.TokenExpected(tok);
         }
 
         #endregion

@@ -495,6 +495,18 @@ namespace OneScript.Tests
             Assert.IsInstanceOfType(node.BoundExpression, typeof(BinExpressionNode));
             Assert.IsNotNull(node.Body);
         }
+
+        [TestMethod]
+        public void For_Each_Simple_Test()
+        {
+            var builder = ParseCode("Для Каждого Элемент Из Коллекция Цикл а = 1 КонецЦикла");
+
+            var node = builder.topNode as IASTForEachNode;
+            Assert.IsNotNull(node);
+            Assert.IsNotNull(node.ItemIdentifier);
+            Assert.IsNotNull(node.CollectionExpression);
+            Assert.IsNotNull(node.Body);
+        }
     }
 
 }

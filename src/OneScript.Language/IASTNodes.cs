@@ -36,7 +36,7 @@ namespace OneScript.Language
 
     public interface IASTForEachNode : IASTStatementNode
     {
-        string ItemIdentifier { get; set; }
+        IASTNode ItemIdentifier { get; set; }
         IASTNode CollectionExpression { get; set; }
         IASTNode Body { get; set; }
     }

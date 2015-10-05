@@ -182,7 +182,7 @@ namespace OneScript.Tests
 
         public void EndConditionStatement(IASTConditionNode node)
         {
-            StandardPlaceOnTop(node);
+            AppendCode(node);
         }
 
         public IASTWhileNode BeginWhileStatement()
@@ -192,10 +192,10 @@ namespace OneScript.Tests
 
         public void EndWhileStatement(IASTWhileNode node)
         {
-            StandardPlaceOnTop(node);
+            AppendCode(node);
         }
 
-        private void StandardPlaceOnTop(IASTNode node)
+        private void AppendCode(IASTNode node)
         {
             CodeNode.Children.Add((TestASTNodeBase)node);
         }
@@ -207,20 +207,20 @@ namespace OneScript.Tests
 
         public void EndForLoopNode(IASTForLoopNode node)
         {
-            StandardPlaceOnTop(node);
+            AppendCode(node);
         }
 
-        public IASTForEachNode BeginForeEachNode()
+        public IASTForEachNode BeginForEachNode()
         {
-            throw new NotImplementedException();
+            return new ForEachNode();
         }
 
         public void EndForEachNode(IASTForEachNode node)
         {
-            throw new NotImplementedException();
+            AppendCode(node);
         }
 
-        public IASTTryExceptNode BeginTryCatchNode()
+        public IASTTryExceptNode BeginTryExceptNode()
         {
             throw new NotImplementedException();
         }

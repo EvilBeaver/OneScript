@@ -74,6 +74,11 @@ namespace OneScript.Language
             return new CompilerException("Ожидается символ: " + tokens);
         }
 
+        public static CompilerException TokenExpected(Token token)
+        {
+            return new CompilerException("Ожидается символ: " + token.ToString());
+        }
+
         public static CompilerException ExpressionExpected()
         {
             return new CompilerException("Ожидается выражение");
