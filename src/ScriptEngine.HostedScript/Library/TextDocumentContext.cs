@@ -254,7 +254,10 @@ namespace ScriptEngine.HostedScript.Library
         public void Read(string path, IValue encoding = null, string lineSeparator = null)
         {
             var newContent = new List<string>();
-            using(var reader = new StreamReader(path, TextEncodingEnum.GetEncoding(encoding)))
+
+            Encoding enc = encoding == null ? Encoding.UTF8 : TextEncodingEnum.GetEncoding(encoding);
+
+            using(var reader = new StreamReader(path, enc))
             {
                 string line = null;
                 while ((line = reader.ReadLine()) != null)
