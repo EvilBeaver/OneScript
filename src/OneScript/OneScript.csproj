@@ -56,6 +56,7 @@
     <Compile Include="Core\EngineException.cs" />
     <Compile Include="Core\GenericValue.cs" />
     <Compile Include="Core\IRefCountable.cs" />
+    <Compile Include="FileOpener.cs" />
     <Compile Include="ILoadedModule.cs" />
     <Compile Include="Core\NullValue.cs" />
     <Compile Include="Core\NumericValue.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="Core\UndefinedValue.cs" />
     <Compile Include="Core\ValueMarshaler.cs" />
     <Compile Include="IScriptEngine.cs" />
+    <Compile Include="IScriptSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ValueFactory.cs" />
     <Compile Include="AbstractScriptRuntime.cs" />

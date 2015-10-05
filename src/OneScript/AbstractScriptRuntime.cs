@@ -20,7 +20,7 @@ namespace OneScript
 
         abstract public IValue Eval(string expression);
 
-        abstract public void Execute(ILoadedModule module);
+        abstract public void Execute(IScriptSource moduleSource);
         
     }
 }

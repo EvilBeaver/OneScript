@@ -76,7 +76,7 @@ namespace OneScript.Runtime
             throw new NotImplementedException();
         }
 
-        public override void Execute(ILoadedModule module)
+        public override void Execute(IScriptSource moduleSource)
         {
             throw new NotImplementedException();
         }
