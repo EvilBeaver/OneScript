@@ -14,6 +14,8 @@ namespace OneScript.Language
         private Stack<Token[]> _blockEndings;
 
         private bool _isInMethodScope = false;
+        private int _isInLoopScope;
+        private int _isInExceptScope;
 
         public Parser(IASTBuilder builder)
         {
@@ -986,6 +988,22 @@ namespace OneScript.Language
         {
             if(_lastExtractedLexem.Token != tok)
                 throw CompilerException.TokenExpected(tok);
+        }
+
+        private void SetBlockFlag(ref int flag)
+        {
+            flag++;
+        }
+
+        private void UnsetBlockFlag(ref int flag)
+        {
+            if (FlagIsSet(ref flag))
+                flag--;
+        }
+
+        private bool FlagIsSet(ref int flag)
+        {
+            return flag > 0;
         }
 
         #endregion
