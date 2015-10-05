@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Compiler;
+using System.IO;
 
 namespace ScriptEngine.Environment
 {
@@ -57,26 +58,38 @@ namespace ScriptEngine.Environment
         {
             if (_code == null)
             {
-                var builder = new StringBuilder();
-                using (var reader = FileOpener.OpenReader(_path))
+                using (var fStream = new FileStream(_path, FileMode.Open, FileAccess.Read))
                 {
-                    var buf = new char[2];
-                    reader.Read(buf, 0, 2);
+                    var buf = new byte[2];
+                    fStream.Read(buf, 0, 2);
+                    Encoding enc = null;
+                    bool skipShebang = false;
                     if (IsLinuxScript(buf))
-                        reader.ReadLine();
+                    {
+                        enc = Encoding.UTF8; // скрипты с shebang считать в формате UTF-8
+                        skipShebang = true;
+                    }
                     else
-                        builder.Append(buf);
-                    
-                    builder.Append(reader.ReadToEnd());
+                    {
+                        fStream.Position = 0;
+                        enc = FileOpener.AssumeEncoding(fStream);
+                    }
 
-                    _code = builder.ToString();
+                    using (var reader = new StreamReader(fStream, enc))
+                    {
+                        if (skipShebang)
+                            reader.ReadLine();
+
+                        _code = reader.ReadToEnd();
+                    }
+
                 }
             }
 
             return _code;
         }
 
-        private static bool IsLinuxScript(char[] buf)
+        private static bool IsLinuxScript(byte[] buf)
         {
             return buf[0] == '#' && buf[1] == '!';
         }
