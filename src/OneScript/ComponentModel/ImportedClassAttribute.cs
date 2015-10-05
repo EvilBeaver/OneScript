@@ -14,7 +14,6 @@ namespace OneScript.ComponentModel
 
         public string Name { get; set; }
         public string Alias { get; set; }
-        public bool IsSimpleType { get; set; }
 
     }
 }

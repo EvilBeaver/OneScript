@@ -16,7 +16,7 @@ namespace OneScript.Core
 
         public string Name { get; internal set; }
         public string Alias { get; internal set; }
-        public bool IsObject { get; internal set; }
+        
         public DataTypeConstructor Constructor { get; internal set; }
         public TypeId ID { get; private set; }
 

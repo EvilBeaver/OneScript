@@ -28,18 +28,6 @@ namespace OneScript.Tests
         }
         
         [TestMethod]
-        public void BasicTypes_AreNonObject()
-        {
-            Assert.IsFalse(BasicTypes.Number.IsObject);
-            Assert.IsFalse(BasicTypes.String.IsObject);
-            Assert.IsFalse(BasicTypes.Date.IsObject);
-            Assert.IsFalse(BasicTypes.Boolean.IsObject);
-            Assert.IsFalse(BasicTypes.Undefined.IsObject);
-            Assert.IsFalse(BasicTypes.Type.IsObject);
-            Assert.IsFalse(BasicTypes.Null.IsObject);
-        }
-        
-        [TestMethod]
         public void BasicTypes_Are_Unique()
         {
             DataType type1 = BasicTypes.Number;
@@ -111,10 +99,10 @@ namespace OneScript.Tests
         {
             var id = TypeId.New();
             var manager1 = new TypeManager();
-            var newType1 = manager1.RegisterSimpleType("ВидСравнения", "ComparisonType", id, null);
+            var newType1 = manager1.RegisterType("ВидСравнения", "ComparisonType", id, null);
 
             var manager2 = new TypeManager();
-            var newType2 = manager2.RegisterSimpleType("ВидСравнения", "ComparisonType", id, null);
+            var newType2 = manager2.RegisterType("ВидСравнения", "ComparisonType", id, null);
 
             Assert.AreNotSame(newType1, newType2);
             Assert.IsTrue(newType1.Equals(newType2));
@@ -124,19 +112,17 @@ namespace OneScript.Tests
         public void TypeRegistration()
         {
             var manager = new TypeManager();
-            var newType = manager.RegisterSimpleType("ВидСравнения", "ComparisonType");
+            var newType = manager.RegisterType("ВидСравнения", "ComparisonType");
             Assert.IsTrue(newType.Name == "ВидСравнения");
             Assert.IsTrue(newType.Alias == "ComparisonType");
-            Assert.IsFalse(newType.IsObject);
             Assert.AreSame(newType, manager["ВидСравнения"]);
 
-            newType = manager.RegisterObjectType("Структура");
+            newType = manager.RegisterType("Структура");
             Assert.IsTrue(newType.Name == "Структура");
-            Assert.IsTrue(newType.IsObject);
             Assert.AreSame(newType, manager["Структура"]);
 
             Assert.IsTrue(TestHelpers.ExceptionThrown(
-                ()=>manager.RegisterObjectType("Структура"), 
+                ()=>manager.RegisterType("Структура"), 
                 typeof(ArgumentException)), "No exception thrown");
             
         }

@@ -12,7 +12,7 @@ namespace OneScript.Tests
         public void Standard_ClassCreation_Test()
         {
             var manager = new TypeManager();
-            var type = manager.RegisterObjectType("TestMock", null, CreatableInstanceMock.Constructor);
+            var type = manager.RegisterType("TestMock", null, CreatableInstanceMock.Constructor);
 
             IValue instance = type.CreateInstance(null);
             Assert.IsTrue(instance.GetType() == typeof(CreatableInstanceMock));

@@ -43,11 +43,8 @@ namespace OneScript.ComponentModel
             }
 
             DataType newType;
-            if (attrib.IsSimpleType)
-                newType = _manager.RegisterSimpleType(typeName, typeAlias, ImportedClassesConstructor);
-            else
-                newType = _manager.RegisterObjectType(typeName, typeAlias, ImportedClassesConstructor);
-
+            newType = _manager.RegisterType(typeName, typeAlias, ImportedClassesConstructor);
+            
             var constructors = type.GetMethods(BindingFlags.Static | BindingFlags.Public)
                 .Where((x) => x.IsDefined(typeof(TypeConstructorAttribute), false));
 

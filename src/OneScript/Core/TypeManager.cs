@@ -25,60 +25,33 @@ namespace OneScript.Core
             RegisterType(BasicTypes.Null);
         }
 
-        public DataType RegisterSimpleType(string name)
+        public DataType RegisterType(string name)
         {
-            return RegisterSimpleType(name, null);
+            return RegisterType(name, null);
         }
 
-        public DataType RegisterSimpleType(string name, string alias)
+        public DataType RegisterType(string name, string alias)
         {
-            return RegisterSimpleType(name, alias, null);
-        }
-        public DataType RegisterSimpleType(string name, string alias, DataTypeConstructor constructor)
-        {
-            var t = DataType.CreateType(name, alias);
-            t.Constructor = constructor;
-            RegisterType(t);
-            return t;
+            return RegisterType(name, alias, null);
         }
 
-        public DataType RegisterSimpleType(string name, string alias, TypeId id, DataTypeConstructor constructor)
-        {
-            var t = DataType.CreateType(name, alias, id);
-            t.Constructor = constructor;
-            RegisterType(t);
-            return t;
-        }
-
-        public DataType RegisterObjectType(string name)
-        {
-            return RegisterObjectType(name, null);
-        }
-
-        public DataType RegisterObjectType(string name, string alias)
-        {
-            return RegisterObjectType(name, alias, null);
-        }
-
-        public DataType RegisterObjectType(string name, string alias, DataTypeConstructor constructor)
+        public DataType RegisterType(string name, string alias, DataTypeConstructor constructor)
         {
             DataType t = DataType.CreateType(name, alias);
             t.Constructor = constructor;
-            t.IsObject = true;
             RegisterType(t);
             return t;
         }
 
-        public DataType RegisterObjectType(string name, string alias, TypeId id, DataTypeConstructor constructor)
+        public DataType RegisterType(string name, string alias, TypeId id, DataTypeConstructor constructor)
         {
             DataType t = DataType.CreateType(name, alias, id);
             t.Constructor = constructor;
-            t.IsObject = true;
             RegisterType(t);
             return t;
         }
 
-        private void RegisterType(DataType dataType)
+        public void RegisterType(DataType dataType)
         {
             int newIndex = _types.Count;
             _typeIds.Add(dataType.ID, newIndex);

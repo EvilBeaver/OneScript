@@ -11,7 +11,7 @@ namespace OneScript.Core
         public static T IValueToCLRType<T>(IValue value)
         {
             var type = typeof(T);
-            object retVal = IValueToCLRType(value, type);
+            object retVal = IValueToCLRTypeNonStrict(value, type);
             if (retVal != null)
                 return (T)retVal;
             else
@@ -19,6 +19,18 @@ namespace OneScript.Core
         }
 
         public static object IValueToCLRType(IValue value, Type type)
+        {
+            object retVal = IValueToCLRTypeNonStrict(value, type);
+            if (retVal != null)
+            {
+                if (!type.IsAssignableFrom(retVal.GetType()))
+                    throw new InvalidCastException();
+            }
+
+            return retVal;
+        }
+
+        private static object IValueToCLRTypeNonStrict(IValue value, Type type)
         {
             object valueObj;
 
@@ -56,7 +68,7 @@ namespace OneScript.Core
             }
             else
             {
-                valueObj = IValueToCLRObject(value);
+                valueObj = UnwrapIValueToCLRObject(value);
             }
 
             return valueObj;
@@ -103,7 +115,7 @@ namespace OneScript.Core
             }
         }
 
-        public static object IValueToCLRObject(IValue val)
+        public static object UnwrapIValueToCLRObject(IValue val)
         {
             object result;
             if (val == null)
@@ -121,15 +133,11 @@ namespace OneScript.Core
                 result = null;
             else if (val.Type == BasicTypes.Type)
                 result = ((TypeTypeValue)val).ReferencedType;
-            else if (val.Type.IsObject)
+            else if (val is IRuntimeContextInstance)
                 result = val.AsObject();
             else
-                //result = val.GetRawValue();
-                //if (result is IObjectWrapper)
-                //    result = ((IObjectWrapper)result).UnderlyingObject;
-                //else
-                throw new EngineException("Тип не поддерживает преобразование в CLR-объект");
-
+                result = val; // любое IValue так или иначе является CLR-объектом.
+                
             return result;
         }
 
