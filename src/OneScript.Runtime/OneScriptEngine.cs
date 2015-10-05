@@ -8,9 +8,9 @@ namespace OneScript.Runtime
 {
     public class OneScriptEngine : IScriptEngine
     {
-        public OneScriptEngine()
+        public OneScriptEngine(TypeManager typeManager)
         {
-            TypeManager = new TypeManager();
+            TypeManager = typeManager;
         }
 
         public TypeManager TypeManager
