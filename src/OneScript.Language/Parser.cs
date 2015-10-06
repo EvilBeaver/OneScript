@@ -828,7 +828,7 @@ namespace OneScript.Language
             var loopNode = _builder.BeginWhileStatement();
             loopNode.Condition = BuildExpression(Token.Loop);
             NextLexem();
-            loopNode.Body = BuildCodeBatchTillToken(Token.EndLoop);
+            loopNode.Body = BuildCodeBlock(Token.EndLoop, ref _isInLoopScope);
             NextLexem();
             _builder.EndWhileStatement(loopNode);
         }
@@ -864,7 +864,7 @@ namespace OneScript.Language
             NextLexem();
             loopNode.CollectionExpression = BuildExpression(Token.Loop);
             NextLexem();
-            loopNode.Body = BuildCodeBatchTillToken(Token.EndLoop);
+            loopNode.Body = BuildCodeBlock(Token.EndLoop, ref _isInLoopScope);
             NextLexem();
             _builder.EndForEachNode(loopNode);
             
@@ -887,7 +887,7 @@ namespace OneScript.Language
             NextLexem();
             loopNode.BoundExpression = BuildExpression(Token.Loop);
             NextLexem();
-            loopNode.Body = BuildCodeBatchTillToken(Token.EndLoop);
+            loopNode.Body = BuildCodeBlock(Token.EndLoop, ref _isInLoopScope);
             NextLexem();
             _builder.EndForLoopNode(loopNode);
 
@@ -900,26 +900,34 @@ namespace OneScript.Language
             var node = _builder.BeginTryExceptNode();
             NextLexem();
 
-            node.TryBlock = BuildCodeBatchTillToken(Token.Exception);
+            node.TryBlock = BuildCodeBlock(Token.Exception);
             _builder.EndTryBlock(node);
             NextLexem();
-            node.ExceptBlock = BuildCodeBatchTillToken(Token.EndTry);
+            node.ExceptBlock = BuildCodeBlock(Token.EndTry, ref _isInExceptScope);
             _builder.EndExceptBlock(node);
             NextLexem();
 
         }
 
-        private IASTNode BuildCodeBatchTillToken(Token stopToken)
+        private IASTNode BuildCodeBlock(Token stopToken, ref int blockFlag)
         {
             try
             {
                 PushEndTokens(stopToken);
+                SetBlockFlag(ref blockFlag);
                 return BuildCodeBatch();
             }
             finally
             {
                 PopEndTokens();
+                UnsetBlockFlag(ref blockFlag);
             }
+        }
+
+        private IASTNode BuildCodeBlock(Token stopToken)
+        {
+            int dummy = 0;
+            return BuildCodeBlock(stopToken, ref dummy);
         }
 
         #region Helper methods
