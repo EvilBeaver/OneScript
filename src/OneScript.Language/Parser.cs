@@ -420,6 +420,10 @@ namespace OneScript.Language
             {
                 BuildBreakStatement();
             }
+            else if (_lastExtractedLexem.Token == Token.Continue)
+            {
+                BuildContinueStatement();
+            }
             else
             {
                 throw CompilerException.UnexpectedOperation();
@@ -454,6 +458,15 @@ namespace OneScript.Language
                 throw CompilerException.MisplacedBreakStatement();
 
             _builder.BuildBreakStatement();
+            NextLexem();
+        }
+
+        private void BuildContinueStatement()
+        {
+            if (!FlagIsSet(_isInLoopScope))
+                throw CompilerException.MisplacedContinueStatement();
+
+            _builder.BuildContinueStatement();
             NextLexem();
         }
 

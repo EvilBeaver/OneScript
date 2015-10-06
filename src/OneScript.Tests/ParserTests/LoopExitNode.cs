@@ -8,6 +8,13 @@ namespace OneScript.Tests
 {
     class LoopExitNode : TestASTNodeBase, IASTNode
     {
+        public LoopExitNode(bool isBreak)
+        {
+            IsBreak = isBreak;
+        }
+
+        public bool IsBreak { get; set; }
+
         protected override bool EqualsInternal(IASTNode other)
         {
             throw new NotImplementedException();

@@ -237,12 +237,12 @@ namespace OneScript.Tests
 
         public void BuildBreakStatement()
         {
-            AppendCode(new LoopExitNode());
+            AppendCode(new LoopExitNode(true));
         }
 
         public void BuildContinueStatement()
         {
-            AppendCode(new LoopExitNode());
+            AppendCode(new LoopExitNode(false));
         }
 
         public void BuildReturnStatement(IASTNode expression)

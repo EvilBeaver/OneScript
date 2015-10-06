@@ -519,14 +519,43 @@ namespace OneScript.Tests
             Assert.IsNotNull(node);
             var body = node.Body as CodeBatchNode;
             Assert.IsNotNull(body);
+            var ifBody = (body.Children[0] as ConditionNode).TruePart as CodeBatchNode;
+            Assert.IsInstanceOfType(ifBody.Children[0], typeof(LoopExitNode));
+            Assert.IsTrue((ifBody.Children[0] as LoopExitNode).IsBreak);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(CompilerException))]
+        [ExpectedExceptionMsg(typeof(CompilerException), ExpectedMessage="Оператор 'Прервать' может использоваться только внутри цикла")]
         public void Break_Is_NotAllowed_OutsideALoop()
         {
             var code = @"Если 1 Тогда
                             Прервать;
+                        КонецЕсли";
+            var builder = ParseCode(code);
+        }
+
+        [TestMethod]
+        public void Continue_Is_Allowed_Inside_A_Loop_While()
+        {
+            var code = @"Пока 1 Цикл
+                            Если 1 Тогда Продолжить; КонецЕсли;
+                        КонецЦикла";
+            var builder = ParseCode(code);
+            var node = builder.topNode as WhileNode;
+            Assert.IsNotNull(node);
+            var body = node.Body as CodeBatchNode;
+            Assert.IsNotNull(body);
+            var ifBody = (body.Children[0] as ConditionNode).TruePart as CodeBatchNode;
+            Assert.IsInstanceOfType(ifBody.Children[0], typeof(LoopExitNode));
+            Assert.IsFalse((ifBody.Children[0] as LoopExitNode).IsBreak);
+        }
+
+        [TestMethod]
+        [ExpectedExceptionMsg(typeof(CompilerException), ExpectedMessage="Оператор 'Продолжить' может использоваться только внутри цикла")]
+        public void Continue_Is_NotAllowed_OutsideALoop()
+        {
+            var code = @"Если 1 Тогда
+                            Продолжить;
                         КонецЕсли";
             var builder = ParseCode(code);
         }

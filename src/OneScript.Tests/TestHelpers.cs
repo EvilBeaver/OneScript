@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,26 @@ namespace OneScript.Tests
                     return false;
                 }
             }
+        }
+    }
+
+    class ExpectedExceptionMsgAttribute : ExpectedExceptionBaseAttribute
+    {
+        Type _excType;
+
+        public ExpectedExceptionMsgAttribute(Type exceptionType)
+        {
+            _excType = exceptionType;
+        }
+
+        public string ExpectedMessage { get; set; }
+
+        protected override void Verify(Exception exception)
+        {
+            base.RethrowIfAssertException(exception);
+
+            Assert.IsInstanceOfType(exception, _excType);
+            Assert.IsTrue(exception.Message.Contains(ExpectedMessage), "Could not verify the exception message.");
         }
     }
 }

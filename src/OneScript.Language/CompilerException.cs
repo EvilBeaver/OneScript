@@ -98,5 +98,10 @@ namespace OneScript.Language
         {
             return new CompilerException("Оператор 'Прервать' может использоваться только внутри цикла");
         }
+
+        internal static Exception MisplacedContinueStatement()
+        {
+            throw new CompilerException("Оператор 'Продолжить' может использоваться только внутри цикла");
+        }
     }
 }
