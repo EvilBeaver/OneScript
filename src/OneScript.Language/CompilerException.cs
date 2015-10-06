@@ -93,5 +93,10 @@ namespace OneScript.Language
         {
             return new CompilerException("Локальная переменная не может быть экспортирована");
         }
+
+        public static CompilerException MisplacedBreakStatement()
+        {
+            return new CompilerException("Оператор 'Прервать' может использоваться только внутри цикла");
+        }
     }
 }

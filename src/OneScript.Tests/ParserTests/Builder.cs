@@ -237,12 +237,12 @@ namespace OneScript.Tests
 
         public void BuildBreakStatement()
         {
-            throw new NotImplementedException();
+            AppendCode(new LoopExitNode());
         }
 
         public void BuildContinueStatement()
         {
-            throw new NotImplementedException();
+            AppendCode(new LoopExitNode());
         }
 
         public void BuildReturnStatement(IASTNode expression)

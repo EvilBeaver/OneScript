@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="OSVMEngineTests.cs" />
     <Compile Include="ParserTests\AssignmentNode.cs" />
+    <Compile Include="ParserTests\LoopExitNode.cs" />
     <Compile Include="ParserTests\CallNode.cs" />
     <Compile Include="ParserTests\CodeBatchNode.cs" />
     <Compile Include="ParserTests\ConditionNode.cs" />

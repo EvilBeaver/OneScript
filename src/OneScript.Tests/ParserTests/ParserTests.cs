@@ -507,6 +507,29 @@ namespace OneScript.Tests
             Assert.IsNotNull(node.CollectionExpression);
             Assert.IsNotNull(node.Body);
         }
+
+        [TestMethod]
+        public void Break_Is_Allowed_Inside_A_Loop_While()
+        {
+            var code = @"Пока 1 Цикл
+                            Если 1 Тогда Прервать; КонецЕсли;
+                        КонецЦикла";
+            var builder = ParseCode(code);
+            var node = builder.topNode as WhileNode;
+            Assert.IsNotNull(node);
+            var body = node.Body as CodeBatchNode;
+            Assert.IsNotNull(body);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        public void Break_Is_NotAllowed_OutsideALoop()
+        {
+            var code = @"Если 1 Тогда
+                            Прервать;
+                        КонецЕсли";
+            var builder = ParseCode(code);
+        }
     }
 
 }

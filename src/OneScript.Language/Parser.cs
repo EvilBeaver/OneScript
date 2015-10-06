@@ -408,20 +408,23 @@ namespace OneScript.Language
         {
             Debug.Assert(_lastExtractedLexem.Type == LexemType.Identifier);
 
-            if(LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token))
+            if (LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token))
             {
                 BuildComplexStatement();
             }
-            else if(LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+            else if (LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
             {
                 BuildSimpleStatement();
+            }
+            else if (_lastExtractedLexem.Token == Token.Break)
+            {
+                BuildBreakStatement();
             }
             else
             {
                 throw CompilerException.UnexpectedOperation();
             }
         }
-
         private void BuildComplexStatement()
         {
             switch(_lastExtractedLexem.Token)
@@ -443,6 +446,15 @@ namespace OneScript.Language
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        private void BuildBreakStatement()
+        {
+            if (!FlagIsSet(_isInLoopScope))
+                throw CompilerException.MisplacedBreakStatement();
+
+            _builder.BuildBreakStatement();
+            NextLexem();
         }
 
         private void BuildSimpleStatement()
@@ -1005,11 +1017,11 @@ namespace OneScript.Language
 
         private void UnsetBlockFlag(ref int flag)
         {
-            if (FlagIsSet(ref flag))
+            if (FlagIsSet(flag))
                 flag--;
         }
 
-        private bool FlagIsSet(ref int flag)
+        private bool FlagIsSet(int flag)
         {
             return flag > 0;
         }
