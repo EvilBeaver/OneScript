@@ -21,7 +21,6 @@ namespace oscript
         MapImpl _environmentVars = new MapImpl();
         MapImpl _get = new MapImpl();
         MapImpl _post = new MapImpl();
-        string _post_raw_utf = null;
         byte[] _post_raw = null;
 
         public WebRequestContext()
@@ -63,9 +62,8 @@ namespace oscript
                     stdin.Read(_post_raw, 0, len);
                 }
 
-                // TODO: Подумать, где задавать кодировку разбора сырого запроса
-                //       или вообще убрать разбор по-умолчанию, оставив только двоичные данные
-                _post_raw_utf = Encoding.UTF8.GetString(_post_raw);
+                // по-умолчанию входящий запрос разбираем в UTF-8
+                string _post_raw_utf = Encoding.UTF8.GetString(_post_raw);
 
                 ParseFormData(_post_raw_utf, _post);
             }
@@ -172,26 +170,21 @@ namespace oscript
             }
         }
 
-        [ContextProperty("RAWDATA")]
-        public IValue RAWDATA
+        [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
+        public BinaryDataContext GetBodyAsBinaryData()
         {
-            get
-            {
-                if (_post_raw == null)
-                    return ValueFactory.Create ();
-                return new BinaryDataContext (_post_raw);
-            }
+            return new BinaryDataContext(_post_raw);
         }
 
-        [ContextProperty("POSTDATA")]
-        public IValue POSTDATA
+        [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
+        public string GetBodyAsString(IValue encoding = null)
         {
-            get
-            {
-                if (_post_raw_utf == null)
-                    return ValueFactory.Create ();
-                return ValueFactory.Create (_post_raw_utf);
-            }
+            Encoding enc = (encoding == null || ValueFactory.Create().Equals(encoding))
+                    ? new UTF8Encoding(false)
+                    : TextEncodingEnum.GetEncoding(encoding)
+            ;
+
+            return enc.GetString(_post_raw);
         }
     }
 }
