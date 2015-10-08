@@ -64,7 +64,9 @@
     <Compile Include="ParserTests\IndexedAccessNode.cs" />
     <Compile Include="ParserTests\MethodNode.cs" />
     <Compile Include="ParserTests\PropertyAccessNode.cs" />
+    <Compile Include="ParserTests\RaiseOrReturn.cs" />
     <Compile Include="ParserTests\TestASTNodeBase.cs" />
+    <Compile Include="ParserTests\TryExceptNode.cs" />
     <Compile Include="ParserTests\WhileNode.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TypeSystem.cs" />

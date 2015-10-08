@@ -46,7 +46,7 @@ namespace OneScript.Tests
             base.RethrowIfAssertException(exception);
 
             Assert.IsInstanceOfType(exception, _excType);
-            Assert.IsTrue(exception.Message.Contains(ExpectedMessage), "Could not verify the exception message.");
+            Assert.IsTrue(exception.Message.Contains(ExpectedMessage), String.Format("Could not verify the exception message {0}", exception.Message));
         }
     }
 }

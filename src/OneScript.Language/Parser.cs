@@ -14,6 +14,7 @@ namespace OneScript.Language
         private Stack<Token[]> _blockEndings;
 
         private bool _isInMethodScope = false;
+        private bool _isInFunctionScope = false;
         private int _isInLoopScope;
         private int _isInExceptScope;
 
@@ -280,14 +281,22 @@ namespace OneScript.Language
                 SkipToNextStatement();
             }
 
-            PushEndTokens(isFunction ? Token.EndFunction : Token.EndProcedure);
+            try
+            {
+                PushEndTokens(isFunction ? Token.EndFunction : Token.EndProcedure);
 
-            _isInMethodScope = true;
-            DefineMethodVariables();
-            BuildCodeBatch();            
-            _isInMethodScope = false;
-            
-            PopEndTokens();
+                _isInMethodScope = true;
+                _isInFunctionScope = isFunction;
+
+                DefineMethodVariables();
+                BuildCodeBatch();
+
+            }
+            finally
+            {
+                PopEndTokens();
+                _isInMethodScope = false;
+            }
 
             _builder.EndMethod(methodNode);
 
@@ -424,11 +433,20 @@ namespace OneScript.Language
             {
                 BuildContinueStatement();
             }
+            else if (_lastExtractedLexem.Token == Token.RaiseException)
+            {
+                BuildRaiseExceptionStatement();
+            }
+            else if (_lastExtractedLexem.Token == Token.Return)
+            {
+                BuildReturnStatement();
+            }
             else
             {
                 throw CompilerException.UnexpectedOperation();
             }
         }
+
         private void BuildComplexStatement()
         {
             switch(_lastExtractedLexem.Token)
@@ -468,6 +486,45 @@ namespace OneScript.Language
 
             _builder.BuildContinueStatement();
             NextLexem();
+        }
+
+        private void BuildRaiseExceptionStatement()
+        {
+            NextLexem();
+            if (_lastExtractedLexem.Token == Token.Semicolon || IsLastBlockStatement())
+            {
+                if (!FlagIsSet(_isInExceptScope))
+                    throw CompilerException.MisplacedRaiseException();
+                
+                _builder.BuildRaiseExceptionStatement(null);
+
+            }
+            else
+            {
+                var expr = BuildExpression(Token.Semicolon);
+                _builder.BuildRaiseExceptionStatement(expr);
+            }
+        }
+
+        private void BuildReturnStatement()
+        {
+            if (!_isInMethodScope)
+                throw CompilerException.ReturnOutsideOfMethod();
+
+            NextLexem();
+
+            if (_lastExtractedLexem.Token == Token.Semicolon || IsLastBlockStatement())
+            {
+                if(_isInFunctionScope)
+                    throw CompilerException.FuncEmptyReturnValue();
+
+                _builder.BuildReturnStatement(null);
+            }
+            else
+            {
+                _builder.BuildReturnStatement(BuildExpression(Token.Semicolon));
+            }
+
         }
 
         private void BuildSimpleStatement()
@@ -920,7 +977,7 @@ namespace OneScript.Language
 
         private void BuildTryExceptStatement()
         {
-            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.For);
+            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.Try);
 
             var node = _builder.BeginTryExceptNode();
             NextLexem();
@@ -1037,6 +1094,12 @@ namespace OneScript.Language
         private bool FlagIsSet(int flag)
         {
             return flag > 0;
+        }
+
+        private bool IsLastBlockStatement()
+        {
+            var endTokens = _blockEndings.Peek();
+            return endTokens.Contains(_lastExtractedLexem.Token);
         }
 
         #endregion

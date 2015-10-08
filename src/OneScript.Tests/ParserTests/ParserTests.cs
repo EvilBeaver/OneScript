@@ -559,6 +559,63 @@ namespace OneScript.Tests
                         КонецЕсли";
             var builder = ParseCode(code);
         }
+
+        [TestMethod]
+        [ExpectedExceptionMsg(typeof(CompilerException), ExpectedMessage = "Оператор \"ВызватьИсключение\" без параметров может использоваться только в блоке \"Исключение\"")]
+        public void RaiseException_With_No_Argument_IsNot_Allowed_Outside_Except_Block()
+        {
+            var code = "ВызватьИсключение;";
+            ParseCode(code);
+        }
+
+        [TestMethod]
+        public void RaiseException_With_No_Argument_Is_Allowed_In_Except_Block()
+        {
+            var code = "Попытка ; Исключение ВызватьИсключение КонецПопытки";
+
+            var builder = ParseCode(code);
+            var tryExc = builder.topNode as TryExceptNode;
+            Assert.IsNotNull(tryExc);
+
+        }
+
+        [TestMethod]
+        public void RaiseException_With_Argument()
+        {
+            var code = "ВызватьИсключение 1;";
+            var builder = ParseCode(code);
+
+            var node = builder.topNode as RaiseOrReturn;
+            Assert.IsNotNull(node.Expression);
+            Assert.IsFalse(node.IsReturn);
+
+        }
+
+        [TestMethod]
+        [ExpectedExceptionMsg(typeof(CompilerException), ExpectedMessage = "Оператор \"Возврат\" может использоваться только внутри метода")]
+        public void MisplacedReturn_OutsideMethod()
+        {
+            var code = "Возврат 1;";
+            ParseCode(code);
+        }
+
+        [TestMethod]
+        [ExpectedExceptionMsg(typeof(CompilerException), ExpectedMessage = "Функция должна возвращать значение")]
+        public void Func_Should_Return_Value_Exception()
+        {
+            var code = "Функция А() Возврат; КонецФункции";
+            ParseCode(code);
+        }
+
+        [TestMethod]
+        public void Func_Return_Value()
+        {
+            var code = "Функция А() Возврат 1; КонецФункции";
+            var builder = ParseCode(code);
+            var node = builder.topNode as RaiseOrReturn;
+            Assert.IsNotNull(node.Expression);
+            Assert.IsTrue(node.IsReturn);
+        }
     }
 
 }

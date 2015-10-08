@@ -222,17 +222,17 @@ namespace OneScript.Tests
 
         public IASTTryExceptNode BeginTryExceptNode()
         {
-            throw new NotImplementedException();
+            return new TryExceptNode();
         }
 
         public void EndTryBlock(IASTTryExceptNode node)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void EndExceptBlock(IASTTryExceptNode node)
         {
-            throw new NotImplementedException();
+            AppendCode(node);
         }
 
         public void BuildBreakStatement()
@@ -247,12 +247,12 @@ namespace OneScript.Tests
 
         public void BuildReturnStatement(IASTNode expression)
         {
-            throw new NotImplementedException();
+            AppendCode(new RaiseOrReturn() { IsReturn = true, Expression = expression });
         }
 
         public void BuildRaiseExceptionStatement(IASTNode expression)
         {
-            throw new NotImplementedException();
+            AppendCode(new RaiseOrReturn() { IsReturn = false, Expression = expression });
         }
     }
 }
