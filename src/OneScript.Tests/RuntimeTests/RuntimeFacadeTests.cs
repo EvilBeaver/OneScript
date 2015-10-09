@@ -1,11 +1,12 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Runtime;
+using OneScript.Core;
 
 namespace OneScript.Tests
 {
     [TestClass]
-    public class OSVMEngineTests
+    public class RuntimeFacadeTests
     {
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
@@ -18,6 +19,19 @@ namespace OneScript.Tests
 
             engine.InjectObject(ctx1);
             engine.InjectObject(ctx2);
+        }
+
+        [TestMethod]
+        public void Variable_Value_Is_Changed()
+        {
+            var rt = new OneScriptRuntime();
+            var externalValue = ValueFactory.Create();
+            rt.InjectSymbol("А", externalValue);
+            var code = new StringCodeSource("А = 1;");
+            rt.Execute(code);
+
+            Assert.AreEqual(BasicTypes.Number, externalValue.Type);
+            Assert.AreEqual(1m, externalValue.AsNumber());
         }
     }
 }

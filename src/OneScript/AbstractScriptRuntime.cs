@@ -10,6 +10,7 @@ namespace OneScript
     {
         public AbstractScriptRuntime()
         {
+            PreprocessorDirectives = new PreprocessorDirectivesSet();
         }
 
         abstract public void InjectSymbol(string name, IValue value);
@@ -21,6 +22,7 @@ namespace OneScript
         abstract public IValue Eval(string expression);
 
         abstract public void Execute(IScriptSource moduleSource);
-        
+
+        public PreprocessorDirectivesSet PreprocessorDirectives { get; protected set; }
     }
 }

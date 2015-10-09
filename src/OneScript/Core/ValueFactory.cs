@@ -57,9 +57,17 @@ namespace OneScript.Core
             return new TypeTypeValue(value);
         }
 
-        public static IValue CreateNull()
+        public static IValue Create(PredefinedValueType type)
         {
-            return NullValue.Instance;
+            switch(type)
+            {
+                case PredefinedValueType.Null:
+                    return NullValue.Instance;
+                case PredefinedValueType.Undefined:
+                    return ValueFactory.Create();
+                default:
+                    throw new Exception();
+            }
         }
 
         public static IValue Parse(string presentation, DataType type)
@@ -87,7 +95,7 @@ namespace OneScript.Core
             }
             else if (type == BasicTypes.Null)
             {
-                result = ValueFactory.CreateNull();
+                result = ValueFactory.Create(PredefinedValueType.Null);
             }
             else
                 throw new NotImplementedException("constant type is not supported");
@@ -148,4 +156,15 @@ namespace OneScript.Core
         }
 
     }
+
+    public enum PredefinedValueType
+    {
+        Undefined,
+        String,
+        Boolean,
+        DateTime,
+        Number,
+        Null
+    }
+
 }

@@ -51,7 +51,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="OSVMEngineTests.cs" />
+    <Compile Include="RuntimeTests\RuntimeFacadeTests.cs" />
     <Compile Include="ParserTests\AssignmentNode.cs" />
     <Compile Include="ParserTests\LoopExitNode.cs" />
     <Compile Include="ParserTests\CallNode.cs" />

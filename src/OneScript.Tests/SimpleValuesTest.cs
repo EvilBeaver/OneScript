@@ -35,7 +35,7 @@ namespace OneScript.Tests
             Assert.IsTrue(value.Type == BasicTypes.Date, "Date test failed");
             Assert.IsTrue(value.AsDate() == today, "Date value test failed");
 
-            value = ValueFactory.CreateNull();
+            value = ValueFactory.Create(PredefinedValueType.Null);
             Assert.IsTrue(value.Type == BasicTypes.Null, "Null test failed");
         }
 
@@ -131,7 +131,7 @@ namespace OneScript.Tests
         [TestMethod]
         public void Null_Value_Test()
         {
-            var value = ValueFactory.CreateNull();
+            var value = ValueFactory.Create(PredefinedValueType.Null);
             Assert.IsTrue(value.Type == BasicTypes.Null);
             Assert.IsTrue(value.AsString() == "");
 
