@@ -1014,7 +1014,7 @@ namespace OneScript.Language
 
         #region Helper methods
 
-        public void NextLexem()
+        private void NextLexem()
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
@@ -1103,6 +1103,5 @@ namespace OneScript.Language
         }
 
         #endregion
-   
     }
 }

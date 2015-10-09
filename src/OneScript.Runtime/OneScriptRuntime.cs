@@ -78,7 +78,23 @@ namespace OneScript.Runtime
 
         public override void Execute(IScriptSource moduleSource)
         {
+            var parserClient = new OSByteCodeBuilder();
+            parserClient.Context = _ctx;
+            var parser = new Parser(parserClient);
+
+            var pp = new Preprocessor();
+            foreach (var item in PreprocessorDirectives)
+            {
+                pp.Define(item);
+            }
+
+            parser.ParseModule(pp);
+
+            var module = parserClient.GetModule();
+            var engine = new OneScriptEngine(_typeManager);
+
             throw new NotImplementedException();
+
         }
     }
 }
