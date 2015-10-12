@@ -21,6 +21,7 @@ namespace oscript
         MapImpl _environmentVars = new MapImpl();
         MapImpl _get = new MapImpl();
         MapImpl _post = new MapImpl();
+        byte[] _post_raw = null;
 
         public WebRequestContext()
         {
@@ -55,15 +56,16 @@ namespace oscript
             int len = Int32.Parse(contentLen);
             if (len > 0)
             {
-                byte[] bytes = new byte[len];
+                _post_raw = new byte[len];
                 using (var stdin = Console.OpenStandardInput())
                 {
-                    stdin.Read(bytes, 0, len);
+                    stdin.Read(_post_raw, 0, len);
                 }
 
-                string data = Encoding.Default.GetString(bytes);
+                // по-умолчанию входящий запрос разбираем в UTF-8
+                string _post_raw_utf = Encoding.UTF8.GetString(_post_raw);
 
-                ParseFormData(data, _post);
+                ParseFormData(_post_raw_utf, _post);
             }
         }
 
@@ -166,6 +168,23 @@ namespace oscript
             {
                 return _environmentVars;
             }
+        }
+
+        [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
+        public BinaryDataContext GetBodyAsBinaryData()
+        {
+            return new BinaryDataContext(_post_raw);
+        }
+
+        [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
+        public string GetBodyAsString(IValue encoding = null)
+        {
+            Encoding enc = (encoding == null || ValueFactory.Create().Equals(encoding))
+                    ? new UTF8Encoding(false)
+                    : TextEncodingEnum.GetEncoding(encoding)
+            ;
+
+            return enc.GetString(_post_raw);
         }
     }
 }

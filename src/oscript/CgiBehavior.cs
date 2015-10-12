@@ -59,6 +59,7 @@ namespace oscript
 
             var request = new WebRequestContext();
             engine.InjectGlobalProperty("ВебЗапрос", request, true);
+            engine.InjectGlobalProperty("WebRequest", request, true);
             engine.InjectObject(this, false);
             engine.Initialize();
 
@@ -86,7 +87,7 @@ namespace oscript
 
         #region CGIHost
 
-        [ContextMethod("ВывестиЗаголовок")]
+        [ContextMethod("ВывестиЗаголовок", "Header")]
         public void Header(string header, string value)
         {
             if (_isContentEchoed)
@@ -116,8 +117,11 @@ namespace oscript
                 _isContentEchoed = true;
             }
 
-            if(str!="")
-                Output(str);
+            if (str != "")
+            {
+                Output (str);
+                Console.WriteLine ();
+            }
         }
 
         private void Output(string str)
