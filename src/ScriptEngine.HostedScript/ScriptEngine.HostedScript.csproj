@@ -90,6 +90,14 @@
     <Compile Include="Library\Http\HttpResponseBody.cs" />
     <Compile Include="Library\Http\HttpResponseContext.cs" />
     <Compile Include="Library\Http\InternetProxyContext.cs" />
+    <Compile Include="Library\Http\Multipart\BinaryStreamStack.cs" />
+    <Compile Include="Library\Http\Multipart\FilePart.cs" />
+    <Compile Include="Library\Http\Multipart\MultipartFormDataParser.cs" />
+    <Compile Include="Library\Http\Multipart\MultipartParseException.cs" />
+    <Compile Include="Library\Http\Multipart\ParameterPart.cs" />
+    <Compile Include="Library\Http\Multipart\RebufferableBinaryReader.cs" />
+    <Compile Include="Library\Http\Multipart\StreamingMultipartFormDataParser.cs" />
+    <Compile Include="Library\Http\Multipart\SubsequenceFinder.cs" />
     <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\Net\TCPClient.cs" />
     <Compile Include="Library\Net\TCPServer.cs" />
