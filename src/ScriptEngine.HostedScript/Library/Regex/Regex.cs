@@ -7,18 +7,18 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Text.RegularExpressions;
+using RegExp = System.Text.RegularExpressions;
 
-namespace ScriptEngine.HostedScript.Library
+namespace ScriptEngine.HostedScript.Library.RegexLib
 {
     [ContextClass("РегулярноеВыражение", "Regex")]
     class RegExpImpl : AutoContext<RegExpImpl>
     {
-        Regex _regex;
+        RegExp.Regex _regex;
 
         public RegExpImpl(string pattern)
         {
-            _regex = new Regex(pattern);
+            _regex = new RegExp.Regex(pattern);
         }
 
         [ContextMethod("Соответствует", "IsMatch")]
@@ -27,6 +27,14 @@ namespace ScriptEngine.HostedScript.Library
             return ValueFactory.Create(_regex.IsMatch(input));
         }
 
+        [ContextMethod("НайтиСовпадения", "Matches")]
+        public IValue Matches(string input)
+        {
+
+            return ValueFactory.Create(new MatchCollection(_regex.Matches(input)));
+        }
+
+        
         [ScriptConstructor(Name = "По регулярному выражению")]
         public static IRuntimeContextInstance Constructor(IValue pattern)
         {
