@@ -1042,7 +1042,7 @@ namespace ScriptEngine.Compiler
                 {
                     currentOp = _lastExtractedLexem.Token;
                     newPriority = GetBinaryPriority(currentOp);
-                    if(LanguageDef.IsLogicalOperator(currentOp) && opPriority < newPriority)
+                    if(opPriority < newPriority)
                     {
                         BuildOperation(newPriority);
                     }
