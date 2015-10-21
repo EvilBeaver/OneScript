@@ -42,7 +42,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         /// <param name="startAt">Число. Необязательный параметр. По-умолчанию 0. Содержит стартовую позицию, начиная с которой надо анализировать текст. Нумерация позиций в отличии от 1С начинается с 0</param>
         /// <returns>Коллекция совпадения (тип КоллекцияСовпаденийРегулярногоВыражения).</returns>
         [ContextMethod("НайтиСовпадения", "Matches")]
-        public IValue Matches(string input, int startat = 0)
+        public MatchCollection Matches(string input, int startat = 0)
         {
             return new MatchCollection(_regex.Matches(input, startat));
         }
@@ -55,7 +55,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         /// <param name="startAt">Число. Необязательный параметр. По-умолчанию 0. Содержит стартовую позицию, начиная с которой надо анализировать текст. Нумерация позиций в отличии от 1С начинается с 0</param>
         /// <returns>Массив полученных строк.</returns>
         [ContextMethod("Разделить", "Split")]
-        public IValue Split(string input, int count = 0, int startat = 0)
+        public ArrayImpl Split(string input, int count = 0, int startat = 0)
         {
             string[] arrParsed = _regex.Split(input, count, startat);
             return new ArrayImpl(arrParsed.Select(x => ValueFactory.Create(x)));
