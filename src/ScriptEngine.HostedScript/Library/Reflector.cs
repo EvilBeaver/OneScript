@@ -94,8 +94,8 @@ namespace ScriptEngine.HostedScript.Library
             ValueTable.ValueTable Result = new ValueTable.ValueTable();
             
             var NameColumn = Result.Columns.Add("Имя", ValueFactory.Create(""), "Имя"); // TODO: Доработать после увеличения предела количества параметров
-            var CountColumn = Result.Columns.Add("КоличествоПараметров", ValueFactory.Create(""), "Имя"); // TODO: Доработать после увеличения предела количества параметров
-            var IsFunctionColumn = Result.Columns.Add("ЭтоФункция", ValueFactory.Create(""), "Имя"); // TODO: Доработать после увеличения предела количества параметров
+            var CountColumn = Result.Columns.Add("КоличествоПараметров", ValueFactory.Create(""), "Количество параметров"); // TODO: Доработать после увеличения предела количества параметров
+            var IsFunctionColumn = Result.Columns.Add("ЭтоФункция", ValueFactory.Create(""), "Это функция"); // TODO: Доработать после увеличения предела количества параметров
 
             for (int i = 0; i < target.GetMethodsCount();i++)
             {
