@@ -21,7 +21,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
             _regex = new RegExp.Regex(pattern);
         }
 
-        [ContextMethod("Соответствует", "IsMatch")]
+        [ContextMethod("Совпадает", "IsMatch")]
         public IValue IsMatch(string input)
         {
             return ValueFactory.Create(_regex.IsMatch(input));
@@ -31,7 +31,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         public IValue Matches(string input)
         {
 
-            return ValueFactory.Create(new MatchCollection(_regex.Matches(input)));
+            return new MatchCollection(_regex.Matches(input));
         }
 
         

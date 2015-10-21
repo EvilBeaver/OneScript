@@ -16,7 +16,7 @@ using RegExp = System.Text.RegularExpressions;
 
 namespace ScriptEngine.HostedScript.Library.RegexLib
 {
-    [ContextClass("Совпадение", "Match")]
+    [ContextClass("СовпадениеРегулярногоВыражения", "MatchRegEx")]
     class MatchImpl : AutoContext<MatchImpl>
     {
         private RegExp.Match _match;
@@ -42,6 +42,41 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         public int Length
         {
             get { return _match.Length; }
+        }
+
+        [ContextProperty("Группы", "Groups")]
+        public GroupCollection Groups
+        {
+            get { return new GroupCollection(_match.Groups); }
+        }
+    }
+
+    [ContextClass("ГруппаРегулярногоВыражения", "GroupRegEx")]
+    class GroupImpl : AutoContext<GroupImpl>
+    {
+        private RegExp.Group _group;
+
+        public GroupImpl(RegExp.Group group)
+        {
+            _group = group;
+        }
+
+        [ContextProperty("Значение", "Value")]
+        public string Value
+        {
+            get { return _group.Value; }
+        }
+
+        [ContextProperty("Индекс", "Index")]
+        public int Index
+        {
+            get { return _group.Index; }
+        }
+
+        [ContextProperty("Длина", "Length")]
+        public int Length
+        {
+            get { return _group.Length; }
         }
     }
 }
