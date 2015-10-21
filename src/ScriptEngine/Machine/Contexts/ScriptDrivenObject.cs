@@ -263,6 +263,10 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        public override int GetMethodsCount()
+        {
+            return METHOD_COUNT + _module.Methods.Length;
+        }
         public override int FindMethod(string name)
         {
             var idx = FindOwnMethod(name);

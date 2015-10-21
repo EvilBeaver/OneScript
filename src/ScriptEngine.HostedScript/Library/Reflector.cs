@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Linq;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.HostedScript.Library.ValueTable;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -16,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library
     /// В OneScript рефлексию можно применять для вызова методов объектов по именам методов.
     /// </summary>
     [ContextClass("Рефлектор","Reflector")]
-    public class ReflectorContext : AutoContext<ReflectorContext>
+    class ReflectorContext : AutoContext<ReflectorContext>
     {
         public ReflectorContext()
         {
@@ -61,6 +62,12 @@ namespace ScriptEngine.HostedScript.Library
             return retValue;
         }
 
+        /// <summary>
+        /// Проверяет существование указанного метода у переданного объекта..
+        /// </summary>
+        /// <param name="target">Объект, из которого получаем таблицу методов.</param>
+        /// <param name="methodName">Имя метода для вызова</param>
+        /// <returns>Истину, если метод существует, и Ложь в обратном случае. </returns>
         [ContextMethod("МетодСуществует", "MethodExists")]
         public bool MethodExists(IRuntimeContextInstance target, string methodName)
         {
@@ -73,6 +80,33 @@ namespace ScriptEngine.HostedScript.Library
             {
                 return false;
             }
+        }
+
+
+        /// <summary>
+        /// Получает таблицу методов для переданного объекта..
+        /// </summary>
+        /// <param name="target">Объект, из которого получаем таблицу методов.</param>
+        /// <returns>Таблица значений с 3 колонками - Имя, КоличествоПараметров, ЭтоФункция. </returns>
+        [ContextMethod("ПолучитьТаблицуМетодов", "GetMethodsTable")]
+        public ValueTable.ValueTable GetMethodsTable(IRuntimeContextInstance target)
+        {
+            ValueTable.ValueTable Result = new ValueTable.ValueTable();
+            
+            var NameColumn = Result.Columns.Add("Имя", ValueFactory.Create(""), "Имя"); // TODO: Доработать после увеличения предела количества параметров
+            var CountColumn = Result.Columns.Add("КоличествоПараметров", ValueFactory.Create(""), "Имя"); // TODO: Доработать после увеличения предела количества параметров
+            var IsFunctionColumn = Result.Columns.Add("ЭтоФункция", ValueFactory.Create(""), "Имя"); // TODO: Доработать после увеличения предела количества параметров
+
+            for (int i = 0; i < target.GetMethodsCount();i++)
+            {
+                ValueTableRow new_row = Result.Add();
+                var methInfo = target.GetMethodInfo(i);
+                new_row.Set(NameColumn, ValueFactory.Create(methInfo.Name));
+                new_row.Set(CountColumn, ValueFactory.Create(methInfo.ArgCount));
+                new_row.Set(IsFunctionColumn, ValueFactory.Create(methInfo.IsFunction));
+            }
+
+            return Result;
         }
 
         [ScriptConstructor]

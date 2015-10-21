@@ -62,6 +62,11 @@ void LibraryAttachedContext::SetPropValue(int propNum, IValue^ val)
 	throw gcnew NotImplementedException();
 }
 
+int LibraryAttachedContext::GetMethodsCount()
+{
+	return m_methodIndexes->Count;
+}
+
 int LibraryAttachedContext::FindMethod(String^ mName) 
 {
 	int index;

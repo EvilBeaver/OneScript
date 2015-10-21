@@ -87,6 +87,11 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        public virtual int GetMethodsCount()
+        {
+            return _methods.Count;
+        }
+
         public virtual int FindMethod(string name)
         {
             return _methods.FindMethod(name);
@@ -143,6 +148,5 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         #endregion
-
     }
 }
