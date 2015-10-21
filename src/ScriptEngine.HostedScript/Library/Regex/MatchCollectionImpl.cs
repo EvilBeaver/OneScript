@@ -26,6 +26,10 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
 
         #region ICollectionContext Members
 
+        /// <summary>
+        /// Получает количество полученных совпадений.
+        /// </summary>
+        /// <returns>Количество полученных совпадений.</returns>
         [ContextMethod("Количество", "Count")]
         public int Count()
         {
@@ -78,6 +82,10 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
 
         #region ICollectionContext Members
 
+        /// <summary>
+        /// Получает количество полученных групп.
+        /// </summary>
+        /// <returns>Количество полученных групп.</returns>
         [ContextMethod("Количество", "Count")]
         public int Count()
         {

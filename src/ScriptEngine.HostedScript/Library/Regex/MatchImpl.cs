@@ -26,24 +26,36 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
             _match = match;
         }
 
+        /// <summary>
+        /// Найденная строка.
+        /// </summary>
         [ContextProperty("Значение", "Value")]
         public string Value
         {
             get { return _match.Value; }
         }
 
+        /// <summary>
+        /// Индекс найденной строки. Нумерация начинается с 0
+        /// </summary>
         [ContextProperty("Индекс", "Index")]
         public int Index
         {
             get { return _match.Index; }
         }
 
+        /// <summary>
+        /// Длина найденной строки.
+        /// </summary>
         [ContextProperty("Длина", "Length")]
         public int Length
         {
             get { return _match.Length; }
         }
 
+        /// <summary>
+        /// Коллекция найденных групп (тип КоллекцияГруппРегулярногоВыражения).
+        /// </summary>
         [ContextProperty("Группы", "Groups")]
         public GroupCollection Groups
         {
@@ -61,18 +73,27 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
             _group = group;
         }
 
+        /// <summary>
+        /// Найденная строка.
+        /// </summary>
         [ContextProperty("Значение", "Value")]
         public string Value
         {
             get { return _group.Value; }
         }
 
+        /// <summary>
+        /// Индекс найденной строки. Нумерация начинается с 0
+        /// </summary>
         [ContextProperty("Индекс", "Index")]
         public int Index
         {
             get { return _group.Index; }
         }
 
+        /// <summary>
+        /// Длина найденной строки.
+        /// </summary>
         [ContextProperty("Длина", "Length")]
         public int Length
         {
