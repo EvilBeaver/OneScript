@@ -20,6 +20,8 @@ namespace ScriptEngine.Machine.Contexts
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
         private MethodInfo[] _attachableMethods;
+        private Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
@@ -61,6 +63,18 @@ namespace ScriptEngine.Machine.Contexts
                     _state[i] = Variable.CreateContextPropertyReference(this, i);
                 else
                     _state[i] = Variable.Create(ValueFactory.Create());
+            }
+
+            ReadExportedSymbols(_module.ExportedMethods, _methodSearchCache);
+            ReadExportedSymbols(_module.ExportedProperies, _propertySearchCache);
+        }
+
+        private void ReadExportedSymbols(ExportedSymbol[] exportedSymbols, Dictionary<string, int> searchCache)
+        {
+            for (int i = 0; i < exportedSymbols.Length; i++)
+            {
+                var es = exportedSymbols[i];
+                searchCache[es.SymbolicName] = es.Index;
             }
         }
 
@@ -241,12 +255,9 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                var propsFound = _module.ExportedProperies.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
-                    .Select(x => x.Index).ToArray();
-                if (propsFound.Length > 0)
-                {
-                    return propsFound[0];
-                }
+                int index;
+                if (_propertySearchCache.TryGetValue(name, out index))
+                    return index;
                 else
                     throw RuntimeException.PropNotFoundException(name);
             }
@@ -261,12 +272,9 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                var methFound = _module.ExportedMethods.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
-                    .Select(x => x.Index).ToArray();
-                if (methFound.Length > 0)
-                {
-                    return methFound[0];
-                }
+                int index;
+                if (_methodSearchCache.TryGetValue(name, out index))
+                    return index;
                 else
                     throw RuntimeException.MethodNotFoundException(name);
             }
