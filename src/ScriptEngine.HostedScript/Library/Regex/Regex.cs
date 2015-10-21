@@ -62,6 +62,19 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         }
 
         /// <summary>
+        /// Заменяет в исходной строке все вхождения регулярного выражения на СтрокаЗамены.
+        /// В строке замены можно использовать ссылки на захваченные группы, как $n, где n - номер захваченной группы ($0 - все захваченное выражение).
+        /// </summary>
+        /// <param name="inputString">Строка. Текст, в котором необходимо выполнить замены.</param>
+        /// <param name="replacement">Строка. Текст, который будет вставляться в места замены.</param>
+        /// <returns>Строку-результат замены.</returns>
+        [ContextMethod("Заменить", "Replace")]
+        public string Replace(string input, string replacement)
+        {
+            return _regex.Replace(input, replacement);
+        }
+
+        /// <summary>
         /// Признак Не учитывать регистр символов. Булево
         /// </summary>
         [ContextProperty("ИгнорироватьРегистр", "IgnoreCase")]
