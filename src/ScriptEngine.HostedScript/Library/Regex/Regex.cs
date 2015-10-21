@@ -14,11 +14,13 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
     [ContextClass("РегулярноеВыражение", "Regex")]
     class RegExpImpl : AutoContext<RegExpImpl>
     {
-        RegExp.Regex _regex;
+        private RegExp.Regex _regex;
+        private string _pattern;
 
         public RegExpImpl(string pattern)
         {
-            _regex = new RegExp.Regex(pattern);
+            _pattern = pattern;
+            _regex = new RegExp.Regex(_pattern, RegExp.RegexOptions.IgnoreCase | RegExp.RegexOptions.Multiline );
         }
 
         [ContextMethod("Совпадает", "IsMatch")]
@@ -30,11 +32,23 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         [ContextMethod("НайтиСовпадения", "Matches")]
         public IValue Matches(string input)
         {
-
             return new MatchCollection(_regex.Matches(input));
         }
 
-        
+        [ContextProperty("ИгнорироватьРегистр", "IgnoreCase")]
+        public bool IgnoreCase
+        {
+            get { return _regex.Options.HasFlag( RegExp.RegexOptions.IgnoreCase ); }
+            set { SetOption(value, RegExp.RegexOptions.IgnoreCase); }
+        }
+
+        [ContextProperty("Многострочный", "Multiline")]
+        public bool Multiline
+        {
+            get { return _regex.Options.HasFlag(RegExp.RegexOptions.Multiline); }
+            set { SetOption(value, RegExp.RegexOptions.Multiline); }
+        }
+
         [ScriptConstructor(Name = "По регулярному выражению")]
         public static IRuntimeContextInstance Constructor(IValue pattern)
         {
@@ -42,5 +56,16 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
             return regex;
         }
 
+        private void SetOption(bool value, RegExp.RegexOptions option)
+        {
+                var options = _regex.Options;
+                if (value)
+                    options |= option;
+                else
+                    options &= ~option;
+
+                //приходится пересоздавать объект, т.к. опции объекта по умолчанию только read-only
+                _regex = new RegExp.Regex(_pattern, options);
+        }
     }
 }
