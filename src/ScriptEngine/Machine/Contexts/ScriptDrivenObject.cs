@@ -262,7 +262,8 @@ namespace ScriptEngine.Machine.Contexts
         {
             for (int i = 0; i < _module.Methods.Length; i++)
             {
-                yield return GetMethodInfo(i);
+                if (MethodDefinedInScript(i))
+                    yield return GetMethodInfo(i);
             }
         }
 
