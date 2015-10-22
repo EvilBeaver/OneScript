@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library
     /// В OneScript рефлексию можно применять для вызова методов объектов по именам методов.
     /// </summary>
     [ContextClass("Рефлектор","Reflector")]
-    class ReflectorContext : AutoContext<ReflectorContext>
+    public class ReflectorContext : AutoContext<ReflectorContext>
     {
         public ReflectorContext()
         {
