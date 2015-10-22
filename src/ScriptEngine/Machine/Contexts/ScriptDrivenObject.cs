@@ -237,11 +237,6 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual IEnumerable<MethodInfo> GetMethods()
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
 
         #region IRuntimeContextInstance Members
@@ -263,10 +258,14 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override int GetMethodsCount()
+        public override IEnumerable<MethodInfo> GetMethods()
         {
-            return METHOD_COUNT + _module.Methods.Length;
+            for (int i = 0; i < _module.Methods.Length; i++)
+            {
+                yield return GetMethodInfo(i);
+            }
         }
+
         public override int FindMethod(string name)
         {
             var idx = FindOwnMethod(name);

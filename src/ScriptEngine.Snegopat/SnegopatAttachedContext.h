@@ -61,7 +61,6 @@ public:
 	virtual bool IsPropWritable(int propNum);
 	virtual IValue^ GetPropValue(int propNum);
 	virtual void SetPropValue(int propNum, IValue^ val);
-	virtual int GetMethodsCount();
 	virtual int FindMethod(String^ mName);
 	virtual ScriptEngine::Machine::MethodInfo GetMethodInfo(int mNum);
 	virtual void CallAsProcedure(int mNum, array<IValue^>^ args);

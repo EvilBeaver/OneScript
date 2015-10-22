@@ -97,10 +97,9 @@ namespace ScriptEngine.HostedScript.Library
             var CountColumn = Result.Columns.Add("КоличествоПараметров", ValueFactory.Create(""), "Количество параметров"); // TODO: Доработать после увеличения предела количества параметров
             var IsFunctionColumn = Result.Columns.Add("ЭтоФункция", ValueFactory.Create(""), "Это функция"); // TODO: Доработать после увеличения предела количества параметров
 
-            for (int i = 0; i < target.GetMethodsCount();i++)
+            foreach(var methInfo in target.GetMethods())
             {
                 ValueTableRow new_row = Result.Add();
-                var methInfo = target.GetMethodInfo(i);
                 new_row.Set(NameColumn, ValueFactory.Create(methInfo.Name));
                 new_row.Set(CountColumn, ValueFactory.Create(methInfo.ArgCount));
                 new_row.Set(IsFunctionColumn, ValueFactory.Create(methInfo.IsFunction));

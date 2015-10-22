@@ -87,10 +87,6 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public virtual int GetMethodsCount()
-        {
-            return _methods.Count;
-        }
 
         public virtual int FindMethod(string name)
         {

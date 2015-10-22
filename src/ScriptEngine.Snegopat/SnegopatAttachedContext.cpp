@@ -157,11 +157,6 @@ void SnegopatAttachedContext::SetPropValue(int propNum, IValue^ val)
 	m_DesignerWrapper->SetPropValue(dispId, val);
 }
 
-int SnegopatAttachedContext::GetMethodsCount()
-{
-	return m_methods->Count;
-}
-
 int SnegopatAttachedContext::FindMethod(String^ mName) 
 {
 	int index;
