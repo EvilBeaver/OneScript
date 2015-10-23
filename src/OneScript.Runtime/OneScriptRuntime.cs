@@ -76,7 +76,7 @@ namespace OneScript.Runtime
             throw new NotImplementedException();
         }
 
-        public override void Execute(IScriptSource moduleSource)
+        public override ILoadedModule Compile(IScriptSource moduleSource)
         {
             var parserClient = new OSByteCodeBuilder();
             parserClient.Context = _ctx;
@@ -90,11 +90,26 @@ namespace OneScript.Runtime
 
             parser.ParseModule(pp);
 
-            var module = parserClient.GetModule();
-            var engine = new OneScriptEngine(_typeManager);
-
-            throw new NotImplementedException();
-
+            return parserClient.GetModule();
         }
+
+        public override void Execute(ILoadedModule module, string entryPointName)
+        {
+            var engine = new OneScriptEngine(this);
+        }
+
+        public IList<InjectedValue> GlobalProperties
+        {
+            get
+            {
+                return _externalProperties;
+            }
+        }
+
+        public TypeManager TypeManager
+        {
+            get { return _typeManager; }
+        }
+
     }
 }

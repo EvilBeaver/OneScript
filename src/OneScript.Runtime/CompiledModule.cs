@@ -5,7 +5,23 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    class CompiledModule
+    class CompiledModule : ILoadedModule
     {
+        public string Name
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public Language.ISourceCodeIndexer SourceCodeIndexer
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

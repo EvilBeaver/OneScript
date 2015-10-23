@@ -21,7 +21,9 @@ namespace OneScript
 
         abstract public IValue Eval(string expression);
 
-        abstract public void Execute(IScriptSource moduleSource);
+        abstract public ILoadedModule Compile(IScriptSource moduleSource);
+
+        abstract public void Execute(ILoadedModule module, string entryPointName);
 
         public PreprocessorDirectivesSet PreprocessorDirectives { get; protected set; }
     }

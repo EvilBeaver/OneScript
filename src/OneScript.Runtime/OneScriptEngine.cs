@@ -8,15 +8,19 @@ namespace OneScript.Runtime
 {
     public class OneScriptEngine : IScriptEngine
     {
-        public OneScriptEngine(TypeManager typeManager)
+        public OneScriptEngine(OneScriptRuntime world)
         {
-            TypeManager = typeManager;
+            World = world;
         }
+
+        private OneScriptRuntime World { get; set; }
 
         public TypeManager TypeManager
         {
-            get;
-            internal set;
+            get
+            {
+                return World.TypeManager;
+            }
         }
     }
 }

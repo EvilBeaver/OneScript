@@ -28,7 +28,8 @@ namespace OneScript.Tests
             var externalValue = ValueFactory.Create();
             rt.InjectSymbol("А", externalValue);
             var code = new StringCodeSource("А = 1;");
-            rt.Execute(code);
+            var module = rt.Compile(code);
+            rt.Execute(module, "$entry");
 
             Assert.AreEqual(BasicTypes.Number, externalValue.Type);
             Assert.AreEqual(1m, externalValue.AsNumber());
