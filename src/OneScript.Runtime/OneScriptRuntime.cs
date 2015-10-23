@@ -98,7 +98,7 @@ namespace OneScript.Runtime
             var engine = new OneScriptEngine(this);
         }
 
-        public IList<InjectedValue> GlobalProperties
+        internal IList<InjectedValue> GlobalProperties
         {
             get
             {
@@ -106,7 +106,7 @@ namespace OneScript.Runtime
             }
         }
 
-        public TypeManager TypeManager
+        internal TypeManager TypeManager
         {
             get { return _typeManager; }
         }
