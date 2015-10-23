@@ -111,5 +111,9 @@ namespace OneScript.Runtime
             get { return _typeManager; }
         }
 
+        public override ISourceCompiler CreateCompiler()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

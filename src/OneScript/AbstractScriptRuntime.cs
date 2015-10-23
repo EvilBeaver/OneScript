@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OneScript
 {
-    public abstract class AbstractScriptRuntime
+    public abstract class AbstractScriptRuntime : ISourceCompiler
     {
         public AbstractScriptRuntime()
         {
@@ -24,6 +24,8 @@ namespace OneScript
         abstract public ILoadedModule Compile(IScriptSource moduleSource);
 
         abstract public void Execute(ILoadedModule module, string entryPointName);
+
+        abstract public ISourceCompiler CreateCompiler();
 
         public PreprocessorDirectivesSet PreprocessorDirectives { get; protected set; }
     }
