@@ -96,7 +96,7 @@ namespace ScriptEngine.Machine.Contexts
             return result;
         }
 
-        public override IEnumerable<MethodInfo> GetMethods()
+        IEnumerable<MethodInfo> IReflectableContext.GetMethods()
         {
             throw new NotImplementedException();
         }
