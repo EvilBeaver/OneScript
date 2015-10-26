@@ -258,16 +258,6 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override IEnumerable<MethodInfo> GetMethods()
-        {
-            throw new NotImplementedException();
-            //for (int i = 0; i < _module.Methods.Length; i++)
-            //{
-            //    if (MethodDefinedInScript(i))
-            //        yield return GetMethodInfo(i);
-            //}
-        }
-
         public override int FindMethod(string name)
         {
             var idx = FindOwnMethod(name);

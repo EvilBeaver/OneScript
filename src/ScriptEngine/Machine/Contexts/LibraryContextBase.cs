@@ -27,18 +27,5 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        //#region IReflectableContext
-
-        //IEnumerable<VariableInfo> IReflectableContext.GetProperties()
-        //{
-        //    return this.GetProperties();
-        //}
-
-        //IEnumerable<MethodInfo> IReflectableContext.GetMethods()
-        //{
-        //    return this.GetMethods();
-        //}
-        
-        //#endregion
     }
 }
