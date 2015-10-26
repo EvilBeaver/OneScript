@@ -260,11 +260,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public override IEnumerable<MethodInfo> GetMethods()
         {
-            for (int i = 0; i < _module.Methods.Length; i++)
-            {
-                if (MethodDefinedInScript(i))
-                    yield return GetMethodInfo(i);
-            }
+            throw new NotImplementedException();
+            //for (int i = 0; i < _module.Methods.Length; i++)
+            //{
+            //    if (MethodDefinedInScript(i))
+            //        yield return GetMethodInfo(i);
+            //}
         }
 
         public override int FindMethod(string name)
