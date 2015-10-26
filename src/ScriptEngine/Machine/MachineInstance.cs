@@ -736,7 +736,8 @@ namespace ScriptEngine.Machine
 
         private void CallFunc(int arg)
         {
-            _currentFrame.DiscardReturnValue = MethodCallImpl(arg, true);
+            bool needsDiscrding = MethodCallImpl(arg, true);
+            _currentFrame.DiscardReturnValue = needsDiscrding;
         }
 
         private void CallProc(int arg)
