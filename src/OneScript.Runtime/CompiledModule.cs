@@ -6,8 +6,10 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    class CompiledModule : ILoadedModule
+    public class CompiledModule : ILoadedModule
     {
+        private List<Command> _commands = new List<Command>();
+
         public string Name
         {
             get
@@ -20,9 +22,23 @@ namespace OneScript.Runtime
             }
         }
 
+        public IList<Command> Commands
+        {
+            get
+            {
+                return _commands;
+            }
+        }
+
         public ISourceCodeIndexer SourceCodeIndexer
         {
             get { throw new NotImplementedException(); }
+        }
+
+        public string EntryPointName
+        {
+            get;
+            internal set;
         }
     }
 }

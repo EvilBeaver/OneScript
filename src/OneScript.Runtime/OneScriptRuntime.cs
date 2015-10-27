@@ -84,6 +84,7 @@ namespace OneScript.Runtime
             var parser = new Parser(parserClient);
 
             var pp = new Preprocessor();
+            pp.Code = moduleSource.GetCode();
             foreach (var item in PreprocessorDirectives)
             {
                 pp.Define(item);

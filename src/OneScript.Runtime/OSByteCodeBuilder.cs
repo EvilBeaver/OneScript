@@ -9,14 +9,16 @@ namespace OneScript.Runtime
 {
     public class OSByteCodeBuilder : IASTBuilder
     {
+        private CompiledModule _module;
+
         public void BeginModule()
         {
-            throw new NotImplementedException();
+            _module = new CompiledModule();
         }
 
         public void CompleteModule()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void DefineExportVariable(string symbolicName)
@@ -31,17 +33,23 @@ namespace OneScript.Runtime
 
         public IASTNode SelectOrCreateVariable(string identifier)
         {
-            throw new NotImplementedException();
+            SymbolBinding varDef;
+            if(!Context.TryGetVariable(identifier, out varDef))
+            {
+                varDef = Context.DefineVariable(identifier);
+            }
+            //AddOperation(OperationCode.PushVar, )
+            return NodeStub();
         }
 
         public IASTNode BuildAssignment(IASTNode acceptor, IASTNode source)
         {
-            throw new NotImplementedException();
+            return NodeStub();
         }
 
         public IASTNode ReadLiteral(Lexem lexem)
         {
-            throw new NotImplementedException();
+            return NodeStub();
         }
 
         public IASTNode ReadVariable(string identifier)
@@ -91,12 +99,13 @@ namespace OneScript.Runtime
 
         public IASTNode BeginBatch()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return NodeStub();
         }
 
         public void EndBatch(IASTNode batch)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public IASTConditionNode BeginConditionStatement()
@@ -178,7 +187,24 @@ namespace OneScript.Runtime
 
         internal CompiledModule GetModule()
         {
-            throw new NotImplementedException();
+            return _module;
+        }
+
+        private int AddOperation(OperationCode opCode, int argument)
+        {
+            int commandIndex = _module.Commands.Count;
+            _module.Commands.Add(new Command() { Code = opCode, Argument = argument });
+            return commandIndex;
+        }
+
+        private int AddOperation(OperationCode opCode)
+        {
+            return AddOperation(opCode, 0);
+        }
+
+        private IASTNode NodeStub()
+        {
+            return null;
         }
     }
 }

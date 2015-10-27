@@ -10,5 +10,7 @@ namespace OneScript
     {
         string Name { get; set; }
         ISourceCodeIndexer SourceCodeIndexer { get; }
+
+        string EntryPointName { get; }
     }
 }

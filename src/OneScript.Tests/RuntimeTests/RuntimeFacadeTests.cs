@@ -29,7 +29,7 @@ namespace OneScript.Tests
             rt.InjectSymbol("А", externalValue);
             var code = new StringCodeSource("А = 1;");
             var module = rt.Compile(code);
-            rt.Execute(module, "$entry");
+            rt.Execute(module, module.EntryPointName);
 
             Assert.AreEqual(BasicTypes.Number, externalValue.Type);
             Assert.AreEqual(1m, externalValue.AsNumber());

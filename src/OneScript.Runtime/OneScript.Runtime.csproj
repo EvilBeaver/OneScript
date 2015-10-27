@@ -44,6 +44,7 @@
     <Compile Include="InjectedValue.cs" />
     <Compile Include="Scopes\CompilerContext.cs" />
     <Compile Include="Scopes\IndexedNamesCollection.cs" />
+    <Compile Include="Scopes\ModuleVariableTable.cs" />
     <Compile Include="Scopes\SymbolBinding.cs" />
     <Compile Include="Scopes\SymbolScope.cs" />
     <Compile Include="OneScriptEngine.cs" />

@@ -68,6 +68,7 @@
     <Compile Include="ParserTests\TestASTNodeBase.cs" />
     <Compile Include="ParserTests\TryExceptNode.cs" />
     <Compile Include="ParserTests\WhileNode.cs" />
+    <Compile Include="RuntimeTests\ByteCode_Builder_Tests.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TypeSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
