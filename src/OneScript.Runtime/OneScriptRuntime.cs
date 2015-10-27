@@ -97,6 +97,7 @@ namespace OneScript.Runtime
         public override void Execute(ILoadedModule module, string entryPointName)
         {
             var engine = new OneScriptEngine(this);
+            engine.Execute(module, entryPointName);
         }
 
         internal IList<InjectedValue> GlobalProperties

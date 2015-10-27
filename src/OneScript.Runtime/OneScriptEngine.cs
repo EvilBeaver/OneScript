@@ -22,5 +22,10 @@ namespace OneScript.Runtime
                 return World.TypeManager;
             }
         }
+
+        internal void Execute(ILoadedModule module, string entryPointName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
