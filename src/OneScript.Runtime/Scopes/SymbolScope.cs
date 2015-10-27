@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using OneScript.ComponentModel;
 using OneScript.Core;
 
-namespace OneScript.Language
+namespace OneScript.Scopes
 {
     public class SymbolScope
     {

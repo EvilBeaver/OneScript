@@ -1,4 +1,5 @@
 ﻿using OneScript.Language;
+using OneScript.Scopes;
 using System;
 using System.Collections.Generic;
 using System.Linq;

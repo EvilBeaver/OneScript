@@ -1,9 +1,10 @@
-﻿using System;
+﻿using OneScript.Language;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OneScript.Language
+namespace OneScript.Scopes
 {
     public class CompilerContext
     {

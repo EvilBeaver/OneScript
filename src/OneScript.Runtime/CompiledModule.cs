@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OneScript.Language;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +20,7 @@ namespace OneScript.Runtime
             }
         }
 
-        public Language.ISourceCodeIndexer SourceCodeIndexer
+        public ISourceCodeIndexer SourceCodeIndexer
         {
             get { throw new NotImplementedException(); }
         }
