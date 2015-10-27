@@ -31,6 +31,11 @@ namespace OneScript
             return _values.Contains(directive);
         }
 
+        public void Clear()
+        {
+            _values.Clear();
+        }
+
         public IEnumerator<string> GetEnumerator()
         {
             return _values.GetEnumerator();
