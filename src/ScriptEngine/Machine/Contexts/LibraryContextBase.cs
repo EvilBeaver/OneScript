@@ -22,9 +22,10 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual IEnumerable<MethodInfo> GetMethods()
+        public override IEnumerable<MethodInfo> GetMethods()
         {
             throw new NotImplementedException();
         }
+
     }
 }

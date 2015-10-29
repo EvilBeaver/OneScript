@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Коллекция строк дерева значений.
     /// </summary>
     [ContextClass("КоллекцияСтрокДереваЗначений", "ValueTreeRowCollection")]
-    class ValueTreeRowCollection : AutoContext<ValueTreeRowCollection>, ICollectionContext
+    public class ValueTreeRowCollection : AutoContext<ValueTreeRowCollection>, ICollectionContext
     {
 
         private List<ValueTreeRow> _rows = new List<ValueTreeRow>();

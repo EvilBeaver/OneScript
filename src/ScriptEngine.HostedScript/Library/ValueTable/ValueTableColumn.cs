@@ -15,7 +15,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("КолонкаТаблицыЗначений", "ValueTableColumn")]
-    class ValueTableColumn : AutoContext<ValueTableColumn>
+    public class ValueTableColumn : AutoContext<ValueTableColumn>
     {
         private string _title;
         private string _name;
