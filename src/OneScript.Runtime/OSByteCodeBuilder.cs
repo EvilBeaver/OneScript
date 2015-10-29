@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using OneScript.Runtime.Scopes;
 
 namespace OneScript.Runtime
 {
@@ -14,11 +15,17 @@ namespace OneScript.Runtime
         public void BeginModule()
         {
             _module = new CompiledModule();
+            PushScope();
+        }
+
+        public void StartModuleBody()
+        {
+            //throw new NotImplementedException();
         }
 
         public void CompleteModule()
         {
-            //throw new NotImplementedException();
+            PopScope();
         }
 
         public void DefineExportVariable(string symbolicName)
@@ -38,7 +45,8 @@ namespace OneScript.Runtime
             {
                 varDef = Context.DefineVariable(identifier);
             }
-            //AddOperation(OperationCode.PushVar, )
+
+            WritePushVariable(varDef);
             return NodeStub();
         }
 
@@ -197,6 +205,14 @@ namespace OneScript.Runtime
             return commandIndex;
         }
 
+        private void WritePushVariable(SymbolBinding varBinding)
+        {
+            if(varBinding.Context == Context.TopScopeIndex)
+            {
+                //AddOperation()
+            }
+        }
+
         private int AddOperation(OperationCode opCode)
         {
             return AddOperation(opCode, 0);
@@ -206,5 +222,17 @@ namespace OneScript.Runtime
         {
             return null;
         }
+
+
+        private void PushScope()
+        {
+            Context.PushScope(new SymbolScope());
+        }
+
+        private SymbolScope PopScope()
+        {
+            return Context.PopScope();
+        }
+
     }
 }

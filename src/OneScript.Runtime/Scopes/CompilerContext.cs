@@ -21,6 +21,14 @@ namespace OneScript.Scopes
             }
         }
 
+        public int TopScopeIndex
+        {
+            get
+            {
+                return _attachedScopes.Count-1;
+            }
+        }
+
         public void PushScope(SymbolScope scope)
         {
             _attachedScopes.Add(scope);

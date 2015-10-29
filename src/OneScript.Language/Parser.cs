@@ -309,6 +309,7 @@ namespace OneScript.Language
             try
             {
                 PushEndTokens(Token.EndOfText);
+                _builder.StartModuleBody();
                 BuildCodeBatch();
             }
             finally

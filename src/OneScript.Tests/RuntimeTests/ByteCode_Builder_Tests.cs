@@ -1,6 +1,7 @@
 ﻿using System;
 using OneScript.Runtime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OneScript.Scopes;
 
 namespace OneScript.Tests.RuntimeTests
 {
@@ -34,6 +35,34 @@ namespace OneScript.Tests.RuntimeTests
             Assert.AreEqual(OperationCode.PushConst, code[1].Code);
             Assert.AreEqual(0, code[1].Argument);
             Assert.AreEqual(OperationCode.Assign, code[2].Code);
+        }
+
+        [TestMethod]
+        public void Start_Of_Module_Appends_Scope()
+        {
+            var builder = new OSByteCodeBuilder();
+            builder.Context = new CompilerContext();
+
+            builder.BeginModule();
+            Assert.AreEqual(0, builder.Context.TopScopeIndex);
+            builder.CompleteModule();
+            Assert.AreEqual(-1, builder.Context.TopScopeIndex);
+        }
+
+        [TestMethod]
+        public void Scoping_Is_Correct()
+        {
+            var builder = new OSByteCodeBuilder();
+            var ctx = new CompilerContext();
+            builder.Context = ctx;
+            builder.BeginModule();
+            Assert.AreEqual(0, ctx.TopScopeIndex);
+            var n = builder.BeginMethod();
+            Assert.AreEqual(1, ctx.TopScopeIndex);
+            builder.EndMethod(n);
+            Assert.AreEqual(0, ctx.TopScopeIndex);
+            builder.CompleteModule();
+            Assert.AreEqual(-1, ctx.TopScopeIndex);
         }
     }
 }

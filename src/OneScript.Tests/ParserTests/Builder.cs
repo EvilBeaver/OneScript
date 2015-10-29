@@ -43,6 +43,12 @@ namespace OneScript.Tests
             }
         }
 
+        public bool HasModuleBody
+        {
+            get;
+            private set;
+        }
+
         public List<MethodNode> Methods
         {
             get { return _methods; }
@@ -54,6 +60,11 @@ namespace OneScript.Tests
             _mainCode.Children.Clear();
             _batches.Clear();
             _methods.Clear();
+        }
+
+        public void StartModuleBody()
+        {
+            HasModuleBody = true;
         }
 
         public void CompleteModule()

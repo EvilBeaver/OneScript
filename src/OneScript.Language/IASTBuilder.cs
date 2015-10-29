@@ -10,6 +10,8 @@ namespace OneScript.Language
 
         void BeginModule();
 
+        void StartModuleBody();
+
         void CompleteModule();
 
         void DefineExportVariable(string symbolicName);

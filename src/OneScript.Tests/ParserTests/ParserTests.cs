@@ -616,6 +616,13 @@ namespace OneScript.Tests
             Assert.IsNotNull(node.Expression);
             Assert.IsTrue(node.IsReturn);
         }
+
+        [TestMethod]
+        public void Method_Body_Exist()
+        {
+            var builder = ParseCode("а = 1");
+            Assert.IsTrue(builder.HasModuleBody);
+        }
     }
 
 }
