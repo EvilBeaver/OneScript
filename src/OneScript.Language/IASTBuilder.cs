@@ -10,7 +10,9 @@ namespace OneScript.Language
 
         void BeginModule();
 
-        void StartModuleBody();
+        void BeginModuleBody();
+        
+        void EndModuleBody();
 
         void CompleteModule();
 

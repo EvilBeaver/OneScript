@@ -11,6 +11,7 @@ namespace OneScript.Runtime
     {
         private List<Command> _commands = new List<Command>();
         private ModuleVariableTable _varmap = new ModuleVariableTable();
+        private ModuleConstantsTable _constants = new ModuleConstantsTable();
 
         public IList<Command> Commands
         {
@@ -23,6 +24,11 @@ namespace OneScript.Runtime
         public ModuleVariableTable VariableTable
         {
             get { return _varmap; }
+        }
+
+        public ModuleConstantsTable Constants
+        {
+            get { return _constants; }
         }
 
         #region ILoadedModule members

@@ -62,9 +62,14 @@ namespace OneScript.Tests
             _methods.Clear();
         }
 
-        public void StartModuleBody()
+        public void BeginModuleBody()
         {
             HasModuleBody = true;
+        }
+
+        public void EndModuleBody()
+        {
+            
         }
 
         public void CompleteModule()

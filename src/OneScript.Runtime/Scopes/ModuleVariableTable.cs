@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OneScript.Runtime.Scopes
 {
-    public class ModuleVariableTable
+    public class ModuleVariableTable : IEnumerable<SymbolBinding>
     {
         private List<SymbolBinding> _vars = new List<SymbolBinding>();
 
@@ -25,6 +25,40 @@ namespace OneScript.Runtime.Scopes
 
             return idx;
         }
+
+        public int Count
+        {
+            get
+            {
+                return _vars.Count;
+            }
+        }
+
+        public SymbolBinding this[int index]
+        {
+            get
+            {
+                return _vars[index];
+            }
+        }
+
+        #region IEnumerable<SymbolBinding> Members
+
+        public IEnumerator<SymbolBinding> GetEnumerator()
+        {
+            return _vars.GetEnumerator();
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
     }
 
 }

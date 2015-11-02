@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OneScript.Runtime.Scopes;
+using OneScript.Core;
 
 namespace OneScript.Runtime
 {
@@ -18,9 +19,14 @@ namespace OneScript.Runtime
             PushScope();
         }
 
-        public void StartModuleBody()
+        public void BeginModuleBody()
         {
-            //throw new NotImplementedException();
+            PushScope();
+        }
+
+        public void EndModuleBody()
+        {
+            PopScope();
         }
 
         public void CompleteModule()
@@ -52,12 +58,38 @@ namespace OneScript.Runtime
 
         public IASTNode BuildAssignment(IASTNode acceptor, IASTNode source)
         {
+            AddOperation(OperationCode.Assign);
             return NodeStub();
         }
 
         public IASTNode ReadLiteral(Lexem lexem)
         {
+            var constDef = ConstDefinition.CreateFromLiteral(ref lexem);
+            int index = _module.Constants.GetConstIndex(constDef);
+            AddOperation(OperationCode.PushConst, index);
             return NodeStub();
+        }
+
+        private DataType DataTypeFromConstType(ConstType constType)
+        {
+            switch(constType)
+            {
+                case ConstType.Undefined:
+                    return BasicTypes.Undefined;
+                case ConstType.String:
+                    return BasicTypes.String;
+                case ConstType.Number:
+                    return BasicTypes.Number;
+                case ConstType.Boolean:
+                    return BasicTypes.Boolean;
+                case ConstType.Date:
+                    return BasicTypes.Date;
+                case ConstType.Null:
+                    return BasicTypes.Null;
+                default:
+                    throw new ArgumentException("Unknown const type: " + Enum.GetName(typeof(ConstType), constType), "constType");
+
+            }
         }
 
         public IASTNode ReadVariable(string identifier)
@@ -97,12 +129,13 @@ namespace OneScript.Runtime
 
         public IASTMethodDefinitionNode BeginMethod()
         {
-            throw new NotImplementedException();
+            PushScope();
+            return null;
         }
 
         public void EndMethod(IASTMethodDefinitionNode methodNode)
         {
-            throw new NotImplementedException();
+            PopScope();
         }
 
         public IASTNode BeginBatch()
@@ -209,7 +242,11 @@ namespace OneScript.Runtime
         {
             if(varBinding.Context == Context.TopScopeIndex)
             {
-                //AddOperation()
+                AddOperation(OperationCode.PushLocal, varBinding.IndexInContext);
+            }
+            else
+            {
+                AddOperation(OperationCode.PushVar, _module.VariableTable.GetVariableIndex(varBinding));
             }
         }
 
@@ -224,9 +261,16 @@ namespace OneScript.Runtime
         }
 
 
-        private void PushScope()
+        private SymbolScope PushScope()
         {
-            Context.PushScope(new SymbolScope());
+            var newScope = new SymbolScope();
+            Context.PushScope(newScope);
+            return newScope;
+        }
+
+        private void PushScope(SymbolScope newScope)
+        {
+            Context.PushScope(newScope);
         }
 
         private SymbolScope PopScope()
