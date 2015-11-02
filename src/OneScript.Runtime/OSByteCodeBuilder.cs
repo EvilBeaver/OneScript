@@ -1,5 +1,5 @@
 ﻿using OneScript.Language;
-using OneScript.Scopes;
+using OneScript.Runtime.Compiler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
