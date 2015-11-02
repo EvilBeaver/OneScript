@@ -69,28 +69,6 @@ namespace OneScript.Runtime
             return NodeStub();
         }
 
-        private DataType DataTypeFromConstType(ConstType constType)
-        {
-            switch(constType)
-            {
-                case ConstType.Undefined:
-                    return BasicTypes.Undefined;
-                case ConstType.String:
-                    return BasicTypes.String;
-                case ConstType.Number:
-                    return BasicTypes.Number;
-                case ConstType.Boolean:
-                    return BasicTypes.Boolean;
-                case ConstType.Date:
-                    return BasicTypes.Date;
-                case ConstType.Null:
-                    return BasicTypes.Null;
-                default:
-                    throw new ArgumentException("Unknown const type: " + Enum.GetName(typeof(ConstType), constType), "constType");
-
-            }
-        }
-
         public IASTNode ReadVariable(string identifier)
         {
             throw new NotImplementedException();
