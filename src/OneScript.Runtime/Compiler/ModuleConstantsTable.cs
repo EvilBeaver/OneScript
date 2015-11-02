@@ -5,38 +5,9 @@ using System.Text;
 using OneScript.Core;
 using OneScript.Language;
 
-namespace OneScript.Runtime.Scopes
+namespace OneScript.Runtime.Compiler
 {
-    public class ModuleConstantsTable
+    public class ModuleConstantsTable : ModuleEntityTable<ConstDefinition>
     {
-        private List<ConstDefinition> _constants = new List<ConstDefinition>();
-
-        public int GetConstIndex(ConstDefinition constValue)
-        {
-            var idx = _constants.IndexOf(constValue);
-            if (idx < 0)
-            {
-                idx = _constants.Count;
-                _constants.Add(constValue);
-            }
-
-            return idx;
-        }
-
-        public int Count
-        {
-            get
-            {
-                return _constants.Count;
-            }
-        }
-
-        public ConstDefinition this[int index]
-        {
-            get
-            {
-                return _constants[index];
-            }
-        }
     }
 }

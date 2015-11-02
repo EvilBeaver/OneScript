@@ -1,11 +1,10 @@
-﻿using OneScript.Language;
-using OneScript.Runtime.Compiler;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using OneScript.Runtime.Scopes;
 using OneScript.Core;
+using OneScript.Language;
+using OneScript.Runtime.Compiler;
 
 namespace OneScript.Runtime
 {
@@ -65,7 +64,7 @@ namespace OneScript.Runtime
         public IASTNode ReadLiteral(Lexem lexem)
         {
             var constDef = ConstDefinition.CreateFromLiteral(ref lexem);
-            int index = _module.Constants.GetConstIndex(constDef);
+            int index = _module.Constants.GetIndex(constDef);
             AddOperation(OperationCode.PushConst, index);
             return NodeStub();
         }
@@ -246,7 +245,7 @@ namespace OneScript.Runtime
             }
             else
             {
-                AddOperation(OperationCode.PushVar, _module.VariableTable.GetVariableIndex(varBinding));
+                AddOperation(OperationCode.PushVar, _module.VariableTable.GetIndex(varBinding));
             }
         }
 

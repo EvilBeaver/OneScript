@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using OneScript.Runtime.Scopes;
+using OneScript.Runtime.Compiler;
 
 namespace OneScript.Runtime
 {
