@@ -315,6 +315,7 @@ namespace OneScript.Language
             finally
             {
                 PopEndTokens();
+                _builder.EndModuleBody();
             }
         }
 

@@ -107,12 +107,16 @@ namespace OneScript.Runtime
         public IASTMethodDefinitionNode BeginMethod()
         {
             PushScope();
-            return null;
+            return new ModuleMethodNode();
         }
 
         public void EndMethod(IASTMethodDefinitionNode methodNode)
         {
             PopScope();
+            var methodNodeImpl = methodNode as ModuleMethodNode;
+            System.Diagnostics.Debug.Assert(methodNodeImpl != null);
+
+            _module.Methods.Add(methodNodeImpl.GetMethodForModule(_module));
         }
 
         public IASTNode BeginBatch()
@@ -203,7 +207,7 @@ namespace OneScript.Runtime
 
         public CompilerContext Context { get; set; }
 
-        internal CompiledModule GetModule()
+        public CompiledModule GetModule()
         {
             return _module;
         }

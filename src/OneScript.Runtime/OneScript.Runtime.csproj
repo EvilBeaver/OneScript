@@ -41,6 +41,8 @@
   <ItemGroup>
     <Compile Include="Commands.cs" />
     <Compile Include="CompiledModule.cs" />
+    <Compile Include="Compiler\ModuleMethodDefinition.cs" />
+    <Compile Include="Compiler\ModuleMethodNode.cs" />
     <Compile Include="Compiler\ModuleEntityTable.cs" />
     <Compile Include="InjectedValue.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />

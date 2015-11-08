@@ -2,6 +2,7 @@
 using OneScript.Runtime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Runtime.Compiler;
+using OneScript.Language;
 
 namespace OneScript.Tests.RuntimeTests
 {
@@ -88,6 +89,42 @@ namespace OneScript.Tests.RuntimeTests
             Assert.AreEqual(0, ctx.TopScopeIndex);
             builder.CompleteModule();
             Assert.AreEqual(-1, ctx.TopScopeIndex);
+        }
+
+        [TestMethod]
+        public void ModuleBody_Adds_Method()
+        {
+            var builder = new OSByteCodeBuilder();
+            var ctx = new CompilerContext();
+            builder.Context = ctx;
+            builder.BeginModule();
+            builder.BeginModuleBody();
+            builder.EndModuleBody();
+            var module = builder.GetModule();
+            Assert.AreEqual(1, module.Methods.Count);
+            Assert.AreEqual("$entry", module.EntryPointName);
+
+        }
+
+        [TestMethod]
+        public void Default_Method_Param_Adds_A_Constant()
+        {
+            var builder = new OSByteCodeBuilder();
+            var ctx = new CompilerContext();
+            builder.Context = ctx;
+            builder.BeginModule();
+            var ast = builder.BeginMethod();
+            ast.Parameters = new[]
+                {
+                    new ASTMethodParameter(){IsOptional = true, DefaultValueLiteral = new ConstDefinition(){Type = ConstType.Undefined}}
+                };
+            ast.Identifier = "test";
+            builder.EndMethod(ast);
+            builder.CompleteModule();
+            var module = builder.GetModule();
+
+            Assert.AreEqual(1, module.Constants.Count);
+            Assert.AreEqual(1, module.Methods.Count);
         }
     }
 }

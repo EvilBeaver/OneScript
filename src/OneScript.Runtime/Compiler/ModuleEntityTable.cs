@@ -9,7 +9,7 @@ namespace OneScript.Runtime.Compiler
     {
         private List<T> _list = new List<T>();
 
-        public int GetIndex(T item)
+        public virtual int GetIndex(T item)
         {
             var idx = _list.IndexOf(item);
             if (idx < 0)
