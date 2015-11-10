@@ -44,8 +44,6 @@ namespace OneScript.Runtime
             return result;
         }
 
-        public IRuntimeContext RuntimeContext { get { throw new NotImplementedException(); } }
-
         public IScriptEngine CurrentEngineInstance { get { return _engine; } }
 
         public static ScriptThread Create(IScriptEngine engine)

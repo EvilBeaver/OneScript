@@ -68,7 +68,7 @@
     <Compile Include="Core\TypeTypeValue.cs" />
     <Compile Include="Core\UndefinedValue.cs" />
     <Compile Include="Core\ValueMarshaler.cs" />
-    <Compile Include="IScriptEngine.cs" />
+    <Compile Include="Runtime\IScriptEngine.cs" />
     <Compile Include="IScriptSource.cs" />
     <Compile Include="ISourceCompiler.cs" />
     <Compile Include="PreprocessorDirectivesSet.cs" />

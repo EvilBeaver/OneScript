@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OneScript
+namespace OneScript.Runtime
 {
     /// <summary>
     /// Хранит контекстную runtime-информацию о запущенном движке:
@@ -14,6 +14,7 @@ namespace OneScript
     /// </summary>
     public interface IScriptEngine
     {
-        TypeManager TypeManager { get; } 
+        TypeManager TypeManager { get; }
+        IRuntimeContext RuntimeContext { get; }
     }
 }

@@ -27,5 +27,11 @@ namespace OneScript.Runtime
         {
             throw new NotImplementedException();
         }
+
+        public IRuntimeContext RuntimeContext
+        {
+            get { throw new NotImplementedException(); }
+        }
+
     }
 }
