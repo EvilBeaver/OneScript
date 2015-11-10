@@ -44,9 +44,7 @@ namespace OneScript.Runtime
             return result;
         }
 
-        public ILoadedModule Module { get { throw new NotImplementedException(); } }
-        
-        //public ICallStack CallStack { get { throw new NotImplementedException(); } }
+        public IRuntimeContext RuntimeContext { get { throw new NotImplementedException(); } }
 
         public IScriptEngine CurrentEngineInstance { get { return _engine; } }
 
