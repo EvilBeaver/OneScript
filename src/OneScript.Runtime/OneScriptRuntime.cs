@@ -10,7 +10,7 @@ namespace OneScript.Runtime
 {
     public class OneScriptRuntime : AbstractScriptRuntime
     {
-        private List<InjectedValue> _externalProperties = new List<InjectedValue>();
+        private List<NamedValue> _externalProperties = new List<NamedValue>();
         private CompilerContext _ctx = new CompilerContext();
         private SymbolScope _topScope;
         private TypeManager _typeManager;
@@ -24,10 +24,10 @@ namespace OneScript.Runtime
 
         public override void InjectSymbol(string name, IValue value)
         {
-            _externalProperties.Add(new InjectedValue()
+            _externalProperties.Add(new NamedValue()
                 {
                     Name = name,
-                    Object = value
+                    Value = value
                 });
             
             _topScope.DefineVariable(name);
@@ -101,7 +101,7 @@ namespace OneScript.Runtime
             engine.Execute(module, entryPointName);
         }
 
-        internal IList<InjectedValue> GlobalProperties
+        internal IList<NamedValue> GlobalProperties
         {
             get
             {
