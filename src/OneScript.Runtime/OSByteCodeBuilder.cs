@@ -11,21 +11,36 @@ namespace OneScript.Runtime
     public class OSByteCodeBuilder : IASTBuilder
     {
         private CompiledModule _module;
-
+        private VariableUsageTable _currentLocalsTable;
+        
         public void BeginModule()
         {
             _module = new CompiledModule();
             PushScope();
         }
 
-        public void BeginModuleBody()
+        public IASTNode BeginModuleBody()
         {
             PushScope();
+            var method = new ModuleMethodNode();
+            method.Identifier = "$entry";
+            method.EntryPoint = _module.Commands.Count;
+            System.Diagnostics.Debug.Assert(_currentLocalsTable == null);
+            _currentLocalsTable = new VariableUsageTable();
+            return method;
         }
 
-        public void EndModuleBody()
+        public void EndModuleBody(IASTNode bodyNode)
         {
             PopScope();
+            var node = bodyNode as ModuleMethodNode;
+            System.Diagnostics.Debug.Assert(node != null);
+
+            var method = node.GetMethodForModule(_module);
+            method.VariableTable = _currentLocalsTable;
+            _currentLocalsTable = null;
+            _module.Methods.Add(method);
+            _module.EntryPointName = method.Name;
         }
 
         public void CompleteModule()
@@ -107,7 +122,11 @@ namespace OneScript.Runtime
         public IASTMethodDefinitionNode BeginMethod()
         {
             PushScope();
-            return new ModuleMethodNode();
+            var method = new ModuleMethodNode();
+            method.EntryPoint = _module.Commands.Count;
+            System.Diagnostics.Debug.Assert(_currentLocalsTable == null);
+            _currentLocalsTable = new VariableUsageTable();
+            return method;
         }
 
         public void EndMethod(IASTMethodDefinitionNode methodNode)
@@ -115,8 +134,10 @@ namespace OneScript.Runtime
             PopScope();
             var methodNodeImpl = methodNode as ModuleMethodNode;
             System.Diagnostics.Debug.Assert(methodNodeImpl != null);
-
-            _module.Methods.Add(methodNodeImpl.GetMethodForModule(_module));
+            var method = methodNodeImpl.GetMethodForModule(_module);
+            method.VariableTable = _currentLocalsTable;
+            _currentLocalsTable = null;
+            _module.Methods.Add(method);
         }
 
         public IASTNode BeginBatch()
@@ -223,7 +244,7 @@ namespace OneScript.Runtime
         {
             if(varBinding.Context == Context.TopScopeIndex)
             {
-                AddOperation(OperationCode.PushLocal, varBinding.IndexInContext);
+                AddOperation(OperationCode.PushLocal, _currentLocalsTable.GetIndex(varBinding));
             }
             else
             {

@@ -10,9 +10,10 @@ namespace OneScript.Runtime
     public class CompiledModule : ILoadedModule
     {
         private List<Command> _commands = new List<Command>();
-        private ModuleVariableTable _varmap = new ModuleVariableTable();
+        private VariableUsageTable _varmap = new VariableUsageTable();
         private ModuleConstantsTable _constants = new ModuleConstantsTable();
-        private List<ModuleMethodDefinition> _methods = new List<ModuleMethodDefinition>();
+        private MethodsUsageTable _methodmap = new MethodsUsageTable();
+        private MethodDefinitionsTable _methods = new MethodDefinitionsTable();
 
         public IList<Command> Commands
         {
@@ -22,7 +23,7 @@ namespace OneScript.Runtime
             }
         }
 
-        public ModuleVariableTable VariableTable
+        public VariableUsageTable VariableTable
         {
             get { return _varmap; }
         }

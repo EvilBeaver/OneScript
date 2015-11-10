@@ -306,16 +306,17 @@ namespace OneScript.Language
 
         private void BuildModuleBody()
         {
+            IASTNode bodyNode = null;
             try
             {
                 PushEndTokens(Token.EndOfText);
-                _builder.BeginModuleBody();
+                bodyNode = _builder.BeginModuleBody();
                 BuildCodeBatch();
             }
             finally
             {
                 PopEndTokens();
-                _builder.EndModuleBody();
+                _builder.EndModuleBody(bodyNode);
             }
         }
 

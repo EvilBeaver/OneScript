@@ -30,6 +30,9 @@ namespace OneScript.Runtime.Compiler
             return param;
 
         }
+
+        public VariableUsageTable VariableTable { get; internal set; }
+
     }
 
     public struct ModuleMethodParameter

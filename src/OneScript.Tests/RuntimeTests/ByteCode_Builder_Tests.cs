@@ -83,9 +83,9 @@ namespace OneScript.Tests.RuntimeTests
             Assert.AreEqual(1, ctx.TopScopeIndex);
             builder.EndMethod(n);
             Assert.AreEqual(0, ctx.TopScopeIndex);
-            builder.BeginModuleBody();
+            var b = builder.BeginModuleBody();
             Assert.AreEqual(1, ctx.TopScopeIndex);
-            builder.EndModuleBody();
+            builder.EndModuleBody(b);
             Assert.AreEqual(0, ctx.TopScopeIndex);
             builder.CompleteModule();
             Assert.AreEqual(-1, ctx.TopScopeIndex);
@@ -98,8 +98,7 @@ namespace OneScript.Tests.RuntimeTests
             var ctx = new CompilerContext();
             builder.Context = ctx;
             builder.BeginModule();
-            builder.BeginModuleBody();
-            builder.EndModuleBody();
+            builder.EndModuleBody(builder.BeginModuleBody());
             var module = builder.GetModule();
             Assert.AreEqual(1, module.Methods.Count);
             Assert.AreEqual("$entry", module.EntryPointName);
@@ -125,6 +124,60 @@ namespace OneScript.Tests.RuntimeTests
 
             Assert.AreEqual(1, module.Constants.Count);
             Assert.AreEqual(1, module.Methods.Count);
+        }
+
+        [TestMethod]
+        public void Method_Entry_Points_Are_Assigned()
+        {
+            var builder = new OSByteCodeBuilder();
+            var ctx = new CompilerContext();
+            builder.Context = ctx;
+            builder.BeginModule();
+
+            builder.ReadLiteral(new Lexem() { Content = "1", Type = LexemType.NumberLiteral });
+            builder.ReadLiteral(new Lexem() { Content = "2", Type = LexemType.NumberLiteral });
+
+            var ast = builder.BeginMethod();
+            ast.Parameters = new[]
+                {
+                    new ASTMethodParameter(){IsOptional = true, DefaultValueLiteral = new ConstDefinition(){Type = ConstType.Undefined}}
+                };
+            ast.Identifier = "test";
+            builder.EndMethod(ast);
+            builder.CompleteModule();
+            var module = builder.GetModule();
+            Assert.AreEqual(2, module.Methods[0].EntryPoint);
+        }
+
+        [TestMethod]
+        public void Body_Entry_Point_Is_Assigned()
+        {
+            var builder = new OSByteCodeBuilder();
+            var ctx = new CompilerContext();
+            builder.Context = ctx;
+            builder.BeginModule();
+
+            builder.ReadLiteral(new Lexem() { Content = "1", Type = LexemType.NumberLiteral });
+            builder.ReadLiteral(new Lexem() { Content = "2", Type = LexemType.NumberLiteral });
+
+            builder.EndModuleBody(builder.BeginModuleBody());
+            
+            builder.CompleteModule();
+            var module = builder.GetModule();
+            Assert.AreEqual(2, module.Methods[0].EntryPoint);
+        }
+
+        [TestMethod]
+        public void Local_Variables_Stored_In_Method()
+        {
+            var code = CreateModuleForCode("Процедура А() Б = 2; В = 4; КонецПроцедуры");
+            var varmap = code.Methods[0].VariableTable;
+
+            Assert.AreEqual(2, varmap.Count);
+            Assert.AreEqual(2, varmap[0].Context); // external + module + local = 2
+            Assert.AreEqual(2, varmap[1].Context);
+            Assert.AreEqual(0, varmap[0].IndexInContext);
+            Assert.AreEqual(1, varmap[1].IndexInContext);
         }
     }
 }

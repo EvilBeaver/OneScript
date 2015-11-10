@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OneScript.Runtime.Compiler
 {
-    public class ModuleVariableTable : ModuleEntityTable<SymbolBinding>
+    public class VariableUsageTable : ModuleEntityTable<SymbolBinding>
     {
         
     }

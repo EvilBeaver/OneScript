@@ -39,6 +39,8 @@ namespace OneScript.Runtime.Compiler
             set;
         }
 
+        public int EntryPoint { get; set; }
+
         public ModuleMethodDefinition GetMethodForModule(CompiledModule module)
         {
             var parameters = new ModuleMethodParameter[Parameters.Length];
@@ -55,6 +57,7 @@ namespace OneScript.Runtime.Compiler
             }
 
             _method.Parameters = parameters;
+            _method.EntryPoint = EntryPoint;
             return _method;
         }
 

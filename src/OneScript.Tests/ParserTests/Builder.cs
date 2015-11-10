@@ -62,12 +62,13 @@ namespace OneScript.Tests
             _methods.Clear();
         }
 
-        public void BeginModuleBody()
+        public IASTNode BeginModuleBody()
         {
             HasModuleBody = true;
+            return null;
         }
 
-        public void EndModuleBody()
+        public void EndModuleBody(IASTNode bodyNode)
         {
             
         }
