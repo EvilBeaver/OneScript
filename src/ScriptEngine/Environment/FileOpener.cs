@@ -33,7 +33,8 @@ namespace ScriptEngine.Environment
 
         public static StreamWriter OpenWriter(string filename)
         {
-            return new StreamWriter(filename, false, Encoding.UTF8);
+            var utf8BOMEncoding = new UTF8Encoding(true);
+            return new StreamWriter(filename, false, utf8BOMEncoding);
         }
 
         public static StreamWriter OpenWriter(string filename, Encoding encoding)
