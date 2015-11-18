@@ -127,9 +127,13 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((string)objParam);
             }
-            else if (type == typeof(int))
+            else if (type == typeof(int) || type == typeof(uint) || type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort))
             {
-                return ValueFactory.Create((int)objParam);
+                return ValueFactory.Create(System.Convert.ToInt32(objParam));
+            }
+            else if(type == typeof(long) || type == typeof(ulong))
+            {
+                return ValueFactory.Create(System.Convert.ToInt64(objParam));
             }
             else if (type == typeof(double))
             {
