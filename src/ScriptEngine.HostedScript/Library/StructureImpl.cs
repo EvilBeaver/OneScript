@@ -133,6 +133,18 @@ namespace ScriptEngine.HostedScript.Library
             return _methods.FindMethod(name);
         }
 
+        #region IReflectableContext Members
+
+        public override IEnumerable<MethodInfo> GetMethods()
+        {
+            for (int i = 0; i < _methods.Count; i++)
+            {
+                yield return _methods.GetMethodInfo(i);
+            }
+        }
+
+        #endregion
+
         #region ICollectionContext Members
 
         [ContextMethod("Количество", "Count")]

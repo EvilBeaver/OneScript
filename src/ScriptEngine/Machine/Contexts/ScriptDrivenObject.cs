@@ -52,8 +52,8 @@ namespace ScriptEngine.Machine.Contexts
         public void InitOwnData()
         {
             
-            VARIABLE_COUNT = GetVariableCount();
-            METHOD_COUNT = GetMethodCount();
+            VARIABLE_COUNT = GetOwnVariableCount();
+            METHOD_COUNT = GetOwnMethodCount();
 
             int stateSize = VARIABLE_COUNT + _module.VariableFrameSize;
             _state = new IVariable[stateSize];
@@ -78,8 +78,8 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        protected abstract int GetVariableCount();
-        protected abstract int GetMethodCount();
+        protected abstract int GetOwnVariableCount();
+        protected abstract int GetOwnMethodCount();
         protected abstract void UpdateState();
         
         public bool MethodDefinedInScript(int index)
@@ -233,11 +233,6 @@ namespace ScriptEngine.Machine.Contexts
         #region IReflectableContext Members
 
         public virtual IEnumerable<VariableInfo> GetProperties()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual IEnumerable<MethodInfo> GetMethods()
         {
             throw new NotImplementedException();
         }

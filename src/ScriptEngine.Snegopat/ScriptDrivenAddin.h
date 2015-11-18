@@ -29,12 +29,12 @@ public:
 	
 protected:
 
-	virtual int GetMethodCount() override
+	virtual int GetOwnMethodCount() override
     {
         return 0;
     }
 
-    virtual int GetVariableCount() override
+    virtual int GetOwnVariableCount() override
     {
 		return m_valuesByIndex->Count;
     }

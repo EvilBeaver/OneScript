@@ -49,9 +49,13 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsString();
             }
-            else if (type == typeof(int))
+            else if (type == typeof(int) || type == typeof(uint) || type == typeof(short) || type == typeof(ushort) || type == typeof(byte) || type == typeof(sbyte))
             {
                 valueObj = (int)value.AsNumber();
+            }
+            else if (type == typeof(long) || type == typeof(ulong))
+            {
+                valueObj = (long)value.AsNumber();
             }
             else if (type == typeof(double) || type == typeof(decimal))
             {

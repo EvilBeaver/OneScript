@@ -121,7 +121,7 @@ namespace ScriptEngine.HostedScript
             _engine.AttachAssembly(assembly, _env);
         }
 
-        protected override int GetVariableCount()
+        protected override int GetOwnVariableCount()
         {
             return 1;
         }
@@ -149,7 +149,7 @@ namespace ScriptEngine.HostedScript
                 throw new ArgumentException(String.Format("Неверный индекс свойства {0}", index), "index");
         }
 
-        protected override int GetMethodCount()
+        protected override int GetOwnMethodCount()
         {
             return _methods.Count;
         }

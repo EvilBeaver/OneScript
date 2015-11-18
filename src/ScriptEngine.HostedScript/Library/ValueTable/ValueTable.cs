@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("ТаблицаЗначений", "ValueTable")]
-    class ValueTable : AutoContext<ValueTable>, ICollectionContext
+    public class ValueTable : AutoContext<ValueTable>, ICollectionContext
     {
         private ValueTableColumnCollection _columns = new ValueTableColumnCollection();
         private List<ValueTableRow> _rows = new List<ValueTableRow>();

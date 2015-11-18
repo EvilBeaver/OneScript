@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Древовидная структура с фунциональностью подобно таблице значений.
     /// </summary>
     [ContextClass("ДеревоЗначений", "ValueTree")]
-    class ValueTree : AutoContext<ValueTree>
+    public class ValueTree : AutoContext<ValueTree>
     {
         private ValueTreeColumnCollection _columns = new ValueTreeColumnCollection();
         private ValueTreeRowCollection _rows;

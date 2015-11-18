@@ -54,6 +54,11 @@ namespace ScriptEngine.HostedScript.Library
                 throw RuntimeException.MethodNotFoundException(name);
         }
 
+        public override IEnumerable<MethodInfo> GetMethods()
+        {
+            yield return GetMethodInfo(0);
+        }
+
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
             if (methodNumber == 0)
@@ -71,6 +76,8 @@ namespace ScriptEngine.HostedScript.Library
             if (methodNumber == 0)
                 return new MethodInfo()
                 {
+                    Name = "количество",
+                    Alias = "count",
                     IsFunction = true,
                     Params = new ParameterDefinition[0]
                 };
