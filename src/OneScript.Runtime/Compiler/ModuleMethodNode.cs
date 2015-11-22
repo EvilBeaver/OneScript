@@ -52,7 +52,7 @@ namespace OneScript.Runtime.Compiler
                     Identifier = src.Name,
                     IsByValue = src.ByValue,
                     IsOptional = src.IsOptional,
-                    DefaultValueIndex = module.Constants.GetIndex(src.DefaultValueLiteral)
+                    DefaultValueIndex = src.IsOptional ? module.Constants.GetIndex(src.DefaultValueLiteral) : CompiledModule.InvalidEntityIndex
                 };
             }
 

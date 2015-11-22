@@ -12,7 +12,18 @@ namespace OneScript.Runtime
     {
         private CompiledModule _module;
         private VariableUsageTable _currentLocalsTable;
-        
+
+        private List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
+
+        private struct ForwardedMethodDecl
+        {
+            public string identifier;
+            public bool[] factArguments;
+            public bool asFunction;
+            public int codeLine;
+            public int commandIndex;
+        }
+
         public void BeginModule()
         {
             _module = new CompiledModule();
@@ -106,7 +117,19 @@ namespace OneScript.Runtime
 
         public void BuildProcedureCall(IASTNode target, string identifier, IASTNode[] args)
         {
-            throw new NotImplementedException();
+            if(target == null)
+            {
+                SymbolBinding binding;
+                var isKnown = Context.TryGetMethod(identifier, out binding);
+                if(!isKnown)
+                    throw new NotImplementedException();
+
+                int callIndex = _module.MethodUsageMap.GetIndex(binding);
+                //AddOperation(OperationCode.)
+
+            }
+            else
+                throw new NotImplementedException();
         }
 
         public IASTNode ResolveProperty(IASTNode target, string propertyName)
@@ -248,7 +271,7 @@ namespace OneScript.Runtime
             }
             else
             {
-                AddOperation(OperationCode.PushVar, _module.VariableTable.GetIndex(varBinding));
+                AddOperation(OperationCode.PushVar, _module.VariableUsageMap.GetIndex(varBinding));
             }
         }
 

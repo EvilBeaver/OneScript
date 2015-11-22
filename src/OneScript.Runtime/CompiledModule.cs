@@ -13,7 +13,10 @@ namespace OneScript.Runtime
         private VariableUsageTable _varmap = new VariableUsageTable();
         private ModuleConstantsTable _constants = new ModuleConstantsTable();
         private MethodsUsageTable _methodmap = new MethodsUsageTable();
+
         private MethodDefinitionsTable _methods = new MethodDefinitionsTable();
+
+        public const int InvalidEntityIndex = -1;
 
         public IList<Command> Commands
         {
@@ -23,9 +26,14 @@ namespace OneScript.Runtime
             }
         }
 
-        public VariableUsageTable VariableTable
+        public VariableUsageTable VariableUsageMap
         {
             get { return _varmap; }
+        }
+
+        public MethodsUsageTable MethodUsageMap
+        {
+            get { return _methodmap; }
         }
 
         public ModuleConstantsTable Constants

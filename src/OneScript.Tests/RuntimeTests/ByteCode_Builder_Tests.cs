@@ -20,6 +20,11 @@ namespace OneScript.Tests.RuntimeTests
         private static CompiledModule CreateModuleForCode(string codeString)
         {
             var rt = new OneScriptRuntime();
+            return CreateModuleForCode(codeString, rt);
+        }
+
+        private static CompiledModule CreateModuleForCode(string codeString, AbstractScriptRuntime rt)
+        {
             var code = new StringCodeSource(codeString);
             var module = rt.Compile(code) as CompiledModule;
             return module;
@@ -178,6 +183,48 @@ namespace OneScript.Tests.RuntimeTests
             Assert.AreEqual(2, varmap[1].Context);
             Assert.AreEqual(0, varmap[0].IndexInContext);
             Assert.AreEqual(1, varmap[1].IndexInContext);
+        }
+
+        [TestMethod]
+        public void ASTModuleNode_Creates_MethodDef_With_Parameters()
+        {
+            var code = CreateModuleForCode("Процедура А(Знач Первый, Второй, Знач Третий = 1) ; КонецПроцедуры");
+
+            Assert.AreEqual(1, code.Methods.Count);
+            var method = code.Methods[0];
+
+            Assert.AreEqual(3, method.Parameters.Length);
+            Assert.AreEqual("Первый", method.Parameters[0].Identifier);
+            Assert.IsTrue(method.Parameters[0].IsByValue);
+            Assert.IsFalse(method.Parameters[0].IsOptional);
+            Assert.AreEqual(CompiledModule.InvalidEntityIndex, method.Parameters[0].DefaultValueIndex);
+
+            Assert.AreEqual("Второй", method.Parameters[1].Identifier);
+            Assert.IsFalse(method.Parameters[1].IsByValue);
+            Assert.IsFalse(method.Parameters[1].IsOptional);
+            Assert.AreEqual(CompiledModule.InvalidEntityIndex, method.Parameters[1].DefaultValueIndex);
+
+            Assert.AreEqual("Третий", method.Parameters[2].Identifier);
+            Assert.IsTrue(method.Parameters[2].IsByValue);
+            Assert.IsTrue(method.Parameters[2].IsOptional);
+            Assert.AreEqual(0, method.Parameters[2].DefaultValueIndex);
+            Assert.AreEqual("1", code.Constants[0].Presentation);
+            Assert.AreEqual(ConstType.Number, code.Constants[0].Type);
+        }
+
+        [TestMethod]
+        public void MethodCall_Creates_A_Usage_Record()
+        {
+            var rt = new OneScriptRuntime();
+            var methodsProvider = new ImportedMembersClass();
+            rt.InjectObject(methodsProvider);
+
+            var code = CreateModuleForCode("Proc();", rt);
+
+            Assert.AreEqual(1, code.Methods.Count); //тело модуля
+            Assert.AreEqual(1, code.MethodUsageMap.Count);
+            Assert.AreEqual(1, code.MethodUsageMap[0].Context);
+            Assert.AreEqual("Proc", code.MethodUsageMap[0].Name);
         }
     }
 }
