@@ -19,7 +19,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
     /// Объект записи ZIP-архивов.
     /// </summary>
     [ContextClass("ЗаписьZipФайла", "ZipFileWriter")]
-    public class ZipWriter : AutoContext<ZipWriter>
+    public class ZipWriter : AutoContext<ZipWriter>, IDisposable
     {
         private ZipFile _zip;
         private string _filename;
@@ -68,8 +68,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             CheckIfOpened();
 
             _zip.Save(_filename);
-            _zip.Dispose();
-            _zip = null;
+            Dispose(true);
         }
 
         /// <summary>
@@ -322,5 +321,26 @@ namespace ScriptEngine.HostedScript.Library.Zip
             else
                 return ContextValuesMarshaller.ConvertParam<T>(raw);
         }
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_zip != null)
+                {
+                    _zip.Dispose();
+                    _zip = null;
+                }
+            }
+        }
+
+        #endregion
     }
 }
