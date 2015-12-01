@@ -49,7 +49,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             _filename = filename;
             _zip = new ZipFile();
-            _zip.AlternateEncoding = Encoding.UTF8;
+            _zip.AlternateEncoding = Encoding.GetEncoding(866); // fuck non-russian encodings on non-ascii files
             _zip.AlternateEncodingUsage = ZipOption.Always;
             _zip.Password = password;
             _zip.Comment = comment;
