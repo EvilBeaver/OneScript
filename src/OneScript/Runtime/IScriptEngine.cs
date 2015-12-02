@@ -15,6 +15,6 @@ namespace OneScript.Runtime
     public interface IScriptEngine
     {
         TypeManager TypeManager { get; }
-        IRuntimeContext RuntimeContext { get; }
+        IRuntimeDataContext RuntimeContext { get; }
     }
 }

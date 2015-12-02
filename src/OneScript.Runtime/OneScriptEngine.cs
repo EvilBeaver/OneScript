@@ -28,7 +28,7 @@ namespace OneScript.Runtime
             throw new NotImplementedException();
         }
 
-        public IRuntimeContext RuntimeContext
+        public IRuntimeDataContext RuntimeContext
         {
             get { throw new NotImplementedException(); }
         }

@@ -51,6 +51,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="RuntimeTests\MemoryManager_Test.cs" />
     <Compile Include="RuntimeTests\RuntimeFacadeTests.cs" />
     <Compile Include="ParserTests\AssignmentNode.cs" />
     <Compile Include="ParserTests\LoopExitNode.cs" />

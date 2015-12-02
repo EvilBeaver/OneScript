@@ -6,7 +6,7 @@ using OneScript.Core;
 
 namespace OneScript.Runtime
 {
-    public interface IRuntimeContext
+    public interface IRuntimeDataContext
     {
 
     }

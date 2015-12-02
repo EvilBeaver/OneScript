@@ -52,10 +52,13 @@
     <Compile Include="Compiler\SymbolBinding.cs" />
     <Compile Include="Compiler\SymbolScope.cs" />
     <Compile Include="Compiler\MethodsUsageTable.cs" />
+    <Compile Include="IVariable.cs" />
     <Compile Include="OneScriptEngine.cs" />
     <Compile Include="OneScriptRuntime.cs" />
     <Compile Include="OSByteCodeBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PropertyReferenceVariable.cs" />
+    <Compile Include="RuntimeScope.cs" />
     <Compile Include="StringCodeSource.cs" />
   </ItemGroup>
   <ItemGroup>
