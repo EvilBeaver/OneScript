@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public FixedStructureImpl(StructureImpl structure)
         {
-        	foreach (KeyAndValueImpl keyValue in (structure as StructureImpl))
+        	foreach (KeyAndValueImpl keyValue in structure)
         		_structure.Insert(keyValue.Key.AsString(), keyValue.Value);
 
         }
