@@ -257,14 +257,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         [ContextMethod("НайтиСтроки", "FindRows")]
         public ArrayImpl FindRows(IValue Filter, bool IncludeChildren = false)
         {
-            if (!(Filter is StructureImpl))
+            var filterStruct = Filter.GetRawValue() as StructureImpl;
+
+            if (filterStruct == null)
                 throw RuntimeException.InvalidArgumentType();
 
             ArrayImpl Result = new ArrayImpl();
 
             foreach (ValueTreeRow row in _rows)
             {
-                if (CheckFilterCriteria(row, Filter as StructureImpl))
+                if (CheckFilterCriteria(row, filterStruct))
                 {
                     Result.Add(row);
                 }

@@ -145,9 +145,10 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor(IValue structure)
         {
-            if (structure.GetRawValue() is StructureImpl)
+            var structObject = structure.GetRawValue() as StructureImpl;
+            if (structObject != null)
             {
-	            return new FixedStructureImpl(structure.GetRawValue() as StructureImpl);
+                return new FixedStructureImpl(structObject);
             }
             else
             {
