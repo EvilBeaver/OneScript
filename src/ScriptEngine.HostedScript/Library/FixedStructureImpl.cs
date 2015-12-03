@@ -16,17 +16,10 @@ namespace ScriptEngine.HostedScript.Library
         private StructureImpl _structure = new StructureImpl();
 
 
-        public FixedStructureImpl(IValue structure)
+        public FixedStructureImpl(StructureImpl structure)
         {
-            if (structure is StructureImpl)
-            {
-            	foreach (KeyAndValueImpl keyValue in (structure as StructureImpl))
-            		_structure.Insert(keyValue.Key.AsString(), keyValue.Value);
-            }
-            else
-            {
-              throw new RuntimeException("В качестве параметра для конструктора можно передавать только ФиксированнаяСтруктура или Ключи и Значения");
-            }
+        	foreach (KeyAndValueImpl keyValue in (structure as StructureImpl))
+        		_structure.Insert(keyValue.Key.AsString(), keyValue.Value);
 
         }
 
@@ -152,7 +145,14 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor(IValue structure)
         {
-            return new FixedStructureImpl(structure);
+            if (structure is StructureImpl)
+            {
+	            return new FixedStructureImpl(structure as StructureImpl);
+            }
+            else
+            {
+              throw new RuntimeException("В качестве параметра для конструктора можно передавать только ФиксированнаяСтруктура или Ключи и Значения");
+            }
         }
 
         /// <summary>
