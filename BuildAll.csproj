@@ -152,8 +152,8 @@
 		<NugetAbleProject Include="ScriptEngine.HostedScript"/>
 	</ItemGroup>
 	
-	<Exec WorkingDirectory="$(MSBuildProjectDirectory)\src\@(NugetAbleProject)" 
-		Command="$(NugetExecutable) pack @(NugetAbleProject).csproj -Version $(Major).$(Minor).$(Release) -Prop Configuration=Release -Prop &quot;TargetPath=$(BinFolder)@(NugetAbleProject).dll&quot; -OutputDirectory &quot;$(DistPath)\&quot;"/>
+	<Exec WorkingDirectory="$(MSBuildProjectDirectory)\src\%(NugetAbleProject.Identity)" 
+		Command="$(NugetExecutable) pack %(NugetAbleProject.Identity).csproj -Version $(Major).$(Minor).$(Release) -Prop Configuration=Release -Prop &quot;TargetPath=$(BinFolder)%(NugetAbleProject.Identity).dll&quot; -OutputDirectory &quot;$(DistPath)\&quot;"/>
 	
   </Target>
   
