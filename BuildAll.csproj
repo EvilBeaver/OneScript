@@ -10,6 +10,7 @@
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
     <Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
     <InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
+	<NugetExecutable>"$(NugetPath)\nuget.exe"</NugetExecutable>
 
     <Major>1</Major>
     <Minor>0</Minor>
@@ -72,7 +73,6 @@
   
   <Target Name="Build" DependsOnTargets="CleanAll;Configure;Compile" >
     <CallTarget Targets="PreparePackage" />
-	<CallTarget Targets="ContinueBuild" />
   </Target>
   
   <Target Name="CleanAll">
@@ -141,8 +141,19 @@
     
   </Target>
 
-  <Target Name="ContinueBuild">
+  <Target Name="CreateMSI">
     <!--TODO Add Wix cretation MSI-->
+  </Target>
+  
+  <Target Name="CreateNuget">
+    
+	<ItemGroup>
+		<NugetAbleProject Include="ScriptEngine"/>
+	</ItemGroup>
+	
+	<Exec WorkingDirectory="$(MSBuildProjectDirectory)\src\@(NugetAbleProject)" 
+		Command="$(NugetExecutable) pack @(NugetAbleProject).csproj -Version $(Major).$(Minor).$(Release) -Prop Configuration=Release -Prop &quot;TargetPath=$(BinFolder)@(NugetAbleProject).dll&quot; -OutputDirectory &quot;$(DistPath)\&quot;"/>
+	
   </Target>
   
   <!--aditional tasks-->
