@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>$id$</id>
+    <id>OneScript</id>
     <version>$version$</version>
     <title>OneScript Runtime Core</title>
     <authors>OneScript OpenSource Community</authors>
