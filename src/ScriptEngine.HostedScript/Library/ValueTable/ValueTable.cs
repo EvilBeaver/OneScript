@@ -214,14 +214,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("НайтиСтроки", "FindRows")]
         public ArrayImpl FindRows(IValue Filter)
         {
-            if (!(Filter is StructureImpl))
+            var filterStruct = Filter.GetRawValue() as StructureImpl;
+
+            if (filterStruct == null)
                 throw RuntimeException.InvalidArgumentType();
 
             ArrayImpl Result = new ArrayImpl();
 
             foreach (ValueTableRow row in _rows)
             {
-                if (CheckFilterCriteria(row, Filter as StructureImpl))
+                if (CheckFilterCriteria(row, filterStruct))
                     Result.Add(row);
             }
 

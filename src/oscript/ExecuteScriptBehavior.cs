@@ -74,10 +74,10 @@ namespace oscript
             if(exc is ScriptException)
             {
                 var rte = (ScriptException)exc;
-                Console.WriteLine(rte.MessageWithoutCodeFragment);
+                Echo(rte.MessageWithoutCodeFragment);
             }
             else
-                Console.WriteLine(exc.Message);
+                Echo(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)

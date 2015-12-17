@@ -10,6 +10,7 @@
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
     <Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
     <InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
+	<NugetExecutable>"$(NugetPath)\nuget.exe"</NugetExecutable>
 
     <Major>1</Major>
     <Minor>0</Minor>
@@ -72,7 +73,6 @@
   
   <Target Name="Build" DependsOnTargets="CleanAll;Configure;Compile" >
     <CallTarget Targets="PreparePackage" />
-	<CallTarget Targets="ContinueBuild" />
   </Target>
   
   <Target Name="CleanAll">
@@ -130,6 +130,9 @@
 	<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
 	<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
 	
+	<!-- Генерация скрипта запуска для opm -->
+	<Exec WorkingDirectory="$(BinFolder)" Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(LibFolder)\opm\src\opm.os&quot; app &quot;$(LibFolder)\opm\src\opm.os&quot;"/>
+	
   </Target>
   
   <Target Name="CreateInstall">
@@ -138,8 +141,20 @@
     
   </Target>
 
-  <Target Name="ContinueBuild">
+  <Target Name="CreateMSI">
     <!--TODO Add Wix cretation MSI-->
+  </Target>
+  
+  <Target Name="CreateNuget">
+    
+	<ItemGroup>
+		<NugetAbleProject Include="ScriptEngine"/>
+		<NugetAbleProject Include="ScriptEngine.HostedScript"/>
+	</ItemGroup>
+	
+	<Exec WorkingDirectory="$(MSBuildProjectDirectory)\src\%(NugetAbleProject.Identity)" 
+		Command="$(NugetExecutable) pack %(NugetAbleProject.Identity).csproj -Version $(Major).$(Minor).$(Build) -Prop Configuration=Release -Prop &quot;TargetPath=$(BinFolder)%(NugetAbleProject.Identity).dll&quot; -OutputDirectory &quot;$(DistPath)\&quot;"/>
+	
   </Target>
   
   <!--aditional tasks-->

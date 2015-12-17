@@ -80,6 +80,7 @@
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
+    <Compile Include="Library\FixedStructureImpl.cs" />
     <Compile Include="Library\Http\HttpConnectionContext.cs" />
     <Compile Include="Library\Http\HttpRequestBody.cs" />
     <Compile Include="Library\Http\HttpRequestBodyBinary.cs" />

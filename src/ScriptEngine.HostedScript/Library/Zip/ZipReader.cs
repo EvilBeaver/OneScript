@@ -46,7 +46,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ContextMethod("Открыть","Open")]
         public void Open(string filename, string password = null)
         {
-            _zip = ZipFile.Read(filename);
+            // fuck non-russian encodings on non-ascii files
+            _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = Encoding.GetEncoding(866) });
             _zip.Password = password;
         }
 
