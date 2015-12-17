@@ -117,7 +117,7 @@ namespace ScriptEngine.HostedScript
         [ContextMethod("ЗагрузитьБиблиотеку", "LoadLibrary")]
         public void LoadLibrary(string dllPath)
         {
-            var assembly = System.Reflection.Assembly.LoadFile(dllPath);
+            var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
             _engine.AttachAssembly(assembly, _env);
         }
 
