@@ -127,7 +127,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
         public void AttachAddIn(string dllPath)
         {
-            var assembly = System.Reflection.Assembly.LoadFile(dllPath);
+            var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
             EngineInstance.AttachAssembly(assembly);
         }
 
