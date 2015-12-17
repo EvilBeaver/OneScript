@@ -12,10 +12,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
+using HttpMultipartParser;
 
 namespace oscript
 {
-    [ContextClass("ВебЗапрос","WebRequest")]
+    [ContextClass("ВебЗапрос", "WebRequest")]
     public class WebRequestContext : AutoContext<WebRequestContext>
     {
         MapImpl _environmentVars = new MapImpl();
@@ -26,18 +28,52 @@ namespace oscript
         public WebRequestContext()
         {
             string get = Environment.GetEnvironmentVariable("QUERY_STRING");
-            if(get != null)
+            if (get != null)
             {
                 FillGetMap(get);
             }
 
-            string contentLen = Environment.GetEnvironmentVariable("CONTENT_LENGTH");
-            if(contentLen != null)
-            {
-                FillPostMap(contentLen);
-            }
+            ProcessPostData();
 
             FillEnvironmentVars();
+
+        }
+
+        private void ProcessPostData()
+        {
+            var contentLen = Environment.GetEnvironmentVariable("CONTENT_LENGTH");
+            if (contentLen == null)
+                return;
+
+            int len = Int32.Parse(contentLen);
+            if (len == 0)
+                return;
+
+            // THINK: правильно ли хранить всегда весь запрос в памяти???
+            _post_raw = new byte[len];
+            using (var stdin = Console.OpenStandardInput())
+            {
+                stdin.Read(_post_raw, 0, len);
+            }
+
+            var type = Environment.GetEnvironmentVariable("CONTENT_TYPE");
+            if (type.StartsWith("multipart/"))
+            {
+                var boundary = type.Substring(type.IndexOf('=') + 1);
+                using (var stdin = new MemoryStream(_post_raw))
+                {
+                    var parser = new MultipartFormDataParser(stdin, boundary, Encoding.UTF8); 
+                    foreach (var param in parser.Parameters)
+                    {
+                        _post.Insert(ValueFactory.Create(param.Name), ValueFactory.Create(param.Data));
+                    }
+                    // TODO: выдать наружу файлы
+                }
+            }
+            else
+            {
+                FillPostMap();
+            }
 
         }
 
@@ -51,22 +87,11 @@ namespace oscript
             }
         }
 
-        private void FillPostMap(string contentLen)
+        private void FillPostMap()
         {
-            int len = Int32.Parse(contentLen);
-            if (len > 0)
-            {
-                _post_raw = new byte[len];
-                using (var stdin = Console.OpenStandardInput())
-                {
-                    stdin.Read(_post_raw, 0, len);
-                }
-
-                // по-умолчанию входящий запрос разбираем в UTF-8
-                string _post_raw_utf = Encoding.UTF8.GetString(_post_raw);
-
-                ParseFormData(_post_raw_utf, _post);
-            }
+            // по-умолчанию входящий запрос разбираем в UTF-8
+            string _post_raw_utf = Encoding.UTF8.GetString(_post_raw);
+            ParseFormData(_post_raw_utf, _post);
         }
 
         private void FillGetMap(string get)
@@ -86,7 +111,7 @@ namespace oscript
                     IValue val = ValueFactory.Create(Decode(nameVal[1]));
                     map.Insert(key, val);
                 }
-                else if(pair.Length > 0)
+                else if (pair.Length > 0)
                 {
                     IValue val = ValueFactory.Create(Decode(pair));
                     map.Insert(val, ValueFactory.Create());
@@ -181,8 +206,7 @@ namespace oscript
         {
             Encoding enc = (encoding == null || ValueFactory.Create().Equals(encoding))
                     ? new UTF8Encoding(false)
-                    : TextEncodingEnum.GetEncoding(encoding)
-            ;
+                    : TextEncodingEnum.GetEncoding(encoding);
 
             return enc.GetString(_post_raw);
         }
