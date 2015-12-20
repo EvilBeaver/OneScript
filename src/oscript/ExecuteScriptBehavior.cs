@@ -15,7 +15,7 @@ using ScriptEngine.Machine;
 
 namespace oscript
 {
-    class ExecuteScriptBehavior : AppBehavior, IHostApplication
+    class ExecuteScriptBehavior : AppBehavior, IHostApplication, ISystemLogWriter
     {
         string[] _scriptArgs;
         string _path;
@@ -32,6 +32,8 @@ namespace oscript
             {
                 throw new System.IO.FileNotFoundException("Script file is not found", _path);
             }
+
+            SystemLogger.SetWriter(this);
 
             var hostedScript = new HostedScriptEngine();
             hostedScript.Initialize();
@@ -101,5 +103,10 @@ namespace oscript
         }
 
         #endregion
+
+        public void Write(string text)
+        {
+            Console.Error.WriteLine(text);
+        }
     }
 }

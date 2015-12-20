@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using ScriptEngine.HostedScript;
 using System.Collections.Generic;
+using ScriptEngine;
 
 
 namespace TestApp
@@ -163,7 +164,7 @@ namespace TestApp
             }
 
             var host = new Host(result, l_args.ToArray());
-
+            SystemLogger.SetWriter(host);
             var hostedScript = new HostedScriptEngine();
             hostedScript.Initialize();
             var src = new EditedFileSource(txtCode.Text, _currentDocPath);
@@ -356,7 +357,7 @@ namespace TestApp
         }
     }
 
-    class Host : IHostApplication
+    class Host : IHostApplication, ISystemLogWriter
     {
         private TextBox _output;
         private string[] _arguments;
@@ -396,5 +397,10 @@ namespace TestApp
         }
 
         #endregion
+
+        public void Write(string text)
+        {
+            Echo(text);
+        }
     }
 }

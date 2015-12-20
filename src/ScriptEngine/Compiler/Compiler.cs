@@ -855,6 +855,10 @@ namespace ScriptEngine.Compiler
 
             CorrectCommandArgument(beginTryIndex, _module.Code.Count);
 
+            Assert(_lastExtractedLexem.Token == Token.Exception);
+            if(StringComparer.OrdinalIgnoreCase.Compare(_lastExtractedLexem.Content, "Exception") == 0)
+                SystemLogger.Write("WARNING! BREAKING CHANGE: Keyword 'Exception' is not supported anymore. Consider using 'Except'");
+
             PushStructureToken(Token.EndTry);
             NextToken();
             BuildCodeBatch();
