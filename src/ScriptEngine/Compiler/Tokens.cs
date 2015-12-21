@@ -65,7 +65,9 @@ namespace ScriptEngine.Compiler
             AddToken(Token.Continue, "продолжить", "contınue");
             AddToken(Token.Break, "прервать", "break");
             AddToken(Token.Try, "попытка", "try");
-            AddToken(Token.Exception, "исключение", "exception");
+            AddToken(Token.Exception, "исключение", "except");
+            // обратная совместимость с beta 1.0
+            AddToken(Token.Exception, "exception");
             AddToken(Token.RaiseException, "вызватьисключение", "raise");
             AddToken(Token.EndTry, "конецпопытки", "endtry");
             AddToken(Token.NewObject, "новый", "new");

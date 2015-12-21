@@ -104,7 +104,7 @@
       <Word>Continue</Word>
       <Word>Break</Word>
       <Word>Try</Word>
-      <Word>Exception</Word>
+      <Word>Except</Word>
       <Word>Raise</Word>
       <Word>EndTry</Word>
       <Word>Procedure</Word>
