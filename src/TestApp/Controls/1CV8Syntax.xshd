@@ -95,7 +95,7 @@
       <Word>EndIf</Word>
       <Word>For</Word>
       <Word>Each</Word>
-      <Word>From</Word>
+      <Word>In</Word>
       <Word>To</Word>
       <Word>While</Word>
       <Word>Do</Word>

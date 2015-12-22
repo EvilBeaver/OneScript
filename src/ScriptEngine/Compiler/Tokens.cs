@@ -56,7 +56,7 @@ namespace ScriptEngine.Compiler
             AddToken(Token.EndFunction, "конецфункции", "endfunction");
             AddToken(Token.For, "для", "for");
             AddToken(Token.Each, "каждого", "each");
-            AddToken(Token.In, "из", "from");
+            AddToken(Token.In, "из", "in");
             AddToken(Token.To, "по", "to");
             AddToken(Token.While, "пока", "while");
             AddToken(Token.Loop, "цикл", "do");
