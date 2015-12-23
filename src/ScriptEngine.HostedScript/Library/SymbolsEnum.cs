@@ -10,7 +10,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
 
-    [SystemEnum("Символы", "Symbols")]
+    [SystemEnum("Символы", "Chars")]
     public class SymbolsEnum : EnumerationContext
     {
         private SymbolsEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
