@@ -29,7 +29,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="target">Объект, метод которого нужно вызвать.</param>
         /// <param name="methodName">Имя метода для вызова</param>
-        /// <param name="arguments">Массив аргументов, передаваемых методу</param>
+        /// <param name="arguments">Массив аргументов, передаваемых методу. Следует учесть, что все параметры нужно передавать явно, в том числе необязательные.</param>
         /// <returns>Если вызывается функция, то возвращается ее результат. В противном случае возвращается Неопределено.</returns>
         [ContextMethod("ВызватьМетод", "CallMethod")]
         public IValue CallMethod(IRuntimeContextInstance target, string methodName, ArrayImpl arguments = null)
