@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using HttpMultipartParser;
+using ScriptEngine.HostedScript.Library.Http.Multipart;
 
 namespace oscript
 {
@@ -22,7 +23,7 @@ namespace oscript
     {
         MapImpl _environmentVars = new MapImpl();
         MapImpl _get = new MapImpl();
-        MapImpl _post = new MapImpl();
+        PostRequestData _post;
         byte[] _post_raw = null;
 
         public WebRequestContext()
@@ -57,22 +58,14 @@ namespace oscript
             }
 
             var type = Environment.GetEnvironmentVariable("CONTENT_TYPE");
-            if (type.StartsWith("multipart/"))
+            if (type != null && type.StartsWith("multipart/"))
             {
                 var boundary = type.Substring(type.IndexOf('=') + 1);
-                using (var stdin = new MemoryStream(_post_raw))
-                {
-                    var parser = new MultipartFormDataParser(stdin, boundary, Encoding.UTF8); 
-                    foreach (var param in parser.Parameters)
-                    {
-                        _post.Insert(ValueFactory.Create(param.Name), ValueFactory.Create(param.Data));
-                    }
-                    // TODO: выдать наружу файлы
-                }
+                _post = new PostRequestData(_post_raw, boundary);
             }
             else
             {
-                FillPostMap();
+                _post = new PostRequestData(Encoding.UTF8.GetString(_post_raw));
             }
 
         }
@@ -85,13 +78,6 @@ namespace oscript
                     ValueFactory.Create((string)item.Key),
                     ValueFactory.Create((string)item.Value));
             }
-        }
-
-        private void FillPostMap()
-        {
-            // по-умолчанию входящий запрос разбираем в UTF-8
-            string _post_raw_utf = Encoding.UTF8.GetString(_post_raw);
-            ParseFormData(_post_raw_utf, _post);
         }
 
         private void FillGetMap(string get)

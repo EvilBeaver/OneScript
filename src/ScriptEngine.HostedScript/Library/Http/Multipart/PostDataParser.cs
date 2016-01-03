@@ -16,7 +16,7 @@ using HttpMultipartParser;
 namespace ScriptEngine.HostedScript.Library.Http.Multipart
 {
     [ContextClass("ДанныеPOSTЗапроса", "PostRequestData")]
-    class PostRequestData : AutoContext<PostRequestData>
+    public class PostRequestData : AutoContext<PostRequestData>
     {
 
         private MapImpl _params = new MapImpl();
@@ -37,6 +37,75 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
                     _files.Add(ValueFactory.Create(new PostFileDescription(file)));
                 }
             }
+        }
+
+        public PostRequestData(string data)
+        {
+            var pairs = data.Split('&');
+            foreach (var pair in pairs)
+            {
+                var nameVal = pair.Split(new Char[] { '=' }, 2);
+                if (nameVal.Length == 2)
+                {
+                    IValue key = ValueFactory.Create(nameVal[0]);
+                    IValue val = ValueFactory.Create(Decode(nameVal[1]));
+                    _params.Insert(key, val);
+                }
+                else if (pair.Length > 0)
+                {
+                    IValue val = ValueFactory.Create(Decode(pair));
+                    _params.Insert(val, ValueFactory.Create());
+                }
+            }
+        }
+
+        private static string Decode(string p)
+        {
+            byte[] bytes = new byte[p.Length];
+
+            int j = 0;
+            for (int i = 0; i < p.Length; i++, j++)
+            {
+                if (p[i] == '+')
+                    bytes[j] = 0x20;
+                else if (p[i] == '%')
+                {
+                    bytes[j] = ByteFromHEX(p, ref i);
+                }
+                else
+                    bytes[j] = (byte)p[i];
+            }
+
+            return Encoding.UTF8.GetString(bytes, 0, j);
+
+        }
+
+        private static byte ByteFromHEX(string pattern, ref int index)
+        {
+            System.Diagnostics.Debug.Assert(pattern[index] == '%');
+
+            index++;
+            int major = 0;
+            int minor = 0;
+            for (int i = 0; i < 2; i++)
+            {
+                int code = (int)pattern[index];
+                if (code >= 48 && code <= 57)
+                    code = code - 48;
+                else if (code >= 65 && code <= 70)
+                    code = code - 55;
+
+                if (i == 0)
+                {
+                    major = code;
+                    index++;
+                }
+                else
+                    minor = code;
+            }
+
+            return (byte)(major * 16 + minor);
+
         }
 
         [ContextProperty("Параметры", "Params")]
