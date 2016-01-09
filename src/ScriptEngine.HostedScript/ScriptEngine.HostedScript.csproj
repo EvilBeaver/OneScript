@@ -96,7 +96,6 @@
     <Compile Include="Library\Http\Multipart\MultipartFormDataParser.cs" />
     <Compile Include="Library\Http\Multipart\MultipartParseException.cs" />
     <Compile Include="Library\Http\Multipart\ParameterPart.cs" />
-    <Compile Include="Library\Http\Multipart\PostDataParser.cs" />
     <Compile Include="Library\Http\Multipart\PostFileDescription.cs" />
     <Compile Include="Library\Http\Multipart\RebufferableBinaryReader.cs" />
     <Compile Include="Library\Http\Multipart\StreamingMultipartFormDataParser.cs" />
@@ -155,6 +154,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\StructureImpl.cs" />
     <Compile Include="Library\StringOperations.cs" />
+    <Compile Include="Library\Http\Multipart\PostRequestData.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
