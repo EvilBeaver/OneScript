@@ -15,10 +15,23 @@ namespace ScriptEngine.HostedScript
 {
     class KeyValueConfig
     {
-        private Dictionary<string, string> _values = new Dictionary<string, string>();
+        private Dictionary<string, string> _values = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
-        private KeyValueConfig()
+        public KeyValueConfig()
         { 
+        }
+
+        public KeyValueConfig(Dictionary<string, string> source)
+        {
+            Merge(source);
+        }
+
+        public void Merge(Dictionary<string, string> source)
+        {
+            foreach (var keyValue in source)
+            {
+                this[keyValue.Key] = keyValue.Value;
+            }
         }
 
         public string this[string key]
@@ -26,7 +39,7 @@ namespace ScriptEngine.HostedScript
             get
             {
                 if (String.IsNullOrWhiteSpace(key))
-                    throw new ArgumentException("wrong config key format");
+                    throw BadKeyException(key);
 
                 string value = null;
                 _values.TryGetValue(key, out value);
@@ -34,6 +47,18 @@ namespace ScriptEngine.HostedScript
                 return value;
 
             }
+            private set
+            {
+                if (String.IsNullOrWhiteSpace(key))
+                    throw BadKeyException(key);
+
+                _values[key] = value;
+            }
+        }
+
+        private static ArgumentException BadKeyException(string key)
+        {
+            return new ArgumentException(String.Format("wrong config key format: {0}", key));
         }
 
         public static KeyValueConfig Read(StreamReader reader)

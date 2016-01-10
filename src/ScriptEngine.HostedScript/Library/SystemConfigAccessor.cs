@@ -12,6 +12,8 @@ namespace ScriptEngine.HostedScript.Library
     {
         private KeyValueConfig _config;
 
+        internal EngineConfigProvider Provider { get; set; }
+
         public SystemConfigAccessor()
         {
             Refresh();
@@ -20,9 +22,8 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ОбновитьНастройкиСистемы", "RefreshSystemConfig")]
         public void Refresh()
         {
-            var file = HostedScriptEngine.ConfigFilePath();
-            if (file != null)
-                _config = KeyValueConfig.Read(file);
+            if (Provider != null)
+                _config = Provider.ReadConfig();
         }
 
         [ContextMethod("ПолучитьЗначениеСистемнойНастройки", "GetSystemOptionValue")]

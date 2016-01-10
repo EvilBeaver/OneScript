@@ -68,6 +68,7 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="EngineConfigProvider.cs" />
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
     <Compile Include="KeyValueConfig.cs" />

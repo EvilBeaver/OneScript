@@ -74,17 +74,7 @@ namespace ScriptEngine.HostedScript
 
         public static string ConfigFilePath()
         {
-            string asmLocation;
-            asmLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            if(String.IsNullOrEmpty(asmLocation))
-                asmLocation = System.Reflection.Assembly.GetEntryAssembly().Location;
-
-            var assemblyPath = System.IO.Path.GetDirectoryName(asmLocation);
-            var configFile = System.IO.Path.Combine(assemblyPath, "oscript.cfg");
-            if (System.IO.File.Exists(configFile))
-                return configFile;
-            else
-                return null;
+            return EngineConfigProvider.DefaultConfigFilePath();
         }
 
         private void InitLibrariesFromConfig(string configFile)
