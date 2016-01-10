@@ -13,7 +13,7 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript
 {
-    class KeyValueConfig
+    public class KeyValueConfig
     {
         private Dictionary<string, string> _values = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 

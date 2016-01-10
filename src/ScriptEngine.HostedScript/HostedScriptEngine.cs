@@ -55,6 +55,12 @@ namespace ScriptEngine.HostedScript
             }
         }
 
+        public KeyValueConfig GetWorkingConfig()
+        {
+            var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
+            return cfgAccessor.GetConfig();
+        }
+
         public string CustomConfig { get; set; }
 
         public void Initialize()
