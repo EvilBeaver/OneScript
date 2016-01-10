@@ -63,8 +63,9 @@ namespace ScriptEngine.HostedScript
             {
                 var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
                 cfgAccessor.Provider = new EngineConfigProvider(CustomConfig);
+                cfgAccessor.Refresh();
 
-                InitLibrariesByDefault();
+                InitLibraries(cfgAccessor.GetConfig());
 
                 _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
@@ -72,12 +73,11 @@ namespace ScriptEngine.HostedScript
             }
         }
 
-        private void InitLibrariesByDefault()
+        private void InitLibraries(KeyValueConfig config)
         {
-            var configFile = ConfigFilePath();
-            if(configFile != null)
+            if(config != null)
             {
-                InitLibrariesFromConfig(configFile);
+                InitLibrariesFromConfig(config);
             }
             else
             {
@@ -90,23 +90,12 @@ namespace ScriptEngine.HostedScript
             return EngineConfigProvider.DefaultConfigFilePath();
         }
 
-        private void InitLibrariesFromConfig(string configFile)
+        private void InitLibrariesFromConfig(KeyValueConfig config)
         {
-            const string SYSTEM_LIB_KEY = "lib.system";
-            const string ADDITIONAL_LIB_KEY = "lib.additional";
-
-            var config = KeyValueConfig.Read(configFile);
-
-            string sysDir = config[SYSTEM_LIB_KEY];
-            if(sysDir != null && !System.IO.Path.IsPathRooted(sysDir))
-            {
-                var confDir = System.IO.Path.GetDirectoryName(configFile);
-                sysDir = System.IO.Path.GetFullPath(
-                    System.IO.Path.Combine(confDir, sysDir));
-            }
-
-            string additionalDirsList = config[ADDITIONAL_LIB_KEY];
+            string sysDir = config[EngineConfigProvider.SYSTEM_LIB_KEY];
+            string additionalDirsList = config[EngineConfigProvider.ADDITIONAL_LIB_KEY];
             string[] addDirs = null;
+            
             if(additionalDirsList != null)
             {
                 addDirs = additionalDirsList.Split(';');

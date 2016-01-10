@@ -61,34 +61,5 @@ namespace ScriptEngine.HostedScript
             return new ArgumentException(String.Format("wrong config key format: {0}", key));
         }
 
-        public static KeyValueConfig Read(StreamReader reader)
-        {
-            var conf = new KeyValueConfig();
-            while (!reader.EndOfStream)
-            {
-                var line = reader.ReadLine();
-                if (String.IsNullOrWhiteSpace(line) || line[0] == '#')
-                    continue;
-
-                var keyValue = line.Split(new[] { '=' }, 2);
-                if (keyValue.Length != 2)
-                    continue;
-
-                conf._values[keyValue[0].Trim()] = keyValue[1].Trim();
-            }
-
-            return conf;
-        }
-        
-        public static KeyValueConfig Read(string configPath)
-        {
-            KeyValueConfig conf;
-            using(var reader = new StreamReader(configPath, true))
-            {
-                conf = Read(reader);
-            }
-
-            return conf;
-        }
     }
 }

@@ -19,6 +19,11 @@ namespace ScriptEngine.HostedScript.Library
             Refresh();
         }
 
+        internal KeyValueConfig GetConfig()
+        {
+            return _config;
+        }
+
         [ContextMethod("ОбновитьНастройкиСистемы", "RefreshSystemConfig")]
         public void Refresh()
         {

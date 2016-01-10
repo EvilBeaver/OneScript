@@ -69,7 +69,22 @@ namespace ScriptEngine.HostedScript
                 }
             }
 
+            ExpandRelativePaths(conf, configPath);
+
             return conf;
+        }
+
+        private static void ExpandRelativePaths(Dictionary<string, string> conf, string configFile)
+        {
+            string sysDir = null;
+            conf.TryGetValue(SYSTEM_LIB_KEY, out sysDir);
+
+            if (sysDir != null && !System.IO.Path.IsPathRooted(sysDir))
+            {
+                var confDir = System.IO.Path.GetDirectoryName(configFile);
+                sysDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(confDir, sysDir));
+                conf[SYSTEM_LIB_KEY] = sysDir;
+            }
         }
 
         private void ReadCustomConfig()
