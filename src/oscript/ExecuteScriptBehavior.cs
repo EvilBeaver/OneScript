@@ -36,6 +36,7 @@ namespace oscript
             SystemLogger.SetWriter(this);
 
             var hostedScript = new HostedScriptEngine();
+            hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
             var source = hostedScript.Loader.FromFile(_path);
 
             Process process;

@@ -25,6 +25,7 @@ namespace oscript
         public override int Execute()
         {
             var hostedScript = new HostedScriptEngine();
+            hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
             hostedScript.Initialize();
             var source = hostedScript.Loader.FromFile(_path);
             var compiler = hostedScript.GetCompilerService();

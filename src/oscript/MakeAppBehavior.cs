@@ -37,6 +37,7 @@ namespace oscript
                 int offset = (int)output.Length;
 
                 var engine = new HostedScriptEngine();
+                engine.CustomConfig = ScriptFileHelper.CustomConfigPath(_codePath);
                 engine.Initialize();
                 var source = engine.Loader.FromFile(_codePath);
                 var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();

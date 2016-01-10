@@ -55,6 +55,7 @@ namespace oscript
         private int RunCGIMode(string scriptFile)
         {
             var engine = new HostedScriptEngine();
+            engine.CustomConfig = ScriptFileHelper.CustomConfigPath(scriptFile);
             engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
 
             var request = new WebRequestContext();

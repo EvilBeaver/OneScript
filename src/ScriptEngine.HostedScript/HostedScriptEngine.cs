@@ -85,7 +85,7 @@ namespace ScriptEngine.HostedScript
             }
         }
 
-        public static string ConfigFilePath()
+        private static string ConfigFilePath()
         {
             return EngineConfigProvider.DefaultConfigFilePath();
         }
