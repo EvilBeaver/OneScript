@@ -11,8 +11,7 @@ namespace ScriptEngine.HostedScript
         KeyValueConfig _currentConfig;
         string _customConfigFilePath;
 
-        const string CONFIG_FILE_NAME = "oscript.cfg";
-        
+        public const string CONFIG_FILE_NAME = "oscript.cfg";
         public const string SYSTEM_LIB_KEY = "lib.system";
         public const string ADDITIONAL_LIB_KEY = "lib.additional";
 

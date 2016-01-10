@@ -47,12 +47,22 @@ namespace ScriptEngine.HostedScript
             }
         }
 
+        public static string ConfigFileName
+        {
+            get
+            {
+                return EngineConfigProvider.CONFIG_FILE_NAME;
+            }
+        }
+
+        public string CustomConfig { get; set; }
+
         public void Initialize()
         {
             if (!_isInitialized)
             {
                 var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
-                cfgAccessor.Provider = new EngineConfigProvider(null);
+                cfgAccessor.Provider = new EngineConfigProvider(CustomConfig);
 
                 InitLibrariesByDefault();
 
