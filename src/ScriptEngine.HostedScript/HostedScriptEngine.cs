@@ -31,8 +31,6 @@ namespace ScriptEngine.HostedScript
 
             _env.InjectObject(_globalCtx, false);
             _engine.Environment = _env;
-            
-            InitLibrariesByDefault();
 
         }
 
@@ -53,6 +51,11 @@ namespace ScriptEngine.HostedScript
         {
             if (!_isInitialized)
             {
+                var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
+                cfgAccessor.Provider = new EngineConfigProvider(null);
+
+                InitLibrariesByDefault();
+
                 _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
                 _isInitialized = true;

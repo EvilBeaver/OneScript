@@ -166,7 +166,6 @@ namespace TestApp
             var host = new Host(result, l_args.ToArray());
             SystemLogger.SetWriter(host);
             var hostedScript = new HostedScriptEngine();
-            hostedScript.Initialize();
             var src = new EditedFileSource(txtCode.Text, _currentDocPath);
 
             Process process = null;
