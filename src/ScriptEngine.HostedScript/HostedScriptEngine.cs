@@ -157,7 +157,7 @@ namespace ScriptEngine.HostedScript
         {
             SetGlobalEnvironment(host, src);
             var module = _engine.LoadModuleImage(moduleHandle);
-            return InitProcess(host, src, ref module);
+            return InitProcess(host, ref module);
         }
 
         private void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
@@ -167,7 +167,7 @@ namespace ScriptEngine.HostedScript
             _globalCtx.InitInstance();
         }
 
-        private Process InitProcess(IHostApplication host, ICodeSource src, ref LoadedModuleHandle module)
+        private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
         {
             Initialize();
             var process = new Process(host, module, _engine);
