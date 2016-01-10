@@ -14,6 +14,7 @@ namespace ScriptEngine.Environment
 {
     public static class FileOpener
     {
+        public static Encoding DefaultEncoding { get; set; }
 
         public static StreamReader OpenReader(string filename)
         {
@@ -51,7 +52,7 @@ namespace ScriptEngine.Environment
         {
             Encoding enc;
             // *** Use Default of Encoding.Default (Ansi CodePage)
-            enc = Encoding.Default;
+            enc = DefaultEncoding == null ? Encoding.Default : DefaultEncoding;
 
             // *** Detect byte order mark if any - otherwise assume default
             byte[] buffer = new byte[5];

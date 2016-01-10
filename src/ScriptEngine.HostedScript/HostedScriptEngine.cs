@@ -19,6 +19,7 @@ namespace ScriptEngine.HostedScript
         SystemGlobalContext _globalCtx;
         RuntimeEnvironment _env;
         bool _isInitialized;
+        bool _configInitialized;
 
         public HostedScriptEngine()
         {
@@ -58,6 +59,12 @@ namespace ScriptEngine.HostedScript
         public KeyValueConfig GetWorkingConfig()
         {
             var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
+            if (!_configInitialized)
+            {
+                cfgAccessor.Provider = new EngineConfigProvider(CustomConfig);
+                cfgAccessor.Refresh();
+                _configInitialized = true;
+            }
             return cfgAccessor.GetConfig();
         }
 
@@ -67,11 +74,7 @@ namespace ScriptEngine.HostedScript
         {
             if (!_isInitialized)
             {
-                var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
-                cfgAccessor.Provider = new EngineConfigProvider(CustomConfig);
-                cfgAccessor.Refresh();
-
-                InitLibraries(cfgAccessor.GetConfig());
+                InitLibraries(GetWorkingConfig());
 
                 _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));

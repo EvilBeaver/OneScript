@@ -1,4 +1,5 @@
-﻿using ScriptEngine.HostedScript;
+﻿using ScriptEngine.Environment;
+using ScriptEngine.HostedScript;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +18,17 @@ namespace oscript
                 return cfgPath;
             else
                 return null;
+        }
+
+        public static void OnBeforeScriptRead(HostedScriptEngine engine)
+        {
+            var cfg = engine.GetWorkingConfig();
+
+            string openerEncoding = cfg["encoding.script"];
+            if(!String.IsNullOrWhiteSpace(openerEncoding) && StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") != 0)
+            {
+                FileOpener.DefaultEncoding = Encoding.GetEncoding(openerEncoding);
+            }
         }
     }
 }

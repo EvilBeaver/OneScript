@@ -39,6 +39,7 @@ namespace oscript
                 var engine = new HostedScriptEngine();
                 engine.CustomConfig = ScriptFileHelper.CustomConfigPath(_codePath);
                 engine.Initialize();
+                ScriptFileHelper.OnBeforeScriptRead(engine);
                 var source = engine.Loader.FromFile(_codePath);
                 var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 var persistor = new ScriptEngine.Compiler.ModulePersistor(formatter);

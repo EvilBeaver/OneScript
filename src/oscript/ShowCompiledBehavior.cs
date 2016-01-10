@@ -27,6 +27,7 @@ namespace oscript
             var hostedScript = new HostedScriptEngine();
             hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
             hostedScript.Initialize();
+            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
             var compiler = hostedScript.GetCompilerService();
             var writer = new ScriptEngine.Compiler.ModuleWriter(compiler);
