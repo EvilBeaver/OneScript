@@ -150,9 +150,7 @@ namespace ScriptEngine.HostedScript
 
         public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
         {
-            SetGlobalEnvironment(host, src);
-            var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
-            return InitProcess(host, src, ref module);
+            return CreateProcess(host, compilerSvc.CreateModule(src), src);
         }
 
         public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle, ICodeSource src)
