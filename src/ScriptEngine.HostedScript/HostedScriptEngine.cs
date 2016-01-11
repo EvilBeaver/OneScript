@@ -74,8 +74,6 @@ namespace ScriptEngine.HostedScript
         {
             if (!_isInitialized)
             {
-                InitLibraries(GetWorkingConfig());
-
                 _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
                 _isInitialized = true;
@@ -84,6 +82,9 @@ namespace ScriptEngine.HostedScript
 
         private void InitLibraries(KeyValueConfig config)
         {
+            if (_engine.DirectiveResolver != null)
+                return;
+
             if(config != null)
             {
                 InitLibrariesFromConfig(config);
@@ -139,6 +140,8 @@ namespace ScriptEngine.HostedScript
 
         public CompilerService GetCompilerService()
         {
+            InitLibraries(GetWorkingConfig());
+
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
             return compilerSvc;
@@ -151,7 +154,10 @@ namespace ScriptEngine.HostedScript
 
         public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
         {
-            return CreateProcess(host, compilerSvc.CreateModule(src), src);
+            SetGlobalEnvironment(host, src);
+            Initialize();
+            var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
+            return InitProcess(host, ref module);
         }
 
         public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle, ICodeSource src)
