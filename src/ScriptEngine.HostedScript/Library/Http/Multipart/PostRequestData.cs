@@ -121,5 +121,11 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
         {
             return new PostRequestData(data.Buffer, boundary.ToString());
         }
+
+        [ScriptConstructor(Name="Из строки запроса")]
+        public static PostRequestData Constructor(IValue RequestString)
+        {
+            return new PostRequestData(RequestString.ToString());
+        }
     }
 }
