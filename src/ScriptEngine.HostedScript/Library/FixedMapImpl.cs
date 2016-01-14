@@ -35,7 +35,15 @@ namespace ScriptEngine.HostedScript.Library
 
         public override IValue GetIndexedValue(IValue index)
         {
-            return _map.GetIndexedValue(index);
+            if(_map.ContainsKey(index))
+                return _map.GetIndexedValue(index);
+
+            throw new RuntimeException("Значение, соответствующее ключу, не задано");
+        }
+
+        public override void SetIndexedValue(IValue index, IValue val)
+        {
+            throw new RuntimeException("Индексированное значение доступно только для чтения");
         }
 
         public override bool IsPropReadable(int propNum)

@@ -38,6 +38,11 @@ namespace ScriptEngine.HostedScript.Library
             return _array.GetIndexedValue(index);
         }
 
+        public override void SetIndexedValue(IValue index, IValue val)
+        {
+            throw new RuntimeException("Индексированное значение доступно только для чтения");
+        }
+
         public override bool IsPropReadable(int propNum)
         {
             throw new NotImplementedException();

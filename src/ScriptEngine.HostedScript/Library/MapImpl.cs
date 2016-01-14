@@ -50,6 +50,11 @@ namespace ScriptEngine.HostedScript.Library
             return false;
         }
         
+        internal bool ContainsKey(IValue key)
+        {
+            return _content.ContainsKey(key);
+        }
+
         #region ICollectionContext Members
 
         [ContextMethod("Вставить", "Insert")]
