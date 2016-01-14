@@ -19,31 +19,37 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
     public class PostRequestData : AutoContext<PostRequestData>
     {
 
-        private MapImpl _params = new MapImpl();
-        private MapImpl _files = new MapImpl();
+        private FixedMapImpl _params;
+        private FixedMapImpl _files;
 
         public PostRequestData(byte []buffer, string boundary)
         {
             using (var stdin = new MemoryStream(buffer))
             {
                 var parser = new MultipartFormDataParser(stdin, boundary, Encoding.UTF8);
+                MapImpl m_params = new MapImpl();
                 foreach (var param in parser.Parameters)
                 {
-                    _params.Insert(ValueFactory.Create(param.Name), ValueFactory.Create(param.Data));
+                    m_params.Insert(ValueFactory.Create(param.Name), ValueFactory.Create(param.Data));
                 }
+                _params = new FixedMapImpl(m_params);
 
+                MapImpl m_files = new MapImpl();
                 foreach (var file in parser.Files)
                 {
-                    _files.Insert(
+                    m_files.Insert(
                         ValueFactory.Create(file.Name),
                         ValueFactory.Create(new PostFileDescription(file))
                     );
                 }
+                _files = new FixedMapImpl(m_files);
             }
         }
 
         public PostRequestData(string data)
         {
+            MapImpl m_params = new MapImpl();
+
             var pairs = data.Split('&');
             foreach (var pair in pairs)
             {
@@ -52,13 +58,15 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
                 {
                     IValue key = ValueFactory.Create(Decode(nameVal[0]));
                     IValue val = ValueFactory.Create(Decode(nameVal[1]));
-                    _params.Insert(key, val);
+                    m_params.Insert(key, val);
                 }
                 else if (pair.Length > 0)
                 {
                     IValue val = ValueFactory.Create(Decode(pair));
-                    _params.Insert(val, ValueFactory.Create());
+                    m_params.Insert(val, ValueFactory.Create());
                 }
+                _params = new FixedMapImpl(m_params);
+                _files = new FixedMapImpl(new MapImpl());
             }
         }
 
@@ -73,14 +81,14 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
         /// Параметры запроса
         /// </summary>
         [ContextProperty("Параметры", "Params")]
-        public MapImpl Params
+        public FixedMapImpl Params
         { get { return _params; } }
 
         /// <summary>
         /// Загруженные файлы
         /// </summary>
         [ContextProperty("Файлы", "Files")]
-        public MapImpl Files
+        public FixedMapImpl Files
         { get { return _files; } }
 
         [ScriptConstructor(Name="Из двоичных данных")]

@@ -98,7 +98,7 @@ namespace oscript
         /// Параметры запроса
         /// </summary>
         [ContextProperty("Параметры", "Params")]
-        public MapImpl Params {
+        public FixedMapImpl Params {
             get {
                 return _post.Params;
             }
@@ -108,7 +108,7 @@ namespace oscript
         /// Загруженные файлы
         /// </summary>
         [ContextProperty("Файлы", "Files")]
-        public MapImpl Files {
+        public FixedMapImpl Files {
             get {
                 return _post.Files;
             }
