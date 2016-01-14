@@ -81,6 +81,8 @@
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
+    <Compile Include="Library\FixedArrayImpl.cs" />
+    <Compile Include="Library\FixedMapImpl.cs" />
     <Compile Include="Library\FixedStructureImpl.cs" />
     <Compile Include="Library\Http\HttpConnectionContext.cs" />
     <Compile Include="Library\Http\HttpRequestBody.cs" />
