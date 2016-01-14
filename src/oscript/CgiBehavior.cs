@@ -113,7 +113,7 @@ namespace oscript
                     Header("Content-type", "text/html");
                 if (!IsHeaderWritten("Content-encoding"))
                     Header("Content-encoding", Encoding.BodyName);
-                Console.WriteLine();
+                oscript.Output.WriteLine();
 
                 _isContentEchoed = true;
             }
@@ -121,7 +121,7 @@ namespace oscript
             if (str != "")
             {
                 Output (str);
-                Console.WriteLine ();
+                oscript.Output.WriteLine();
             }
         }
 

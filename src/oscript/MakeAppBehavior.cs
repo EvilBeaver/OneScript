@@ -28,7 +28,7 @@ namespace oscript
 
         public override int Execute()
         {
-            Console.WriteLine("Make started...");
+            Output.WriteLine("Make started...");
             using (var exeStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("oscript.StandaloneRunner.exe"))
             using (var output = new FileStream(_exePath, FileMode.Create))
             {
@@ -56,7 +56,7 @@ namespace oscript
                     bw.Write(offset);
                 }
             }
-            Console.WriteLine("Make completed");
+            Output.WriteLine("Make completed");
             return 0;
         }
     }
