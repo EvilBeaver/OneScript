@@ -21,7 +21,7 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
         private string _filename;
         private string _content_disposition;
         private string _content_type;
-        private long _content_size;          // TODO: long для размера файла?
+        private long _content_size;
         private BinaryDataContext _data;
 
         internal PostFileDescription(FilePart filepart)
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
             _content_size = filepart.Data.Length;
 
             byte[] buf = new byte[_content_size];
-            filepart.Data.Read(buf, 0, (int)_content_size); // TODO: преобразование размера файла long в int
+            filepart.Data.Read(buf, 0, (int)_content_size);
 
             _data = new BinaryDataContext(buf);
         }
@@ -58,7 +58,6 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
         public decimal ContentSize
         { get { return _content_size; } }
 
-        // TODO: Или назвать Содержимое/Content ?
         [ContextProperty("Данные", "Data")]
         public BinaryDataContext Data
         { get { return _data; } }

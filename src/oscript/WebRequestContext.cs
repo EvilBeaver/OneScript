@@ -94,21 +94,30 @@ namespace oscript
             }
         }
 
-        [ContextProperty ("Параметры", "Params")]
+        /// <summary>
+        /// Параметры запроса
+        /// </summary>
+        [ContextProperty("Параметры", "Params")]
         public MapImpl Params {
             get {
                 return _post.Params;
             }
         }
 
-        [ContextProperty ("Файлы", "Files")]
-        public ArrayImpl Files {
+        /// <summary>
+        /// Загруженные файлы
+        /// </summary>
+        [ContextProperty("Файлы", "Files")]
+        public MapImpl Files {
             get {
                 return _post.Files;
             }
         }
 
-        [ContextProperty ("ENV")]
+        /// <summary>
+        /// Переменные среды
+        /// </summary>
+        [ContextProperty("ENV")]
         public IValue ENV {
             get {
                 return _environmentVars;

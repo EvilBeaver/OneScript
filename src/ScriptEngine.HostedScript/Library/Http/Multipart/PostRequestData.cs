@@ -20,7 +20,7 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
     {
 
         private MapImpl _params = new MapImpl();
-        private ArrayImpl _files = new ArrayImpl(); // TODO: MapImpl для файлов POST-запроса
+        private MapImpl _files = new MapImpl();
 
         public PostRequestData(byte []buffer, string boundary)
         {
@@ -34,7 +34,10 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
 
                 foreach (var file in parser.Files)
                 {
-                    _files.Add(ValueFactory.Create(new PostFileDescription(file)));
+                    _files.Insert(
+                        ValueFactory.Create(file.Name),
+                        ValueFactory.Create(new PostFileDescription(file))
+                    );
                 }
             }
         }
@@ -47,7 +50,7 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
                 var nameVal = pair.Split(new Char[] { '=' }, 2);
                 if (nameVal.Length == 2)
                 {
-                    IValue key = ValueFactory.Create(nameVal[0]);
+                    IValue key = ValueFactory.Create(Decode(nameVal[0]));
                     IValue val = ValueFactory.Create(Decode(nameVal[1]));
                     _params.Insert(key, val);
                 }
@@ -61,59 +64,23 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
 
         private static string Decode(string p)
         {
-            byte[] bytes = new byte[p.Length];
-
-            int j = 0;
-            for (int i = 0; i < p.Length; i++, j++)
-            {
-                if (p[i] == '+')
-                    bytes[j] = 0x20;
-                else if (p[i] == '%')
-                {
-                    bytes[j] = ByteFromHEX(p, ref i);
-                }
-                else
-                    bytes[j] = (byte)p[i];
-            }
-
-            return Encoding.UTF8.GetString(bytes, 0, j);
-
+            // https://msdn.microsoft.com/ru-ru/library/system.uri.unescapedatastring(v=vs.110).aspx
+            // UnescapeDataString не преобразовывает "+" в пробелы
+            return System.Uri.UnescapeDataString(p.Replace("+", "%20"));
         }
 
-        private static byte ByteFromHEX(string pattern, ref int index)
-        {
-            System.Diagnostics.Debug.Assert(pattern[index] == '%');
-
-            index++;
-            int major = 0;
-            int minor = 0;
-            for (int i = 0; i < 2; i++)
-            {
-                int code = (int)pattern[index];
-                if (code >= 48 && code <= 57)
-                    code = code - 48;
-                else if (code >= 65 && code <= 70)
-                    code = code - 55;
-
-                if (i == 0)
-                {
-                    major = code;
-                    index++;
-                }
-                else
-                    minor = code;
-            }
-
-            return (byte)(major * 16 + minor);
-
-        }
-
+        /// <summary>
+        /// Параметры запроса
+        /// </summary>
         [ContextProperty("Параметры", "Params")]
         public MapImpl Params
         { get { return _params; } }
 
+        /// <summary>
+        /// Загруженные файлы
+        /// </summary>
         [ContextProperty("Файлы", "Files")]
-        public ArrayImpl Files
+        public MapImpl Files
         { get { return _files; } }
 
         [ScriptConstructor(Name="Из двоичных данных")]
