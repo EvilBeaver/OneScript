@@ -70,7 +70,7 @@ namespace oscript
                         }
                         catch
                         {
-                            Console.WriteLine("Wrong console encoding");
+                            Output.WriteLine("Wrong console encoding");
                             encoding = null;
                         }
 

@@ -55,14 +55,15 @@ namespace oscript
         private int RunCGIMode(string scriptFile)
         {
             var engine = new HostedScriptEngine();
+            engine.CustomConfig = ScriptFileHelper.CustomConfigPath(scriptFile);
             engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
 
             var request = new WebRequestContext();
             engine.InjectGlobalProperty("ВебЗапрос", request, true);
             engine.InjectGlobalProperty("WebRequest", request, true);
             engine.InjectObject(this, false);
-            engine.Initialize();
 
+            ScriptFileHelper.OnBeforeScriptRead(engine);
             var source = engine.Loader.FromFile(scriptFile);
             
             Process process;
@@ -112,7 +113,7 @@ namespace oscript
                     Header("Content-type", "text/html");
                 if (!IsHeaderWritten("Content-encoding"))
                     Header("Content-encoding", Encoding.BodyName);
-                Console.WriteLine();
+                oscript.Output.WriteLine();
 
                 _isContentEchoed = true;
             }
@@ -120,7 +121,7 @@ namespace oscript
             if (str != "")
             {
                 Output (str);
-                Console.WriteLine ();
+                oscript.Output.WriteLine();
             }
         }
 

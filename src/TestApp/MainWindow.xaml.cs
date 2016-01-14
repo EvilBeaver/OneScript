@@ -125,6 +125,7 @@ namespace TestApp
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var hostedScript = new HostedScriptEngine();
+            hostedScript.CustomConfig = CustomConfigPath(_currentDocPath);
             hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
             using (var writer = new StringWriter())
@@ -166,7 +167,7 @@ namespace TestApp
             var host = new Host(result, l_args.ToArray());
             SystemLogger.SetWriter(host);
             var hostedScript = new HostedScriptEngine();
-            hostedScript.Initialize();
+            hostedScript.CustomConfig = CustomConfigPath(_currentDocPath);
             var src = new EditedFileSource(txtCode.Text, _currentDocPath);
 
             Process process = null;
@@ -192,7 +193,20 @@ namespace TestApp
             result.AppendText("\nDuration: " + sw.Elapsed.ToString());
             
         }
-        
+
+        public static string CustomConfigPath(string scriptPath)
+        {
+            if (scriptPath == null)
+                return null;
+
+            var dir = Path.GetDirectoryName(scriptPath);
+            var cfgPath = Path.Combine(dir, HostedScriptEngine.ConfigFileName);
+            if (File.Exists(cfgPath))
+                return cfgPath;
+            else
+                return null;
+        }
+
         private static string GetFileDialogFilter()
         {
             return "Поддерживаемые файлы|*.os;*.txt|Все файлы|*.*";

@@ -30,13 +30,15 @@ namespace oscript
         {
             if (!System.IO.File.Exists(_path))
             {
-                throw new System.IO.FileNotFoundException("Script file is not found", _path);
+                Echo(String.Format("Script file is not found '{0}'", _path));
+                return 2;
             }
 
             SystemLogger.SetWriter(this);
 
             var hostedScript = new HostedScriptEngine();
-            hostedScript.Initialize();
+            hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
+            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
 
             Process process;
@@ -57,18 +59,7 @@ namespace oscript
 
         public void Echo(string text)
         {
-            if(Program.ConsoleOutputEncoding == null)
-                Console.WriteLine(text);
-            else
-            {
-                using(var stdout = Console.OpenStandardOutput())
-                {
-                    var enc = Program.ConsoleOutputEncoding;
-                    var bytes = enc.GetBytes(text);
-                    stdout.Write(bytes, 0, bytes.Length);
-                }
-                Console.WriteLine();
-            }
+            Output.WriteLine(text);
         }
 
         public void ShowExceptionInfo(Exception exc)

@@ -10,10 +10,20 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library
 {
-    [ContextClass("Соответствие", "Map")]
-    public class MapImpl : AutoContext<MapImpl>, ICollectionContext
+    [ContextClass("ФиксированноеСоответствие", "FixedMap")]
+    public class FixedMapImpl : AutoContext<FixedMapImpl>, ICollectionContext
     {
-        private Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>(new GenericIValueComparer());
+
+        private readonly MapImpl _map;
+
+        public FixedMapImpl(MapImpl source)
+        {
+            _map = new MapImpl();
+            foreach (KeyAndValueImpl KV in source)
+            {
+                _map.Insert(KV.Key, KV.Value);
+            }
+        }
 
         public override bool IsIndexed
         {
@@ -25,43 +35,28 @@ namespace ScriptEngine.HostedScript.Library
 
         public override IValue GetIndexedValue(IValue index)
         {
-            IValue result;
-            if (!_content.TryGetValue(index, out result))
-            {
-                result = ValueFactory.Create();
-                _content.Add(index, result);
-            }
+            if(_map.ContainsKey(index))
+                return _map.GetIndexedValue(index);
 
-            return result;
+            throw new RuntimeException("Значение, соответствующее ключу, не задано");
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            _content[index] = val;
+            throw new RuntimeException("Индексированное значение доступно только для чтения");
         }
 
         public override bool IsPropReadable(int propNum)
         {
-            return false;
+            return _map.IsPropReadable(propNum);
         }
 
         public override bool IsPropWritable(int propNum)
         {
-            return false;
+            return _map.IsPropWritable(propNum);
         }
         
-        internal bool ContainsKey(IValue key)
-        {
-            return _content.ContainsKey(key);
-        }
-
         #region ICollectionContext Members
-
-        [ContextMethod("Вставить", "Insert")]
-        public void Insert(IValue key, IValue val)
-        {
-            SetIndexedValue(key, val);
-        }
 
         [ContextMethod("Получить", "Get")]
         public IValue Retrieve(IValue key)
@@ -72,24 +67,12 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Количество", "Count")]
         public int Count()
         {
-            return _content.Count;
-        }
-
-        [ContextMethod("Очистить", "Clear")]
-        public void Clear()
-        {
-            _content.Clear();
-        }
-
-        [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue key)
-        {
-            _content.Remove(key);
+            return _map.Count();
         }
 
         public CollectionEnumerator GetManagedIterator()
         {
-            return new CollectionEnumerator(GetEnumerator());
+            return _map.GetManagedIterator();
         }
 
         #endregion
@@ -98,10 +81,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public IEnumerator<IValue> GetEnumerator()
         {
-            foreach (var item in _content)
-            {
-                yield return new KeyAndValueImpl(item.Key, item.Value);
-            }
+            return _map.GetEnumerator();
         }
 
         #endregion
@@ -116,9 +96,11 @@ namespace ScriptEngine.HostedScript.Library
         #endregion
 
         [ScriptConstructor]
-        public static MapImpl Constructor()
+        public static IRuntimeContextInstance Constructor(IValue source)
         {
-            return new MapImpl();
+            MapImpl RawSource = source.GetRawValue() as MapImpl;
+            return new FixedMapImpl(RawSource);
         }
     }
+
 }
