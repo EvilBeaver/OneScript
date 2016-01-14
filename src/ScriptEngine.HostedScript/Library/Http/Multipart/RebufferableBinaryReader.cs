@@ -253,12 +253,13 @@ namespace HttpMultipartParser
                 {
                     if (StreamData() == 0)
                     {
-                        return builder.ToArray();
+                        return builder.Length > 0 ? builder.ToArray() : null;
                     }
                 }
 
                 bool hitStreamEnd;
                 byte[] line = streamStack.ReadByteLine(out hitStreamEnd);
+
                 builder.Write(line, 0, line.Length);
                 if (!hitStreamEnd)
                 {
@@ -272,12 +273,12 @@ namespace HttpMultipartParser
         ///     characters will not be included in the stream
         /// </summary>
         /// <returns>
-        ///     The <see cref="string" /> containing the line.
+        ///     The <see cref="string" /> containing the line or null if end of stream.
         /// </returns>
         public string ReadLine()
         {
             byte[] data = ReadByteLine();
-            return encoding.GetString(data);
+            return data == null ? null : encoding.GetString(data);
         }
 
         #endregion

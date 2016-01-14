@@ -196,6 +196,9 @@ namespace HttpMultipartParser
         /// </param>
         public StreamingMultipartFormDataParser(Stream stream, string boundary, Encoding encoding, int binaryBufferSize)
         {
+            if(stream == null || stream == Stream.Null) { throw new ArgumentNullException("stream"); }
+            if(encoding == null) { throw new ArgumentNullException("encoding"); }
+
             this.stream = stream;
             this.boundary = boundary;
             Encoding = encoding;
@@ -253,6 +256,8 @@ namespace HttpMultipartParser
         public delegate void FileStreamDelegate(
             string name, string fileName, string contentType, string contentDisposition, byte[] buffer, int bytes);
 
+        public delegate void StreamClosedDelegate();
+
         /// <summary>
         /// The ParameterDelegate defining functions that can handle multipart parameter data
         /// </summary>
@@ -278,6 +283,11 @@ namespace HttpMultipartParser
         /// The ParameterHandler. Delegates attached to this property will recieve parameter data.
         /// </summary>
         public ParameterDelegate ParameterHandler { get; set; }
+
+        /// <summary>
+        /// The StreamClosedHandler. Delegates attached to this property will be notified when the source stream is exhausted.
+        /// </summary>
+        public StreamClosedDelegate StreamClosedHandler { get; set; }
 
         #endregion
 
@@ -412,6 +422,11 @@ namespace HttpMultipartParser
                 // the next boundary.
                 ParseSection(reader);
             }
+
+            if (StreamClosedHandler != null)
+            {
+                StreamClosedHandler();
+            }
         }
 
         /// <summary>
@@ -460,8 +475,16 @@ namespace HttpMultipartParser
                 // closest boundary and don't miss the end --'s if it's an end boundary.
                 int endBoundaryPos = SubsequenceFinder.Search(fullBuffer, endBoundaryBinary, fullLength);
                 int endBoundaryLength = endBoundaryBinary.Length;
+
                 int boundaryPos = SubsequenceFinder.Search(fullBuffer, boundaryBinary, fullLength);
                 int boundaryLength = boundaryBinary.Length;
+
+                // If the boundaryPos is exactly at the end of our full buffer then ignore it as it could
+                // actually be a endBoundary that's had the '--' chopped off by the buffer.
+                if(boundaryPos + boundaryLength == fullLength)
+                {
+                    boundaryPos = -1;
+                }
 
                 // We need to select the appropriate position and length
                 // based on the smallest non-negative position.
@@ -577,7 +600,7 @@ namespace HttpMultipartParser
             {
                 if (line == null)
                 {
-                    throw new MultipartParseException("Unexpected end of section");
+                    throw new MultipartParseException("Unexpected end of stream. Is there an end boundary?");
                 }
 
                 if (firstTime)
