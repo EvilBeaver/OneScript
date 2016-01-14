@@ -30,7 +30,8 @@ namespace oscript
         {
             if (!System.IO.File.Exists(_path))
             {
-                throw new System.IO.FileNotFoundException("Script file is not found", _path);
+                Echo(String.Format("Script file is not found '{0}'", _path));
+                return 2;
             }
 
             SystemLogger.SetWriter(this);
