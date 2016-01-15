@@ -65,6 +65,7 @@ namespace ScriptEngine.HostedScript.Library.Http.Multipart
                     IValue val = ValueFactory.Create(Decode(pair));
                     m_params.Insert(val, ValueFactory.Create());
                 }
+
                 _params = new FixedMapImpl(m_params);
                 _files = new FixedMapImpl(new MapImpl());
             }

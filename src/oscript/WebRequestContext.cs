@@ -21,7 +21,7 @@ namespace oscript
     [ContextClass ("ВебЗапрос", "WebRequest")]
     public class WebRequestContext : AutoContext<WebRequestContext>
     {
-        MapImpl _environmentVars = new MapImpl ();
+        FixedMapImpl _environmentVars;
         PostRequestData _post;
         byte[] _post_raw = null;
 
@@ -48,7 +48,6 @@ namespace oscript
             if (len == 0)
                 return;
 
-            // THINK: правильно ли хранить всегда весь запрос в памяти???
             _post_raw = new byte[len];
             using (var stdin = Console.OpenStandardInput ()) {
                 stdin.Read (_post_raw, 0, len);
@@ -66,11 +65,14 @@ namespace oscript
 
         private void FillEnvironmentVars ()
         {
+            MapImpl vars = new MapImpl();
             foreach (DictionaryEntry item in Environment.GetEnvironmentVariables()) {
-                _environmentVars.Insert (
+                vars.Insert (
                     ValueFactory.Create ((string)item.Key),
                     ValueFactory.Create ((string)item.Value));
             }
+
+            _environmentVars = new FixedMapImpl(vars);
         }
 
         private void FillGetMap (string get)
@@ -118,7 +120,7 @@ namespace oscript
         /// Переменные среды
         /// </summary>
         [ContextProperty("ENV")]
-        public IValue ENV {
+        public FixedMapImpl ENV {
             get {
                 return _environmentVars;
             }
