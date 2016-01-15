@@ -29,7 +29,6 @@ namespace ScriptEngine.HostedScript.Library
             if (!_content.TryGetValue(index, out result))
             {
                 result = ValueFactory.Create();
-                _content.Add(index, result);
             }
 
             return result;
