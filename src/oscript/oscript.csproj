@@ -72,6 +72,7 @@
     <Compile Include="AppBehavior.cs" />
     <Compile Include="BehaviorSelector.cs" />
     <Compile Include="CgiBehavior.cs" />
+    <Compile Include="CheckSyntaxBehavior.cs" />
     <Compile Include="ExecuteScriptBehavior.cs" />
     <Compile Include="MakeAppBehavior.cs" />
     <Compile Include="MeasureBehavior.cs" />
