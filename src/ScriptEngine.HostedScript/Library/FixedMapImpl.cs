@@ -61,7 +61,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Получить", "Get")]
         public IValue Retrieve(IValue key)
         {
-            return GetIndexedValue(key);
+            return _map.GetIndexedValue(key);
         }
 
         [ContextMethod("Количество", "Count")]
