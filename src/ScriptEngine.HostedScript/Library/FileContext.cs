@@ -104,10 +104,10 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ContextMethod("Размер", "Size")]
-        public int Size()
+        public long Size()
         {
             if (IsFile())
-                return (int)((FileInfo)_fsEntry).Length;
+                return (long)((FileInfo)_fsEntry).Length;
             else
                 throw new RuntimeException("Получение размера применимо только к файлам");
         }

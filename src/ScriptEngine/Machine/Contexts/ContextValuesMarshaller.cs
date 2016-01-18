@@ -97,6 +97,10 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((int)objParam);
             }
+            else if (type == typeof(long))
+            {
+                return ValueFactory.Create((long)objParam);
+            }
             else if (type == typeof(decimal))
             {
                 return ValueFactory.Create((decimal)objParam);
