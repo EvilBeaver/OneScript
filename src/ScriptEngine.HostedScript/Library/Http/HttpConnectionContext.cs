@@ -144,6 +144,41 @@ namespace ScriptEngine.HostedScript.Library.Http
             return GetResponse(request, "DELETE");
         }
 
+        /// <summary>
+        /// Изменяет данные на сервере при помощи PATCH-запроса
+        /// </summary>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
+        [ContextMethod("Изменить", "Patch")]
+        public HttpResponseContext Patch(HttpRequestContext request)
+        {
+            return GetResponse(request, "PATCH");
+        }
+
+        /// <summary>
+        /// Получает при помощи HEAD-запроса информацию о запрошиваемых данных, содержащуюся в заголовках, не получая сами данные.
+        /// </summary>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
+        [ContextMethod("ПолучитьЗаголовки", "Head")]
+        public HttpResponseContext Head(HttpRequestContext request)
+        {
+            return GetResponse(request, "HEAD");
+        }
+
+        /// <summary>
+        /// Вызвать произвольный HTTP-метод
+        /// </summary>
+        /// <param name="method">Строка. Имя метода HTTP</param>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <param name="output">Строка. Имя выходного файла</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
+        [ContextMethod("ВызватьHTTPМетод", "CallHTTPMethod")]
+        public HttpResponseContext Patch(string method, HttpRequestContext request, string output = null)
+        {
+            return GetResponse(request, method, output);
+        }
+
         private HttpWebRequest CreateRequest(string resource)
         {
             var uriBuilder = new UriBuilder(_hostUri);
