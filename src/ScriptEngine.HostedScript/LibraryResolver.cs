@@ -172,7 +172,7 @@ namespace ScriptEngine.HostedScript
                 // немного костыльно, ага ((
                 //
                 if (!PathHasInvalidChars(currentPath))
-                    realPath = Path.Combine(Path.GetDirectoryName(currentPath), libraryPath);
+                    realPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(currentPath), libraryPath));
                 else
                     realPath = libraryPath;
             }
