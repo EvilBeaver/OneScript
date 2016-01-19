@@ -13,6 +13,7 @@ using System.Windows.Input;
 using ScriptEngine.HostedScript;
 using System.Collections.Generic;
 using ScriptEngine;
+using ScriptEngine.Environment;
 
 
 namespace TestApp
@@ -168,6 +169,8 @@ namespace TestApp
             SystemLogger.SetWriter(host);
             var hostedScript = new HostedScriptEngine();
             hostedScript.CustomConfig = CustomConfigPath(_currentDocPath);
+            SetEncodingFromConfig(hostedScript);
+
             var src = new EditedFileSource(txtCode.Text, _currentDocPath);
 
             Process process = null;
@@ -233,7 +236,11 @@ namespace TestApp
             dlg.Multiselect = false;
             if (dlg.ShowDialog() == true)
             {
-                using (var fs = ScriptEngine.Environment.FileOpener.OpenReader(dlg.FileName))
+                var hostedScript = new HostedScriptEngine();
+                hostedScript.CustomConfig = CustomConfigPath(dlg.FileName);
+                SetEncodingFromConfig(hostedScript);
+
+                using (var fs = FileOpener.OpenReader(dlg.FileName))
                 {
                     txtCode.Text = fs.ReadToEnd();
                     _currentDocPath = dlg.FileName;
@@ -245,6 +252,17 @@ namespace TestApp
         private void Save_Execute(object sender, ExecutedRoutedEventArgs e)
         {
             SaveFile();
+        }
+
+        private void SetEncodingFromConfig(HostedScriptEngine engine)
+        {
+            var cfg = engine.GetWorkingConfig();
+
+            string openerEncoding = cfg["encoding.script"];
+            if (!String.IsNullOrWhiteSpace(openerEncoding) && StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") != 0)
+            {
+                FileOpener.DefaultEncoding = Encoding.GetEncoding(openerEncoding);
+            }
         }
 
         private bool SaveFile()
