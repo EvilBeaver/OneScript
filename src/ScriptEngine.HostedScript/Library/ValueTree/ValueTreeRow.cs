@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Строка дерева значений.
     /// </summary>
     [ContextClass("СтрокаДереваЗначений", "ValueTreeRow")]
-    class ValueTreeRow : DynamicPropertiesAccessor, ICollectionContext
+    public class ValueTreeRow : DynamicPropertiesAccessor, ICollectionContext
     {
         private Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private ValueTreeRow _parent;

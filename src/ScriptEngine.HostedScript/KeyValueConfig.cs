@@ -1,4 +1,11 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,12 +13,25 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript
 {
-    class KeyValueConfig
+    public class KeyValueConfig
     {
-        private Dictionary<string, string> _values = new Dictionary<string, string>();
+        private Dictionary<string, string> _values = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
-        private KeyValueConfig()
+        public KeyValueConfig()
         { 
+        }
+
+        public KeyValueConfig(Dictionary<string, string> source)
+        {
+            Merge(source);
+        }
+
+        public void Merge(Dictionary<string, string> source)
+        {
+            foreach (var keyValue in source)
+            {
+                this[keyValue.Key] = keyValue.Value;
+            }
         }
 
         public string this[string key]
@@ -19,7 +39,7 @@ namespace ScriptEngine.HostedScript
             get
             {
                 if (String.IsNullOrWhiteSpace(key))
-                    throw new ArgumentException("wrong config key format");
+                    throw BadKeyException(key);
 
                 string value = null;
                 _values.TryGetValue(key, out value);
@@ -27,36 +47,19 @@ namespace ScriptEngine.HostedScript
                 return value;
 
             }
-        }
-
-        public static KeyValueConfig Read(StreamReader reader)
-        {
-            var conf = new KeyValueConfig();
-            while (!reader.EndOfStream)
+            private set
             {
-                var line = reader.ReadLine();
-                if (String.IsNullOrWhiteSpace(line) || line[0] == '#')
-                    continue;
+                if (String.IsNullOrWhiteSpace(key))
+                    throw BadKeyException(key);
 
-                var keyValue = line.Split(new[] { '=' }, 2);
-                if (keyValue.Length != 2)
-                    continue;
-
-                conf._values[keyValue[0].Trim()] = keyValue[1].Trim();
+                _values[key] = value;
             }
-
-            return conf;
         }
-        
-        public static KeyValueConfig Read(string configPath)
+
+        private static ArgumentException BadKeyException(string key)
         {
-            KeyValueConfig conf;
-            using(var reader = new StreamReader(configPath, true))
-            {
-                conf = Read(reader);
-            }
-
-            return conf;
+            return new ArgumentException(String.Format("wrong config key format: {0}", key));
         }
+
     }
 }

@@ -12,6 +12,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using ScriptEngine.HostedScript;
 using System.Collections.Generic;
+using ScriptEngine;
+using ScriptEngine.Environment;
 
 
 namespace TestApp
@@ -124,6 +126,7 @@ namespace TestApp
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var hostedScript = new HostedScriptEngine();
+            hostedScript.CustomConfig = CustomConfigPath(_currentDocPath);
             hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
             using (var writer = new StringWriter())
@@ -163,9 +166,11 @@ namespace TestApp
             }
 
             var host = new Host(result, l_args.ToArray());
-
+            SystemLogger.SetWriter(host);
             var hostedScript = new HostedScriptEngine();
-            hostedScript.Initialize();
+            hostedScript.CustomConfig = CustomConfigPath(_currentDocPath);
+            SetEncodingFromConfig(hostedScript);
+
             var src = new EditedFileSource(txtCode.Text, _currentDocPath);
 
             Process process = null;
@@ -191,7 +196,20 @@ namespace TestApp
             result.AppendText("\nDuration: " + sw.Elapsed.ToString());
             
         }
-        
+
+        public static string CustomConfigPath(string scriptPath)
+        {
+            if (scriptPath == null)
+                return null;
+
+            var dir = Path.GetDirectoryName(scriptPath);
+            var cfgPath = Path.Combine(dir, HostedScriptEngine.ConfigFileName);
+            if (File.Exists(cfgPath))
+                return cfgPath;
+            else
+                return null;
+        }
+
         private static string GetFileDialogFilter()
         {
             return "Поддерживаемые файлы|*.os;*.txt|Все файлы|*.*";
@@ -218,7 +236,11 @@ namespace TestApp
             dlg.Multiselect = false;
             if (dlg.ShowDialog() == true)
             {
-                using (var fs = ScriptEngine.Environment.FileOpener.OpenReader(dlg.FileName))
+                var hostedScript = new HostedScriptEngine();
+                hostedScript.CustomConfig = CustomConfigPath(dlg.FileName);
+                SetEncodingFromConfig(hostedScript);
+
+                using (var fs = FileOpener.OpenReader(dlg.FileName))
                 {
                     txtCode.Text = fs.ReadToEnd();
                     _currentDocPath = dlg.FileName;
@@ -230,6 +252,17 @@ namespace TestApp
         private void Save_Execute(object sender, ExecutedRoutedEventArgs e)
         {
             SaveFile();
+        }
+
+        private void SetEncodingFromConfig(HostedScriptEngine engine)
+        {
+            var cfg = engine.GetWorkingConfig();
+
+            string openerEncoding = cfg["encoding.script"];
+            if (!String.IsNullOrWhiteSpace(openerEncoding) && StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") != 0)
+            {
+                FileOpener.DefaultEncoding = Encoding.GetEncoding(openerEncoding);
+            }
         }
 
         private bool SaveFile()
@@ -356,7 +389,7 @@ namespace TestApp
         }
     }
 
-    class Host : IHostApplication
+    class Host : IHostApplication, ISystemLogWriter
     {
         private TextBox _output;
         private string[] _arguments;
@@ -396,5 +429,10 @@ namespace TestApp
         }
 
         #endregion
+
+        public void Write(string text)
+        {
+            Echo(text);
+        }
     }
 }

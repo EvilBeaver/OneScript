@@ -324,6 +324,11 @@ namespace ScriptEngine.Machine.Contexts
             _instance.SetPropValue(propNum, newVal);
         }
 
+        public IEnumerable<MethodInfo> GetMethods()
+        {
+            return _instance.GetMethods();
+        }
+
         public int FindMethod(string name)
         {
             return _instance.FindMethod(name);

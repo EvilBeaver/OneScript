@@ -44,12 +44,12 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        protected override int GetMethodCount()
+        protected override int GetOwnMethodCount()
         {
             return 0;
         }
 
-        protected override int GetVariableCount()
+        protected override int GetOwnVariableCount()
         {
             if (_ownProperties == null)
                 return 0;

@@ -117,11 +117,11 @@ namespace ScriptEngine.HostedScript
         [ContextMethod("ЗагрузитьБиблиотеку", "LoadLibrary")]
         public void LoadLibrary(string dllPath)
         {
-            var assembly = System.Reflection.Assembly.LoadFile(dllPath);
+            var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
             _engine.AttachAssembly(assembly, _env);
         }
 
-        protected override int GetVariableCount()
+        protected override int GetOwnVariableCount()
         {
             return 1;
         }
@@ -149,7 +149,7 @@ namespace ScriptEngine.HostedScript
                 throw new ArgumentException(String.Format("Неверный индекс свойства {0}", index), "index");
         }
 
-        protected override int GetMethodCount()
+        protected override int GetOwnMethodCount()
         {
             return _methods.Count;
         }

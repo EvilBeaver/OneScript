@@ -19,6 +19,7 @@ namespace ScriptEngine.HostedScript
         SystemGlobalContext _globalCtx;
         RuntimeEnvironment _env;
         bool _isInitialized;
+        bool _configInitialized;
 
         public HostedScriptEngine()
         {
@@ -31,8 +32,6 @@ namespace ScriptEngine.HostedScript
 
             _env.InjectObject(_globalCtx, false);
             _engine.Environment = _env;
-            
-            InitLibrariesByDefault();
 
         }
 
@@ -49,6 +48,28 @@ namespace ScriptEngine.HostedScript
             }
         }
 
+        public static string ConfigFileName
+        {
+            get
+            {
+                return EngineConfigProvider.CONFIG_FILE_NAME;
+            }
+        }
+
+        public KeyValueConfig GetWorkingConfig()
+        {
+            var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
+            if (!_configInitialized)
+            {
+                cfgAccessor.Provider = new EngineConfigProvider(CustomConfig);
+                cfgAccessor.Refresh();
+                _configInitialized = true;
+            }
+            return cfgAccessor.GetConfig();
+        }
+
+        public string CustomConfig { get; set; }
+
         public void Initialize()
         {
             if (!_isInitialized)
@@ -59,12 +80,14 @@ namespace ScriptEngine.HostedScript
             }
         }
 
-        private void InitLibrariesByDefault()
+        private void InitLibraries(KeyValueConfig config)
         {
-            var configFile = ConfigFilePath();
-            if(configFile != null)
+            if (_engine.DirectiveResolver != null)
+                return;
+
+            if(config != null)
             {
-                InitLibrariesFromConfig(configFile);
+                InitLibrariesFromConfig(config);
             }
             else
             {
@@ -72,38 +95,17 @@ namespace ScriptEngine.HostedScript
             }
         }
 
-        public static string ConfigFilePath()
+        private static string ConfigFilePath()
         {
-            string asmLocation;
-            asmLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            if(String.IsNullOrEmpty(asmLocation))
-                asmLocation = System.Reflection.Assembly.GetEntryAssembly().Location;
-
-            var assemblyPath = System.IO.Path.GetDirectoryName(asmLocation);
-            var configFile = System.IO.Path.Combine(assemblyPath, "oscript.cfg");
-            if (System.IO.File.Exists(configFile))
-                return configFile;
-            else
-                return null;
+            return EngineConfigProvider.DefaultConfigFilePath();
         }
 
-        private void InitLibrariesFromConfig(string configFile)
+        private void InitLibrariesFromConfig(KeyValueConfig config)
         {
-            const string SYSTEM_LIB_KEY = "lib.system";
-            const string ADDITIONAL_LIB_KEY = "lib.additional";
-
-            var config = KeyValueConfig.Read(configFile);
-
-            string sysDir = config[SYSTEM_LIB_KEY];
-            if(sysDir != null && !System.IO.Path.IsPathRooted(sysDir))
-            {
-                var confDir = System.IO.Path.GetDirectoryName(configFile);
-                sysDir = System.IO.Path.GetFullPath(
-                    System.IO.Path.Combine(confDir, sysDir));
-            }
-
-            string additionalDirsList = config[ADDITIONAL_LIB_KEY];
+            string sysDir = config[EngineConfigProvider.SYSTEM_LIB_KEY];
+            string additionalDirsList = config[EngineConfigProvider.ADDITIONAL_LIB_KEY];
             string[] addDirs = null;
+            
             if(additionalDirsList != null)
             {
                 addDirs = additionalDirsList.Split(';');
@@ -138,6 +140,8 @@ namespace ScriptEngine.HostedScript
 
         public CompilerService GetCompilerService()
         {
+            InitLibraries(GetWorkingConfig());
+
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
             return compilerSvc;
@@ -151,15 +155,16 @@ namespace ScriptEngine.HostedScript
         public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
         {
             SetGlobalEnvironment(host, src);
+            Initialize();
             var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
-            return InitProcess(host, src, ref module);
+            return InitProcess(host, ref module);
         }
 
         public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle, ICodeSource src)
         {
             SetGlobalEnvironment(host, src);
             var module = _engine.LoadModuleImage(moduleHandle);
-            return InitProcess(host, src, ref module);
+            return InitProcess(host, ref module);
         }
 
         private void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
@@ -169,7 +174,7 @@ namespace ScriptEngine.HostedScript
             _globalCtx.InitInstance();
         }
 
-        private Process InitProcess(IHostApplication host, ICodeSource src, ref LoadedModuleHandle module)
+        private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
         {
             Initialize();
             var process = new Process(host, module, _engine);

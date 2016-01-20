@@ -14,6 +14,7 @@ namespace ScriptEngine.Environment
 {
     public static class FileOpener
     {
+        public static Encoding DefaultEncoding { get; set; }
 
         public static StreamReader OpenReader(string filename)
         {
@@ -33,7 +34,8 @@ namespace ScriptEngine.Environment
 
         public static StreamWriter OpenWriter(string filename)
         {
-            return new StreamWriter(filename, false, Encoding.UTF8);
+            var utf8BOMEncoding = new UTF8Encoding(true);
+            return new StreamWriter(filename, false, utf8BOMEncoding);
         }
 
         public static StreamWriter OpenWriter(string filename, Encoding encoding)
@@ -50,7 +52,7 @@ namespace ScriptEngine.Environment
         {
             Encoding enc;
             // *** Use Default of Encoding.Default (Ansi CodePage)
-            enc = Encoding.Default;
+            enc = DefaultEncoding == null ? Encoding.Default : DefaultEncoding;
 
             // *** Detect byte order mark if any - otherwise assume default
             byte[] buffer = new byte[5];
@@ -58,14 +60,19 @@ namespace ScriptEngine.Environment
             inputStream.Read(buffer, 0, 5);
             inputStream.Position = 0;
 
-            if (buffer[0] == 0xef && buffer[1] == 0xbb && buffer[2] == 0xbf)
+            if (buffer [0] == 0xef && buffer [1] == 0xbb && buffer [2] == 0xbf)
                 enc = Encoding.UTF8;
-            else if (buffer[0] == 0xfe && buffer[1] == 0xff)
+            else if (buffer [0] == 0xfe && buffer [1] == 0xff)
                 enc = Encoding.Unicode;
-            else if (buffer[0] == 0 && buffer[1] == 0 && buffer[2] == 0xfe && buffer[3] == 0xff)
+            else if (buffer [0] == 0 && buffer [1] == 0 && buffer [2] == 0xfe && buffer [3] == 0xff)
                 enc = Encoding.UTF32;
-            else if (buffer[0] == 0x2b && buffer[1] == 0x2f && buffer[2] == 0x76)
+            else if (buffer [0] == 0x2b && buffer [1] == 0x2f && buffer [2] == 0x76)
                 enc = Encoding.UTF7;
+            else if (buffer [0] == '#' && buffer [1] == '!') 
+            {
+                /* Если в начале файла присутствует shebang, считаем, что файл в UTF-8*/
+                enc = Encoding.UTF8;
+            }
 
             return enc;
         }

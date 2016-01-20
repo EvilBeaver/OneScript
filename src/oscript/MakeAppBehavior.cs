@@ -28,7 +28,7 @@ namespace oscript
 
         public override int Execute()
         {
-            Console.WriteLine("Make started...");
+            Output.WriteLine("Make started...");
             using (var exeStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("oscript.StandaloneRunner.exe"))
             using (var output = new FileStream(_exePath, FileMode.Create))
             {
@@ -37,7 +37,9 @@ namespace oscript
                 int offset = (int)output.Length;
 
                 var engine = new HostedScriptEngine();
+                engine.CustomConfig = ScriptFileHelper.CustomConfigPath(_codePath);
                 engine.Initialize();
+                ScriptFileHelper.OnBeforeScriptRead(engine);
                 var source = engine.Loader.FromFile(_codePath);
                 var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 var persistor = new ScriptEngine.Compiler.ModulePersistor(formatter);
@@ -54,7 +56,7 @@ namespace oscript
                     bw.Write(offset);
                 }
             }
-            Console.WriteLine("Make completed");
+            Output.WriteLine("Make completed");
             return 0;
         }
     }

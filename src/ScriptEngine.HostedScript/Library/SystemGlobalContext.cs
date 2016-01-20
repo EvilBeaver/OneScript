@@ -127,7 +127,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
         public void AttachAddIn(string dllPath)
         {
-            var assembly = System.Reflection.Assembly.LoadFile(dllPath);
+            var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
             EngineInstance.AttachAssembly(assembly);
         }
 
@@ -206,6 +206,23 @@ namespace ScriptEngine.HostedScript.Library
             {
                 disposable.Dispose();
             }
+        }
+
+        /// <summary>
+        /// OneScript не выполняет подсчет ссылок на объекты, а полагается на сборщик мусора CLR.
+        /// Это значит, что объекты автоматически не освобождаются при выходе из области видимости.
+        /// 
+        /// С помощью данного метода можно запустить принудительную сборку мусора среды CLR.
+        /// Данные метод следует использовать обдуманно, поскольку вызов данного метода не гарантирует освобождение всех объектов.
+        /// Локальные переменные, например, до завершения текущего метода очищены не будут,
+        /// поскольку до завершения текущего метода CLR будет видеть, что они используются движком 1Script.
+        /// 
+        /// </summary>
+        [ContextMethod("ВыполнитьСборкуМусора", "RunGarbageCollection")]
+        public void RunGarbageCollection()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         /// <summary>

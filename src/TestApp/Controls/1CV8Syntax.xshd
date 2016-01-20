@@ -95,7 +95,7 @@
       <Word>EndIf</Word>
       <Word>For</Word>
       <Word>Each</Word>
-      <Word>From</Word>
+      <Word>In</Word>
       <Word>To</Word>
       <Word>While</Word>
       <Word>Do</Word>
@@ -104,7 +104,7 @@
       <Word>Continue</Word>
       <Word>Break</Word>
       <Word>Try</Word>
-      <Word>Exception</Word>
+      <Word>Except</Word>
       <Word>Raise</Word>
       <Word>EndTry</Word>
       <Word>Procedure</Word>
