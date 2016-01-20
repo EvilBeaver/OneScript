@@ -29,7 +29,7 @@ namespace oscript
             {
                 compiler.CreateModule(source);
             }
-            catch (Exception e)
+            catch (ScriptException e)
             {
                 Output.WriteLine(e.Message);
                 return 1;
