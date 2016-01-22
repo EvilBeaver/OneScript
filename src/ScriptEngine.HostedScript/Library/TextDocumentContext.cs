@@ -298,7 +298,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             StreamReader reader;
             if (encoding == null)
-                reader = ScriptEngine.Environment.FileOpener.OpenReader(path);
+                reader = ScriptEngine.Environment.FileOpener.OpenReader(path, Encoding.UTF8);
             else
                 reader = ScriptEngine.Environment.FileOpener.OpenReader(path, TextEncodingEnum.GetEncoding(encoding));
 
@@ -309,7 +309,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             StreamWriter writer;
             if (encoding == null)
-                writer = ScriptEngine.Environment.FileOpener.OpenWriter(path);
+                writer = ScriptEngine.Environment.FileOpener.OpenWriter(path, new UTF8Encoding(true));
             else
                 writer = ScriptEngine.Environment.FileOpener.OpenWriter(path, TextEncodingEnum.GetEncoding(encoding));
 

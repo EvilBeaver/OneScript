@@ -22,7 +22,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (encoding == null)
             {
-                _reader = Environment.FileOpener.OpenReader(path);
+                _reader = Environment.FileOpener.OpenReader(path, Encoding.UTF8);
             }
             else
             {
