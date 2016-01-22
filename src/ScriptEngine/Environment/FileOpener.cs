@@ -50,9 +50,16 @@ namespace ScriptEngine.Environment
 
         public static Encoding AssumeEncoding(Stream inputStream)
         {
-            Encoding enc;
             // *** Use Default of Encoding.Default (Ansi CodePage)
-            enc = DefaultEncoding == null ? Encoding.Default : DefaultEncoding;
+            var enc = DefaultEncoding == null ? Encoding.UTF8 : DefaultEncoding;
+
+            return AssumeEncoding(inputStream, enc);
+
+        }
+
+        public static Encoding AssumeEncoding(Stream inputStream, Encoding fallbackEncoding)
+        {
+            var enc = fallbackEncoding;
 
             // *** Detect byte order mark if any - otherwise assume default
             byte[] buffer = new byte[5];
