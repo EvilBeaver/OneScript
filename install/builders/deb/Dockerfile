@@ -1,51 +1,24 @@
 FROM ubuntu:latest
 
 
-MAINTAINER alustin@silverbulleters.org
+MAINTAINER sergey.batanov@dmpas.ru 
+
+# Add mono repository
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
+		echo "deb http://download.mono-project.com/repo/debian wheezy main" > /etc/apt/sources.list.d/mono-xamarin.list
 
 RUN apt-get update && apt-get install -y \
+# mono build tools
+		mono-xbuild \
+# deb-package tools
         dpkg\
         debconf\
         debhelper\
         lintian\
-        unzip\
         md5deep\
         fakeroot
 
-RUN mkdir ~/oscript-deb-core
+RUN mkdir /workspace && mkdir ~/oscript-deb-core
+ADD ./build.sh /workspace/ 
+ENTRYPOINT /workspace/build.sh 
 
-RUN mkdir -p ~/oscript-deb-core/DEBIAN
-RUN mkdir -p ~/oscript-deb-core/usr/bin
-RUN mkdir -p ~/oscript-deb-core/usr/lib/oscript
-
-RUN mkdir -p /workspace
-
-ADD ./*.zip /workspace/
-
-ADD ./settings /settings
-
-RUN ls -a /settings
-
-RUN cp /settings/control ~/oscript-deb-core/DEBIAN/
-RUN cp /settings/dirs ~/oscript-deb-core/DEBIAN/
-
-RUN unzip -o -u /workspace/*.zip -d ~/oscript-deb-core/usr/lib/oscript
-
-RUN ln -s ~/oscript-deb-core/usr/lib/oscript/oscript.exe ~/oscript-deb-core/usr/bin/oscript.exe
-
-RUN chmod +x ~/oscript-deb-core/usr/lib/oscript/oscript.exe
-
-RUN md5deep -r ~/oscript-deb-core/usr/ > ~/oscript-deb-core/DEBIAN/md5sums
-
-RUN cat ~/oscript-deb-core/DEBIAN/md5sums
-
-
-RUN cd ~/
-
-RUN ls -a ~/oscript-deb-core/DEBIAN
-
-RUN fakeroot dpkg-deb --build ~/oscript-deb-core
-
-RUN ls ~/
-
-RUN cp ~/oscript-deb-core.deb /workspace/
