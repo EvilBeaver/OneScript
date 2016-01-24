@@ -2,29 +2,31 @@
 
 # TODO: $1
 SRCPATH=/media/
-DEBBUILDPATH=${SRCPATH}src/oscript/bin/
+BINPATH=${SRCPATH}src/oscript/bin/Release/
+DEBBUILDROOT=${SRCPATH}src/oscript/bin/
 
-mkdir ${DEBBUILDPATH}oscript-deb-core 
-mkdir -p ${DEBBUILDPATH}oscript-deb-core/DEBIAN
-mkdir -p ${DEBBUILDPATH}oscript-deb-core/usr/bin
-mkdir -p ${DEBBUILDPATH}oscript-deb-core/usr/lib/oscript
+# Хитрый способ вычленения версии ОдноСкрипта
+VERSION=$(mono ${BINPATH}oscript.exe | head -1 | grep -oE '([[:digit:]]+\.){3,3}[[:digit:]]+')
+PAKNAME=onescript-engine_${VERSION}
 
-xbuild /p:Configuration=Release /p:Platform="Any CPU" /target:Clean ${SRCPATH}src/1Script_Mono.sln
-xbuild /p:Configuration=Release /p:Platform="Any CPU" ${SRCPATH}src/1Script_Mono.sln
 
-cp ${SRCPATH}install/builders/deb/settings/* ${DEBBUILDPATH}oscript-deb-core/DEBIAN/
+mkdir ${DEBBUILDROOT}${PAKNAME} 
+mkdir -p ${DEBBUILDROOT}${PAKNAME}/DEBIAN
+mkdir -p ${DEBBUILDROOT}${PAKNAME}/usr/bin
+mkdir -p ${DEBBUILDROOT}${PAKNAME}/usr/lib/oscript
 
-cp ${SRCPATH}src/oscript/bin/Release/*.exe ${DEBBUILDPATH}oscript-deb-core/usr/bin 
-cp ${SRCPATH}src/oscript/bin/Release/*.dll ${DEBBUILDPATH}oscript-deb-core/usr/bin
+cp ${SRCPATH}install/builders/deb/settings/* ${DEBBUILDROOT}${PAKNAME}/DEBIAN/
+cp ${BINPATH}*.exe ${DEBBUILDROOT}${PAKNAME}/usr/bin 
+cp ${BINPATH}*.dll ${DEBBUILDROOT}${PAKNAME}/usr/bin
 
-fakeroot dpkg-deb --build ${DEBBUILDPATH}oscript-deb-core
+fakeroot dpkg-deb --build ${DEBBUILDROOT}${PAKNAME}
 
-# 755 -> 777 чтобы удалять файлы из-вне контейнера
-chmod -R 777 ${DEBBUILDPATH}
+rm -rf ${DEBBUILDROOT}${PAKNAME}
+chmod 777 ${DEBBUILDROOT}${PAKNAME}.deb
 
 # проверим установку
 
-dpkg --install ${DEBBUILDPATH}oscript-deb-core.deb && \
+dpkg --install ${DEBBUILDROOT}${PAKNAME}.deb && \
 # вывод версии
 	mono /usr/bin/oscript.exe | head -1
 

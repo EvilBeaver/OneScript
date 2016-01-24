@@ -7,10 +7,12 @@ MAINTAINER sergey.batanov@dmpas.ru
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
 		echo "deb http://download.mono-project.com/repo/debian wheezy main" > /etc/apt/sources.list.d/mono-xamarin.list
 
-RUN apt-get update && apt-get install -y \
-# mono build tools
-		mono-xbuild \
-		mono-devel \
+RUN apt-get update
+RUN apt-get install -y \
+# TODO: брать зависимости из DEBIAN/control
+		mono-runtime \
+		libmono-system-core4.0-cil \
+		libmono-system4.0-cil \
 # deb-package tools
         dpkg\
         debconf\
