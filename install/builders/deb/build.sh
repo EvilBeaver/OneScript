@@ -9,6 +9,7 @@ mkdir -p ${DEBBUILDPATH}oscript-deb-core/DEBIAN
 mkdir -p ${DEBBUILDPATH}oscript-deb-core/usr/bin
 mkdir -p ${DEBBUILDPATH}oscript-deb-core/usr/lib/oscript
 
+xbuild /p:Configuration=Release /p:Platform="Any CPU" /target:Clean ${SRCPATH}src/1Script_Mono.sln
 xbuild /p:Configuration=Release /p:Platform="Any CPU" ${SRCPATH}src/1Script_Mono.sln
 
 cp ${SRCPATH}install/builders/deb/settings/* ${DEBBUILDPATH}oscript-deb-core/DEBIAN/
@@ -18,11 +19,14 @@ cp ${SRCPATH}src/oscript/bin/Release/*.dll ${DEBBUILDPATH}oscript-deb-core/usr/b
 
 fakeroot dpkg-deb --build ${DEBBUILDPATH}oscript-deb-core
 
-# check install
+# 755 -> 777 чтобы удалять файлы из-вне контейнера
+chmod -R 777 ${DEBBUILDPATH}
+
+# проверим установку
 
 dpkg --install ${DEBBUILDPATH}oscript-deb-core.deb && \
-# output version
+# вывод версии
 	mono /usr/bin/oscript.exe | head -1
 
-# run tests
+# запуск тестов
 

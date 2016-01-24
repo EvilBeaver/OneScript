@@ -10,6 +10,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E03280
 RUN apt-get update && apt-get install -y \
 # mono build tools
 		mono-xbuild \
+		mono-devel \
 # deb-package tools
         dpkg\
         debconf\

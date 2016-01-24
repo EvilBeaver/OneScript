@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm -rf ../src/oscript/bin/
+
 SRCPATH=/media
 
 docker build -t onescript:deb ${PWD}/builders/deb/
