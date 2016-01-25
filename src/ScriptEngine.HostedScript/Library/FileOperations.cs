@@ -96,10 +96,16 @@ namespace ScriptEngine.HostedScript.Library
             }
 
             System.IO.SearchOption mode = recursive ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
-            var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
-                .Select<string, IValue>((x) => new FileContext(x));
-
-            return new ArrayImpl(entries);
+            try
+            {
+                var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
+                        .Select<string, IValue>((x) => new FileContext(x));
+                return new ArrayImpl(entries);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new ArrayImpl();
+            }
 
         }
 
