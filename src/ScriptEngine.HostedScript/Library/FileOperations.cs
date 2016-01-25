@@ -229,14 +229,17 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="path1">Первая часть пути</param>
         /// <param name="path2">Вторая часть пути</param>
         /// <param name="path3">Третья часть пути (необязательно)</param>
+        /// <param name="path4">Четвертая часть пути (необязательно)</param>
         /// <returns>Объединенный путь.</returns>
         [ContextMethod("ОбъединитьПути", "CombinePath")]
-        public string CombinePath(string path1, string path2, string path3 = null)
+        public string CombinePath(string path1, string path2, string path3 = null, string path4 = null)
         {
             if (path3 == null)
                 return Path.Combine(path1, path2);
-            else
+            else if (path4 == null)
                 return Path.Combine(path1, path2, path3);
+            else
+                return Path.Combine(path1, path2, path3, path4);
         }
 
         public static IAttachableContext CreateInstance()
