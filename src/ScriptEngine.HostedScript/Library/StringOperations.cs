@@ -26,6 +26,21 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
+        /// Функция НСтр имеет ограниченную поддержку и может использоваться только для упрощения портирования кода из 1С.
+        /// Возвращает только строку на первом языке из списка. Код языка во втором параметре игнорируется.
+        /// </summary>
+        /// <param name="src">Строка на нескольких языках (использован будет только первый)</param>
+        /// <param name="lang">Код языка (игнорируется)</param>
+        [ContextMethod("НСтр", "NStr")]
+        public string NStr(string src, string lang = null)
+        {
+            var parser = new FormatParametersList(src);
+            var str = parser.EnumerateValues().FirstOrDefault();
+
+            return str == null ? String.Empty : str;
+        }
+
+        /// <summary>
         /// Определяет, что строка начинается с указанной подстроки.
         /// </summary>
         /// <param name="inputString">Строка, начало которой проверяется на совпадение с подстрокой поиска.</param>
