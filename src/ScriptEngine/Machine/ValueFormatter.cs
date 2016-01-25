@@ -320,7 +320,12 @@ namespace ScriptEngine.Machine
             if (p == 0)
             {
                 if (formatParameters.HasParam(NUM_ZERO_APPEARANCE, out param))
-                    return param;
+                {
+                    if (param == "")
+                        return "0";
+                    else
+                        return param;
+                }
                 else
                     return "";
             }
