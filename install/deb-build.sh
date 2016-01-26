@@ -7,6 +7,5 @@ mono ${BINPATH}oscript.exe | head -1 | \
 		> ${BINPATH}VERSION
 
 docker build -t onescript:deb ${PWD}/builders/deb/
-docker run -v ${PWD}/..:${SRCPATH} --name onescript_deb onescript:deb ${SRCPATH}
-docker rm onescript_deb
+docker run --rm -v ${PWD}/..:${SRCPATH} onescript:deb ${SRCPATH}
 

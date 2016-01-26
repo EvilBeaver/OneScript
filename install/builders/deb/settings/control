@@ -4,7 +4,7 @@ Provides: onescript
 Maintainer: Sergey Batanov <sergey.batanov@dmpas.ru> 
 Architecture: all
 Section: interpreters
-Description: 1Script execution endgine.
+Description: 1Script execution engine.
  Cross-platform execution engine.
  for junior DevOps.
  who use 1S:Enterprise Platform.
