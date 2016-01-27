@@ -199,7 +199,7 @@ namespace TestApp
 
         public static string CustomConfigPath(string scriptPath)
         {
-            if (scriptPath == null)
+            if (scriptPath == null || !File.Exists(scriptPath))
                 return null;
 
             var dir = Path.GetDirectoryName(scriptPath);
