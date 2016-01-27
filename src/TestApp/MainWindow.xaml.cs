@@ -180,7 +180,7 @@ namespace TestApp
             }
             catch (Exception exc)
             {
-                result.Text = exc.Message;
+                host.Echo(exc.Message);
                 return;
             }
 
@@ -414,7 +414,7 @@ namespace TestApp
 
         public void ShowExceptionInfo(Exception exc)
         {
-            _output.Text = exc.Message;
+            Echo(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)
