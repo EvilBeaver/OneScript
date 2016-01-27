@@ -15,5 +15,7 @@ namespace ScriptEngine.Environment
     {
         ICodeSource FromFile(string path);
         ICodeSource FromString(string code);
+
+        Encoding ReaderEncoding { get; set; }
     }
 }

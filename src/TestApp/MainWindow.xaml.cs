@@ -261,7 +261,7 @@ namespace TestApp
             string openerEncoding = cfg["encoding.script"];
             if (!String.IsNullOrWhiteSpace(openerEncoding) && StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") != 0)
             {
-                FileOpener.DefaultEncoding = Encoding.GetEncoding(openerEncoding);
+                engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
             }
         }
 
