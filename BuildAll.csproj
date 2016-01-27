@@ -138,7 +138,20 @@
   <Target Name="CreateInstall">
 
     <Exec Command="$(InstallerStandartPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot;" />
-    
+	
+  </Target>
+  
+  <Target Name="CreateSignedInstall" DependsOnTargets="CreateInstall">
+	<ItemGroup>
+		<FileToSign Include="$(DistPath)\*.exe" />
+	</ItemGroup>
+	
+	<PropertyGroup>
+		<CertPass>"$(CertPassword)"</CertPass>
+		<CertFile>"$(CertPath)"</CertFile>
+	</PropertyGroup>
+	<Exec Command="&quot;$(SignTool)&quot; sign /f $(CertFile) /p $(CertPass) &quot;@(FileToSign)&quot;"/>
+	
   </Target>
 
   <Target Name="CreateMSI">
