@@ -119,8 +119,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (mask == null)
             {
-                var file = new FileContext(path);
-                if (file.IsDirectory())
+                if (Directory.Exists(path))
                 {
                     System.IO.Directory.Delete(path, true);
                 }
