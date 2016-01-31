@@ -31,9 +31,12 @@ namespace oscript
             var cfg = engine.GetWorkingConfig();
 
             string openerEncoding = cfg["encoding.script"];
-            if(!String.IsNullOrWhiteSpace(openerEncoding) && StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") != 0)
+            if(!String.IsNullOrWhiteSpace(openerEncoding))
             {
-                engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding); 
+                if (StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") == 0)
+                    engine.Loader.ReaderEncoding = FileOpener.SystemSpecificEncoding();
+                else
+                    engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding); 
             }
         }
     }
