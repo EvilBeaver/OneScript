@@ -42,8 +42,13 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return LazyField(ref _name, System.IO.Path.GetFileName);
+                return LazyField(ref _name, GetFileNameV8Compatible);
             }
+        }
+
+        private string GetFileNameV8Compatible(string arg)
+        {
+            return System.IO.Path.GetFileName(arg.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar));
         }
 
         [ContextProperty("ИмяБезРасширения", "BaseName")]
