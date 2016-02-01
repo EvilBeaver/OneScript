@@ -85,14 +85,26 @@ namespace ScriptEngine.HostedScript.Library
             if (mask == null)
             {
                 recursive = false;
-                if (System.Environment.OSVersion.Platform == PlatformID.Unix)
+                if (File.Exists(dir))
                 {
-                    mask = "*";
+                    mask = Path.GetFileName(dir);
+                    dir = Path.GetDirectoryName(dir);
                 }
                 else
                 {
-                    mask = "*.*";
+                    if (System.Environment.OSVersion.Platform == PlatformID.Unix)
+                    {
+                        mask = "*";
+                    }
+                    else
+                    {
+                        mask = "*.*";
+                    }
                 }
+            }
+            else if (File.Exists(dir))
+            {
+                return new ArrayImpl();
             }
 
             System.IO.SearchOption mode = recursive ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
