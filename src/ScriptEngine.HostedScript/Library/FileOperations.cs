@@ -84,22 +84,15 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (mask == null)
             {
-                recursive = false;
-                if (File.Exists(dir))
+                // fix 225, 227, 228
+                var fObj = new FileContext(dir);
+                if(fObj.Exists())
                 {
-                    mask = Path.GetFileName(dir);
-                    dir = Path.GetDirectoryName(dir);
+                    return new ArrayImpl(new[] { fObj });
                 }
                 else
                 {
-                    if (System.Environment.OSVersion.Platform == PlatformID.Unix)
-                    {
-                        mask = "*";
-                    }
-                    else
-                    {
-                        mask = "*.*";
-                    }
+                    return new ArrayImpl();
                 }
             }
             else if (File.Exists(dir))
