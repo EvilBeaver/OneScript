@@ -89,10 +89,10 @@ namespace ScriptEngine.HostedScript.Library
         /// Экспортные свойства и методы скрипта доступны для вызова.
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
-        /// <param name="externalContext">Структура. Внешний контекст загружаемого скрипта (глобальные переменные)</param>
-        /// <example>Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит	
-	    /// // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
-	    /// Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
+        /// <param name="externalContext">Структура. Глобальные свойства, которые будут инжектированы в область видимости загружаемого скрипта. (Необязательный)</param>
+        /// <example>    Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит	
+	    ///    // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
+	    ///    Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
         public IRuntimeContextInstance LoadScript(string path, StructureImpl externalContext = null)
         {

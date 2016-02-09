@@ -180,7 +180,7 @@ namespace TestApp
             }
             catch (Exception exc)
             {
-                result.Text = exc.Message;
+                host.Echo(exc.Message);
                 return;
             }
 
@@ -199,7 +199,7 @@ namespace TestApp
 
         public static string CustomConfigPath(string scriptPath)
         {
-            if (scriptPath == null)
+            if (scriptPath == null || !File.Exists(scriptPath))
                 return null;
 
             var dir = Path.GetDirectoryName(scriptPath);
@@ -261,7 +261,7 @@ namespace TestApp
             string openerEncoding = cfg["encoding.script"];
             if (!String.IsNullOrWhiteSpace(openerEncoding) && StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") != 0)
             {
-                FileOpener.DefaultEncoding = Encoding.GetEncoding(openerEncoding);
+                engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
             }
         }
 
@@ -414,7 +414,7 @@ namespace TestApp
 
         public void ShowExceptionInfo(Exception exc)
         {
-            _output.Text = exc.Message;
+            Echo(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)

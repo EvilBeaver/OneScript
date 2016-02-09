@@ -14,8 +14,6 @@ namespace ScriptEngine.Environment
 {
     public static class FileOpener
     {
-        public static Encoding DefaultEncoding { get; set; }
-
         public static StreamReader OpenReader(string filename)
         {
             FileStream input = new FileStream(filename, FileMode.Open, FileAccess.Read);
@@ -50,11 +48,19 @@ namespace ScriptEngine.Environment
 
         public static Encoding AssumeEncoding(Stream inputStream)
         {
-            // *** Use Default of Encoding.Default (Ansi CodePage)
-            var enc = DefaultEncoding == null ? Encoding.UTF8 : DefaultEncoding;
+            return AssumeEncoding(inputStream, SystemSpecificEncoding());
+        }
 
-            return AssumeEncoding(inputStream, enc);
-
+        public static Encoding SystemSpecificEncoding()
+        {
+            if(System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
+            {
+                return Encoding.UTF8;
+            }
+            else
+            {
+                return Encoding.Default;
+            }
         }
 
         public static Encoding AssumeEncoding(Stream inputStream, Encoding fallbackEncoding)

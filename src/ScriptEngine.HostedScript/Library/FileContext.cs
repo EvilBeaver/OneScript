@@ -17,24 +17,24 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Файл","File")]
     public class FileContext : AutoContext<FileContext>
     {
-        FileSystemInfo _fsEntry;
+        string _givenName;
+        string _name;
+        string _baseName;
+        string _fullName;
+        string _path;
+        string _extension;
 
         public FileContext(string name)
         {
-            RefreshEntry(name);
+            _givenName = name;
         }
-
-        private void RefreshEntry(string name)
+        
+        private string LazyField(ref string value, Func<string, string> algo)
         {
-            if (Directory.Exists(name))
-                _fsEntry = new DirectoryInfo(name);
-            else
-                _fsEntry = new FileInfo(name);
-        }
+            if (value == null)
+                value = algo(_givenName);
 
-        private void RefreshEntry()
-        {
-            RefreshEntry(_fsEntry.FullName);
+            return value;
         }
 
         [ContextProperty("Имя","Name")]
@@ -42,8 +42,13 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return _fsEntry.Name;
+                return LazyField(ref _name, GetFileNameV8Compatible);
             }
+        }
+
+        private string GetFileNameV8Compatible(string arg)
+        {
+            return System.IO.Path.GetFileName(arg.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar));
         }
 
         [ContextProperty("ИмяБезРасширения", "BaseName")]
@@ -51,10 +56,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                if (IsFile())
-                    return System.IO.Path.GetFileNameWithoutExtension(_fsEntry.Name);
-                else
-                    return _fsEntry.Name;
+                return LazyField(ref _baseName, System.IO.Path.GetFileNameWithoutExtension);
             }
         }
 
@@ -63,7 +65,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return _fsEntry.FullName;
+                return LazyField(ref _fullName, System.IO.Path.GetFullPath);
             }
         }
 
@@ -72,18 +74,17 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                string path;
-                if (IsFile())
-                    path = System.IO.Path.GetDirectoryName(_fsEntry.FullName);
-                else
-                    path = ((DirectoryInfo)_fsEntry).Parent.FullName;
-
-                if (path.Length > 0 && path[path.Length-1] != System.IO.Path.DirectorySeparatorChar)
-                    path += System.IO.Path.DirectorySeparatorChar;
-
-                return path;
-
+                return LazyField(ref _path, GetPathWithEndingDelimiter);
             }
+        }
+
+        private string GetPathWithEndingDelimiter(string src)
+        {
+            var path = System.IO.Path.GetDirectoryName(src);
+            if (path.Length > 0 && path[path.Length - 1] != System.IO.Path.DirectorySeparatorChar)
+                path += System.IO.Path.DirectorySeparatorChar;
+
+            return path;
         }
 
         [ContextProperty("Расширение", "Extension")]
@@ -91,83 +92,95 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return _fsEntry.Extension;
+                return LazyField(ref _extension, System.IO.Path.GetExtension);
             }
         }
 
         [ContextMethod("Существует","Exists")]
         public bool Exists()
         {
-            RefreshEntry();
+            try
+            {
+                var attr = File.GetAttributes(FullName);
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
 
-            return _fsEntry.Exists;
+            return true;
         }
 
         [ContextMethod("Размер", "Size")]
         public long Size()
         {
-            if (IsFile())
-                return (long)((FileInfo)_fsEntry).Length;
-            else
-                throw new RuntimeException("Получение размера применимо только к файлам");
+            return new FileInfo(FullName).Length;
         }
 
         [ContextMethod("ПолучитьНевидимость", "GetHidden")]
         public bool GetHidden()
         {
-            var attr = _fsEntry.Attributes;
+            var attr = File.GetAttributes(FullName);
             return attr.HasFlag(System.IO.FileAttributes.Hidden);
         }
 
         [ContextMethod("ПолучитьТолькоЧтение", "GetReadOnly")]
         public bool GetReadOnly()
         {
-            var attr = _fsEntry.Attributes;
+            var attr = File.GetAttributes(FullName);
             return attr.HasFlag(System.IO.FileAttributes.ReadOnly);
         }
 
         [ContextMethod("ПолучитьВремяИзменения", "GetModificationTime")]
         public DateTime GetModificationTime()
         {
-            return _fsEntry.LastWriteTime;
+            return File.GetLastWriteTime(FullName);
         }
 
         [ContextMethod("УстановитьНевидимость", "SetHidden")]
         public void SetHidden(bool value)
         {
+            FileSystemInfo entry = new FileInfo(FullName);
+
             if(value)
-                _fsEntry.Attributes |= System.IO.FileAttributes.Hidden;
+                entry.Attributes |= System.IO.FileAttributes.Hidden;
             else
-                _fsEntry.Attributes &= ~System.IO.FileAttributes.Hidden;
+                entry.Attributes &= ~System.IO.FileAttributes.Hidden;
         }
 
         [ContextMethod("УстановитьТолькоЧтение", "SetReadOnly")]
         public void SetReadOnly(bool value)
         {
+            FileSystemInfo entry = new FileInfo(FullName);
             if (value)
-                _fsEntry.Attributes |= System.IO.FileAttributes.ReadOnly;
+                entry.Attributes |= System.IO.FileAttributes.ReadOnly;
             else
-                _fsEntry.Attributes &= ~System.IO.FileAttributes.ReadOnly;
+                entry.Attributes &= ~System.IO.FileAttributes.ReadOnly;
         }
 
         [ContextMethod("УстановитьВремяИзменения", "SetModificationTime")]
         public void SetModificationTime(DateTime dateTime)
         {
-            _fsEntry.LastWriteTime = dateTime;
+            FileSystemInfo entry = new FileInfo(FullName);
+            entry.LastWriteTime = dateTime;
         }
 
         [ContextMethod("ЭтоКаталог", "IsDirectory")]
         public bool IsDirectory()
         {
-            RefreshEntry();
-            return _fsEntry is DirectoryInfo;
+            var attr = File.GetAttributes(FullName);
+            return attr.HasFlag(FileAttributes.Directory);
         }
 
         [ContextMethod("ЭтоФайл", "IsFile")]
         public bool IsFile()
         {
-            RefreshEntry();
-            return _fsEntry is FileInfo;
+            var attr = File.GetAttributes(FullName);
+            return !attr.HasFlag(FileAttributes.Directory);
         }
 
         [ScriptConstructor]

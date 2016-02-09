@@ -102,7 +102,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return result;
         }
 
-        private List<ValueTableColumn> GetProcessingColumnList(string ColumnNames)
+        private List<ValueTableColumn> GetProcessingColumnList(string ColumnNames, bool EmptyListInCaseOfNull = false)
         {
             List<ValueTableColumn> processing_list = new List<ValueTableColumn>();
             if (ColumnNames != null)
@@ -125,7 +125,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                     processing_list.Add(Column);
                 }
             }
-            else
+            else if (!EmptyListInCaseOfNull)
             {
                 foreach (ValueTableColumn Column in _columns)
                     processing_list.Add(Column);
@@ -250,8 +250,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             // TODO: Сворачиваем за N^2. Переделать на N*log(N)
 
-            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(GroupColumnNames);
-            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(AggregateColumnNames);
+            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(GroupColumnNames, true);
+            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(AggregateColumnNames, true);
 
             List<ValueTableRow> new_rows = new List<ValueTableRow>();
 
