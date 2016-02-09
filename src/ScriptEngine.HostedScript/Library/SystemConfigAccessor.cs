@@ -1,4 +1,11 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -12,17 +19,23 @@ namespace ScriptEngine.HostedScript.Library
     {
         private KeyValueConfig _config;
 
+        internal EngineConfigProvider Provider { get; set; }
+
         public SystemConfigAccessor()
         {
             Refresh();
         }
 
+        internal KeyValueConfig GetConfig()
+        {
+            return _config;
+        }
+
         [ContextMethod("ОбновитьНастройкиСистемы", "RefreshSystemConfig")]
         public void Refresh()
         {
-            var file = HostedScriptEngine.ConfigFilePath();
-            if (file != null)
-                _config = KeyValueConfig.Read(file);
+            if (Provider != null)
+                _config = Provider.ReadConfig();
         }
 
         [ContextMethod("ПолучитьЗначениеСистемнойНастройки", "GetSystemOptionValue")]

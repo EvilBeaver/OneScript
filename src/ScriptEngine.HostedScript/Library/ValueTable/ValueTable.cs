@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("ТаблицаЗначений", "ValueTable")]
-    class ValueTable : AutoContext<ValueTable>, ICollectionContext
+    public class ValueTable : AutoContext<ValueTable>, ICollectionContext
     {
         private ValueTableColumnCollection _columns = new ValueTableColumnCollection();
         private List<ValueTableRow> _rows = new List<ValueTableRow>();
@@ -102,7 +102,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return result;
         }
 
-        private List<ValueTableColumn> GetProcessingColumnList(string ColumnNames)
+        private List<ValueTableColumn> GetProcessingColumnList(string ColumnNames, bool EmptyListInCaseOfNull = false)
         {
             List<ValueTableColumn> processing_list = new List<ValueTableColumn>();
             if (ColumnNames != null)
@@ -125,7 +125,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                     processing_list.Add(Column);
                 }
             }
-            else
+            else if (!EmptyListInCaseOfNull)
             {
                 foreach (ValueTableColumn Column in _columns)
                     processing_list.Add(Column);
@@ -214,14 +214,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("НайтиСтроки", "FindRows")]
         public ArrayImpl FindRows(IValue Filter)
         {
-            if (!(Filter is StructureImpl))
+            var filterStruct = Filter.GetRawValue() as StructureImpl;
+
+            if (filterStruct == null)
                 throw RuntimeException.InvalidArgumentType();
 
             ArrayImpl Result = new ArrayImpl();
 
             foreach (ValueTableRow row in _rows)
             {
-                if (CheckFilterCriteria(row, Filter as StructureImpl))
+                if (CheckFilterCriteria(row, filterStruct))
                     Result.Add(row);
             }
 
@@ -248,8 +250,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             // TODO: Сворачиваем за N^2. Переделать на N*log(N)
 
-            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(GroupColumnNames);
-            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(AggregateColumnNames);
+            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(GroupColumnNames, true);
+            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(AggregateColumnNames, true);
 
             List<ValueTableRow> new_rows = new List<ValueTableRow>();
 

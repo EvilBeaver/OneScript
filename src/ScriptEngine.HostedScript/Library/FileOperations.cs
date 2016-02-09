@@ -84,22 +84,33 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (mask == null)
             {
-                recursive = false;
-                if (System.Environment.OSVersion.Platform == PlatformID.Unix)
+                // fix 225, 227, 228
+                var fObj = new FileContext(dir);
+                if(fObj.Exists())
                 {
-                    mask = "*";
+                    return new ArrayImpl(new[] { fObj });
                 }
                 else
                 {
-                    mask = "*.*";
+                    return new ArrayImpl();
                 }
+            }
+            else if (File.Exists(dir))
+            {
+                return new ArrayImpl();
             }
 
             System.IO.SearchOption mode = recursive ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
-            var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
-                .Select<string, IValue>((x) => new FileContext(x));
-
-            return new ArrayImpl(entries);
+            try
+            {
+                var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
+                        .Select<string, IValue>((x) => new FileContext(x));
+                return new ArrayImpl(entries);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new ArrayImpl();
+            }
 
         }
 
@@ -113,8 +124,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (mask == null)
             {
-                var file = new FileContext(path);
-                if (file.IsDirectory())
+                if (Directory.Exists(path))
                 {
                     System.IO.Directory.Delete(path, true);
                 }
@@ -223,14 +233,17 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="path1">Первая часть пути</param>
         /// <param name="path2">Вторая часть пути</param>
         /// <param name="path3">Третья часть пути (необязательно)</param>
+        /// <param name="path4">Четвертая часть пути (необязательно)</param>
         /// <returns>Объединенный путь.</returns>
         [ContextMethod("ОбъединитьПути", "CombinePath")]
-        public string CombinePath(string path1, string path2, string path3 = null)
+        public string CombinePath(string path1, string path2, string path3 = null, string path4 = null)
         {
             if (path3 == null)
                 return Path.Combine(path1, path2);
-            else
+            else if (path4 == null)
                 return Path.Combine(path1, path2, path3);
+            else
+                return Path.Combine(path1, path2, path3, path4);
         }
 
         public static IAttachableContext CreateInstance()

@@ -255,9 +255,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             var newContent = new List<string>();
 
-            Encoding enc = encoding == null ? Encoding.UTF8 : TextEncodingEnum.GetEncoding(encoding);
-
-            using(var reader = new StreamReader(path, enc))
+            using(var reader = GetDefaultReader(path, encoding))
             {
                 string line = null;
                 while ((line = reader.ReadLine()) != null)
@@ -280,7 +278,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Записать", "Write")]
         public void Write(string path, IValue encoding = null, string lineSeparator = null)
         {
-            using(var writer = new StreamWriter(path, false, TextEncodingEnum.GetEncoding(encoding)))
+            using(var writer = GetDefaultWriter(path, encoding))
             {
                 if (lineSeparator == null)
                     lineSeparator = "\r\n";
@@ -294,6 +292,28 @@ namespace ScriptEngine.HostedScript.Library
                 }
             }
             UsedFileName = Path.GetFullPath(path);
+        }
+
+        private StreamReader GetDefaultReader(string path, IValue encoding)
+        {
+            StreamReader reader;
+            if (encoding == null)
+                reader = ScriptEngine.Environment.FileOpener.OpenReader(path);
+            else
+                reader = ScriptEngine.Environment.FileOpener.OpenReader(path, TextEncodingEnum.GetEncoding(encoding));
+
+            return reader;
+        }
+
+        private StreamWriter GetDefaultWriter(string path, IValue encoding)
+        {
+            StreamWriter writer;
+            if (encoding == null)
+                writer = ScriptEngine.Environment.FileOpener.OpenWriter(path, new UTF8Encoding(true));
+            else
+                writer = ScriptEngine.Environment.FileOpener.OpenWriter(path, TextEncodingEnum.GetEncoding(encoding));
+
+            return writer;
         }
 
         [ScriptConstructor]

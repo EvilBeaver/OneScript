@@ -18,6 +18,8 @@ namespace ScriptEngine.Machine.Contexts
     public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
         ScriptException _exc;
+        IValue _innerException;
+
         public ExceptionInfoContext(ScriptException source)
         {
             if (source == null)
@@ -94,28 +96,47 @@ namespace ScriptEngine.Machine.Contexts
         {
             get 
             {
-                bool isExternal = _exc is ExternalSystemException;
-                if (!isExternal && _exc.InnerException != null)
+                if (_innerException == null)
+                    _innerException = CreateInnerExceptionInfo();
+
+                return _innerException;
+            }
+        }
+
+        private IValue CreateInnerExceptionInfo()
+        {
+            if (_exc.InnerException == null)
+                return ValueFactory.Create();
+
+            bool alreadyWrapped = _exc is ExternalSystemException;
+            if (!alreadyWrapped)
+            {
+                ScriptException inner;
+                inner = _exc.InnerException as ScriptException;
+                if (inner == null)
                 {
-                    ScriptException inner;
-                    inner = _exc.InnerException as ScriptException;
-                    if(inner == null)
-                    {
-                        inner = new ExternalSystemException(_exc.InnerException);
-                    }
-                    if (inner.ModuleName == null)
-                        inner.ModuleName = _exc.ModuleName;
-                    if (inner.Code == null)
-                        inner.Code = _exc.Code;
-                    return new ExceptionInfoContext(inner);
+                    inner = new ExternalSystemException(_exc.InnerException);
                 }
-                else if(_exc.InnerException != null && _exc.InnerException is System.Reflection.TargetInvocationException)
-                {
-                    var inner = new ExternalSystemException(_exc.InnerException.InnerException);
-                    return new ExceptionInfoContext(inner);
-                }
-                else
+                if (inner.ModuleName == null)
+                    inner.ModuleName = _exc.ModuleName;
+                if (inner.Code == null)
+                    inner.Code = _exc.Code;
+                return new ExceptionInfoContext(inner);
+            }
+            else
+            {
+                if (_exc.InnerException.InnerException == null)
                     return ValueFactory.Create();
+
+                var inner = new ExternalSystemException(_exc.InnerException.InnerException);
+                if (inner.LineNumber == 0)
+                {
+                    inner.ModuleName = this.ModuleName;
+                    inner.Code = this.SourceLine;
+                    inner.LineNumber = this.LineNumber;
+                }
+
+                return new ExceptionInfoContext(inner);
             }
         }
 

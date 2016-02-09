@@ -36,7 +36,7 @@ namespace ScriptEngine.Machine.Contexts
             Dispose(true);
         }
 
-        protected void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {

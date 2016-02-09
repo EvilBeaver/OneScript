@@ -16,6 +16,9 @@ namespace oscript
         static int Main(string[] args)
         {
             int returnCode;
+            
+            Output.Init();
+
             var behavior = BehaviorSelector.Select(args);
             try
             {
@@ -26,7 +29,7 @@ namespace oscript
                 // сюда при выполнении скрипта мы попадать не должны
                 // исключения времени выполнения выводятся в IApplicationHost.ShowExceptionInfo
                 // здесь мы пишем только если случилось что-то совсем плохое
-                Console.WriteLine(e.ToString());
+                Output.WriteLine(e.ToString());
                 returnCode = 1;
             }
 
@@ -34,10 +37,19 @@ namespace oscript
 
         }
 
+        private static Encoding _encoding;
+
         public static Encoding ConsoleOutputEncoding
         {
-            get;
-            set;
+            get
+            {
+                return _encoding;
+            }
+            set
+            {
+                _encoding = value;
+                Output.Init();
+            }
         }
     }
 }

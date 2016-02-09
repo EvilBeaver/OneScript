@@ -48,10 +48,12 @@ namespace ScriptEngine.Environment
     {
         string _path;
         string _code;
+        Encoding _noBomEncoding;
 
-        public FileBasedSource(string path)
+        public FileBasedSource(string path, Encoding defaultEncoding)
         {
             _path = System.IO.Path.GetFullPath(path);
+            _noBomEncoding = defaultEncoding;
         }
 
         private string GetCodeString()
@@ -72,7 +74,7 @@ namespace ScriptEngine.Environment
                     else
                     {
                         fStream.Position = 0;
-                        enc = FileOpener.AssumeEncoding(fStream);
+                        enc = FileOpener.AssumeEncoding(fStream, _noBomEncoding);
                     }
 
                     using (var reader = new StreamReader(fStream, enc))

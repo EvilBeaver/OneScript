@@ -29,7 +29,6 @@ namespace ScriptEngine.HostedScript.Library
             if (!_content.TryGetValue(index, out result))
             {
                 result = ValueFactory.Create();
-                _content.Add(index, result);
             }
 
             return result;
@@ -50,6 +49,11 @@ namespace ScriptEngine.HostedScript.Library
             return false;
         }
         
+        internal bool ContainsKey(IValue key)
+        {
+            return _content.ContainsKey(key);
+        }
+
         #region ICollectionContext Members
 
         [ContextMethod("Вставить", "Insert")]

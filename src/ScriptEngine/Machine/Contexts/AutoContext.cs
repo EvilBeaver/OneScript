@@ -57,6 +57,14 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.FindMethod(name);
         }
 
+        public override IEnumerable<MethodInfo> GetMethods()
+        {
+            for (int i = 0; i < _methods.Count; i++)
+            {
+                yield return _methods.GetMethodInfo(i);
+            }
+        }
+
         public override MethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);

@@ -44,6 +44,14 @@ namespace oscript
                         return new ShowCompiledBehavior(path);
                     }
                 }
+                else if (cmdLineArgs[0].ToLower() == "-check")
+                {
+                    if (cmdLineArgs.Length > 1)
+                    {
+                        var path = cmdLineArgs[1];
+                        return new CheckSyntaxBehavior(path);
+                    }
+                }
                 else if (cmdLineArgs[0].ToLower() == "-make")
                 {
                     if (cmdLineArgs.Length == 3)
@@ -70,7 +78,7 @@ namespace oscript
                         }
                         catch
                         {
-                            Console.WriteLine("Wrong console encoding");
+                            Output.WriteLine("Wrong console encoding");
                             encoding = null;
                         }
 

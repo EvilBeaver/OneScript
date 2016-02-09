@@ -85,6 +85,7 @@
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
     <Compile Include="Environment\ModuleInformation.cs" />
+    <Compile Include="FormatParametersList.cs" />
     <Compile Include="IDirectiveResolver.cs" />
     <Compile Include="Machine\ComReflectionNameToIdMapper.cs" />
     <Compile Include="Machine\Contexts\EnumContextHelper.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScriptException.cs" />
     <Compile Include="ScriptingEngine.cs" />
+    <Compile Include="SystemLogger.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

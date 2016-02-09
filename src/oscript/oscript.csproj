@@ -72,11 +72,14 @@
     <Compile Include="AppBehavior.cs" />
     <Compile Include="BehaviorSelector.cs" />
     <Compile Include="CgiBehavior.cs" />
+    <Compile Include="CheckSyntaxBehavior.cs" />
     <Compile Include="ExecuteScriptBehavior.cs" />
     <Compile Include="MakeAppBehavior.cs" />
     <Compile Include="MeasureBehavior.cs" />
+    <Compile Include="Output.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScriptFileHelper.cs" />
     <Compile Include="ShowCompiledBehavior.cs" />
     <Compile Include="ShowUsageBehavior.cs" />
     <Compile Include="WebRequestContext.cs" />

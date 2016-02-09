@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Колонка дерева значений.
     /// </summary>
     [ContextClass("КолонкаДереваЗначений", "ValueTreeColumn")]
-    class ValueTreeColumn : AutoContext<ValueTreeColumn>
+    public class ValueTreeColumn : AutoContext<ValueTreeColumn>
     {
         private string _title;
         private string _name;

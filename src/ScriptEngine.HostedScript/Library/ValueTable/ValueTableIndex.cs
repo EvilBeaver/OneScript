@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("ИндексКоллекции", "CollectionIndex")]
-    class CollectionIndex : AutoContext<CollectionIndex>
+    public class CollectionIndex : AutoContext<CollectionIndex>
     {
     }
 }

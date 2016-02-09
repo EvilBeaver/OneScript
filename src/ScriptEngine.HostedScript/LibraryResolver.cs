@@ -172,7 +172,7 @@ namespace ScriptEngine.HostedScript
                 // немного костыльно, ага ((
                 //
                 if (!PathHasInvalidChars(currentPath))
-                    realPath = Path.Combine(Path.GetDirectoryName(currentPath), libraryPath);
+                    realPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(currentPath), libraryPath));
                 else
                     realPath = libraryPath;
             }
@@ -214,24 +214,21 @@ namespace ScriptEngine.HostedScript
 
         private bool LoadByName(string value)
         {
-            if (SearchDirectories.Count == 0)
+            var rootPath = Path.Combine(LibraryRoot, value);
+            if (LoadByPath(rootPath))
+                return true;
+            
+            foreach (var path in SearchDirectories)
             {
-                var libraryPath = Path.Combine(LibraryRoot, value);
-                return LoadByPath(libraryPath);
-            }
-            else
-            {
-                foreach (var path in SearchDirectories)
-                {
-                    if(!Directory.Exists(path))
-                        continue;
+                if(!Directory.Exists(path))
+                    continue;
 
-                    var libraryPath = Path.Combine(path, value);
-                    if (LoadByPath(libraryPath))
-                        return true;
-                }
-                return false;
+                var libraryPath = Path.Combine(path, value);
+                if (LoadByPath(libraryPath))
+                    return true;
             }
+
+            return false;
         }
 
         private bool LoadLibraryInternal(string libraryPath)

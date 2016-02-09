@@ -20,6 +20,8 @@ namespace ScriptEngine.Machine.Contexts
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
         private MethodInfo[] _attachableMethods;
+        private Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
@@ -50,8 +52,8 @@ namespace ScriptEngine.Machine.Contexts
         public void InitOwnData()
         {
             
-            VARIABLE_COUNT = GetVariableCount();
-            METHOD_COUNT = GetMethodCount();
+            VARIABLE_COUNT = GetOwnVariableCount();
+            METHOD_COUNT = GetOwnMethodCount();
 
             int stateSize = VARIABLE_COUNT + _module.VariableFrameSize;
             _state = new IVariable[stateSize];
@@ -62,10 +64,22 @@ namespace ScriptEngine.Machine.Contexts
                 else
                     _state[i] = Variable.Create(ValueFactory.Create());
             }
+
+            ReadExportedSymbols(_module.ExportedMethods, _methodSearchCache);
+            ReadExportedSymbols(_module.ExportedProperies, _propertySearchCache);
         }
 
-        protected abstract int GetVariableCount();
-        protected abstract int GetMethodCount();
+        private void ReadExportedSymbols(ExportedSymbol[] exportedSymbols, Dictionary<string, int> searchCache)
+        {
+            for (int i = 0; i < exportedSymbols.Length; i++)
+            {
+                var es = exportedSymbols[i];
+                searchCache[es.SymbolicName] = es.Index;
+            }
+        }
+
+        protected abstract int GetOwnVariableCount();
+        protected abstract int GetOwnMethodCount();
         protected abstract void UpdateState();
         
         public bool MethodDefinedInScript(int index)
@@ -223,11 +237,6 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual IEnumerable<MethodInfo> GetMethods()
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
 
         #region IRuntimeContextInstance Members
@@ -241,12 +250,9 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                var propsFound = _module.ExportedProperies.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
-                    .Select(x => x.Index).ToArray();
-                if (propsFound.Length > 0)
-                {
-                    return propsFound[0];
-                }
+                int index;
+                if (_propertySearchCache.TryGetValue(name, out index))
+                    return index;
                 else
                     throw RuntimeException.PropNotFoundException(name);
             }
@@ -261,12 +267,9 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                var methFound = _module.ExportedMethods.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
-                    .Select(x => x.Index).ToArray();
-                if (methFound.Length > 0)
-                {
-                    return methFound[0];
-                }
+                int index;
+                if (_methodSearchCache.TryGetValue(name, out index))
+                    return index;
                 else
                     throw RuntimeException.MethodNotFoundException(name);
             }
