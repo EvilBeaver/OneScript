@@ -84,6 +84,8 @@
     <Compile Include="Library\FixedArrayImpl.cs" />
     <Compile Include="Library\FixedMapImpl.cs" />
     <Compile Include="Library\FixedStructureImpl.cs" />
+    <Compile Include="Library\Hash\HashFunctionEnum.cs" />
+    <Compile Include="Library\Hash\HashImpl.cs" />
     <Compile Include="Library\Http\HttpConnectionContext.cs" />
     <Compile Include="Library\Http\HttpRequestBody.cs" />
     <Compile Include="Library\Http\HttpRequestBodyBinary.cs" />
@@ -171,6 +173,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
