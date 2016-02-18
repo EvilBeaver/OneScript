@@ -41,6 +41,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             get
             {
+                _toCalculate.Seek(0, SeekOrigin.Begin);
                 byte[] hash = _provider.ComputeHash(_toCalculate);
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < hash.Length; i++)
