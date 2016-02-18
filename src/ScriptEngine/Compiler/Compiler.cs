@@ -117,7 +117,7 @@ namespace ScriptEngine.Compiler
                     var scope = _ctx.GetScope(methN.ContextIndex);
 
                     var methInfo = scope.GetMethod(methN.CodeIndex);
-                    System.Diagnostics.Debug.Assert(methInfo.Name == item.identifier);
+                    System.Diagnostics.Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
                     if (item.asFunction && !methInfo.IsFunction)
                     {
                         var exc = CompilerException.UseProcAsFunction();
