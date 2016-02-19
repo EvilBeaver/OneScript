@@ -187,7 +187,24 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    DispatchUtility.InvokeSetProperty(_instance, propNum, MarshalIValue(newVal));
+                    object argToPass;
+                    if(newVal.DataType == Machine.DataType.Date)
+                    {
+                        var date = newVal.AsDate();
+                        if(date == DateTime.MinValue)
+                        {
+                            argToPass = new DateTime(100, 1, 1); // Min OLEAuth Date
+                        }
+                        else
+                        {
+                            argToPass = MarshalIValue(newVal);
+                        }
+                    }
+                    else
+                    {
+                        argToPass = MarshalIValue(newVal);
+                    }
+                    DispatchUtility.InvokeSetProperty(_instance, propNum, argToPass);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
