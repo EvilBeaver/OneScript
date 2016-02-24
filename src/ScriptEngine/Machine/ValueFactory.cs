@@ -186,7 +186,7 @@ namespace ScriptEngine.Machine
 
             public bool Equals(IValue other)
             {
-                throw new NotImplementedException();
+                return other.GetRawValue().DataType == DataType;
             }
 
             #endregion

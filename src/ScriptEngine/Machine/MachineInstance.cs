@@ -1193,7 +1193,19 @@ namespace ScriptEngine.Machine
                     {
                         if (i < argValues.Length)
                         {
-                            argsToPass.Add(argValues[i]);
+
+                            if (argValues[i].DataType == DataType.NotAValidValue)
+                            {
+                                if (parameters[i].IsOptional)
+                                    argsToPass.Add(null);
+                                else
+                                { 
+                                    throw new NotImplementedException ("Failed to pass default value");
+                                }
+                            }
+                            else
+                                argsToPass.Add(argValues[i]);
+
                             success = true;
                         }
                         else
