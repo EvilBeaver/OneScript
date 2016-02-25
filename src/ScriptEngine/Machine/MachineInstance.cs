@@ -1199,8 +1199,8 @@ namespace ScriptEngine.Machine
                                 if (parameters[i].IsOptional)
                                     argsToPass.Add(null);
                                 else
-                                { 
-                                    throw new NotImplementedException ("Failed to pass default value");
+                                {
+                                    throw RuntimeException.ArgHasNoDefaultValue(i + 1);
                                 }
                             }
                             else
