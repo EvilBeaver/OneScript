@@ -16,7 +16,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
         protected HashAlgorithm _provider;
         protected IValue _enumValue;
         protected CombinedStream _toCalculate=new CombinedStream();
-        protected bool _inMemory;
+        protected bool _calculated;
         protected string _tempFileName;
         protected byte[] _hash;
 
@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             _provider = provider;
             _enumValue = enumValue;
-            _inMemory = true;
+            _calculated = false;
         }
 
 
@@ -42,6 +42,11 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             get
             {
+                if (!_calculated)
+                {
+                    _hash = _provider.ComputeHash(_toCalculate);
+                    _calculated = true;
+                }
                 return new BinaryDataContext(_hash);
             }
         }
@@ -51,6 +56,11 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             get
             {
+                if (!_calculated)
+                {
+                    _hash = _provider.ComputeHash(_toCalculate);
+                    _calculated = true;
+                }
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < _hash.Length; i++)
                     sb.Append(_hash[i].ToString("X2"));
@@ -96,10 +106,8 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             _toCalculate.Close();
             _toCalculate.Dispose();
-            if (!_inMemory)
-                File.Delete(_tempFileName);
             _toCalculate = new CombinedStream();
-            _inMemory = true;
+            _calculated = false;
         }
 
 
@@ -110,11 +118,18 @@ namespace ScriptEngine.HostedScript.Library.Hash
             return new HashImpl(objectProvider, providerEnum);
         }
 
+        public void Dispose()
+        {
+            _toCalculate.Close();
+            _toCalculate.Dispose();
+        }
+
         private void AddStream(Stream stream)
         {
             _toCalculate.AddStream(stream);
             _toCalculate.Seek(0, SeekOrigin.Begin);
-            _hash = _provider.ComputeHash(_toCalculate);
+            _calculated = false;
+            
         }
     }
 }
