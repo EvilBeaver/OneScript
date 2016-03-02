@@ -16,6 +16,8 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("COMОбъект", "COMObject")]
     abstract public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper
     {
+        protected static readonly DateTime MIN_OLE_DATE = new DateTime(100,1,1);
+
         public COMWrapperContext()
             : base(TypeManager.GetTypeByFrameworkType(typeof(COMWrapperContext)))
         {
@@ -68,7 +70,25 @@ namespace ScriptEngine.Machine.Contexts
 
         public static object MarshalIValue(IValue val)
         {
-            return ContextValuesMarshaller.ConvertToCLRObject(val);
+            object retValue;
+            if (val.DataType == Machine.DataType.Date)
+            {
+                var date = val.AsDate();
+                if (date <= MIN_OLE_DATE)
+                {
+                    retValue = MIN_OLE_DATE;
+                }
+                else
+                {
+                    retValue = date;
+                }
+            }
+            else
+            {
+                retValue = ContextValuesMarshaller.ConvertToCLRObject(val);
+            }
+
+            return retValue;
         }
 
         protected static object[] MarshalArgumentsStrict(IValue[] arguments, Type[] argumentsTypes)
@@ -141,7 +161,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (type == typeof(DateTime))
             {
-                return ValueFactory.Create((DateTime)objParam);
+                var unboxed = (DateTime)objParam;
+                if (unboxed == MIN_OLE_DATE)
+                    unboxed = DateTime.MinValue;
+
+                return ValueFactory.Create(unboxed);
             }
             else if (type == typeof(bool))
             {
