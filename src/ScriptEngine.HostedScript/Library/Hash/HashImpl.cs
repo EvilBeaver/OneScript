@@ -53,14 +53,14 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             get
             {
-                if (InternalHash.Length==4)
+                if (_provider is Crc32)
                 {
                     var buffer = new byte[4];
                     Array.Copy(InternalHash, buffer, 4);
                     if (BitConverter.IsLittleEndian)
                         Array.Reverse(buffer);
                     var ret = BitConverter.ToUInt32(buffer, 0);
-                    return ContextValuesMarshaller.ConvertReturnValue<decimal>((decimal)ret);
+                    return ValueFactory.Create((decimal)ret);
                 }
                 return new BinaryDataContext(InternalHash);
             }

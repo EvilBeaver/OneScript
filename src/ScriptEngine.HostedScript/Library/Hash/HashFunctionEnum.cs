@@ -112,7 +112,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
             if (algName == "CRC32")
                 return new ScriptEngine.HostedScript.Library.Hash.Crc32();
 
-            var ret = HashAlgorithm.Create(neededProvider.AsString());
+            var ret = HashAlgorithm.Create(algName);
             if (ret == null)
                 throw RuntimeException.InvalidArgumentType();
             return ret;
