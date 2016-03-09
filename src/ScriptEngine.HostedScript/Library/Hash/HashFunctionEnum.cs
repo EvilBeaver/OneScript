@@ -23,6 +23,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
         const string SHA256 = "SHA256";
         const string SHA384 = "SHA384";
         const string SHA512 = "SHA512";
+        const string CRC32 = "CRC32";
 
 
         [EnumValue(MD5)]
@@ -75,6 +76,16 @@ namespace ScriptEngine.HostedScript.Library.Hash
         }
 
 
+        [EnumValue(CRC32)]
+        public EnumerationValue Crc32
+        {
+            get
+            {
+                return this[CRC32];
+            }
+        }
+
+
 
         private HashFunctionEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
@@ -97,9 +108,11 @@ namespace ScriptEngine.HostedScript.Library.Hash
             if (neededProvider == null)
                 throw RuntimeException.InvalidArgumentType();
 
-            var providerEnum = GlobalsManager.GetEnum<HashFunctionEnum>();
+            var algName = neededProvider.AsString();
+            if (algName == "CRC32")
+                return new ScriptEngine.HostedScript.Library.Hash.Crc32();
 
-            var ret = HashAlgorithm.Create(neededProvider.AsString());
+            var ret = HashAlgorithm.Create(algName);
             if (ret == null)
                 throw RuntimeException.InvalidArgumentType();
             return ret;

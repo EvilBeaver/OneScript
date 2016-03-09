@@ -24,7 +24,8 @@ namespace ScriptEngine.HostedScript.Library.Hash
 
         public CombinedStream(Stream[] streams)
         {
-            _streams.AddRange(streams);
+            foreach (var stream in streams)
+                this.AddStream(stream);
             CalculateBorders();
         }
 
@@ -75,6 +76,8 @@ namespace ScriptEngine.HostedScript.Library.Hash
 
         public void AddStream(Stream stream)
         {
+            if (stream == null)
+                throw new ArgumentException("Stream is null");
             _streams.Add(stream);
             CalculateBorders();
         }
@@ -128,7 +131,6 @@ namespace ScriptEngine.HostedScript.Library.Hash
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            //Где он с винтом?
             if (offset + count > buffer.Length)
                 throw new ArgumentException();
             Stream stream = GetCurrentStream();

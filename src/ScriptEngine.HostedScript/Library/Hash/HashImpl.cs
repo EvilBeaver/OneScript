@@ -16,17 +16,28 @@ namespace ScriptEngine.HostedScript.Library.Hash
         protected HashAlgorithm _provider;
         protected IValue _enumValue;
         protected CombinedStream _toCalculate=new CombinedStream();
-        protected bool _inMemory;
-        protected string _tempFileName;
+        protected bool _calculated;
         protected byte[] _hash;
 
         public HashImpl(HashAlgorithm provider, IValue enumValue)
         {
             _provider = provider;
             _enumValue = enumValue;
-            _inMemory = true;
+            _calculated = false;
         }
 
+        public byte[] InternalHash
+        {
+            get
+            {
+                if (!_calculated)
+                {
+                    _hash = _provider.ComputeHash(_toCalculate);
+                    _calculated = true;
+                }
+                return _hash;
+            }
+        }
 
         [ContextProperty("ХешФункция", "HashFunction")]
         public IValue Extension
@@ -42,7 +53,16 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             get
             {
-                return new BinaryDataContext(_hash);
+                if (_provider is Crc32)
+                {
+                    var buffer = new byte[4];
+                    Array.Copy(InternalHash, buffer, 4);
+                    if (BitConverter.IsLittleEndian)
+                        Array.Reverse(buffer);
+                    var ret = BitConverter.ToUInt32(buffer, 0);
+                    return ValueFactory.Create((decimal)ret);
+                }
+                return new BinaryDataContext(InternalHash);
             }
         }
 
@@ -52,8 +72,8 @@ namespace ScriptEngine.HostedScript.Library.Hash
             get
             {
                 StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < _hash.Length; i++)
-                    sb.Append(_hash[i].ToString("X2"));
+                for (int i = 0; i < InternalHash.Length; i++)
+                    sb.Append(InternalHash[i].ToString("X2"));
                 return sb.ToString();
             }
         }
@@ -96,10 +116,8 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             _toCalculate.Close();
             _toCalculate.Dispose();
-            if (!_inMemory)
-                File.Delete(_tempFileName);
             _toCalculate = new CombinedStream();
-            _inMemory = true;
+            _calculated = false;
         }
 
 
@@ -110,11 +128,18 @@ namespace ScriptEngine.HostedScript.Library.Hash
             return new HashImpl(objectProvider, providerEnum);
         }
 
+        public void Dispose()
+        {
+            _toCalculate.Close();
+            _toCalculate.Dispose();
+        }
+
         private void AddStream(Stream stream)
         {
             _toCalculate.AddStream(stream);
             _toCalculate.Seek(0, SeekOrigin.Begin);
-            _hash = _provider.ComputeHash(_toCalculate);
+            _calculated = false;
+            
         }
     }
 }
