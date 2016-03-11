@@ -52,6 +52,7 @@ Source: "build\bin\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
 Source: "build\bin\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
 ; библиотека
 Source: "build\lib\*"; DestDir: "{app}\lib"; Components: stdlib; Flags: recursesubdirs
+Source: "build\bin\*.bat"; DestDir: "{app}\bin"; Components: stdlib
 
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
 Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: VCRedistNeedsInstall
