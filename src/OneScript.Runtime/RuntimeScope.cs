@@ -11,7 +11,7 @@ namespace OneScript.Runtime
     {
         private SymbolScope _symbols;
         private IRuntimeContextInstance _target;
-        private IVariable[] _variables;
+        private IValueRef[] _variables;
 
         private RuntimeScope()
 	    {
@@ -41,7 +41,7 @@ namespace OneScript.Runtime
             return _variables[index].Value;
         }
 
-        public IVariable[] Variables
+        public IValueRef[] ValueRefs
         {
             get
             {
@@ -52,10 +52,10 @@ namespace OneScript.Runtime
         private void InitVariables()
         {
             // TODO: в scope могут быть не только свойства контекста, пока минимальный функционал для прохождения теста
-            _variables = new IVariable[_symbols.VariableCount];
+            _variables = new IValueRef[_symbols.VariableCount];
             for (int i = 0; i < _variables.Length-1; i++)
             {
-                _variables[i] = new PropertyReferenceVariable(_target, i);
+                _variables[i] = new PropertyValueRef(_target, i);
             }
         }
 

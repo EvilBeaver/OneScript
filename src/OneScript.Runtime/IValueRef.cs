@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    public interface IVariable
+    public interface IValueRef
     {
         IValue Value { get; set; }
     }

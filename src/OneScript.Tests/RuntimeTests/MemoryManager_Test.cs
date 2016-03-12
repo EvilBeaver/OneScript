@@ -66,7 +66,7 @@ namespace OneScript.Tests.RuntimeTests
 
             Assert.AreEqual(ValueFactory.Create(true), scope.ValueOf(index));
             // присвоили значение переменной
-            scope.Variables[index].Value = ValueFactory.Create(false);
+            scope.ValueRefs[index].Value = ValueFactory.Create(false);
             // убедились, что в объекте значение поменялось
             Assert.AreEqual(ValueFactory.Create(false), context.GetPropertyValue(index));
         }

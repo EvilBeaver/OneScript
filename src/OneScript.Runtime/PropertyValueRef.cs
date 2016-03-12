@@ -6,12 +6,12 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    class PropertyReferenceVariable : IVariable
+    class PropertyValueRef : IValueRef
     {
         IRuntimeContextInstance _target;
         int _propertyIndex;
 
-        public PropertyReferenceVariable(IRuntimeContextInstance target, int propertyIndex)
+        public PropertyValueRef(IRuntimeContextInstance target, int propertyIndex)
         {
             _target = target;
             _propertyIndex = propertyIndex;
