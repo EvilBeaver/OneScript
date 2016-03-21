@@ -16,10 +16,10 @@ mkdir -p ${DEBBUILDROOT}${PAKNAME}/usr/lib/oscript
 
 cp ${BUILDERROOT}settings/dirs ${DEBBUILDROOT}${PAKNAME}/DEBIAN/
 cat ${BUILDERROOT}settings/control | sed -r "s/VERSION/$VERSION/g" > ${DEBBUILDROOT}${PAKNAME}/DEBIAN/control
-cp ${BINPATH}*.exe ${DEBBUILDROOT}${PAKNAME}/usr/bin/ 
-cp ${BINPATH}*.dll ${DEBBUILDROOT}${PAKNAME}/usr/bin/
-cp ${BUILDERROOT}oscript ${DEBBUILDROOT}${PAKNAME}/usr/bin/
-cp ${BUILDERROOT}oscript-cgi ${DEBBUILDROOT}${PAKNAME}/usr/bin/
+cp ${BINPATH}*.exe ${DEBBUILDROOT}${PAKNAME}/usr/lib/oscript
+cp ${BINPATH}*.dll ${DEBBUILDROOT}${PAKNAME}/usr/lib/oscript
+cp ${BUILDERROOT}oscript ${DEBBUILDROOT}${PAKNAME}/usr/bin
+cp ${BUILDERROOT}oscript-cgi ${DEBBUILDROOT}${PAKNAME}/usr/bin
 
 fakeroot dpkg-deb --build ${DEBBUILDROOT}${PAKNAME}
 

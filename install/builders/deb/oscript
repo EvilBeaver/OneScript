@@ -1,3 +1,3 @@
 #!/bin/sh
-mono /usr/bin/oscript.exe $@
+mono /usr/lib/oscript/oscript.exe $@
 

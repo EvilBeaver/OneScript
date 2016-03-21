@@ -4,5 +4,5 @@ if [ -z "$SCRIPT_FILENAME" ]; then
 	export SCRIPT_FILENAME=$1
 fi
 
-mono /usr/bin/oscript.exe -cgi $@
+mono /usr/lib/oscript/oscript.exe -cgi $@
 
