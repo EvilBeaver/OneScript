@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd `dirname $0`
+
 SRCPATH=/media
 BINPATH=${PWD}/../src/oscript/bin/Release/
 mono ${BINPATH}oscript.exe | head -1 | \

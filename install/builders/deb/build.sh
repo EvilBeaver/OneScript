@@ -8,23 +8,31 @@ BUILDERROOT=${SRCPATH}install/builders/deb/
 
 VERSION=$(cat ${BINPATH}VERSION)
 PAKNAME=onescript-engine_${VERSION}
+DSTPATH=${DEBBUILDROOT}${PAKNAME}
 
-mkdir ${DEBBUILDROOT}${PAKNAME} 
-mkdir -p ${DEBBUILDROOT}${PAKNAME}/DEBIAN
-mkdir -p ${DEBBUILDROOT}${PAKNAME}/usr/bin
-mkdir -p ${DEBBUILDROOT}${PAKNAME}/usr/lib/oscript
+mkdir $DSTPATH 
+mkdir -p $DSTPATH/DEBIAN
+mkdir -p $DSTPATH/usr/bin
+mkdir -p $DSTPATH/usr/share/oscript/lib
+mkdir -p $DSTPATH/usr/share/oscript/bin
+mkdir -p $DSTPATH/etc
 
-cp ${BUILDERROOT}settings/dirs ${DEBBUILDROOT}${PAKNAME}/DEBIAN/
-cat ${BUILDERROOT}settings/control | sed -r "s/VERSION/$VERSION/g" > ${DEBBUILDROOT}${PAKNAME}/DEBIAN/control
-cp ${BINPATH}*.exe ${DEBBUILDROOT}${PAKNAME}/usr/lib/oscript
-cp ${BINPATH}*.dll ${DEBBUILDROOT}${PAKNAME}/usr/lib/oscript
-cp ${BUILDERROOT}oscript ${DEBBUILDROOT}${PAKNAME}/usr/bin
-cp ${BUILDERROOT}oscript-cgi ${DEBBUILDROOT}${PAKNAME}/usr/bin
+cp ${BUILDERROOT}settings/dirs $DSTPATH/DEBIAN/
+cat ${BUILDERROOT}settings/control | sed -r "s/VERSION/$VERSION/g" > $DSTPATH/DEBIAN/control
+cp ${BINPATH}*.exe $DSTPATH/usr/share/oscript/bin
+cp ${BINPATH}*.dll $DSTPATH/usr/share/oscript/bin
+cp ${BUILDERROOT}oscript $DSTPATH/usr/bin
+cp ${BUILDERROOT}oscript-cgi $DSTPATH/usr/bin
+cp -r ${SRCPATH}/oscript-library/src/* $DSTPATH/usr/share/oscript/lib
+cp ${BINPATH}/oscript.cfg $DSTPATH/etc
 
-fakeroot dpkg-deb --build ${DEBBUILDROOT}${PAKNAME}
+# TODO: Убрать это!
+cp ${BINPATH}/oscript.cfg $DSTPATH/usr/share/oscript/bin
 
-rm -rf ${DEBBUILDROOT}${PAKNAME}
-chmod 777 ${DEBBUILDROOT}${PAKNAME}.deb
+fakeroot dpkg-deb --build $DSTPATH
+
+rm -rf $DSTPATH
+chmod 777 $DSTPATH.deb
 
 ####
 #	Тестирование. TODO: Вынести в отдельный контейнер
@@ -32,7 +40,7 @@ chmod 777 ${DEBBUILDROOT}${PAKNAME}.deb
 
 # проверим установку
 
-dpkg --force-depends --install ${DEBBUILDROOT}${PAKNAME}.deb && apt-get -f -y install
+dpkg --force-depends --install $DSTPATH.deb && apt-get -f -y install
 
 # запуск тестов
 oscript ${SRCPATH}tests/testrunner.os -runall ${SRCPATH}tests
