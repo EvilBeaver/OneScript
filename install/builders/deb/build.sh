@@ -7,7 +7,7 @@ DEBBUILDROOT=${SRCPATH}src/oscript/bin/
 BUILDERROOT=${SRCPATH}install/builders/deb/
 
 VERSION=$(cat ${BINPATH}VERSION)
-PAKNAME=onescript-engine_${VERSION}
+PAKNAME=onescript-engine
 DSTPATH=${DEBBUILDROOT}${PAKNAME}
 
 mkdir $DSTPATH 
@@ -40,7 +40,8 @@ chmod 777 $DSTPATH.deb
 
 # проверим установку
 
-dpkg --force-depends --install $DSTPATH.deb && apt-get -f -y install
+dpkg-name --overwrite $DSTPATH.deb
+find -name '*.deb' | xargs dpkg --force-depends --install 
 
 # запуск тестов
 oscript ${SRCPATH}tests/testrunner.os -runall ${SRCPATH}tests
