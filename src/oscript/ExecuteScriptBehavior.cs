@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +15,7 @@ using ScriptEngine.Machine;
 
 namespace oscript
 {
-    class ExecuteScriptBehavior : AppBehavior, IHostApplication
+    class ExecuteScriptBehavior : AppBehavior, IHostApplication, ISystemLogWriter
     {
         string[] _scriptArgs;
         string _path;
@@ -24,13 +30,27 @@ namespace oscript
         {
             if (!System.IO.File.Exists(_path))
             {
-                throw new System.IO.FileNotFoundException("Script file is not found", _path);
+                Echo(String.Format("Script file is not found '{0}'", _path));
+                return 2;
             }
 
+            SystemLogger.SetWriter(this);
+
             var hostedScript = new HostedScriptEngine();
-            hostedScript.Initialize();
+            hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
+            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
-            var process = hostedScript.CreateProcess(this, source);
+
+            Process process;
+            try
+            {
+                process = hostedScript.CreateProcess(this, source);
+            }
+            catch(Exception e)
+            {
+                this.ShowExceptionInfo(e);
+                return 1;
+            }
 
             return process.Start();
         }
@@ -39,12 +59,18 @@ namespace oscript
 
         public void Echo(string text)
         {
-            Console.WriteLine(text);
+            Output.WriteLine(text);
         }
 
         public void ShowExceptionInfo(Exception exc)
         {
-            Console.WriteLine(exc.Message);
+            if(exc is ScriptException)
+            {
+                var rte = (ScriptException)exc;
+                Echo(rte.MessageWithoutCodeFragment);
+            }
+            else
+                Echo(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)
@@ -68,5 +94,10 @@ namespace oscript
         }
 
         #endregion
+
+        public void Write(string text)
+        {
+            Console.Error.WriteLine(text);
+        }
     }
 }

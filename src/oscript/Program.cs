@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +16,9 @@ namespace oscript
         static int Main(string[] args)
         {
             int returnCode;
+            
+            Output.Init();
+
             var behavior = BehaviorSelector.Select(args);
             try
             {
@@ -19,18 +28,28 @@ namespace oscript
             {
                 // сюда при выполнении скрипта мы попадать не должны
                 // исключения времени выполнения выводятся в IApplicationHost.ShowExceptionInfo
-                Console.WriteLine(e.ToString());
+                // здесь мы пишем только если случилось что-то совсем плохое
+                Output.WriteLine(e.ToString());
                 returnCode = 1;
-            }
-
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                Console.Write("Press any key to continue. . . ");
-                Console.ReadKey(true);
             }
 
             return returnCode;
 
+        }
+
+        private static Encoding _encoding;
+
+        public static Encoding ConsoleOutputEncoding
+        {
+            get
+            {
+                return _encoding;
+            }
+            set
+            {
+                _encoding = value;
+                Output.Init();
+            }
         }
     }
 }

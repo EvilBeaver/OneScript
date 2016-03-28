@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,6 +50,12 @@ namespace ScriptEngine
             
             _globalScope.DefineVariable(identifier, SymbolType.ContextProperty);
             _injectedProperties.Insert(value, identifier, true, !readOnly);
+        }
+
+        public void SetGlobalProperty(string propertyName, IValue value)
+        {
+            int propId = _injectedProperties.FindProperty(propertyName);
+            _injectedProperties.SetPropValue(propId, value);
         }
 
         internal CompilerContext SymbolsContext

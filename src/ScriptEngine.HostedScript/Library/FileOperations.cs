@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -54,13 +60,12 @@ namespace ScriptEngine.HostedScript.Library
         {
             // примитивная реализация "в лоб"
             var fn = Path.GetRandomFileName();
-            if (ext != null)
+            if (ext != null && !String.IsNullOrWhiteSpace(ext))
             {
-                if (ext[0] == '.')
+                if(ext[0] == '.')
                     fn += ext;
                 else
                     fn += "." + ext;
-
             }
 
             return Path.Combine(TempFilesDir(), fn);
@@ -79,22 +84,33 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (mask == null)
             {
-                recursive = false;
-                if (System.Environment.OSVersion.Platform == PlatformID.Unix)
+                // fix 225, 227, 228
+                var fObj = new FileContext(dir);
+                if(fObj.Exists())
                 {
-                    mask = "*";
+                    return new ArrayImpl(new[] { fObj });
                 }
                 else
                 {
-                    mask = "*.*";
+                    return new ArrayImpl();
                 }
+            }
+            else if (File.Exists(dir))
+            {
+                return new ArrayImpl();
             }
 
             System.IO.SearchOption mode = recursive ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
-            var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
-                .Select<string, IValue>((x) => new FileContext(x));
-
-            return new ArrayImpl(entries);
+            try
+            {
+                var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
+                        .Select<string, IValue>((x) => new FileContext(x));
+                return new ArrayImpl(entries);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new ArrayImpl();
+            }
 
         }
 
@@ -108,8 +124,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (mask == null)
             {
-                var file = new FileContext(path);
-                if (file.IsDirectory())
+                if (Directory.Exists(path))
                 {
                     System.IO.Directory.Delete(path, true);
                 }
@@ -121,14 +136,15 @@ namespace ScriptEngine.HostedScript.Library
             else
             {
                 var entries = System.IO.Directory.EnumerateFileSystemEntries(path, mask)
-                    .AsParallel();
+                    .AsParallel()
+                    .ToArray();
                 foreach (var item in entries)
                 {
                     System.IO.FileInfo finfo = new System.IO.FileInfo(item);
-                    if (finfo.Attributes == System.IO.FileAttributes.Directory)
+                    if (finfo.Attributes.HasFlag(System.IO.FileAttributes.Directory))
                     {
                         //recursively delete directory
-                        System.IO.Directory.Delete(item, true);
+                        DeleteDirectory(item, true);
                     }
                     else
                     {
@@ -136,6 +152,26 @@ namespace ScriptEngine.HostedScript.Library
                     }
                 }
             }
+        }
+
+        public static void DeleteDirectory(string path, bool recursive)
+        {
+            if (recursive)
+            {
+                var subfolders = Directory.GetDirectories(path);
+                foreach (var s in subfolders)
+                {
+                    DeleteDirectory(s, recursive);
+                }
+            }
+
+            var files = Directory.GetFiles(path);
+            foreach (var f in files)
+            {
+                File.Delete(f);
+            }
+
+            Directory.Delete(path);
         }
 
         /// <summary>
@@ -167,8 +203,49 @@ namespace ScriptEngine.HostedScript.Library
             System.IO.Directory.SetCurrentDirectory(path);
         }
 
-        private static ContextMethodsMapper<FileOperations> _methods = new ContextMethodsMapper<FileOperations>();
-        
+        /// <summary>
+        /// Получает разделитель пути в соответствии с текущей операционной системой
+        /// </summary>
+        [ContextMethod("ПолучитьРазделительПути","GetPathSeparator")]
+        public string GetPathSeparator()
+        {
+            return new string(new char[]{Path.DirectorySeparatorChar});
+        }
+
+        /// <summary>
+        /// Получает маску "все файлы" для текущей операционной системы.
+        /// В Windows маска принимает значение "*.*", в nix - "*".
+        /// </summary>
+        [ContextMethod("ПолучитьМаскуВсеФайлы", "GetAllFilesMask")]
+        public string GetAllFilesMask()
+        {
+            var platform = System.Environment.OSVersion.Platform;
+            if (platform == PlatformID.Win32NT || platform == PlatformID.Win32Windows)
+                return "*.*";
+            else
+                return "*";
+        }
+
+        /// <summary>
+        /// Объединяет компоненты файлового пути, с учетом разделителей, принятых в данной ОС.
+        /// При этом корректно, без дублирования, обрабатываются уже существующие разделители пути.
+        /// </summary>
+        /// <param name="path1">Первая часть пути</param>
+        /// <param name="path2">Вторая часть пути</param>
+        /// <param name="path3">Третья часть пути (необязательно)</param>
+        /// <param name="path4">Четвертая часть пути (необязательно)</param>
+        /// <returns>Объединенный путь.</returns>
+        [ContextMethod("ОбъединитьПути", "CombinePath")]
+        public string CombinePath(string path1, string path2, string path3 = null, string path4 = null)
+        {
+            if (path3 == null)
+                return Path.Combine(path1, path2);
+            else if (path4 == null)
+                return Path.Combine(path1, path2, path3);
+            else
+                return Path.Combine(path1, path2, path3, path4);
+        }
+
         public static IAttachableContext CreateInstance()
         {
             return new FileOperations();

@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +16,15 @@ namespace ScriptEngine.Machine.Contexts
         private ContextMethodsMapper<T> _methods = new ContextMethodsMapper<T>();
         private ContextPropertyMapper<T> _properties = new ContextPropertyMapper<T>();
 
+        protected ContextMethodsMapper<T> Methods
+        {
+            get { return _methods; }
+        }
+
+        protected ContextPropertyMapper<T> Properties
+        {
+            get { return _properties; }
+        }
 
         #region IRuntimeContextInstance members
 
@@ -72,6 +87,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+
         public virtual int FindMethod(string name)
         {
             return _methods.FindMethod(name);
@@ -128,6 +144,5 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         #endregion
-
     }
 }

@@ -1,3 +1,9 @@
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -100,6 +106,11 @@ namespace ScriptEngine.Compiler
             if (_index < _code.Length)
             {
                 _currentSymbol = _code[_index];
+                if (_currentSymbol == '\n')
+                {
+                    _lineCounter++;
+                    _lineBounds.Add(_index + 1);
+                }
                 return true;
             }
             else
@@ -143,13 +154,6 @@ namespace ScriptEngine.Compiler
         {
             while (Char.IsWhiteSpace(_currentSymbol))
             {
-                if (_currentSymbol == '\n')
-                {
-                    _lineCounter++;
-                    if(_index < _code.Length)
-                        _lineBounds.Add(_index+1);
-                }
-
                 if (!MoveNext())
                 {
                     return false;

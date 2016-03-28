@@ -3,18 +3,27 @@
   
   <PropertyGroup>
     <Configuration>Release</Configuration>
-    <OutputPathForDist>$(MSBuildProjectDirectory)\install\build\</OutputPathForDist>
+    <OutputPathForBuild>$(MSBuildProjectDirectory)\install\build\</OutputPathForBuild>
     <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
+	<BinFolder>$(OutputPathForBuild)\bin\</BinFolder>
+	<LibFolder>$(OutputPathForBuild)\lib\</LibFolder>
+	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
     <Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
-    <InstallerStandartPath>"C:\Program Files (x86)\Inno Setup 5\iscc.exe"</InstallerStandartPath>
+    <InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
+	<NugetExecutable>"$(NugetPath)\nuget.exe"</NugetExecutable>
 
     <Major>1</Major>
     <Minor>0</Minor>
-    <Build>9</Build>
+    <Build>11</Build>
     <Revision>0</Revision>
     
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(ReleaseNumber)' != '' ">
+    <!-- CI Build Number -->
+    <Build>$(ReleaseNumber)</Build>
+  </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(BUILD_NUMBER)' != '' ">
     <!-- CI Build Number -->
     <Revision>$(BUILD_NUMBER)</Revision>
@@ -27,8 +36,8 @@
     <DefaultExclude Include="**\*.pdb" />
     <DefaultExclude Include="**\*.XML" />
     <DefaultExclude Include="*.zip" />
-    <DefaultExclude Include="$(OutputPathForDist)\*.pdb" />
-    <DefaultExclude Include="$(OutputPathForDist)\*.XML" />
+    <DefaultExclude Include="$(OutputPathForBuild)\*.pdb" />
+    <DefaultExclude Include="$(OutputPathForBuild)\*.XML" />
   </ItemGroup>
 
   <Target Name="VersionGenerate">
@@ -53,10 +62,7 @@
   
 
   <Target Name="Configure">
-    <GitVersion LocalPath="$(MSBuildProjectDirectory)">
-      <Output TaskParameter="CommitHash" PropertyName="CommitHash" />
-    </GitVersion>
-
+    
     <!--CI server will be generate build numbaer and regenerate all AssemblyInfo without commit-->
     <CallTarget Targets="VersionGenerate" Condition=" '$(BUILD_NUMBER)' != '' "/>
 
@@ -65,15 +71,32 @@
     
   </Target>
   
-  <Target Name="Build" DependsOnTargets="CleanAll;Configure;Compile;CreateInstall" >
-    <CallTarget Targets="ContinueBuild" />
+  <Target Name="Build" DependsOnTargets="CleanAll;Configure;Compile" >
+    <CallTarget Targets="PreparePackage" />
   </Target>
   
+  <Target Name="CleanAll">
+    <CreateItem Include="$(OutputPathForBuild)\**\*">
+      <Output TaskParameter="Include" ItemName="RemoveFiles" />
+    </CreateItem>
+
+    <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
+      <Output TaskParameter="Include" ItemName="RemoveXMLTestResultOnClean" />
+    </CreateItem>
+    
+	<DeleteTree Directories="$(DistPath)/**/*" Condition="Exists($(DistPath))"/>
+	<DeleteTree Directories="$(OutputPathForBuild)/**/*" Condition="Exists($(OutputPathForBuild))"/>
+    <Delete Files="@(RemoveXMLTestResultOnClean)" />
+    
+    <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForBuild)"/>
+
+  </Target>
+
   <Target Name="Compile">
     
-    <MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)" />
+    <MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForBuild)" />
 
-    <CreateItem Include="$(OutputPathForDist)\*.pdb;$(OutputPathForDist)\*.XML">
+    <CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML">
       <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
     </CreateItem>
 
@@ -85,85 +108,92 @@
         <SnegopatEngine Include="$(MSBuildProjectDirectory)\src\Release\ScriptEngine.Snegopat.dll"/>
     </ItemGroup>
 
-    <Copy  SourceFiles="@(SnegopatEngine)" DestinationFolder="$(OutputPathForDist)\" />
+    <Copy  SourceFiles="@(SnegopatEngine)" DestinationFolder="$(OutputPathForBuild)\" />
 
   </Target>
 
-
-  <Target Name="CleanAll">
-    <CreateItem Include="$(OutputPathForDist)\*">
-      <Output TaskParameter="Include" ItemName="RemoveFiles" />
+  <Target Name="PreparePackage">
+	
+	<CreateItem Include="$(OutputPathForBuild)\StandaloneRunner.exe">
+      <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
     </CreateItem>
-
-    <CreateItem Include="$(DistPath)\*">
-      <Output TaskParameter="Include" ItemName="RemoveDistrs" />
-    </CreateItem>
-
-    <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
-      <Output TaskParameter="Include" ItemName="RemoveXMLTestResultOnClean" />
-    </CreateItem>
-    
-    
-	  <Delete Files="@(RemoveFiles)" />
-    <Delete Files="@(RemoveDistrs)" />
-    <Delete Files="@(RemoveXMLTestResultOnClean)" />
-    
-    <MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForDist)"/>
-
+	
+    <Delete Files="@(RemoveUnnessesaryFiles)" />
+	
+	<ItemGroup>
+		<BinaryFiles Include="$(OutputPathForBuild)\*"/>
+		<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*"/>
+		<ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
+	</ItemGroup>
+	
+	<Move SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)"/> 
+	<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
+	<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
+	
+	<!-- Генерация скрипта запуска для opm -->
+	<Exec WorkingDirectory="$(BinFolder)" Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(LibFolder)\opm\src\opm.os&quot; app &quot;$(LibFolder)\opm\src\opm.os&quot;"/>
+	
   </Target>
-
-
+  
   <Target Name="CreateInstall">
 
-    <Exec Command="$(InstallerStandartPath) $(MSBuildProjectDirectory)\install\install.iss /o./dist" />
-    
+    <Exec Command="$(InstallerStandartPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot;" />
+	
+  </Target>
+  
+  <Target Name="CreateSignedInstall" DependsOnTargets="CreateInstall">
+	<ItemGroup>
+		<FileToSign Include="$(DistPath)\*.exe" />
+	</ItemGroup>
+	
+	<PropertyGroup>
+		<CertPass>"$(CertPassword)"</CertPass>
+		<CertFile>"$(CertPath)"</CertFile>
+	</PropertyGroup>
+	<Exec Command="&quot;$(SignTool)&quot; sign /f $(CertFile) /p $(CertPass) /t http://timestamp.verisign.com/scripts/timstamp.dll  /d &quot;OneScript Engine&quot; /du http://oscript.io &quot;@(FileToSign)&quot;"/>
+	
   </Target>
 
-  <Target Name="ContinueBuild">
+  <Target Name="CreateMSI">
     <!--TODO Add Wix cretation MSI-->
+  </Target>
+  
+  <Target Name="CreateNuget">
+    
+	<ItemGroup>
+		<NugetAbleProject Include="ScriptEngine"/>
+		<NugetAbleProject Include="ScriptEngine.HostedScript"/>
+	</ItemGroup>
+	
+	<Exec WorkingDirectory="$(MSBuildProjectDirectory)\src\%(NugetAbleProject.Identity)" 
+		Command="$(NugetExecutable) pack %(NugetAbleProject.Identity).csproj -Version $(Major).$(Minor).$(Build) -Prop Configuration=Release -Prop &quot;TargetPath=$(BinFolder)%(NugetAbleProject.Identity).dll&quot; -OutputDirectory &quot;$(DistPath)\&quot;"/>
+	
   </Target>
   
   <!--aditional tasks-->
 
   <Target Name="xUnitTest">
-    <ItemGroup>
-      <TestFiles Include="$(MSBuildProjectDirectory)\tests\*.os" Exclude="$(MSBuildProjectDirectory)\tests\start.os;$(MSBuildProjectDirectory)\tests\testrunner.os"/>
-    </ItemGroup>
-
+    
     <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
       <Output TaskParameter="Include" ItemName="RemoveXMLTestResult" />
     </CreateItem>
     
     <Delete Files="@(RemoveXMLTestResult)" />
 
-    <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="$(OutputPathForDist)\oscript.exe $(MSBuildProjectDirectory)\tests\start.os -run %(TestFiles.FullPath)" IgnoreExitCode="true"/>
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="$(OutputPathForBuild)\bin\oscript.exe $(MSBuildProjectDirectory)\tests\testrunner.os -runall . xddReportPath ." IgnoreExitCode="true"/>
     
   </Target>
   
-  
   <Target Name="CreateZipForUpdateDll">
-    <CreateItem Include="$(DistPath)\*.zip">
-      <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
-    </CreateItem>
-
-    <Delete Files="@(RemoveUnnessesaryFiles)" />
-
-    <CreateItem Include="$(OutputPathForDist)\*.*" Exclude="$(DefaultExclude)" >
+    
+    <CreateItem Include="$(OutputPathForBuild)\**\*" Exclude="$(DefaultExclude)" >
       <Output TaskParameter="Include" ItemName="ZipFiles" />
     </CreateItem>
 
-    <GitBranch>
-      <Output TaskParameter="Branch" PropertyName="GitBranch" />
-    </GitBranch>
-
-    <Message Text="Current GIT branch $(GitBranch)"/>
-  
-    <!--$(GitBranch.Replace('\','-').Replace('/','-'))-->
-    
     <Zip Files="@(ZipFiles)"
-         WorkingDirectory="$(OutputPathForDist)"
-         ZipFileName="$(DistPath)OneScript-latest.zip" />
+         WorkingDirectory="$(OutputPathForBuild)"
+         ZipFileName="$(DistPath)OneScript-$(Major).$(Minor).$(Build)-bin.zip" />
    
-  </Target>  
+  </Target>
   
 </Project>

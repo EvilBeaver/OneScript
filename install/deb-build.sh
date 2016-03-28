@@ -1,16 +1,13 @@
 #!/bin/bash
 
+cd `dirname $0`
 
-docker build -t ubuntu/dpkg ${PWD}/builders/deb/
+SRCPATH=/media
+BINPATH=${PWD}/../src/oscript/bin/Release/
+mono ${BINPATH}oscript.exe | head -1 | \
+		grep -oE '([[:digit:]]+\.){2}[[:digit:]]+' \
+		> ${BINPATH}VERSION
 
-
-docker run ubuntu/dpkg lintian /workspace/oscript-deb-core.deb
-
-
-docker run ubuntu/dpkg sudo dpkg -i /workspace/oscript-deb-core.deb
-
-
-docker run -i -v ${PWD}/dist:/dist ubuntu/dpkg cp -u /workspace/oscript-deb-core.deb /dist/oscript-core_1.0.9.$BUILD_NUMBER_all.deb
-
-
+docker build -t onescript:deb ${PWD}/builders/deb/
+docker run --rm -v ${PWD}/..:${SRCPATH} onescript:deb ${SRCPATH}
 

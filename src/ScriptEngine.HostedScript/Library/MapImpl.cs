@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -23,7 +29,6 @@ namespace ScriptEngine.HostedScript.Library
             if (!_content.TryGetValue(index, out result))
             {
                 result = ValueFactory.Create();
-                _content.Add(index, result);
             }
 
             return result;
@@ -44,6 +49,11 @@ namespace ScriptEngine.HostedScript.Library
             return false;
         }
         
+        internal bool ContainsKey(IValue key)
+        {
+            return _content.ContainsKey(key);
+        }
+
         #region ICollectionContext Members
 
         [ContextMethod("Вставить", "Insert")]

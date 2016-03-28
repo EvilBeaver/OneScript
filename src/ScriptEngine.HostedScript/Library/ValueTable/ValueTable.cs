@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("ТаблицаЗначений", "ValueTable")]
-    class ValueTable : AutoContext<ValueTable>, ICollectionContext
+    public class ValueTable : AutoContext<ValueTable>, ICollectionContext
     {
         private ValueTableColumnCollection _columns = new ValueTableColumnCollection();
         private List<ValueTableRow> _rows = new List<ValueTableRow>();
@@ -96,7 +102,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return result;
         }
 
-        private List<ValueTableColumn> GetProcessingColumnList(string ColumnNames)
+        private List<ValueTableColumn> GetProcessingColumnList(string ColumnNames, bool EmptyListInCaseOfNull = false)
         {
             List<ValueTableColumn> processing_list = new List<ValueTableColumn>();
             if (ColumnNames != null)
@@ -119,7 +125,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                     processing_list.Add(Column);
                 }
             }
-            else
+            else if (!EmptyListInCaseOfNull)
             {
                 foreach (ValueTableColumn Column in _columns)
                     processing_list.Add(Column);
@@ -208,14 +214,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("НайтиСтроки", "FindRows")]
         public ArrayImpl FindRows(IValue Filter)
         {
-            if (!(Filter is StructureImpl))
+            var filterStruct = Filter.GetRawValue() as StructureImpl;
+
+            if (filterStruct == null)
                 throw RuntimeException.InvalidArgumentType();
 
             ArrayImpl Result = new ArrayImpl();
 
             foreach (ValueTableRow row in _rows)
             {
-                if (CheckFilterCriteria(row, Filter as StructureImpl))
+                if (CheckFilterCriteria(row, filterStruct))
                     Result.Add(row);
             }
 
@@ -242,8 +250,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             // TODO: Сворачиваем за N^2. Переделать на N*log(N)
 
-            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(GroupColumnNames);
-            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(AggregateColumnNames);
+            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(GroupColumnNames, true);
+            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(AggregateColumnNames, true);
 
             List<ValueTableRow> new_rows = new List<ValueTableRow>();
 
@@ -369,36 +377,57 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
             ValueTable Result = CopyColumns(ColumnNames);
             List<ValueTableColumn> columns = GetProcessingColumnList(ColumnNames);
-
-            // TODO: Переделать это убожество. Свернуть две ветки в одну, сделать соответствие объектов старых колонок и новых.
-
+            
+            IEnumerable<ValueTableRow> requestedRows;
             if (Rows == null)
             {
-                foreach (ValueTableRow row in _rows)
-                {
-                    ValueTableRow new_row = Result.Add();
-                    foreach (ValueTableColumn Column in columns)
-                    {
-                        new_row.Set(ValueFactory.Create(Column.Name), row.Get(Column));
-                    }
-                }
+                requestedRows = _rows;
             }
             else
             {
-                ArrayImpl a_Rows = Rows as ArrayImpl;
-                foreach (IValue irow in a_Rows)
-                {
-                    ValueTableRow row = irow as ValueTableRow;
+                if (Rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(StructureImpl))))
+                    requestedRows = FindRows(Rows).Select(x => x as ValueTableRow);
+                else if (Rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(ArrayImpl))))
+                    requestedRows = GetRowsEnumByArray(Rows);
+                else
+                    throw RuntimeException.InvalidArgumentType();
+            }
 
-                    ValueTableRow new_row = Result.Add();
-                    foreach (ValueTableColumn Column in columns)
-                    {
-                        new_row.Set(ValueFactory.Create(Column.Name), row.Get(Column));
-                    }
+            var columnMap = new Dictionary<ValueTableColumn, ValueTableColumn>();
+            foreach (var column in columns)
+            {
+                var destinationColumn = Result.Columns.FindColumnByName(column.Name);
+                columnMap.Add(column, destinationColumn);
+            }
+
+            foreach (var row in requestedRows)
+            {
+                ValueTableRow new_row = Result.Add();
+                foreach (ValueTableColumn Column in columns)
+                {
+                    new_row.Set(columnMap[Column], row.Get(Column));
                 }
             }
 
             return Result;
+        }
+
+        private IEnumerable<ValueTableRow> GetRowsEnumByArray(IValue Rows)
+        {
+            IEnumerable<ValueTableRow> requestedRows;
+            var rowsArray = Rows.GetRawValue() as ArrayImpl;
+            if (rowsArray == null)
+                throw RuntimeException.InvalidArgumentType();
+
+            requestedRows = rowsArray.Select(x =>
+            {
+                var vtr = x.GetRawValue() as ValueTableRow;
+                if (vtr == null || vtr.Owner() != this)
+                    throw RuntimeException.InvalidArgumentValue();
+
+                return vtr;
+            });
+            return requestedRows;
         }
 
         private struct ValueTableSortRule
@@ -440,6 +469,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         private class RowComparator : IComparer<ValueTableRow>
         {
             List<ValueTableSortRule> Rules;
+            GenericIValueComparer _comparer = new GenericIValueComparer();
 
             public RowComparator(List<ValueTableSortRule> Rules)
             {
@@ -454,7 +484,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 IValue xValue = x.Get(Rule.Column);
                 IValue yValue = y.Get(Rule.Column);
 
-                int result = xValue.CompareTo(yValue) * Rule.direction;
+                int result = _comparer.Compare(xValue, yValue) * Rule.direction;
 
                 return result;
             }

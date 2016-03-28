@@ -1,10 +1,16 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library
 {
 
-    [SystemEnum("Символы", "Symbols")]
+    [SystemEnum("Символы", "Chars")]
     public class SymbolsEnum : EnumerationContext
     {
         private SymbolsEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
@@ -62,12 +68,12 @@ namespace ScriptEngine.HostedScript.Library
             var stringType = TypeDescriptor.FromDataType(DataType.String);
             var instance = new SymbolsEnum(type, stringType);
 
-            instance.AddValue("ПС", new SymbolsEnumValue(instance, "\n"));
-            instance.AddValue("ВК", new SymbolsEnumValue(instance, "\r"));
-            instance.AddValue("ВТаб", new SymbolsEnumValue(instance, "\v"));
-            instance.AddValue("Таб", new SymbolsEnumValue(instance, "\t"));
-            instance.AddValue("ПФ", new SymbolsEnumValue(instance, "\f"));
-            instance.AddValue("НПП", new SymbolsEnumValue(instance, "\u00A0"));
+            instance.AddValue("ПС", "LF", new SymbolsEnumValue(instance, "\n"));
+            instance.AddValue("ВК", "CR", new SymbolsEnumValue(instance, "\r"));
+            instance.AddValue("ВТаб", "VTab", new SymbolsEnumValue(instance, "\v"));
+            instance.AddValue("Таб", "Tab", new SymbolsEnumValue(instance, "\t"));
+            instance.AddValue("ПФ", "FF", new SymbolsEnumValue(instance, "\f"));
+            instance.AddValue("НПП", "NBSp", new SymbolsEnumValue(instance, "\u00A0"));
 
             return instance;
         }

@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -69,15 +75,34 @@ namespace ScriptEngine
             }
         }
 
+        public string ErrorDescription
+        {
+            get
+            {
+                return base.Message;
+            }
+        }
+
+        public string MessageWithoutCodeFragment
+        {
+            get
+            {
+                return String.Format("{{Модуль {0} / Ошибка в строке: {1} / {2}}}",
+                    this.ModuleName,
+                    this.LineNumber,
+                    base.Message);
+            }
+        }
+
         public override string Message
         {
             get
             {
-                return String.Format("{{Модуль {0} / Ошибка в строке: {1} / {2}}}\n  {3}",
-                    _codePosition.ModuleName,
-                    _codePosition.LineNumber,
-                    base.Message,
-                    _codePosition.Code);
+                var sb = new StringBuilder(MessageWithoutCodeFragment);
+                sb.AppendLine("    ");
+                sb.Append(Code);
+
+                return sb.ToString();
             }
         }
     }

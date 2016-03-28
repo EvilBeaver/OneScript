@@ -1,6 +1,8 @@
 #include "Stdafx.h"
 #include "DispatchHelpers.h"
 
+#pragma unmanaged
+
 LPCTSTR getNextVarType(LPCTSTR pszFmt, VARTYPE FAR* pvt)
 {   
     *pvt = 0;

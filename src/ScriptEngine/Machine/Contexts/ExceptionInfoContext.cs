@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,10 +15,12 @@ namespace ScriptEngine.Machine.Contexts
     /// Класс позволяет узнать информацию о произошедшем исключении.
     /// </summary>
     [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
-    class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
+    public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
-        Exception _exc;
-        public ExceptionInfoContext(Exception source)
+        ScriptException _exc;
+        IValue _innerException;
+
+        public ExceptionInfoContext(ScriptException source)
         {
             if (source == null)
                 throw new ArgumentNullException();
@@ -24,9 +32,60 @@ namespace ScriptEngine.Machine.Contexts
         /// Содержит краткое описание ошибки. Эквивалент Exception.Message в C#
         /// </summary>
         [ContextProperty("Описание", "Description")]
-        public string Message 
+        public string Description 
         { 
-            get { return _exc.Message; } 
+            get { return _exc.ErrorDescription; } 
+        }
+
+        public string MessageWithoutCodeFragment
+        {
+            get { return _exc.MessageWithoutCodeFragment; }
+        }
+
+        public string DetailedDescription
+        {
+            get { return _exc.Message; }
+        }
+
+        /// <summary>
+        /// Имя модуля, вызвавшего исключение.
+        /// </summary>
+        [ContextProperty("ИмяМодуля", "ModuleName")]
+        public string ModuleName
+        {
+            get
+            {
+                return SafeMarshallingNullString(_exc.ModuleName);
+            }
+        }
+
+        /// <summary>
+        /// Номер строки, вызвавшей исключение.
+        /// </summary>
+        [ContextProperty("НомерСтроки", "LineNumber")]
+        public int LineNumber
+        {
+            get
+            {
+                return _exc.LineNumber;
+            }
+        }
+
+        /// <summary>
+        /// Строка исходного кода, вызвавшего исключение.
+        /// </summary>
+        [ContextProperty("ИсходнаяСтрока", "SourceLine")]
+        public string SourceLine
+        {
+            get
+            {
+                return SafeMarshallingNullString(_exc.Code);
+            }
+        }
+
+        private string SafeMarshallingNullString(string src)
+        {
+            return src == null ? "" : src;
         }
 
         /// <summary>
@@ -37,10 +96,47 @@ namespace ScriptEngine.Machine.Contexts
         {
             get 
             {
-                if (_exc.InnerException != null)
-                    return new ExceptionInfoContext(_exc.InnerException);
-                else
+                if (_innerException == null)
+                    _innerException = CreateInnerExceptionInfo();
+
+                return _innerException;
+            }
+        }
+
+        private IValue CreateInnerExceptionInfo()
+        {
+            if (_exc.InnerException == null)
+                return ValueFactory.Create();
+
+            bool alreadyWrapped = _exc is ExternalSystemException;
+            if (!alreadyWrapped)
+            {
+                ScriptException inner;
+                inner = _exc.InnerException as ScriptException;
+                if (inner == null)
+                {
+                    inner = new ExternalSystemException(_exc.InnerException);
+                }
+                if (inner.ModuleName == null)
+                    inner.ModuleName = _exc.ModuleName;
+                if (inner.Code == null)
+                    inner.Code = _exc.Code;
+                return new ExceptionInfoContext(inner);
+            }
+            else
+            {
+                if (_exc.InnerException.InnerException == null)
                     return ValueFactory.Create();
+
+                var inner = new ExternalSystemException(_exc.InnerException.InnerException);
+                if (inner.LineNumber == 0)
+                {
+                    inner.ModuleName = this.ModuleName;
+                    inner.Code = this.SourceLine;
+                    inner.LineNumber = this.LineNumber;
+                }
+
+                return new ExceptionInfoContext(inner);
             }
         }
 
@@ -58,7 +154,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string ToString()
         {
-            return Message;
+            return Description;
         }
 
     }

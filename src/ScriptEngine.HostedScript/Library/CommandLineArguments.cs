@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -40,12 +46,17 @@ namespace ScriptEngine.HostedScript.Library
 
         public override int FindMethod(string name)
         {
-            if (name.ToLower() == "количество")
+            if (name.ToLower() == "количество" || name.ToLower() == "count")
             {
                 return 0;
             }
             else
                 throw RuntimeException.MethodNotFoundException(name);
+        }
+
+        public override IEnumerable<MethodInfo> GetMethods()
+        {
+            yield return GetMethodInfo(0);
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
@@ -65,6 +76,8 @@ namespace ScriptEngine.HostedScript.Library
             if (methodNumber == 0)
                 return new MethodInfo()
                 {
+                    Name = "количество",
+                    Alias = "count",
                     IsFunction = true,
                     Params = new ParameterDefinition[0]
                 };

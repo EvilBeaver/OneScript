@@ -1,0 +1,364 @@
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine.Contexts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using ScriptEngine.Machine;
+
+namespace ScriptEngine.HostedScript.Library
+{
+    [GlobalContext(Category = "Операции с строками")]
+    public class StringOperations : GlobalContextBase<StringOperations>
+    {
+        readonly int STRTEMPLATE_ID;
+        const string STRTEMPLATE_NAME_RU = "СтрШаблон";
+        const string STRTEMPLATE_NAME_EN = "StrTemplate";
+
+        public StringOperations()
+        {
+            STRTEMPLATE_ID = this.Methods.Count;
+        }
+
+        /// <summary>
+        /// Функция НСтр имеет ограниченную поддержку и может использоваться только для упрощения портирования кода из 1С.
+        /// Возвращает только строку на первом языке из списка. Код языка во втором параметре игнорируется.
+        /// </summary>
+        /// <param name="src">Строка на нескольких языках (использован будет только первый)</param>
+        /// <param name="lang">Код языка (игнорируется)</param>
+        [ContextMethod("НСтр", "NStr")]
+        public string NStr(string src, string lang = null)
+        {
+            var parser = new FormatParametersList(src);
+            var str = parser.EnumerateValues().FirstOrDefault();
+
+            return str == null ? String.Empty : str;
+        }
+
+        /// <summary>
+        /// Определяет, что строка начинается с указанной подстроки.
+        /// </summary>
+        /// <param name="inputString">Строка, начало которой проверяется на совпадение с подстрокой поиска.</param>
+        /// <param name="searchString">Строка, содержащая предполагаемое начало строки. В случае если переданное значение является пустой строкой генерируется исключительная ситуация.</param>
+        [ContextMethod("СтрНачинаетсяС", "StrStartWith")]
+        public bool StrStartWith(string inputString, string searchString)
+        {
+            bool result = false;
+
+            if(!string.IsNullOrEmpty(inputString))
+            {
+                if (!string.IsNullOrEmpty(searchString))
+                {
+                    result = inputString.StartsWith(searchString);
+                }
+                else throw new RuntimeException("Ошибка при вызове метода контекста (СтрНачинаетсяС): Недопустимое значение параметра (параметр номер '2')"); 
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Определяет, заканчивается ли строка указанной подстрокой.
+        /// </summary>
+        /// <param name="inputString">Строка, окончание которой проверяется на совпадение с подстрокой поиска.</param>
+        /// <param name="searchString">Строка, содержащая предполагаемое окончание строки. В случае если переданное значение является пустой строкой генерируется исключительная ситуация.</param>
+        [ContextMethod("СтрЗаканчиваетсяНа", "StrEndsWith")]
+        public bool StrEndsWith(string inputString, string searchString)
+        {
+            bool result = false;
+
+            if(!string.IsNullOrEmpty(inputString))
+            {
+                if (!string.IsNullOrEmpty(searchString))
+                {
+                    result = inputString.EndsWith(searchString);
+                }
+                else throw new RuntimeException("Ошибка при вызове метода контекста (СтрЗаканчиваетсяНа): Недопустимое значение параметра (параметр номер '2')"); 
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Разделяет строку на части по указанным символам-разделителям.
+        /// </summary>
+        /// <param name="inputString">Разделяемая строка.</param>
+        /// <param name="stringDelimiter">Строка символов, каждый из которых является индивидуальным разделителем.</param>
+        /// <param name="includeEmpty">Указывает необходимость включать в результат пустые строки, которые могут образоваться в результате разделения исходной строки. Значение по умолчанию: Истина. </param>
+        [ContextMethod("СтрРазделить", "StrSplit")]
+        public ArrayImpl StrSplit(string inputString, string stringDelimiter, bool includeEmpty = true)
+        {
+            ArrayImpl arrResult = new ArrayImpl();
+            string[] arrParsed;
+            if(!string.IsNullOrEmpty(inputString))
+            {
+                if(!string.IsNullOrEmpty(stringDelimiter))
+                {
+                    arrParsed = inputString.Split(new string[] { stringDelimiter }, includeEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
+                }
+                else
+                {
+                    arrParsed = new string[] { inputString };
+                }
+            } else
+            {
+                arrParsed = new string[] { string.Empty };
+            }
+            arrResult = new ArrayImpl(arrParsed.Select(x => ValueFactory.Create(x)));
+            return arrResult;
+        }
+
+        /// <summary>
+        /// Соединяет массив переданных строк в одну строку с указанным разделителем
+        /// </summary>
+        /// <param name="input">Массив - соединяемые строки</param>
+        /// <param name="delimiter">Разделитель. Если не указан, строки объединяются слитно</param>
+        [ContextMethod("СтрСоединить", "StrConcat")]
+        public string StrConcat(ArrayImpl input, string delimiter = null)
+        {
+            var strings = input.Select(x => x.AsString());
+            
+            return String.Join(delimiter, strings);
+        }
+
+        /// <summary>
+        /// Сравнивает строки без учета регистра.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns>-1 первая строка больше, 1 - вторая строка больше. 0 - строки равны</returns>
+        [ContextMethod("СтрСравнить", "StrCompare")]
+        public int StrCompare(string first, string second)
+        {
+            return String.Compare(first, second, true);
+        }
+
+        /// <summary>
+        /// Находит вхождение искомой строки как подстроки в исходной строке
+        /// </summary>
+        /// <param name="haystack">Строка, в которой ищем</param>
+        /// <param name="needle">Строка, которую надо найти</param>
+        /// <param name="direction">значение перечисления НаправлениеПоиска (с конца/с начала)</param>
+        /// <param name="startPos">Начальная позиция, с которой начинать поиск</param>
+        /// <param name="occurance">Указывает номер вхождения искомой подстроки в исходной строке</param>
+        /// <returns>Позицию искомой строки в исходной строке. Возвращает 0, если подстрока не найдена.</returns>
+        [ContextMethod("СтрНайти", "StrFind")]
+        public int StrFind(string haystack, string needle, SelfAwareEnumValue<SearchDirectionEnum> direction = null, int startPos = 0, int occurance = 0)
+        {
+            int len = haystack.Length;
+            if (len == 0 || needle.Length == 0)
+                return 0;
+
+            if (direction == null)
+                direction = GlobalsManager.GetEnum<SearchDirectionEnum>().FromBegin as SelfAwareEnumValue<SearchDirectionEnum>;
+
+            bool fromBegin = direction == GlobalsManager.GetEnum<SearchDirectionEnum>().FromBegin;
+
+            if(startPos == 0)
+            {
+                startPos = fromBegin ? 1 : len;
+            }
+
+            if (startPos < 1 || startPos > len)
+                throw RuntimeException.InvalidArgumentValue();
+
+            if (occurance == 0)
+                occurance = 1;
+
+            int startIndex = startPos - 1;
+            int foundTimes = 0;
+            int index = len + 1;
+
+            if(fromBegin)
+            {
+                while(foundTimes < occurance && index >= 0)
+                {
+                    index = haystack.IndexOf(needle, startIndex);
+                    if (index >= 0)
+                    {
+                        startIndex = index + 1;
+                        foundTimes++;
+                    }
+                    if (startIndex >= len)
+                        break;
+                }
+
+            }
+            else
+            {
+                while(foundTimes < occurance && index >= 0)
+                {
+                    index = haystack.LastIndexOf(needle, startIndex);
+                    if (index >= 0)
+                    {
+                        startIndex = index - 1;
+                        foundTimes++;
+                    }
+                    if (startIndex < 0)
+                        break;
+                }
+
+            }
+
+            if (foundTimes == occurance)
+                return index + 1;
+            else
+                return 0;
+        }
+
+        #region IRuntimeContextInstance overrides
+
+        public override int FindMethod(string name)
+        {
+            if (string.Compare(name, STRTEMPLATE_NAME_RU, true) == 0 || string.Compare(name, STRTEMPLATE_NAME_EN, true) == 0)
+                return STRTEMPLATE_ID;
+            else
+                return base.FindMethod(name);
+        }
+
+        public override IEnumerable<MethodInfo> GetMethods()
+        {
+            var fullList = new List<MethodInfo>(base.GetMethods());
+            var strTemplateMethodInfo = CreateStrTemplateMethodInfo();
+
+            fullList.Add(strTemplateMethodInfo);
+            return fullList;
+
+        }
+
+        private static MethodInfo CreateStrTemplateMethodInfo()
+        {
+            var strTemplateMethodInfo = new MethodInfo();
+            strTemplateMethodInfo.IsFunction = true;
+            strTemplateMethodInfo.Name = STRTEMPLATE_NAME_RU;
+            strTemplateMethodInfo.Alias = STRTEMPLATE_NAME_EN;
+            strTemplateMethodInfo.Params = new ParameterDefinition[11];
+
+            strTemplateMethodInfo.Params[0] = new ParameterDefinition()
+            {
+                IsByValue = true
+            };
+
+            for (int i = 1; i < strTemplateMethodInfo.Params.Length; i++)
+            {
+                strTemplateMethodInfo.Params[i] = new ParameterDefinition()
+                {
+                    IsByValue = true,
+                    HasDefaultValue = true
+                };
+            }
+            return strTemplateMethodInfo;
+        }
+
+        public override MethodInfo GetMethodInfo(int methodNumber)
+        {
+            if (methodNumber == STRTEMPLATE_ID)
+                return CreateStrTemplateMethodInfo();
+            else
+                return base.GetMethodInfo(methodNumber);
+        }
+
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        {
+            if (methodNumber == STRTEMPLATE_ID)
+                CallStrTemplate(arguments);
+            else
+                base.CallAsProcedure(methodNumber, arguments);
+        }
+
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        {
+            if (methodNumber == STRTEMPLATE_ID)
+                retValue = CallStrTemplate(arguments);
+            else
+                base.CallAsFunction(methodNumber, arguments, out retValue);
+        } 
+
+        #endregion
+
+        private IValue CallStrTemplate(IValue[] arguments)
+        {
+            var srcFormat = arguments[0].AsString();
+            if (srcFormat == String.Empty)
+                return ValueFactory.Create("");
+
+            var re = new System.Text.RegularExpressions.Regex(@"(%%)|(%\d+)|(%\D)");
+            int matchCount = 0;
+            int passedArgsCount = arguments.Skip(1).Where(x => x != null).Count();
+            var result = re.Replace(srcFormat, (m) =>
+            {
+                if (m.Groups[1].Success)
+                    return "%";
+                
+                if(m.Groups[2].Success)
+                {
+                    matchCount++;
+                    var number = int.Parse(m.Groups[2].Value.Substring(1));
+                    if (number < 1 || number > 11)
+                        throw new RuntimeException("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
+
+                    if (arguments[number] != null)
+                        return arguments[number].AsString();
+                    else
+                        return "";
+                }
+
+                throw new RuntimeException("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
+
+            });
+
+            if (passedArgsCount > matchCount)
+                throw RuntimeException.TooManyArgumentsPassed();
+
+            return ValueFactory.Create(result);
+        }
+
+        public static IAttachableContext CreateInstance()
+        {
+            return new StringOperations();
+        }
+
+    }
+
+
+    [SystemEnum("НаправлениеПоиска", "SearchDirection")]
+    public class SearchDirectionEnum : EnumerationContext
+    {
+        const string FROM_BEGIN = "СНачала";
+        const string FROM_END = "СКонца";
+
+        public SearchDirectionEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
+            : base(typeRepresentation, valuesType)
+        {
+
+        }
+
+        [EnumValue(FROM_BEGIN, "FromBegin")]
+        public EnumerationValue FromBegin 
+        {
+            get
+            {
+                return this[FROM_BEGIN];
+            }
+        }
+
+        [EnumValue(FROM_END, "FromEnd")]
+        public EnumerationValue FromEnd
+        {
+            get
+            {
+                return this[FROM_END];
+            }
+        }
+
+        public static SearchDirectionEnum CreateInstance()
+        {
+            return EnumContextHelper.CreateEnumInstance<SearchDirectionEnum>((t, v) => new SearchDirectionEnum(t, v));
+        }
+    }
+}

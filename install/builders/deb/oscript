@@ -1,0 +1,3 @@
+#!/bin/sh
+mono /usr/share/oscript/bin/oscript.exe $@
+

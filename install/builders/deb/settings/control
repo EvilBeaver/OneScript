@@ -1,12 +1,14 @@
 Package: onescript-engine
-Version: $BUILD_NUMBER
+Version: VERSION 
 Provides: onescript
-Maintainer: Alexey Lustin <alustin@sivlerbulleters.org>
+Maintainer: Sergey Batanov <sergey.batanov@dmpas.ru> 
 Architecture: all
-Section: misc
-Description: 1Script execution endgine.
+Section: interpreters
+Description: 1Script execution engine.
  Cross-platform execution engine.
  for junior DevOps.
  who use 1S:Enterprise Platform.
-Depends: mono-сomplete
+Depends: mono-runtime, libmono-system-core4.0-cil, libmono-system4.0-cil,
+  libmono-corlib4.0-cil, libmono-i18n4.0-all
+Recommends: mono-complete
 Origin: https://bitbucket.org/EvilBeaver/1script/ 

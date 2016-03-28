@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Environment;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using System;
 using System.Collections.Generic;
@@ -23,18 +29,28 @@ namespace ScriptEngine.Compiler
             _formatter.Serialize(output, FromHandle(module));
         }
 
+        private ModuleImage FromHandle(ScriptModuleHandle module)
+        {
+            return module.Module;
+        }
+
         public ScriptModuleHandle Read(Stream input)
         {
             var moduleImage = (ModuleImage)_formatter.Deserialize(input);
+
+            string path = System.Reflection.Assembly.GetEntryAssembly().Location;
+            moduleImage.ModuleInfo = new ModuleInformation()
+            {
+                CodeIndexer = new CompiledCodeIndexer(),
+                ModuleName = System.IO.Path.GetFileName(path),
+                Origin = path
+            };
+
             return new ScriptModuleHandle()
             {
                 Module = moduleImage
             };
         }
 
-        private ModuleImage FromHandle(ScriptModuleHandle module)
-        {
-            return module.Module;
-        }
     }
 }

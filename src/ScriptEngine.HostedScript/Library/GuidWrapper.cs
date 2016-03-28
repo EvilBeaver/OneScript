@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -8,7 +14,7 @@ using System.Text;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("УникальныйИдентификатор","UUID")]
-    public class GuidWrapper : IValue
+    public class GuidWrapper : IValue, IObjectWrapper
     {
         Guid _value;
 
@@ -93,6 +99,12 @@ namespace ScriptEngine.HostedScript.Library
                 return false;
             else
                 return _value.Equals(otherUuid._value);
+        }
+
+
+        object IObjectWrapper.UnderlyingObject
+        {
+            get { return _value; }
         }
     }
 }

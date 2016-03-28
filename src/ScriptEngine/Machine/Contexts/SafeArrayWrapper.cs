@@ -1,4 +1,10 @@
-﻿#if !__MonoCS__
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+#if !__MonoCS__
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,17 +45,29 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        [ContextMethod("GetValue")]
+        public IValue GetValue(int index)
+        {
+            return COMWrapperContext.CreateIValue(_array[index]);
+        }
+
+        [ContextMethod("SetValue")]
+        public void SetValue(int index, IValue value)
+        {
+            var newValue = COMWrapperContext.MarshalIValue(value);
+            _array[index] = newValue;
+        }
+
         public override IValue GetIndexedValue(IValue index)
         {
             var intIndex = (int)index.AsNumber();
-            return COMWrapperContext.CreateIValue(_array[intIndex]);
+            return GetValue(intIndex);
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
             var intIndex = (int)index.AsNumber();
-            var newValue = COMWrapperContext.MarshalIValue(val);
-            _array[intIndex] = newValue;
+            SetValue(intIndex, val);
         }
 
         public CollectionEnumerator GetManagedIterator()

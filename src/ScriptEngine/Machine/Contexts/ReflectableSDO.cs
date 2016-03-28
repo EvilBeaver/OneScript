@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Environment;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Environment;
 #if !__MonoCS__
 using System;
 using System.Collections.Generic;
@@ -316,6 +322,11 @@ namespace ScriptEngine.Machine.Contexts
         public void SetPropValue(int propNum, IValue newVal)
         {
             _instance.SetPropValue(propNum, newVal);
+        }
+
+        public IEnumerable<MethodInfo> GetMethods()
+        {
+            return _instance.GetMethods();
         }
 
         public int FindMethod(string name)

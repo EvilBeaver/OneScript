@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
@@ -11,7 +17,6 @@ namespace ScriptEngine
         private MachineInstance _machine = new MachineInstance();
         private ScriptSourceFactory _scriptFactory;
         private AttachedScriptsFactory _attachedScriptsFactory;
-        private CompilerContext _symbolsContext;
 
         public ScriptingEngine()
         {
@@ -33,17 +38,27 @@ namespace ScriptEngine
             ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm);
         }
 
-        public void Initialize(RuntimeEnvironment environment)
-        {
-            _symbolsContext = environment.SymbolsContext;
+        public RuntimeEnvironment Environment { get; set; }
 
-            foreach (var item in environment.AttachedContexts)
+        public void Initialize()
+        {
+            SetDefaultEnvironmentIfNeeded();
+
+            var symbolsContext = Environment.SymbolsContext;
+            _machine.Cleanup();
+            foreach (var item in Environment.AttachedContexts)
             {
                 _machine.AttachContext(item, false);
             }
 
             _attachedScriptsFactory = new AttachedScriptsFactory(this);
             AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
+        }
+
+        private void SetDefaultEnvironmentIfNeeded()
+        {
+            if (Environment == null)
+                Environment = new RuntimeEnvironment();
         }
 
         public ICodeSourceFactory Loader
@@ -54,9 +69,13 @@ namespace ScriptEngine
             }
         }
 
+        public IDirectiveResolver DirectiveResolver { get; set; }
+
         public CompilerService GetCompilerService()
         {
-            return new CompilerService(_symbolsContext);
+            var cs = new CompilerService(Environment.SymbolsContext);
+            cs.DirectiveResolver = DirectiveResolver;
+            return cs;
         }
 
         public LoadedModuleHandle LoadModuleImage(ScriptModuleHandle moduleImage)
@@ -66,10 +85,18 @@ namespace ScriptEngine
             return handle;
         }
 
-        internal IRuntimeContextInstance NewObject(LoadedModule module)
+        internal IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new Machine.Contexts.UserScriptContextInstance(module, "Сценарий");
             scriptContext.AddProperty("ЭтотОбъект", scriptContext);
+            if (externalContext != null)
+            {
+                foreach (var item in externalContext)
+                {
+                    scriptContext.AddProperty(item.Key, item.Value);
+                }
+            }
+
             scriptContext.InitOwnData();
             InitializeSDO(scriptContext);
 
@@ -79,6 +106,11 @@ namespace ScriptEngine
         public IRuntimeContextInstance NewObject(LoadedModuleHandle module)
         {
             return NewObject(module.Module); 
+        }
+
+        public IRuntimeContextInstance NewObject(LoadedModuleHandle module, ExternalContextData externalContext)
+        {
+            return NewObject(module.Module, externalContext);
         }
 
         public void InitializeSDO(ScriptDrivenObject sdo)

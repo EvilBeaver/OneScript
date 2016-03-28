@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,7 +28,7 @@ namespace oscript
 
         public override int Execute()
         {
-            Console.WriteLine("Make started...");
+            Output.WriteLine("Make started...");
             using (var exeStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("oscript.StandaloneRunner.exe"))
             using (var output = new FileStream(_exePath, FileMode.Create))
             {
@@ -31,7 +37,9 @@ namespace oscript
                 int offset = (int)output.Length;
 
                 var engine = new HostedScriptEngine();
+                engine.CustomConfig = ScriptFileHelper.CustomConfigPath(_codePath);
                 engine.Initialize();
+                ScriptFileHelper.OnBeforeScriptRead(engine);
                 var source = engine.Loader.FromFile(_codePath);
                 var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 var persistor = new ScriptEngine.Compiler.ModulePersistor(formatter);
@@ -48,7 +56,7 @@ namespace oscript
                     bw.Write(offset);
                 }
             }
-            Console.WriteLine("Make completed");
+            Output.WriteLine("Make completed");
             return 0;
         }
     }

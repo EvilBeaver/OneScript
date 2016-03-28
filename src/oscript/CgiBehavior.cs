@@ -1,4 +1,10 @@
-﻿using ScriptEngine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -49,13 +55,15 @@ namespace oscript
         private int RunCGIMode(string scriptFile)
         {
             var engine = new HostedScriptEngine();
+            engine.CustomConfig = ScriptFileHelper.CustomConfigPath(scriptFile);
             engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
 
             var request = new WebRequestContext();
             engine.InjectGlobalProperty("ВебЗапрос", request, true);
+            engine.InjectGlobalProperty("WebRequest", request, true);
             engine.InjectObject(this, false);
-            engine.Initialize();
 
+            ScriptFileHelper.OnBeforeScriptRead(engine);
             var source = engine.Loader.FromFile(scriptFile);
             
             Process process;
@@ -80,7 +88,7 @@ namespace oscript
 
         #region CGIHost
 
-        [ContextMethod("ВывестиЗаголовок")]
+        [ContextMethod("ВывестиЗаголовок", "Header")]
         public void Header(string header, string value)
         {
             if (_isContentEchoed)
@@ -105,13 +113,16 @@ namespace oscript
                     Header("Content-type", "text/html");
                 if (!IsHeaderWritten("Content-encoding"))
                     Header("Content-encoding", Encoding.BodyName);
-                Console.WriteLine();
+                oscript.Output.WriteLine();
 
                 _isContentEchoed = true;
             }
 
-            if(str!="")
-                Output(str);
+            if (str != "")
+            {
+                Output (str);
+                oscript.Output.WriteLine();
+            }
         }
 
         private void Output(string str)

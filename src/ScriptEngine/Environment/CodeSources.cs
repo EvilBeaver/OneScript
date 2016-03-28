@@ -1,8 +1,15 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Compiler;
+using System.IO;
 
 namespace ScriptEngine.Environment
 {
@@ -40,18 +47,53 @@ namespace ScriptEngine.Environment
     class FileBasedSource : ICodeSource
     {
         string _path;
+        string _code;
+        Encoding _noBomEncoding;
 
-        public FileBasedSource(string path)
+        public FileBasedSource(string path, Encoding defaultEncoding)
         {
-            _path = path;
+            _path = System.IO.Path.GetFullPath(path);
+            _noBomEncoding = defaultEncoding;
         }
 
         private string GetCodeString()
         {
-            using (var reader = FileOpener.OpenReader(_path))
+            if (_code == null)
             {
-                return reader.ReadToEnd();
+                using (var fStream = new FileStream(_path, FileMode.Open, FileAccess.Read))
+                {
+                    var buf = new byte[2];
+                    fStream.Read(buf, 0, 2);
+                    Encoding enc = null;
+                    bool skipShebang = false;
+                    if (IsLinuxScript(buf))
+                    {
+                        enc = Encoding.UTF8; // скрипты с shebang считать в формате UTF-8
+                        skipShebang = true;
+                    }
+                    else
+                    {
+                        fStream.Position = 0;
+                        enc = FileOpener.AssumeEncoding(fStream, _noBomEncoding);
+                    }
+
+                    using (var reader = new StreamReader(fStream, enc))
+                    {
+                        if (skipShebang)
+                            reader.ReadLine();
+
+                        _code = reader.ReadToEnd();
+                    }
+
+                }
             }
+
+            return _code;
+        }
+
+        private static bool IsLinuxScript(byte[] buf)
+        {
+            return buf[0] == '#' && buf[1] == '!';
         }
 
         #region ICodeSource Members

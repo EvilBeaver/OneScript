@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +19,9 @@ namespace ScriptEngine.Machine.Contexts
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
+        private MethodInfo[] _attachableMethods;
+        private Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
@@ -43,8 +52,8 @@ namespace ScriptEngine.Machine.Contexts
         public void InitOwnData()
         {
             
-            VARIABLE_COUNT = GetVariableCount();
-            METHOD_COUNT = GetMethodCount();
+            VARIABLE_COUNT = GetOwnVariableCount();
+            METHOD_COUNT = GetOwnMethodCount();
 
             int stateSize = VARIABLE_COUNT + _module.VariableFrameSize;
             _state = new IVariable[stateSize];
@@ -55,10 +64,22 @@ namespace ScriptEngine.Machine.Contexts
                 else
                     _state[i] = Variable.Create(ValueFactory.Create());
             }
+
+            ReadExportedSymbols(_module.ExportedMethods, _methodSearchCache);
+            ReadExportedSymbols(_module.ExportedProperies, _propertySearchCache);
         }
 
-        protected abstract int GetVariableCount();
-        protected abstract int GetMethodCount();
+        private void ReadExportedSymbols(ExportedSymbol[] exportedSymbols, Dictionary<string, int> searchCache)
+        {
+            for (int i = 0; i < exportedSymbols.Length; i++)
+            {
+                var es = exportedSymbols[i];
+                searchCache[es.SymbolicName] = es.Index;
+            }
+        }
+
+        protected abstract int GetOwnVariableCount();
+        protected abstract int GetOwnMethodCount();
         protected abstract void UpdateState();
         
         public bool MethodDefinedInScript(int index)
@@ -71,6 +92,11 @@ namespace ScriptEngine.Machine.Contexts
             return index >= VARIABLE_COUNT;
         }
 
+        internal int GetMethodDescriptorIndex(int indexInContext)
+        {
+            return indexInContext - METHOD_COUNT;
+        }
+
         public void Initialize(MachineInstance runner)
         {
             _machine = runner;
@@ -80,6 +106,38 @@ namespace ScriptEngine.Machine.Contexts
                 _machine.AttachContext(this, true);
                 _machine.ExecuteModuleBody();
             });
+        }
+
+        protected int GetScriptMethod(string methodName, string alias = null)
+        {
+            int index = -1;
+
+            for (int i = 0; i < _module.Methods.Length; i++)
+            {
+                var item = _module.Methods[i];
+                if (StringComparer.OrdinalIgnoreCase.Compare(item.Signature.Name, methodName) == 0
+                    || (alias != null && StringComparer.OrdinalIgnoreCase.Compare(item.Signature.Name, alias) == 0))
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        protected IValue CallScriptMethod(int methodIndex, IValue[] parameters)
+        {
+            IValue returnValue = null;
+
+            _machine.StateConsistentOperation(() =>
+            {
+                _machine.SetModule(_module);
+                _machine.AttachContext(this, true);
+                returnValue = _machine.ExecuteMethod(methodIndex, parameters);
+            });
+
+            return returnValue;
         }
 
         #region Own Members Call
@@ -138,8 +196,20 @@ namespace ScriptEngine.Machine.Contexts
             UpdateState();
 
             variables = _state;
+            methods = AttachMethods();
+            instance = this;
+
+            _machine = machine;
+
+        }
+
+        private MethodInfo[] AttachMethods()
+        {
+            if (_attachableMethods != null)
+                return _attachableMethods;
+
             int totalMethods = METHOD_COUNT + _module.Methods.Length;
-            methods = new MethodInfo[totalMethods];
+            _attachableMethods = new MethodInfo[totalMethods];
 
             var moduleMethods = _module.Methods.Select(x => x.Signature).ToArray();
 
@@ -147,18 +217,15 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (MethodDefinedInScript(i))
                 {
-                    methods[i] = moduleMethods[i];
+                    _attachableMethods[i] = moduleMethods[i - METHOD_COUNT];
                 }
                 else
                 {
-                    methods[i] = GetOwnMethod(i);
+                    _attachableMethods[i] = GetOwnMethod(i);
                 }
             }
-            
-            instance = this;
 
-            _machine = machine;
-
+            return _attachableMethods;
         }
 
         #endregion
@@ -166,11 +233,6 @@ namespace ScriptEngine.Machine.Contexts
         #region IReflectableContext Members
 
         public virtual IEnumerable<VariableInfo> GetProperties()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual IEnumerable<MethodInfo> GetMethods()
         {
             throw new NotImplementedException();
         }
@@ -188,12 +250,9 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                var propsFound = _module.ExportedProperies.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
-                    .Select(x => x.Index).ToArray();
-                if (propsFound.Length > 0)
-                {
-                    return propsFound[0];
-                }
+                int index;
+                if (_propertySearchCache.TryGetValue(name, out index))
+                    return index;
                 else
                     throw RuntimeException.PropNotFoundException(name);
             }
@@ -208,12 +267,9 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                var methFound = _module.ExportedMethods.Where(x => String.Compare(x.SymbolicName, name, true) == 0)
-                    .Select(x => x.Index).ToArray();
-                if (methFound.Length > 0)
-                {
-                    return methFound[0];
-                }
+                int index;
+                if (_methodSearchCache.TryGetValue(name, out index))
+                    return index;
                 else
                     throw RuntimeException.MethodNotFoundException(name);
             }
