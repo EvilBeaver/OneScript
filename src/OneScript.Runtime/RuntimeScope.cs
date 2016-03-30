@@ -7,7 +7,7 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    public class RuntimeScope
+    public class RuntimeScope : ISymbolScope
     {
         private SymbolScope _symbols;
         private IRuntimeContextInstance _target;
@@ -26,6 +26,41 @@ namespace OneScript.Runtime
         {
             return _symbols.GetMethodNumber(name);
         }
+
+        public IEnumerable<string> GetMethodSymbols()
+        {
+            return _symbols.GetMethodSymbols();
+        }
+
+        public IEnumerable<string> GetVariableSymbols()
+        {
+            return _symbols.GetVariableSymbols();
+        }
+
+        public bool IsMethodDefined(string name)
+        {
+            return _symbols.IsMethodDefined(name);
+        }
+
+        public bool IsVarDefined(string name)
+        {
+            return _symbols.IsVarDefined(name);
+        }
+
+        public int MethodCount
+        {
+            get { return _symbols.MethodCount; }
+        }
+
+        public int VariableCount
+        {
+            get { return _symbols.VariableCount; }
+        }
+
+        public int DefineVariable(string name) { throw new NotSupportedException("Scope is read only"); }
+        public int DefineMethod(string name) { throw new NotSupportedException("Scope is read only"); }
+        public void SetMethodAlias(int methodNumber, string alias) { throw new NotSupportedException("Scope is read only"); }
+        public void SetVariableAlias(int variableNumber, string alias) { throw new NotSupportedException("Scope is read only"); }
 
         public IValue ValueOf(string name)
         {
@@ -74,5 +109,6 @@ namespace OneScript.Runtime
 
             return result;
         }
+
     }
 }

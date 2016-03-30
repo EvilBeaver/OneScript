@@ -5,7 +5,7 @@ using OneScript.Core;
 
 namespace OneScript.Runtime.Compiler
 {
-    public class SymbolScope
+    public class SymbolScope : ISymbolScope
     {
         IndexedNamesCollection _variables = new IndexedNamesCollection();
         IndexedNamesCollection _methods = new IndexedNamesCollection();

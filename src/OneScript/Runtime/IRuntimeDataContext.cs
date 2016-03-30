@@ -10,10 +10,4 @@ namespace OneScript.Runtime
     {
 
     }
-
-    public struct NamedValue
-    {
-        public string Name;
-        public IValue Value;
-    }
 }

@@ -300,7 +300,7 @@ namespace OneScript.Runtime
 
         private SymbolScope PopScope()
         {
-            return Context.PopScope();
+            return (SymbolScope)Context.PopScope();
         }
 
     }

@@ -10,40 +10,35 @@ namespace OneScript.Runtime
 {
     public class OneScriptRuntime : AbstractScriptRuntime
     {
-        private List<NamedValue> _externalProperties = new List<NamedValue>();
+        private RuntimeValuesHolder _externalProperties = new RuntimeValuesHolder();
+        private List<RuntimeScope> _externalContexts = new List<RuntimeScope>();
+
         private CompilerContext _ctx = new CompilerContext();
-        private SymbolScope _topScope;
         private TypeManager _typeManager;
 
         public OneScriptRuntime()
         {
             _typeManager = new TypeManager();
-            _topScope = new SymbolScope();
-            _ctx.PushScope(_topScope);
+            _ctx.PushScope(_externalProperties);
         }
 
         public override void InjectSymbol(string name, IValue value)
         {
-            _externalProperties.Add(new NamedValue()
-                {
-                    Name = name,
-                    Value = value
-                });
-            
-            _topScope.DefineVariable(name);
+            _externalProperties.DefineVariable(name, value);
         }
 
         public override void InjectObject(IRuntimeContextInstance context)
         {
-            var scope = SymbolScope.ExtractFromContext(context);
+            var scope = RuntimeScope.FromContext(context);
 
             CheckVariablesConflicts(scope);
             CheckMethodsConflicts(scope);
 
             _ctx.PushScope(scope);
+            _externalContexts.Add(scope);
         }
 
-        private void CheckVariablesConflicts(SymbolScope scope)
+        private void CheckVariablesConflicts(ISymbolScope scope)
         {
             if (scope.VariableCount == 0)
                 return;
@@ -55,7 +50,7 @@ namespace OneScript.Runtime
             }
         }
 
-        private void CheckMethodsConflicts(SymbolScope scope)
+        private void CheckMethodsConflicts(ISymbolScope scope)
         {
             if (scope.MethodCount == 0)
                 return;
@@ -99,14 +94,6 @@ namespace OneScript.Runtime
         {
             var engine = new OneScriptEngine(this);
             engine.Execute(module, entryPointName);
-        }
-
-        internal IList<NamedValue> GlobalProperties
-        {
-            get
-            {
-                return _externalProperties;
-            }
         }
 
         internal TypeManager TypeManager

@@ -70,5 +70,41 @@ namespace OneScript.Tests.RuntimeTests
             // убедились, что в объекте значение поменялось
             Assert.AreEqual(ValueFactory.Create(false), context.GetPropertyValue(index));
         }
+
+        [TestMethod]
+        public void Runtime_Scope_Implements_ISymbolScope()
+        {
+            var context = new ImportedMembersClass();
+            var scope = RuntimeScope.FromContext(context);
+
+            Assert.IsInstanceOfType(scope, typeof(ISymbolScope));
+
+            Assert.AreEqual(scope.VariableCount, 4);
+            Assert.AreEqual(scope.MethodCount, 3);
+            Assert.IsTrue(scope.IsVarDefined("БулевоСвойство"));
+            Assert.IsTrue(scope.IsMethodDefined("Func"));
+            Assert.IsTrue(scope.IsMethodDefined("Функция"));
+        }
+
+        [TestMethod]
+        public void Machine_Memory_Accepts_Scopes()
+        {
+            var context = new ImportedMembersClass();
+            context.BooleanExplicitName = true;
+
+            var scope1 = RuntimeScope.FromContext(context);
+            var scope2 = RuntimeScope.FromContext(context);
+            var mem = new MachineMemory();
+
+            mem.AddScope(scope1);
+            mem.PushScope(scope2);
+            Assert.AreSame(scope1, mem[0]);
+            Assert.AreSame(scope2, mem[1]);
+            Assert.AreEqual(2, mem.ScopeCount);
+            Assert.AreEqual(1, mem.FixedScopeCount);
+            mem.PopScope();
+            Assert.AreEqual(1, mem.ScopeCount);
+            Assert.AreEqual(1, mem.FixedScopeCount);
+        }
     }
 }

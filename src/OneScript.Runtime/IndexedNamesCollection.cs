@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OneScript.Runtime.Compiler
+namespace OneScript.Runtime
 {
     class IndexedNamesCollection : IEnumerable<string>
     {

@@ -8,9 +8,9 @@ namespace OneScript.Runtime.Compiler
 {
     public class CompilerContext
     {
-        List<SymbolScope> _attachedScopes = new List<SymbolScope>();
+        List<ISymbolScope> _attachedScopes = new List<ISymbolScope>();
 
-        public SymbolScope TopScope
+        public ISymbolScope TopScope
         {
             get
             {
@@ -29,12 +29,12 @@ namespace OneScript.Runtime.Compiler
             }
         }
 
-        public void PushScope(SymbolScope scope)
+        public void PushScope(ISymbolScope scope)
         {
             _attachedScopes.Add(scope);
         }
 
-        public SymbolScope PopScope()
+        public ISymbolScope PopScope()
         {
             var scope = TopScope;
             _attachedScopes.RemoveAt(_attachedScopes.Count - 1);
@@ -124,7 +124,7 @@ namespace OneScript.Runtime.Compiler
         }
 
 
-        public SymbolScope GetScope(int number)
+        public ISymbolScope GetScope(int number)
         {
             return _attachedScopes[number];
         }

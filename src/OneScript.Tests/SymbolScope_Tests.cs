@@ -100,7 +100,7 @@ namespace OneScript.Tests
             Assert.AreEqual(ctx.GetVariable("Global"), globalBind);
             Assert.AreEqual(ctx.GetVariable("Local"), localBind);
 
-            SymbolScope popped = ctx.PopScope();
+            var popped = ctx.PopScope();
             Assert.AreSame(scope2, popped);
 
             
