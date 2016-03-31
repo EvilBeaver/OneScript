@@ -247,13 +247,17 @@ namespace ScriptEngine.HostedScript
             {
                 var compiler = _engine.GetCompilerService();
 
+                var source = _engine.Loader.FromFile(script.path);
+                var module = _engine.AttachedScriptsFactory.CreateModuleFromSource(compiler, source, null);
+
                 if(script.asClass)
                 {
-                    _engine.AttachedScriptsFactory.AttachByPath(compiler, script.path, script.identifier);
+                    _engine.AttachedScriptsFactory.LoadAndRegister(script.identifier, module);
                 }
                 else
-                {
-                    var instance = (IValue)_engine.AttachedScriptsFactory.LoadFromPath(compiler, script.path);
+                {                    
+                    var loaded = _engine.LoadModuleImage(module);
+                    var instance = (IValue)_engine.NewObject(loaded);
                     _env.SetGlobalProperty(script.identifier, instance);
                 }
             }
