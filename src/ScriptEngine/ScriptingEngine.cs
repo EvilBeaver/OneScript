@@ -137,15 +137,6 @@ namespace ScriptEngine
             }
         }
 
-        public void NotifyClassAdded(ScriptModuleHandle module, string symbol)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void NotifyModuleAdded(ScriptModuleHandle module, string symbol)
-        {
-            throw new NotImplementedException();
-        }
 
         #region IDisposable Members
 

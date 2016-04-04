@@ -253,12 +253,14 @@ namespace ScriptEngine.HostedScript
                 if(script.asClass)
                 {
                     _engine.AttachedScriptsFactory.LoadAndRegister(script.identifier, module);
+                    _env.NotifyClassAdded(module, script.identifier);
                 }
                 else
                 {                    
                     var loaded = _engine.LoadModuleImage(module);
                     var instance = (IValue)_engine.NewObject(loaded);
                     _env.SetGlobalProperty(script.identifier, instance);
+                    _env.NotifyModuleAdded(module, script.identifier);
                 }
             }
 
