@@ -20,13 +20,29 @@ namespace StandaloneRunner
             try
             {
                 Stream codeStream = LocateCode();
+                int modulesCount;
+                using(var binReader = new BinaryReader(codeStream))
+                {
+                    modulesCount = binReader.ReadInt32();
+                }
+
                 var formatter = new BinaryFormatter();
                 var reader = new ScriptEngine.Compiler.ModulePersistor(formatter);
-                var moduleHandle = reader.Read(codeStream);
-                var engine = new HostedScriptEngine();
-                var src = new BinaryCodeSource(moduleHandle);
 
-                var process = engine.CreateProcess(this, moduleHandle, src);
+                var entry = reader.Read(codeStream);
+                --modulesCount;
+
+                var engine = new HostedScriptEngine();
+
+                while(modulesCount-- > 0)
+                {
+                    var userScript = reader.Read(codeStream);
+                    engine.LoadUserScript(userScript);
+                }
+
+                var src = new BinaryCodeSource(entry.Module);
+
+                var process = engine.CreateProcess(this, entry.Module, src);
                 return process.Start();
                 
             }
