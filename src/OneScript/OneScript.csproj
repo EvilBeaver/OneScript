@@ -57,7 +57,7 @@
     <Compile Include="Core\GenericValue.cs" />
     <Compile Include="Core\IRefCountable.cs" />
     <Compile Include="FileOpener.cs" />
-    <Compile Include="ILoadedModule.cs" />
+    <Compile Include="ICompiledModule.cs" />
     <Compile Include="Core\NullValue.cs" />
     <Compile Include="Core\NumericValue.cs" />
     <Compile Include="Core\StringValue.cs" />
