@@ -37,10 +37,8 @@
   <ItemGroup>
     <Compile Include="CodePositionInfo.cs" />
     <Compile Include="CommentLexerState.cs" />
-    <Compile Include="CompilerEngine.cs" />
     <Compile Include="CompilerErrorEventArgs.cs" />
     <Compile Include="CompilerException.cs" />
-    <Compile Include="CompilerFactory.cs" />
     <Compile Include="DateLexerState.cs" />
     <Compile Include="IASTNodes.cs" />
     <Compile Include="ILexemGenerator.cs" />

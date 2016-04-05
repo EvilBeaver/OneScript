@@ -12,13 +12,13 @@ namespace OneScript.Tests
     {
         private Builder ParseCode(string code)
         {
-            var compiler = CompilerFactory<Builder>.Create();
-            compiler.SetCode(code);
-            var builder = (Builder)compiler.GetModuleBuilder();
-
-            Assert.IsTrue(compiler.Compile());
-
-            return (Builder)compiler.GetModuleBuilder();
+            var lexer = new Preprocessor();
+            lexer.Code = code;
+            var builder = new Builder();
+            var parser = new Parser(builder);
+            Assert.IsTrue(parser.ParseModule(lexer));
+            
+            return builder;
         }
 
         [TestMethod]
