@@ -93,7 +93,7 @@ namespace OneScript.Runtime
 
         public void Execute(ICompiledModule module, string entryPointName)
         {
-            var engine = new OneScriptEngine(this);
+            var engine = new OneScriptProcess(this);
             engine.Execute(module, entryPointName);
         }
 

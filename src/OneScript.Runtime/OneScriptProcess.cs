@@ -6,9 +6,9 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    public class OneScriptEngine : IScriptProcess
+    public class OneScriptProcess : IScriptProcess
     {
-        public OneScriptEngine(OneScriptRuntime world)
+        public OneScriptProcess(OneScriptRuntime world)
         {
             World = world;
         }

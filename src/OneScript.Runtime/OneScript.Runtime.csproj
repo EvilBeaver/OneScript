@@ -55,7 +55,7 @@
     <Compile Include="Compiler\MethodsUsageTable.cs" />
     <Compile Include="IValueRef.cs" />
     <Compile Include="MachineMemory.cs" />
-    <Compile Include="OneScriptEngine.cs" />
+    <Compile Include="OneScriptProcess.cs" />
     <Compile Include="OneScriptRuntime.cs" />
     <Compile Include="OSByteCodeBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
