@@ -3,7 +3,7 @@ namespace OneScript
 {
     public interface ISourceCompiler
     {
-        ILoadedModule Compile(IScriptSource moduleSource);
+        ICompiledModule Compile(IScriptSource moduleSource);
         
         void InjectObject(OneScript.Core.IRuntimeContextInstance context);
         

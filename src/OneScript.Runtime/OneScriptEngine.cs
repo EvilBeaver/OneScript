@@ -23,7 +23,7 @@ namespace OneScript.Runtime
             }
         }
 
-        internal void Execute(ILoadedModule module, string entryPointName)
+        internal void Execute(ICompiledModule module, string entryPointName)
         {
             throw new NotImplementedException();
         }

@@ -72,7 +72,7 @@ namespace OneScript.Runtime
             throw new NotImplementedException();
         }
 
-        public override ILoadedModule Compile(IScriptSource moduleSource)
+        public override ICompiledModule Compile(IScriptSource moduleSource)
         {
             var parserClient = new OSByteCodeBuilder();
             parserClient.Context = _ctx;
@@ -90,7 +90,7 @@ namespace OneScript.Runtime
             return parserClient.GetModule();
         }
 
-        public override void Execute(ILoadedModule module, string entryPointName)
+        public override void Execute(ICompiledModule module, string entryPointName)
         {
             var engine = new OneScriptEngine(this);
             engine.Execute(module, entryPointName);

@@ -7,7 +7,7 @@ using OneScript.Runtime.Compiler;
 
 namespace OneScript.Runtime
 {
-    public class CompiledModule : ILoadedModule
+    public class CompiledModule : ICompiledModule
     {
         private List<Command> _commands = new List<Command>();
         private VariableUsageTable _varmap = new VariableUsageTable();

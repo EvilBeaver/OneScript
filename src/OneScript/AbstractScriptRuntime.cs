@@ -21,9 +21,9 @@ namespace OneScript
 
         abstract public IValue Eval(string expression);
 
-        abstract public ILoadedModule Compile(IScriptSource moduleSource);
+        abstract public ICompiledModule Compile(IScriptSource moduleSource);
 
-        abstract public void Execute(ILoadedModule module, string entryPointName);
+        abstract public void Execute(ICompiledModule module, string entryPointName);
 
         abstract public ISourceCompiler CreateCompiler();
 

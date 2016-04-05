@@ -6,7 +6,7 @@ using OneScript.Language;
 
 namespace OneScript
 {
-    public interface ILoadedModule
+    public interface ICompiledModule
     {
         string Name { get; set; }
         ISourceCodeIndexer SourceCodeIndexer { get; }
