@@ -147,6 +147,25 @@ namespace ScriptEngine.HostedScript
             return compilerSvc;
         }
 
+        public IEnumerable<UserAddedScript> GetUserAddedScripts()
+        {
+            return _env.GetUserAddedScripts();
+        }
+
+        public void LoadUserScript(UserAddedScript script)
+        {
+            if (script.Type == UserAddedScriptType.Class)
+            {
+                _engine.AttachedScriptsFactory.LoadAndRegister(script.Symbol, script.Module);
+            }
+            else
+            {
+                var loaded = _engine.LoadModuleImage(script.Module);
+                var instance = (IValue)_engine.NewObject(loaded);
+                _env.InjectGlobalProperty(instance, script.Symbol, true);
+            }
+        }
+
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {
             return CreateProcess(host, src, GetCompilerService());
