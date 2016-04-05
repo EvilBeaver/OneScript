@@ -68,14 +68,14 @@
     <Compile Include="Core\TypeTypeValue.cs" />
     <Compile Include="Core\UndefinedValue.cs" />
     <Compile Include="Core\ValueMarshaler.cs" />
-    <Compile Include="Runtime\IScriptEngine.cs" />
+    <Compile Include="Runtime\IScriptProcess.cs" />
     <Compile Include="IScriptSource.cs" />
     <Compile Include="ISourceCompiler.cs" />
     <Compile Include="PreprocessorDirectivesSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ValueFactory.cs" />
-    <Compile Include="AbstractScriptRuntime.cs" />
     <Compile Include="Runtime\IRuntimeDataContext.cs" />
+    <Compile Include="IScriptRuntime.cs" />
     <Compile Include="Runtime\ScriptThread.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>

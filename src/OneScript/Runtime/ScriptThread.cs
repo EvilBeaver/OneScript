@@ -15,7 +15,7 @@ namespace OneScript.Runtime
         private static object _lockHolder = new object();
         private static Dictionary<int, ScriptThread> _threads = new Dictionary<int, ScriptThread>();
 
-        private IScriptEngine _engine;
+        private IScriptProcess _engine;
 
         internal ScriptThread()
         {
@@ -44,9 +44,9 @@ namespace OneScript.Runtime
             return result;
         }
 
-        public IScriptEngine CurrentEngineInstance { get { return _engine; } }
+        public IScriptProcess CurrentProcess { get { return _engine; } }
 
-        public static ScriptThread Create(IScriptEngine engine)
+        public static ScriptThread Create(IScriptProcess engine)
         {
             var thread = new ScriptThread();
             thread._engine = engine;

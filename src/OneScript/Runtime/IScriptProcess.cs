@@ -12,7 +12,7 @@ namespace OneScript.Runtime
     ///  - возможно, информацию для отладки
     ///  - настройки (если есть)
     /// </summary>
-    public interface IScriptEngine
+    public interface IScriptProcess
     {
         TypeManager TypeManager { get; }
         IRuntimeDataContext RuntimeContext { get; }

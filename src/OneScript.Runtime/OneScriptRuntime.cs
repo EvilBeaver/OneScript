@@ -8,7 +8,7 @@ using OneScript.Runtime.Compiler;
 
 namespace OneScript.Runtime
 {
-    public class OneScriptRuntime : AbstractScriptRuntime
+    public class OneScriptRuntime : IScriptRuntime
     {
         private RuntimeValuesHolder _externalProperties = new RuntimeValuesHolder();
         private List<RuntimeScope> _externalContexts = new List<RuntimeScope>();
@@ -19,15 +19,16 @@ namespace OneScript.Runtime
         public OneScriptRuntime()
         {
             _typeManager = new TypeManager();
+            PreprocessorDirectives = new PreprocessorDirectivesSet();
             _ctx.PushScope(_externalProperties);
         }
 
-        public override void InjectSymbol(string name, IValue value)
+        public void InjectSymbol(string name, IValue value)
         {
             _externalProperties.DefineVariable(name, value);
         }
 
-        public override void InjectObject(IRuntimeContextInstance context)
+        public void InjectObject(IRuntimeContextInstance context)
         {
             var scope = RuntimeScope.FromContext(context);
 
@@ -62,17 +63,17 @@ namespace OneScript.Runtime
             }
         }
 
-        public override DataType RegisterType(string name, string alias, DataTypeConstructor constructor = null)
+        public DataType RegisterType(string name, string alias, DataTypeConstructor constructor = null)
         {
             return _typeManager.RegisterType(name, alias, constructor);
         }
 
-        public override IValue Eval(string expression)
+        public IValue Eval(string expression)
         {
             throw new NotImplementedException();
         }
 
-        public override ICompiledModule Compile(IScriptSource moduleSource)
+        public ICompiledModule Compile(IScriptSource moduleSource)
         {
             var parserClient = new OSByteCodeBuilder();
             parserClient.Context = _ctx;
@@ -90,20 +91,18 @@ namespace OneScript.Runtime
             return parserClient.GetModule();
         }
 
-        public override void Execute(ICompiledModule module, string entryPointName)
+        public void Execute(ICompiledModule module, string entryPointName)
         {
             var engine = new OneScriptEngine(this);
             engine.Execute(module, entryPointName);
         }
+
+        public PreprocessorDirectivesSet PreprocessorDirectives { get; private set; }
 
         internal TypeManager TypeManager
         {
             get { return _typeManager; }
         }
 
-        public override ISourceCompiler CreateCompiler()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    public class OneScriptEngine : IScriptEngine
+    public class OneScriptEngine : IScriptProcess
     {
         public OneScriptEngine(OneScriptRuntime world)
         {
