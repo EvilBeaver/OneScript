@@ -50,29 +50,27 @@ namespace oscript
                 using (var bw = new BinaryWriter(output))
                 {
                     bw.Write(embeddedContext.Count() + 1);
-                }
 
-                var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                var persistor = new ScriptEngine.Compiler.ModulePersistor(formatter);
-                persistor.Save(new UserAddedScript()
+                    var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                    var persistor = new ScriptEngine.Compiler.ModulePersistor(formatter);
+                    persistor.Save(new UserAddedScript()
+                        {
+                            Type = UserAddedScriptType.Module,
+                            Symbol = "$entry",
+                            Module = entry
+                        }, output);
+
+                    foreach (var item in embeddedContext)
                     {
-                        Type = UserAddedScriptType.Module,
-                        Symbol = "$entry",
-                        Module = entry
-                    }, output);
+                        persistor.Save(item, output);
+                    }
 
-                foreach (var item in embeddedContext)
-                {
-                    persistor.Save(item, output);
-                }
-
-                byte[] signature = new byte[4]
+                    byte[] signature = new byte[4]
                     {
                         0x4f,0x53,0x4d,0x44
                     };
-                output.Write(signature, 0, signature.Length);
-                using (var bw = new BinaryWriter(output))
-                {
+                    output.Write(signature, 0, signature.Length);
+
                     bw.Write(offset);
                 }
             }

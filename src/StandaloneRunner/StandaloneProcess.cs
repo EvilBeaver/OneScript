@@ -10,6 +10,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Machine;
+using ScriptEngine;
 
 namespace StandaloneRunner
 {
@@ -19,30 +20,36 @@ namespace StandaloneRunner
         {
             try
             {
-                Stream codeStream = LocateCode();
-                int modulesCount;
-                using(var binReader = new BinaryReader(codeStream))
-                {
-                    modulesCount = binReader.ReadInt32();
-                }
-
-                var formatter = new BinaryFormatter();
-                var reader = new ScriptEngine.Compiler.ModulePersistor(formatter);
-
-                var entry = reader.Read(codeStream);
-                --modulesCount;
-
+                ScriptModuleHandle module;
                 var engine = new HostedScriptEngine();
+                engine.Initialize();
 
-                while(modulesCount-- > 0)
+                using(Stream codeStream = LocateCode())
+                using (var binReader = new BinaryReader(codeStream))
                 {
-                    var userScript = reader.Read(codeStream);
-                    engine.LoadUserScript(userScript);
+                    int modulesCount;
+                    modulesCount = binReader.ReadInt32();
+
+
+                    var formatter = new BinaryFormatter();
+                    var reader = new ScriptEngine.Compiler.ModulePersistor(formatter);
+
+                    var entry = reader.Read(codeStream);
+                    --modulesCount;
+
+                    while (modulesCount-- > 0)
+                    {
+                        var userScript = reader.Read(codeStream);
+                        engine.LoadUserScript(userScript);
+                    }
+
+                    module = entry.Module;
+
                 }
 
-                var src = new BinaryCodeSource(entry.Module);
+                var src = new BinaryCodeSource(module);
+                var process = engine.CreateProcess(this, module, src);
 
-                var process = engine.CreateProcess(this, entry.Module, src);
                 return process.Start();
                 
             }
