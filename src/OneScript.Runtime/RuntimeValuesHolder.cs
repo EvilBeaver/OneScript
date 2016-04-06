@@ -6,10 +6,12 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    class RuntimeValuesHolder : ISymbolScope
+    class RuntimeValuesHolder : ISymbolScope, IRuntimeValueHolder
     {
         private List<IValue> _values = new List<IValue>();
         IndexedNamesCollection _names = new IndexedNamesCollection();
+
+        IValueRef[] _variables;
 
         public IValue ValueOf(string nameOrAlias)
         {
@@ -78,6 +80,19 @@ namespace OneScript.Runtime
             return idx;
         }
 
+        public IValueRef[] ValueRefs
+        {
+            get
+            {
+                if (_variables == null)
+                {
+                    _variables = _values.Select(x => new GeneralValueRef(x)).ToArray();
+                }
+
+                return _variables;
+            }
+        }
+
         public int DefineMethod(string name)
         {
             throw new NotSupportedException();
@@ -92,5 +107,6 @@ namespace OneScript.Runtime
         {
             _names.RegisterAlias(variableNumber, alias);
         }
+
     }
 }

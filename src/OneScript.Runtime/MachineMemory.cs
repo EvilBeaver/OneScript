@@ -7,17 +7,17 @@ namespace OneScript.Runtime
 {
     public class MachineMemory : IRuntimeDataContext
     {
-        private List<RuntimeScope> _fixedScopes = new List<RuntimeScope>();
-        private List<RuntimeScope> _dynamicScopes = new List<RuntimeScope>();
+        private List<IRuntimeValueHolder> _fixedScopes = new List<IRuntimeValueHolder>();
+        private List<IRuntimeValueHolder> _dynamicScopes = new List<IRuntimeValueHolder>();
         private int _fixedCount = 0;
 
-        public void AddScope(RuntimeScope scope)
+        public void AddScope(IRuntimeValueHolder scope)
         {
             _fixedScopes.Add(scope);
             ++_fixedCount;
         }
 
-        public void PushScope(RuntimeScope scope)
+        public void PushScope(IRuntimeValueHolder scope)
         {
             _dynamicScopes.Add(scope);
         }
@@ -28,7 +28,7 @@ namespace OneScript.Runtime
                 _dynamicScopes.RemoveAt(_dynamicScopes.Count - 1);
         }
 
-        public RuntimeScope this[int index]
+        public IRuntimeValueHolder this[int index]
         {
             get
             {

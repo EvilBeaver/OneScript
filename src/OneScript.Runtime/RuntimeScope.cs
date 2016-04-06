@@ -7,9 +7,9 @@ using System.Text;
 
 namespace OneScript.Runtime
 {
-    public class RuntimeScope : ISymbolScope
+    public class RuntimeScope : ISymbolScope, IRuntimeValueHolder
     {
-        private SymbolScope _symbols;
+        private ISymbolScope _symbols;
         private IRuntimeContextInstance _target;
         private IValueRef[] _variables;
 
@@ -109,6 +109,5 @@ namespace OneScript.Runtime
 
             return result;
         }
-
     }
 }

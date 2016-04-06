@@ -41,6 +41,8 @@
   <ItemGroup>
     <Compile Include="Commands.cs" />
     <Compile Include="CompiledModule.cs" />
+    <Compile Include="GeneralValueRef.cs" />
+    <Compile Include="IRuntimeValueHolder.cs" />
     <Compile Include="ISymbolScope.cs" />
     <Compile Include="Compiler\ModuleMethodDefinition.cs" />
     <Compile Include="Compiler\MethodDefinitionsTable.cs" />
