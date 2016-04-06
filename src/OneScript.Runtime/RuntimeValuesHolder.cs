@@ -42,7 +42,7 @@ namespace OneScript.Runtime
 
         public IEnumerable<string> GetVariableSymbols()
         {
-            return new string[0];
+            return _names;
         }
 
         public bool IsMethodDefined(string name)
