@@ -93,8 +93,22 @@ namespace OneScript.Runtime
 
         public void Execute(ICompiledModule module, string entryPointName)
         {
-            var engine = new OneScriptProcess(this);
-            engine.Execute(module, entryPointName);
+            var process = CreateProcess();
+
+            process.Execute(module, entryPointName);
+
+        }
+
+        private OneScriptProcess CreateProcess()
+        {
+            var process = new OneScriptProcess(this);
+
+            process.Memory.AddScope(_externalProperties);
+            foreach (var ctx in _externalContexts)
+            {
+                process.Memory.AddScope(ctx);
+            }
+            return process;
         }
 
         public PreprocessorDirectivesSet PreprocessorDirectives { get; private set; }

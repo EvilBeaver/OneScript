@@ -11,6 +11,7 @@ namespace OneScript.Runtime
         public OneScriptProcess(OneScriptRuntime world)
         {
             World = world;
+            Memory = new MachineMemory();
         }
 
         private OneScriptRuntime World { get; set; }
@@ -31,6 +32,12 @@ namespace OneScript.Runtime
         public IRuntimeDataContext RuntimeContext
         {
             get { throw new NotImplementedException(); }
+        }
+
+        public MachineMemory Memory
+        {
+            get;
+            private set;
         }
 
     }

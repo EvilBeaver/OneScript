@@ -59,6 +59,7 @@
     <Compile Include="MachineMemory.cs" />
     <Compile Include="OneScriptProcess.cs" />
     <Compile Include="OneScriptRuntime.cs" />
+    <Compile Include="OneScriptStackMachine.cs" />
     <Compile Include="OSByteCodeBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyValueRef.cs" />

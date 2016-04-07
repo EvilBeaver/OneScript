@@ -70,6 +70,7 @@
     <Compile Include="ParserTests\TryExceptNode.cs" />
     <Compile Include="ParserTests\WhileNode.cs" />
     <Compile Include="RuntimeTests\ByteCode_Builder_Tests.cs" />
+    <Compile Include="RuntimeTests\StackMachine_Test.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TypeSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
