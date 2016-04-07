@@ -75,20 +75,23 @@ namespace OneScript.Runtime
 
         public ICompiledModule Compile(IScriptSource moduleSource)
         {
+            var compiler = GetCompilerService();
+            return compiler.CompileModule(moduleSource);
+        }
+
+        public CompilerService GetCompilerService()
+        {
             var parserClient = new OSByteCodeBuilder();
             parserClient.Context = _ctx;
             var parser = new Parser(parserClient);
-
             var pp = new Preprocessor();
-            pp.Code = moduleSource.GetCode();
+            
             foreach (var item in PreprocessorDirectives)
             {
                 pp.Define(item);
             }
 
-            parser.ParseModule(pp);
-
-            return parserClient.GetModule();
+            return new CompilerService(null, pp, parserClient);
         }
 
         public void Execute(ICompiledModule module, string entryPointName)
@@ -99,7 +102,7 @@ namespace OneScript.Runtime
 
         }
 
-        private OneScriptProcess CreateProcess()
+        public OneScriptProcess CreateProcess()
         {
             var process = new OneScriptProcess(this);
 

@@ -10,9 +10,9 @@ namespace OneScript.Runtime
         MachineMemory _mem;
         CompiledModule _module;
 
-        public void AttachTo(MachineMemory memory)
+        public void AttachTo(OneScriptProcess process)
         {
-            _mem = memory;
+            _mem = process.Memory;
         }
 
         public void SetCode(CompiledModule module)

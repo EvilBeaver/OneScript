@@ -33,7 +33,7 @@ namespace OneScript.Language
         public bool ParseCodeBatch(ILexemGenerator lexer)
         {
             InitFields(lexer);
-
+            NextLexem();
             return Parse(BuildModuleBody);
         }
 

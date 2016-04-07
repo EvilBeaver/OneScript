@@ -10,24 +10,28 @@ namespace OneScript.Tests.RuntimeTests
     public class StackMachine_Test
     {
         [TestMethod]
-        public void Machine_Accepts_Module_And_Memory_Ref()
+        public void Machine_Can_Run_Code_In_Process()
         {
             var machine = new OneScriptStackMachine();
-            var memory  = new MachineMemory();
-            
-            var builder = new OSByteCodeBuilder();
-            var parser = new Parser(builder);
-            var lexer = new FullSourceLexer();
-            lexer.Code = "П = 1";
-            parser.ParseCodeBatch(lexer);
+            var engine = new OneScriptRuntime();
+            engine.InjectSymbol("П", ValueFactory.Create());
+            var process = engine.CreateProcess();
 
-            var module = builder.GetModule();
+            var compiler = engine.GetCompilerService();
+            var code = new StringCodeSource("П = 1");
+            var module = compiler.CompileCodeBatch(code);
 
-            machine.AttachTo(memory);
+            machine.AttachTo(process);
             machine.SetCode(module);
-            machine.Run(0);
 
-            Assert.AreEqual(ValueFactory.Create(1), memory[0].ValueOf("П"));
+            var thread = ScriptThread.Create(process);
+            thread.Run(() =>
+                {
+                    machine.Run(0);
+                    return ValueFactory.Create();
+                });
+
+            Assert.AreEqual(ValueFactory.Create(1), process.Memory[0].ValueOf("П"));
         }
     }
 }
