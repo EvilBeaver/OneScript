@@ -42,5 +42,21 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        [ContextProperty("Каталог", "Path")]
+        public string Path
+        {
+            get
+            {
+                if (System.IO.File.Exists(_origin) || System.IO.Directory.Exists(_origin))
+                {
+                    return System.IO.Path.GetDirectoryName(_origin);
+                }
+                else
+                {
+                    throw new RuntimeException("Источник сценария не является файловым");
+                }
+            }
+        }
+
     }
 }

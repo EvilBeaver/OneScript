@@ -21,12 +21,12 @@ namespace oscript
         public override int Execute()
         {
             var sw = new System.Diagnostics.Stopwatch();
-            Console.WriteLine("Script started: " + DateTime.Now.ToString() + "\n");
+            Output.WriteLine("Script started: " + DateTime.Now.ToString() + "\n");
             sw.Start();
             int exitCode = base.Execute();
             sw.Stop();
-            Console.WriteLine("\nScript completed: " + DateTime.Now.ToString());
-            Console.WriteLine("\nDuration: " + sw.Elapsed.ToString());
+            Output.WriteLine("\nScript completed: " + DateTime.Now.ToString());
+            Output.WriteLine("\nDuration: " + sw.Elapsed.ToString());
             return exitCode;
         }
     }

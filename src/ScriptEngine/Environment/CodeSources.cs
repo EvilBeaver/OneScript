@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Compiler;
+using System.IO;
 
 namespace ScriptEngine.Environment
 {
@@ -47,23 +48,52 @@ namespace ScriptEngine.Environment
     {
         string _path;
         string _code;
+        Encoding _noBomEncoding;
 
-        public FileBasedSource(string path)
+        public FileBasedSource(string path, Encoding defaultEncoding)
         {
-            _path = path;
+            _path = System.IO.Path.GetFullPath(path);
+            _noBomEncoding = defaultEncoding;
         }
 
         private string GetCodeString()
         {
             if (_code == null)
             {
-                using (var reader = FileOpener.OpenReader(_path))
+                using (var fStream = new FileStream(_path, FileMode.Open, FileAccess.Read))
                 {
-                    _code = reader.ReadToEnd();
+                    var buf = new byte[2];
+                    fStream.Read(buf, 0, 2);
+                    Encoding enc = null;
+                    bool skipShebang = false;
+                    if (IsLinuxScript(buf))
+                    {
+                        enc = Encoding.UTF8; // скрипты с shebang считать в формате UTF-8
+                        skipShebang = true;
+                    }
+                    else
+                    {
+                        fStream.Position = 0;
+                        enc = FileOpener.AssumeEncoding(fStream, _noBomEncoding);
+                    }
+
+                    using (var reader = new StreamReader(fStream, enc))
+                    {
+                        if (skipShebang)
+                            reader.ReadLine();
+
+                        _code = reader.ReadToEnd();
+                    }
+
                 }
             }
 
             return _code;
+        }
+
+        private static bool IsLinuxScript(byte[] buf)
+        {
+            return buf[0] == '#' && buf[1] == '!';
         }
 
         #region ICodeSource Members

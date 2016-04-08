@@ -84,18 +84,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public static TextEncodingEnum CreateInstance()
         {
-            TextEncodingEnum instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            EnumContextHelper.RegisterEnumType<TextEncodingEnum>(out enumType, out enumValType);
-
-            instance = new TextEncodingEnum(enumType, enumValType);
-
-            EnumContextHelper.RegisterValues<TextEncodingEnum>(instance);
-
-            return instance;
+            return EnumContextHelper.CreateEnumInstance<TextEncodingEnum>((t,v)=>new TextEncodingEnum(t,v));
         }
 
         public static Encoding GetEncoding(IValue encoding)

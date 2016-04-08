@@ -15,7 +15,7 @@ using ScriptEngine.Machine;
 
 namespace oscript
 {
-    class ExecuteScriptBehavior : AppBehavior, IHostApplication
+    class ExecuteScriptBehavior : AppBehavior, IHostApplication, ISystemLogWriter
     {
         string[] _scriptArgs;
         string _path;
@@ -30,13 +30,27 @@ namespace oscript
         {
             if (!System.IO.File.Exists(_path))
             {
-                throw new System.IO.FileNotFoundException("Script file is not found", _path);
+                Echo(String.Format("Script file is not found '{0}'", _path));
+                return 2;
             }
 
+            SystemLogger.SetWriter(this);
+
             var hostedScript = new HostedScriptEngine();
-            hostedScript.Initialize();
+            hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
+            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
-            var process = hostedScript.CreateProcess(this, source);
+
+            Process process;
+            try
+            {
+                process = hostedScript.CreateProcess(this, source);
+            }
+            catch(Exception e)
+            {
+                this.ShowExceptionInfo(e);
+                return 1;
+            }
 
             return process.Start();
         }
@@ -45,18 +59,18 @@ namespace oscript
 
         public void Echo(string text)
         {
-            Console.WriteLine(text);
+            Output.WriteLine(text);
         }
 
         public void ShowExceptionInfo(Exception exc)
         {
-            if(exc is RuntimeException)
+            if(exc is ScriptException)
             {
-                var rte = (RuntimeException)exc;
-                Console.WriteLine(rte.MessageWithoutCodeFragment);
+                var rte = (ScriptException)exc;
+                Echo(rte.MessageWithoutCodeFragment);
             }
             else
-                Console.WriteLine(exc.Message);
+                Echo(exc.Message);
         }
 
         public bool InputString(out string result, int maxLen)
@@ -80,5 +94,10 @@ namespace oscript
         }
 
         #endregion
+
+        public void Write(string text)
+        {
+            Console.Error.WriteLine(text);
+        }
     }
 }

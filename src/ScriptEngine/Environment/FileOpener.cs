@@ -14,17 +14,13 @@ namespace ScriptEngine.Environment
 {
     public static class FileOpener
     {
-
         public static StreamReader OpenReader(string filename)
         {
             FileStream input = new FileStream(filename, FileMode.Open, FileAccess.Read);
             Encoding enc = AssumeEncoding(input);
 
 			var reader = new StreamReader(input, enc, true);
-
-			bool skipFirstLine = IsLinuxScript (input);
-			if(skipFirstLine)
-				reader.ReadLine();
+			
 			return reader;
 
         }
@@ -36,7 +32,8 @@ namespace ScriptEngine.Environment
 
         public static StreamWriter OpenWriter(string filename)
         {
-            return new StreamWriter(filename, false, Encoding.UTF8);
+            var utf8BOMEncoding = new UTF8Encoding(true);
+            return new StreamWriter(filename, false, utf8BOMEncoding);
         }
 
         public static StreamWriter OpenWriter(string filename, Encoding encoding)
@@ -51,9 +48,24 @@ namespace ScriptEngine.Environment
 
         public static Encoding AssumeEncoding(Stream inputStream)
         {
-            Encoding enc;
-            // *** Use Default of Encoding.Default (Ansi CodePage)
-            enc = Encoding.Default;
+            return AssumeEncoding(inputStream, SystemSpecificEncoding());
+        }
+
+        public static Encoding SystemSpecificEncoding()
+        {
+            if(System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
+            {
+                return Encoding.UTF8;
+            }
+            else
+            {
+                return Encoding.Default;
+            }
+        }
+
+        public static Encoding AssumeEncoding(Stream inputStream, Encoding fallbackEncoding)
+        {
+            var enc = fallbackEncoding;
 
             // *** Detect byte order mark if any - otherwise assume default
             byte[] buffer = new byte[5];
@@ -61,30 +73,22 @@ namespace ScriptEngine.Environment
             inputStream.Read(buffer, 0, 5);
             inputStream.Position = 0;
 
-            if (buffer[0] == 0xef && buffer[1] == 0xbb && buffer[2] == 0xbf)
+            if (buffer [0] == 0xef && buffer [1] == 0xbb && buffer [2] == 0xbf)
                 enc = Encoding.UTF8;
-            else if (buffer[0] == 0xfe && buffer[1] == 0xff)
+            else if (buffer [0] == 0xfe && buffer [1] == 0xff)
                 enc = Encoding.Unicode;
-            else if (buffer[0] == 0 && buffer[1] == 0 && buffer[2] == 0xfe && buffer[3] == 0xff)
+            else if (buffer [0] == 0 && buffer [1] == 0 && buffer [2] == 0xfe && buffer [3] == 0xff)
                 enc = Encoding.UTF32;
-            else if (buffer[0] == 0x2b && buffer[1] == 0x2f && buffer[2] == 0x76)
+            else if (buffer [0] == 0x2b && buffer [1] == 0x2f && buffer [2] == 0x76)
                 enc = Encoding.UTF7;
+            else if (buffer [0] == '#' && buffer [1] == '!') 
+            {
+                /* Если в начале файла присутствует shebang, считаем, что файл в UTF-8*/
+                enc = Encoding.UTF8;
+            }
 
             return enc;
         }
-
-		static bool IsLinuxScript (FileStream input)
-		{
-			byte[] buf = new byte[2];
-			bool skipLine = false;
-			if (input.Read (buf, 0, 2) > 0) {
-				if (buf [0] == 0x23 && buf [1] == 0x21)
-					skipLine = true;
-			}
-
-			input.Position = 0;
-			return skipLine;
-		}
 
     }
 }

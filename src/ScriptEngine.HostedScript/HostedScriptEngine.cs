@@ -9,6 +9,7 @@ using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System.Collections.Generic;
 
 namespace ScriptEngine.HostedScript
 {
@@ -18,6 +19,7 @@ namespace ScriptEngine.HostedScript
         SystemGlobalContext _globalCtx;
         RuntimeEnvironment _env;
         bool _isInitialized;
+        bool _configInitialized;
 
         public HostedScriptEngine()
         {
@@ -29,11 +31,44 @@ namespace ScriptEngine.HostedScript
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
-            var libLoader = new LibraryResolver(_engine, _env);
-            libLoader.LibraryRoot = LibraryRoot;
-            _engine.DirectiveResolver = libLoader;
             _engine.Environment = _env;
+
         }
+
+        public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
+        {
+            var libLoader = new LibraryResolver(_engine, _env);
+            _engine.DirectiveResolver = libLoader;
+
+            libLoader.LibraryRoot = systemLibrary;
+            libLoader.SearchDirectories.Clear();
+            if (searchDirs != null)
+            {
+                libLoader.SearchDirectories.AddRange(searchDirs);
+            }
+        }
+
+        public static string ConfigFileName
+        {
+            get
+            {
+                return EngineConfigProvider.CONFIG_FILE_NAME;
+            }
+        }
+
+        public KeyValueConfig GetWorkingConfig()
+        {
+            var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
+            if (!_configInitialized)
+            {
+                cfgAccessor.Provider = new EngineConfigProvider(CustomConfig);
+                cfgAccessor.Refresh();
+                _configInitialized = true;
+            }
+            return cfgAccessor.GetConfig();
+        }
+
+        public string CustomConfig { get; set; }
 
         public void Initialize()
         {
@@ -41,9 +76,43 @@ namespace ScriptEngine.HostedScript
             {
                 _engine.Initialize();
                 TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
-
                 _isInitialized = true;
             }
+        }
+
+        private void InitLibraries(KeyValueConfig config)
+        {
+            if (_engine.DirectiveResolver != null)
+                return;
+
+            if(config != null)
+            {
+                InitLibrariesFromConfig(config);
+            }
+            else
+            {
+                InitExternalLibraries(null, null);
+            }
+        }
+
+        private static string ConfigFilePath()
+        {
+            return EngineConfigProvider.DefaultConfigFilePath();
+        }
+
+        private void InitLibrariesFromConfig(KeyValueConfig config)
+        {
+            string sysDir = config[EngineConfigProvider.SYSTEM_LIB_KEY];
+            string additionalDirsList = config[EngineConfigProvider.ADDITIONAL_LIB_KEY];
+            string[] addDirs = null;
+            
+            if(additionalDirsList != null)
+            {
+                addDirs = additionalDirsList.Split(';');
+            }
+
+            InitExternalLibraries(sysDir, addDirs);
+
         }
 
         public void AttachAssembly(System.Reflection.Assembly asm)
@@ -71,12 +140,31 @@ namespace ScriptEngine.HostedScript
 
         public CompilerService GetCompilerService()
         {
+            InitLibraries(GetWorkingConfig());
+
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
             return compilerSvc;
         }
 
-        public string LibraryRoot { get; set; }
+        public IEnumerable<UserAddedScript> GetUserAddedScripts()
+        {
+            return _env.GetUserAddedScripts();
+        }
+
+        public void LoadUserScript(UserAddedScript script)
+        {
+            if (script.Type == UserAddedScriptType.Class)
+            {
+                _engine.AttachedScriptsFactory.LoadAndRegister(script.Symbol, script.Module);
+            }
+            else
+            {
+                var loaded = _engine.LoadModuleImage(script.Module);
+                var instance = (IValue)_engine.NewObject(loaded);
+                _env.InjectGlobalProperty(instance, script.Symbol, true);
+            }
+        }
 
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {
@@ -86,15 +174,16 @@ namespace ScriptEngine.HostedScript
         public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
         {
             SetGlobalEnvironment(host, src);
+            Initialize();
             var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
-            return InitProcess(host, src, ref module);
+            return InitProcess(host, ref module);
         }
 
         public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle, ICodeSource src)
         {
             SetGlobalEnvironment(host, src);
             var module = _engine.LoadModuleImage(moduleHandle);
-            return InitProcess(host, src, ref module);
+            return InitProcess(host, ref module);
         }
 
         private void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
@@ -104,7 +193,7 @@ namespace ScriptEngine.HostedScript
             _globalCtx.InitInstance();
         }
 
-        private Process InitProcess(IHostApplication host, ICodeSource src, ref LoadedModuleHandle module)
+        private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
         {
             Initialize();
             var process = new Process(host, module, _engine);

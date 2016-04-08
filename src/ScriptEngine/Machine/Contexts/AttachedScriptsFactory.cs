@@ -71,14 +71,19 @@ namespace ScriptEngine.Machine.Contexts
 
         public IRuntimeContextInstance LoadFromPath(CompilerService compiler, string path)
         {
+            return LoadFromPath(compiler, path, null);
+        }
+
+        public IRuntimeContextInstance LoadFromPath(CompilerService compiler, string path, ExternalContextData externalContext)
+        {
             var code = _engine.Loader.FromFile(path);
-            return LoadAndCreate(compiler, code);
+            return LoadAndCreate(compiler, code, externalContext);
         }
 
         public IRuntimeContextInstance LoadFromString(CompilerService compiler, string text)
         {
             var code = _engine.Loader.FromString(text);
-            return LoadAndCreate(compiler, code);
+            return LoadAndCreate(compiler, code, null);
         }
 
 
@@ -108,10 +113,9 @@ namespace ScriptEngine.Machine.Contexts
                 return;
             }
 
-            compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
-
-            var moduleHandle = compiler.CreateModule(code);
+            var moduleHandle = CreateModuleFromSource(compiler, code, null);
             var loadedHandle = _engine.LoadModuleImage(moduleHandle);
+
             _loadedModules.Add(typeName, loadedHandle.Module);
             using(var md5Hash = MD5.Create())
             {
@@ -123,14 +127,39 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private IRuntimeContextInstance LoadAndCreate(CompilerService compiler, Environment.ICodeSource code)
+        public void LoadAndRegister(string typeName, ScriptModuleHandle moduleHandle)
+        {
+            if (_loadedModules.ContainsKey(typeName))
+            {
+                return;
+            }
+
+            var loadedHandle = _engine.LoadModuleImage(moduleHandle);
+            _loadedModules.Add(typeName, loadedHandle.Module);
+            
+            TypeManager.RegisterType(typeName, typeof(AttachedScriptsFactory));
+
+        }
+
+        private IRuntimeContextInstance LoadAndCreate(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
+        {
+            var moduleHandle = CreateModuleFromSource(compiler, code, externalContext);
+            var loadedHandle = _engine.LoadModuleImage(moduleHandle);
+            return _engine.NewObject(loadedHandle.Module, externalContext);
+        }
+
+        public ScriptModuleHandle CreateModuleFromSource(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
             compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
-            var moduleHandle = compiler.CreateModule(code);
-            var loadedHandle = _engine.LoadModuleImage(moduleHandle);
+            if (externalContext != null)
+            {
+                foreach (var item in externalContext)
+                {
+                    compiler.DefineVariable(item.Key, SymbolType.ContextProperty);
+                }
+            }
 
-            return _engine.NewObject(loadedHandle.Module);
-
+            return compiler.CreateModule(code);
         }
 
         private static AttachedScriptsFactory _instance;

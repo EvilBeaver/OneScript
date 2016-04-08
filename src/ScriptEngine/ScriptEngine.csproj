@@ -14,8 +14,6 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -72,7 +70,9 @@
     </Compile>
     <Compile Include="CodePositionInfo.cs" />
     <Compile Include="CompilerService.cs" />
+    <Compile Include="Compiler\CompiledCodeIndexer.cs" />
     <Compile Include="Compiler\Compiler.cs" />
+    <Compile Include="Compiler\ISourceCodeIndexer.cs" />
     <Compile Include="Compiler\ModuleCompilerContext.cs" />
     <Compile Include="Compiler\CompilerContext.cs" />
     <Compile Include="Compiler\CompilerExceptions.cs" />
@@ -85,6 +85,7 @@
     <Compile Include="Environment\FileOpener.cs" />
     <Compile Include="Environment\ICodeSourceFactory.cs" />
     <Compile Include="Environment\ModuleInformation.cs" />
+    <Compile Include="FormatParametersList.cs" />
     <Compile Include="IDirectiveResolver.cs" />
     <Compile Include="Machine\ComReflectionNameToIdMapper.cs" />
     <Compile Include="Machine\Contexts\EnumContextHelper.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
     <Compile Include="Machine\Contexts\SystemEnumAttribute.cs" />
     <Compile Include="Machine\Contexts\UnmanagedRCWComContext.cs" />
+    <Compile Include="Machine\ExternalContextData.cs" />
     <Compile Include="Machine\GenericIValueComparer.cs" />
     <Compile Include="Machine\GlobalInstancesManager.cs" />
     <Compile Include="Machine\IndexedNamesCollection.cs" />
@@ -157,6 +159,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScriptException.cs" />
     <Compile Include="ScriptingEngine.cs" />
+    <Compile Include="SystemLogger.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -165,7 +168,8 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp --force --update "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner/"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

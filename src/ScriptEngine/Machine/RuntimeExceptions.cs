@@ -86,6 +86,11 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Неверный тип аргумента");
         }
 
+        public static RuntimeException InvalidArgumentType(string argName)
+        {
+            return new RuntimeException(String.Format("Неверный тип аргумента '{0}'", argName));
+        }
+
         public static RuntimeException InvalidArgumentValue()
         {
             return new RuntimeException("Неверное значение аргумента");
@@ -127,7 +132,7 @@ namespace ScriptEngine.Machine
         }
     }
 
-    public class WrongStackConditionException : RuntimeException
+    public class WrongStackConditionException : ApplicationException
     {
         public WrongStackConditionException()
             : base("Внутренняя ошибка: неверное состояние стека")
@@ -170,4 +175,14 @@ namespace ScriptEngine.Machine
         public int ExitCode { get; private set; }
     }
 
+    public class ValueMarshallingException : RuntimeException
+    {
+        public ValueMarshallingException() : this("Неклассифицированная ошибка маршаллинга значений")
+        {
+        }
+
+        public ValueMarshallingException(string message) : base(message)
+        {
+        }
+    }
 }

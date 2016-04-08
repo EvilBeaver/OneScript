@@ -94,7 +94,16 @@ namespace ScriptEngine.Machine
 
         public TypeDescriptor GetTypeByName(string name)
         {
-            var ktIndex = _knownTypesIndexes[name];
+            int ktIndex;
+            try
+            {
+                ktIndex = _knownTypesIndexes[name];
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new RuntimeException(String.Format("Тип не зарегистрирован ({0})", name));
+            }
+
             return _knownTypes[ktIndex].Descriptor;
         }
 
@@ -275,7 +284,7 @@ namespace ScriptEngine.Machine
                 typeId = TypeManager.GetTypeByName(typeName).ID;
                 clrType = TypeManager.GetImplementingClass(typeId);
             }
-            catch (KeyNotFoundException)
+            catch (RuntimeException e)
             {
                 if (NewInstanceHandler != null)
                 {
@@ -283,7 +292,7 @@ namespace ScriptEngine.Machine
                 }
                 else
                 {
-                    throw new RuntimeException("Конструктор не найден (" + typeName + ")");
+                    throw new RuntimeException("Конструктор не найден (" + typeName + ")", e);
                 }
             }
 

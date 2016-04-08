@@ -441,7 +441,7 @@ namespace V8Reader.Controls
 
                         if (PreCommentStart >= 0)
                         {
-                            var Folding = new NewFolding(PreCommentStart, tf.offset - 2);
+                            var Folding = new NewFolding(PreCommentStart, tf.offset-1);
                             newFoldings.Add(Folding);
                             PreCommentStart = -1;
                         }

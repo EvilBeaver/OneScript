@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
-    public class GenericIValueComparer : IEqualityComparer<IValue>
+    public class GenericIValueComparer : IEqualityComparer<IValue>, IComparer<IValue>
     {
 
         public bool Equals(IValue x, IValue y)
@@ -22,8 +22,25 @@ namespace ScriptEngine.Machine
 
         public int GetHashCode(IValue obj)
         {
-            var CLR_obj = ContextValuesMarshaller.ConvertToCLRObject(obj);
+            object CLR_obj;
+            try
+            {
+                CLR_obj = ContextValuesMarshaller.ConvertToCLRObject(obj);
+            }
+            catch (ValueMarshallingException)
+            {
+                CLR_obj = obj;
+            }
+
             return CLR_obj.GetHashCode();
+        }
+
+        public int Compare(IValue x, IValue y)
+        {
+            if (x.SystemType.ID == y.SystemType.ID)
+                return x.CompareTo(y);
+            else
+                return x.AsString().CompareTo(y.AsString());
         }
     }
 }

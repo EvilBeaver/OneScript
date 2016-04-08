@@ -45,17 +45,29 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        [ContextMethod("GetValue")]
+        public IValue GetValue(int index)
+        {
+            return COMWrapperContext.CreateIValue(_array[index]);
+        }
+
+        [ContextMethod("SetValue")]
+        public void SetValue(int index, IValue value)
+        {
+            var newValue = COMWrapperContext.MarshalIValue(value);
+            _array[index] = newValue;
+        }
+
         public override IValue GetIndexedValue(IValue index)
         {
             var intIndex = (int)index.AsNumber();
-            return COMWrapperContext.CreateIValue(_array[intIndex]);
+            return GetValue(intIndex);
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
             var intIndex = (int)index.AsNumber();
-            var newValue = COMWrapperContext.MarshalIValue(val);
-            _array[intIndex] = newValue;
+            SetValue(intIndex, val);
         }
 
         public CollectionEnumerator GetManagedIterator()

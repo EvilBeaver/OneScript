@@ -21,6 +21,8 @@ namespace ScriptEngine
         private SymbolScope _globalScope;
         private PropertyBag _injectedProperties;
 
+        private List<UserAddedScript> _externalScripts = new List<UserAddedScript>();
+
         public void InjectObject(IAttachableContext context)
         {
             InjectObject(context, false);
@@ -52,6 +54,12 @@ namespace ScriptEngine
             _injectedProperties.Insert(value, identifier, true, !readOnly);
         }
 
+        public void SetGlobalProperty(string propertyName, IValue value)
+        {
+            int propId = _injectedProperties.FindProperty(propertyName);
+            _injectedProperties.SetPropValue(propId, value);
+        }
+
         internal CompilerContext SymbolsContext
         {
             get
@@ -66,6 +74,31 @@ namespace ScriptEngine
             {
                 return _objects;
             }
+        }
+
+        public void NotifyClassAdded(ScriptModuleHandle module, string symbol)
+        {
+            _externalScripts.Add(new UserAddedScript()
+                {
+                    Type = UserAddedScriptType.Class,
+                    Symbol = symbol,
+                    Module = module
+                });
+        }
+
+        public void NotifyModuleAdded(ScriptModuleHandle module, string symbol)
+        {
+            _externalScripts.Add(new UserAddedScript()
+            {
+                Type = UserAddedScriptType.Module,
+                Symbol = symbol,
+                Module = module
+            });
+        }
+
+        public IEnumerable<UserAddedScript> GetUserAddedScripts()
+        {
+            return _externalScripts;
         }
 
         private void RegisterSymbolScope(IReflectableContext provider, bool asDynamicScope)
@@ -97,6 +130,18 @@ namespace ScriptEngine
             _objects.Add(context);
         }
 
+    }
 
+    public struct UserAddedScript
+    {
+        public UserAddedScriptType Type;
+        public ScriptModuleHandle Module;
+        public string Symbol;
+    }
+
+    public enum UserAddedScriptType
+    {
+        Module,
+        Class
     }
 }

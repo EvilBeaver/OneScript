@@ -20,6 +20,14 @@ namespace ScriptEngine.HostedScript
         private RuntimeEnvironment _env;
         private ScriptingEngine _engine;
         bool _customized;
+        List<DelayLoadedScriptData> _delayLoadedScripts = new List<DelayLoadedScriptData>();
+
+        private struct DelayLoadedScriptData
+        {
+            public string path;
+            public string identifier;
+            public bool asClass;
+        }
 
         private enum MethodNumbers
         {
@@ -54,6 +62,8 @@ namespace ScriptEngine.HostedScript
         {
             var code = engine.Loader.FromFile(processingScript);
             var compiler = engine.GetCompilerService();
+            compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
+            
             for (int i = 0; i < _methods.Count; i++)
             {
                 var mi = _methods.GetMethodInfo(i);
@@ -80,8 +90,12 @@ namespace ScriptEngine.HostedScript
             if (!Utils.IsValidIdentifier(className))
                 throw RuntimeException.InvalidArgumentValue();
 
-            var compiler = _engine.GetCompilerService();
-            _engine.AttachedScriptsFactory.AttachByPath(compiler, file, className);
+            _delayLoadedScripts.Add(new DelayLoadedScriptData()
+                {
+                    path = file,
+                    identifier = className,
+                    asClass = true
+                });
         }
 
         [ContextMethod("ДобавитьМодуль", "AddModule")]
@@ -90,17 +104,52 @@ namespace ScriptEngine.HostedScript
             if (!Utils.IsValidIdentifier(moduleName))
                 throw RuntimeException.InvalidArgumentValue();
 
-            var compiler = _engine.GetCompilerService();
-            var instance = (IValue)_engine.AttachedScriptsFactory.LoadFromPath(compiler, file);
-            _env.InjectGlobalProperty(instance, moduleName, true);
+            _delayLoadedScripts.Add(new DelayLoadedScriptData()
+            {
+                path = file,
+                identifier = moduleName,
+                asClass = false
+            });
+
+            _env.InjectGlobalProperty(null, moduleName, true);
         }
 
-        protected override int GetVariableCount()
+        [ContextMethod("ЗагрузитьБиблиотеку", "LoadLibrary")]
+        public void LoadLibrary(string dllPath)
         {
-            return 0;
+            var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
+            _engine.AttachAssembly(assembly, _env);
         }
 
-        protected override int GetMethodCount()
+        protected override int GetOwnVariableCount()
+        {
+            return 1;
+        }
+
+        protected override int FindOwnProperty(string name)
+        {
+            if(StringComparer.OrdinalIgnoreCase.Compare(name, "ЭтотОбъект") == 0)
+            {
+                return 0;
+            }
+
+            return base.FindOwnProperty(name);
+        }
+
+        protected override bool IsOwnPropReadable(int index)
+        {
+            return true;
+        }
+
+        protected override IValue GetOwnPropValue(int index)
+        {
+            if (index == 0)
+                return this;
+            else
+                throw new ArgumentException(String.Format("Неверный индекс свойства {0}", index), "index");
+        }
+
+        protected override int GetOwnMethodCount()
         {
             return _methods.Count;
         }
@@ -132,14 +181,20 @@ namespace ScriptEngine.HostedScript
 
         public bool ProcessLibrary(string libraryPath)
         {
+            bool success;
             if(!_customized)
             {
-                return DefaultProcessing(libraryPath);
+                success = DefaultProcessing(libraryPath);
             }
             else
             {
-                return CustomizedProcessing(libraryPath);
+                success = CustomizedProcessing(libraryPath);
             }
+
+            if(success)
+                CompileDelayedModules();
+
+            return success;
         }
 
         private bool CustomizedProcessing(string libraryPath)
@@ -181,6 +236,34 @@ namespace ScriptEngine.HostedScript
             }
 
             return hasFiles;
+        }
+
+        private void CompileDelayedModules()
+        {
+            var ordered = _delayLoadedScripts.OrderBy(x => x.asClass ? 1 : 0).ToArray();
+            _delayLoadedScripts.Clear();
+
+            foreach (var script in ordered)
+            {
+                var compiler = _engine.GetCompilerService();
+
+                var source = _engine.Loader.FromFile(script.path);
+                var module = _engine.AttachedScriptsFactory.CreateModuleFromSource(compiler, source, null);
+
+                if(script.asClass)
+                {
+                    _engine.AttachedScriptsFactory.LoadAndRegister(script.identifier, module);
+                    _env.NotifyClassAdded(module, script.identifier);
+                }
+                else
+                {                    
+                    var loaded = _engine.LoadModuleImage(module);
+                    var instance = (IValue)_engine.NewObject(loaded);
+                    _env.SetGlobalProperty(script.identifier, instance);
+                    _env.NotifyModuleAdded(module, script.identifier);
+                }
+            }
+
         }
     }
 }

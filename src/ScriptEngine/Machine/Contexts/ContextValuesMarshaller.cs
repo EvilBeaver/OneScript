@@ -49,9 +49,13 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsString();
             }
-            else if (type == typeof(int))
+            else if (type == typeof(int) || type == typeof(uint) || type == typeof(short) || type == typeof(ushort) || type == typeof(byte) || type == typeof(sbyte))
             {
                 valueObj = (int)value.AsNumber();
+            }
+            else if (type == typeof(long) || type == typeof(ulong))
+            {
+                valueObj = (long)value.AsNumber();
             }
             else if (type == typeof(double) || type == typeof(decimal))
             {
@@ -92,6 +96,10 @@ namespace ScriptEngine.Machine.Contexts
             else if (type == typeof(int))
             {
                 return ValueFactory.Create((int)objParam);
+            }
+            else if (type == typeof(long))
+            {
+                return ValueFactory.Create((long)objParam);
             }
             else if (type == typeof(decimal))
             {
@@ -146,13 +154,17 @@ namespace ScriptEngine.Machine.Contexts
 			case Machine.DataType.Undefined:
 				result = null;
 				break;
-			case Machine.DataType.Object:
-				result = val.AsObject();
+			default:
+                if (val.DataType == DataType.Object)
+                    result = val.AsObject();
+
+				result = val.GetRawValue();
 				if (result is IObjectWrapper)
 					result = ((IObjectWrapper)result).UnderlyingObject;
-				break;
-			default:
-				throw new RuntimeException("Тип не поддерживает преобразование в CLR-объект");
+				else
+				    throw new ValueMarshallingException("Тип не поддерживает преобразование в CLR-объект");
+
+                break;
 			}
 			
 			return result;

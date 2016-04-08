@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection")]
-    class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext
+    public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext
     {
         private List<ValueTableColumn> _columns = new List<ValueTableColumn>();
         private int _internal_counter = 0; // Нарастающий счётчик определителей колонок

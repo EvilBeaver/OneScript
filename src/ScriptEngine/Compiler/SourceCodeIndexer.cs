@@ -11,7 +11,7 @@ using System.Text;
 
 namespace ScriptEngine.Compiler
 {
-    class SourceCodeIndexer
+    class SourceCodeIndexer : ISourceCodeIndexer
     {
         private string _code;
         private IList<int> _lineBounds;

@@ -44,18 +44,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         public static ZIPSubDirProcessingModeEnum CreateInstance()
         {
-            ZIPSubDirProcessingModeEnum instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            EnumContextHelper.RegisterEnumType<ZIPSubDirProcessingModeEnum>(out enumType, out enumValType);
-
-            instance = new ZIPSubDirProcessingModeEnum(enumType, enumValType);
-
-            EnumContextHelper.RegisterValues<ZIPSubDirProcessingModeEnum>(instance);
-
-            return instance;
+            return EnumContextHelper.CreateEnumInstance<ZIPSubDirProcessingModeEnum>((t, v) => new ZIPSubDirProcessingModeEnum(t, v));
         }
     }
 }

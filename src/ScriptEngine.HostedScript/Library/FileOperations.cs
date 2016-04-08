@@ -84,22 +84,33 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (mask == null)
             {
-                recursive = false;
-                if (System.Environment.OSVersion.Platform == PlatformID.Unix)
+                // fix 225, 227, 228
+                var fObj = new FileContext(dir);
+                if(fObj.Exists())
                 {
-                    mask = "*";
+                    return new ArrayImpl(new[] { fObj });
                 }
                 else
                 {
-                    mask = "*.*";
+                    return new ArrayImpl();
                 }
+            }
+            else if (File.Exists(dir))
+            {
+                return new ArrayImpl();
             }
 
             System.IO.SearchOption mode = recursive ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
-            var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
-                .Select<string, IValue>((x) => new FileContext(x));
-
-            return new ArrayImpl(entries);
+            try
+            {
+                var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
+                        .Select<string, IValue>((x) => new FileContext(x));
+                return new ArrayImpl(entries);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new ArrayImpl();
+            }
 
         }
 
@@ -113,8 +124,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (mask == null)
             {
-                var file = new FileContext(path);
-                if (file.IsDirectory())
+                if (Directory.Exists(path))
                 {
                     System.IO.Directory.Delete(path, true);
                 }
@@ -126,14 +136,15 @@ namespace ScriptEngine.HostedScript.Library
             else
             {
                 var entries = System.IO.Directory.EnumerateFileSystemEntries(path, mask)
-                    .AsParallel();
+                    .AsParallel()
+                    .ToArray();
                 foreach (var item in entries)
                 {
                     System.IO.FileInfo finfo = new System.IO.FileInfo(item);
-                    if (finfo.Attributes == System.IO.FileAttributes.Directory)
+                    if (finfo.Attributes.HasFlag(System.IO.FileAttributes.Directory))
                     {
                         //recursively delete directory
-                        System.IO.Directory.Delete(item, true);
+                        DeleteDirectory(item, true);
                     }
                     else
                     {
@@ -141,6 +152,26 @@ namespace ScriptEngine.HostedScript.Library
                     }
                 }
             }
+        }
+
+        public static void DeleteDirectory(string path, bool recursive)
+        {
+            if (recursive)
+            {
+                var subfolders = Directory.GetDirectories(path);
+                foreach (var s in subfolders)
+                {
+                    DeleteDirectory(s, recursive);
+                }
+            }
+
+            var files = Directory.GetFiles(path);
+            foreach (var f in files)
+            {
+                File.Delete(f);
+            }
+
+            Directory.Delete(path);
         }
 
         /// <summary>
@@ -202,18 +233,19 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="path1">Первая часть пути</param>
         /// <param name="path2">Вторая часть пути</param>
         /// <param name="path3">Третья часть пути (необязательно)</param>
+        /// <param name="path4">Четвертая часть пути (необязательно)</param>
         /// <returns>Объединенный путь.</returns>
         [ContextMethod("ОбъединитьПути", "CombinePath")]
-        public string CombinePath(string path1, string path2, string path3 = null)
+        public string CombinePath(string path1, string path2, string path3 = null, string path4 = null)
         {
             if (path3 == null)
                 return Path.Combine(path1, path2);
-            else
+            else if (path4 == null)
                 return Path.Combine(path1, path2, path3);
+            else
+                return Path.Combine(path1, path2, path3, path4);
         }
 
-        private static ContextMethodsMapper<FileOperations> _methods = new ContextMethodsMapper<FileOperations>();
-        
         public static IAttachableContext CreateInstance()
         {
             return new FileOperations();

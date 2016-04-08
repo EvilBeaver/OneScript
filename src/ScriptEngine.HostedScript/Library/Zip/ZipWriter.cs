@@ -19,7 +19,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
     /// Объект записи ZIP-архивов.
     /// </summary>
     [ContextClass("ЗаписьZipФайла", "ZipFileWriter")]
-    public class ZipWriter : AutoContext<ZipWriter>
+    public class ZipWriter : AutoContext<ZipWriter>, IDisposable
     {
         private ZipFile _zip;
         private string _filename;
@@ -49,7 +49,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             _filename = filename;
             _zip = new ZipFile();
-            _zip.AlternateEncoding = Encoding.UTF8;
+            _zip.AlternateEncoding = Encoding.GetEncoding(866); // fuck non-russian encodings on non-ascii files
             _zip.AlternateEncodingUsage = ZipOption.Always;
             _zip.Password = password;
             _zip.Comment = comment;
@@ -68,8 +68,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             CheckIfOpened();
 
             _zip.Save(_filename);
-            _zip.Dispose();
-            _zip = null;
+            Dispose(true);
         }
 
         /// <summary>
@@ -106,7 +105,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         private void AddDirectory(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
             IEnumerable<string> filesToAdd;
-            string path = file;
+            string path = System.IO.Path.GetDirectoryName(file);
             string allFilesMask;
 
             if (System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
@@ -171,21 +170,22 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
 
             filesToAdd = System.IO.Directory.EnumerateFiles(path, mask, searchOption);
-            AddEnumeratedFiles(filesToAdd, path, storePathMode);
+            var relativePath = System.IO.Path.GetFullPath(path);
+            AddEnumeratedFiles(filesToAdd, relativePath, storePathMode);
 
         }
 
-        private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, string path, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, string relativePath, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
             var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
             if (storePathMode == null)
-                storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
+                storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.DontStorePath;
 
             foreach (var item in filesToAdd)
             {
                 string pathInArchive;
                 if (storePathMode == storeModeEnum.StoreRelativePath)
-                    pathInArchive = GetRelativePath(path, item);
+                    pathInArchive = GetRelativePath(item, relativePath);
                 else if (storePathMode == storeModeEnum.StoreFullPath)
                     pathInArchive = null;
                 else
@@ -195,11 +195,16 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        private static string GetRelativePath(string archiveRoot, string item)
+        private string GetRelativePath(string item, string basePath)
         {
             var dir = System.IO.Path.GetDirectoryName(item);
-            var pathInArchive = dir.Substring(archiveRoot.Length).TrimStart(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
-            return pathInArchive;
+            int startIndex;
+            if (dir == basePath)
+                startIndex = System.IO.Path.GetDirectoryName(basePath).Length;
+            else
+                startIndex = basePath.Length;
+
+            return dir.Substring(startIndex).TrimStart(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
         }
 
         private static bool GetRecursiveFlag(SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories)
@@ -316,5 +321,26 @@ namespace ScriptEngine.HostedScript.Library.Zip
             else
                 return ContextValuesMarshaller.ConvertParam<T>(raw);
         }
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_zip != null)
+                {
+                    _zip.Dispose();
+                    _zip = null;
+                }
+            }
+        }
+
+        #endregion
     }
 }

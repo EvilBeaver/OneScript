@@ -108,6 +108,17 @@ namespace ScriptEngine.Machine
                 return null;
         }
 
+        internal ScriptInformationContext CurrentScript
+        {
+            get
+            {
+                if (_module.ModuleInfo != null)
+                    return new ScriptInformationContext(_module.ModuleInfo);
+                else
+                    return null;
+            }
+        }
+
         private IValue GetDefaultArgValue(int methodIndex, int paramIndex)
         {
             var meth = _module.Methods[methodIndex].Signature;
@@ -435,10 +446,13 @@ namespace ScriptEngine.Machine
                 StrPos,
                 UCase,
                 LCase,
+                TCase,
                 Chr,
                 ChrCode,
                 EmptyStr,
                 StrReplace,
+                StrGetLine,
+                StrLineCount,
                 StrEntryCount,
                 Year,
                 Month,
@@ -722,7 +736,8 @@ namespace ScriptEngine.Machine
 
         private void CallFunc(int arg)
         {
-            _currentFrame.DiscardReturnValue = MethodCallImpl(arg, true);
+            bool needsDiscrding = MethodCallImpl(arg, true);
+            _currentFrame.DiscardReturnValue = needsDiscrding;
         }
 
         private void CallProc(int arg)
@@ -1119,7 +1134,7 @@ namespace ScriptEngine.Machine
             for (int i = argCount - 1; i >= 0; i--)
             {
                 var argValue = _operationStack.Pop();
-                argValues[i] = argValue;
+                argValues[i] = BreakVariableLink(argValue);
             }
 
             var typeName = _operationStack.Pop().AsString();
@@ -1178,7 +1193,19 @@ namespace ScriptEngine.Machine
                     {
                         if (i < argValues.Length)
                         {
-                            argsToPass.Add(argValues[i]);
+
+                            if (argValues[i].DataType == DataType.NotAValidValue)
+                            {
+                                if (parameters[i].IsOptional)
+                                    argsToPass.Add(null);
+                                else
+                                {
+                                    throw RuntimeException.ArgHasNoDefaultValue(i + 1);
+                                }
+                            }
+                            else
+                                argsToPass.Add(argValues[i]);
+
                             success = true;
                         }
                         else
@@ -1298,7 +1325,9 @@ namespace ScriptEngine.Machine
             if (arg < 0)
             {
                 if (_currentFrame.LastException == null)
-                    throw new ApplicationException("Некорректное состояние стека исключений");
+                    // Если в блоке Исключение была еще одна Попытка, то она затерла lastException
+                    // 1С в этом случае бросает новое пустое исключение
+                    throw new RuntimeException("");
 
                 throw _currentFrame.LastException;
             }
@@ -1484,7 +1513,11 @@ namespace ScriptEngine.Machine
             if (len > str.Length)
                 len = str.Length;
             else if (len < 0)
-                throw RuntimeException.InvalidArgumentValue();
+            {
+                _operationStack.Push(ValueFactory.Create(""));
+                NextInstruction();
+                return;
+            }
 
             _operationStack.Push(ValueFactory.Create(str.Substring(0, len)));
             NextInstruction();
@@ -1497,8 +1530,12 @@ namespace ScriptEngine.Machine
 
             if (len > str.Length)
                 len = str.Length;
-            else if(len < 0)
-                throw RuntimeException.InvalidArgumentValue();
+            else if (len < 0)
+            {
+                _operationStack.Push(ValueFactory.Create(""));
+                NextInstruction();
+                return;
+            }
 
             int startIdx = str.Length - len;
             _operationStack.Push(ValueFactory.Create(str.Substring(startIdx, len)));
@@ -1569,6 +1606,47 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void TCase(int arg)
+        {
+            var argValue = _operationStack.Pop().AsString();
+
+            char[] array = argValue.ToCharArray();
+	        // Handle the first letter in the string.
+            bool inWord = false;
+            if (array.Length >= 1)
+	        {
+	            if (char.IsLetter(array[0]))
+                    inWord = true;
+
+                if(char.IsLower(array[0]))
+	            {
+		            array[0] = char.ToUpper(array[0]);
+	            }
+	        }
+	        // Scan through the letters, checking for spaces.
+	        // ... Uppercase the lowercase letters following spaces.
+            for (int i = 1; i < array.Length; i++)
+	        {
+                if (inWord && Char.IsLetter(array[i]))
+                    array[i] = Char.ToLower(array[i]);
+                else if (Char.IsSeparator(array[i]) || Char.IsPunctuation(array[i]))
+                    inWord = false;
+                else if(!inWord && Char.IsLetter(array[i]))
+                {
+                    inWord = true;
+                    if (char.IsLower(array[i]))
+                    {
+                        array[i] = char.ToUpper(array[i]);
+                    }
+                }
+	        }
+	        
+            var result = new string(array);
+
+            _operationStack.Push(ValueFactory.Create(result));
+            NextInstruction();
+        }
+
         private void Chr(int arg)
         {
             var code = (int)_operationStack.Pop().AsNumber();
@@ -1580,12 +1658,31 @@ namespace ScriptEngine.Machine
 
         private void ChrCode(int arg)
         {
-            var strChar = _operationStack.Pop().AsString();
+            string strChar;
+            int position;
+
+            if(arg == 2)
+            {
+                position = (int)_operationStack.Pop().AsNumber()-1;
+                strChar = _operationStack.Pop().AsString();
+            }
+            else if(arg == 1)
+            {
+                strChar = _operationStack.Pop().AsString();
+                position = 0;
+            }
+            else
+            {
+                throw new WrongStackConditionException();
+            }
+
             int result;
             if (strChar.Length == 0)
                 result = 0;
+            else if (position >= 0 && position < strChar.Length)
+                result = (int)strChar[position];
             else
-                result = (int)strChar[0];
+                throw RuntimeException.InvalidArgumentValue();
 
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
@@ -1607,6 +1704,66 @@ namespace ScriptEngine.Machine
 
             var result = sourceString.Replace(searchVal, newVal);
             _operationStack.Push(ValueFactory.Create(result));
+            NextInstruction();
+        }
+
+        private void StrGetLine(int arg)
+        {
+            var lineNumber = (int)_operationStack.Pop().AsNumber();
+            var strArg = _operationStack.Pop().AsString();
+            string result = "";
+            if (lineNumber >= 1)
+            {
+                int lineStart = 0;
+                int currentLineNumber = 1;
+                while (true)
+                {
+                    int lineEnd = strArg.IndexOf('\n', lineStart);
+                    if (lineEnd > 0)
+                    {
+                        if (currentLineNumber == lineNumber)
+                        {
+                            if (lineEnd > lineStart)
+                                result = strArg.Substring(lineStart, lineEnd - lineStart);
+
+                            break;
+                        }
+
+                        lineStart = lineEnd + 1;
+                        currentLineNumber++;
+                    }
+                    else
+                    {
+                        if (currentLineNumber == lineNumber)
+                        {
+                            result = strArg.Substring(lineStart);
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            _operationStack.Push(ValueFactory.Create(result));
+            NextInstruction();
+        }
+
+        private void StrLineCount(int arg)
+        {
+            var strArg = _operationStack.Pop().AsString();
+            int pos = 0;
+            int lineCount = 1;
+            while (pos >= 0 && pos < strArg.Length)
+            {
+                pos = strArg.IndexOf('\n', pos);
+                if (pos >= 0)
+                {
+                    lineCount++;
+                    pos++;
+                }
+            }
+
+            _operationStack.Push(ValueFactory.Create(lineCount));
+
             NextInstruction();
         }
 
@@ -2061,11 +2218,10 @@ namespace ScriptEngine.Machine
 
         private void ModuleInfo(int arg)
         {
-
-            if (_module.ModuleInfo != null)
+            var currentScript = this.CurrentScript;
+            if (currentScript != null)
             {
-                var infoContext = new ScriptInformationContext(_module.ModuleInfo);
-                _operationStack.Push(infoContext);
+                _operationStack.Push(currentScript);
             }
             else
             {

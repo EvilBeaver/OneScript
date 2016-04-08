@@ -7,12 +7,16 @@
 	ВсеТесты = Новый Массив;
 	
 	ВсеТесты.Добавить("ТестДолжен_ПолучитьПутьКOscript");
-	ВсеТесты.Добавить("ТестДолжен_ПрочитатьВыводOscriptСразу");
-	ВсеТесты.Добавить("ТестДолжен_ПрочитатьВыводOscriptПострочно");
-	ВсеТесты.Добавить("ТестДолжен_ЗаписатьВоВходнойПотокПроцесса");
-	ВсеТесты.Добавить("ТестДолжен_НайтиПроцессПоИмени");
-	ВсеТесты.Добавить("ТестДолжен_НайтиПроцессПоPID");
-	ВсеТесты.Добавить("ТестДолжен_ПроверитьЗапускСАргументамиСодержащимиПробелы");
+	
+	СИ = Новый СистемнаяИнформация;
+	Если Найти(СИ.ВерсияОС, "Windows") > 0 Тогда
+		ВсеТесты.Добавить("ТестДолжен_ПрочитатьВыводOscriptСразу");
+		ВсеТесты.Добавить("ТестДолжен_ПрочитатьВыводOscriptПострочно");
+		ВсеТесты.Добавить("ТестДолжен_ЗаписатьВоВходнойПотокПроцесса");
+		ВсеТесты.Добавить("ТестДолжен_НайтиПроцессПоИмени");
+		ВсеТесты.Добавить("ТестДолжен_НайтиПроцессПоPID");
+		ВсеТесты.Добавить("ТестДолжен_ПроверитьЗапускСАргументамиСодержащимиПробелы");
+	КонецЕсли;
 	
 	Возврат ВсеТесты;
 	
@@ -115,9 +119,13 @@
 	|Mode can be one of these:
 	|  -measure   measures execution time
 	|  -compile   shows compiled module without execution
+	|  -encoding=<encoding-name> set output encoding
 	|
 	|III. Build standalone executable: oscript.exe -make <script_path> <output_exe>
-	|Builds a standalone executable module based on script specified
+	|  Builds a standalone executable module based on script specified
+	|
+	|IV. Run as CGI application: oscript.exe -cgi <script_path> [script arguments..]
+	|  Runs as CGI application under HTTP-server (Apache/Nginx/IIS/etc...)
 	|";
 	
 	Возврат НормализоватьПереводыСтрок(Текст);

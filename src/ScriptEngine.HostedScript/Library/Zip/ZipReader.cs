@@ -44,9 +44,10 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="filename">Имя ZIP файла, который требуется открыть для чтения.</param>
         /// <param name="password">Пароль к файлу, если он зашифрован.</param>
         [ContextMethod("Открыть","Open")]
-        private void Open(string filename, string password = null)
+        public void Open(string filename, string password = null)
         {
-            _zip = ZipFile.Read(filename);
+            // fuck non-russian encodings on non-ascii files
+            _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = Encoding.GetEncoding(866) });
             _zip.Password = password;
         }
 
@@ -141,8 +142,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
         public void Dispose()
         {
             _entriesWrapper = null;
-            _zip.Dispose();
-            _zip = null;
+            if (_zip != null)
+            {
+                _zip.Dispose();
+                _zip = null;
+            }
         }
     }
 }

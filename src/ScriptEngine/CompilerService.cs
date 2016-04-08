@@ -86,6 +86,12 @@ namespace ScriptEngine
 
             var compiler = new Compiler.Compiler();
             compiler.DirectiveHandler = ResolveDirective;
+
+            if (DirectiveResolver != null)
+            {
+                DirectiveResolver.Source = source;
+            }
+
             ModuleImage compiledImage;
             try
             {
@@ -93,8 +99,17 @@ namespace ScriptEngine
             }
             catch (ScriptException e)
             {
-                e.ModuleName = source.SourceDescription;
+                if(e.ModuleName == null)
+                    e.ModuleName = source.SourceDescription;
+
                 throw;
+            }
+            finally
+            {
+                if (DirectiveResolver != null)
+                {
+                    DirectiveResolver.Source = null;
+                }
             }
 
             foreach (var item in _predefinedVariables)

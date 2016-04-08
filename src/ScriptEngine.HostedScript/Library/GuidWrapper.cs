@@ -14,7 +14,7 @@ using System.Text;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("УникальныйИдентификатор","UUID")]
-    public class GuidWrapper : IValue
+    public class GuidWrapper : IValue, IObjectWrapper
     {
         Guid _value;
 
@@ -99,6 +99,12 @@ namespace ScriptEngine.HostedScript.Library
                 return false;
             else
                 return _value.Equals(otherUuid._value);
+        }
+
+
+        object IObjectWrapper.UnderlyingObject
+        {
+            get { return _value; }
         }
     }
 }

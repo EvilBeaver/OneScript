@@ -14,6 +14,11 @@ namespace ScriptEngine.Environment
 {
     class ScriptSourceFactory : ICodeSourceFactory
     {
+        public ScriptSourceFactory()
+        {
+            ReaderEncoding = Encoding.UTF8;
+        }
+        
         public ICodeSource FromString(string source)
         {
             return new StringBasedSource(source);
@@ -21,7 +26,9 @@ namespace ScriptEngine.Environment
 
         public ICodeSource FromFile(string path)
         {
-            return new FileBasedSource(path);
+            return new FileBasedSource(path, ReaderEncoding);
         }
+
+        public Encoding ReaderEncoding { get; set; }
     }
 }

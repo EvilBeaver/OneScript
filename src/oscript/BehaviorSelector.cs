@@ -6,8 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace oscript
 {
@@ -42,6 +44,14 @@ namespace oscript
                         return new ShowCompiledBehavior(path);
                     }
                 }
+                else if (cmdLineArgs[0].ToLower() == "-check")
+                {
+                    if (cmdLineArgs.Length > 1)
+                    {
+                        var path = cmdLineArgs[1];
+                        return new CheckSyntaxBehavior(path);
+                    }
+                }
                 else if (cmdLineArgs[0].ToLower() == "-make")
                 {
                     if (cmdLineArgs.Length == 3)
@@ -54,6 +64,29 @@ namespace oscript
                 else if(cmdLineArgs[0].ToLower() == "-cgi")
                 {
                     return new CgiBehavior();
+                }
+                else if(cmdLineArgs[0].StartsWith("-encoding="))
+                {
+                    var prefixLen = ("-encoding=").Length;
+                    if(cmdLineArgs[0].Length > prefixLen)
+                    {
+                        var encValue = cmdLineArgs[0].Substring(prefixLen);
+                        Encoding encoding;
+                        try
+                        {
+                            encoding = Encoding.GetEncoding(encValue);
+                        }
+                        catch
+                        {
+                            Output.WriteLine("Wrong console encoding");
+                            encoding = null;
+                        }
+
+                        if (encoding != null)
+                            Program.ConsoleOutputEncoding = encoding;
+
+                        return Select(cmdLineArgs.Skip(1).ToArray());
+                    }
                 }
             }
             

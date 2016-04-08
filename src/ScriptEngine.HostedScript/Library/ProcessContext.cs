@@ -26,9 +26,28 @@ namespace ScriptEngine.HostedScript.Library
         private StdTextReadStream _stdErrContext;
         private StdTextWriteStream _stdInContext;
 
-        public ProcessContext(System.Diagnostics.Process p)
+        private IValue _outputEncoding;
+
+        private ProcessContext(System.Diagnostics.Process p, IValue encoding)
         {
-            this._p = p;
+            _p = p;
+            _outputEncoding = encoding;
+        }
+
+        public ProcessContext(System.Diagnostics.Process p):this(p, ValueFactory.Create())
+        {
+        }
+
+        /// <summary>
+        /// Устанавливает кодировку в которой будут считываться стандартные потоки вывода и ошибок.
+        /// </summary>
+        [ContextProperty("КодировкаВывода", "OutputEncoding")]
+        public IValue OutputEncoding
+        {
+            get
+            {
+                return _outputEncoding;
+            }
         }
 
         /// <summary>
@@ -41,6 +60,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 if(_stdOutContext == null)
                     _stdOutContext = new StdTextReadStream(_p.StandardOutput);
+                    
                 return _stdOutContext;
             }
         }
@@ -155,5 +175,67 @@ namespace ScriptEngine.HostedScript.Library
 
             _p.Dispose();
         }
+
+        public static ProcessContext Create(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
+        {
+            var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
+            sInfo.UseShellExecute = false;
+            if (redirectInput)
+                sInfo.RedirectStandardInput = true;
+
+            if (redirectOutput)
+            {
+                sInfo.RedirectStandardOutput = true;
+                sInfo.RedirectStandardError = true;
+            }
+
+            if (encoding != null)
+            {
+                var enc = TextEncodingEnum.GetEncoding(encoding);
+
+                sInfo.StandardOutputEncoding = enc;
+                sInfo.StandardErrorEncoding = enc;
+            }
+
+            var p = new System.Diagnostics.Process();
+            p.StartInfo = sInfo;
+
+            return new ProcessContext(p, encoding);
+        }
+
+        public static System.Diagnostics.ProcessStartInfo PrepareProcessStartupInfo(string cmdLine, string currentDir)
+        {
+            var sInfo = new System.Diagnostics.ProcessStartInfo();
+
+            var enumArgs = Utils.SplitCommandLine(cmdLine);
+
+            bool fNameRead = false;
+            StringBuilder argsBuilder = new StringBuilder();
+
+            foreach (var item in enumArgs)
+            {
+                if (!fNameRead)
+                {
+                    sInfo.FileName = item;
+                    fNameRead = true;
+                }
+                else
+                {
+                    argsBuilder.Append(' ');
+                    argsBuilder.Append(item);
+                }
+            }
+
+            if (argsBuilder.Length > 0)
+            {
+                argsBuilder.Remove(0, 1);
+            }
+
+            sInfo.Arguments = argsBuilder.ToString();
+            if (currentDir != null)
+                sInfo.WorkingDirectory = currentDir;
+            return sInfo;
+        }
+
     }
 }

@@ -16,6 +16,8 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("COMОбъект", "COMObject")]
     abstract public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper
     {
+        protected static readonly DateTime MIN_OLE_DATE = new DateTime(100,1,1);
+
         public COMWrapperContext()
             : base(TypeManager.GetTypeByFrameworkType(typeof(COMWrapperContext)))
         {
@@ -68,7 +70,25 @@ namespace ScriptEngine.Machine.Contexts
 
         public static object MarshalIValue(IValue val)
         {
-            return ContextValuesMarshaller.ConvertToCLRObject(val);
+            object retValue;
+            if (val.DataType == Machine.DataType.Date)
+            {
+                var date = val.AsDate();
+                if (date <= MIN_OLE_DATE)
+                {
+                    retValue = MIN_OLE_DATE;
+                }
+                else
+                {
+                    retValue = date;
+                }
+            }
+            else
+            {
+                retValue = ContextValuesMarshaller.ConvertToCLRObject(val);
+            }
+
+            return retValue;
         }
 
         protected static object[] MarshalArgumentsStrict(IValue[] arguments, Type[] argumentsTypes)
@@ -85,6 +105,34 @@ namespace ScriptEngine.Machine.Contexts
             return marshalledArgs;
         }
 
+        protected static object[] MarshalArgumentsStrict(System.Reflection.MethodInfo method, IValue[] arguments)
+        {
+            var parameters = method.GetParameters();
+
+            object[] marshalledArgs = new object[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if(i < arguments.Length)
+                {
+                    if (IsMissedArg(arguments[i]) && parameters[i].IsOptional)
+                        marshalledArgs[i] = Type.Missing;
+                    else
+                        marshalledArgs[i] = ContextValuesMarshaller.ConvertParam(arguments[i], parameters[i].ParameterType);
+                }
+                else
+                {
+                    marshalledArgs[i] = Type.Missing;
+                }
+            }
+
+            return marshalledArgs;
+        }
+
+        private static bool IsMissedArg(IValue arg)
+        {
+            return arg == null || arg.DataType == DataType.NotAValidValue;
+        }
+
         public static IValue CreateIValue(object objParam)
         {
             if (objParam == null)
@@ -99,17 +147,25 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((string)objParam);
             }
-            else if (type == typeof(int))
+            else if (type == typeof(int) || type == typeof(uint) || type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort))
             {
-                return ValueFactory.Create((int)objParam);
+                return ValueFactory.Create(System.Convert.ToInt32(objParam));
+            }
+            else if(type == typeof(long) || type == typeof(ulong))
+            {
+                return ValueFactory.Create(System.Convert.ToInt64(objParam));
             }
             else if (type == typeof(double))
             {
-                return ValueFactory.Create((decimal)objParam);
+                return ValueFactory.Create((decimal)(double)objParam);
             }
             else if (type == typeof(DateTime))
             {
-                return ValueFactory.Create((DateTime)objParam);
+                var unboxed = (DateTime)objParam;
+                if (unboxed == MIN_OLE_DATE)
+                    unboxed = DateTime.MinValue;
+
+                return ValueFactory.Create(unboxed);
             }
             else if (type == typeof(bool))
             {

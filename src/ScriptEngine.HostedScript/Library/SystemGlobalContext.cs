@@ -89,14 +89,46 @@ namespace ScriptEngine.HostedScript.Library
         /// Экспортные свойства и методы скрипта доступны для вызова.
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
-        /// <example>УправлениеКонфигуратором = ЗагрузитьСценарий("C:\config-manager.os");
-        /// УправлениеКонфигуратором.ВыгрузитьБазуДанных();</example>
-        /// </param>
+        /// <param name="externalContext">Структура. Глобальные свойства, которые будут инжектированы в область видимости загружаемого скрипта. (Необязательный)</param>
+        /// <example>    Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит	
+	    ///    // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
+	    ///    Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
-        public IRuntimeContextInstance LoadScript(string path)
+        public IRuntimeContextInstance LoadScript(string path, StructureImpl externalContext = null)
         {
             var compiler = EngineInstance.GetCompilerService();
-            return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path);
+            if(externalContext == null)
+                return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path);
+            else
+            {
+                ExternalContextData extData = new ExternalContextData();
+
+                foreach (var item in externalContext)
+                {
+                    var kv = item as KeyAndValueImpl;
+                    extData.Add(kv.Key.AsString(), kv.Value);
+                }
+
+                return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path, extData);
+
+            }
+        }
+
+        /// <summary>
+        /// Подключает внешнюю сборку среды .NET (*.dll) и регистрирует классы 1Script, объявленные в этой сборке.
+        /// Публичные классы, отмеченные в dll атрибутом ContextClass, будут импортированы аналогично встроенным классам 1Script.
+        /// Загружаемая сборка должна ссылаться на сборку ScriptEngine.dll
+        /// <example>
+        /// ПодключитьВнешнююКомпоненту("C:\MyAssembly.dll");
+        /// КлассИзКомпоненты = Новый КлассИзКомпоненты(); // тип объявлен внутри компоненты
+        /// </example>
+        /// </summary>
+        /// <param name="dllPath">Путь к внешней компоненте</param>
+        [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
+        public void AttachAddIn(string dllPath)
+        {
+            var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
+            EngineInstance.AttachAssembly(assembly);
         }
 
         /// <summary>
@@ -106,7 +138,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <returns>Объект ИнформацияОСценарии</returns>
         [ContextMethod("СтартовыйСценарий", "EntryScript")]
-        public IRuntimeContextInstance CurrentScript()
+        public IRuntimeContextInstance StartupScript()
         {
             return new ScriptInformationContext(CodeSource);
         }
@@ -177,6 +209,23 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
+        /// OneScript не выполняет подсчет ссылок на объекты, а полагается на сборщик мусора CLR.
+        /// Это значит, что объекты автоматически не освобождаются при выходе из области видимости.
+        /// 
+        /// С помощью данного метода можно запустить принудительную сборку мусора среды CLR.
+        /// Данные метод следует использовать обдуманно, поскольку вызов данного метода не гарантирует освобождение всех объектов.
+        /// Локальные переменные, например, до завершения текущего метода очищены не будут,
+        /// поскольку до завершения текущего метода CLR будет видеть, что они используются движком 1Script.
+        /// 
+        /// </summary>
+        [ContextMethod("ВыполнитьСборкуМусора", "RunGarbageCollection")]
+        public void RunGarbageCollection()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
+        /// <summary>
         /// Доступ к аргументам командной строки.
         /// Объект АргументыКоманднойСтроки представляет собой массив в режиме "только чтение".
         /// </summary>
@@ -212,7 +261,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗапуститьПриложение", "RunApp")]
         public void RunApp(string cmdLine, string currentDir = null, bool wait = false, [ByRef] IVariable retCode = null)
         {
-            var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
+            var sInfo = ProcessContext.PrepareProcessStartupInfo(cmdLine, currentDir);
 
             var p = new System.Diagnostics.Process();
             p.StartInfo = sInfo;
@@ -234,25 +283,11 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="currentDir">Текущая директория запускаемого процесса (необязательно)</param>
         /// <param name="redirectOutput">Перехватывать стандартные потоки stdout и stderr</param>
         /// <param name="redirectInput">Перехватывать стандартный поток stdin</param>
+        /// <param name="encoding">Кодировка стандартных потоков вывода и ошибок</param>
         [ContextMethod("СоздатьПроцесс", "CreateProcess")]
-        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false)
+        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
         {
-            var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
-            sInfo.UseShellExecute = false;
-            if (redirectInput)
-                sInfo.RedirectStandardInput = true;
-
-            if(redirectOutput)
-            {
-                sInfo.RedirectStandardOutput = true;
-                sInfo.RedirectStandardError = true;
-            }
-
-            var p = new System.Diagnostics.Process();
-            p.StartInfo = sInfo;
-
-            return new ProcessContext(p);
-
+            return ProcessContext.Create(cmdLine, currentDir, redirectOutput, redirectInput, encoding);
         }
 
         /// <summary>
@@ -315,40 +350,6 @@ namespace ScriptEngine.HostedScript.Library
         public string DetailErrorDescription(ExceptionInfoContext errInfo)
         {
             return errInfo.DetailedDescription;
-        }
-
-        private static System.Diagnostics.ProcessStartInfo PrepareProcessStartupInfo(string cmdLine, string currentDir)
-        {
-            var sInfo = new System.Diagnostics.ProcessStartInfo();
-
-            var enumArgs = Utils.SplitCommandLine(cmdLine);
-
-            bool fNameRead = false;
-            StringBuilder argsBuilder = new StringBuilder();
-
-            foreach (var item in enumArgs)
-            {
-                if (!fNameRead)
-                {
-                    sInfo.FileName = item;
-                    fNameRead = true;
-                }
-                else
-                {
-                    argsBuilder.Append(' ');
-                    argsBuilder.Append(item);
-                }
-            }
-
-            if (argsBuilder.Length > 0)
-            {
-                argsBuilder.Remove(0, 1);
-            }
-
-            sInfo.Arguments = argsBuilder.ToString();
-            if (currentDir != null)
-                sInfo.WorkingDirectory = currentDir;
-            return sInfo;
         }
 
         /// <summary>

@@ -376,6 +376,10 @@ namespace ScriptEngine.Compiler
                     };
                     return lex;
                 }
+                else if(cs == '\r')
+                {
+                    continue;
+                }
                 else if (cs == '\n')
                 {
                     iterator.MoveNext();

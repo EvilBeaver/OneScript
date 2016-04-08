@@ -34,8 +34,13 @@ namespace ScriptEngine.HostedScript.Library.Http
             string user = null,
             string password = null,
             InternetProxyContext proxy = null,
-            int timeout = 0)
+            int timeout = 0,
+            IValue ssl = null,
+            bool useOSAuth = false)
         {
+            if (ssl != null && !(ssl.DataType == Machine.DataType.Undefined || ssl.DataType == Machine.DataType.NotAValidValue))
+                throw new RuntimeException("Защищенное соединение по произвольным сертификатам не поддерживается. Если необходим доступ по https, просто укажите протокол https в адресе хоста.");
+            
             var uriBuilder = new UriBuilder(host);
             if (port != 0)
                 uriBuilder.Port = port;
@@ -52,7 +57,15 @@ namespace ScriptEngine.HostedScript.Library.Http
             Password = password == null ? String.Empty : password;
             Timeout = timeout;
             _proxy = proxy;
+            UseOSAuthentication = useOSAuth;
             
+        }
+
+        [ContextProperty("ИспользоватьАутентификациюОС", "UseOSAuthentication", CanWrite=false)]
+        public bool UseOSAuthentication
+        {
+            get;
+            set;
         }
 
         [ContextProperty("Пользователь","User")]
@@ -144,6 +157,41 @@ namespace ScriptEngine.HostedScript.Library.Http
             return GetResponse(request, "DELETE");
         }
 
+        /// <summary>
+        /// Изменяет данные на сервере при помощи PATCH-запроса
+        /// </summary>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
+        [ContextMethod("Изменить", "Patch")]
+        public HttpResponseContext Patch(HttpRequestContext request)
+        {
+            return GetResponse(request, "PATCH");
+        }
+
+        /// <summary>
+        /// Получает при помощи HEAD-запроса информацию о запрошиваемых данных, содержащуюся в заголовках, не получая сами данные.
+        /// </summary>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
+        [ContextMethod("ПолучитьЗаголовки", "Head")]
+        public HttpResponseContext Head(HttpRequestContext request)
+        {
+            return GetResponse(request, "HEAD");
+        }
+
+        /// <summary>
+        /// Вызвать произвольный HTTP-метод
+        /// </summary>
+        /// <param name="method">Строка. Имя метода HTTP</param>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <param name="output">Строка. Имя выходного файла</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
+        [ContextMethod("ВызватьHTTPМетод", "CallHTTPMethod")]
+        public HttpResponseContext Patch(string method, HttpRequestContext request, string output = null)
+        {
+            return GetResponse(request, method, output);
+        }
+
         private HttpWebRequest CreateRequest(string resource)
         {
             var uriBuilder = new UriBuilder(_hostUri);
@@ -164,6 +212,10 @@ namespace ScriptEngine.HostedScript.Library.Http
                 var basicAuthEncoding = Encoding.GetEncoding("UTF-8");
                 authInfo = Convert.ToBase64String(basicAuthEncoding.GetBytes(authInfo));
                 request.Headers["Authorization"] = "Basic " + authInfo;
+            }
+            else if(UseOSAuthentication)
+            {
+                request.Credentials = CredentialCache.DefaultNetworkCredentials;
             }
 
             if(_proxy != null)
@@ -325,6 +377,10 @@ namespace ScriptEngine.HostedScript.Library.Http
         /// <param name="password">Пароль</param>
         /// <param name="proxy">ИнтернетПрокси. Настройки прокси-сервера</param>
         /// <param name="timeout">Таймаут ожидания.</param>
+        /// <param name="ssl">Объект ЗащищенноеСоединение. На данный момент данная механика работы с SSL не поддерживается. 
+        /// Обращение к https возможно, если в адресе хоста указать протокол https. В этом случае будут использованы сертификаты из хранилища ОС.
+        /// Указание произвольных клиентских и серверных сертификатов в текущей версии не поддерживается.</param>
+        /// <param name="timeout">Таймаут ожидания.</param>
         /// <returns></returns>
         [ScriptConstructor]
         public static HttpConnectionContext Constructor(IValue host, 
@@ -332,14 +388,18 @@ namespace ScriptEngine.HostedScript.Library.Http
             IValue user = null, 
             IValue password = null,
             IValue proxy = null,
-            IValue timeout = null)
+            IValue timeout = null,
+            IValue ssl = null,
+            IValue useOSAuthentication = null)
         {
             return new HttpConnectionContext(host.AsString(),
                 ContextValuesMarshaller.ConvertParam<int>(port),
                 ContextValuesMarshaller.ConvertParam<string>(user),
                 ContextValuesMarshaller.ConvertParam<string>(password),
                 ContextValuesMarshaller.ConvertParam<InternetProxyContext>(proxy),
-                ContextValuesMarshaller.ConvertParam<int>(timeout)
+                ContextValuesMarshaller.ConvertParam<int>(timeout),
+                ContextValuesMarshaller.ConvertParam<IValue>(ssl),
+                ContextValuesMarshaller.ConvertParam<bool>(useOSAuthentication)
                 );
         }
 
