@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneScript.Runtime;
 using OneScript.Language;
 using OneScript.Core;
+using System.Linq;
+using OneScript.Runtime.Compiler;
 
 namespace OneScript.Tests.RuntimeTests
 {
@@ -23,15 +25,35 @@ namespace OneScript.Tests.RuntimeTests
 
             machine.AttachTo(process);
             machine.SetCode(module);
-
+            
             var thread = ScriptThread.Create(process);
             thread.Run(() =>
                 {
-                    machine.Run(0);
+                    var meth = module.Methods.First(x => x.Name == module.EntryPointName);
+                    machine.Run(meth);
                     return ValueFactory.Create();
                 });
 
             Assert.AreEqual(ValueFactory.Create(1), process.Memory[0].ValueOf("П"));
+        }
+
+        [TestMethod]
+        public void Machine_Can_Enter_Method()
+        {
+            var machine = new OneScriptStackMachine();
+            var builder = new OSByteCodeBuilder();
+            builder.Context = new CompilerContext();
+            var parser = new Parser(builder);
+            var src = new Preprocessor();
+            src.Code = "F = 1";
+            parser.ParseModule(src);
+            var module = builder.GetModule();
+
+            machine.SetCode(module);
+            machine.Enter(module.Methods[0]);
+            Assert.IsTrue(machine.CurrentFrame.Module == module);
+            Assert.IsTrue(machine.CurrentFrame.CurrentMethod == module.Methods[0].Name);
+
         }
     }
 }

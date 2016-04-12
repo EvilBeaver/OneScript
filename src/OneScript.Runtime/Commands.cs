@@ -17,6 +17,7 @@ namespace OneScript.Runtime
         PushVar,
         PushConst,
         PushLocal,
-        Assign
+        LoadVar,
+        LoadLocal
     }
 }

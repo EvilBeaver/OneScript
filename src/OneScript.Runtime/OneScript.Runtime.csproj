@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CallStackFrame.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="CompiledModule.cs" />
     <Compile Include="Compiler\CompilerService.cs" />

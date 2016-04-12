@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{4585BA5D-9EC4-4C89-8250-2033D2AC2999}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -151,6 +151,7 @@ Global
 		{3F89D545-7846-4B88-9D86-DE67DA39C831}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{3F89D545-7846-4B88-9D86-DE67DA39C831}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{3F89D545-7846-4B88-9D86-DE67DA39C831}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{3F89D545-7846-4B88-9D86-DE67DA39C831}.Debug|Win32.Build.0 = Debug|Any CPU
 		{3F89D545-7846-4B88-9D86-DE67DA39C831}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{3F89D545-7846-4B88-9D86-DE67DA39C831}.Debug|x86.Build.0 = Debug|Any CPU
 		{3F89D545-7846-4B88-9D86-DE67DA39C831}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -164,6 +165,7 @@ Global
 		{9EFE06CB-13AF-4C75-BED8-AE84955E1CC1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{9EFE06CB-13AF-4C75-BED8-AE84955E1CC1}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{9EFE06CB-13AF-4C75-BED8-AE84955E1CC1}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{9EFE06CB-13AF-4C75-BED8-AE84955E1CC1}.Debug|Win32.Build.0 = Debug|Any CPU
 		{9EFE06CB-13AF-4C75-BED8-AE84955E1CC1}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{9EFE06CB-13AF-4C75-BED8-AE84955E1CC1}.Debug|x86.Build.0 = Debug|Any CPU
 		{9EFE06CB-13AF-4C75-BED8-AE84955E1CC1}.Release|Any CPU.ActiveCfg = Release|Any CPU

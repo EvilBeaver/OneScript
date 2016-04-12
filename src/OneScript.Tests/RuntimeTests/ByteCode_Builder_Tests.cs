@@ -40,7 +40,7 @@ namespace OneScript.Tests.RuntimeTests
             Assert.AreEqual(OperationCode.PushLocal, code[0].Code);
             Assert.AreEqual(OperationCode.PushConst, code[1].Code);
             Assert.AreEqual(0, code[1].Argument);
-            Assert.AreEqual(OperationCode.Assign, code[2].Code);
+            Assert.AreEqual(OperationCode.LoadLocal, code[2].Code);
         }
 
         [TestMethod]

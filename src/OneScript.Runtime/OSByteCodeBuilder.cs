@@ -83,7 +83,7 @@ namespace OneScript.Runtime
 
         public IASTNode BuildAssignment(IASTNode acceptor, IASTNode source)
         {
-            AddOperation(OperationCode.Assign);
+            throw new NotImplementedException();
             return NodeStub();
         }
 

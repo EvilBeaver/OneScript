@@ -68,6 +68,7 @@
     <Compile Include="Core\TypeTypeValue.cs" />
     <Compile Include="Core\UndefinedValue.cs" />
     <Compile Include="Core\ValueMarshaler.cs" />
+    <Compile Include="Runtime\ICallStackFrame.cs" />
     <Compile Include="Runtime\IScriptProcess.cs" />
     <Compile Include="IScriptSource.cs" />
     <Compile Include="ISourceCompiler.cs" />
