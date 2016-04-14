@@ -74,12 +74,17 @@ namespace OneScript.Runtime
 
         private void LoadVar(int arg)
         {
-            throw new NotImplementedException();
+            var binding = _module.VariableUsageMap[arg];
+            var scope = _mem[binding.Context];
+            scope.ValueRefs[arg].Value = _operationStack.Pop();
+            NextInstruction();
         }
 
         private void LoadLocal(int arg)
         {
-            throw new NotImplementedException();
+            var value = _operationStack.Pop();
+            CurrentFrame.Locals[arg].Value = value;
+            NextInstruction();
         }
 
         private void Loop()

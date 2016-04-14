@@ -26,7 +26,19 @@ namespace OneScript.Runtime
 
         internal void Execute(ICompiledModule module, string entryPointName)
         {
-            throw new NotImplementedException();
+            var machine = new OneScriptStackMachine();
+            machine.AttachTo(this);
+            var mod = (CompiledModule)module;
+            machine.SetCode(mod);
+
+            var thread = ScriptThread.Create(this);
+            thread.Run(() =>
+            {
+                var meth = mod.Methods.First(x => x.Name == entryPointName);
+                machine.Run(meth);
+                return ValueFactory.Create();
+            });
+
         }
 
         public IRuntimeDataContext RuntimeContext

@@ -1,4 +1,5 @@
 ﻿using OneScript.Core;
+using OneScript.Runtime.Compiler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,12 +20,12 @@ namespace OneScript.Runtime
             if(!_names.TryGetIdOfName(nameOrAlias, out output))
                 throw new InvalidOperationException("Wrong name");
 
-            return _values[output];
+            return ValueOf(output);
         }
 
         public IValue ValueOf(int index)
         {
-            return _values[index];
+            return ValueRefs[index].Value;
         }
 
         public int GetMethodNumber(string name)
@@ -39,7 +40,15 @@ namespace OneScript.Runtime
 
         public int GetVariableNumber(string name)
         {
-            return -1;
+            int idx;
+            if(_names.TryGetIdOfName(name, out idx))
+            {
+                return idx;
+            }
+            else
+            {
+                return SymbolScope.InvalidIndex;
+            }
         }
 
         public IEnumerable<string> GetVariableSymbols()

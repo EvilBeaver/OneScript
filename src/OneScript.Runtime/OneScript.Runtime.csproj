@@ -58,7 +58,6 @@
     <Compile Include="Compiler\SymbolBinding.cs" />
     <Compile Include="Compiler\SymbolScope.cs" />
     <Compile Include="Compiler\MethodsUsageTable.cs" />
-    <Compile Include="IValueRef.cs" />
     <Compile Include="MachineMemory.cs" />
     <Compile Include="OneScriptProcess.cs" />
     <Compile Include="OneScriptRuntime.cs" />
