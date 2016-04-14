@@ -95,7 +95,7 @@ namespace OneScript.Runtime
             {
                 if (_variables == null)
                 {
-                    _variables = _values.Select(x => new GeneralValueRef(x)).ToArray();
+                    _variables = _values.Select(x => x is IValueRef ? ((IValueRef)x) : new GeneralValueRef(x)).ToArray();
                 }
 
                 return _variables;

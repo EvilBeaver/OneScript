@@ -45,6 +45,7 @@
     <Compile Include="Compiler\CompilerService.cs" />
     <Compile Include="Compiler\ValueAcceptorASTNode.cs" />
     <Compile Include="GeneralValueRef.cs" />
+    <Compile Include="InjectedVariable.cs" />
     <Compile Include="IRuntimeValueHolder.cs" />
     <Compile Include="ISymbolScope.cs" />
     <Compile Include="Compiler\ModuleMethodDefinition.cs" />

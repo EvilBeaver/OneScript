@@ -39,6 +39,11 @@ namespace OneScript.Runtime
             _externalContexts.Add(scope);
         }
 
+        public void InjectVariable(InjectedVariable variable)
+        {
+            InjectSymbol(variable.Name, variable);
+        }
+
         private void CheckVariablesConflicts(ISymbolScope scope)
         {
             if (scope.VariableCount == 0)

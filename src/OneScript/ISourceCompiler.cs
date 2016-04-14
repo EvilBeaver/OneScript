@@ -5,9 +5,9 @@ namespace OneScript
     {
         ICompiledModule Compile(IScriptSource moduleSource);
         
-        void InjectObject(OneScript.Core.IRuntimeContextInstance context);
+        void InjectObject(Core.IRuntimeContextInstance context);
         
-        void InjectSymbol(string name, OneScript.Core.IValue value);
+        void InjectSymbol(string name, Core.IValue value);
         
         PreprocessorDirectivesSet PreprocessorDirectives { get; }
     }
