@@ -108,7 +108,9 @@ namespace OneScript.Runtime
 
         public IASTNode ReadVariable(string identifier)
         {
-            throw new NotImplementedException();
+            var binding = Context.GetVariable(identifier);
+            WritePushVariable(binding);
+            return NodeStub();
         }
 
         public IASTNode BinaryOperation(Token operationToken, IASTNode leftHandedNode, IASTNode rightHandedNode)

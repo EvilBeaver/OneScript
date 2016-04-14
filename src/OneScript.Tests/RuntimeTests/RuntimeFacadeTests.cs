@@ -32,7 +32,7 @@ namespace OneScript.Tests
             rt.Execute(module, module.EntryPointName);
 
             Assert.AreEqual(BasicTypes.Number, externalValue.Type);
-            Assert.AreEqual(1m, externalValue.AsNumber());
+            Assert.AreEqual(1, externalValue.AsNumber());
         }
     }
 }
