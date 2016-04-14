@@ -77,13 +77,24 @@ namespace OneScript.Runtime
                 varDef = Context.DefineVariable(identifier);
             }
 
-            WritePushVariable(varDef);
-            return NodeStub();
+            ValueAcceptorASTNode acceptor;
+
+            if (varDef.Context == Context.TopScopeIndex)
+            {
+                acceptor = ValueAcceptorASTNode.LocalVariable(_currentLocalsTable.GetIndex(varDef));
+            }
+            else
+            {
+                acceptor = ValueAcceptorASTNode.ExternalVariable(_module.VariableUsageMap.GetIndex(varDef));
+            }
+
+            return acceptor;
         }
 
         public IASTNode BuildAssignment(IASTNode acceptor, IASTNode source)
         {
-            throw new NotImplementedException();
+            var acceptNode = (ValueAcceptorASTNode)acceptor;
+            AddOperation(acceptNode.OperationCode, acceptNode.Argument);
             return NodeStub();
         }
 

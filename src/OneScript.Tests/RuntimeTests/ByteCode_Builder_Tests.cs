@@ -36,11 +36,10 @@ namespace OneScript.Tests.RuntimeTests
             var module = CreateModuleForCode("а = 1;");
             var code = module.Commands;
 
-            Assert.AreEqual(3, code.Count);
-            Assert.AreEqual(OperationCode.PushLocal, code[0].Code);
-            Assert.AreEqual(OperationCode.PushConst, code[1].Code);
+            Assert.AreEqual(2, code.Count);
+            Assert.AreEqual(OperationCode.PushConst, code[0].Code);
             Assert.AreEqual(0, code[1].Argument);
-            Assert.AreEqual(OperationCode.LoadLocal, code[2].Code);
+            Assert.AreEqual(OperationCode.LoadLocal, code[1].Code);
         }
 
         [TestMethod]
@@ -49,16 +48,16 @@ namespace OneScript.Tests.RuntimeTests
             var module = CreateModuleForCode("а = 1;б = 2;");
             var code = module.Commands;
 
-            Assert.AreEqual(6, code.Count);
-            Assert.AreEqual(OperationCode.PushLocal, code[0].Code);
+            Assert.AreEqual(4, code.Count);
+            Assert.AreEqual(OperationCode.PushConst, code[0].Code);
             Assert.AreEqual(0, code[0].Argument);
-            Assert.AreEqual(OperationCode.PushConst, code[1].Code);
+            Assert.AreEqual(OperationCode.LoadLocal, code[1].Code);
             Assert.AreEqual(0, code[1].Argument);
 
-            Assert.AreEqual(OperationCode.PushLocal, code[3].Code);
+            Assert.AreEqual(OperationCode.PushConst, code[2].Code);
+            Assert.AreEqual(1, code[2].Argument);
+            Assert.AreEqual(OperationCode.LoadLocal, code[3].Code);
             Assert.AreEqual(1, code[3].Argument);
-            Assert.AreEqual(OperationCode.PushConst, code[4].Code);
-            Assert.AreEqual(1, code[4].Argument);
 
             Assert.AreEqual(2, module.Constants.Count);
             //Assert.AreEqual(2, module.VariableTable.Count);
