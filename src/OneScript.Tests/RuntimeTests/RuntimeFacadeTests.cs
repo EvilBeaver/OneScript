@@ -25,7 +25,7 @@ namespace OneScript.Tests
         public void Variable_Value_Is_Changed()
         {
             var rt = new OneScriptRuntime();
-            var externalValue = new InjectedVariable("А", ValueFactory.Create(0));
+            var externalValue = new InjectedVariable("А");
             rt.InjectVariable(externalValue);
             var code = new StringCodeSource("А = 1;");
             var module = rt.Compile(code);

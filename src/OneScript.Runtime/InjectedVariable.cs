@@ -8,7 +8,7 @@ namespace OneScript.Runtime
 {
     public class InjectedVariable : IValueRef, IValue
     {
-        public InjectedVariable()
+        public InjectedVariable(string name) : this(name, ValueFactory.Create())
         {
 
         }
