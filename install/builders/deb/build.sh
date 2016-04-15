@@ -1,10 +1,9 @@
 #!/bin/sh
 
-# TODO: $1
-SRCPATH=/media/
-BINPATH=${SRCPATH}src/oscript/bin/Release/
-DEBBUILDROOT=${SRCPATH}src/oscript/bin/
-BUILDERROOT=${SRCPATH}install/builders/deb/
+SRCPATH=/media
+BINPATH=${SRCPATH}/bin/
+DEBBUILDROOT=${SRCPATH}/bin/
+BUILDERROOT=${SRCPATH}/deb/
 
 VERSION=$(cat ${BINPATH}VERSION)
 PAKNAME=onescript-engine
@@ -23,7 +22,7 @@ cp ${BINPATH}*.exe $DSTPATH/usr/share/oscript/bin
 cp ${BINPATH}*.dll $DSTPATH/usr/share/oscript/bin
 cp ${BUILDERROOT}oscript $DSTPATH/usr/bin
 cp ${BUILDERROOT}oscript-cgi $DSTPATH/usr/bin
-cp -r ${SRCPATH}/oscript-library/src/* $DSTPATH/usr/share/oscript/lib
+cp -r ${SRCPATH}/lib/src/* $DSTPATH/usr/share/oscript/lib
 cp ${BINPATH}/oscript.cfg $DSTPATH/etc
 
 # TODO: Убрать это!
@@ -33,16 +32,4 @@ fakeroot dpkg-deb --build $DSTPATH
 
 rm -rf $DSTPATH
 chmod 777 $DSTPATH.deb
-
-####
-#	Тестирование. TODO: Вынести в отдельный контейнер
-####
-
-# проверим установку
-
-dpkg-name --overwrite $DSTPATH.deb
-find -name '*.deb' | xargs dpkg --force-depends --install 
-
-# запуск тестов
-oscript ${SRCPATH}tests/testrunner.os -runall ${SRCPATH}tests
 
