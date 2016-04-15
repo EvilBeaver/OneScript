@@ -46,7 +46,9 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
+          <Private>False</Private>
+        </Reference>
       </ItemGroup>
     </Otherwise>
   </Choose>
@@ -71,6 +73,7 @@
     <Compile Include="ParserTests\WhileNode.cs" />
     <Compile Include="RuntimeTests\ByteCode_Builder_Tests.cs" />
     <Compile Include="RuntimeTests\StackMachine_Test.cs" />
+    <Compile Include="RuntimeTests\AbstractRuntimeTest.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TypeSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
