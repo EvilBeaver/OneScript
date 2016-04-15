@@ -37,7 +37,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Runtime\IValueRef.cs" />
+    <Compile Include="Core\IValueRef.cs" />
     <Compile Include="Core\TypeConversionException.cs" />
     <Compile Include="ComponentModel\AutoContext.cs" />
     <Compile Include="ComponentModel\ComponentBase.cs" />
@@ -72,7 +72,6 @@
     <Compile Include="Runtime\ICallStackFrame.cs" />
     <Compile Include="Runtime\IScriptProcess.cs" />
     <Compile Include="IScriptSource.cs" />
-    <Compile Include="ISourceCompiler.cs" />
     <Compile Include="PreprocessorDirectivesSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ValueFactory.cs" />

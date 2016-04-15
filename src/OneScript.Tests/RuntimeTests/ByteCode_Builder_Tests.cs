@@ -23,7 +23,7 @@ namespace OneScript.Tests.RuntimeTests
             return CreateModuleForCode(codeString, rt);
         }
 
-        private static CompiledModule CreateModuleForCode(string codeString, ISourceCompiler rt)
+        private static CompiledModule CreateModuleForCode(string codeString, OneScriptRuntime rt)
         {
             var code = new StringCodeSource(codeString);
             var module = rt.Compile(code) as CompiledModule;
