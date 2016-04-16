@@ -10,6 +10,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Machine;
+using ScriptEngine;
 
 namespace StandaloneRunner
 {
@@ -19,14 +20,36 @@ namespace StandaloneRunner
         {
             try
             {
-                Stream codeStream = LocateCode();
-                var formatter = new BinaryFormatter();
-                var reader = new ScriptEngine.Compiler.ModulePersistor(formatter);
-                var moduleHandle = reader.Read(codeStream);
+                ScriptModuleHandle module;
                 var engine = new HostedScriptEngine();
-                var src = new BinaryCodeSource(moduleHandle);
+                engine.Initialize();
 
-                var process = engine.CreateProcess(this, moduleHandle, src);
+                using(Stream codeStream = LocateCode())
+                using (var binReader = new BinaryReader(codeStream))
+                {
+                    int modulesCount;
+                    modulesCount = binReader.ReadInt32();
+
+
+                    var formatter = new BinaryFormatter();
+                    var reader = new ScriptEngine.Compiler.ModulePersistor(formatter);
+
+                    var entry = reader.Read(codeStream);
+                    --modulesCount;
+
+                    while (modulesCount-- > 0)
+                    {
+                        var userScript = reader.Read(codeStream);
+                        engine.LoadUserScript(userScript);
+                    }
+
+                    module = entry.Module;
+
+                }
+
+                var src = new BinaryCodeSource(module);
+                var process = engine.CreateProcess(this, module, src);
+
                 return process.Start();
                 
             }
