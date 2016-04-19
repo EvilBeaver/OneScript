@@ -22,7 +22,7 @@
     <WixVariable Id="WixUILicenseRtf" Value="mpl2_license.rtf" />
     
       <UI>
-        <UIRef Id="WixUI_Advanced"/>
+        <UIRef Id="WixUI_FeatureTree"/>
       </UI>
     
     <DirectoryRef Id="BinFolder">
@@ -46,7 +46,7 @@
 
     </DirectoryRef>
     
-    <Feature Id="FullPackage" Title="Полная поставка" Level="1">
+    <Feature Id="FullPackage" Title="OneScript Engine" Level="1" ConfigurableDirectory="APPLICATIONFOLDER">
 
       <Feature Id="StandardPackage" Title="Основные файлы программы">
         <ComponentRef Id="Engine"/>
