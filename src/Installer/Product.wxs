@@ -8,7 +8,13 @@
     
     <MajorUpgrade DowngradeErrorMessage="A newer version of OneScript is already installed." />
 		<MediaTemplate EmbedCab="yes" />
-		
+
+    <PropertyRef Id="NETFRAMEWORK40FULL"/>
+
+    <Condition Message="This application requires .NET Framework 4.0. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR NETFRAMEWORK40FULL]]>
+    </Condition>
+
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
         <Directory Id="APPLICATIONFOLDER" Name="OneScript">
@@ -21,7 +27,6 @@
 
     <Property Id="ApplicationFolderName" Value="OneScript" />
     <Property Id="WixAppFolder" Value="WixPerMachineFolder" />
-    <PropertyRef Id="NETFRAMEWORK40FULL"/>
 
     <WixVariable Id="WixUISupportPerUser" Value="0" />
     <WixVariable Id="WixUILicenseRtf" Value="mpl2_license.rtf" />
