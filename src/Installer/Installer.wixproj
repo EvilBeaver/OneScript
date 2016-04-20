@@ -17,7 +17,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;ProductVersion=$(Version);LibraryContentPath=$(OutputPathForBuild)lib</DefineConstants>
+    <DefineConstants>Debug;ProductVersion=$(Version);OutputPathForBuild=$(OutputPathForBuild);LibraryContentPath=$(OutputPathForBuild)lib</DefineConstants>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
     <LinkerAdditionalOptions>-cultures:ru-RU</LinkerAdditionalOptions>
@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BinaryContent.wxs" />
+    <Compile Include="ExamplesContent.wxs" />
     <Compile Include="Features.wxs" />
     <Compile Include="LibraryContent.wxs" />
     <Compile Include="Product.wxs" />

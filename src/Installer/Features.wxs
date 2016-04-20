@@ -2,13 +2,14 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Fragment>
     <FeatureGroup Id="Media">
-      <Feature Id="FullPackage" Title="OneScript Engine" Level="1" ConfigurableDirectory="APPLICATIONFOLDER">
+      <Feature Id="FullPackage" Title="OneScript Engine" Level="1" ConfigurableDirectory="APPLICATIONFOLDER" Display="expandInitially">
 
         <Feature Id="StandardPackage" Title="Основные файлы программы">
           <ComponentRef Id="Engine"/>
           <ComponentRef Id="HostedLib"/>
           <ComponentRef Id="ConsoleApp"/>
           <ComponentRef Id="ConfigFile"/>
+          <ComponentRef Id="OpmLauncher"/>
         </Feature>
 
         <Feature Id="OscriptLibrary" Title="Библиотека стандартных скриптов">
@@ -17,6 +18,10 @@
 
         <Feature Id="TestApp" Title="Тестовая утилита для отладки 1Script" Level="2">
           <ComponentRef Id="TestApp"/>
+        </Feature>
+
+        <Feature Id="Snegopat" Title="Интеграция со 'Снегопатом'" Level="2">
+          <ComponentRef Id="SnegopatDll"/>
         </Feature>
 
       </Feature>
