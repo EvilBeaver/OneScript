@@ -9,6 +9,7 @@
         <ComponentRef Id="ConsoleApp"/>
         <ComponentRef Id="ConfigFile"/>
         <ComponentRef Id="OpmLauncher"/>
+        <ComponentRef Id="SetPathVariable"/>
       </Feature>
       
       <Feature Id="OscriptLibrary" Title="Библиотека стандартных скриптов">

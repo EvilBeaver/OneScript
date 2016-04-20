@@ -32,6 +32,17 @@
         <File Source="$(var.ScriptEngine.Snegopat.TargetPath)"></File>
       </Component>
 
+      <Component Id="SetPathVariable" Guid="1B6964FE-3841-45B9-B7E8-C1193161CD65" KeyPath="yes">
+        <Environment Action="set"
+                     Id="SetPathToInstallFolderToSystemPath"
+                     Name="PATH"
+                     System="yes"
+                     Value="[APPLICATIONFOLDER]"
+                     Permanent="no"
+                     Part="last"
+                     />
+      </Component>
+
     </DirectoryRef>
 	</Fragment>
 </Wix>
