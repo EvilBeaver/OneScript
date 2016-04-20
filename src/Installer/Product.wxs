@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Product Id="0B8916C9-DB9D-4DF0-BBA9-D93D0AE6A55A" Name="OneScript" Language="1049" Version="$(var.ProductVersion)" Manufacturer="OneScript Team" UpgradeCode="525fd963-d484-448d-bbd8-5fa06234288e">
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Description="OneScript Engine"/>
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of OneScript is already installed." />
 		<MediaTemplate EmbedCab="yes" />
@@ -10,6 +10,8 @@
       <Directory Id="ProgramFilesFolder">
         <Directory Id="APPLICATIONFOLDER" Name="OneScript">
           <Directory Id="BinFolder" Name="bin"/>
+          <Directory Id="LibFolder" Name="lib" ComponentGuidGenerationSeed="F8FD669F-0B32-45C8-942F-256FEFD2E0A2" />
+          <Directory Id="ExamplesFolder" Name="examples"/>
         </Directory>
       </Directory>
     </Directory>
@@ -21,50 +23,21 @@
     <WixVariable Id="WixUISupportPerUser" Value="0" />
     <WixVariable Id="WixUILicenseRtf" Value="mpl2_license.rtf" />
     
-      <UI>
-        <UIRef Id="WixUI_FeatureTree"/>
-      </UI>
+    <UI>
+      <UIRef Id="WixUI_FeatureTree"/>
+    </UI>
+
+    <FeatureGroupRef Id="Media"/>
     
-    <DirectoryRef Id="BinFolder">
-      <Component Id="Engine" Guid="4A83F6D9-5F9A-4628-9861-BF3AD53D0E50">
-        <File Source="$(var.ScriptEngine.TargetPath)"></File>
-      </Component>
+    <!--Fresh GUIDs
+    961B0595-86AB-4E21-B753-539FFDFF73B8
+    CD7DA53D-A4E0-4C01-BA2D-AC67064102F2
+    30288046-360B-454E-B49F-F67DD9B6A1F6
+    1B6964FE-3841-45B9-B7E8-C1193161CD65
+    486E508F-009A-4B06-93F9-48CCDC75D7DC
+    A54A721E-3C8A-4A1B-B0E6-9063160FF611
+    -->
 
-      <Component Id="HostedLib" Guid="A98FCBE4-04BB-44EA-809F-A375CE5B11D3">
-        <File Source="$(var.ScriptEngine.HostedScript.TargetPath)"></File>
-        <File Source="$(var.ScriptEngine.HostedScript.TargetDir)Ionic.Zip.dll"></File>
-      </Component>
-
-      <Component Id="ConsoleApp" Guid="D42B2795-B9DF-490F-B469-AB06E25085D7">
-        <File Source="$(var.oscript.TargetPath)"></File>
-      </Component>
-
-      <Component Id="TestApp" Guid="9C435D24-3B33-42DA-AE7F-D5604B11DC05">
-        <File Source="$(var.TestApp.TargetPath)"></File>
-        <File Source="$(var.TestApp.TargetDir)ICSharpCode.AvalonEdit.dll"></File>
-      </Component>
-
-    </DirectoryRef>
-    
-    <Feature Id="FullPackage" Title="OneScript Engine" Level="1" ConfigurableDirectory="APPLICATIONFOLDER">
-
-      <Feature Id="StandardPackage" Title="Основные файлы программы">
-        <ComponentRef Id="Engine"/>
-        <ComponentRef Id="HostedLib"/>
-        <ComponentRef Id="ConsoleApp"/>
-      </Feature>
-
-      <Feature Id="OscriptLibrary" Title="Библиотека стандартных скриптов">
-        <ComponentRef Id="TestApp"/>
-        <!--TODO описать компонент для библиотеки-->
-      </Feature>
-
-      <Feature Id="TestApp" Title="Тестовая утилита для отладки 1Script" Level="2">
-        <ComponentRef Id="TestApp"/>
-      </Feature>
-
-    </Feature>
-    
   </Product>
-
+  
 </Wix>

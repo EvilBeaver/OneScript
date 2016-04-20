@@ -16,10 +16,15 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;ProductVersion=$(Version)</DefineConstants>
+    <DefineConstants>Debug;ProductVersion=$(Version);LibraryContentPath=$(SolutionDir)..\install\build\lib</DefineConstants>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
     <LinkerAdditionalOptions>-cultures:ru-RU</LinkerAdditionalOptions>
+    <SuppressAllWarnings>False</SuppressAllWarnings>
+    <Pedantic>False</Pedantic>
+    <VerboseOutput>True</VerboseOutput>
+    <WixVariables>
+    </WixVariables>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -27,6 +32,9 @@
     <DefineConstants>ProductVersion=$(Version)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BinaryContent.wxs" />
+    <Compile Include="Features.wxs" />
+    <Compile Include="LibraryContent.wxs" />
     <Compile Include="Product.wxs" />
   </ItemGroup>
   <ItemGroup>
@@ -85,7 +93,13 @@
       <Name>WixUIExtension</Name>
     </WixExtension>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="mpl2_license.rtf" />
+  </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
+  <PropertyGroup>
+    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(SolutionDir)..\install\build\lib" -o "$(ProjectDir)LibraryContent.wxs" -dr LibFolder -cg Library.Content -sfrag -gg -srd -var var.LibraryContentPath</PreBuildEvent>
+  </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Wix.targets.

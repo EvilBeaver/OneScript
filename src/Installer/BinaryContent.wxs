@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Fragment>
+    <DirectoryRef Id="BinFolder">
+      <Component Id="Engine" Guid="4A83F6D9-5F9A-4628-9861-BF3AD53D0E50">
+        <File Source="$(var.ScriptEngine.TargetPath)"></File>
+      </Component>
+
+      <Component Id="HostedLib" Guid="A98FCBE4-04BB-44EA-809F-A375CE5B11D3">
+        <File Source="$(var.ScriptEngine.HostedScript.TargetPath)"></File>
+        <File Source="$(var.ScriptEngine.HostedScript.TargetDir)Ionic.Zip.dll"></File>
+      </Component>
+
+      <Component Id="ConsoleApp" Guid="D42B2795-B9DF-490F-B469-AB06E25085D7">
+        <File Source="$(var.oscript.TargetPath)"></File>
+      </Component>
+
+      <Component Id="TestApp" Guid="9C435D24-3B33-42DA-AE7F-D5604B11DC05">
+        <File Source="$(var.TestApp.TargetPath)"></File>
+        <File Source="$(var.TestApp.TargetDir)ICSharpCode.AvalonEdit.dll"></File>
+      </Component>
+
+      <Component Id="ConfigFile" Guid="6C875017-1B56-4F5D-947A-A57810AC8BB1" KeyPath="yes">
+        <File Source="$(var.ScriptEngine.HostedScript.TargetDir)oscript.cfg"></File>
+      </Component>
+    </DirectoryRef>
+	</Fragment>
+</Wix>
