@@ -4,6 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <Version Condition=" '$(Version)' == '' ">1.0.0</Version>
+    <OutputPathForBuild Condition=" '$(OutputPathForBuild)' == '' ">$(SolutionDir)..\install\build\</OutputPathForBuild>
     <ProductVersion>3.9</ProductVersion>
     <ProjectGuid>bbe794a6-b159-422f-b655-b7f03f25f223</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
@@ -16,7 +17,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;ProductVersion=$(Version);LibraryContentPath=$(SolutionDir)..\install\build\lib</DefineConstants>
+    <DefineConstants>Debug;ProductVersion=$(Version);LibraryContentPath=$(OutputPathForBuild)lib</DefineConstants>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
     <LinkerAdditionalOptions>-cultures:ru-RU</LinkerAdditionalOptions>
