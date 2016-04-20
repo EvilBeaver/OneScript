@@ -98,17 +98,6 @@
   <PropertyGroup>
     <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(SolutionDir)..\install\build\lib" -o "$(ProjectDir)LibraryContent.wxs" -dr LibFolder -cg Library.Content -sfrag -gg -srd -var var.LibraryContentPath</PreBuildEvent>
   </PropertyGroup>
-  <ItemGroup>
-    <BootstrapperFile Include=".NETFramework,Version=v4.0">
-      <ProductName>.NET Framework 4.0 Full</ProductName>
-    </BootstrapperFile>
-    <BootstrapperFile Include="Microsoft.Windows.Installer.3.1">
-      <ProductName>Windows Installer 3.1</ProductName>
-    </BootstrapperFile>
-  </ItemGroup>
-  <Target Name="AfterBuild">
-    <GenerateBootstrapper ApplicationFile="$(TargetFileName)" BootstrapperItems="@(BootstrapperFile)" ComponentsLocation="Relative" CopyComponents="True" OutputPath="$(OutputPath)" Path="C:\Program Files (x86)\Microsoft SDKs\Windows\v8.1A\Bootstrapper\" />
-  </Target>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Wix.targets.
