@@ -157,7 +157,7 @@
   <Target Name="CreateMSI">
 	<Message Text="$(OutputPathForBuild)"/>
     <MSBuild Projects="$(MSBuildProjectDirectory)\src\Installer\Installer.wixproj" 
-		Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForBuild);OutputPathForBuild=$(OutputPathForBuild)" />
+		Properties="Configuration=$(Configuration);OutputPath=$(DistPath);OutputPathForBuild=$(OutputPathForBuild)" />
   </Target>
   
   <Target Name="CreateNuget">
