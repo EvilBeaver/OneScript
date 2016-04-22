@@ -143,13 +143,15 @@
   
   <Target Name="CreateSignedInstall" DependsOnTargets="CreateInstall">
 	<ItemGroup>
-		<FileToSign Include="$(DistPath)\*.exe" />
+		<FileToSign Include="$(DistPath)\*.msi" />
 	</ItemGroup>
 	
 	<PropertyGroup>
 		<CertPass>"$(CertPassword)"</CertPass>
 		<CertFile>"$(CertPath)"</CertFile>
 	</PropertyGroup>
+	
+	<Exec Command="echo $(CertPass) > crtpassword.txt"/>
 	<Exec Command="&quot;$(SignTool)&quot; sign /f $(CertFile) /p $(CertPass) /t http://timestamp.verisign.com/scripts/timstamp.dll  /d &quot;OneScript Engine&quot; /du http://oscript.io &quot;@(FileToSign)&quot;"/>
 	
   </Target>
