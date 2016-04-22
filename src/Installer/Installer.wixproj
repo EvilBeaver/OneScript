@@ -52,6 +52,7 @@
     </WixExtension>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="installer_left.bmp" />
     <Content Include="mpl2_license.rtf" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />

@@ -28,6 +28,7 @@
     <Property Id="ApplicationFolderName" Value="OneScript" />
     <Property Id="WixAppFolder" Value="WixPerMachineFolder" />
 
+    <WixVariable Id="WixUIDialogBmp" Value="installer_left.bmp" />
     <WixVariable Id="WixUISupportPerUser" Value="0" />
     <WixVariable Id="WixUILicenseRtf" Value="mpl2_license.rtf" />
     
