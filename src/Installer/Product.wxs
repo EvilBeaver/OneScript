@@ -3,7 +3,7 @@
 	<Product Id="0B8916C9-DB9D-4DF0-BBA9-D93D0AE6A55A" Name="OneScript" Language="1049" Version="$(var.ProductVersion)" Manufacturer="OneScript Team" UpgradeCode="525fd963-d484-448d-bbd8-5fa06234288e">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Description="OneScript Engine"/>
 
-    <Icon Id="MainIcon" SourceFile="$(var.TestApp.TargetPath)"/>
+    <Icon Id="MainIcon" SourceFile="$(var.OutputPathForBuild)bin\TestApp.exe"/>
     <Property Id="ARPPRODUCTICON" Value="MainIcon" />
     
     <MajorUpgrade DowngradeErrorMessage="A newer version of OneScript is already installed." />

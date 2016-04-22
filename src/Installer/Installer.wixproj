@@ -30,7 +30,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>ProductVersion=$(Version)</DefineConstants>
+    <DefineConstants>ProductVersion=$(Version);OutputPathForBuild=$(OutputPathForBuild);LibraryContentPath=$(OutputPathForBuild)lib</DefineConstants>
+    <LinkerAdditionalOptions>-cultures:ru-RU</LinkerAdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BinaryContent.wxs" />
@@ -38,48 +39,6 @@
     <Compile Include="Features.wxs" />
     <Compile Include="LibraryContent.wxs" />
     <Compile Include="Product.wxs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\oscript\oscript.csproj">
-      <Name>oscript</Name>
-      <Project>{2590e2bb-cc1f-4775-80ed-451f45c9a4f1}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
-      <Name>ScriptEngine.HostedScript</Name>
-      <Project>{f09a46bd-5737-45e7-ba60-a47c9f7821a9}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\ScriptEngine.Snegopat\ScriptEngine.Snegopat.vcxproj">
-      <Name>ScriptEngine.Snegopat</Name>
-      <Project>{618f7216-6576-410d-818c-c79bb6beea0c}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
-      <Name>ScriptEngine</Name>
-      <Project>{f062d1d9-d307-492a-a56b-ff3c55f8f6c0}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\TestApp\TestApp.csproj">
-      <Name>TestApp</Name>
-      <Project>{4585ba5d-9ec4-4c89-8250-2033d2ac2999}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixNetFxExtension">
@@ -96,7 +55,7 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>
-    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(SolutionDir)..\install\build\lib" -o "$(ProjectDir)LibraryContent.wxs" -dr LibFolder -cg Library.Content -sfrag -gg -srd -var var.LibraryContentPath</PreBuildEvent>
+    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(OutputPathForBuild)lib" -o "$(ProjectDir)LibraryContent.wxs" -dr LibFolder -cg Library.Content -sfrag -gg -srd -var var.LibraryContentPath</PreBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
