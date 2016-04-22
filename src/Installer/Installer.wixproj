@@ -32,6 +32,7 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>ProductVersion=$(Version);OutputPathForBuild=$(OutputPathForBuild);LibraryContentPath=$(OutputPathForBuild)lib</DefineConstants>
     <LinkerAdditionalOptions>-cultures:ru-RU</LinkerAdditionalOptions>
+    <SuppressPdbOutput>True</SuppressPdbOutput>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BinaryContent.wxs" />
