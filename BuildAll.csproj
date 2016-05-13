@@ -141,9 +141,10 @@
 	
   </Target>
   
-  <Target Name="CreateSignedInstall" DependsOnTargets="CreateMSI">
+  <Target Name="CreateSignedInstall" DependsOnTargets="CreateMSI,CreateInstall">
 	<ItemGroup>
 		<FileToSign Include="$(DistPath)\*.msi" />
+		<FileToSign Include="$(DistPath)\*.exe" />
 	</ItemGroup>
 	
 	<PropertyGroup>
