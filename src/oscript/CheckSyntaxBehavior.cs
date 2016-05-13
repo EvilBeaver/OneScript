@@ -16,10 +16,12 @@ namespace oscript
     class CheckSyntaxBehavior : AppBehavior
     {
         string _path;
+        string _envFile;
 
-        public CheckSyntaxBehavior(string path)
+        public CheckSyntaxBehavior(string path, string envFile)
         {
             _path = path;
+            _envFile = envFile;
         } 
 
         public override int Execute()
@@ -33,6 +35,11 @@ namespace oscript
 
             try
             {
+                if(_envFile != null)
+                {
+                    var envSrc = hostedScript.Loader.FromFile(_envFile);
+                    compiler.CreateModule(envSrc);
+                }
                 compiler.CreateModule(source);
             }
             catch (ScriptException e)
