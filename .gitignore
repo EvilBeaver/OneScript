@@ -80,3 +80,5 @@ src/ScriptEngine.Snegopat/Snegopat_i.c
 /src/ipch/*.ipch
 src/ipch/
 src/Installer/obj/
+src/.vs/
+src/1Script.VC.opendb
