@@ -13,7 +13,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library
 {
-    [GlobalContext(Category = "Операции с строками")]
+    [GlobalContext(Category = "Операции со строками")]
     public class StringOperations : GlobalContextBase<StringOperations>
     {
         readonly int STRTEMPLATE_ID;
