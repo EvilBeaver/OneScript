@@ -1333,7 +1333,16 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                throw new RuntimeException(_operationStack.Pop().AsString());
+                var exceptionValue = _operationStack.Pop().GetRawValue();
+                if (exceptionValue is ExceptionTemplate)
+                {
+                    var excInfo = exceptionValue as ExceptionTemplate;
+                    throw new ParametrizedRuntimeException(excInfo.Message, excInfo.Parameter);
+                }
+                else
+                {
+                    throw new RuntimeException(exceptionValue.AsString());
+                }
             }
         }
 
@@ -2192,7 +2201,12 @@ namespace ScriptEngine.Machine
         {
             if (_currentFrame.LastException != null)
             {
-                var excInfo = new ExceptionInfoContext(_currentFrame.LastException);
+                ExceptionInfoContext excInfo;
+                if (_currentFrame.LastException is ParametrizedRuntimeException)
+                    excInfo = new ExceptionInfoContext((ParametrizedRuntimeException)_currentFrame.LastException);
+                else
+                    excInfo = new ExceptionInfoContext(_currentFrame.LastException);
+
                 _operationStack.Push(ValueFactory.Create(excInfo));
             }
             else
