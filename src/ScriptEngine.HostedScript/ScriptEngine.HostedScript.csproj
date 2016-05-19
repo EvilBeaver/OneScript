@@ -107,6 +107,7 @@
     <Compile Include="Library\Http\Multipart\RebufferableBinaryReader.cs" />
     <Compile Include="Library\Http\Multipart\StreamingMultipartFormDataParser.cs" />
     <Compile Include="Library\Http\Multipart\SubsequenceFinder.cs" />
+    <Compile Include="Library\ConsoleColorEnum.cs" />
     <Compile Include="Library\MessageStatusEnum.cs" />
     <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\Net\TCPClient.cs" />
