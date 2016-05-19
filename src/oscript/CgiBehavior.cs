@@ -105,7 +105,7 @@ namespace oscript
             return _headersWritten.IndexOf(header.ToLower()) >= 0;
         }
 
-        public void Echo(string str)
+        public void Echo(string str, EchoStatus status = EchoStatus.Undefined)
         {
             if(!_isContentEchoed)
             {

@@ -405,7 +405,7 @@ namespace TestApp
 
         #region IHostApplication Members
 
-        public void Echo(string str)
+        public void Echo(string str, EchoStatus status = EchoStatus.Undefined)
         {
             _output.AppendText(str + '\n');
             _output.ScrollToEnd();
