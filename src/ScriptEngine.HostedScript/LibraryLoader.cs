@@ -111,7 +111,15 @@ namespace ScriptEngine.HostedScript
                 asClass = false
             });
 
-            _env.InjectGlobalProperty(null, moduleName, true);
+            try
+            {
+                _env.InjectGlobalProperty(null, moduleName, true);
+            }
+            catch (InvalidOperationException e)
+	        {
+                // символ уже определен
+                throw new RuntimeException(String.Format("Невозможно загрузить модуль {0}. Такой символ уже определен.", moduleName), e);
+            }
         }
 
         [ContextMethod("ЗагрузитьБиблиотеку", "LoadLibrary")]
