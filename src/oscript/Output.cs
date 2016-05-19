@@ -14,10 +14,16 @@ namespace oscript
     static class Output
     {
         public static Action<string> Write { get; private set; }
-        
-        public static void Init()
+        private static Encoding _encoding;
+
+        static Output()
         {
-            if (Program.ConsoleOutputEncoding == null)
+            Init();
+        }
+
+        private static void Init()
+        {
+            if (ConsoleOutputEncoding == null)
                 Write = WriteStandardConsole;
             else
                 Write = WriteEncodedStream;
@@ -43,9 +49,22 @@ namespace oscript
         {
             using (var stdout = Console.OpenStandardOutput())
             {
-                var enc = Program.ConsoleOutputEncoding;
+                var enc = ConsoleOutputEncoding;
                 var bytes = enc.GetBytes(text);
                 stdout.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+        public static Encoding ConsoleOutputEncoding
+        {
+            get
+            {
+                return _encoding;
+            }
+            set
+            {
+                _encoding = value;
+                Init();
             }
         }
     }

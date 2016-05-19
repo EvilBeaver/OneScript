@@ -17,8 +17,6 @@ namespace oscript
         {
             int returnCode;
             
-            Output.Init();
-
             var behavior = BehaviorSelector.Select(args);
             try
             {
@@ -48,7 +46,7 @@ namespace oscript
             set
             {
                 _encoding = value;
-                Output.Init();
+                Output.ConsoleOutputEncoding = value;
             }
         }
     }
