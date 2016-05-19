@@ -57,7 +57,7 @@ namespace oscript
 
         #region IHostApplication Members
 
-        public void Echo(string text)
+        public void Echo(string text, EchoStatus status = EchoStatus.Undefined)
         {
             Output.WriteLine(text);
         }

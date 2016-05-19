@@ -99,7 +99,7 @@ namespace StandaloneRunner
 
         #region IHostApplication Members
 
-        public void Echo(string text)
+        public void Echo(string text, EchoStatus status = EchoStatus.Undefined)
         {
             Console.WriteLine(text);
         }
