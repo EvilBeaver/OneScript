@@ -31,15 +31,16 @@ namespace oscript
             hostedScript.Initialize();
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
-            var compiler = hostedScript.GetCompilerService();
 
             try
             {
                 if(_envFile != null)
                 {
+                    var envCompiler = hostedScript.GetCompilerService();
                     var envSrc = hostedScript.Loader.FromFile(_envFile);
-                    compiler.CreateModule(envSrc);
+                    envCompiler.CreateModule(envSrc);
                 }
+                var compiler = hostedScript.GetCompilerService();
                 compiler.CreateModule(source);
             }
             catch (ScriptException e)
