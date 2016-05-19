@@ -11,6 +11,7 @@ using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Machine;
 using ScriptEngine;
+using oscript;
 
 namespace StandaloneRunner
 {
@@ -101,33 +102,17 @@ namespace StandaloneRunner
 
         public void Echo(string text, EchoStatus status = EchoStatus.Undefined)
         {
-            Console.WriteLine(text);
+            ConsoleHostImpl.Echo(text, status);
         }
 
         public void ShowExceptionInfo(Exception exc)
         {
-            if (exc is RuntimeException)
-            {
-                var rte = (RuntimeException)exc;
-                Console.WriteLine(rte.MessageWithoutCodeFragment);
-            }
-            else
-                Console.WriteLine(exc.Message);
+            ConsoleHostImpl.ShowExceptionInfo(exc);
         }
 
         public bool InputString(out string result, int maxLen)
         {
-            if (maxLen == 0)
-            {
-                result = Console.ReadLine();
-            }
-            else
-            {
-                result = Console.ReadLine().Substring(0, maxLen);
-            }
-
-            return result.Length > 0;
-
+            return ConsoleHostImpl.InputString(out result, maxLen);
         }
 
         public string[] GetCommandLineArguments()

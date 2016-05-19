@@ -59,33 +59,17 @@ namespace oscript
 
         public void Echo(string text, EchoStatus status = EchoStatus.Undefined)
         {
-            Output.WriteLine(text);
+            ConsoleHostImpl.Echo(text, status);
         }
 
         public void ShowExceptionInfo(Exception exc)
         {
-            if(exc is ScriptException)
-            {
-                var rte = (ScriptException)exc;
-                Echo(rte.MessageWithoutCodeFragment);
-            }
-            else
-                Echo(exc.Message);
+            ConsoleHostImpl.ShowExceptionInfo(exc);
         }
 
         public bool InputString(out string result, int maxLen)
         {
-            if (maxLen == 0)
-            {
-                result = Console.ReadLine();
-            }
-            else
-            {
-                result = Console.ReadLine().Substring(0, maxLen);
-            }
-
-            return result.Length > 0;
-
+            return ConsoleHostImpl.InputString(out result, maxLen);
         }
 
         public string[] GetCommandLineArguments()

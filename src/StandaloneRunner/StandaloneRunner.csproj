@@ -65,6 +65,9 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\oscript\ConsoleHostImpl.cs">
+      <Link>ConsoleHostImpl.cs</Link>
+    </Compile>
     <Compile Include="..\oscript\Output.cs">
       <Link>Output.cs</Link>
     </Compile>

@@ -21,6 +21,18 @@ namespace oscript
             Init();
         }
 
+        public static ConsoleColor TextColor
+        {
+            get
+            {
+                return Console.ForegroundColor;
+            }
+            set
+            {
+                Console.ForegroundColor = value;
+            }
+        }
+
         private static void Init()
         {
             if (ConsoleOutputEncoding == null)
