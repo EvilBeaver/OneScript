@@ -130,8 +130,8 @@
 	<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
 	<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
 	
-	<!-- Генерация скрипта запуска для opm -->
-	<Exec WorkingDirectory="$(BinFolder)" Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(LibFolder)\opm\src\opm.os&quot; app &quot;$(LibFolder)\opm\src\opm.os&quot;"/>
+	<!-- Копирование скрипта запуска для opm -->
+	<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
 	
   </Target>
   
