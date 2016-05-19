@@ -82,3 +82,4 @@ src/ipch/
 src/Installer/obj/
 src/.vs/
 src/1Script.VC.opendb
+*.VC.opendb,*.VC.db
