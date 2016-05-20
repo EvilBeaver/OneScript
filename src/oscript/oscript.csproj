@@ -83,7 +83,17 @@
     <Compile Include="ScriptFileHelper.cs" />
     <Compile Include="ShowCompiledBehavior.cs" />
     <Compile Include="ShowUsageBehavior.cs" />
-    <Compile Include="WebRequestContext.cs" />
+    <Compile Include="Web\WebRequestContext.cs" />
+    <Compile Include="Web\Multipart\BinaryStreamStack.cs" />
+    <Compile Include="Web\Multipart\FilePart.cs" />
+    <Compile Include="Web\Multipart\MultipartFormDataParser.cs" />
+    <Compile Include="Web\Multipart\MultipartParseException.cs" />
+    <Compile Include="Web\Multipart\ParameterPart.cs" />
+    <Compile Include="Web\Multipart\PostFileDescription.cs" />
+    <Compile Include="Web\Multipart\PostRequestData.cs" />
+    <Compile Include="Web\Multipart\RebufferableBinaryReader.cs" />
+    <Compile Include="Web\Multipart\StreamingMultipartFormDataParser.cs" />
+    <Compile Include="Web\Multipart\SubsequenceFinder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
