@@ -1,0 +1,80 @@
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using System;
+using ScriptEngine;
+using ScriptEngine.HostedScript;
+
+namespace oscript
+{
+    static class ConsoleHostImpl
+    {
+        public static void Echo(string text, EchoStatus status = EchoStatus.Undefined)
+        {
+            if (status == EchoStatus.Undefined || status == EchoStatus.Ordinary)
+                Output.WriteLine(text);
+            else
+            {
+                ConsoleColor oldColor = Output.TextColor;
+                ConsoleColor newColor;
+
+                switch (status)
+                {
+                    case EchoStatus.Information:
+                        newColor = ConsoleColor.Green;
+                        break;
+                    case EchoStatus.Attention:
+                        newColor = ConsoleColor.Yellow;
+                        break;
+                    case EchoStatus.Important:
+                    case EchoStatus.VeryImportant:
+                        newColor = ConsoleColor.Red;
+                        break;
+                    default:
+                        newColor = oldColor;
+                        break;
+                }
+
+                try
+                {
+                    Output.TextColor = newColor;
+                    Output.WriteLine(text);
+                }
+                finally
+                {
+                    Output.TextColor = oldColor;
+                }
+            }
+        }
+
+        public static void ShowExceptionInfo(Exception exc)
+        {
+            if (exc is ScriptException)
+            {
+                var rte = (ScriptException)exc;
+                Echo(rte.MessageWithoutCodeFragment);
+            }
+            else
+                Echo(exc.Message);
+        }
+
+        public static bool InputString(out string result, int maxLen)
+        {
+            if (maxLen == 0)
+            {
+                result = Console.ReadLine();
+            }
+            else
+            {
+                result = Console.ReadLine().Substring(0, maxLen);
+            }
+
+            return result.Length > 0;
+
+        }
+    }
+}

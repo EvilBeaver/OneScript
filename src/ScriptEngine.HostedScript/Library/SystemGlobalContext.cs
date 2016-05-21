@@ -62,9 +62,12 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="message">Выдаваемое сообщение.</param>
         [ContextMethod("Сообщить", "Message")]
-        public void Echo(string message)
+        public void Echo(string message, CLREnumValueWrapper<EchoStatus> status = null)
         {
-            ApplicationHost.Echo(message);
+            if(status == null)
+                ApplicationHost.Echo(message);
+            else
+                ApplicationHost.Echo(message, status.UnderlyingObject);
         }
 
         /// <summary>

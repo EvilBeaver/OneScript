@@ -49,7 +49,12 @@ namespace oscript
                     if (cmdLineArgs.Length > 1)
                     {
                         var path = cmdLineArgs[1];
-                        return new CheckSyntaxBehavior(path);
+                        string env = null;
+                        if(cmdLineArgs.Length>2 && cmdLineArgs[2].StartsWith("-env="))
+                        {
+                            env = cmdLineArgs[2].Substring(5);
+                        }
+                        return new CheckSyntaxBehavior(path, env);
                     }
                 }
                 else if (cmdLineArgs[0].ToLower() == "-make")

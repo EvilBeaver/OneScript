@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{4585BA5D-9EC4-4C89-8250-2033D2AC2999}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		GlobalAssemblyInfo.cs = GlobalAssemblyInfo.cs
 	EndProjectSection
+EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{BBE794A6-B159-422F-B655-B7F03F25F223}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -82,6 +84,12 @@ Global
 		{795AA2F5-3074-4BC5-A30F-1B6354044D9B}.Release|Win32.Build.0 = Release|x86
 		{795AA2F5-3074-4BC5-A30F-1B6354044D9B}.Release|x86.ActiveCfg = Release|x86
 		{795AA2F5-3074-4BC5-A30F-1B6354044D9B}.Release|x86.Build.0 = Release|x86
+		{BBE794A6-B159-422F-B655-B7F03F25F223}.Debug|Win32.ActiveCfg = Debug|x86
+		{BBE794A6-B159-422F-B655-B7F03F25F223}.Debug|x86.ActiveCfg = Debug|x86
+		{BBE794A6-B159-422F-B655-B7F03F25F223}.Debug|x86.Build.0 = Debug|x86
+		{BBE794A6-B159-422F-B655-B7F03F25F223}.Release|Win32.ActiveCfg = Release|x86
+		{BBE794A6-B159-422F-B655-B7F03F25F223}.Release|x86.ActiveCfg = Release|x86
+		{BBE794A6-B159-422F-B655-B7F03F25F223}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
