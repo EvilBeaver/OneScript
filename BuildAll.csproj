@@ -148,7 +148,7 @@
   <Target Name="GenerateDocs">
 	
 	<Exec Command="$(OneScriptDocumenter) $(TMP)\tempdoc.xml &quot;$(OutputPathForBuild)\ScriptEngine.dll&quot; &quot;$(OutputPathForBuild)\ScriptEngine.HostedScript.dll&quot; &quot;$(OutputPathForBuild)\oscript.exe&quot;"/>
-	<Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)&quot;"/>
+	<Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)\&quot;"/>
 	
   </Target>
   
