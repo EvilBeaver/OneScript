@@ -97,12 +97,6 @@
     
     <MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForBuild)" />
 
-    <CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML">
-      <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
-    </CreateItem>
-
-    <Delete Files="@(RemoveUnnessesaryFiles)" />
-    
     <!--TODO Why Snheopat.Engine build into source dir -->
     
     <ItemGroup>
@@ -115,14 +109,14 @@
 
   <Target Name="PreparePackage">
 	
-	<CreateItem Include="$(OutputPathForBuild)\StandaloneRunner.exe">
+	<!--Сборка документации-->
+	<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
+	
+	<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
       <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
     </CreateItem>
 	
     <Delete Files="@(RemoveUnnessesaryFiles)" />
-	
-	<!--Сборка документации-->
-	<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
 	
 	<ItemGroup>
 		<BinaryFiles Include="$(OutputPathForBuild)\*"/>
