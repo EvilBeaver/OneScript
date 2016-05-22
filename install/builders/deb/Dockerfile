@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 
-MAINTAINER sergey.batanov@dmpas.ru 
+MAINTAINER sergey.batanov@dmpas.ru
 
 # чтобы запустить тесты
 RUN locale-gen --lang ru_RU.UTF-8
@@ -19,13 +19,13 @@ RUN apt-get update && apt-get install -y \
 		libmono-corlib4.0-cil \
 		libmono-i18n4.0-all \
 # deb-package tools
-        dpkg\
-        debconf\
-        debhelper\
-        lintian\
-        md5deep\
-        fakeroot
+		dpkg\
+		debconf\
+		debhelper\
+		lintian\
+		md5deep\
+		fakeroot
 
-ADD ./build.sh /root/ 
-ENTRYPOINT /root/build.sh 
+ADD ./build.sh /root/
+ENTRYPOINT /root/build.sh
 
