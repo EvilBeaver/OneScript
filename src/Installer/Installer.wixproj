@@ -17,7 +17,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;ProductVersion=$(Version);OutputPathForBuild=$(OutputPathForBuild);LibraryContentPath=$(OutputPathForBuild)lib</DefineConstants>
+    <DefineConstants>Debug;ProductVersion=$(Version);OutputPathForBuild=$(OutputPathForBuild);LibraryContentPath=$(OutputPathForBuild)lib;DocContentPath=$(OutputPathForBuild)doc</DefineConstants>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
     <LinkerAdditionalOptions>-cultures:ru-RU</LinkerAdditionalOptions>
@@ -30,12 +30,13 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>ProductVersion=$(Version);OutputPathForBuild=$(OutputPathForBuild);LibraryContentPath=$(OutputPathForBuild)lib</DefineConstants>
+    <DefineConstants>ProductVersion=$(Version);OutputPathForBuild=$(OutputPathForBuild);LibraryContentPath=$(OutputPathForBuild)lib;DocContentPath=$(OutputPathForBuild)doc</DefineConstants>
     <LinkerAdditionalOptions>-cultures:ru-RU</LinkerAdditionalOptions>
     <SuppressPdbOutput>True</SuppressPdbOutput>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BinaryContent.wxs" />
+    <Compile Include="DocumentsContent.wxs" />
     <Compile Include="ExamplesContent.wxs" />
     <Compile Include="Features.wxs" />
     <Compile Include="LibraryContent.wxs" />
@@ -57,7 +58,8 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>
-    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(OutputPathForBuild)lib" -o "$(ProjectDir)LibraryContent.wxs" -dr LibFolder -cg Library.Content -sfrag -gg -srd -var var.LibraryContentPath</PreBuildEvent>
+    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(OutputPathForBuild)lib" -o "$(ProjectDir)LibraryContent.wxs" -dr LibFolder -cg Library.Content -sfrag -gg -srd -var var.LibraryContentPath
+"%25WIX%25\bin\heat.exe" dir "$(OutputPathForBuild)doc" -o "$(ProjectDir)DocumentsContent.wxs" -dr DocFolder -cg Docs.Content -sfrag -gg -srd -var var.DocContentPath</PreBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

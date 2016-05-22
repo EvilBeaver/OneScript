@@ -7,6 +7,7 @@
     <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
 	<BinFolder>$(OutputPathForBuild)\bin\</BinFolder>
 	<LibFolder>$(OutputPathForBuild)\lib\</LibFolder>
+	<DocFolder>$(OutputPathForBuild)\doc\</DocFolder>
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
     <Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
     <InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
@@ -120,6 +121,9 @@
 	
     <Delete Files="@(RemoveUnnessesaryFiles)" />
 	
+	<!--Сборка документации-->
+	<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
+	
 	<ItemGroup>
 		<BinaryFiles Include="$(OutputPathForBuild)\*"/>
 		<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*"/>
@@ -138,6 +142,13 @@
   <Target Name="CreateInstall">
 
     <Exec Command="$(InstallerStandartPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot;" />
+	
+  </Target>
+  
+  <Target Name="GenerateDocs">
+	
+	<Exec Command="$(OneScriptDocumenter) $(TMP)\tempdoc.xml &quot;$(OutputPathForBuild)\ScriptEngine.dll&quot; &quot;$(OutputPathForBuild)\ScriptEngine.HostedScript.dll&quot; &quot;$(OutputPathForBuild)\oscript.exe&quot;"/>
+	<Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)\&quot;"/>
 	
   </Target>
   

@@ -20,6 +20,7 @@
         <Directory Id="APPLICATIONFOLDER" Name="OneScript">
           <Directory Id="BinFolder" Name="bin"/>
           <Directory Id="LibFolder" Name="lib" ComponentGuidGenerationSeed="F8FD669F-0B32-45C8-942F-256FEFD2E0A2" />
+          <Directory Id="DocFolder" Name="doc" ComponentGuidGenerationSeed="486E508F-009A-4B06-93F9-48CCDC75D7DC" />
           <Directory Id="ExamplesFolder" Name="examples"/>
         </Directory>
       </Directory>
@@ -40,7 +41,6 @@
     
     <!--Fresh GUIDs
     
-    486E508F-009A-4B06-93F9-48CCDC75D7DC
     A54A721E-3C8A-4A1B-B0E6-9063160FF611
     -->
 
