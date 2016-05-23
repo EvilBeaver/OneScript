@@ -4,16 +4,15 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+using HttpMultipartParser;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using HttpMultipartParser;
+using System.Text;
 
-namespace ScriptEngine.HostedScript.Library.Http.Multipart
+namespace oscript.Web.Multipart
 {
     [ContextClass("ДанныеPOSTЗапроса", "PostRequestData")]
     public class PostRequestData : AutoContext<PostRequestData>

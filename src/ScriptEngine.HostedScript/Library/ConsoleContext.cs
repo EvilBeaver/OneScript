@@ -112,6 +112,32 @@ namespace ScriptEngine.HostedScript.Library
             Console.CursorVisible = visible;
             return oldVal;
         }
+        
+        [ContextProperty("ЦветТекста", "TextColor")]
+        public CLREnumValueWrapper<ConsoleColor> TextColor
+        {
+            get
+            {
+                return (CLREnumValueWrapper<ConsoleColor> )GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.ForegroundColor);
+            }
+            set
+            {
+                Console.ForegroundColor = value.UnderlyingObject;
+            }
+        }
+
+        [ContextProperty("ЦветФона", "BackgroundColor")]
+        public CLREnumValueWrapper<ConsoleColor> BackgroundColor
+        {
+            get
+            {
+                return (CLREnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
+            }
+            set
+            {
+                Console.BackgroundColor = value.UnderlyingObject;
+            }
+        }
 
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor()

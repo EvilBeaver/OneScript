@@ -1,0 +1,4 @@
+#!/bin/sh
+OSPATH=/usr/share/oscript
+mono $OSPATH/bin/oscript.exe $OSPATH/lib/opm/src/opm.os $@
+

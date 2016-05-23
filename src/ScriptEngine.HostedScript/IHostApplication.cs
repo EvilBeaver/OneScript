@@ -13,9 +13,20 @@ namespace ScriptEngine.HostedScript
 {
     public interface IHostApplication
     {
-        void Echo(string str);
+        void Echo(string str, EchoStatus status = EchoStatus.Undefined);
         void ShowExceptionInfo(Exception exc);
         bool InputString(out string result, int maxLen);
         string[] GetCommandLineArguments();
+    }
+
+    public enum EchoStatus
+    {
+        Undefined,
+        WithoutStatus,
+        Ordinary,
+        Information,
+        Attention,
+        Important,
+        VeryImportant
     }
 }

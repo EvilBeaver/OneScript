@@ -24,8 +24,23 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (source == null)
                 throw new ArgumentNullException();
-
+            
             _exc = source;
+        }
+
+        public ExceptionInfoContext(ParametrizedRuntimeException source):this((ScriptException)source)
+        {
+            Parameters = source.Parameter;
+        }
+
+        /// <summary>
+        /// Значение, переданное при создании исключения в конструкторе объекта ИнформацияОбОшибке.
+        /// </summary>
+        [ContextProperty("Параметры", "Parameters", CanWrite = false)]
+        public IValue Parameters
+        {
+            get;
+            private set;
         }
 
         /// <summary>
@@ -155,6 +170,13 @@ namespace ScriptEngine.Machine.Contexts
         public override string ToString()
         {
             return Description;
+        }
+
+
+        [ScriptConstructor(Name = "С возможностью передачи параметров")]
+        public static ExceptionTemplate Create(IValue msg, IValue parameter)
+        {
+            return new ExceptionTemplate(msg.AsString(), parameter);
         }
 
     }
