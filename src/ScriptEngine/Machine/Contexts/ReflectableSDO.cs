@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Environment;
-#if !__MonoCS__
+//#if !__MonoCS__
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -353,4 +353,4 @@ namespace ScriptEngine.Machine.Contexts
     }
 
 }
-#endif
+//#endif
