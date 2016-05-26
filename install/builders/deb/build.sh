@@ -23,7 +23,7 @@ cp ${BINPATH}*.dll $DSTPATH/usr/share/oscript/bin
 cp ${BUILDERROOT}oscript $DSTPATH/usr/bin
 cp ${BUILDERROOT}oscript-cgi $DSTPATH/usr/bin
 cp ${BUILDERROOT}oscript-opm $DSTPATH/usr/bin
-cp -r ${SRCPATH}/lib/src/* $DSTPATH/usr/share/oscript/lib
+cp -r ${SRCPATH}/lib/* $DSTPATH/usr/share/oscript/lib
 cp ${BINPATH}/oscript.cfg $DSTPATH/etc
 
 ln -s /usr/bin/oscript-opm $DSTPATH/usr/bin/opm
