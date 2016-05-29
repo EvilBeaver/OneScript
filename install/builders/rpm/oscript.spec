@@ -7,7 +7,7 @@ Release:        1%{?dist}
 Summary:        1Script execution engine.
 
 License:        MPL 2.0
-URL:            https://bitbucket.org/EvilBeaver/1script/
+URL:            https://github.com/EvilBeaver/OneScript
 Source0:        OneScript-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires:	wget
