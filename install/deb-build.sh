@@ -2,8 +2,10 @@
 
 DISTPATH=$(cd $1; pwd)
 BINPATH=$DISTPATH/bin
-
 cd `dirname $0`
+
+echo "Assets folder: $DISTPATH"
+echo "Current dir: {$PWD}"
 
 VERSIONFILE=$BINPATH/VERSION
 if [ -f "$VERSIONFILE" ] ; then

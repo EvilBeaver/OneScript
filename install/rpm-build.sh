@@ -8,7 +8,8 @@ DISTPATH=$(cd $1; pwd)
 BINPATH=$DISTPATH/bin
 cd `dirname $0`
 
-echo $BINPATH
+echo "Assets folder: $DISTPATH"
+echo "Current dir: {$PWD}"
 
 if [ -z "$TMP" ] ; then
 	TMP=/tmp
@@ -21,14 +22,9 @@ echo "Version is $VERSION"
 
 TMPDIR=$TMP/OneScript-$VERSION
 mkdir $TMPDIR
-#mkdir -p $TMPDIR/bin
-#mkdir -p $TMPDIR/lib
 
 cp -r $DISTPATH/* $TMPDIR
-
-#cp -a $BINPATH/. $TMPDIR/bin
-#cp -r ../install/builders/deb/oscript $TMPDIR/oscript
-#cp -r ../oscript-library/. $TMPDIR/lib
+cp -r ../install/builders/deb/oscript $TMPDIR/oscript
 
 pushd $TMP
 tar -czvf OneScript-$VERSION.tar.gz $TMPDIR/ 
