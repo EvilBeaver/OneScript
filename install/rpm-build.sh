@@ -27,7 +27,7 @@ cp -r $DISTPATH/* $TMPDIR
 cp -r ../install/builders/deb/oscript $TMPDIR/oscript
 
 pushd $TMP
-tar -czvf OneScript-$VERSION.tar.gz $TMPDIR/ 
+tar -czvf OneScript-$VERSION.tar.gz OneScript-$VERSION/
 popd
 
 mkdir -p $TMP/$PROJECT-$VERSION-build
