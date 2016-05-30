@@ -17,10 +17,9 @@ Requires:		mono-core
 %define _subdir OneScript-%{version}
 
 %description
-Cross-platform execution engine.
- for junior DevOps.
- who use 1S:Enterprise Platform.
-
+1Script execution engine.
+  Cross-platform scripting engine
+  for DevOps who use 1C:Enterprise Platform (http://1c-dn.com/1c_enterprise)
 
 %prep
 pwd
