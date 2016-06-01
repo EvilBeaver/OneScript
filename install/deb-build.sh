@@ -1,21 +1,11 @@
 #!/bin/bash
 
-BINPATH=$(cd $1; pwd)
+DISTPATH=$(cd $1; pwd)
+BINPATH=$DISTPATH/bin
 cd `dirname $0`
 
-if [ -z "$TMP" ] ; then
-	TMP=/tmp
-fi
-
-TMPDIR=$TMP/oscript-deb-builder
-
-mkdir -p $TMPDIR/deb
-mkdir -p $TMPDIR/bin
-mkdir -p $TMPDIR/lib
-
-cp -r $BINPATH/* $TMPDIR/bin
-cp -r ../install/builders/deb/* $TMPDIR/deb
-cp -r ../oscript-library/* $TMPDIR/lib
+echo "Assets folder: $DISTPATH"
+echo "Current dir: {$PWD}"
 
 VERSIONFILE=$BINPATH/VERSION
 if [ -f "$VERSIONFILE" ] ; then
@@ -31,9 +21,8 @@ if [ ! -f "$VERSIONFILE" ] ; then
 	exit 1
 fi
 		
+mkdir -p $DISTPATH/deb
+cp -r ${PWD}/builders/deb/* $DISTPATH/deb
+
 docker build -t onescript:deb ${PWD}/builders/deb/
-docker run --rm -v ${TMPDIR}:/media onescript:deb 
-
-cp $TMPDIR/bin/*.deb $BINPATH
-rm -rd $TMPDIR
-
+docker run --rm -v ${DISTPATH}:/media onescript:deb 

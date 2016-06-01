@@ -5,9 +5,8 @@ Maintainer: Sergey Batanov <sergey.batanov@dmpas.ru>
 Architecture: all
 Section: interpreters
 Description: 1Script execution engine.
- Cross-platform execution engine.
- for junior DevOps.
- who use 1S:Enterprise Platform.
+  Cross-platform scripting engine
+  for DevOps who use 1C:Enterprise Platform (http://1c-dn.com/1c_enterprise)
 Depends: mono-runtime, libmono-system-core4.0-cil, libmono-system4.0-cil,
   libmono-corlib4.0-cil, libmono-i18n4.0-all
 Recommends: mono-complete

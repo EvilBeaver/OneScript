@@ -9,7 +9,7 @@ VERSION=$(cat ${BINPATH}VERSION)
 PAKNAME=onescript-engine
 DSTPATH=${DEBBUILDROOT}${PAKNAME}
 
-mkdir $DSTPATH 
+mkdir $DSTPATH
 mkdir -p $DSTPATH/DEBIAN
 mkdir -p $DSTPATH/usr/bin
 mkdir -p $DSTPATH/usr/share/oscript/lib
@@ -22,8 +22,11 @@ cp ${BINPATH}*.exe $DSTPATH/usr/share/oscript/bin
 cp ${BINPATH}*.dll $DSTPATH/usr/share/oscript/bin
 cp ${BUILDERROOT}oscript $DSTPATH/usr/bin
 cp ${BUILDERROOT}oscript-cgi $DSTPATH/usr/bin
-cp -r ${SRCPATH}/lib/src/* $DSTPATH/usr/share/oscript/lib
+cp ${BUILDERROOT}oscript-opm $DSTPATH/usr/bin
+cp -r ${SRCPATH}/lib/* $DSTPATH/usr/share/oscript/lib
 cp ${BINPATH}/oscript.cfg $DSTPATH/etc
+
+ln -s /usr/bin/oscript-opm $DSTPATH/usr/bin/opm
 
 # TODO: Убрать это!
 cp ${BINPATH}/oscript.cfg $DSTPATH/usr/share/oscript/bin
@@ -32,4 +35,5 @@ fakeroot dpkg-deb --build $DSTPATH
 
 rm -rf $DSTPATH
 chmod 777 $DSTPATH.deb
+dpkg-name -o $DSTPATH.deb
 
