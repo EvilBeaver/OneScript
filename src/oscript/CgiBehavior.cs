@@ -58,7 +58,7 @@ namespace oscript
             engine.CustomConfig = ScriptFileHelper.CustomConfigPath(scriptFile);
             engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
 
-            var request = new WebRequestContext();
+            var request = new Web.WebRequestContext();
             engine.InjectGlobalProperty("ВебЗапрос", request, true);
             engine.InjectGlobalProperty("WebRequest", request, true);
             engine.InjectObject(this, false);
@@ -105,7 +105,7 @@ namespace oscript
             return _headersWritten.IndexOf(header.ToLower()) >= 0;
         }
 
-        public void Echo(string str)
+        public void Echo(string str, EchoStatus status = EchoStatus.Undefined)
         {
             if(!_isContentEchoed)
             {

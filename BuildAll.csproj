@@ -7,6 +7,7 @@
     <DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
 	<BinFolder>$(OutputPathForBuild)\bin\</BinFolder>
 	<LibFolder>$(OutputPathForBuild)\lib\</LibFolder>
+	<DocFolder>$(OutputPathForBuild)\doc\</DocFolder>
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
     <Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
     <InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
@@ -96,12 +97,6 @@
     
     <MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForBuild)" />
 
-    <CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML">
-      <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
-    </CreateItem>
-
-    <Delete Files="@(RemoveUnnessesaryFiles)" />
-    
     <!--TODO Why Snheopat.Engine build into source dir -->
     
     <ItemGroup>
@@ -114,7 +109,10 @@
 
   <Target Name="PreparePackage">
 	
-	<CreateItem Include="$(OutputPathForBuild)\StandaloneRunner.exe">
+	<!--Сборка документации-->
+	<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
+	
+	<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
       <Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
     </CreateItem>
 	
@@ -130,8 +128,8 @@
 	<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
 	<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
 	
-	<!-- Генерация скрипта запуска для opm -->
-	<Exec WorkingDirectory="$(BinFolder)" Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(LibFolder)\opm\src\opm.os&quot; app &quot;$(LibFolder)\opm\src\opm.os&quot;"/>
+	<!-- Копирование скрипта запуска для opm -->
+	<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
 	
   </Target>
   
@@ -141,8 +139,16 @@
 	
   </Target>
   
-  <Target Name="CreateSignedInstall" DependsOnTargets="CreateInstall">
+  <Target Name="GenerateDocs">
+	
+	<Exec Command="$(OneScriptDocumenter) $(TMP)\tempdoc.xml &quot;$(OutputPathForBuild)\ScriptEngine.dll&quot; &quot;$(OutputPathForBuild)\ScriptEngine.HostedScript.dll&quot; &quot;$(OutputPathForBuild)\oscript.exe&quot;"/>
+	<Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)\&quot;"/>
+	
+  </Target>
+  
+  <Target Name="CreateSignedInstall" DependsOnTargets="CreateMSI;CreateInstall">
 	<ItemGroup>
+		<FileToSign Include="$(DistPath)\*.msi" />
 		<FileToSign Include="$(DistPath)\*.exe" />
 	</ItemGroup>
 	
@@ -150,12 +156,16 @@
 		<CertPass>"$(CertPassword)"</CertPass>
 		<CertFile>"$(CertPath)"</CertFile>
 	</PropertyGroup>
-	<Exec Command="&quot;$(SignTool)&quot; sign /f $(CertFile) /p $(CertPass) /t http://timestamp.verisign.com/scripts/timstamp.dll  /d &quot;OneScript Engine&quot; /du http://oscript.io &quot;@(FileToSign)&quot;"/>
+	
+	<!--Exec Command="echo $(CertPass) > crtpassword.txt"/-->
+	<Exec Command="&quot;$(SignTool)&quot; sign /f $(CertFile) /p $(CertPass) /t http://timestamp.verisign.com/scripts/timstamp.dll  /d &quot;OneScript Engine&quot; /du http://oscript.io @(FileToSign,' ')"/>
 	
   </Target>
 
   <Target Name="CreateMSI">
-    <!--TODO Add Wix cretation MSI-->
+	<Message Text="$(OutputPathForBuild)"/>
+    <MSBuild Projects="$(MSBuildProjectDirectory)\src\Installer\Installer.wixproj" 
+		Properties="Configuration=$(Configuration);OutputPath=$(DistPath);OutputPathForBuild=$(OutputPathForBuild);Version=$(Major).$(Minor).$(Build)" />
   </Target>
   
   <Target Name="CreateNuget">

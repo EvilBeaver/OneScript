@@ -4,7 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-#if !__MonoCS__
+//#if !__MonoCS__
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -187,7 +187,24 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    DispatchUtility.InvokeSetProperty(_instance, propNum, MarshalIValue(newVal));
+                    object argToPass;
+                    if(newVal.DataType == Machine.DataType.Date)
+                    {
+                        var date = newVal.AsDate();
+                        if(date == DateTime.MinValue)
+                        {
+                            argToPass = new DateTime(100, 1, 1); // Min OLEAuth Date
+                        }
+                        else
+                        {
+                            argToPass = MarshalIValue(newVal);
+                        }
+                    }
+                    else
+                    {
+                        argToPass = MarshalIValue(newVal);
+                    }
+                    DispatchUtility.InvokeSetProperty(_instance, propNum, argToPass);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -273,4 +290,4 @@ namespace ScriptEngine.Machine.Contexts
 
     }
 }
-#endif
+//#endif

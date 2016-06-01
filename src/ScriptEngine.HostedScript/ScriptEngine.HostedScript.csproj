@@ -84,6 +84,10 @@
     <Compile Include="Library\FixedArrayImpl.cs" />
     <Compile Include="Library\FixedMapImpl.cs" />
     <Compile Include="Library\FixedStructureImpl.cs" />
+    <Compile Include="Library\Hash\CombinedStream.cs" />
+    <Compile Include="Library\Hash\Crc32.cs" />
+    <Compile Include="Library\Hash\HashFunctionEnum.cs" />
+    <Compile Include="Library\Hash\HashImpl.cs" />
     <Compile Include="Library\Http\HttpConnectionContext.cs" />
     <Compile Include="Library\Http\HttpRequestBody.cs" />
     <Compile Include="Library\Http\HttpRequestBodyBinary.cs" />
@@ -94,15 +98,8 @@
     <Compile Include="Library\Http\HttpResponseBody.cs" />
     <Compile Include="Library\Http\HttpResponseContext.cs" />
     <Compile Include="Library\Http\InternetProxyContext.cs" />
-    <Compile Include="Library\Http\Multipart\BinaryStreamStack.cs" />
-    <Compile Include="Library\Http\Multipart\FilePart.cs" />
-    <Compile Include="Library\Http\Multipart\MultipartFormDataParser.cs" />
-    <Compile Include="Library\Http\Multipart\MultipartParseException.cs" />
-    <Compile Include="Library\Http\Multipart\ParameterPart.cs" />
-    <Compile Include="Library\Http\Multipart\PostFileDescription.cs" />
-    <Compile Include="Library\Http\Multipart\RebufferableBinaryReader.cs" />
-    <Compile Include="Library\Http\Multipart\StreamingMultipartFormDataParser.cs" />
-    <Compile Include="Library\Http\Multipart\SubsequenceFinder.cs" />
+    <Compile Include="Library\ConsoleColorEnum.cs" />
+    <Compile Include="Library\MessageStatusEnum.cs" />
     <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\Net\TCPClient.cs" />
     <Compile Include="Library\Net\TCPServer.cs" />
@@ -157,7 +154,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Library\StructureImpl.cs" />
     <Compile Include="Library\StringOperations.cs" />
-    <Compile Include="Library\Http\Multipart\PostRequestData.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
@@ -171,6 +167,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

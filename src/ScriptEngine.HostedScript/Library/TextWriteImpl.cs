@@ -116,21 +116,10 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="encoding">Кодировка в виде строки</param>
         /// <param name="append">Признак добавления в конец файла (необязательный)</param>
         [ScriptConstructor(Name = "По имени файла и кодировке")]
-        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding, IValue lineDelimiter, IValue append)
+        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue append = null)
         {
-            return new TextWriteImpl(path.AsString(), encoding, append.AsBoolean());
-        }
-
-        /// <summary>
-        /// Создает объект по имени файла с кодировкой utf-8. Существующий файл будет перезаписан.
-        /// </summary>
-        /// <param name="path">Путь к файлу</param>
-        [ScriptConstructor(Name = "По имени файла")]
-        public static IRuntimeContextInstance Constructor(IValue path)
-        {
-            var obj = new TextWriteImpl();
-            obj.Open(path.AsString());
-            return obj;
+            bool _append = append == null ? false : append.AsBoolean();
+            return new TextWriteImpl(path.AsString(), encoding, _append);
         }
 
         [ScriptConstructor]

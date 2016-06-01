@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Fragment>
+    <DirectoryRef Id="BinFolder">
+      <Component Id="Engine" Guid="4A83F6D9-5F9A-4628-9861-BF3AD53D0E50">
+        <File Source="$(var.OutputPathForBuild)bin\ScriptEngine.dll"></File>
+      </Component>
+
+      <Component Id="HostedLib" Guid="A98FCBE4-04BB-44EA-809F-A375CE5B11D3">
+        <File Source="$(var.OutputPathForBuild)bin\ScriptEngine.HostedScript.dll"></File>
+        <File Source="$(var.OutputPathForBuild)bin\Ionic.Zip.dll"></File>
+      </Component>
+
+      <Component Id="ConsoleApp" Guid="D42B2795-B9DF-490F-B469-AB06E25085D7">
+        <File Source="$(var.OutputPathForBuild)bin\oscript.exe"></File>
+      </Component>
+
+      <Component Id="TestApp" Guid="9C435D24-3B33-42DA-AE7F-D5604B11DC05">
+        <File Source="$(var.OutputPathForBuild)bin\TestApp.exe"></File>
+        <File Source="$(var.OutputPathForBuild)bin\ICSharpCode.AvalonEdit.dll"></File>
+      </Component>
+
+      <Component Id="ConfigFile" Guid="6C875017-1B56-4F5D-947A-A57810AC8BB1" KeyPath="yes">
+        <File Source="$(var.OutputPathForBuild)bin\oscript.cfg"></File>
+      </Component>
+
+      <Component Id="OpmLauncher" Guid="CD7DA53D-A4E0-4C01-BA2D-AC67064102F2" KeyPath="yes">
+        <File Source="$(var.OutputPathForBuild)bin\opm.bat"></File>
+      </Component>
+
+      <Component Id="SnegopatDll" Guid="961B0595-86AB-4E21-B753-539FFDFF73B8">
+        <File Source="$(var.OutputPathForBuild)bin\ScriptEngine.Snegopat.dll"></File>
+      </Component>
+
+      <Component Id="SetPathVariable" Guid="1B6964FE-3841-45B9-B7E8-C1193161CD65" KeyPath="yes">
+        <Environment Action="set"
+                     Id="SetPathToInstallFolderToSystemPath"
+                     Name="PATH"
+                     System="yes"
+                     Value="[APPLICATIONFOLDER]\bin"
+                     Permanent="no"
+                     Part="last"
+                     />
+      </Component>
+
+    </DirectoryRef>
+	</Fragment>
+</Wix>

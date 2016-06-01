@@ -16,10 +16,12 @@ namespace oscript
     class CheckSyntaxBehavior : AppBehavior
     {
         string _path;
+        string _envFile;
 
-        public CheckSyntaxBehavior(string path)
+        public CheckSyntaxBehavior(string path, string envFile)
         {
             _path = path;
+            _envFile = envFile;
         } 
 
         public override int Execute()
@@ -29,10 +31,16 @@ namespace oscript
             hostedScript.Initialize();
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
-            var compiler = hostedScript.GetCompilerService();
 
             try
             {
+                if(_envFile != null)
+                {
+                    var envCompiler = hostedScript.GetCompilerService();
+                    var envSrc = hostedScript.Loader.FromFile(_envFile);
+                    envCompiler.CreateModule(envSrc);
+                }
+                var compiler = hostedScript.GetCompilerService();
                 compiler.CreateModule(source);
             }
             catch (ScriptException e)

@@ -10,6 +10,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Machine;
+using ScriptEngine;
+using oscript;
 
 namespace StandaloneRunner
 {
@@ -19,14 +21,36 @@ namespace StandaloneRunner
         {
             try
             {
-                Stream codeStream = LocateCode();
-                var formatter = new BinaryFormatter();
-                var reader = new ScriptEngine.Compiler.ModulePersistor(formatter);
-                var moduleHandle = reader.Read(codeStream);
+                ScriptModuleHandle module;
                 var engine = new HostedScriptEngine();
-                var src = new BinaryCodeSource(moduleHandle);
+                engine.Initialize();
 
-                var process = engine.CreateProcess(this, moduleHandle, src);
+                using(Stream codeStream = LocateCode())
+                using (var binReader = new BinaryReader(codeStream))
+                {
+                    int modulesCount;
+                    modulesCount = binReader.ReadInt32();
+
+
+                    var formatter = new BinaryFormatter();
+                    var reader = new ScriptEngine.Compiler.ModulePersistor(formatter);
+
+                    var entry = reader.Read(codeStream);
+                    --modulesCount;
+
+                    while (modulesCount-- > 0)
+                    {
+                        var userScript = reader.Read(codeStream);
+                        engine.LoadUserScript(userScript);
+                    }
+
+                    module = entry.Module;
+
+                }
+
+                var src = new BinaryCodeSource(module);
+                var process = engine.CreateProcess(this, module, src);
+
                 return process.Start();
                 
             }
@@ -76,35 +100,19 @@ namespace StandaloneRunner
 
         #region IHostApplication Members
 
-        public void Echo(string text)
+        public void Echo(string text, EchoStatus status = EchoStatus.Undefined)
         {
-            Console.WriteLine(text);
+            ConsoleHostImpl.Echo(text, status);
         }
 
         public void ShowExceptionInfo(Exception exc)
         {
-            if (exc is RuntimeException)
-            {
-                var rte = (RuntimeException)exc;
-                Console.WriteLine(rte.MessageWithoutCodeFragment);
-            }
-            else
-                Console.WriteLine(exc.Message);
+            ConsoleHostImpl.ShowExceptionInfo(exc);
         }
 
         public bool InputString(out string result, int maxLen)
         {
-            if (maxLen == 0)
-            {
-                result = Console.ReadLine();
-            }
-            else
-            {
-                result = Console.ReadLine().Substring(0, maxLen);
-            }
-
-            return result.Length > 0;
-
+            return ConsoleHostImpl.InputString(out result, maxLen);
         }
 
         public string[] GetCommandLineArguments()

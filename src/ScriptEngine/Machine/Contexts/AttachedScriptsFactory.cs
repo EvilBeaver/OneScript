@@ -113,10 +113,9 @@ namespace ScriptEngine.Machine.Contexts
                 return;
             }
 
-            compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
-
-            var moduleHandle = compiler.CreateModule(code);
+            var moduleHandle = CreateModuleFromSource(compiler, code, null);
             var loadedHandle = _engine.LoadModuleImage(moduleHandle);
+
             _loadedModules.Add(typeName, loadedHandle.Module);
             using(var md5Hash = MD5.Create())
             {
@@ -128,10 +127,31 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
+        public void LoadAndRegister(string typeName, ScriptModuleHandle moduleHandle)
+        {
+            if (_loadedModules.ContainsKey(typeName))
+            {
+                return;
+            }
+
+            var loadedHandle = _engine.LoadModuleImage(moduleHandle);
+            _loadedModules.Add(typeName, loadedHandle.Module);
+            
+            TypeManager.RegisterType(typeName, typeof(AttachedScriptsFactory));
+
+        }
+
         private IRuntimeContextInstance LoadAndCreate(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
+            var moduleHandle = CreateModuleFromSource(compiler, code, externalContext);
+            var loadedHandle = _engine.LoadModuleImage(moduleHandle);
+            return _engine.NewObject(loadedHandle.Module, externalContext);
+        }
+
+        public ScriptModuleHandle CreateModuleFromSource(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
+        {
             compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
-            if(externalContext != null)
+            if (externalContext != null)
             {
                 foreach (var item in externalContext)
                 {
@@ -139,11 +159,7 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
 
-            var moduleHandle = compiler.CreateModule(code);
-            var loadedHandle = _engine.LoadModuleImage(moduleHandle);
-
-            return _engine.NewObject(loadedHandle.Module, externalContext);
-
+            return compiler.CreateModule(code);
         }
 
         private static AttachedScriptsFactory _instance;

@@ -197,7 +197,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         private string GetRelativePath(string item, string basePath)
         {
-            var dir = System.IO.Path.GetDirectoryName(item);
+            var dir = System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(item));
             int startIndex;
             if (dir == basePath)
                 startIndex = System.IO.Path.GetDirectoryName(basePath).Length;

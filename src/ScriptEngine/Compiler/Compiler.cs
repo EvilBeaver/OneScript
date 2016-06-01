@@ -117,7 +117,7 @@ namespace ScriptEngine.Compiler
                     var scope = _ctx.GetScope(methN.ContextIndex);
 
                     var methInfo = scope.GetMethod(methN.CodeIndex);
-                    System.Diagnostics.Debug.Assert(methInfo.Name == item.identifier);
+                    System.Diagnostics.Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
                     if (item.asFunction && !methInfo.IsFunction)
                     {
                         var exc = CompilerException.UseProcAsFunction();
@@ -1506,13 +1506,13 @@ namespace ScriptEngine.Compiler
         private void BuildNewObjectCreation()
         {
             NextToken();
-            if(_lastExtractedLexem.Token == Token.OpenPar)
+            if (_lastExtractedLexem.Token == Token.OpenPar)
             {
                 // создание по строковому имени класса
                 NewObjectDynamicConstructor();
 
             }
-            else if (IsUserSymbol(ref _lastExtractedLexem))
+            else if (IsUserSymbol(ref _lastExtractedLexem) || _lastExtractedLexem.Token == Token.ExceptionInfo)
             {
                 NewObjectStaticConstructor();
             }
