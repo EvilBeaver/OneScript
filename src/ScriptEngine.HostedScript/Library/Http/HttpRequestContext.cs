@@ -124,7 +124,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             ctx.ResourceAddress = resource.AsString();
             if (headers != null)
             {
-                var headersMap = headers.AsObject() as MapImpl;
+                var headersMap = headers.GetRawValue() as MapImpl;
                 if (headersMap == null)
                     throw RuntimeException.InvalidArgumentType();
 
