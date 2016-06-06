@@ -96,8 +96,8 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ContextMethod("Существует","Exists")]
-        public bool Exists()
+        [ContextMethod("Существует","Exist")]
+        public bool Exist()
         {
             try
             {
