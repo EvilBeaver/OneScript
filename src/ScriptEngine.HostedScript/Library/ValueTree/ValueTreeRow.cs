@@ -65,11 +65,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return _owner;
         }
 
-        private IValue TryValue(ValueTreeColumn Column)
+        private IValue TryValue(ValueTreeColumn column)
         {
-            IValue Value;
-            if (_data.TryGetValue(Column, out Value))
-                return Value;
+            IValue value;
+            if (_data.TryGetValue(column, out value))
+                return value;
             return ValueFactory.Create(); // TODO: Определять пустое значение для типа колонки
         }
 
@@ -81,19 +81,19 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         [ContextMethod("Получить", "Get")]
         public IValue Get(int index)
         {
-            var C = Owner().Columns.FindColumnByIndex(index);
-            return TryValue(C);
+            var column = Owner().Columns.FindColumnByIndex(index);
+            return TryValue(column);
         }
 
         public IValue Get(IValue index)
         {
-            var C = Owner().Columns.GetColumnByIIndex(index);
-            return TryValue(C);
+            var column = Owner().Columns.GetColumnByIIndex(index);
+            return TryValue(column);
         }
 
-        public IValue Get(ValueTreeColumn C)
+        public IValue Get(ValueTreeColumn column)
         {
-            return TryValue(C);
+            return TryValue(column);
         }
 
         /// <summary>
@@ -102,21 +102,21 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <param name="index">Число. Индекс параметра, которому задаётся значение.</param>
         /// <param name="value">Произвольный. Новое значение.</param>
         [ContextMethod("Установить", "Set")]
-        public void Set(int index, IValue Value)
+        public void Set(int index, IValue value)
         {
-            var C = Owner().Columns.FindColumnByIndex(index);
-            _data[C] = Value;
+            var column = Owner().Columns.FindColumnByIndex(index);
+            _data[column] = value;
         }
 
-        public void Set(IValue index, IValue Value)
+        public void Set(IValue index, IValue value)
         {
-            var C = Owner().Columns.GetColumnByIIndex(index);
-            _data[C] = Value;
+            var column = Owner().Columns.GetColumnByIIndex(index);
+            _data[column] = value;
         }
 
-        public void Set(ValueTreeColumn Column, IValue Value)
+        public void Set(ValueTreeColumn column, IValue value)
         {
-            _data[Column] = Value;
+            _data[column] = value;
         }
 
         /// <summary>
@@ -152,38 +152,38 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public override int FindProperty(string name)
         {
-            ValueTreeColumn C = Owner().Columns.FindColumnByName(name);
+            var column = Owner().Columns.FindColumnByName(name);
 
-            if (C == null)
+            if (column == null)
             {
                 return _properties.FindProperty(name);
             }
 
-            return C.ID;
+            return column.ID;
         }
 
         public override IValue GetPropValue(int propNum)
         {
-            ValueTreeColumn C = Owner().Columns.FindColumnById(propNum);
-            if (C == null)
+            var column = Owner().Columns.FindColumnById(propNum);
+            if (column == null)
             {
-                var Prop = _properties.GetProperty(propNum);
-                return Prop.Getter(this);
+                var property = _properties.GetProperty(propNum);
+                return property.Getter(this);
             }
-            return TryValue(C);
+            return TryValue(column);
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
         {
-            ValueTreeColumn C = Owner().Columns.FindColumnById(propNum);
-            if (C == null)
+            var column = Owner().Columns.FindColumnById(propNum);
+            if (column == null)
             {
-                var Prop = _properties.GetProperty(propNum);
-                Prop.Setter(this, newVal);
+                var property = _properties.GetProperty(propNum);
+                property.Setter(this, newVal);
             }
             else
             {
-                _data[C] = newVal;
+                _data[column] = newVal;
             }
         }
 
@@ -194,8 +194,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public override IValue GetIndexedValue(IValue index)
         {
-            ValueTreeColumn C = GetColumnByIIndex(index);
-            return TryValue(C);
+            var column = GetColumnByIIndex(index);
+            return TryValue(column);
         }
 
         public override void SetIndexedValue(IValue index, IValue val)

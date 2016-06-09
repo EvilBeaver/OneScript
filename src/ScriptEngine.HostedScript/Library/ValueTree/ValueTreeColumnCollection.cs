@@ -20,7 +20,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     public class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext
     {
         private List<ValueTreeColumn> _columns = new List<ValueTreeColumn>();
-        private int _internal_counter = 3; // Нарастающий счётчик определителей колонок
+        private int _internalCounter = 3; // Нарастающий счётчик определителей колонок
                                            // Начальное значение установлено в ненулевое для предопределённых полей строки дерева Родитель и Строки
 
         public ValueTreeColumnCollection()
@@ -30,18 +30,18 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <summary>
         /// Добавляет новую колонку.
         /// </summary>
-        /// <param name="Name">Строка. Имя колонки.</param>
-        /// <param name="Type">ОписаниеТипов. Доступные типы значений для колонки. Необязательный параметр.</param>
-        /// <param name="Title">Строка. Заголовок колонки. Необязательный параметр.</param>
-        /// <param name="Width">Число. Ширина колонки. Необязательный параметр.</param>
+        /// <param name="name">Строка. Имя колонки.</param>
+        /// <param name="type">ОписаниеТипов. Доступные типы значений для колонки. Необязательный параметр.</param>
+        /// <param name="title">Строка. Заголовок колонки. Необязательный параметр.</param>
+        /// <param name="width">Число. Ширина колонки. Необязательный параметр.</param>
         /// <returns>КолонкаДереваЗначений. Добавленная колонка.</returns>
         [ContextMethod("Добавить", "Add")]
-        public ValueTreeColumn Add(string Name, IValue Type = null, string Title = null, int Width = 0)
+        public ValueTreeColumn Add(string name, IValue type = null, string title = null, int width = 0)
         {
-            if (FindColumnByName(Name) != null)
-                throw new RuntimeException("Неверное имя колонки " + Name);
+            if (FindColumnByName(name) != null)
+                throw new RuntimeException("Неверное имя колонки " + name);
 
-            ValueTreeColumn column = new ValueTreeColumn(this, ++_internal_counter, Name, Title, Type, Width);
+            ValueTreeColumn column = new ValueTreeColumn(this, ++_internalCounter, name, title, type, width);
             _columns.Add(column);
 
             return column;
@@ -51,18 +51,18 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// Вставляет новую колонку по указанному индексу.
         /// </summary>
         /// <param name="index">Число. Индекс новой колонки.</param>
-        /// <param name="Name">Строка. Имя колонки.</param>
-        /// <param name="Type">ОписаниеТипов. Доступные типы значений для колонки. Необязательный параметр.</param>
-        /// <param name="Title">Строка. Заголовок колонки. Необязательный параметр.</param>
-        /// <param name="Width">Число. Ширина колонки. Необязательный параметр.</param>
+        /// <param name="name">Строка. Имя колонки.</param>
+        /// <param name="type">ОписаниеТипов. Доступные типы значений для колонки. Необязательный параметр.</param>
+        /// <param name="title">Строка. Заголовок колонки. Необязательный параметр.</param>
+        /// <param name="width">Число. Ширина колонки. Необязательный параметр.</param>
         /// <returns>КолонкаДереваЗначений. Добавленная колонка.</returns>
         [ContextMethod("Вставить", "Insert")]
-        public ValueTreeColumn Insert(int index, string Name, IValue Type = null, string Title = null, int Width = 0)
+        public ValueTreeColumn Insert(int index, string name, IValue type = null, string title = null, int width = 0)
         {
-            if (FindColumnByName(Name) != null)
-                throw new RuntimeException("Неверное имя колонки " + Name);
+            if (FindColumnByName(name) != null)
+                throw new RuntimeException("Неверное имя колонки " + name);
 
-            ValueTreeColumn column = new ValueTreeColumn(this, ++_internal_counter, Name, Title, Type, Width);
+            ValueTreeColumn column = new ValueTreeColumn(this, ++_internalCounter, name, title, type, width);
             _columns.Insert(index, column);
 
             return column;
@@ -92,15 +92,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <summary>
         /// Ищет колонку по имени.
         /// </summary>
-        /// <param name="Name">Строка. Имя искомой колонки.</param>
+        /// <param name="name">Строка. Имя искомой колонки.</param>
         /// <returns>КолонкаДереваЗначений, Неопределено. Найденная колонка или Неопределено, если колонка не найдена.</returns>
         [ContextMethod("Найти", "Find")]
-        public IValue Find(string Name)
+        public IValue Find(string name)
         {
-            ValueTreeColumn Column = FindColumnByName(Name);
-            if (Column == null)
+            var column = FindColumnByName(name);
+            if (column == null)
                 return ValueFactory.Create();
-            return Column;
+            return column;
         }
 
         /// <summary>
@@ -108,10 +108,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// </summary>
         /// <param name="column">КолонкаДереваЗначений. Колонка.</param>
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue Column)
+        public void Delete(IValue column)
         {
-            Column = Column.GetRawValue();
-            _columns.Remove(GetColumnByIIndex(Column));
+            column = column.GetRawValue();
+            _columns.Remove(GetColumnByIIndex(column));
         }
 
         /// <summary>
@@ -142,29 +142,29 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// Сдвигает колонку на указанное смещение.
         /// </summary>
         /// <param name="column">КолонкаДереваЗначений. Колонка.</param>
-        /// <param name="Offset">Число. Смещение.</param>
+        /// <param name="offset">Число. Смещение.</param>
         [ContextMethod("Сдвинуть", "Move")]
-        public void Move(IValue column, int Offset)
+        public void Move(IValue column, int offset)
         {
-            ValueTreeColumn Column = GetColumnByIIndex(column);
-            int index_source = _columns.IndexOf(Column);
+            var treeColumn = GetColumnByIIndex(column);
+            int indexSource = _columns.IndexOf(treeColumn);
 
-            int index_dest = (index_source + Offset) % _columns.Count();
-            while (index_dest < 0)
+            int indexDestination = (indexSource + offset) % _columns.Count();
+            while (indexDestination < 0)
             {
-                index_dest += _columns.Count();
+                indexDestination += _columns.Count();
             }
 
 
-            if (index_source < index_dest)
+            if (indexSource < indexDestination)
             {
-                _columns.Insert(index_dest + 1, Column);
-                _columns.RemoveAt(index_source);
+                _columns.Insert(indexDestination + 1, treeColumn);
+                _columns.RemoveAt(indexSource);
             }
             else
             {
-                _columns.RemoveAt(index_source);
-                _columns.Insert(index_dest, Column);
+                _columns.RemoveAt(indexSource);
+                _columns.Insert(indexDestination, treeColumn);
             }
 
         }
@@ -174,15 +174,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _columns.Clear();
             foreach (ValueTreeColumn column in src._columns)
             {
-                _columns.Add(new ValueTreeColumn(this, ++_internal_counter, column));
+                _columns.Add(new ValueTreeColumn(this, ++_internalCounter, column));
             }
         }
 
-        public ValueTreeColumn FindColumnByName(string Name)
+        public ValueTreeColumn FindColumnByName(string name)
         {
-            var Comparer = StringComparer.OrdinalIgnoreCase;
-            return _columns.Find(column => Comparer.Equals(Name, column.Name));
+            var comparer = StringComparer.OrdinalIgnoreCase;
+            return _columns.Find(column => comparer.Equals(name, column.Name));
         }
+
         public ValueTreeColumn FindColumnById(int id)
         {
             return _columns.Find(column => column.ID == id);
@@ -213,10 +214,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public override int FindProperty(string name)
         {
-            ValueTreeColumn Column = FindColumnByName(name);
-            if (Column == null)
+            var column = FindColumnByName(name);
+            if (column == null)
                 throw RuntimeException.PropNotFoundException(name);
-            return Column.ID;
+            return column.ID;
         }
 
         public override IValue GetPropValue(int propNum)
@@ -233,20 +234,20 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         {
             if (index.DataType == DataType.String)
             {
-                ValueTreeColumn Column = FindColumnByName(index.AsString());
-                if (Column == null)
+                var column = FindColumnByName(index.AsString());
+                if (column == null)
                     throw RuntimeException.PropNotFoundException(index.AsString());
-                return Column;
+                return column;
             }
 
             if (index.DataType == DataType.Number)
             {
-                int i_index = Decimal.ToInt32(index.AsNumber());
-                if (i_index < 0 || i_index >= Count())
+                int indexNum = Decimal.ToInt32(index.AsNumber());
+                if (indexNum < 0 || indexNum >= Count())
                     throw RuntimeException.InvalidArgumentValue();
 
-                ValueTreeColumn Column = FindColumnByIndex(i_index);
-                return Column;
+                var column = FindColumnByIndex(indexNum);
+                return column;
             }
 
             if (index is ValueTreeColumn)
@@ -300,35 +301,35 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return _methods.FindMethod(name);
         }
 
-        internal List<ValueTreeColumn> GetProcessingColumnList(string ColumnNames)
+        internal List<ValueTreeColumn> GetProcessingColumnList(string columnNamesString)
         {
-            List<ValueTreeColumn> processing_list = new List<ValueTreeColumn>();
-            if (ColumnNames != null)
+            List<ValueTreeColumn> processingList = new List<ValueTreeColumn>();
+            if (columnNamesString != null)
             {
 
-                if (ColumnNames.Trim().Length == 0)
+                if (columnNamesString.Trim().Length == 0)
                 {
                     // Передали пустую строку вместо списка колонок
-                    return processing_list;
+                    return processingList;
                 }
 
-                string[] column_names = ColumnNames.Split(',');
-                foreach (string name in column_names)
+                string[] columnNames = columnNamesString.Split(',');
+                foreach (string name in columnNames)
                 {
-                    ValueTreeColumn Column = FindColumnByName(name.Trim());
+                    var column = FindColumnByName(name.Trim());
 
-                    if (Column == null)
+                    if (column == null)
                         throw RuntimeException.PropNotFoundException(name.Trim());
 
-                    processing_list.Add(Column);
+                    processingList.Add(column);
                 }
             }
             else
             {
-                foreach (ValueTreeColumn Column in _columns)
-                    processing_list.Add(Column);
+                foreach (var column in _columns)
+                    processingList.Add(column);
             }
-            return processing_list;
+            return processingList;
         }
 
     }

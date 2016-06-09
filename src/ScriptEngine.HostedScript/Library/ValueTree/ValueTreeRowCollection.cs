@@ -99,21 +99,21 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <summary>
         /// Удаляет строку из коллекции.
         /// </summary>
-        /// <param name="index">СтрокаДереваЗначений, Число. Удаляемая строка или её индекс.</param>
+        /// <param name="row">СтрокаДереваЗначений, Число. Удаляемая строка или её индекс.</param>
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue Row)
+        public void Delete(IValue row)
         {
-            Row = Row.GetRawValue();
+            row = row.GetRawValue();
             int index;
-            if (Row is ValueTreeRow)
+            if (row is ValueTreeRow)
             {
-                index = _rows.IndexOf(Row as ValueTreeRow);
+                index = _rows.IndexOf(row as ValueTreeRow);
                 if (index == -1)
                     throw RuntimeException.InvalidArgumentValue();
             }
             else
             {
-                index = Decimal.ToInt32(Row.AsNumber());
+                index = Decimal.ToInt32(row.AsNumber());
             }
             _rows.RemoveAt(index);
         }
@@ -121,33 +121,33 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <summary>
         /// Загружает значения из массива в колонку.
         /// </summary>
-        /// <param name="Values">Массив. Значения.</param>
-        /// <param name="ColumnIndex">КолонкаДереваЗначений, Число, Строка. Колонка, в которую будут загружены значения, её имя или индекс.</param>
+        /// <param name="values">Массив. Значения.</param>
+        /// <param name="columnIndex">КолонкаДереваЗначений, Число, Строка. Колонка, в которую будут загружены значения, её имя или индекс.</param>
         [ContextMethod("ЗагрузитьКолонку", "LoadColumn")]
-        public void LoadColumn(IValue Values, IValue ColumnIndex)
+        public void LoadColumn(IValue values, IValue columnIndex)
         {
-            var row_iterator = _rows.GetEnumerator();
-            var array_iterator = (Values as ArrayImpl).GetEnumerator();
+            var rowIterator = _rows.GetEnumerator();
+            var arrayIterator = (values as ArrayImpl).GetEnumerator();
 
-            while (row_iterator.MoveNext() && array_iterator.MoveNext())
+            while (rowIterator.MoveNext() && arrayIterator.MoveNext())
             {
-                row_iterator.Current.Set(ColumnIndex, array_iterator.Current);
+                rowIterator.Current.Set(columnIndex, arrayIterator.Current);
             }
         }
 
         /// <summary>
         /// Загружает значения из массива в колонку.
         /// </summary>
-        /// <param name="Column">КолонкаДереваЗначений, Число, Строка. Колонка, из которой будут выгружены значения, её имя или индекс.</param>
+        /// <param name="column">КолонкаДереваЗначений, Число, Строка. Колонка, из которой будут выгружены значения, её имя или индекс.</param>
         /// <returns>Массив. Массив значений.</returns>
         [ContextMethod("ВыгрузитьКолонку", "UnloadColumn")]
-        public ArrayImpl UnloadColumn(IValue Column)
+        public ArrayImpl UnloadColumn(IValue column)
         {
             ArrayImpl result = new ArrayImpl();
 
             foreach (ValueTreeRow row in _rows)
             {
-                result.Add(row.Get(Column));
+                result.Add(row.Get(column));
             }
 
             return result;
@@ -156,15 +156,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <summary>
         /// Определяет индекс строки.
         /// </summary>
-        /// <param name="column">СтрокаДереваЗначений. Строка.</param>
+        /// <param name="row">СтрокаДереваЗначений. Строка.</param>
         /// <returns>Число. Индекс строки в коллекции. Если строка не найдена, возвращается -1.</returns>
         [ContextMethod("Индекс", "IndexOf")]
-        public int IndexOf(IValue Row)
+        public int IndexOf(IValue row)
         {
-            Row = Row.GetRawValue();
+            row = row.GetRawValue();
 
-            if (Row is ValueTreeRow)
-                return _rows.IndexOf(Row as ValueTreeRow);
+            if (row is ValueTreeRow)
+                return _rows.IndexOf(row as ValueTreeRow);
 
             return -1;
         }
@@ -172,76 +172,76 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <summary>
         /// Суммирует значения в строках.
         /// </summary>
-        /// <param name="ColumnIndex">КолонкаДереваЗначений, Строка, Число. Колонка, значения которой будут суммироваться.</param>
-        /// <param name="IncludeChildren">Булево. Если Истина, в расчёт будут включены все вложенные строки.</param>
+        /// <param name="columnIndex">КолонкаДереваЗначений, Строка, Число. Колонка, значения которой будут суммироваться.</param>
+        /// <param name="includeChildren">Булево. Если Истина, в расчёт будут включены все вложенные строки.</param>
         /// <returns>Число. Вычисленная сумма.</returns>
         [ContextMethod("Итог", "Total")]
-        public IValue Total(IValue ColumnIndex, bool IncludeChildren = false)
+        public IValue Total(IValue columnIndex, bool includeChildren = false)
         {
-            ValueTreeColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
-            decimal Result = 0;
+            ValueTreeColumn column = Columns.GetColumnByIIndex(columnIndex);
+            decimal result = 0;
 
             foreach (ValueTreeRow row in _rows)
             {
-                IValue current_value = row.Get(Column);
-                if (current_value.DataType == Machine.DataType.Number)
+                IValue currentValue = row.Get(column);
+                if (currentValue.DataType == Machine.DataType.Number)
                 {
-                    Result += current_value.AsNumber();
+                    result += currentValue.AsNumber();
                 }
 
-                if (IncludeChildren)
+                if (includeChildren)
                 {
-                    IValue children_total = row.Rows.Total(ColumnIndex, IncludeChildren);
-                    if (children_total.DataType == Machine.DataType.Number)
+                    IValue childrenTotal = row.Rows.Total(columnIndex, includeChildren);
+                    if (childrenTotal.DataType == Machine.DataType.Number)
                     {
-                        Result += children_total.AsNumber();
+                        result += childrenTotal.AsNumber();
                     }
                 }
             }
 
-            return ValueFactory.Create(Result);
+            return ValueFactory.Create(result);
         }
 
         /// <summary>
         /// Ищет значение в строках дерева значений.
         /// </summary>
-        /// <param name="Value">Произвольный. Искомое значение.</param>
-        /// <param name="ColumnNames">Строка. Список колонок через запятую, в которых будет производиться поиск. Необязательный параметр.</param>
-        /// <param name="IncludeChildren">Булево. Если Истина, в поиск будут включены все вложенные строки. Необязательный параметр.</param>
+        /// <param name="value">Произвольный. Искомое значение.</param>
+        /// <param name="columnNames">Строка. Список колонок через запятую, в которых будет производиться поиск. Необязательный параметр.</param>
+        /// <param name="includeChildren">Булево. Если Истина, в поиск будут включены все вложенные строки. Необязательный параметр.</param>
         /// <returns>СтрокаДереваЗначений, Неопределено. Найденная строка или Неопределено, если строка не найдена.</returns>
         [ContextMethod("Найти", "Find")]
-        public IValue Find(IValue Value, string ColumnNames = null, bool IncludeChildren = false)
+        public IValue Find(IValue value, string columnNames = null, bool includeChildren = false)
         {
-            List<ValueTreeColumn> processing_list = Columns.GetProcessingColumnList(ColumnNames);
+            List<ValueTreeColumn> processingList = Columns.GetProcessingColumnList(columnNames);
             foreach (ValueTreeRow row in _rows)
             {
-                foreach (ValueTreeColumn col in processing_list)
+                foreach (ValueTreeColumn col in processingList)
                 {
                     IValue current = row.Get(col);
-                    if (Value.Equals(current))
+                    if (value.Equals(current))
                         return row;
                 }
-                if (IncludeChildren)
+                if (includeChildren)
                 {
-                    IValue children_result = row.Rows.Find(Value, ColumnNames, IncludeChildren);
-                    if (children_result.DataType != Machine.DataType.Undefined)
+                    IValue childrenResult = row.Rows.Find(value, columnNames, includeChildren);
+                    if (childrenResult.DataType != Machine.DataType.Undefined)
                     {
-                        return children_result;
+                        return childrenResult;
                     }
                 }
             }
             return ValueFactory.Create();
         }
 
-        private bool CheckFilterCriteria(ValueTreeRow Row, StructureImpl Filter)
+        private bool CheckFilterCriteria(ValueTreeRow row, StructureImpl filter)
         {
-            foreach (KeyAndValueImpl kv in Filter)
+            foreach (KeyAndValueImpl kv in filter)
             {
-                ValueTreeColumn Column = Columns.FindColumnByName(kv.Key.AsString());
-                if (Column == null)
+                ValueTreeColumn column = Columns.FindColumnByName(kv.Key.AsString());
+                if (column == null)
                     throw RuntimeException.PropNotFoundException(kv.Key.AsString());
 
-                IValue current = Row.Get(Column);
+                IValue current = row.Get(column);
                 if (!current.Equals(kv.Value))
                     return false;
             }
@@ -251,37 +251,37 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <summary>
         /// Ищет строки, отвечающие критериям отбора.
         /// </summary>
-        /// <param name="Filter">Структура. Структура, в которой Ключ - это имя колонки, а Значение - искомое значение.</param>
-        /// <param name="IncludeChildren">Булево. Если Истина, в поиск будут включены все вложенные строки. Необязательный параметр.</param>
+        /// <param name="filter">Структура. Структура, в которой Ключ - это имя колонки, а Значение - искомое значение.</param>
+        /// <param name="includeChildren">Булево. Если Истина, в поиск будут включены все вложенные строки. Необязательный параметр.</param>
         /// <returns>Массив. Найденные строки.</returns>
         [ContextMethod("НайтиСтроки", "FindRows")]
-        public ArrayImpl FindRows(IValue Filter, bool IncludeChildren = false)
+        public ArrayImpl FindRows(IValue filter, bool includeChildren = false)
         {
-            var filterStruct = Filter.GetRawValue() as StructureImpl;
+            var filterStruct = filter.GetRawValue() as StructureImpl;
 
             if (filterStruct == null)
                 throw RuntimeException.InvalidArgumentType();
 
-            ArrayImpl Result = new ArrayImpl();
+            ArrayImpl result = new ArrayImpl();
 
             foreach (ValueTreeRow row in _rows)
             {
                 if (CheckFilterCriteria(row, filterStruct))
                 {
-                    Result.Add(row);
+                    result.Add(row);
                 }
                 
-                if (IncludeChildren)
+                if (includeChildren)
                 {
-                    ArrayImpl children_result = row.Rows.FindRows(Filter, IncludeChildren);
-                    foreach (IValue value in children_result)
+                    ArrayImpl childrenResult = row.Rows.FindRows(filter, includeChildren);
+                    foreach (IValue value in childrenResult)
                     {
-                        Result.Add(value);
+                        result.Add(value);
                     }
                 }
             }
 
-            return Result;
+            return result;
         }
 
         /// <summary>
@@ -309,39 +309,39 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <summary>
         /// Сдвигает строку на указанное смещение.
         /// </summary>
-        /// <param name="column">СтрокаДереваЗначений. Строка.</param>
-        /// <param name="Offset">Число. Смещение.</param>
+        /// <param name="row">СтрокаДереваЗначений. Строка.</param>
+        /// <param name="offset">Число. Смещение.</param>
         [ContextMethod("Сдвинуть", "Move")]
-        public void Move(IValue Row, int Offset)
+        public void Move(IValue row, int offset)
         {
-            Row = Row.GetRawValue();
+            row = row.GetRawValue();
 
-            int index_source;
-            if (Row is ValueTreeRow)
-                index_source = _rows.IndexOf(Row as ValueTreeRow);
-            else if (Row.DataType == Machine.DataType.Number)
-                index_source = decimal.ToInt32(Row.AsNumber());
+            int indexSource;
+            if (row is ValueTreeRow)
+                indexSource = _rows.IndexOf(row as ValueTreeRow);
+            else if (row.DataType == Machine.DataType.Number)
+                indexSource = decimal.ToInt32(row.AsNumber());
             else
                 throw RuntimeException.InvalidArgumentType();
 
-            if (index_source < 0 || index_source >= _rows.Count())
+            if (indexSource < 0 || indexSource >= _rows.Count())
                 throw RuntimeException.InvalidArgumentValue();
 
-            int index_dest = (index_source + Offset) % _rows.Count();
-            while (index_dest < 0)
-                index_dest += _rows.Count();
+            int indexDestination = (indexSource + offset) % _rows.Count();
+            while (indexDestination < 0)
+                indexDestination += _rows.Count();
 
-            ValueTreeRow tmp = _rows[index_source];
+            ValueTreeRow tmp = _rows[indexSource];
 
-            if (index_source < index_dest)
+            if (indexSource < indexDestination)
             {
-                _rows.Insert(index_dest + 1, tmp);
-                _rows.RemoveAt(index_source);
+                _rows.Insert(indexDestination + 1, tmp);
+                _rows.RemoveAt(indexSource);
             }
             else
             {
-                _rows.RemoveAt(index_source);
-                _rows.Insert(index_dest, tmp);
+                _rows.RemoveAt(indexSource);
+                _rows.Insert(indexDestination, tmp);
             }
 
         }
@@ -352,59 +352,59 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             public int direction; // 1 = asc, -1 = desc
         }
 
-        private List<ValueTreeSortRule> GetSortRules(string Columns)
+        private List<ValueTreeSortRule> GetSortRules(string columns)
         {
 
-            string[] a_columns = Columns.Split(',');
+            string[] aColumns = columns.Split(',');
 
-            List<ValueTreeSortRule> Rules = new List<ValueTreeSortRule>();
+            List<ValueTreeSortRule> rules = new List<ValueTreeSortRule>();
 
-            foreach (string column in a_columns)
+            foreach (string column in aColumns)
             {
                 string[] description = column.Trim().Split(' ');
                 if (description.Count() == 0)
                     throw RuntimeException.PropNotFoundException(""); // TODO: WrongColumnNameException
 
-                ValueTreeSortRule Desc = new ValueTreeSortRule();
-                Desc.Column = this.Columns.FindColumnByName(description[0]);
-                if (Desc.Column == null)
+                ValueTreeSortRule desc = new ValueTreeSortRule();
+                desc.Column = this.Columns.FindColumnByName(description[0]);
+                if (desc.Column == null)
                     throw RuntimeException.PropNotFoundException(description[0]);
 
                 if (description.Count() > 1)
                 {
                     if (String.Compare(description[1], "DESC", true) == 0 || String.Compare(description[1], "УБЫВ", true) == 0)
-                        Desc.direction = -1;
+                        desc.direction = -1;
                     else
-                        Desc.direction = 1;
+                        desc.direction = 1;
                 }
                 else
-                    Desc.direction = 1;
+                    desc.direction = 1;
 
-                Rules.Add(Desc);
+                rules.Add(desc);
             }
 
-            return Rules;
+            return rules;
         }
 
         private class RowComparator : IComparer<ValueTreeRow>
         {
-            List<ValueTreeSortRule> Rules;
+            List<ValueTreeSortRule> _rules;
             GenericIValueComparer _comparer = new GenericIValueComparer();
 
-            public RowComparator(List<ValueTreeSortRule> Rules)
+            public RowComparator(List<ValueTreeSortRule> rules)
             {
-                if (Rules.Count() == 0)
+                if (rules.Count() == 0)
                     throw RuntimeException.InvalidArgumentValue();
 
-                this.Rules = Rules;
+                this._rules = rules;
             }
 
-            private int OneCompare(ValueTreeRow x, ValueTreeRow y, ValueTreeSortRule Rule)
+            private int OneCompare(ValueTreeRow x, ValueTreeRow y, ValueTreeSortRule rule)
             {
-                IValue xValue = x.Get(Rule.Column);
-                IValue yValue = y.Get(Rule.Column);
+                IValue xValue = x.Get(rule.Column);
+                IValue yValue = y.Get(rule.Column);
 
-                int result = _comparer.Compare(xValue, yValue) * Rule.direction;
+                int result = _comparer.Compare(xValue, yValue) * rule.direction;
 
                 return result;
             }
@@ -412,9 +412,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             public int Compare(ValueTreeRow x, ValueTreeRow y)
             {
                 int i = 0, r;
-                while ((r = OneCompare(x, y, Rules[i])) == 0)
+                while ((r = OneCompare(x, y, _rules[i])) == 0)
                 {
-                    if (++i >= Rules.Count())
+                    if (++i >= _rules.Count())
                         return 0;
                 }
 
@@ -427,23 +427,23 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// </summary>
         /// <param name="columns">Строка. Правило сортировки: список имён колонок, разделённых запятой. После имени через
         ///  пробел может указываться направление сортировки: Возр(Asc) - по возрастанию, Убыв(Desc) - по убыванию.</param>
-        /// <param name="SortChildren">Булево. Если Истина, сортировка будет применена также к вложенным строкам.</param>
-        /// <param name="Comparator">СравнениеЗначений. Не используется.</param>
+        /// <param name="sortChildren">Булево. Если Истина, сортировка будет применена также к вложенным строкам.</param>
+        /// <param name="comparator">СравнениеЗначений. Не используется.</param>
         [ContextMethod("Сортировать", "Sort")]
-        public void Sort(string columns, bool SortChildren = false, IValue Comparator = null)
+        public void Sort(string columns, bool sortChildren = false, IValue comparator = null)
         {
-            Sort(new RowComparator(GetSortRules(columns)), SortChildren);
+            Sort(new RowComparator(GetSortRules(columns)), sortChildren);
         }
 
-        private void Sort(RowComparator Comparator, bool SortChildren)
+        private void Sort(RowComparator comparator, bool sortChildren)
         {
-            _rows.Sort(Comparator);
+            _rows.Sort(comparator);
 
-            if (SortChildren)
+            if (sortChildren)
             {
                 foreach (var row in _rows)
                 {
-                    row.Rows.Sort(Comparator, SortChildren);
+                    row.Rows.Sort(comparator, sortChildren);
                 }
             }
         }
@@ -452,7 +452,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// Не поддерживается.
         /// </summary>
         [ContextMethod("ВыбратьСтроку", "ChooseRow")]
-        public void ChooseRow(string Title = null, IValue StartRow = null)
+        public void ChooseRow(string title = null, IValue startRow = null)
         {
             throw new NotSupportedException();
         }
@@ -460,16 +460,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         internal void CopyFrom(ValueTreeRowCollection src)
         {
             _rows.Clear();
-            ValueTreeColumnCollection Columns = Owner().Columns;
+            ValueTreeColumnCollection columns = Owner().Columns;
 
             foreach (ValueTreeRow row in src._rows)
             {
-                ValueTreeRow new_row = Add();
-                foreach (ValueTreeColumn Column in Columns)
+                ValueTreeRow newRow = Add();
+                foreach (ValueTreeColumn column in columns)
                 {
-                    new_row.Set(Column, row.Get(ValueFactory.Create(Column.Name)));
+                    newRow.Set(column, row.Get(ValueFactory.Create(column.Name)));
                 }
-                new_row.Rows.CopyFrom(row.Rows);
+                newRow.Rows.CopyFrom(row.Rows);
             }
         }
 
