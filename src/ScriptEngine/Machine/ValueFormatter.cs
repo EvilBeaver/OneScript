@@ -176,7 +176,12 @@ namespace ScriptEngine.Machine
             {
                 ApplyNumericSizeRestrictions(ref p, totalDigits, fractionDigits);
 
-                formatBuilder.Append(leadingFormatSpecifier, totalDigits - fractionDigits);
+                int repeatCount = totalDigits - fractionDigits;
+                if (repeatCount < 0)
+                    repeatCount = 1;
+                    
+                formatBuilder.Append(leadingFormatSpecifier, repeatCount);
+
                 ApplyDigitsGrouping(formatBuilder, nf);
 
                 formatBuilder.Append('.');

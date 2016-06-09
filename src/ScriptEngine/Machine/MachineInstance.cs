@@ -1106,9 +1106,6 @@ namespace ScriptEngine.Machine
             var counter = _operationStack.Pop();
             var limit = _currentFrame.LocalFrameStack.Peek();
 
-            if(counter.DataType != DataType.Number || limit.DataType != DataType.Number)
-                throw new WrongStackConditionException(); 
-
             if (counter.CompareTo(limit) <= 0)
             {
                 NextInstruction();
