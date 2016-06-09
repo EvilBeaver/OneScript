@@ -1,5 +1,7 @@
 # README #
 
+[![Join the chat at https://gitter.im/EvilBeaver/OneScript](https://badges.gitter.im/EvilBeaver/OneScript.svg)](https://gitter.im/EvilBeaver/OneScript?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ### Проект является независимой кросс-платформенной реализацией виртуальной машины, исполняющей скрипты на языке 1С:Предприятие.
 
 При этом библиотеки системы 1С:Предприятие не используются и не требуется установка системы 1С:Предприятие на целевой машине.
