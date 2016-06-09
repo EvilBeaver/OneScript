@@ -80,7 +80,10 @@ namespace ScriptEngine.HostedScript.Library
 
         private string GetPathWithEndingDelimiter(string src)
         {
-            var path = System.IO.Path.GetDirectoryName(src);
+            var path = System.IO.Path.GetDirectoryName(src.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar));
+            if (path == null)
+                return src; // корневой каталог
+            
             if (path.Length > 0 && path[path.Length - 1] != System.IO.Path.DirectorySeparatorChar)
                 path += System.IO.Path.DirectorySeparatorChar;
 
@@ -96,8 +99,8 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ContextMethod("Существует","Exists")]
-        public bool Exists()
+        [ContextMethod("Существует","Exist")]
+        public bool Exist()
         {
             try
             {

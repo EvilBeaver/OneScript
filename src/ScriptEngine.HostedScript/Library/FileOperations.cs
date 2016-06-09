@@ -86,7 +86,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 // fix 225, 227, 228
                 var fObj = new FileContext(dir);
-                if(fObj.Exists())
+                if(fObj.Exist())
                 {
                     return new ArrayImpl(new[] { fObj });
                 }

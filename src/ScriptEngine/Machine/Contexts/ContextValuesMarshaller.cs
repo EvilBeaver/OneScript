@@ -87,7 +87,10 @@ namespace ScriptEngine.Machine.Contexts
             object objParam = (object)param;
             if (type == typeof(IValue))
             {
-                return (IValue)param;
+                if (param != null)
+                    return (IValue)param;
+                else
+                    return ValueFactory.Create();
             }
             else if (type == typeof(string))
             {
