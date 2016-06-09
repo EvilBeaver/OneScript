@@ -61,6 +61,7 @@ namespace ScriptEngine.HostedScript.Library
         /// Выдает сообщение в консоль.
         /// </summary>
         /// <param name="message">Выдаваемое сообщение.</param>
+        /// <param name="status">Статус сообщения.</param>
         [ContextMethod("Сообщить", "Message")]
         public void Echo(string message, CLREnumValueWrapper<EchoStatus> status = null)
         {
