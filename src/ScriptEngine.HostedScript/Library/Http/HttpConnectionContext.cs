@@ -380,7 +380,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         /// <param name="ssl">Объект ЗащищенноеСоединение. На данный момент данная механика работы с SSL не поддерживается. 
         /// Обращение к https возможно, если в адресе хоста указать протокол https. В этом случае будут использованы сертификаты из хранилища ОС.
         /// Указание произвольных клиентских и серверных сертификатов в текущей версии не поддерживается.</param>
-        /// <param name="timeout">Таймаут ожидания.</param>
+        /// <param name="useOSAuthentication">Использовать аутентификацию ОС.</param>
         /// <returns></returns>
         [ScriptConstructor]
         public static HttpConnectionContext Constructor(IValue host, 
