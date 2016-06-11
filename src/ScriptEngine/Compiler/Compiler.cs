@@ -175,7 +175,7 @@ namespace ScriptEngine.Compiler
                         BuildModuleBody();
                     }
                 }
-                else if(_lastExtractedLexem.Type == LexemType.Directive && !isCodeEntered)
+                else if(_lastExtractedLexem.Type == LexemType.Directive)
                 {
                     HandleDirective();
                 }

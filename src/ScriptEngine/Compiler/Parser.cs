@@ -124,15 +124,13 @@ namespace ScriptEngine.Compiler
 
         internal string ReadLineToEnd()
         {
-            _iterator.MoveToContent();
-            while (_iterator.MoveNext())
+            while (_iterator.CurrentSymbol != '\n')
             {
-                if (_iterator.CurrentSymbol == '\n')
-                {
-                    return _iterator.GetContents().content;
-                }
+                if (!_iterator.MoveNext ())
+                    break;
             }
-            return _iterator.GetContents().content;
+            string content = _iterator.GetContents().content;
+            return content == null ? "" : content;
         }
     }
 
