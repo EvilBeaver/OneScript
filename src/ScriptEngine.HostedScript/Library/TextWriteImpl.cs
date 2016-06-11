@@ -114,12 +114,13 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="path">Имя файла</param>
         /// <param name="encoding">Кодировка в виде строки</param>
+        /// <param name="lineDelimiter">Символ - разделитель строк</param>
         /// <param name="append">Признак добавления в конец файла (необязательный)</param>
         [ScriptConstructor(Name = "По имени файла и кодировке")]
         public static IRuntimeContextInstance Constructor(IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue append = null)
         {
-            bool _append = append == null ? false : append.AsBoolean();
-            return new TextWriteImpl(path.AsString(), encoding, _append);
+            bool isAppend = append != null && append.AsBoolean();
+            return new TextWriteImpl(path.AsString(), encoding, isAppend);
         }
 
         [ScriptConstructor]

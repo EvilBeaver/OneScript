@@ -30,9 +30,9 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         /// <param name="startAt">Число. Необязательный параметр. По-умолчанию 0. Содержит стартовую позицию, начиная с которой надо анализировать текст. Нумерация позиций в отличии от 1С начинается с 0</param>
         /// <returns>Признак совпадения. Булево.</returns>
         [ContextMethod("Совпадает", "IsMatch")]
-        public IValue IsMatch(string input, int startat = 0)
+        public IValue IsMatch(string inputString, int startAt = 0)
         {
-            return ValueFactory.Create(_regex.IsMatch(input, startat));
+            return ValueFactory.Create(_regex.IsMatch(inputString, startAt));
         }
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         /// <param name="startAt">Число. Необязательный параметр. По-умолчанию 0. Содержит стартовую позицию, начиная с которой надо анализировать текст. Нумерация позиций в отличии от 1С начинается с 0</param>
         /// <returns>Коллекция совпадения (тип КоллекцияСовпаденийРегулярногоВыражения).</returns>
         [ContextMethod("НайтиСовпадения", "Matches")]
-        public MatchCollection Matches(string input, int startat = 0)
+        public MatchCollection Matches(string inputString, int startAt = 0)
         {
-            return new MatchCollection(_regex.Matches(input, startat));
+            return new MatchCollection(_regex.Matches(inputString, startAt));
         }
 
         /// <summary>
@@ -55,9 +55,9 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         /// <param name="startAt">Число. Необязательный параметр. По-умолчанию 0. Содержит стартовую позицию, начиная с которой надо анализировать текст. Нумерация позиций в отличии от 1С начинается с 0</param>
         /// <returns>Массив полученных строк.</returns>
         [ContextMethod("Разделить", "Split")]
-        public ArrayImpl Split(string input, int count = 0, int startat = 0)
+        public ArrayImpl Split(string inputString, int count = 0, int startAt = 0)
         {
-            string[] arrParsed = _regex.Split(input, count, startat);
+            string[] arrParsed = _regex.Split(inputString, count, startAt);
             return new ArrayImpl(arrParsed.Select(x => ValueFactory.Create(x)));
         }
 
@@ -69,9 +69,9 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         /// <param name="replacement">Строка. Текст, который будет вставляться в места замены.</param>
         /// <returns>Строку-результат замены.</returns>
         [ContextMethod("Заменить", "Replace")]
-        public string Replace(string input, string replacement)
+        public string Replace(string inputString, string replacement)
         {
-            return _regex.Replace(input, replacement);
+            return _regex.Replace(inputString, replacement);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
         /// <summary>
         /// Конструктор создания регулярного выражения по заданному шаблону.
         /// </summary>
-        /// <param name="patternString">Строка-шаблон регулярного выражения.</param>
+        /// <param name="pattern">Строка-шаблон регулярного выражения.</param>
         [ScriptConstructor(Name = "По регулярному выражению")]
         public static IRuntimeContextInstance Constructor(IValue pattern)
         {
