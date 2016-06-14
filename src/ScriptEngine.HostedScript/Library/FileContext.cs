@@ -26,6 +26,9 @@ namespace ScriptEngine.HostedScript.Library
 
         public FileContext(string name)
         {
+            if (String.IsNullOrWhiteSpace (name))
+                throw RuntimeException.InvalidArgumentValue ();
+            
             _givenName = name;
         }
         
@@ -80,6 +83,10 @@ namespace ScriptEngine.HostedScript.Library
 
         private string GetPathWithEndingDelimiter(string src)
         {
+            src = src.Trim ();
+            if (src.Length == 1 && src[0] == System.IO.Path.DirectorySeparatorChar)
+                return src; // корневой каталог
+
             var path = System.IO.Path.GetDirectoryName(src.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar));
             if (path == null)
                 return src; // корневой каталог
