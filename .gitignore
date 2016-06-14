@@ -12,6 +12,7 @@
 /src/**/[Oo]bj/
 [Dd]ebug
 [Rr]elease
+/*.log
 
 /src/**/*.exe
 /src/**/*.dll
@@ -37,6 +38,7 @@ ipch/
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
+JetBrains.ReSharper.CommandLineTools
 
 # CI and full build|deploy
 dist
