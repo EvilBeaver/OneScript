@@ -17,7 +17,9 @@ fi
 echo $define
 sudo cp -arv /media/* rpmbuild/SOURCES/
 sudo cp -arv /media/*.spec rpmbuild/SPECS/ 
-rpmbuild -ba rpmbuild/SPECS/oscript.spec || exit 1
+rpmbuild -ba \
+	--define "_version ${VERSION:-1.0.13}" \
+	rpmbuild/SPECS/oscript.spec || exit 1
 
 [[ -d /media ]] || exit 0
 
