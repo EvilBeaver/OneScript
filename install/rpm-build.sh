@@ -22,16 +22,20 @@ echo "Version is $VERSION"
 
 TMPDIR=$TMP/OneScript-$VERSION
 mkdir $TMPDIR
+echo "Created TMPDIR $TMPDIR"
 
-cp -r $DISTPATH/* $TMPDIR
-cp -r ../install/builders/deb/oscript $TMPDIR/oscript
+echo "Copying sources to tmpdir"
+cp -r -v $DISTPATH/* $TMPDIR
+cp -r -v ../install/builders/deb/oscript $TMPDIR/oscript
 
 pushd $TMP
+echo "Compressing OneScript-$VERSION to tar"
 tar -czvf OneScript-$VERSION.tar.gz OneScript-$VERSION/
 popd
 
 mkdir -p $TMP/$PROJECT-$VERSION-build
 BUILDDIR=$TMP/$PROJECT-$VERSION-build
+echo "Created build dir: $BUILDDIR"
 
 cp -ra $TMP/OneScript-$VERSION.tar.gz $BUILDDIR/
 cp -rf ./builders/rpm/oscript.spec $BUILDDIR/
