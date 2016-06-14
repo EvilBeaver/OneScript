@@ -15,8 +15,8 @@ else
 fi
 
 echo $define
-sudo cp -ar /media/* rpmbuild/SOURCES/
-sudo cp -ar /media/*.spec rpmbuild/SPECS/ 
+sudo cp -arv /media/* rpmbuild/SOURCES/
+sudo cp -arv /media/*.spec rpmbuild/SPECS/ 
 rpmbuild -ba rpmbuild/SPECS/oscript.spec || exit 1
 
 [[ -d /media ]] || exit 0
