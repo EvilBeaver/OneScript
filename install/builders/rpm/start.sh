@@ -17,7 +17,7 @@ fi
 echo $define
 sudo cp -arv /media/* rpmbuild/SOURCES/
 sudo cp -arv /media/*.spec rpmbuild/SPECS/ 
-rpmbuild -ba $define rpmbuild/SPECS/oscript.spec || exit 1
+rpmbuild -ba rpmbuild/SPECS/oscript.spec || exit 1
 
 [[ -d /media ]] || exit 0
 
