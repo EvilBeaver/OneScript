@@ -177,7 +177,7 @@ namespace ScriptEngine.Compiler
                 }
                 else if(_lastExtractedLexem.Type == LexemType.Directive)
                 {
-                    HandleDirective();
+                    HandleDirective(isCodeEntered);
                 }
                 else
                 {
@@ -290,13 +290,13 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void HandleDirective()
+        private void HandleDirective(bool codeEntered)
         {
             var directive = _lastExtractedLexem.Content;
             var value = _parser.ReadLineToEnd().Trim();
             NextToken();
 
-            if (DirectiveHandler == null || !DirectiveHandler(directive, value))
+            if (DirectiveHandler == null || !DirectiveHandler(directive, value, codeEntered))
                 throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
 
         }
@@ -1783,6 +1783,6 @@ namespace ScriptEngine.Compiler
 
     }
 
-    public delegate bool CompilerDirectiveHandler(string directive, string value);
+    public delegate bool CompilerDirectiveHandler(string directive, string value, bool codeEntered);
 
 }

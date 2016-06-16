@@ -18,11 +18,11 @@ namespace ScriptEngine.HostedScript
             this.AddRange(resolvers);
         }
 
-        public bool Resolve(string directive, string value)
+        public bool Resolve(string directive, string value, bool codeEntered)
         {
             foreach (var resolver in this)
             {
-                if (resolver.Resolve(directive, value))
+                if (resolver.Resolve(directive, value, codeEntered))
                     return true;
             }
             return false;

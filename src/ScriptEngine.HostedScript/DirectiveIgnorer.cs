@@ -19,7 +19,7 @@ namespace ScriptEngine.HostedScript
             Add(alias);
         }
 
-        public bool Resolve(string directive, string value)
+        public bool Resolve(string directive, string value, bool codeEntered)
         {
             if (FindIndex(word => word.Equals(directive, StringComparison.InvariantCultureIgnoreCase)) == -1)
                 return false;
