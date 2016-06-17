@@ -5,12 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Diagnostics;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -21,20 +18,33 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Процесс", "Process")]
     public class ProcessContext : AutoContext<ProcessContext>, IDisposable
     {
-        private System.Diagnostics.Process _p;
+        private readonly System.Diagnostics.Process _process;
+        
         private StdTextReadStream _stdOutContext;
+        
         private StdTextReadStream _stdErrContext;
+        
         private StdTextWriteStream _stdInContext;
 
-        private IValue _outputEncoding;
+        private readonly IValue _outputEncoding;
 
-        private ProcessContext(System.Diagnostics.Process p, IValue encoding)
+        private readonly Encoding _defaultInputEncoding;
+
+        private ProcessContext(System.Diagnostics.Process process, IValue encoding)
         {
-            _p = p;
+            _process = process;
             _outputEncoding = encoding;
+            _defaultInputEncoding = Console.InputEncoding;
+
+            // Хак для Windows, чтобы на входе получить кодировку UTF-8 без BOM
+            if (Console.InputEncoding.Equals(Encoding.UTF8))
+            {
+                Console.InputEncoding = new UTF8Encoding(false);
+                _process.Exited += ProcessOnExited;
+            }
         }
 
-        public ProcessContext(System.Diagnostics.Process p):this(p, ValueFactory.Create())
+        public ProcessContext(System.Diagnostics.Process process):this(process, ValueFactory.Create())
         {
         }
 
@@ -59,7 +69,7 @@ namespace ScriptEngine.HostedScript.Library
             get
             {
                 if(_stdOutContext == null)
-                    _stdOutContext = new StdTextReadStream(_p.StandardOutput);
+                    _stdOutContext = new StdTextReadStream(_process.StandardOutput);
                     
                 return _stdOutContext;
             }
@@ -74,7 +84,7 @@ namespace ScriptEngine.HostedScript.Library
             get
             {
                 if (_stdErrContext == null)
-                    _stdErrContext = new StdTextReadStream(_p.StandardError);
+                    _stdErrContext = new StdTextReadStream(_process.StandardError);
                 return _stdErrContext;
             }
         }
@@ -88,7 +98,7 @@ namespace ScriptEngine.HostedScript.Library
             get
             {
                 if (_stdInContext == null)
-                    _stdInContext = new StdTextWriteStream(_p.StandardInput);
+                    _stdInContext = new StdTextWriteStream(_process.StandardInput);
                 return _stdInContext;
             }
         }
@@ -99,7 +109,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Запустить", "Start")]
         public void Start()
         {
-            _p.Start();
+            _process.Start();
         }
 
         /// <summary>
@@ -110,7 +120,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return _p.HasExited;
+                return _process.HasExited;
             }
         }
 
@@ -122,7 +132,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return _p.ExitCode;
+                return _process.ExitCode;
             }
         }
 
@@ -132,7 +142,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ОжидатьЗавершения", "WaitForExit")]
         public void WaitForExit()
         {
-            _p.WaitForExit();
+            _process.WaitForExit();
         }
 
         /// <summary>
@@ -143,14 +153,14 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return _p.Id;
+                return _process.Id;
             }
         }
 
         [ContextMethod("Завершить","Stop")]
         public void Stop()
         {
-            _p.Kill();
+            _process.Kill();
         }
 
         public void Dispose()
@@ -173,7 +183,7 @@ namespace ScriptEngine.HostedScript.Library
                 _stdInContext = null;
             }
 
-            _p.Dispose();
+            _process.Dispose();
         }
 
         public static ProcessContext Create(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
@@ -209,8 +219,8 @@ namespace ScriptEngine.HostedScript.Library
 
             var enumArgs = Utils.SplitCommandLine(cmdLine);
 
-            bool fNameRead = false;
-            StringBuilder argsBuilder = new StringBuilder();
+            var fNameRead = false;
+            var argsBuilder = new StringBuilder();
 
             foreach (var item in enumArgs)
             {
@@ -237,5 +247,8 @@ namespace ScriptEngine.HostedScript.Library
             return sInfo;
         }
 
+        private void ProcessOnExited(object sender, EventArgs eventArgs) {
+            Console.InputEncoding = _defaultInputEncoding;
+        }
     }
 }
