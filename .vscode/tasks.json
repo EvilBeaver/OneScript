@@ -1,0 +1,108 @@
+{
+    "version": "0.1.0",
+    "command": "oscript",
+    "isShellCommand": true,
+    "showOutput": "silent",
+    "args": [
+        "-encoding=utf-8"
+    ],
+    "tasks": [
+        {
+            "taskName": "Testing project",
+            "args": [
+                "${workspaceRoot}/tests/testrunner.os",
+                "-runall",
+                "${workspaceRoot}/tests"
+            ],
+            "echoCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            // "isBuildCommand": false,
+            "isTestCommand": false,
+            "problemMatcher": {
+                "fileLocation": "absolute",
+                "pattern": {
+                    "regexp": "{Модуль\\s+(.+)\\s\\/\\s.*:\\s+(\\d+)\\s+\\/\\s+([^{]*)",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                }
+            }
+        },
+        {
+            "taskName": "Test current test-file",
+            "args": [
+                "${workspaceRoot}/tests/testrunner.os",
+                "-run",
+                "${file}"
+            ],
+            "echoCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            // "isBuildCommand": false,
+            "isTestCommand": false,
+            "problemMatcher": {
+                "fileLocation": "absolute",
+                "pattern": {
+                    "regexp": "{Модуль\\s+(.+)\\s\\/\\s.*:\\s+(\\d+)\\s+\\/\\s+([^{]*)",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                }
+            }
+        },
+        {
+            "taskName": "OneScript: compile",
+            "args": [
+                "-compile",
+                "${file}"
+            ],
+            "echoCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            "isBuildCommand": false
+        },
+        {
+            "taskName": "OneScript: check",
+            "args": [
+                "-check",
+                "${file}"
+            ],
+            "echoCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            "isBuildCommand": false
+        },
+        {
+            "taskName": "OneScript: make",
+            "args": [
+                "-make",
+                "${file}",
+                "${fileBasename}.exe"
+            ],
+            "echoCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            "isBuildCommand": false
+        },
+        {
+            "taskName": "OneScript: run",
+            "args": [
+                "${file}"
+            ],
+            "echoCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            "isBuildCommand": true,
+            "problemMatcher": {
+                "fileLocation": "absolute",
+                "pattern": {
+                    "regexp": "{Модуль\\s+(.+)\\s\\/\\s.*:\\s+(\\d+)\\s+\\/\\s+([^{]*)",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                }
+            }
+        }
+    ]
+}
