@@ -70,6 +70,10 @@ namespace oscript
                 {
                     return new CgiBehavior();
                 }
+                else if (cmdLineArgs[0].ToLower() == "-version")
+                {
+                    return new ShowVersionBehavior();
+                }
                 else if(cmdLineArgs[0].StartsWith("-encoding="))
                 {
                     var prefixLen = ("-encoding=").Length;
