@@ -15,7 +15,7 @@ if [ -z "$TMP" ] ; then
 	TMP=/tmp
 fi
 
-VERSION=`mono ${BINPATH}/oscript.exe | head -1 | \
+VERSION=`mono ${BINPATH}/oscript.exe -version | \
 		grep -oE '([[:digit:]]+\.){2}[[:digit:]]+'`
 
 echo "Version is $VERSION"

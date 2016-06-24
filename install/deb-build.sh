@@ -12,7 +12,7 @@ if [ -f "$VERSIONFILE" ] ; then
 	rm $VERSIONFILE
 fi
 
-mono ${BINPATH}/oscript.exe | head -1 | \
+mono ${BINPATH}/oscript.exe -version | \
 		grep -oE '([[:digit:]]+\.){2}[[:digit:]]+' \
 		> ${BINPATH}/VERSION
 
