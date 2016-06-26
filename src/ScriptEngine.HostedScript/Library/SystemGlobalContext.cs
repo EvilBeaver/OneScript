@@ -366,6 +366,12 @@ namespace ScriptEngine.HostedScript.Library
             return DateTime.Now;
         }
 
+        [ContextMethod("ТекущаяУниверсальнаяДатаВМиллисекундах", "CurrentUniversalDateInMilliseconds")]
+        public decimal CurrentUniversalDateInMilliseconds()
+        {
+            return DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
+        }
+
         /// <summary>
         /// Проверяет заполненность значения по принципу, заложенному в 1С:Предприятии
         /// </summary>
