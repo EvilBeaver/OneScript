@@ -15,6 +15,6 @@ namespace ScriptEngine
     public interface IDirectiveResolver
     {
         ICodeSource Source { get; set; }
-        bool Resolve(string directive, string value);
+        bool Resolve(string directive, string value, bool codeEntered);
     }
 }

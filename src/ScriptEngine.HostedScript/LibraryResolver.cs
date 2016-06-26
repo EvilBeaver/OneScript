@@ -127,8 +127,12 @@ namespace ScriptEngine.HostedScript
             }
         }
 
-        public bool Resolve(string directive, string value)
+        public bool Resolve(string directive, string value, bool codeEntered)
         {
+            if (codeEntered) {
+                return false;
+            }
+
             if (DirectiveSupported(directive))
             {
                 LoadLibrary(value);

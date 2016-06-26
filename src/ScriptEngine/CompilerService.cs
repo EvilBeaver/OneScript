@@ -138,11 +138,11 @@ namespace ScriptEngine
             };
         }
 
-        private bool ResolveDirective(string directive, string value)
+        private bool ResolveDirective(string directive, string value, bool codeEntered)
         {
             if (DirectiveResolver != null)
             {
-                return DirectiveResolver.Resolve(directive, value);
+                return DirectiveResolver.Resolve(directive, value, codeEntered);
             }
             else
                 return false;

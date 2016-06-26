@@ -138,9 +138,26 @@ namespace ScriptEngine.HostedScript
             }
         }
 
+        private void InitializeDirectiveResolver()
+        {
+            var ignoreDirectiveResolver = new DirectiveIgnorer();
+
+            ignoreDirectiveResolver.Add("Region", "Область");
+            ignoreDirectiveResolver.Add("EndRegion", "КонецОбласти");
+
+            var resolversCollection = new DirectiveMultiResolver();
+            resolversCollection.Add(ignoreDirectiveResolver);
+
+            if (_engine.DirectiveResolver != null)
+                resolversCollection.Add(_engine.DirectiveResolver);
+
+            _engine.DirectiveResolver = resolversCollection;
+        }
+
         public CompilerService GetCompilerService()
         {
             InitLibraries(GetWorkingConfig());
+            InitializeDirectiveResolver();
 
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
