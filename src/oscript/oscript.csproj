@@ -101,6 +101,7 @@
     <Compile Include="ScriptFileHelper.cs" />
     <Compile Include="ShowCompiledBehavior.cs" />
     <Compile Include="ShowUsageBehavior.cs" />
+    <Compile Include="ShowVersionBehavior.cs" />
     <Compile Include="Web\WebRequestContext.cs" />
     <Compile Include="Web\Multipart\BinaryStreamStack.cs" />
     <Compile Include="Web\Multipart\FilePart.cs" />
