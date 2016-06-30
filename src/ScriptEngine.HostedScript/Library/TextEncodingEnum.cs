@@ -82,6 +82,29 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        public EnumerationValue GetValue(Encoding encoding)
+        {
+            if (encoding.Equals(Encoding.GetEncoding(866)))
+                return Oem;
+
+            if (encoding.Equals(Encoding.GetEncoding(1251)))
+                return Ansi;
+
+            if (encoding.Equals(new UnicodeEncoding(false, true)))
+                return Utf16;
+
+            if (encoding.Equals(new UTF8Encoding(true)))
+                return Utf8;
+
+            if (encoding.Equals(new UTF8Encoding(false)))
+                return Utf8NoBOM;
+
+            if (encoding.Equals(Encoding.Default))
+                return System;
+
+            throw RuntimeException.InvalidArgumentValue();
+        }
+
         public static TextEncodingEnum CreateInstance()
         {
             return EnumContextHelper.CreateEnumInstance<TextEncodingEnum>((t,v)=>new TextEncodingEnum(t,v));
@@ -121,6 +144,5 @@ namespace ScriptEngine.HostedScript.Library
                 return enc;
             }
         }
-
     }
 }
