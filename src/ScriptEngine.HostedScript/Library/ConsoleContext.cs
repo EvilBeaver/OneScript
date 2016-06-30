@@ -114,7 +114,7 @@ namespace ScriptEngine.HostedScript.Library
         }
         
         [ContextProperty("ЦветТекста", "TextColor")]
-        public CLREnumValueWrapper<ConsoleColor> TextColor
+        public IValue TextColor
         {
             get
             {
@@ -122,12 +122,13 @@ namespace ScriptEngine.HostedScript.Library
             }
             set
             {
-                Console.ForegroundColor = value.UnderlyingObject;
+                var typed = value.GetRawValue() as CLREnumValueWrapper<ConsoleColor>;
+                Console.ForegroundColor = typed.UnderlyingObject;
             }
         }
 
         [ContextProperty("ЦветФона", "BackgroundColor")]
-        public CLREnumValueWrapper<ConsoleColor> BackgroundColor
+        public IValue BackgroundColor
         {
             get
             {
@@ -135,7 +136,26 @@ namespace ScriptEngine.HostedScript.Library
             }
             set
             {
-                Console.BackgroundColor = value.UnderlyingObject;
+                var typed = value.GetRawValue() as CLREnumValueWrapper<ConsoleColor>;
+                Console.BackgroundColor = typed.UnderlyingObject;
+            }
+        }
+
+        /// <summary>
+        /// Возвращает или задает кодировку консоли, используемую при чтении входных данных.
+        /// </summary>
+        /// <returns>КодировкаТекста</returns>
+        [ContextProperty("КодировкаВходногоПотока", "InputEncoding")]
+        public IValue InputEncoding 
+        {
+            get
+            {
+                var encodingEnum = GlobalsManager.GetEnum<TextEncodingEnum>();
+                return encodingEnum.GetValue(Console.InputEncoding);
+            }
+            set 
+            {
+                Console.InputEncoding = TextEncodingEnum.GetEncoding(value);                
             }
         }
 
