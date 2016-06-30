@@ -141,6 +141,24 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        /// <summary>
+        /// Возвращает или задает кодировку консоли, используемую при чтении входных данных.
+        /// </summary>
+        /// <returns>КодировкаТекста</returns>
+        [ContextProperty("КодировкаВходногоПотока", "InputEncoding")]
+        public IValue InputEncoding 
+        {
+            get
+            {
+                var encodingEnum = GlobalsManager.GetEnum<TextEncodingEnum>();
+                return encodingEnum.GetValue(Console.InputEncoding);
+            }
+            set 
+            {
+                Console.InputEncoding = TextEncodingEnum.GetEncoding(value);                
+            }
+        }
+
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor()
         {
