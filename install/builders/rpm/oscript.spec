@@ -1,5 +1,4 @@
 %global debug_package %{nil}
-%define _version 1.0.13
 
 Name:           onescript-engine
 Version:        %{_version}
