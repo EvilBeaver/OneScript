@@ -1,0 +1,15 @@
+language: csharp
+os:
+    - linux
+    - osx
+
+# OS-X поддерживать некому
+matrix:
+    allow_failures:
+        os: osx
+
+solution: src/1Script_Mono.sln
+script:
+    - install/build.sh
+    - echo "lib.system=${PWD}/oscript-library/src" > src/oscript/bin/Release/oscript.cfg
+    - ./travis-runtests.sh src/oscript/bin/Release/
