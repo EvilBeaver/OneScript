@@ -195,9 +195,12 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("НайтиПрефикс","LookupPrefix")]
-		public void LookupPrefix(string uri)
+		public IValue LookupPrefix(string uri)
 		{
-            _writer.LookupPrefix(uri);
+            string prefix = _writer.LookupPrefix(uri);
+            if (prefix == null)
+                return ValueFactory.Create();
+            return ValueFactory.Create(prefix);
         }
 
         [ContextMethod("Закрыть","Close")]
