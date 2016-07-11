@@ -7,7 +7,10 @@ namespace ScriptEngine.HostedScript
     public class DirectiveIgnorer : List<string>, IDirectiveResolver
     {
 
-        public ICodeSource Source { get; set; }
+        public ICodeSource Source {
+            get { return null;  }
+            set { }
+        }
 
         public DirectiveIgnorer ()
         {

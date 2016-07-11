@@ -7,7 +7,29 @@ namespace ScriptEngine.HostedScript
     public class DirectiveMultiResolver : List<IDirectiveResolver>, IDirectiveResolver
     {
 
-        public ICodeSource Source { get; set; }
+        public ICodeSource Source
+        {
+            get
+            {
+                foreach (var resolver in this)
+                {
+                    var result = resolver.Source;
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+
+                return null;
+            }
+            set
+            {
+                foreach (var resolver in this)
+                {
+                    resolver.Source = value;
+                }
+            }
+        }
 
         public DirectiveMultiResolver ()
         {
