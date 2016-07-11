@@ -1,0 +1,16 @@
+version: 1.0.14.{build}
+pull_requests:
+  do_not_increment_build_number: true
+configuration: Release
+platform: x86
+init:
+- ps: Set-WinSystemLocale ru-RU
+- ps: Start-Sleep -s 5
+- ps: Restart-Computer
+install:
+- cmd: git submodule update --init --recursive
+build:
+  project: src/1Script_Mono.sln
+  verbosity: minimal
+test_script:
+- cmd: appveyor-runtests.cmd
