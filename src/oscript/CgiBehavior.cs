@@ -18,7 +18,7 @@ namespace oscript
     class CgiBehavior : AppBehavior,  IHostApplication, IRuntimeContextInstance, IAttachableContext
     {
         private bool _isContentEchoed;
-        private List<string> _headersWritten = new List<string>();
+        private readonly HashSet<string> _headersWritten = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public CgiBehavior()
         {
@@ -95,14 +95,14 @@ namespace oscript
                 throw new InvalidOperationException("Headers can not be written after the main content");
 
             Output(header + ": " + value + "\r\n");
-            _headersWritten.Add(header.ToLower());
+            _headersWritten.Add(header);
         }
 
         public Encoding Encoding { get; set; }
 
         private bool IsHeaderWritten(string header)
         {
-            return _headersWritten.IndexOf(header.ToLower()) >= 0;
+            return _headersWritten.Contains(header);
         }
 
         public void Echo(string str, EchoStatus status = EchoStatus.Undefined)
