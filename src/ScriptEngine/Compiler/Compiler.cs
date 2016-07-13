@@ -14,7 +14,7 @@ namespace ScriptEngine.Compiler
 {
     partial class Compiler
     {
-        private static Dictionary<Token, OperationCode> _tokenToOpCode = null;
+        private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
         private Parser _parser;
         private ICompilerContext _ctx;
@@ -26,9 +26,9 @@ namespace ScriptEngine.Compiler
         private bool _isFunctionProcessed = false;
         private bool _isInTryBlock = false;
 
-        private Stack<Token[]> _tokenStack = new Stack<Token[]>();
-        private Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
-        private List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
+        private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
+        private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
+        private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
 
         private struct ForwardedMethodDecl
         {
@@ -430,7 +430,8 @@ namespace ScriptEngine.Compiler
             {
                 _ctx.PopScope();
             }
-            var pop = PopStructureToken();
+            
+            PopStructureToken();
 
             var descriptor = new MethodDescriptor();
             descriptor.EntryPoint = entryPoint;
@@ -578,7 +579,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildIfStatement()
         {
-            List<int> exitIndices = new List<int>();
+            var exitIndices = new List<int>();
             NextToken();
             BuildExpression(Token.Then);
             PushStructureToken(Token.Else, Token.ElseIf, Token.EndIf);
@@ -1609,22 +1610,17 @@ namespace ScriptEngine.Compiler
 
         #region Helper methods
 
-        private bool IsUserSymbol(ref Lexem lex)
+        private static bool IsUserSymbol(ref Lexem lex)
         {
             return LanguageDef.IsUserSymbol(ref lex);
         }
 
-        private bool IsValidIdentifier(ref Lexem lex)
-        {
-            return lex.Type == LexemType.Identifier;
-        }
-
-        private bool IsLiteral(ref Lexem lex)
+        private static bool IsLiteral(ref Lexem lex)
         {
             return LanguageDef.IsLiteral(ref lex);
         }
 
-        private OperationCode BuiltInFunctionCode(Token token)
+        private static OperationCode BuiltInFunctionCode(Token token)
         {
             return _tokenToOpCode[token];
         }
@@ -1714,22 +1710,6 @@ namespace ScriptEngine.Compiler
         {
             var tok = _tokenStack.Pop();
             return tok;
-        }
-
-        private void CheckStructureToken(Token tok)
-        {
-            if (_tokenStack.Count > 0)
-            {
-                var toks = PopStructureToken();
-                if (!toks.Contains(tok))
-                {
-                    throw CompilerException.TokenExpected(tok);
-                }
-            }
-            else
-            {
-                throw CompilerException.UnexpectedOperation();
-            }
         }
 
         private int AddCommand(OperationCode code, int arg)
