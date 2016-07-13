@@ -1431,7 +1431,7 @@ namespace ScriptEngine.Compiler
             return argsPassed;
         }
 
-        private int BuildMethodCall(string identifier, bool[] argsPassed, bool asFunction)
+        private void BuildMethodCall(string identifier, bool[] argsPassed, bool asFunction)
         {
             try
             {
@@ -1449,14 +1449,11 @@ namespace ScriptEngine.Compiler
                     CheckFactArguments(methInfo, argsPassed);
                 }
                 
-                int callAddr;
-                
                 if(asFunction)
-                    callAddr = AddCommand(OperationCode.CallFunc, GetMethodRefNumber(ref methBinding));
+                    AddCommand(OperationCode.CallFunc, GetMethodRefNumber(ref methBinding));
                 else
-                    callAddr = AddCommand(OperationCode.CallProc, GetMethodRefNumber(ref methBinding));
-                
-                return callAddr;
+                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(ref methBinding));
+
             }
             catch (SymbolNotFoundException)
             {
@@ -1468,10 +1465,8 @@ namespace ScriptEngine.Compiler
                 forwarded.factArguments = argsPassed;
 
                 var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
-                int callAddr = forwarded.commandIndex = AddCommand(opCode, -1);
+                forwarded.commandIndex = AddCommand(opCode, -1);
                 _forwardedMethods.Add(forwarded);
-
-                return callAddr;
             }
         }
 
