@@ -13,7 +13,7 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class DynamicPropertiesHolder
     {
-        private Dictionary<string, int> _propNumbers = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<string, int> _propNumbers = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
 
         public int RegisterProperty(string name)
         {

@@ -14,13 +14,15 @@ namespace ScriptEngine.Machine
 {
     class ComReflectionNameToIdMapper
     {
-        private Type _reflectedType;
+        private readonly Type _reflectedType;
 
-        IndexedNamesCollection _propertyNames;
-        IndexedNamesCollection _methodNames;
+        readonly IndexedNamesCollection _propertyNames;
 
-        List<PropertyInfo> _propertyCache;
-        List<System.Reflection.MethodInfo> _methodsCache;
+        readonly IndexedNamesCollection _methodNames;
+
+        readonly List<PropertyInfo> _propertyCache;
+
+        readonly List<System.Reflection.MethodInfo> _methodsCache;
 
         public ComReflectionNameToIdMapper(Type type)
         {

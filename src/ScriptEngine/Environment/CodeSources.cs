@@ -15,7 +15,7 @@ namespace ScriptEngine.Environment
 {
     class StringBasedSource : ICodeSource
     {
-        string _src;
+        readonly string _src;
 
         public StringBasedSource(string src)
         {
@@ -46,9 +46,10 @@ namespace ScriptEngine.Environment
 
     class FileBasedSource : ICodeSource
     {
-        string _path;
+        readonly string _path;
         string _code;
-        Encoding _noBomEncoding;
+
+        readonly Encoding _noBomEncoding;
 
         public FileBasedSource(string path, Encoding defaultEncoding)
         {

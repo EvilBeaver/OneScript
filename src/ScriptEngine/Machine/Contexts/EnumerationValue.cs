@@ -13,7 +13,7 @@ namespace ScriptEngine.Machine.Contexts
 {
     abstract public class EnumerationValue : IValue
     {
-        EnumerationContext _owner;
+        readonly EnumerationContext _owner;
 
         public EnumerationValue(EnumerationContext owner)
         {

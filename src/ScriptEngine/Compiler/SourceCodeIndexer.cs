@@ -13,8 +13,8 @@ namespace ScriptEngine.Compiler
 {
     class SourceCodeIndexer : ISourceCodeIndexer
     {
-        private string _code;
-        private IList<int> _lineBounds;
+        private readonly string _code;
+        private readonly IList<int> _lineBounds;
 
         public SourceCodeIndexer(string code, IList<int> lineBounds)
         {

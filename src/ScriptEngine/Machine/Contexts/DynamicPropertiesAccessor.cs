@@ -13,7 +13,7 @@ namespace ScriptEngine.Machine.Contexts
 {
     public abstract class DynamicPropertiesAccessor : PropertyNameIndexAccessor, IReflectableContext
     {
-        private DynamicPropertiesHolder _propHolder;
+        private readonly DynamicPropertiesHolder _propHolder;
         
         public DynamicPropertiesAccessor()
         {

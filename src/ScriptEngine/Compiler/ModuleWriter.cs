@@ -14,7 +14,7 @@ namespace ScriptEngine.Compiler
 {
     public class ModuleWriter
     {
-        CompilerService _compiler;
+        readonly CompilerService _compiler;
 
         public ModuleWriter(CompilerService compilerService)
         {

@@ -15,7 +15,8 @@ namespace ScriptEngine.Machine.Contexts
     {
         bool _canRead;
         bool _canWrite;
-        string _name;
+
+        readonly string _name;
         int _dispId;
 
         public ReflectedPropertyInfo(string name)

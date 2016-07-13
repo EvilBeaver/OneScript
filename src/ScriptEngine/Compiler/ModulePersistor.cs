@@ -18,7 +18,7 @@ namespace ScriptEngine.Compiler
 {
     public class ModulePersistor
     {
-        IFormatter _formatter;
+        readonly IFormatter _formatter;
 
         private struct ModuleHeader
         {

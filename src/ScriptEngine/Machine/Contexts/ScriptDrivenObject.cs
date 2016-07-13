@@ -14,14 +14,14 @@ namespace ScriptEngine.Machine.Contexts
 {
     public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IAttachableContext
     {
-        private LoadedModule _module;
+        private readonly LoadedModule _module;
         private MachineInstance _machine;
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
         private MethodInfo[] _attachableMethods;
-        private Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        private Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {

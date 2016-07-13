@@ -17,7 +17,7 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
     public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
-        ScriptException _exc;
+        readonly ScriptException _exc;
         IValue _innerException;
 
         public ExceptionInfoContext(ScriptException source)

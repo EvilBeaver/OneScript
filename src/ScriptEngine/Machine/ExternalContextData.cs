@@ -7,7 +7,7 @@ namespace ScriptEngine.Machine
 {
     public class ExternalContextData : IDictionary<string, IValue>
     {
-        private Dictionary<string, IValue> _data = new Dictionary<string, IValue>();
+        private readonly Dictionary<string, IValue> _data = new Dictionary<string, IValue>();
 
         public void Add(string key, IValue value)
         {

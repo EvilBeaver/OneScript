@@ -17,8 +17,10 @@ namespace ScriptEngine
     public class CompilerService
     {
         SymbolScope _scope;
-        ModuleCompilerContext _currentContext;
-        List<int> _predefinedVariables = new List<int>();
+
+        readonly ModuleCompilerContext _currentContext;
+
+        readonly List<int> _predefinedVariables = new List<int>();
 
         internal CompilerService(CompilerContext outerContext)
         {

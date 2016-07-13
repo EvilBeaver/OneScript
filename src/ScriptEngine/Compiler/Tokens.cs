@@ -13,8 +13,8 @@ namespace ScriptEngine.Compiler
 {
     static class LanguageDef
     {
-        static Dictionary<Token, int> _priority = new Dictionary<Token, int>();
-        static Dictionary<string, Token> _stringToToken = new Dictionary<string, Token>(StringComparer.InvariantCultureIgnoreCase);
+        static readonly Dictionary<Token, int> _priority = new Dictionary<Token, int>();
+        static readonly Dictionary<string, Token> _stringToToken = new Dictionary<string, Token>(StringComparer.InvariantCultureIgnoreCase);
 
         const int BUILTINS_INDEX = (int)Token.ByValParam;
 

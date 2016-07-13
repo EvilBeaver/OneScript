@@ -14,8 +14,8 @@ namespace ScriptEngine
 {
     public class ScriptingEngine : IDisposable
     {
-        private MachineInstance _machine = new MachineInstance();
-        private ScriptSourceFactory _scriptFactory;
+        private readonly MachineInstance _machine = new MachineInstance();
+        private readonly ScriptSourceFactory _scriptFactory;
         private AttachedScriptsFactory _attachedScriptsFactory;
 
         public ScriptingEngine()

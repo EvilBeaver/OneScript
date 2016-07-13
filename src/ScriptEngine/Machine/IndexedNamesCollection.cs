@@ -13,8 +13,8 @@ namespace ScriptEngine.Machine
 {
     class IndexedNamesCollection
     {
-        private List<string> _names = new List<string>();
-        private Dictionary<string, int> _nameIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly List<string> _names = new List<string>();
+        private readonly Dictionary<string, int> _nameIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
 
         public bool TryGetIdOfName(string name, out int id)
         {

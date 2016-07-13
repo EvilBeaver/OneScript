@@ -139,9 +139,9 @@ namespace ScriptEngine.Machine
         //////////////////////////////////////////////////
         #region Static factory methods
 
-        private static SimpleConstantValue _staticUndef = new SimpleConstantValue();
-        private static SimpleConstantValue _staticBoolTrue = BooleanInternal(true);
-        private static SimpleConstantValue _staticBoolFalse = BooleanInternal(false);
+        private static readonly SimpleConstantValue _staticUndef = new SimpleConstantValue();
+        private static readonly SimpleConstantValue _staticBoolTrue = BooleanInternal(true);
+        private static readonly SimpleConstantValue _staticBoolFalse = BooleanInternal(false);
 
         public static SimpleConstantValue Undefined()
         {
@@ -214,7 +214,7 @@ namespace ScriptEngine.Machine
 
     class StringConstantValue : IValue
     {
-        private string _value;
+        private readonly string _value;
 
         public StringConstantValue(string val)
         {

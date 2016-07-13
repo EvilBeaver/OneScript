@@ -19,7 +19,7 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("SafeArrayWrapper")]
     public class SafeArrayWrapper : AutoContext<SafeArrayWrapper>, ICollectionContext, IObjectWrapper
     {
-        private object[] _array;
+        private readonly object[] _array;
 
         public SafeArrayWrapper(object safearray)
         {

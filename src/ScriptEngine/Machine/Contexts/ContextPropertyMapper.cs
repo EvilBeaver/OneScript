@@ -15,8 +15,9 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Property)]
     public class ContextPropertyAttribute : Attribute
     {
-        string _name;
-        string _alias;
+        readonly string _name;
+
+        readonly string _alias;
 
         public ContextPropertyAttribute(string name, string alias = "")
         {
@@ -43,10 +44,10 @@ namespace ScriptEngine.Machine.Contexts
 
     public class PropertyTarget<TInstance>
     {
-        private Func<TInstance, IValue> _getter;
-        private Action<TInstance, IValue> _setter;
-        private string _name;
-        private string _alias;
+        private readonly Func<TInstance, IValue> _getter;
+        private readonly Action<TInstance, IValue> _setter;
+        private readonly string _name;
+        private readonly string _alias;
 
         public PropertyTarget(PropertyInfo propInfo)
         {

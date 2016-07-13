@@ -14,7 +14,7 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class UserScriptContextInstance : ScriptDrivenObject
     {
-        LoadedModule _module;
+        readonly LoadedModule _module;
         Dictionary<string, int> _ownPropertyIndexes;
         List<IValue> _ownProperties;
         

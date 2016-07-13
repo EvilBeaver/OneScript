@@ -14,7 +14,7 @@ namespace ScriptEngine.Compiler
 {
     class CompilerContext : ICompilerContext
     {
-        List<SymbolScope> _scopeStack = new List<SymbolScope>();
+        readonly List<SymbolScope> _scopeStack = new List<SymbolScope>();
 
         public void PushScope(SymbolScope scope)
         {

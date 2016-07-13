@@ -19,9 +19,9 @@ namespace ScriptEngine.Machine.Contexts
 
         private const uint E_DISP_MEMBERNOTFOUND = 0x80020003;
         private bool? _isIndexed;
-        private Dictionary<string, int> _dispIdCache = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
-        private Dictionary<int, MemberInfo> _membersCache = new Dictionary<int, MemberInfo>();
-        private Dictionary<int, MethodInfo> _methodBinding = new Dictionary<int, MethodInfo>();
+        private readonly Dictionary<string, int> _dispIdCache = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<int, MemberInfo> _membersCache = new Dictionary<int, MemberInfo>();
+        private readonly Dictionary<int, MethodInfo> _methodBinding = new Dictionary<int, MethodInfo>();
 
         public UnmanagedRCWComContext(object instance)
         {

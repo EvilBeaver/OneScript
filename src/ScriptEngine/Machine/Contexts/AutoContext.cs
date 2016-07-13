@@ -112,7 +112,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private static ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
-        private static ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();
+        private static readonly ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
+        private static readonly ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();
     }
 }

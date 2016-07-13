@@ -14,8 +14,9 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Property)]
     public class EnumValueAttribute : Attribute
     {
-        string _name;
-        string _alias;
+        readonly string _name;
+
+        readonly string _alias;
 
         public EnumValueAttribute(string name, string alias = null)
         {

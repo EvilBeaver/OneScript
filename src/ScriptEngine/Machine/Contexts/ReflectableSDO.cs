@@ -17,8 +17,9 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class ReflectableSDO : IValue, IRuntimeContextInstance, IReflect
     {
-        ScriptDrivenObject _instance;
-        LoadedModule _module;
+        readonly ScriptDrivenObject _instance;
+
+        readonly LoadedModule _module;
         Dictionary<string, int> _reflectedMethods;
         Dictionary<string, int> _reflectedProperties;
         ReflectedMethodInfo[] _methodsCache;

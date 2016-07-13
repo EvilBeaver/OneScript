@@ -13,7 +13,7 @@ namespace ScriptEngine
 {
     public class ScriptException : ApplicationException
     {
-        private CodePositionInfo _codePosition;
+        private readonly CodePositionInfo _codePosition;
 
         internal ScriptException() 
         {

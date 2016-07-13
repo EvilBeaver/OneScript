@@ -13,10 +13,10 @@ namespace ScriptEngine.Machine
 {
     static class BuiltinFunctions
     {
-        static Dictionary<OperationCode, ParameterDefinition[]> _paramInfoCache = new Dictionary<OperationCode,ParameterDefinition[]>();
+        static readonly Dictionary<OperationCode, ParameterDefinition[]> _paramInfoCache = new Dictionary<OperationCode,ParameterDefinition[]>();
 
-        private static ParameterDefinition MANDATORY_BYVAL = new ParameterDefinition { IsByValue = true };
-        private static ParameterDefinition OPTIONAL_BYVAL = new ParameterDefinition { IsByValue = true, HasDefaultValue = true };
+        private static readonly ParameterDefinition MANDATORY_BYVAL = new ParameterDefinition { IsByValue = true };
+        private static readonly ParameterDefinition OPTIONAL_BYVAL = new ParameterDefinition { IsByValue = true, HasDefaultValue = true };
         
         private const int BUILTIN_OPCODES_INDEX = (int)OperationCode.Bool;
 

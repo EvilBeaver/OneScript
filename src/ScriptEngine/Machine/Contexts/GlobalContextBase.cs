@@ -13,8 +13,8 @@ namespace ScriptEngine.Machine.Contexts
 {
     abstract public class GlobalContextBase<T> : IRuntimeContextInstance, IAttachableContext where T : GlobalContextBase<T>
     {
-        private ContextMethodsMapper<T> _methods = new ContextMethodsMapper<T>();
-        private ContextPropertyMapper<T> _properties = new ContextPropertyMapper<T>();
+        private readonly ContextMethodsMapper<T> _methods = new ContextMethodsMapper<T>();
+        private readonly ContextPropertyMapper<T> _properties = new ContextPropertyMapper<T>();
 
         protected ContextMethodsMapper<T> Methods
         {

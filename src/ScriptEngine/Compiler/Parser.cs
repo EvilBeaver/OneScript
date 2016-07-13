@@ -17,13 +17,13 @@ namespace ScriptEngine.Compiler
         private ParserState _state;
         private ParseIterator _iterator;
 
-        ParserState _emptyState = new EmptyParserState();
-        ParserState _wordState = new WordParserState();
-        ParserState _numberState = new NumberParserState();
-        ParserState _stringState = new StringParserState();
-        ParserState _operatorState = new OperatorParserState();
-        ParserState _dateState = new DateParserState();
-        ParserState _directiveState = new DirectiveParserState();
+        private readonly ParserState _emptyState = new EmptyParserState();
+        private readonly ParserState _wordState = new WordParserState();
+        private readonly ParserState _numberState = new NumberParserState();
+        private readonly ParserState _stringState = new StringParserState();
+        private readonly ParserState _operatorState = new OperatorParserState();
+        private readonly ParserState _dateState = new DateParserState();
+        private readonly ParserState _directiveState = new DirectiveParserState();
 
         public string Code 
         { 
@@ -199,9 +199,11 @@ namespace ScriptEngine.Compiler
 
     class WordParserState : ParserState
     {
-        HashSet<string> _booleanOperators = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        HashSet<string> _booleanLiterals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        HashSet<string> _undefined = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        readonly HashSet<string> _booleanOperators = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        readonly HashSet<string> _booleanLiterals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        readonly HashSet<string> _undefined = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public WordParserState()
         {

@@ -14,11 +14,13 @@ namespace ScriptEngine.Compiler
 {
     class SymbolScope
     {
-        Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        List<VariableInfo> _variables = new List<VariableInfo>();
+        readonly Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        List<MethodInfo> _methods = new List<MethodInfo>();
+        readonly List<VariableInfo> _variables = new List<VariableInfo>();
+
+        readonly Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        readonly List<MethodInfo> _methods = new List<MethodInfo>();
 
         public MethodInfo GetMethod(string name)
         {

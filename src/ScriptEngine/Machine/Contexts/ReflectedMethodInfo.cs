@@ -16,11 +16,11 @@ namespace ScriptEngine.Machine.Contexts
    
 	class ReflectedMethodInfo : System.Reflection.MethodInfo
     {
-        string _name;
+	    readonly string _name;
         int _dispId;
         bool _isPrivate;
 
-        List<ParameterInfo> _parameters;
+	    readonly List<ParameterInfo> _parameters;
 
         public ReflectedMethodInfo(string name)
         {

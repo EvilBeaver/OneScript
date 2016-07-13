@@ -14,8 +14,9 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Method)]
     public class ContextMethodAttribute : Attribute
     {
-        string _name;
-        string _alias;
+        readonly string _name;
+
+        readonly string _alias;
 
         public ContextMethodAttribute(string name, string alias = "")
         {
@@ -45,7 +46,7 @@ namespace ScriptEngine.Machine.Contexts
 
     public class ContextMethodsMapper<TInstance>
     {
-        private List<InternalMethInfo> _methodPtrs = new List<InternalMethInfo>();
+        private readonly List<InternalMethInfo> _methodPtrs = new List<InternalMethInfo>();
         
         public ContextMethodsMapper()
         {

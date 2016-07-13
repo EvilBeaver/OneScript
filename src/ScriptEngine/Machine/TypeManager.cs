@@ -28,8 +28,8 @@ namespace ScriptEngine.Machine
 
     class StandartTypeManager : ITypeManager
     {
-        private Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
-        private List<KnownType> _knownTypes = new List<KnownType>();
+        private readonly Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly List<KnownType> _knownTypes = new List<KnownType>();
         private Type _dynamicFactory;
 
         private struct KnownType

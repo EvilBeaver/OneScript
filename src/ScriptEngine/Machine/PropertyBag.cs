@@ -20,8 +20,8 @@ namespace ScriptEngine.Machine
             public bool CanWrite;
         }
 
-        private List<IValue> _values = new List<IValue>();
-        private List<PropertyAccessFlags> _accessFlags = new List<PropertyAccessFlags>();
+        private readonly List<IValue> _values = new List<IValue>();
+        private readonly List<PropertyAccessFlags> _accessFlags = new List<PropertyAccessFlags>();
 
         public void Insert(IValue value, string identifier)
         {

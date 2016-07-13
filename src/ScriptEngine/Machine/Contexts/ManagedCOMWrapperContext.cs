@@ -15,11 +15,11 @@ namespace ScriptEngine.Machine.Contexts
 {
     class ManagedCOMWrapperContext : COMWrapperContext
     {
-        private Type _instanceType;
-        private object _instance;
+        private readonly Type _instanceType;
+        private readonly object _instance;
         private bool? _isIndexed;
 
-        private ComReflectionNameToIdMapper _nameMapper;
+        private readonly ComReflectionNameToIdMapper _nameMapper;
 
         public ManagedCOMWrapperContext(object instance)
         {

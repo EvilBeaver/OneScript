@@ -11,8 +11,9 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Class)]
     public class ContextClassAttribute : Attribute
     {
-        string _name;
-        string _alias;
+        readonly string _name;
+
+        readonly string _alias;
 
         public ContextClassAttribute(string typeName, string typeAlias = "")
         {

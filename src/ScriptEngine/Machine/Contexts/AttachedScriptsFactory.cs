@@ -15,10 +15,10 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class AttachedScriptsFactory
     {
-        private Dictionary<string, LoadedModule> _loadedModules;
-        private Dictionary<string, string> _fileHashes;
+        private readonly Dictionary<string, LoadedModule> _loadedModules;
+        private readonly Dictionary<string, string> _fileHashes;
         
-        private ScriptingEngine _engine;
+        private readonly ScriptingEngine _engine;
 
         internal AttachedScriptsFactory(ScriptingEngine engine)
         {

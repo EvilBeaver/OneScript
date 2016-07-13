@@ -15,9 +15,9 @@ namespace ScriptEngine.Compiler
         private int _index;
         private int _startPosition;
         private char _currentSymbol;
-        private string _code;
+        private readonly string _code;
         private int _lineCounter = 1;
-        private List<int> _lineBounds;
+        private readonly List<int> _lineBounds;
 
         public ParseIterator(string code)
         {

@@ -14,8 +14,8 @@ namespace ScriptEngine.Compiler
 {
     class ModuleCompilerContext : ICompilerContext
     {
-        private CompilerContext _outerCtx;
-        private CompilerContext _moduleCtx;
+        private readonly CompilerContext _outerCtx;
+        private readonly CompilerContext _moduleCtx;
         private readonly int OUTER_CTX_SIZE;
         private int _localScopesCount = 0;
 

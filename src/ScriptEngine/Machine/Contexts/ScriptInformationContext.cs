@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("ИнформацияОСценарии", "ScriptInformation")]
     public class ScriptInformationContext : AutoContext<ScriptInformationContext>
     {
-        private string _origin;
+        private readonly string _origin;
 
         internal ScriptInformationContext(ModuleInformation info)
         {

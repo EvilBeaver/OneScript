@@ -16,12 +16,12 @@ namespace ScriptEngine
 {
     public class RuntimeEnvironment
     {
-        private List<IAttachableContext> _objects = new List<IAttachableContext>();
-        private CompilerContext _symbolScopes = new CompilerContext();
+        private readonly List<IAttachableContext> _objects = new List<IAttachableContext>();
+        private readonly CompilerContext _symbolScopes = new CompilerContext();
         private SymbolScope _globalScope;
         private PropertyBag _injectedProperties;
 
-        private List<UserAddedScript> _externalScripts = new List<UserAddedScript>();
+        private readonly List<UserAddedScript> _externalScripts = new List<UserAddedScript>();
 
         public void InjectObject(IAttachableContext context)
         {

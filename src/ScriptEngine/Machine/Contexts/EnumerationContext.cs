@@ -13,9 +13,10 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class EnumerationContext : PropertyNameIndexAccessor
     {
-        private List<EnumerationValue> _values = new List<EnumerationValue>();
-        IndexedNamesCollection _nameIds = new IndexedNamesCollection();
-        private TypeDescriptor _valuesType;
+        private readonly List<EnumerationValue> _values = new List<EnumerationValue>();
+
+        readonly IndexedNamesCollection _nameIds = new IndexedNamesCollection();
+        private readonly TypeDescriptor _valuesType;
 
         public EnumerationContext(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) : base(typeRepresentation)
         {

@@ -13,7 +13,7 @@ namespace ScriptEngine.Machine
 {
     public static class GlobalsManager
     {
-        static Dictionary<Type, object> _instances = new Dictionary<Type, object>();
+        static readonly Dictionary<Type, object> _instances = new Dictionary<Type, object>();
 
         internal static void Reset()
         {

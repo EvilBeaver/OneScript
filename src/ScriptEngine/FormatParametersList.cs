@@ -16,8 +16,8 @@ namespace ScriptEngine
     {
         private struct FormatParameter
         {
-            private string _name;
-            private string _value;
+            private readonly string _name;
+            private readonly string _value;
 
             public FormatParameter(string name, string value)
             {
@@ -37,8 +37,8 @@ namespace ScriptEngine
 
 
         }
-        
-        List<FormatParameter> _paramList = new List<FormatParameter>();
+
+        readonly List<FormatParameter> _paramList = new List<FormatParameter>();
 
         public FormatParametersList(string format)
         {

@@ -14,8 +14,8 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Class)]
     public class SystemEnumAttribute : Attribute
     {
-        private string _name;
-        private string _alias;
+        private readonly string _name;
+        private readonly string _alias;
 
         public SystemEnumAttribute(string name, string alias = "")
         {
