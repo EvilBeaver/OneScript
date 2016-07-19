@@ -4,8 +4,10 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,6 +20,7 @@ namespace ScriptEngine.HostedScript.Library
     public class TextDocumentContext : AutoContext<TextDocumentContext>
     {
         private List<string> _lines;
+
         private string _lineSeparator;
 
         public TextDocumentContext()
@@ -25,7 +28,7 @@ namespace ScriptEngine.HostedScript.Library
             LineSeparator = "\n";
             _lines = new List<string>();
         }
-        
+
         #region Свойства
 
         /// <summary>
@@ -35,14 +38,8 @@ namespace ScriptEngine.HostedScript.Library
         [ContextProperty("Вывод", "Output")]
         public IValue Output
         {
-            get
-            {
-                return ValueFactory.Create();
-            }
-            set
-            {
-
-            }
+            get { return ValueFactory.Create(); }
+            set {  }
         }
 
         /// <summary>
@@ -66,20 +63,14 @@ namespace ScriptEngine.HostedScript.Library
         [ContextProperty("Параметры", "Parameters")]
         public IValue Parameters
         {
-            get
-            {
-                return ValueFactory.Create();
-            }
+            get { return ValueFactory.Create(); }
             set { }
         }
 
         [ContextProperty("РазделительСтрок", "LineSeparator")]
         public string LineSeparator
         {
-            get
-            {
-                return _lineSeparator;
-            }
+            get { return _lineSeparator; }
             set
             {
                 if (value == "\n" || value == "\r" || value == "\r\n")
@@ -94,7 +85,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         [ContextProperty("ТолькоПросмотр", "ReadOnly")]
         public bool ReadOnly { get; set; }
-        
+
         #endregion
 
         private List<string> ParseInputString(string input)
@@ -113,6 +104,7 @@ namespace ScriptEngine.HostedScript.Library
                     }
                 }
             }
+
             return output;
         }
 
@@ -130,14 +122,14 @@ namespace ScriptEngine.HostedScript.Library
         public void InsertLine(int position, string line)
         {
             var localLines = ParseInputString(line);
-            
+
             int insertionPos = position - 1;
             if (insertionPos < 0)
                 insertionPos = 0;
             else if (insertionPos > _lines.Count)
                 insertionPos = _lines.Count;
 
-            _lines.InsertRange(insertionPos, localLines);                
+            _lines.InsertRange(insertionPos, localLines);
         }
 
         /// <summary>
@@ -165,7 +157,7 @@ namespace ScriptEngine.HostedScript.Library
         public string GetText()
         {
             var builder = new StringBuilder();
-            foreach(var line in _lines)
+            foreach (var line in _lines)
             {
                 builder.AppendFormat("{0}\n", line);
             }
@@ -205,7 +197,7 @@ namespace ScriptEngine.HostedScript.Library
             if (newLines.Count == 1)
                 _lines[number - 1] = newLines[0];
             else
-            { 
+            {
                 _lines[number - 1] = newLines[0];
                 _lines.InsertRange(number, newLines.Skip(1));
             }
@@ -255,9 +247,9 @@ namespace ScriptEngine.HostedScript.Library
         {
             var newContent = new List<string>();
 
-            using(var reader = GetDefaultReader(path, encoding))
+            using (var reader = GetDefaultReader(path, encoding))
             {
-                string line = null;
+                string line;
                 while ((line = reader.ReadLine()) != null)
                 {
                     newContent.Add(line);
@@ -278,7 +270,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Записать", "Write")]
         public void Write(string path, IValue encoding = null, string lineSeparator = null)
         {
-            using(var writer = GetDefaultWriter(path, encoding))
+            using (var writer = GetDefaultWriter(path, encoding))
             {
                 if (lineSeparator == null)
                     lineSeparator = "\r\n";
@@ -291,6 +283,7 @@ namespace ScriptEngine.HostedScript.Library
                     writer.Write(lineSeparator);
                 }
             }
+
             UsedFileName = Path.GetFullPath(path);
         }
 
@@ -298,9 +291,9 @@ namespace ScriptEngine.HostedScript.Library
         {
             StreamReader reader;
             if (encoding == null)
-                reader = ScriptEngine.Environment.FileOpener.OpenReader(path);
+                reader = Environment.FileOpener.OpenReader(path);
             else
-                reader = ScriptEngine.Environment.FileOpener.OpenReader(path, TextEncodingEnum.GetEncoding(encoding));
+                reader = Environment.FileOpener.OpenReader(path, TextEncodingEnum.GetEncoding(encoding));
 
             return reader;
         }
@@ -309,9 +302,9 @@ namespace ScriptEngine.HostedScript.Library
         {
             StreamWriter writer;
             if (encoding == null)
-                writer = ScriptEngine.Environment.FileOpener.OpenWriter(path, new UTF8Encoding(true));
+                writer = Environment.FileOpener.OpenWriter(path, new UTF8Encoding(true));
             else
-                writer = ScriptEngine.Environment.FileOpener.OpenWriter(path, TextEncodingEnum.GetEncoding(encoding));
+                writer = Environment.FileOpener.OpenWriter(path, TextEncodingEnum.GetEncoding(encoding));
 
             return writer;
         }
