@@ -519,7 +519,6 @@ namespace ScriptEngine.Compiler
                     BuildComplexStructureStatement();
                 }
 
-                //NextToken();
                 if (_lastExtractedLexem.Token != Token.Semicolon)
                 {
                     if (endTokens.Contains(_lastExtractedLexem.Token))
@@ -1548,9 +1547,6 @@ namespace ScriptEngine.Compiler
             else
             {
                 argsPassed = new bool[0];
-                // TODO: разобраться с костылем про BackOneToken()
-                //if (_lastExtractedLexem.Token == Token.ClosePar)
-                    //BackOneToken();
             }
 
             AddCommand(OperationCode.NewInstance, argsPassed.Length);
