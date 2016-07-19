@@ -106,7 +106,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 using (var reader = new StringReader(input))
                 {
-                    string line = null;
+                    string line;
                     while ((line = reader.ReadLine()) != null)
                     {
                         output.Add(line);
