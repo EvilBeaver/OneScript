@@ -14,7 +14,6 @@ namespace ScriptEngine.Compiler
     class Parser
     {
         private string _code;
-        private ParserState _state;
         private ParseIterator _iterator;
 
         private readonly ParserState _emptyState = new EmptyParserState();
@@ -51,32 +50,32 @@ namespace ScriptEngine.Compiler
 
         public Lexem NextLexem()
         {
-            _state = _emptyState;
-
             while (true)
             {
                 if (_iterator.MoveToContent())
                 {
+                    ParserState state;
+
                     char cs = _iterator.CurrentSymbol;
                     if (Char.IsLetter(cs) || cs == '_')
                     {
-                        _state = _wordState;
+                        state = _wordState;
                     }
                     else if (Char.IsDigit(cs))
                     {
-                        _state = _numberState;
+                        state = _numberState;
                     }
                     else if (cs == SpecialChars.DateQuote)
                     {
-                        _state = _dateState;
+                        state = _dateState;
                     }
                     else if (cs == SpecialChars.StringQuote)
                     {
-                        _state = _stringState;
+                        state = _stringState;
                     }
                     else if (SpecialChars.IsOperatorChar(cs))
                     {
-                        _state = _operatorState;
+                        state = _operatorState;
                     }
                     else if (cs == SpecialChars.EndOperator)
                     {
@@ -90,7 +89,7 @@ namespace ScriptEngine.Compiler
                     }
                     else if(cs == SpecialChars.Directive)
                     {
-                        _state = _directiveState;
+                        state = _directiveState;
                     }
                     else
                     {
@@ -98,10 +97,9 @@ namespace ScriptEngine.Compiler
                         throw new ParserException(cp, string.Format("Неизвестный символ {0}", cs));
                     }
 
-                    var lex = _state.ReadNextLexem(_iterator);
+                    var lex = state.ReadNextLexem(_iterator);
                     if (lex.Type == LexemType.NotALexem)
                     {
-                        _state = _emptyState;
                         continue;
                     }
 
