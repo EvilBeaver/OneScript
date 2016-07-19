@@ -595,7 +595,6 @@ namespace ScriptEngine.Compiler
 
             while (_lastExtractedLexem.Token == Token.ElseIf)
             {
-                hasAlternativeBranches = true;
                 _module.Code[jumpFalseIndex] = new Command()
                 {
                     Code = OperationCode.JmpFalse,
@@ -610,7 +609,6 @@ namespace ScriptEngine.Compiler
                 BuildCodeBatch();
                 PopStructureToken();
                 exitIndices.Add(AddCommand(OperationCode.Jmp, -1));
-                hasAlternativeBranches = false;
             }
 
             if (_lastExtractedLexem.Token == Token.Else)
@@ -977,7 +975,7 @@ namespace ScriptEngine.Compiler
             {
                 // это вызов
                 System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
-                var args = PushMethodArgumentsBeforeCall();
+                PushMethodArgumentsBeforeCall();
                 var cDef = new ConstDefinition();
                 cDef.Type = DataType.String;
                 cDef.Presentation = ident;
