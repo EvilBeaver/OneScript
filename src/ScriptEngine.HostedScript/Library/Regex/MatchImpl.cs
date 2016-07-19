@@ -15,7 +15,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
     [ContextClass("СовпадениеРегулярногоВыражения", "RegExMatch")]
     class MatchImpl : AutoContext<MatchImpl>
     {
-        private RegExp.Match _match;
+        private readonly RegExp.Match _match;
 
         public MatchImpl(RegExp.Match match)
         {
@@ -62,7 +62,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
     [ContextClass("ГруппаРегулярногоВыражения", "RegExGroup")]
     class GroupImpl : AutoContext<GroupImpl>
     {
-        private RegExp.Group _group;
+        private readonly RegExp.Group _group;
 
         public GroupImpl(RegExp.Group group)
         {

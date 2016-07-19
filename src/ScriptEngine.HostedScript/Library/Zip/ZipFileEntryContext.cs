@@ -20,7 +20,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
     [ContextClass("ЭлементZipФайла", "ZipFileEntry")]
     public class ZipFileEntryContext : AutoContext<ZipFileEntryContext>
     {
-        ZipEntry _entry;
+        readonly ZipEntry _entry;
 
         public ZipFileEntryContext(ZipEntry entry)
         {

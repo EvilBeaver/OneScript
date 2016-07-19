@@ -22,8 +22,8 @@ namespace ScriptEngine.HostedScript.Library
     {
         private IVariable[] _state;
         private CommandLineArguments _args;
-        private DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
-        private List<Func<IValue>> _properties = new List<Func<IValue>>();
+        private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
+        private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
 
         public SystemGlobalContext()
         {
@@ -584,7 +584,7 @@ namespace ScriptEngine.HostedScript.Library
 
         #endregion
 
-        private static ContextMethodsMapper<SystemGlobalContext> _methods;
+        private static readonly ContextMethodsMapper<SystemGlobalContext> _methods;
 
         static SystemGlobalContext()
         {

@@ -12,7 +12,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 {
     class HttpRequestBodyFile : IHttpRequestBody
     {
-        private FileStream _bodyOpenedFile;
+        private readonly FileStream _bodyOpenedFile;
 
         public HttpRequestBodyFile(string filename)
         {

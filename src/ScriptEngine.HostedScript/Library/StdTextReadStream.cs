@@ -20,7 +20,7 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("ПотокВыводаТекста","TextOutputStream")]
     public class StdTextReadStream : AutoContext<StdTextReadStream>, IDisposable
     {
-        private StreamReader _reader;
+        private readonly StreamReader _reader;
 
         public StdTextReadStream(StreamReader source)
         {

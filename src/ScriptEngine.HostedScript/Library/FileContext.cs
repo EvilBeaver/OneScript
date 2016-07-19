@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Файл","File")]
     public class FileContext : AutoContext<FileContext>
     {
-        string _givenName;
+        readonly string _givenName;
         string _name;
         string _baseName;
         string _fullName;

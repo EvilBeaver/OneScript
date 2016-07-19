@@ -13,7 +13,7 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("ГенераторСлучайныхЧисел", "RandomNumberGenerator")]
     class RandomNumberGenerator : AutoContext<RandomNumberGenerator>
     {
-        private Random _random;
+        private readonly Random _random;
 
         public RandomNumberGenerator(int seed = 0)
         {

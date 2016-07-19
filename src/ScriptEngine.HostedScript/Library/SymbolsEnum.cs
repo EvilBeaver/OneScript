@@ -21,7 +21,7 @@ namespace ScriptEngine.HostedScript.Library
 
         class SymbolsEnumValue : EnumerationValue
         {
-            string _val;
+            readonly string _val;
 
             public SymbolsEnumValue(EnumerationContext owner, string val)
                 : base(owner)

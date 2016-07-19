@@ -15,7 +15,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
     class RegExpImpl : AutoContext<RegExpImpl>
     {
         private RegExp.Regex _regex;
-        private string _pattern;
+        private readonly string _pattern;
 
         public RegExpImpl(string pattern)
         {

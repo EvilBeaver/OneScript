@@ -17,10 +17,12 @@ namespace ScriptEngine.HostedScript
 {
     class LibraryLoader : ScriptDrivenObject
     {
-        private RuntimeEnvironment _env;
-        private ScriptingEngine _engine;
-        bool _customized;
-        List<DelayLoadedScriptData> _delayLoadedScripts = new List<DelayLoadedScriptData>();
+        private readonly RuntimeEnvironment _env;
+        private readonly ScriptingEngine _engine;
+
+        readonly bool _customized;
+
+        readonly List<DelayLoadedScriptData> _delayLoadedScripts = new List<DelayLoadedScriptData>();
 
         private struct DelayLoadedScriptData
         {
@@ -56,7 +58,7 @@ namespace ScriptEngine.HostedScript
         
         #region Static part
 
-        private static ContextMethodsMapper<LibraryLoader> _methods = new ContextMethodsMapper<LibraryLoader>();
+        private static readonly ContextMethodsMapper<LibraryLoader> _methods = new ContextMethodsMapper<LibraryLoader>();
 
         public static LibraryLoader Create(ScriptingEngine engine, RuntimeEnvironment env, string processingScript)
         {

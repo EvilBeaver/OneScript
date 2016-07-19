@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("КоллекцияАргументовКоманднойСтроки", "CommandLineArgumentsCollection")]
     class CommandLineArguments : ContextIValueImpl, ICollectionContext
     {
-        string[] _values;
+        private readonly string[] _values;
 
         public CommandLineArguments(string[] arguments)
         {
@@ -126,7 +126,7 @@ namespace ScriptEngine.HostedScript.Library
 
         #endregion
 
-        private static CommandLineArguments _empty = new CommandLineArguments(new string[0]);
+        private static readonly CommandLineArguments _empty = new CommandLineArguments(new string[0]);
 
         public static CommandLineArguments Empty
         {

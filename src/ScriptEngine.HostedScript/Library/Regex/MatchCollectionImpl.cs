@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
     [ContextClass("КоллекцияСовпаденийРегулярногоВыражения", "RegExMatchCollection")]
     class MatchCollection : AutoContext<MatchCollection>, ICollectionContext
     {
-        private RegExp.MatchCollection _matches;
+        private readonly RegExp.MatchCollection _matches;
 
         public MatchCollection(RegExp.MatchCollection matches)
         {
@@ -73,7 +73,7 @@ namespace ScriptEngine.HostedScript.Library.RegexLib
     [ContextClass("КоллекцияГруппРегулярногоВыражения", "RegExGroupCollection")]
     class GroupCollection : AutoContext<GroupCollection>, ICollectionContext
     {
-        private RegExp.GroupCollection _groups;
+        private readonly RegExp.GroupCollection _groups;
 
         public GroupCollection(RegExp.GroupCollection groups)
         {

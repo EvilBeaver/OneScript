@@ -13,7 +13,7 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("ФиксированнаяСтруктура", "FixedStructure")]
     public class FixedStructureImpl : DynamicPropertiesAccessor, ICollectionContext
     {
-        private StructureImpl _structure = new StructureImpl();
+        private readonly StructureImpl _structure = new StructureImpl();
 
 
         public FixedStructureImpl(StructureImpl structure)
@@ -136,7 +136,7 @@ namespace ScriptEngine.HostedScript.Library
 
         #endregion
 
-        private static ContextMethodsMapper<FixedStructureImpl> _methods = new ContextMethodsMapper<FixedStructureImpl>();
+        private static readonly ContextMethodsMapper<FixedStructureImpl> _methods = new ContextMethodsMapper<FixedStructureImpl>();
         
         /// <summary>
         /// Создает фиксированную структуру по исходной структуре

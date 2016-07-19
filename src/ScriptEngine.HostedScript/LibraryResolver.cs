@@ -23,9 +23,9 @@ namespace ScriptEngine.HostedScript
         private const string USE_DIRECTIVE_EN = "use";
         private const string PREDEFINED_LOADER_FILE = "package-loader.os";
 
-        private RuntimeEnvironment _env;
-        private ScriptingEngine _engine;
-        private List<Library> _libs;
+        private readonly RuntimeEnvironment _env;
+        private readonly ScriptingEngine _engine;
+        private readonly List<Library> _libs;
         private LibraryLoader _defaultLoader;
         private string _libraryRoot;
 
@@ -75,7 +75,7 @@ namespace ScriptEngine.HostedScript
 
         //TODO: Тут совсем ужасно спроектировано взаимодействие слоев и передача контекста
         // нужно снова заняться версией 2.0 ((
-        private Stack<ICodeSource> _compiledSourcesStack = new Stack<ICodeSource>();
+        private readonly Stack<ICodeSource> _compiledSourcesStack = new Stack<ICodeSource>();
 
         public ICodeSource Source 
         { 

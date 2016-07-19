@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library
     [SystemEnum("ЦветКонсоли", "ConsoleColor")]
     class ConsoleColorEnum : EnumerationContext
     {
-        Dictionary<ConsoleColor, IValue> _valuesCache = new Dictionary<ConsoleColor, IValue>();
+        readonly Dictionary<ConsoleColor, IValue> _valuesCache = new Dictionary<ConsoleColor, IValue>();
 
         private ConsoleColorEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)

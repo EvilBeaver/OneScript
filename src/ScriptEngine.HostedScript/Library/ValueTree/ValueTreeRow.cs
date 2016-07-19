@@ -19,11 +19,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     [ContextClass("СтрокаДереваЗначений", "ValueTreeRow")]
     public class ValueTreeRow : DynamicPropertiesAccessor, ICollectionContext
     {
-        private Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
-        private ValueTreeRow _parent;
-        private ValueTree _owner;
-        private int _level;
-        private ValueTreeRowCollection _rows;
+        private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
+        private readonly ValueTreeRow _parent;
+        private readonly ValueTree _owner;
+        private readonly int _level;
+        private readonly ValueTreeRowCollection _rows;
 
         public ValueTreeRow(ValueTree owner, ValueTreeRow parent, int level)
         {
@@ -148,7 +148,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return new CollectionEnumerator(GetEnumerator());
         }
 
-        private static ContextPropertyMapper<ValueTreeRow> _properties = new ContextPropertyMapper<ValueTreeRow>();
+        private static readonly ContextPropertyMapper<ValueTreeRow> _properties = new ContextPropertyMapper<ValueTreeRow>();
 
         public override int FindProperty(string name)
         {
@@ -204,7 +204,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         }
 
 
-        private static ContextMethodsMapper<ValueTreeRow> _methods = new ContextMethodsMapper<ValueTreeRow>();
+        private static readonly ContextMethodsMapper<ValueTreeRow> _methods = new ContextMethodsMapper<ValueTreeRow>();
 
         public override MethodInfo GetMethodInfo(int methodNumber)
         {

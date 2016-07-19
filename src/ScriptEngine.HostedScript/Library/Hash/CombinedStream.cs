@@ -15,7 +15,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
 {
     public class CombinedStream : Stream
     {
-        private List<Stream> _streams = new List<Stream>();
+        private readonly List<Stream> _streams = new List<Stream>();
         private long _position;
         private long[] _borders;
 

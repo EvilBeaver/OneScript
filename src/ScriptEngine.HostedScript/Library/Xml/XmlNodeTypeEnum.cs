@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
     [SystemEnum("ТипУзлаXML", "XMLNodeType")]
     public class XmlNodeTypeEnum : EnumerationContext
     {
-        Dictionary<XmlNodeType, IValue> _valuesCache = new Dictionary<XmlNodeType,IValue>();
+        readonly Dictionary<XmlNodeType, IValue> _valuesCache = new Dictionary<XmlNodeType,IValue>();
 
         private XmlNodeTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)

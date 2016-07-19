@@ -20,8 +20,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     [ContextClass("ДеревоЗначений", "ValueTree")]
     public class ValueTree : AutoContext<ValueTree>
     {
-        private ValueTreeColumnCollection _columns = new ValueTreeColumnCollection();
-        private ValueTreeRowCollection _rows;
+        private readonly ValueTreeColumnCollection _columns = new ValueTreeColumnCollection();
+        private readonly ValueTreeRowCollection _rows;
 
         public ValueTree()
         {

@@ -15,9 +15,11 @@ namespace ScriptEngine.HostedScript
 {
     public class HostedScriptEngine
     {
-        ScriptingEngine _engine;
-        SystemGlobalContext _globalCtx;
-        RuntimeEnvironment _env;
+        readonly ScriptingEngine _engine;
+
+        readonly SystemGlobalContext _globalCtx;
+
+        readonly RuntimeEnvironment _env;
         bool _isInitialized;
         bool _configInitialized;
 

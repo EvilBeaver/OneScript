@@ -21,12 +21,12 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Процесс", "Process")]
     public class ProcessContext : AutoContext<ProcessContext>, IDisposable
     {
-        private System.Diagnostics.Process _p;
+        private readonly System.Diagnostics.Process _p;
         private StdTextReadStream _stdOutContext;
         private StdTextReadStream _stdErrContext;
         private StdTextWriteStream _stdInContext;
 
-        private IValue _outputEncoding;
+        private readonly IValue _outputEncoding;
 
         private ProcessContext(System.Diagnostics.Process p, IValue encoding)
         {

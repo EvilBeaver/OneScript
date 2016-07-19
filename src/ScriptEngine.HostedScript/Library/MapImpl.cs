@@ -13,7 +13,7 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Соответствие", "Map")]
     public class MapImpl : AutoContext<MapImpl>, ICollectionContext
     {
-        private Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>(new GenericIValueComparer());
+        private readonly Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>(new GenericIValueComparer());
 
         public override bool IsIndexed
         {

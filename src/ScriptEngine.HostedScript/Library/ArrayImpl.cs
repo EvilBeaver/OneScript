@@ -14,7 +14,7 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Массив", "Array")]
     public class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext
     {
-        private List<IValue> _values;
+        private readonly List<IValue> _values;
 
         public ArrayImpl()
         {

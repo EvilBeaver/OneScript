@@ -14,7 +14,7 @@ namespace ScriptEngine.HostedScript.Library
 {
     class CLREnumValueWrapper<T> : EnumerationValue
     {
-        T _realValue;
+        readonly T _realValue;
 
         public CLREnumValueWrapper(EnumerationContext owner, T realValue):base(owner)
         {

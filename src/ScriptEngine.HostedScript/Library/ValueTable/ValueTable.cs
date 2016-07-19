@@ -16,9 +16,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     [ContextClass("ТаблицаЗначений", "ValueTable")]
     public class ValueTable : AutoContext<ValueTable>, ICollectionContext
     {
-        private ValueTableColumnCollection _columns = new ValueTableColumnCollection();
-        private List<ValueTableRow> _rows = new List<ValueTableRow>();
-        private CollectionIndexes _indexes = new CollectionIndexes();
+        private readonly ValueTableColumnCollection _columns = new ValueTableColumnCollection();
+        private readonly List<ValueTableRow> _rows = new List<ValueTableRow>();
+        private readonly CollectionIndexes _indexes = new CollectionIndexes();
 
         public ValueTable()
         {
@@ -468,8 +468,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         private class RowComparator : IComparer<ValueTableRow>
         {
-            List<ValueTableSortRule> Rules;
-            GenericIValueComparer _comparer = new GenericIValueComparer();
+            readonly List<ValueTableSortRule> Rules;
+
+            readonly GenericIValueComparer _comparer = new GenericIValueComparer();
 
             public RowComparator(List<ValueTableSortRule> Rules)
             {

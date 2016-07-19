@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
     [ContextClass("ЭлементыZipФайла", "ZipFileEntries")]
     public class ZipFileEntriesCollection : AutoContext<ZipFileEntriesCollection>, ICollectionContext
     {
-        List<ZipFileEntryContext> _entries;
+        readonly List<ZipFileEntryContext> _entries;
 
         public ZipFileEntriesCollection(IEnumerable<ZipEntry> entries)
         {

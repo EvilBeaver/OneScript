@@ -13,7 +13,7 @@ namespace ScriptEngine.HostedScript.Library.ValueList
     [ContextClass("СписокЗначений", "ValueList")]
     public class ValueListImpl : AutoContext<ValueListImpl>, ICollectionContext
     {
-        List<ValueListItem> _items;
+        readonly List<ValueListItem> _items;
         public ValueListImpl()
         {
             _items = new List<ValueListItem>();

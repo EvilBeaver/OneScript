@@ -22,7 +22,7 @@ namespace ScriptEngine.HostedScript.Library.Net
     [ContextClass("TCPСоединение","TCPConnection")]
     public class TCPClient : AutoContext<TCPClient>, IDisposable
     {
-        private TcpClient _client;
+        private readonly TcpClient _client;
 
         public TCPClient(TcpClient client)
         {

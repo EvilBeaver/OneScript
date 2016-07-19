@@ -17,8 +17,10 @@ namespace ScriptEngine.HostedScript
     public class Process
     {
         ScriptingEngine _engine;
-        IHostApplication _host;
-        LoadedModuleHandle _module;
+
+        readonly IHostApplication _host;
+
+        readonly LoadedModuleHandle _module;
 
         internal Process(IHostApplication host, LoadedModuleHandle src, ScriptingEngine runtime)
         {

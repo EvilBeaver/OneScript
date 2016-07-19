@@ -23,11 +23,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         private string _name;
         private IValue _valueType;
         private int _width;
-        private ValueTreeColumnCollection _owner;
+        private readonly ValueTreeColumnCollection _owner;
 
         // id нужен для правильной работы функции FindProperty.
         // Порядковый номер колонки не может быть использовать из-за своей изменчивости.
-        private int _id;
+        private readonly int _id;
 
         public ValueTreeColumn(ValueTreeColumnCollection Owner, int id, string Name, string Title, IValue Type, int Width)
         {

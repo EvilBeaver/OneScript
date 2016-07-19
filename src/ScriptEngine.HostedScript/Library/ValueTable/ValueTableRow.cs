@@ -16,8 +16,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     [ContextClass("СтрокаТаблицыЗначений", "ValueTableRow")]
     public class ValueTableRow : DynamicPropertiesAccessor, ICollectionContext
     {
-        private Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
-        private WeakReference _owner;
+        private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
+        private readonly WeakReference _owner;
 
         public ValueTableRow(ValueTable Owner)
         {
@@ -137,7 +137,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         }
 
 
-        private static ContextMethodsMapper<ValueTableRow> _methods = new ContextMethodsMapper<ValueTableRow>();
+        private static readonly ContextMethodsMapper<ValueTableRow> _methods = new ContextMethodsMapper<ValueTableRow>();
 
         public override MethodInfo GetMethodInfo(int methodNumber)
         {

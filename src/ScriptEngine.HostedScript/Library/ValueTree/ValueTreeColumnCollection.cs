@@ -19,7 +19,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     [ContextClass("КоллекцияКолонокДереваЗначений", "ValueTreeColumnCollection")]
     public class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext
     {
-        private List<ValueTreeColumn> _columns = new List<ValueTreeColumn>();
+        private readonly List<ValueTreeColumn> _columns = new List<ValueTreeColumn>();
         private int _internalCounter = 3; // Нарастающий счётчик определителей колонок
                                            // Начальное значение установлено в ненулевое для предопределённых полей строки дерева Родитель и Строки
 
@@ -263,7 +263,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return GetColumnByIIndex(index);
         }
 
-        private static ContextMethodsMapper<ValueTreeColumnCollection> _methods = new ContextMethodsMapper<ValueTreeColumnCollection>();
+        private static readonly ContextMethodsMapper<ValueTreeColumnCollection> _methods = new ContextMethodsMapper<ValueTreeColumnCollection>();
 
         public override MethodInfo GetMethodInfo(int methodNumber)
         {

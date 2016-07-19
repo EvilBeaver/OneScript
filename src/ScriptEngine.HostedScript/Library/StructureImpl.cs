@@ -13,7 +13,7 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Структура", "Structure")]
     public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext
     {
-        private List<IValue> _values = new List<IValue>();
+        private readonly List<IValue> _values = new List<IValue>();
         
         public StructureImpl()
         {
@@ -190,7 +190,7 @@ namespace ScriptEngine.HostedScript.Library
 
         #endregion 
 
-        private static ContextMethodsMapper<StructureImpl> _methods = new ContextMethodsMapper<StructureImpl>();
+        private static readonly ContextMethodsMapper<StructureImpl> _methods = new ContextMethodsMapper<StructureImpl>();
 
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor()

@@ -21,7 +21,7 @@ namespace ScriptEngine.HostedScript.Library.Http
     [ContextClass("HTTPОтвет", "HTTPResponse")]
     public class HttpResponseContext : AutoContext<HttpResponseContext>, IDisposable
     {
-        private MapImpl _headers = new MapImpl();
+        private readonly MapImpl _headers = new MapImpl();
         // TODO: Нельзя выделить массив размером больше чем 2GB
         // поэтому функционал сохранения в файл не должен использовать промежуточный буфер _body
         private HttpResponseBody _body;

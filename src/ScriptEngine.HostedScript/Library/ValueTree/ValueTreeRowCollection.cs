@@ -20,10 +20,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     public class ValueTreeRowCollection : AutoContext<ValueTreeRowCollection>, ICollectionContext
     {
 
-        private List<ValueTreeRow> _rows = new List<ValueTreeRow>();
-        private ValueTreeRow _parent;
-        private ValueTree _owner;
-        private int _level;
+        private readonly List<ValueTreeRow> _rows = new List<ValueTreeRow>();
+        private readonly ValueTreeRow _parent;
+        private readonly ValueTree _owner;
+        private readonly int _level;
 
         public ValueTreeRowCollection(ValueTree owner, ValueTreeRow parent, int level)
         {
@@ -388,8 +388,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         private class RowComparator : IComparer<ValueTreeRow>
         {
-            List<ValueTreeSortRule> _rules;
-            GenericIValueComparer _comparer = new GenericIValueComparer();
+            readonly List<ValueTreeSortRule> _rules;
+
+            readonly GenericIValueComparer _comparer = new GenericIValueComparer();
 
             public RowComparator(List<ValueTreeSortRule> rules)
             {

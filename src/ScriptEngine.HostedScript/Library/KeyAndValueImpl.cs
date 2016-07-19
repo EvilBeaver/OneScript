@@ -12,8 +12,8 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("КлючИЗначение", "KeyAndValue")]
     public class KeyAndValueImpl : AutoContext<KeyAndValueImpl>
     {
-        private IValue _key;
-        private IValue _value;
+        private readonly IValue _key;
+        private readonly IValue _value;
 
         public KeyAndValueImpl(IValue key, IValue value)
         {

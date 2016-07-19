@@ -22,7 +22,7 @@ namespace ScriptEngine.HostedScript.Library.Http
     {
 
         IHttpRequestBody _body;
-        static IHttpRequestBody _emptyBody = new HttpRequestBodyUnknown();
+        static readonly IHttpRequestBody _emptyBody = new HttpRequestBodyUnknown();
 
         public HttpRequestContext()
         {

@@ -16,8 +16,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     [ContextClass("ИндексыКоллекции", "CollectionIndexes")]
     public class CollectionIndexes : AutoContext<CollectionIndexes>, ICollectionContext
     {
-
-        List<CollectionIndex> _indexes = new List<CollectionIndex>();
+        readonly List<CollectionIndex> _indexes = new List<CollectionIndex>();
 
         [ContextMethod("Добавить", "Add")]
         public CollectionIndex Add(string columns)

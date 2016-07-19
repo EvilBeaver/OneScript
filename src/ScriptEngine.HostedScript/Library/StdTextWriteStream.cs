@@ -21,7 +21,7 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("ПотокВводаТекста", "TextInputStream")]
     public class StdTextWriteStream : AutoContext<StdTextWriteStream>, IDisposable
     {
-        private StreamWriter _writer;
+        private readonly StreamWriter _writer;
 
         public StdTextWriteStream(StreamWriter writer)
         {

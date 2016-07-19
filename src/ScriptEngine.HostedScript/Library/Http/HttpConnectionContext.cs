@@ -23,8 +23,9 @@ namespace ScriptEngine.HostedScript.Library.Http
     [ContextClass("HTTPСоединение", "HTTPConnection")]
     public class HttpConnectionContext : AutoContext<HttpConnectionContext>
     {
-        InternetProxyContext _proxy;
-        Uri _hostUri;
+        readonly InternetProxyContext _proxy;
+
+        readonly Uri _hostUri;
 
         const string HTTP_SCHEME = "http";
         const string HTTPS_SCHEME = "https";

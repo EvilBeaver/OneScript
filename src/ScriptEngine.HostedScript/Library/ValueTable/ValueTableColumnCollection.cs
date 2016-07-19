@@ -16,7 +16,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection")]
     public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext
     {
-        private List<ValueTableColumn> _columns = new List<ValueTableColumn>();
+        private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
         private int _internal_counter = 0; // Нарастающий счётчик определителей колонок
 
         public ValueTableColumnCollection()
@@ -164,7 +164,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return GetColumnByIIndex(index);
         }
 
-        private static ContextMethodsMapper<ValueTableColumnCollection> _methods = new ContextMethodsMapper<ValueTableColumnCollection>();
+        private static readonly ContextMethodsMapper<ValueTableColumnCollection> _methods = new ContextMethodsMapper<ValueTableColumnCollection>();
 
         public override MethodInfo GetMethodInfo(int methodNumber)
         {

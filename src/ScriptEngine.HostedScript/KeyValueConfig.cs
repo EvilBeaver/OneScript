@@ -15,7 +15,7 @@ namespace ScriptEngine.HostedScript
 {
     public class KeyValueConfig
     {
-        private Dictionary<string, string> _values = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<string, string> _values = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
         public KeyValueConfig()
         { 

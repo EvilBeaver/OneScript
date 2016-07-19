@@ -16,7 +16,8 @@ namespace ScriptEngine.HostedScript
     class EngineConfigProvider
     {
         KeyValueConfig _currentConfig;
-        string _customConfigFilePath;
+
+        readonly string _customConfigFilePath;
 
         public const string CONFIG_FILE_NAME = "oscript.cfg";
         public const string SYSTEM_LIB_KEY = "lib.system";

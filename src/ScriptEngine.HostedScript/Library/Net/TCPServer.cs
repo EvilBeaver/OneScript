@@ -21,7 +21,7 @@ namespace ScriptEngine.HostedScript.Library.Net
     [ContextClass("TCPСервер", "TCPServer")]
     public class TCPServer : AutoContext<TCPServer>
     {
-        private TcpListener _listener;
+        private readonly TcpListener _listener;
 
         public TCPServer(int port)
         {
