@@ -203,38 +203,52 @@ namespace ScriptEngine.HostedScript.Library
             return new ProcessContext(p, encoding);
         }
 
-        public static System.Diagnostics.ProcessStartInfo PrepareProcessStartupInfo(string cmdLine, string currentDir)
+        public static ProcessStartInfo PrepareProcessStartupInfo(string cmdLine, string currentDir)
         {
-            var sInfo = new System.Diagnostics.ProcessStartInfo();
+            var sInfo = new ProcessStartInfo();
 
-            var enumArgs = Utils.SplitCommandLine(cmdLine);
-
-            bool fNameRead = false;
-            StringBuilder argsBuilder = new StringBuilder();
-
-            foreach (var item in enumArgs)
-            {
-                if (!fNameRead)
-                {
-                    sInfo.FileName = item;
-                    fNameRead = true;
-                }
-                else
-                {
-                    argsBuilder.Append(' ');
-                    argsBuilder.Append(item);
-                }
-            }
-
-            if (argsBuilder.Length > 0)
-            {
-                argsBuilder.Remove(0, 1);
-            }
-
-            sInfo.Arguments = argsBuilder.ToString();
+            int argsPosition;
+            sInfo.FileName = ExtractExecutableName(cmdLine, out argsPosition);
+            sInfo.Arguments = argsPosition >= cmdLine.Length ? "" : cmdLine.Substring(argsPosition);
             if (currentDir != null)
                 sInfo.WorkingDirectory = currentDir;
             return sInfo;
+        }
+
+        private static string ExtractExecutableName(string cmdLine, out int argsPosition)
+        {
+            bool inQuotes = false;
+            int startIdx = 0;
+            int i;
+            for (i = 0; i < cmdLine.Length; i++)
+            {
+                var symb = cmdLine[i];
+                
+                if (symb == '\"')
+                {
+                    if (inQuotes)
+                    {
+                        argsPosition = i + 1;
+                        return cmdLine.Substring(startIdx, i - startIdx);
+                    }
+                    
+                    inQuotes = true;
+                    startIdx = i + 1;
+                    
+                }
+                else if (symb == ' ' && !inQuotes)
+                {
+                    argsPosition = i + 1;
+                    return cmdLine.Substring(startIdx, i - startIdx);
+                }
+
+            }
+
+            if (inQuotes)
+                throw RuntimeException.InvalidArgumentValue();
+
+            argsPosition = i + 1;
+            return cmdLine.Substring(startIdx, i - startIdx);
         }
 
     }
