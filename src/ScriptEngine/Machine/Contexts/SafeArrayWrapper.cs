@@ -17,7 +17,7 @@ namespace ScriptEngine.Machine.Contexts
     /// На данный момент класс не является полноценной заменой для COMSafeArray и его нельзя создать вручную.
     /// </summary>
     [ContextClass("SafeArrayWrapper")]
-    public class SafeArrayWrapper : AutoContext<SafeArrayWrapper>, ICollectionContext, IObjectWrapper
+    public class SafeArrayWrapper : AutoContext<SafeArrayWrapper>, ICollectionContext, IObjectWrapper, IEnumerable<IValue>
     {
         private readonly object[] _array;
 

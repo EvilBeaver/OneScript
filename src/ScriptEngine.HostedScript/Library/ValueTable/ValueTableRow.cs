@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("СтрокаТаблицыЗначений", "ValueTableRow")]
-    public class ValueTableRow : DynamicPropertiesAccessor, ICollectionContext
+    public class ValueTableRow : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<IValue>
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly WeakReference _owner;

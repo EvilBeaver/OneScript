@@ -15,7 +15,7 @@ using System.Text;
 namespace ScriptEngine.HostedScript.Library.Zip
 {
     [ContextClass("ЭлементыZipФайла", "ZipFileEntries")]
-    public class ZipFileEntriesCollection : AutoContext<ZipFileEntriesCollection>, ICollectionContext
+    public class ZipFileEntriesCollection : AutoContext<ZipFileEntriesCollection>, ICollectionContext, IEnumerable<ZipFileEntryContext>
     {
         readonly List<ZipFileEntryContext> _entries;
 
@@ -66,7 +66,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             return new CollectionEnumerator(GetEnumerator());
         }
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<ZipFileEntryContext> GetEnumerator()
         {
             return _entries.GetEnumerator();
         }

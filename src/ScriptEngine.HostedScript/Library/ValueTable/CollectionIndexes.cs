@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("ИндексыКоллекции", "CollectionIndexes")]
-    public class CollectionIndexes : AutoContext<CollectionIndexes>, ICollectionContext
+    public class CollectionIndexes : AutoContext<CollectionIndexes>, ICollectionContext, IEnumerable<CollectionIndex>
     {
         readonly List<CollectionIndex> _indexes = new List<CollectionIndex>();
 
@@ -48,7 +48,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             _indexes.Clear();
         }
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<CollectionIndex> GetEnumerator()
         {
             foreach (var item in _indexes)
             {

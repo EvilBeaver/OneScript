@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Коллекция строк дерева значений.
     /// </summary>
     [ContextClass("КоллекцияСтрокДереваЗначений", "ValueTreeRowCollection")]
-    public class ValueTreeRowCollection : AutoContext<ValueTreeRowCollection>, ICollectionContext
+    public class ValueTreeRowCollection : AutoContext<ValueTreeRowCollection>, ICollectionContext, IEnumerable<ValueTreeRow>
     {
 
         private readonly List<ValueTreeRow> _rows = new List<ValueTreeRow>();
@@ -475,7 +475,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         }
 
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<ValueTreeRow> GetEnumerator()
         {
             foreach (var item in _rows)
             {

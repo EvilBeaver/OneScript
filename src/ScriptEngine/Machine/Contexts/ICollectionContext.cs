@@ -11,7 +11,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public interface ICollectionContext : IEnumerable<IValue>
+    public interface ICollectionContext
     {
         int Count();
         CollectionEnumerator GetManagedIterator();

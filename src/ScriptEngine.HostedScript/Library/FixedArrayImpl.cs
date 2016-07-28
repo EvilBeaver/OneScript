@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ФиксированныйМассив", "FixedArray")]
-    public class FixedArrayImpl : AutoContext<FixedArrayImpl>, ICollectionContext
+    public class FixedArrayImpl : AutoContext<FixedArrayImpl>, ICollectionContext, IEnumerable<IValue>
     {
         private readonly ArrayImpl _array;
 
@@ -107,8 +107,11 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name = "На основании обычного массива")]
         public static IRuntimeContextInstance Constructor(IValue source)
         {
-            ArrayImpl RawSource = source.GetRawValue() as ArrayImpl;
-            return new FixedArrayImpl(RawSource);
+            var rawSource = source.GetRawValue() as ArrayImpl;
+            if (rawSource == null)
+                throw RuntimeException.InvalidArgumentType();
+
+            return new FixedArrayImpl(rawSource);
         }
     }
 }

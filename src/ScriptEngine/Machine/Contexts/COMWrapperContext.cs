@@ -14,7 +14,7 @@ using System.Text;
 namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("COMОбъект", "COMObject")]
-    abstract public class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper
+    public abstract class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper, IEnumerable<IValue>
     {
         protected static readonly DateTime MIN_OLE_DATE = new DateTime(100,1,1);
 

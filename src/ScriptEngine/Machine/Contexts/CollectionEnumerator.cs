@@ -11,13 +11,17 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class CollectionEnumerator : IValue, IEnumerator<IValue>
+    public sealed class CollectionEnumerator : IValue, IEnumerator<IValue>
     {
         private IEnumerator<IValue> _iterator;
 
         public CollectionEnumerator(IEnumerator<IValue> realEnumerator)
         {
             _iterator = realEnumerator;
+        }
+
+        public CollectionEnumerator(IEnumerable<IValue> collection) : this(collection.GetEnumerator())
+        {
         }
 
         #region IEnumerator<IValue> Members
@@ -36,7 +40,7 @@ namespace ScriptEngine.Machine.Contexts
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (disposing)
             {

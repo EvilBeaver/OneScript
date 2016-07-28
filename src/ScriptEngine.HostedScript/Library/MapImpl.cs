@@ -11,7 +11,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("Соответствие", "Map")]
-    public class MapImpl : AutoContext<MapImpl>, ICollectionContext
+    public class MapImpl : AutoContext<MapImpl>, ICollectionContext, IEnumerable<KeyAndValueImpl>
     {
         private readonly Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>(new GenericIValueComparer());
 
@@ -95,7 +95,7 @@ namespace ScriptEngine.HostedScript.Library
 
         #region IEnumerable<IValue> Members
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<KeyAndValueImpl> GetEnumerator()
         {
             foreach (var item in _content)
             {

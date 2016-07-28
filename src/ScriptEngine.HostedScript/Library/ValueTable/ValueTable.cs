@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("ТаблицаЗначений", "ValueTable")]
-    public class ValueTable : AutoContext<ValueTable>, ICollectionContext
+    public class ValueTable : AutoContext<ValueTable>, ICollectionContext, IEnumerable<ValueTableRow>
     {
         private readonly ValueTableColumnCollection _columns = new ValueTableColumnCollection();
         private readonly List<ValueTableRow> _rows = new List<ValueTableRow>();
@@ -504,18 +504,18 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         }
 
         [ContextMethod("Сортировать", "Sort")]
-        public void Sort(string columns, IValue Comparator = null)
+        public void Sort(string columns, IValue comparator = null)
         {
             _rows.Sort(new RowComparator(GetSortRules(columns)));
         }
 
         [ContextMethod("ВыбратьСтроку", "ChooseRow")]
-        public void ChooseRow(string Title = null, IValue StartRow = null)
+        public void ChooseRow(string title = null, IValue startRow = null)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<ValueTableRow> GetEnumerator()
         {
             foreach (var item in _rows)
             {

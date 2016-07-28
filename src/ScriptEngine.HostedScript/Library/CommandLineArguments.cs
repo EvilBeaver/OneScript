@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -100,31 +102,11 @@ namespace ScriptEngine.HostedScript.Library
 
         public CollectionEnumerator GetManagedIterator()
         {
-            return new CollectionEnumerator(GetEnumerator());
+            return new CollectionEnumerator(_values.Select(x=>ValueFactory.Create(x)));
         }
 
         #endregion
 
-        #region IEnumerable<IValue> Members
-
-        public IEnumerator<IValue> GetEnumerator()
-        {
-            for (int i = 0; i < _values.Length; i++)
-            {
-                yield return ValueFactory.Create(_values[i]);
-            }
-        }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
 
         private static readonly CommandLineArguments _empty = new CommandLineArguments(new string[0]);
 

@@ -11,7 +11,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ФиксированноеСоответствие", "FixedMap")]
-    public class FixedMapImpl : AutoContext<FixedMapImpl>, ICollectionContext
+    public class FixedMapImpl : AutoContext<FixedMapImpl>, ICollectionContext, IEnumerable<KeyAndValueImpl>
     {
 
         private readonly MapImpl _map;
@@ -79,7 +79,7 @@ namespace ScriptEngine.HostedScript.Library
 
         #region IEnumerable<IValue> Members
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<KeyAndValueImpl> GetEnumerator()
         {
             return _map.GetEnumerator();
         }
@@ -98,8 +98,11 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor(IValue source)
         {
-            MapImpl RawSource = source.GetRawValue() as MapImpl;
-            return new FixedMapImpl(RawSource);
+            var rawSource = source.GetRawValue() as MapImpl;
+            if (rawSource == null)
+                throw RuntimeException.InvalidArgumentType();
+
+            return new FixedMapImpl(rawSource);
         }
     }
 

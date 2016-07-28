@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("Массив", "Array")]
-    public class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext
+    public class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext, IEnumerable<IValue>
     {
         private readonly List<IValue> _values;
 

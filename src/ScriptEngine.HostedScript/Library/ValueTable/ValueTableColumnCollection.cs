@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection")]
-    public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext
+    public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTableColumn>
     {
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
         private int _internal_counter = 0; // Нарастающий счётчик определителей колонок
@@ -96,7 +96,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return _columns[index];
         }
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<ValueTableColumn> GetEnumerator()
         {
             foreach (var item in _columns)
             {

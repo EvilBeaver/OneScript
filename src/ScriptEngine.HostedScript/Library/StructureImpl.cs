@@ -11,7 +11,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("Структура", "Structure")]
-    public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext
+    public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<KeyAndValueImpl>
     {
         private readonly List<IValue> _values = new List<IValue>();
         
@@ -169,7 +169,7 @@ namespace ScriptEngine.HostedScript.Library
 
         #region IEnumerable<IValue> Members
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<KeyAndValueImpl> GetEnumerator()
         {
             foreach (var item in GetProperties())
             {

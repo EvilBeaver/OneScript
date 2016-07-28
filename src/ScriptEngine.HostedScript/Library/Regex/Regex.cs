@@ -4,12 +4,15 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System.Linq;
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+
 using RegExp = System.Text.RegularExpressions;
 
-namespace ScriptEngine.HostedScript.Library.RegexLib
+namespace ScriptEngine.HostedScript.Library.Regex
 {
     [ContextClass("РегулярноеВыражение", "Regex")]
     class RegExpImpl : AutoContext<RegExpImpl>

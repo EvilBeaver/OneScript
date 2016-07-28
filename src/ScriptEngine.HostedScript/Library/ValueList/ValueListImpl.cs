@@ -11,7 +11,7 @@ namespace ScriptEngine.HostedScript.Library.ValueList
     /// Стандартная универсальная коллекция системы 1С:Предприятие 8
     /// </summary>
     [ContextClass("СписокЗначений", "ValueList")]
-    public class ValueListImpl : AutoContext<ValueListImpl>, ICollectionContext
+    public class ValueListImpl : AutoContext<ValueListImpl>, ICollectionContext, IEnumerable<ValueListItem>
     {
         readonly List<ValueListItem> _items;
         public ValueListImpl()
@@ -238,11 +238,11 @@ namespace ScriptEngine.HostedScript.Library.ValueList
                 itemObject = tmpObject;
             }
 
-            var index_source = this.IndexOf(itemObject);
-            if (index_source < 0)
+            var indexSource = IndexOf(itemObject);
+            if (indexSource < 0)
                 throw new RuntimeException("Элемент не принадлежит списку значений");
 
-            _items.RemoveAt(index_source);
+            _items.RemoveAt(indexSource);
         }
 
         #region Collection Context
@@ -255,12 +255,12 @@ namespace ScriptEngine.HostedScript.Library.ValueList
 
         public CollectionEnumerator GetManagedIterator()
         {
-            return new CollectionEnumerator(_items.GetEnumerator());
+            return new CollectionEnumerator(GetEnumerator());
         }
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<ValueListItem> GetEnumerator()
         {
-            return GetManagedIterator();
+            return _items.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

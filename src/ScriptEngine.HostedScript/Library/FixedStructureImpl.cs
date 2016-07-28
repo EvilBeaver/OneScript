@@ -11,7 +11,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ФиксированнаяСтруктура", "FixedStructure")]
-    public class FixedStructureImpl : DynamicPropertiesAccessor, ICollectionContext
+    public class FixedStructureImpl : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<KeyAndValueImpl>
     {
         private readonly StructureImpl _structure = new StructureImpl();
 
@@ -120,7 +120,7 @@ namespace ScriptEngine.HostedScript.Library
 
         #region IEnumerable<IValue> Members
 
-        public IEnumerator<IValue> GetEnumerator()
+        public IEnumerator<KeyAndValueImpl> GetEnumerator()
         {
         	return _structure.GetEnumerator();
         }

@@ -6,11 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine;
 using RegExp = System.Text.RegularExpressions;
 
-
-namespace ScriptEngine.HostedScript.Library.RegexLib
+namespace ScriptEngine.HostedScript.Library.Regex
 {
     [ContextClass("СовпадениеРегулярногоВыражения", "RegExMatch")]
     class MatchImpl : AutoContext<MatchImpl>
