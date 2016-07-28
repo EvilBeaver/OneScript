@@ -13,10 +13,8 @@ namespace ScriptEngine.Compiler
 {
     class Parser
     {
-        private string _code;
         private ParseIterator _iterator;
 
-        private readonly ParserState _emptyState = new EmptyParserState();
         private readonly ParserState _wordState = new WordParserState();
         private readonly ParserState _numberState = new NumberParserState();
         private readonly ParserState _stringState = new StringParserState();
@@ -24,15 +22,11 @@ namespace ScriptEngine.Compiler
         private readonly ParserState _dateState = new DateParserState();
         private readonly ParserState _directiveState = new DirectiveParserState();
 
-        public string Code 
-        { 
-            get { return _code; } 
-            set { _code = value; } 
-        }
+        public string Code { get; set; }
 
         public void Start()
         {
-            _iterator = new ParseIterator(_code);
+            _iterator = new ParseIterator(Code);
         }
 
         public int CurrentLine
@@ -106,12 +100,9 @@ namespace ScriptEngine.Compiler
                     return lex;
 
                 }
-                else
-                {
-                    return Lexem.EndOfText();
-                }
-            }
 
+                return Lexem.EndOfText();
+            }
         }
 
 
@@ -197,11 +188,9 @@ namespace ScriptEngine.Compiler
 
     class WordParserState : ParserState
     {
-        readonly HashSet<string> _booleanOperators = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        readonly HashSet<string> _booleanLiterals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        readonly HashSet<string> _undefined = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _booleanOperators = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _booleanLiterals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _undefined = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public WordParserState()
         {
@@ -225,7 +214,7 @@ namespace ScriptEngine.Compiler
         public override Lexem ReadNextLexem(ParseIterator iterator)
         {
             bool isEndOfText = false;
-            Char cs = '\0';
+            char cs = '\0';
             while (true)
             {
                 if (!isEndOfText)
@@ -264,7 +253,7 @@ namespace ScriptEngine.Compiler
                         };
 
                     }
-                    else if (String.Compare(content, "null", true) == 0)
+                    else if (String.Compare(content, "null", StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         lex = new Lexem()
                         {
@@ -422,7 +411,8 @@ namespace ScriptEngine.Compiler
 
                     return lex;
                 }
-                else if(Char.IsDigit(cs))
+
+                if(Char.IsDigit(cs))
                 {
                     numbers.Append(cs);
                 }
