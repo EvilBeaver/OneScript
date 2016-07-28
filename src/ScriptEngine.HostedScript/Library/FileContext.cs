@@ -111,7 +111,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             try
             {
-                var attr = File.GetAttributes(FullName);
+                File.GetAttributes(FullName);
             }
             catch (FileNotFoundException)
             {
