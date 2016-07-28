@@ -132,7 +132,7 @@ namespace ScriptEngine.HostedScript.Library
         public void AttachAddIn(string dllPath)
         {
             var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
-            EngineInstance.AttachAssembly(assembly);
+            EngineInstance.AttachAssembly(assembly, EngineInstance.Environment);
         }
 
         /// <summary>
