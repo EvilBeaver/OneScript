@@ -17,9 +17,9 @@ at http://mozilla.org/MPL/2.0/.
 [assembly: System.Reflection.AssemblyCompany("BeaverSoft")]
 [assembly: System.Reflection.AssemblyCopyright("Copyright (c) 2016 EvilBeaver")]
 [assembly: System.Reflection.AssemblyConfiguration("Commit 2a614c0")]
-[assembly: System.Reflection.AssemblyVersion("1.0.14.0")]
-[assembly: System.Reflection.AssemblyFileVersion("1.0.14.0")]
-[assembly: System.Reflection.AssemblyInformationalVersion("1.0.14.0")]
+[assembly: System.Reflection.AssemblyVersion("1.0.15.0")]
+[assembly: System.Reflection.AssemblyFileVersion("1.0.15.0")]
+[assembly: System.Reflection.AssemblyInformationalVersion("1.0.15.0")]
 
 
 
