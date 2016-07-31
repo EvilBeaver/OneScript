@@ -10,6 +10,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -104,8 +105,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         private void AddDirectory(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
-            IEnumerable<string> filesToAdd;
-            string path = System.IO.Path.GetDirectoryName(file);
+            var path = Path.IsPathRooted(file) ? Path.GetDirectoryName(file) : Path.GetFullPath(file);
             string allFilesMask;
 
             if (System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
@@ -113,7 +113,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             else
                 allFilesMask = "*.*";
 
-            filesToAdd = System.IO.Directory.EnumerateFiles(file, allFilesMask, searchOption);
+            var filesToAdd = System.IO.Directory.EnumerateFiles(file, allFilesMask, searchOption);
             AddEnumeratedFiles(filesToAdd, path, storePathMode);
         }
 
