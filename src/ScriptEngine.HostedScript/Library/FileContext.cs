@@ -17,17 +17,23 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Файл","File")]
     public class FileContext : AutoContext<FileContext>
     {
-        readonly string _givenName;
-        string _name;
-        string _baseName;
-        string _fullName;
-        string _path;
-        string _extension;
+        private readonly string _givenName;
+        private string _name;
+        private string _baseName;
+        private string _fullName;
+        private string _path;
+        private string _extension;
 
         public FileContext(string name)
         {
-            if (String.IsNullOrWhiteSpace (name))
-                throw RuntimeException.InvalidArgumentValue ();
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                _name = "";
+                _baseName = "";
+                _fullName = "";
+                _path = "";
+                _extension = "";
+            }
             
             _givenName = name;
         }
@@ -109,6 +115,9 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Существует","Exist")]
         public bool Exist()
         {
+            if (_givenName == String.Empty)
+                return false;
+
             try
             {
                 File.GetAttributes(FullName);
