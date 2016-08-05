@@ -108,6 +108,7 @@
     <Compile Include="FormatParametersList.cs" />
     <Compile Include="IDirectiveResolver.cs" />
     <Compile Include="Machine\ComReflectionNameToIdMapper.cs" />
+    <Compile Include="Machine\Contexts\CLREnumValueWrapper.cs" />
     <Compile Include="Machine\Contexts\EnumContextHelper.cs" />
     <Compile Include="Machine\Contexts\ContextClassAttribute.cs" />
     <Compile Include="Machine\Contexts\AttachedScriptsFactory.cs" />

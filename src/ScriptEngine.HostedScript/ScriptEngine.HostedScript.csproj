@@ -96,7 +96,6 @@
     <Compile Include="LibraryResolver.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
     <Compile Include="Library\BinaryDataContext.cs" />
-    <Compile Include="Library\CLREnumValueWrapper.cs" />
     <Compile Include="Library\CommandLineArguments.cs" />
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />

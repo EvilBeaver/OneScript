@@ -10,11 +10,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScriptEngine.HostedScript.Library
+namespace ScriptEngine.Machine.Contexts
 {
-    class CLREnumValueWrapper<T> : EnumerationValue
+    public class CLREnumValueWrapper<T> : EnumerationValue
     {
-        readonly T _realValue;
+        private readonly T _realValue;
 
         public CLREnumValueWrapper(EnumerationContext owner, T realValue):base(owner)
         {
@@ -29,13 +29,13 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        public override bool Equals(Machine.IValue other)
+        public override bool Equals(IValue other)
         {
             var otherWrapper = other.GetRawValue() as CLREnumValueWrapper<T>;
             if (otherWrapper == null)
                 return false;
 
-            return this.UnderlyingObject.Equals(otherWrapper.UnderlyingObject);
+            return UnderlyingObject.Equals(otherWrapper.UnderlyingObject);
         }
     }
 }
