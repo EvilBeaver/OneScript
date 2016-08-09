@@ -22,6 +22,7 @@
   <PropertyGroup Condition=" '$(ReleaseNumber)' != '' ">
     <!-- CI Build Number -->
     <Build>$(ReleaseNumber)</Build>
+	<VersionSuffix>$(Build)$(Suffix)</VersionSuffix>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(BUILD_NUMBER)' != '' ">
@@ -156,7 +157,7 @@
   <Target Name="CreateMSI">
 	<Message Text="$(OutputPathForBuild)"/>
     <MSBuild Projects="$(MSBuildProjectDirectory)\src\Installer\Installer.wixproj" 
-		Properties="Configuration=$(Configuration);OutputPath=$(DistPath);OutputPathForBuild=$(OutputPathForBuild);Version=$(Major).$(Minor).$(Build)" />
+		Properties="Configuration=$(Configuration);OutputPath=$(DistPath);OutputPathForBuild=$(OutputPathForBuild);Version=$(Major).$(Minor).$(VersionSuffix)" />
   </Target>
   
   <Target Name="CreateNuget">
@@ -167,7 +168,7 @@
 	</ItemGroup>
 	
 	<Exec WorkingDirectory="$(MSBuildProjectDirectory)\src\%(NugetAbleProject.Identity)" 
-		Command="$(NugetExecutable) pack %(NugetAbleProject.Identity).csproj -Version $(Major).$(Minor).$(Build) -Prop Configuration=Release -Prop &quot;TargetPath=$(BinFolder)%(NugetAbleProject.Identity).dll&quot; -OutputDirectory &quot;$(DistPath)\&quot;"/>
+		Command="$(NugetExecutable) pack %(NugetAbleProject.Identity).csproj -Version $(Major).$(Minor).$(VersionSuffix) -Prop Configuration=Release -Prop &quot;TargetPath=$(BinFolder)%(NugetAbleProject.Identity).dll&quot; -OutputDirectory &quot;$(DistPath)\&quot;"/>
 	
   </Target>
   
