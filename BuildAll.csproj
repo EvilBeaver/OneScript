@@ -42,17 +42,12 @@
   </ItemGroup>
 
   <Target Name="VersionGenerate">
-    <Time>
-      <Output TaskParameter="Month" PropertyName="Month" />
-      <Output TaskParameter="Day" PropertyName="Day" />
-      <Output TaskParameter="Year" PropertyName="Year" />
-    </Time>
-
+ 
     <AssemblyInfo CodeLanguage="CS"
                   OutputFile="src\GlobalAssemblyInfo.cs"
                   GenerateClass="true"
-                  AssemblyCompany="BeaverSoft"
-                  AssemblyCopyright="Copyright (c) 2014 BeaverSoft"
+                  AssemblyCompany="EvilBeaver"
+                  AssemblyCopyright="Copyright (c) 2016 EvilBeaver"
                   AssemblyConfiguration="Configuration=$(Configuration) Commit $(CommitHash)"
              
                   AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)"
