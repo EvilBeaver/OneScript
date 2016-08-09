@@ -96,14 +96,6 @@
     
     <MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForBuild)" />
 
-    <!--TODO Why Snheopat.Engine build into source dir -->
-    
-    <ItemGroup>
-        <SnegopatEngine Include="$(MSBuildProjectDirectory)\src\Release\ScriptEngine.Snegopat.dll"/>
-    </ItemGroup>
-
-    <Copy  SourceFiles="@(SnegopatEngine)" DestinationFolder="$(OutputPathForBuild)\" />
-
   </Target>
 
   <Target Name="PreparePackage">

@@ -20,10 +20,6 @@
         <ComponentRef Id="TestApp"/>
       </Feature>
 
-      <Feature Id="Snegopat" Title="Интеграция со 'Снегопатом'" Level="2">
-        <ComponentRef Id="SnegopatDll"/>
-      </Feature>
-
       <Feature Id="Examples" Title="Примеры скриптов" Level="1">
         <ComponentRef Id="ExampleFiles"/>
       </Feature>

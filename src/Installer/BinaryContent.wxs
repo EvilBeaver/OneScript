@@ -28,10 +28,6 @@
         <File Source="$(var.OutputPathForBuild)bin\opm.bat"></File>
       </Component>
 
-      <Component Id="SnegopatDll" Guid="961B0595-86AB-4E21-B753-539FFDFF73B8">
-        <File Source="$(var.OutputPathForBuild)bin\ScriptEngine.Snegopat.dll"></File>
-      </Component>
-
       <Component Id="SetPathVariable" Guid="1B6964FE-3841-45B9-B7E8-C1193161CD65" KeyPath="yes">
         <Environment Action="set"
                      Id="SetPathToInstallFolderToSystemPath"

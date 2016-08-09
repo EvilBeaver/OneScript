@@ -34,7 +34,6 @@ Name: "custom"; Description: "Выборочная установка"; Flags: i
 Name: "main"; Description: "Основные файлы"; Types: normal custom; Flags: fixed
 Name: "stdlib"; Description: "Стандартная библиотека скриптов"; Types: normal custom;
 Name: "testapp"; Description: "Тестовая консоль (TestApp)";
-Name: "snegopat"; Description: "Интеграция со 'Снегопатом'";
 Name: "docs"; Description: "Документация по свойствам и методам (синтакс-помощник)";
 
 [Files]              
@@ -46,8 +45,6 @@ Source: "build\bin\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: 
 
 Source: "build\examples\*"; DestDir: "{app}\examples"; Components: main
 
-; снегопат
-Source: "build\bin\ScriptEngine.Snegopat.dll"; DestDir: "{app}\bin"; Components: snegopat
 ; testapp
 Source: "build\bin\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
 Source: "build\bin\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
@@ -69,7 +66,6 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 
 [Run]
 Filename: {tmp}\dotNetFx40_Full_setup.exe; Parameters: "/q:a /c:""install /l /q"""; Check: not IsRequiredDotNetDetected; StatusMsg: Microsoft .NET Framework 4.0 is being installed. Please wait..
-Filename: {tmp}\vcredist_x86.exe; Parameters: "/q /norestart"; Components: snegopat; StatusMsg: MS Redistributable C++ Runtime is being installed. Please wait..
 Filename: "{app}\bin\{#MainExe}"; Description: "Launch application"; Components: testapp; Flags: postinstall nowait skipifsilent unchecked
 
 [Code]
