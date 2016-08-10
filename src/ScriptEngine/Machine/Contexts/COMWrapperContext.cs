@@ -71,7 +71,7 @@ namespace ScriptEngine.Machine.Contexts
         public static object MarshalIValue(IValue val)
         {
             object retValue;
-            if (val.DataType == Machine.DataType.Date)
+            if (val != null && val.DataType == Machine.DataType.Date)
             {
                 var date = val.AsDate();
                 if (date <= MIN_OLE_DATE)
