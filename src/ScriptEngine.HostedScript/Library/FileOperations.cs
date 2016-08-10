@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Text;
 
 namespace ScriptEngine.HostedScript.Library
@@ -100,18 +101,65 @@ namespace ScriptEngine.HostedScript.Library
                 return new ArrayImpl();
             }
 
-            System.IO.SearchOption mode = recursive ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
+            if(!Directory.Exists(dir))
+                return new ArrayImpl();
+
+            var filesFound = FindFilesV8Compatible(dir, mask, recursive);
+
+            return new ArrayImpl(filesFound);
+
+        }
+
+        private static IEnumerable<FileContext> FindFilesV8Compatible(string dir, string mask, bool recursive)
+        {
+            var collectedFiles = new List<FileContext>();
+            IEnumerable<FileContext> entries;
             try
             {
-                var entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask, mode)
-                        .Select<string, IValue>((x) => new FileContext(x));
-                return new ArrayImpl(entries);
+                entries = Directory.EnumerateFileSystemEntries(dir, mask)
+                                   .Select(x => new FileContext(x));
             }
-            catch (DirectoryNotFoundException)
+            catch (SecurityException)
             {
-                return new ArrayImpl();
+                return collectedFiles;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return collectedFiles;
             }
 
+            if (recursive)
+            {
+                foreach (var fileFound in entries)
+                {
+                    try
+                    {
+                        var attrs = fileFound.GetAttributes();
+                        if (attrs.HasFlag(FileAttributes.ReparsePoint))
+                            continue;
+                    }
+                    catch (SecurityException)
+                    {
+                        continue;
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        continue;
+                    }
+
+                    collectedFiles.Add(fileFound);
+                    if (fileFound.IsDirectory())
+                    {
+                        collectedFiles.AddRange(FindFilesV8Compatible(fileFound.FullName, mask, true));
+                    }
+                }
+            }
+            else
+            {
+                collectedFiles.AddRange(entries);
+            }
+
+            return collectedFiles;
         }
 
         /// <summary>

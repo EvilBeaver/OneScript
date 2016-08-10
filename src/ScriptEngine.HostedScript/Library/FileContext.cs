@@ -202,6 +202,11 @@ namespace ScriptEngine.HostedScript.Library
             return !attr.HasFlag(FileAttributes.Directory);
         }
 
+        public FileAttributes GetAttributes()
+        {
+            return File.GetAttributes(FullName);
+        }
+
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor(IValue name)
         {
