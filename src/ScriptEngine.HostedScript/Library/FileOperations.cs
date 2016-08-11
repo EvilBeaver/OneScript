@@ -136,7 +136,10 @@ namespace ScriptEngine.HostedScript.Library
                     {
                         var attrs = fileFound.GetAttributes();
                         if (attrs.HasFlag(FileAttributes.ReparsePoint))
+                        {
+                            collectedFiles.Add(fileFound);
                             continue;
+                        }
                     }
                     catch (SecurityException)
                     {
