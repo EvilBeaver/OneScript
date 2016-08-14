@@ -124,14 +124,6 @@ namespace ScriptEngine.Machine
 
     }
 
-    public class ExternalSystemException : RuntimeException
-    {
-        public ExternalSystemException(Exception reason)
-            : base("Внешнее исключение: " + reason.Message, reason)
-        {
-        }
-    }
-
     public class WrongStackConditionException : ApplicationException
     {
         public WrongStackConditionException()
