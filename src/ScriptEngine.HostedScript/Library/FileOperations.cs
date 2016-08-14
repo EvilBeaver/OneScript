@@ -114,8 +114,12 @@ namespace ScriptEngine.HostedScript.Library
         {
             var collectedFiles = new List<FileContext>();
             IEnumerable<FileContext> entries;
+            IEnumerable<FileContext> folders = null;
             try
             {
+                if (recursive)
+                    folders = Directory.GetDirectories(dir).Select(x => new FileContext(x));
+
                 entries = Directory.EnumerateFileSystemEntries(dir, mask)
                                    .Select(x => new FileContext(x));
             }
@@ -151,9 +155,23 @@ namespace ScriptEngine.HostedScript.Library
                     }
 
                     collectedFiles.Add(fileFound);
-                    if (fileFound.IsDirectory())
+                }
+
+                foreach (var folder in folders)
+                {
+                    try
                     {
-                        collectedFiles.AddRange(FindFilesV8Compatible(fileFound.FullName, mask, true));
+                        var attrs = folder.GetAttributes();
+                        if (!attrs.HasFlag(FileAttributes.ReparsePoint))
+                        {
+                            collectedFiles.AddRange(FindFilesV8Compatible(folder.FullName, mask, true));
+                        }
+                    }
+                    catch (SecurityException)
+                    {
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
                     }
                 }
             }
