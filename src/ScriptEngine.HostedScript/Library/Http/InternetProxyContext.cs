@@ -21,13 +21,11 @@ namespace ScriptEngine.HostedScript.Library.Http
     [ContextClass("ИнтернетПрокси", "InternetProxy")]
     public class InternetProxyContext : AutoContext<InternetProxyContext>
     {
-        readonly IWebProxy _proxy;
-
-        readonly NetworkCredential _creds;
-
-        readonly bool _isDefault;
-        ArrayImpl _bypassProxyOnAddresses;
-        bool _bypassLocal;
+        private readonly IWebProxy _proxy;
+        private readonly NetworkCredential _creds;
+        private readonly bool _isDefault;
+        private ArrayImpl _bypassProxyOnAddresses;
+        private bool _bypassLocal;
 
         public InternetProxyContext(bool useDefault)
         {
