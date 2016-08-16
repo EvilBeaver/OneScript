@@ -21,71 +21,110 @@ namespace ScriptEngine.HostedScript.Library.Http
     [ContextClass("ИнтернетПрокси", "InternetProxy")]
     public class InternetProxyContext : AutoContext<InternetProxyContext>
     {
-        private readonly IWebProxy _proxy;
-        private readonly NetworkCredential _creds;
-        private readonly bool _isDefault;
         private ArrayImpl _bypassProxyOnAddresses;
         private bool _bypassLocal;
 
+        private Dictionary<string, ProxySettings> _proxies = new Dictionary<string, ProxySettings>();
+
+        private class ProxySettings
+        {
+            public string server;
+            public int port;
+            public bool useOSAuthentication;
+            public IWebProxy proxy;
+            public NetworkCredential creds;
+        }
+
+        private const string PROTO_HTTP = "http";
+        private const string PROTO_HTTPS = "https";
+
         public InternetProxyContext(bool useDefault)
         {
-            _isDefault = useDefault;
+            var settings = new ProxySettings();
             if (useDefault)
             {
-                _proxy = WebRequest.GetSystemWebProxy();
-                _creds = (NetworkCredential)System.Net.CredentialCache.DefaultCredentials;
-                if (_creds != null)
-                    _proxy.Credentials = _creds;
+                settings.proxy = WebRequest.GetSystemWebProxy();
+                settings.creds = (NetworkCredential)System.Net.CredentialCache.DefaultCredentials;
+                if (settings.creds != null)
+                    settings.proxy.Credentials = settings.creds;
                 else
-                    _creds = new NetworkCredential();
+                    settings.creds = new NetworkCredential();
+
+                _proxies[PROTO_HTTP]  = settings;
+                _proxies[PROTO_HTTPS] = settings;
             }
             else
             {
-                _proxy = new WebProxy();
-                _bypassLocal = ((WebProxy)_proxy).BypassProxyOnLocal;
-                _creds = new NetworkCredential();
+                _bypassLocal = false;
+                settings.server = String.Empty;
+                settings.creds = new NetworkCredential();
+
+                _proxies[PROTO_HTTP] = settings;
+                _proxies[PROTO_HTTPS] = settings;
             }
 
             _bypassProxyOnAddresses = new ArrayImpl();
         }
 
-        public IWebProxy GetProxy()
+        public IWebProxy GetProxy(string protocol)
         {
-            if (!_isDefault)
+            var settings = GetSettings(protocol);
+            WebProxy wp;
+            if (settings.proxy == null)
             {
-                var wp = (WebProxy)_proxy;
-                wp.Credentials = _creds;
+                wp = new WebProxy(settings.server, settings.port);
+                wp.Credentials = settings.creds;
                 wp.BypassList = _bypassProxyOnAddresses.Select(x => x.AsString()).ToArray();
                 wp.BypassProxyOnLocal = _bypassLocal;
+                settings.proxy = wp;
+            }
+            else
+            {
+                wp = (WebProxy)_proxies[protocol].proxy;
             }
             
-            return _proxy;
+            return wp;
         }
 
-        [ContextProperty("Пользователь","User")]
-        public string User 
+        [ContextMethod("Пользователь","User")]
+        public string User(string protocol)
         {
-            get
-            {
-                return _creds.UserName;
-            }
-            set
-            {
-                _creds.UserName = value;
-            }
+            return GetSettings(protocol).creds.UserName;
         }
 
-        [ContextProperty("Пароль", "Password")]
-        public string Password 
+        [ContextMethod("Пароль", "Password")]
+        public string Password(string protocol)
         {
-            get
+            return GetSettings(protocol).creds.Password;
+        }
+
+        [ContextMethod("Сервер", "Server")]
+        public string Server(string protocol)
+        {
+            return GetSettings(protocol).server;
+        }
+
+        [ContextMethod("Порт", "Password")]
+        public int Port(string protocol)
+        {
+            return GetSettings(protocol).port;
+        }
+
+        [ContextMethod("Установить", "Set")]
+        public void Set(string protocol, string server, int port = 0, string username = "", string password = "", bool useOSAuthentication = true)
+        {
+            if(!ProtocolNameIsValid(protocol))
+                throw RuntimeException.InvalidArgumentValue();
+
+            var settings = new ProxySettings
             {
-                return _creds.Password;
-            }
-            set
-            {
-               _creds.Password = value;
-            }
+                server = server,
+                port = port,
+                creds = new NetworkCredential(username, password),
+                useOSAuthentication = useOSAuthentication
+            };
+
+            _proxies[protocol] = settings;
         }
 
         [ContextProperty("НеИспользоватьПроксиДляАдресов","BypassProxyOnAddresses")]
@@ -112,6 +151,19 @@ namespace ScriptEngine.HostedScript.Library.Http
             {
                 _bypassLocal = value;
             }
+        }
+
+        private ProxySettings GetSettings(string protocol)
+        {
+            if (!ProtocolNameIsValid(protocol))
+                throw RuntimeException.InvalidArgumentValue();
+
+            return _proxies[protocol];
+        }
+
+        private static bool ProtocolNameIsValid(string protocol)
+        {
+            return StringComparer.OrdinalIgnoreCase.Compare(protocol, PROTO_HTTP) == 0 || StringComparer.OrdinalIgnoreCase.Compare(protocol, PROTO_HTTPS) == 0;
         }
 
         [ScriptConstructor(Name="Ручная настройка прокси")]

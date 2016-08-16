@@ -220,7 +220,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
 
             if(_proxy != null)
-                request.Proxy = _proxy.GetProxy();
+                request.Proxy = _proxy.GetProxy(uriBuilder.Scheme);
 
             if (Timeout > 0)
                 request.Timeout = Timeout;
