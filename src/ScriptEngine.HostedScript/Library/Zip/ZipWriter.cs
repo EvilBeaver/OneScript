@@ -276,16 +276,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
             return new ZipWriter();
         }
 
-        [ScriptConstructor(Name="На основании имени файла")]
-        public static ZipWriter ConstructByFilename(IValue filename)
-        {
-            var zip = new ZipWriter();
-            zip.Open(filename.AsString());
-            return zip;
-        }
-
-        [ScriptConstructor(Name = "На основании параметров архива")]
-        public static ZipWriter ConstructByFileOptions(IValue filename, IValue password, IValue comment, IValue compressionMethod, IValue compressionLevel, IValue encryptionMethod)
+        [ScriptConstructor(Name = "На основании имени файла")]
+        public static ZipWriter ConstructByFileOptions(IValue filename, IValue password = null, IValue comment = null, IValue compressionMethod = null, IValue compressionLevel = null, IValue encryptionMethod = null)
         {
             var zip = new ZipWriter();
             zip.Open(filename.AsString(),
