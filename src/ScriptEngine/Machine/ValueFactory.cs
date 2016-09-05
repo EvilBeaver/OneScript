@@ -192,5 +192,74 @@ namespace ScriptEngine.Machine
             #endregion
         }
 
+
+        public static IValue Add(IValue op1, IValue op2)
+        {
+            var type1 = op1.DataType;
+
+            if (type1 == DataType.String)
+            {
+                return Create(op1.AsString() + op2.AsString());
+            }
+
+            if (type1 == DataType.Date && op2.DataType == DataType.Number)
+            {
+                var date = op1.AsDate();
+                return Create(date.AddSeconds((double)op2.AsNumber()));
+            }
+
+            // все к числовому типу.
+            return Create(op1.AsNumber() + op2.AsNumber());
+        }
+
+        public static IValue Sub(IValue op1, IValue op2)
+        {
+            if (op1.DataType == DataType.Number)
+            {
+                return Create(op1.AsNumber() - op2.AsNumber());
+            }
+            if (op1.DataType == DataType.Date && op2.DataType == DataType.Number)
+            {
+                var date = op1.AsDate();
+                var result = date.AddSeconds(-(double)op2.AsNumber());
+                return Create(result);
+            }
+            if (op1.DataType == DataType.Date && op2.DataType == DataType.Date)
+            {
+                var span = op1.AsDate() - op2.AsDate();
+                return Create((decimal)span.TotalSeconds);
+            }
+
+            // все к числовому типу.
+            return Create(op1.AsNumber() - op2.AsNumber());
+        }
+
+        public static IValue Mul(IValue op1, IValue op2)
+        {
+            return Create(op1.AsNumber() * op2.AsNumber());
+        }
+
+        public static IValue Div(IValue op1, IValue op2)
+        {
+            if (op2.AsNumber() == 0)
+            {
+                throw RuntimeException.DivideByZero();
+            }
+            return Create(op1.AsNumber() / op2.AsNumber());
+        }
+
+        public static IValue Mod(IValue op1, IValue op2)
+        {
+            if (op2.AsNumber() == 0)
+            {
+                throw RuntimeException.DivideByZero();
+            }
+            return Create(op1.AsNumber() % op2.AsNumber());
+        }
+
+        public static IValue Neg(IValue op1)
+        {
+            return Create(op1.AsNumber() * -1);
+        }
     }
 }
