@@ -564,24 +564,7 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-
-            var type1 = op1.DataType;
-            if (type1 == DataType.String)
-            {
-                var result = op1.AsString() + op2.AsString();
-                _operationStack.Push(ValueFactory.Create(result));
-            }
-            else if (type1 == DataType.Date && op2.DataType == DataType.Number)
-            {
-                var date = op1.AsDate();
-                var result = date.AddSeconds((double)op2.AsNumber());
-                _operationStack.Push(ValueFactory.Create(result));
-            }
-            else
-            {   // все к числовому типу.
-                var result = op1.AsNumber() + op2.AsNumber();
-                _operationStack.Push(ValueFactory.Create(result));
-            }
+            _operationStack.Push(ValueFactory.Add(op1, op2));
             NextInstruction();
 
         }
@@ -590,26 +573,7 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            if (op1.DataType == DataType.Number)
-            {
-                _operationStack.Push(ValueFactory.Create(op1.AsNumber() - op2.AsNumber()));
-            }
-            else if (op1.DataType == DataType.Date && op2.DataType == DataType.Number)
-            {
-                var date = op1.AsDate();
-                var result = date.AddSeconds(-(double)op2.AsNumber());
-                _operationStack.Push(ValueFactory.Create(result));
-            }
-            else if (op1.DataType == DataType.Date && op2.DataType == DataType.Date)
-            {
-                var span = op1.AsDate() - op2.AsDate();
-                _operationStack.Push(ValueFactory.Create((decimal)span.TotalSeconds));
-            }
-            else
-            {   // все к числовому типу.
-                var result = op1.AsNumber() - op2.AsNumber();
-                _operationStack.Push(ValueFactory.Create(result));
-            }
+            _operationStack.Push(ValueFactory.Sub(op1, op2));
             NextInstruction();
         }
 
@@ -617,21 +581,15 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Create(op1.AsNumber() * op2.AsNumber()));
+            _operationStack.Push(ValueFactory.Mul(op1, op2));
             NextInstruction();
         }
 
         private void Div(int arg)
         {
-            var op2 = _operationStack.Pop().AsNumber();
-            var op1 = _operationStack.Pop().AsNumber();
-
-            if (op2 == 0)
-            {
-                throw RuntimeException.DivideByZero();
-            }
-
-            _operationStack.Push(ValueFactory.Create(op1 / op2));
+            var op2 = _operationStack.Pop();
+            var op1 = _operationStack.Pop();
+            _operationStack.Push(ValueFactory.Div(op1, op2));
             NextInstruction();
         }
 
@@ -639,14 +597,14 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Create(op1.AsNumber() % op2.AsNumber()));
+            _operationStack.Push(ValueFactory.Mod(op1, op2));
             NextInstruction();
         }
 
         private void Neg(int arg)
         {
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Create(op1.AsNumber() * -1));
+            _operationStack.Push(ValueFactory.Neg(op1));
             NextInstruction();
         }
 
