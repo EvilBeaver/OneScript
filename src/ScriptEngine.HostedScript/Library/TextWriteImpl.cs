@@ -16,6 +16,8 @@ namespace ScriptEngine.HostedScript.Library
     class TextWriteImpl : AutoContext<TextWriteImpl>, IDisposable
     {
         StreamWriter _writer;
+        string _lineDelimiter = "";
+        string _eolReplacement = "";
 
         public TextWriteImpl()
         {
@@ -37,11 +39,15 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="path">Путь к файлу</param>
         /// <param name="encoding">Кодировка (необязательный). По умолчанию используется utf-8</param>
-        /// <param name="lineDelimiter">Разделитель строк (необязательный). В текущей релизации параметр игнорируется</param>
-        /// <param name="append">Признак добавления в конец файла. (необязательный)</param>
+        /// <param name="lineDelimiter">Разделитель строк (необязательный).</param>
+        /// <param name="append">Признак добавления в конец файла (необязательный)</param>
+        /// <param name="eolReplacement">Разделитель строк в файле (необязательный).</param>
         [ContextMethod("Открыть", "Open")]
-        public void Open(string path, IValue encoding = null, string lineDelimiter = null, bool append = false)
+        public void Open(string path, IValue encoding = null, string lineDelimiter = null, bool append = false, string eolReplacement = null)
         {
+            _lineDelimiter = lineDelimiter ?? "\n";
+            _eolReplacement = eolReplacement ?? System.Environment.NewLine;
+
             Encoding enc;
             if (encoding == null)
             {
@@ -72,20 +78,29 @@ namespace ScriptEngine.HostedScript.Library
         public void Write(string what)
         {
             ThrowIfNotOpened();
+
+            var stringToOutput = what.Replace ("\n", _eolReplacement);
             
-            _writer.Write(what);
+            _writer.Write(stringToOutput);
         }
 
         /// <summary>
         /// Записывает текст и добавляет перевод строки
         /// </summary>
         /// <param name="what">Текст для записи</param>
+        /// <param name="delimiter">Разделитель строк</param>
         [ContextMethod("ЗаписатьСтроку", "WriteLine")]
-        public void WriteLine(string what)
+        public void WriteLine(string what, IValue delimiter = null)
         {
             ThrowIfNotOpened();
 
-            _writer.WriteLine(what);
+            Write (what);
+
+            var sDelimiter = _lineDelimiter;
+            if (delimiter != null && delimiter.GetRawValue().DataType != DataType.Undefined)
+                sDelimiter = delimiter.ToString();
+
+            Write (sDelimiter);
         }
 
         public void ThrowIfNotOpened()
@@ -103,12 +118,6 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ScriptConstructor(Name = "")]
-        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding)
-        {
-            return new TextWriteImpl(path.AsString(), encoding);
-        }
-
         /// <summary>
         /// Создает объект с начальными значениями имени файла и кодировки.
         /// </summary>
@@ -116,11 +125,22 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="encoding">Кодировка в виде строки</param>
         /// <param name="lineDelimiter">Символ - разделитель строк</param>
         /// <param name="append">Признак добавления в конец файла (необязательный)</param>
+        /// <param name="eolReplacement">Разделитель строк в файле (необязательный).</param>
         [ScriptConstructor(Name = "По имени файла и кодировке")]
-        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue append = null)
+        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue append = null, IValue eolReplacement = null)
         {
             bool isAppend = append != null && append.AsBoolean();
-            return new TextWriteImpl(path.AsString(), encoding, isAppend);
+            var result = new TextWriteImpl ();
+
+            string sLineDelimiter = lineDelimiter == null ? "\n" : lineDelimiter.ToString ();
+            string sEolReplacement = eolReplacement == null
+                ? System.Environment.NewLine
+                : eolReplacement.ToString ()
+            ;
+
+            result.Open (path.AsString (), encoding, sLineDelimiter, isAppend, sEolReplacement);
+
+            return result;
         }
 
         [ScriptConstructor]
