@@ -39,88 +39,106 @@ namespace ScriptEngine.HostedScript.Library
 
         private void UpdateCharQueue()
         {
-            // TODO: продумать оптимальный размер буфера
-            int NEEDED_BUFFER_SIZE = 256;
-
             if (_reader.EndOfStream)
                 return;
 
-            if (_queue.Count < _eolDelimiter.Length) {
-                while (_queue.Count < NEEDED_BUFFER_SIZE) {
-                    var ic = _reader.Read ();
-                    if (ic == -1)
-                        break;
-                    _queue.Enqueue ((char)ic);
+            var ic = _reader.Read();
+            if (ic == -1)
+                return;
+            
+            var c = (char)ic;
+            if (c != _eolDelimiter[0]) {
+                _queue.Enqueue(c);
+                return;
+            }
+
+            // Если встретили первый символ разделителя строк,
+            // то необходимо проверить, действительно ли встретили разделитель
+
+            var tempQueue = new List<char>();
+            tempQueue.Add(c);
+            var isEol = true;
+            for (int i = 1; i < _eolDelimiter.Length; i++) {
+                
+                ic = _reader.Read ();
+                if (ic == -1) {
+                    isEol = false;
+                    break;
                 }
+
+                c = (char)ic;
+                tempQueue.Add(c);
+                if (c != _eolDelimiter[i]) {
+                    isEol = false;
+                    break;
+                }
+            }
+
+            if (isEol) {
+                // Для внутренней работы строк в качестве символа переноса всегда используем Символы.ПС
+                _queue.Enqueue('\n');
+            } else {
+                foreach (var ch in tempQueue)
+                    _queue.Enqueue(ch);
             }
         }
 
         private int ReadNext()
         {
             UpdateCharQueue();
-
             if (_queue.Count == 0)
                 return -1;
 
-            var currentChar = _queue.Dequeue();
-            if (currentChar != _eolDelimiter[0])
-                return currentChar;
-
-            bool isEndOfLine = true;
-            if (_eolDelimiter.Length > 1) {
-                int eolIndex = 1;
-                foreach (var c in _queue) {
-                    if (_eolDelimiter [eolIndex] != c) {
-                        isEndOfLine = false;
-                        break;
-                    }
-                    ++eolIndex;
-                    if (eolIndex == _eolDelimiter.Length)
-                        break;
-                }
-            }
-
-            if (!isEndOfLine)
-                return currentChar;
-
-            for (int i = 1; i < _eolDelimiter.Length; i++)
-                _queue.Dequeue ();
-
-            return -2; // TODO: Magic number!
+            return _queue.Dequeue();
         }
 
         [ContextMethod("Прочитать", "Read")]
         public IValue ReadAll(int size = 0)
         {
             RequireOpen();
-            if (_reader.EndOfStream)
+            UpdateCharQueue();
+            if (_queue.Count == 0)
                 return ValueFactory.Create();
 
-            var sb = new StringBuilder ();
+            var sb = new StringBuilder();
             var read = 0;
             do {
-                var ic = ReadNext ();
+                var ic = ReadNext();
                 if (ic == -1)
                     break;
-                if (ic == -2) {
-                    sb.Append (_lineDelimiter);
-                    read += _lineDelimiter.Length;
-                } else {
-                    sb.Append ((Char)ic);
-                    ++read;
-                }
+                if ((char)ic == '\n')
+                    sb.Append(_lineDelimiter);
+                else
+                    sb.Append((char)ic);
+                ++read;
             } while (size == 0 || read < size);
-            return ValueFactory.Create (sb.ToString());
+
+            return ValueFactory.Create(sb.ToString());
         }
 
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
         public IValue ReadLine()
         {
             RequireOpen();
-            if (_reader.EndOfStream)
+            UpdateCharQueue();
+            if (_queue.Count == 0)
                 return ValueFactory.Create();
 
-            return ValueFactory.Create(_reader.ReadLine());
+            var sb = new StringBuilder();
+            do {
+                var ic = ReadNext();
+
+                if (ic == -1)
+                    break;
+
+                if ((char)ic == '\n')
+                    break;
+                
+                sb.Append((char)ic);
+
+            } while (true);
+
+            return ValueFactory.Create(sb.ToString());
         }
 
         [ContextMethod("Закрыть", "Close")]
@@ -137,7 +155,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ScriptConstructor (Name = "По имени файла и кодировке")]
+        [ScriptConstructor(Name = "По имени файла и кодировке")]
         public static IRuntimeContextInstance Constructor (IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue eolDelimiter = null)
         {
             var reader = new TextReadImpl();
