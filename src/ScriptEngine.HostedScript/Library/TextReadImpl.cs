@@ -137,19 +137,11 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ScriptConstructor(Name="По имени файла и кодировке")]
-        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding)
+        [ScriptConstructor (Name = "По имени файла и кодировке")]
+        public static IRuntimeContextInstance Constructor (IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue eolDelimiter = null)
         {
             var reader = new TextReadImpl();
-            reader.Open(path.AsString(), encoding);
-            return reader;
-        }
-
-        [ScriptConstructor(Name = "По имени файла")]
-        public static IRuntimeContextInstance Constructor(IValue path)
-        {
-            var reader = new TextReadImpl();
-            reader.Open(path.AsString(), null);
+            reader.Open(path.AsString(), encoding, lineDelimiter?.ToString() ?? "\n", eolDelimiter ?.ToString());
             return reader;
         }
 
