@@ -16,89 +16,47 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("ЧтениеТекста", "TextReader")]
     class TextReadImpl : AutoContext<TextReadImpl>, IDisposable
     {
-        StreamReader _reader;
+        // TextReader _reader;
+        CustomLineFeedStreamReader _reader;
         string _lineDelimiter = "\n";
-        string _eolDelimiter = System.Environment.NewLine;
-        Queue<char> _queue = new Queue<char>();
+
+        public TextReadImpl ()
+        {
+            AnalyzeDefaultLineFeed = true;
+        }
 
         [ContextMethod("Открыть", "Open")]
         public void Open(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null)
         {
+            TextReader imReader;
             if (encoding == null)
             {
-                _reader = Environment.FileOpener.OpenReader(path);
+                imReader = Environment.FileOpener.OpenReader(path);
             }
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding);
-                _reader = Environment.FileOpener.OpenReader(path, enc);
+                imReader = Environment.FileOpener.OpenReader(path, enc);
             }
-            _lineDelimiter = lineDelimiter;
-            _eolDelimiter = eolDelimiter ?? System.Environment.NewLine;
+            _lineDelimiter = lineDelimiter ?? "\n";
+            if (eolDelimiter != null)
+                _reader = new CustomLineFeedStreamReader (imReader, eolDelimiter, AnalyzeDefaultLineFeed);
+            else
+                _reader = new CustomLineFeedStreamReader (imReader, System.Environment.NewLine, AnalyzeDefaultLineFeed);
+
         }
 
-        private void UpdateCharQueue()
-        {
-            if (_reader.EndOfStream)
-                return;
-
-            var ic = _reader.Read();
-            if (ic == -1)
-                return;
-            
-            var c = (char)ic;
-            if (c != _eolDelimiter[0]) {
-                _queue.Enqueue(c);
-                return;
-            }
-
-            // Если встретили первый символ разделителя строк,
-            // то необходимо проверить, действительно ли встретили разделитель
-
-            var tempQueue = new List<char>();
-            tempQueue.Add(c);
-            var isEol = true;
-            for (int i = 1; i < _eolDelimiter.Length; i++) {
-                
-                ic = _reader.Read ();
-                if (ic == -1) {
-                    isEol = false;
-                    break;
-                }
-
-                c = (char)ic;
-                tempQueue.Add(c);
-                if (c != _eolDelimiter[i]) {
-                    isEol = false;
-                    break;
-                }
-            }
-
-            if (isEol) {
-                // Для внутренней работы строк в качестве символа переноса всегда используем Символы.ПС
-                _queue.Enqueue('\n');
-            } else {
-                foreach (var ch in tempQueue)
-                    _queue.Enqueue(ch);
-            }
-        }
+        private bool AnalyzeDefaultLineFeed { get; set; }
 
         private int ReadNext()
         {
-            UpdateCharQueue();
-            if (_queue.Count == 0)
-                return -1;
-
-            return _queue.Dequeue();
+            return _reader.Read ();
         }
 
         [ContextMethod("Прочитать", "Read")]
         public IValue ReadAll(int size = 0)
         {
             RequireOpen();
-            UpdateCharQueue();
-            if (_queue.Count == 0)
-                return ValueFactory.Create();
 
             var sb = new StringBuilder();
             var read = 0;
@@ -106,39 +64,26 @@ namespace ScriptEngine.HostedScript.Library
                 var ic = ReadNext();
                 if (ic == -1)
                     break;
-                if ((char)ic == '\n')
-                    sb.Append(_lineDelimiter);
-                else
-                    sb.Append((char)ic);
+                sb.Append((char)ic);
                 ++read;
             } while (size == 0 || read < size);
 
+            if (sb.Length == 0)
+                return ValueFactory.Create ();
+            
             return ValueFactory.Create(sb.ToString());
         }
 
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
-        public IValue ReadLine()
+        public IValue ReadLine(string overridenLineDelimiter = null)
         {
             RequireOpen();
-            UpdateCharQueue();
-            if (_queue.Count == 0)
+            string l = _reader.ReadLine (overridenLineDelimiter ?? _lineDelimiter);
+
+            if (l == null)
                 return ValueFactory.Create();
 
-            var sb = new StringBuilder();
-            do {
-                var ic = ReadNext();
-
-                if (ic == -1)
-                    break;
-
-                if ((char)ic == '\n')
-                    break;
-                
-                sb.Append((char)ic);
-
-            } while (true);
-
-            return ValueFactory.Create(sb.ToString());
+            return ValueFactory.Create(l);
         }
 
         [ContextMethod("Закрыть", "Close")]
@@ -155,10 +100,21 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        [ScriptConstructor(Name="По имени файла")]
+        public static IRuntimeContextInstance Constructor (IValue path)
+        {
+            var reader = new TextReadImpl ();
+            reader.AnalyzeDefaultLineFeed = false;
+            reader.Open (path.AsString (), null, "\n", System.Environment.NewLine);
+            return reader;
+        }
+
         [ScriptConstructor(Name = "По имени файла и кодировке")]
         public static IRuntimeContextInstance Constructor (IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue eolDelimiter = null)
         {
             var reader = new TextReadImpl();
+            if (lineDelimiter != null)
+                reader.AnalyzeDefaultLineFeed = false;
             reader.Open(path.AsString(), encoding, lineDelimiter?.ToString() ?? "\n", eolDelimiter ?.ToString());
             return reader;
         }
@@ -167,6 +123,7 @@ namespace ScriptEngine.HostedScript.Library
         public static IRuntimeContextInstance Constructor()
         {
             var reader = new TextReadImpl();
+            reader.AnalyzeDefaultLineFeed = false;
             return reader;
         }
 
