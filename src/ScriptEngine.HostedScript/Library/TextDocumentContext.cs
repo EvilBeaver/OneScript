@@ -274,7 +274,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 if (lineSeparator == null)
                     lineSeparator = System.Environment.NewLine;
-                else if (lineSeparator != "\n" || lineSeparator != "\r" || lineSeparator != "\r\n")
+                else if (lineSeparator != "\n" && lineSeparator != "\r" && lineSeparator != "\r\n")
                     throw RuntimeException.InvalidArgumentValue();
 
                 foreach (var line in _lines)
