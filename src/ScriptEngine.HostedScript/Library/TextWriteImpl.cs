@@ -13,7 +13,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ЗаписьТекста", "TextWriter")]
-    class TextWriteImpl : AutoContext<TextWriteImpl>, IDisposable
+    public class TextWriteImpl : AutoContext<TextWriteImpl>, IDisposable
     {
         StreamWriter _writer;
         string _lineDelimiter = "";

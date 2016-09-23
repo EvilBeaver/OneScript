@@ -14,7 +14,7 @@ using System.Collections.Generic;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ЧтениеТекста", "TextReader")]
-    class TextReadImpl : AutoContext<TextReadImpl>, IDisposable
+    public class TextReadImpl : AutoContext<TextReadImpl>, IDisposable
     {
         // TextReader _reader;
         CustomLineFeedStreamReader _reader;
