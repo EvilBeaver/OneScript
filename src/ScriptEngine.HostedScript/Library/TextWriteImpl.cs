@@ -97,8 +97,8 @@ namespace ScriptEngine.HostedScript.Library
             Write (what);
 
             var sDelimiter = _lineDelimiter;
-            if (delimiter != null && delimiter.GetRawValue().DataType != DataType.Undefined)
-                sDelimiter = delimiter.ToString();
+            if (delimiter != null && delimiter.GetRawValue ().DataType != DataType.Undefined)
+                sDelimiter = delimiter.GetRawValue ().AsString ();
 
             Write (sDelimiter);
         }
@@ -132,11 +132,8 @@ namespace ScriptEngine.HostedScript.Library
             bool isAppend = append != null && append.AsBoolean();
             var result = new TextWriteImpl ();
 
-            string sLineDelimiter = lineDelimiter == null ? "\n" : lineDelimiter.ToString ();
-            string sEolReplacement = eolReplacement == null
-                ? "\r\n"
-                : eolReplacement.ToString ()
-            ;
+            string sLineDelimiter = lineDelimiter?.GetRawValue().AsString () ?? "\n";
+            string sEolReplacement = eolReplacement?.GetRawValue().AsString () ?? "\r\n";
 
             result.Open (path.AsString (), encoding, sLineDelimiter, isAppend, sEolReplacement);
 

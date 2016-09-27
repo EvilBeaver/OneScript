@@ -115,7 +115,7 @@ namespace ScriptEngine.HostedScript.Library
             var reader = new TextReadImpl();
             if (lineDelimiter != null)
                 reader.AnalyzeDefaultLineFeed = false;
-            reader.Open(path.AsString(), encoding, lineDelimiter?.ToString() ?? "\n", eolDelimiter ?.ToString());
+            reader.Open(path.AsString(), encoding, lineDelimiter?.GetRawValue().AsString() ?? "\n", eolDelimiter ?.GetRawValue().AsString());
             return reader;
         }
 
