@@ -42,7 +42,7 @@ namespace ScriptEngine.HostedScript.Library
             if (eolDelimiter != null)
                 _reader = new CustomLineFeedStreamReader (imReader, eolDelimiter, AnalyzeDefaultLineFeed);
             else
-                _reader = new CustomLineFeedStreamReader (imReader, System.Environment.NewLine, AnalyzeDefaultLineFeed);
+                _reader = new CustomLineFeedStreamReader (imReader, "\r\n", AnalyzeDefaultLineFeed);
 
         }
 
@@ -105,7 +105,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             var reader = new TextReadImpl ();
             reader.AnalyzeDefaultLineFeed = false;
-            reader.Open (path.AsString (), null, "\n", System.Environment.NewLine);
+            reader.Open (path.AsString (), null, "\n", "\r\n");
             return reader;
         }
 

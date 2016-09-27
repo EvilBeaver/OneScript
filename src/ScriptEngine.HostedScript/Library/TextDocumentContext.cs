@@ -273,7 +273,7 @@ namespace ScriptEngine.HostedScript.Library
             using (var writer = GetDefaultWriter(path, encoding))
             {
                 if (lineSeparator == null)
-                    lineSeparator = System.Environment.NewLine;
+                    lineSeparator = "\r\n";
                 else if (lineSeparator != "\n" && lineSeparator != "\r" && lineSeparator != "\r\n")
                     throw RuntimeException.InvalidArgumentValue();
 

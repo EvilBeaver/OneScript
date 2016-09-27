@@ -46,7 +46,7 @@ namespace ScriptEngine.HostedScript.Library
         public void Open(string path, IValue encoding = null, string lineDelimiter = null, bool append = false, string eolReplacement = null)
         {
             _lineDelimiter = lineDelimiter ?? "\n";
-            _eolReplacement = eolReplacement ?? System.Environment.NewLine;
+            _eolReplacement = eolReplacement ?? "\r\n";
 
             Encoding enc;
             if (encoding == null)
@@ -134,7 +134,7 @@ namespace ScriptEngine.HostedScript.Library
 
             string sLineDelimiter = lineDelimiter == null ? "\n" : lineDelimiter.ToString ();
             string sEolReplacement = eolReplacement == null
-                ? System.Environment.NewLine
+                ? "\r\n"
                 : eolReplacement.ToString ()
             ;
 
