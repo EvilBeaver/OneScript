@@ -69,21 +69,26 @@ namespace ScriptEngine.HostedScript.Library.Http
         public IWebProxy GetProxy(string protocol)
         {
             var settings = GetSettings(protocol);
-            WebProxy wp;
+            IWebProxy returnProxy;
+
             if (settings.proxy == null)
             {
-                wp = new WebProxy(settings.server, settings.port);
+                if (String.IsNullOrEmpty(settings.server))
+                    throw new RuntimeException("Не заданы настройки прокси-сервера для протокола, используемого в запросе");
+
+                var wp = new WebProxy(settings.server, settings.port);
                 wp.Credentials = settings.creds;
                 wp.BypassList = _bypassProxyOnAddresses.Select(x => x.AsString()).ToArray();
                 wp.BypassProxyOnLocal = _bypassLocal;
                 settings.proxy = wp;
+                returnProxy = wp;
             }
             else
             {
-                wp = (WebProxy)_proxies[protocol].proxy;
+                returnProxy = _proxies[protocol].proxy;
             }
             
-            return wp;
+            return returnProxy;
         }
 
         [ContextMethod("Пользователь","User")]
