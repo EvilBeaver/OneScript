@@ -9,46 +9,81 @@ using System.IO;
 using System.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System.Collections.Generic;
 
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ЧтениеТекста", "TextReader")]
-    class TextReadImpl : AutoContext<TextReadImpl>, IDisposable
+    public class TextReadImpl : AutoContext<TextReadImpl>, IDisposable
     {
-        StreamReader _reader;
+        // TextReader _reader;
+        CustomLineFeedStreamReader _reader;
+        string _lineDelimiter = "\n";
+
+        public TextReadImpl ()
+        {
+            AnalyzeDefaultLineFeed = true;
+        }
 
         [ContextMethod("Открыть", "Open")]
-        public void Open(string path, IValue encoding = null)
+        public void Open(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null)
         {
+            TextReader imReader;
             if (encoding == null)
             {
-                _reader = Environment.FileOpener.OpenReader(path);
+                imReader = Environment.FileOpener.OpenReader(path);
             }
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding);
-                _reader = Environment.FileOpener.OpenReader(path, enc);
+                imReader = Environment.FileOpener.OpenReader(path, enc);
             }
+            _lineDelimiter = lineDelimiter ?? "\n";
+            if (eolDelimiter != null)
+                _reader = new CustomLineFeedStreamReader (imReader, eolDelimiter, AnalyzeDefaultLineFeed);
+            else
+                _reader = new CustomLineFeedStreamReader (imReader, "\r\n", AnalyzeDefaultLineFeed);
+
+        }
+
+        private bool AnalyzeDefaultLineFeed { get; set; }
+
+        private int ReadNext()
+        {
+            return _reader.Read ();
         }
 
         [ContextMethod("Прочитать", "Read")]
-        public IValue ReadAll()
+        public IValue ReadAll(int size = 0)
         {
             RequireOpen();
-            if (_reader.EndOfStream)
-                return ValueFactory.Create();
 
-            return ValueFactory.Create(_reader.ReadToEnd());
+            var sb = new StringBuilder();
+            var read = 0;
+            do {
+                var ic = ReadNext();
+                if (ic == -1)
+                    break;
+                sb.Append((char)ic);
+                ++read;
+            } while (size == 0 || read < size);
+
+            if (sb.Length == 0)
+                return ValueFactory.Create ();
+            
+            return ValueFactory.Create(sb.ToString());
         }
 
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
-        public IValue ReadLine()
+        public IValue ReadLine(string overridenLineDelimiter = null)
         {
             RequireOpen();
-            if (_reader.EndOfStream)
+            string l = _reader.ReadLine (overridenLineDelimiter ?? _lineDelimiter);
+
+            if (l == null)
                 return ValueFactory.Create();
 
-            return ValueFactory.Create(_reader.ReadLine());
+            return ValueFactory.Create(l);
         }
 
         [ContextMethod("Закрыть", "Close")]
@@ -65,19 +100,22 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ScriptConstructor(Name="По имени файла и кодировке")]
-        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding)
+        [ScriptConstructor(Name="По имени файла")]
+        public static IRuntimeContextInstance Constructor (IValue path)
         {
-            var reader = new TextReadImpl();
-            reader.Open(path.AsString(), encoding);
+            var reader = new TextReadImpl ();
+            reader.AnalyzeDefaultLineFeed = false;
+            reader.Open (path.AsString (), null, "\n", "\r\n");
             return reader;
         }
 
-        [ScriptConstructor(Name = "По имени файла")]
-        public static IRuntimeContextInstance Constructor(IValue path)
+        [ScriptConstructor(Name = "По имени файла и кодировке")]
+        public static IRuntimeContextInstance Constructor (IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue eolDelimiter = null)
         {
             var reader = new TextReadImpl();
-            reader.Open(path.AsString(), null);
+            if (lineDelimiter != null)
+                reader.AnalyzeDefaultLineFeed = false;
+            reader.Open(path.AsString(), encoding, lineDelimiter?.GetRawValue().AsString() ?? "\n", eolDelimiter ?.GetRawValue().AsString());
             return reader;
         }
 
@@ -85,6 +123,7 @@ namespace ScriptEngine.HostedScript.Library
         public static IRuntimeContextInstance Constructor()
         {
             var reader = new TextReadImpl();
+            reader.AnalyzeDefaultLineFeed = false;
             return reader;
         }
 

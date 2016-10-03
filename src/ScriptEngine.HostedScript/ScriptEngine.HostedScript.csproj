@@ -175,6 +175,7 @@
     <Compile Include="Library\StringOperations.cs" />
     <Compile Include="DirectiveMultiResolver.cs" />
     <Compile Include="DirectiveIgnorer.cs" />
+    <Compile Include="Library\CustomLineFeedStreamReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
