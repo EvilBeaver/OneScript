@@ -34,32 +34,49 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ВызватьМетод", "CallMethod")]
         public IValue CallMethod(IRuntimeContextInstance target, string methodName, ArrayImpl arguments = null)
         {
-            if (arguments == null)
-            {
-                arguments = new ArrayImpl();
-            }
-
             var methodIdx = target.FindMethod(methodName);
-
             var methInfo = target.GetMethodInfo(methodIdx);
 
-            if (methInfo.ArgCount < arguments.Count())
-                throw RuntimeException.TooManyArgumentsPassed();
-
-            if (methInfo.ArgCount > arguments.Count())
-                throw RuntimeException.TooLittleArgumentsPassed();
+            var argsToPass = GetArgsToPass(arguments, methInfo);
 
             IValue retValue = ValueFactory.Create();
             if (methInfo.IsFunction)
             {
-                target.CallAsFunction(methodIdx, arguments.ToArray(), out retValue);
+                target.CallAsFunction(methodIdx, argsToPass, out retValue);
             }
             else
             {
-                target.CallAsProcedure(methodIdx, arguments.ToArray());
+                target.CallAsProcedure(methodIdx, argsToPass);
+            }
+
+            if (arguments != null)
+            {
+                for (int i = 0; i < argsToPass.Length; i++)
+                {
+                    arguments.Set(i, argsToPass[i].GetRawValue());
+                }
             }
 
             return retValue;
+        }
+
+        private static IValue[] GetArgsToPass(ArrayImpl arguments, MethodInfo methInfo)
+        {
+            var argsToPass = arguments == null ? new IValue[0] : arguments.ToArray();
+
+            if (methInfo.ArgCount < argsToPass.Length)
+                throw RuntimeException.TooManyArgumentsPassed();
+
+            if (methInfo.ArgCount > argsToPass.Length)
+                throw RuntimeException.TooLittleArgumentsPassed();
+
+            for (int i = 0; i < argsToPass.Length; i++)
+            {
+                if (!methInfo.Params[i].IsByValue)
+                    argsToPass[i] = Variable.Create(argsToPass[i]);
+            }
+
+            return argsToPass;
         }
 
         /// <summary>
