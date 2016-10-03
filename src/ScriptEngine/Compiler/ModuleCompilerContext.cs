@@ -16,14 +16,14 @@ namespace ScriptEngine.Compiler
     {
         private readonly CompilerContext _outerCtx;
         private readonly CompilerContext _moduleCtx;
-        private readonly int OUTER_CTX_SIZE;
+        private int OUTER_CTX_SIZE;
         private int _localScopesCount = 0;
 
         public ModuleCompilerContext(CompilerContext outerContext)
         {
             _outerCtx = outerContext;
             _moduleCtx = new CompilerContext();
-            OUTER_CTX_SIZE = _outerCtx.TopIndex()+1;
+            Update();
         }
         
         #region ICompilerContext Members
@@ -150,6 +150,11 @@ namespace ScriptEngine.Compiler
         private void ShiftIndex(ref SymbolBinding symbolBinding)
         {
             symbolBinding.ContextIndex += OUTER_CTX_SIZE;
+        }
+
+        internal void Update()
+        {
+            OUTER_CTX_SIZE = _outerCtx.TopIndex() + 1;
         }
     }
 }

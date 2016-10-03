@@ -33,6 +33,7 @@ namespace ScriptEngine.HostedScript
         {
             try
             {
+                _engine.Initialize();
                 _engine.NewObject(_module);
                 return 0;
             }

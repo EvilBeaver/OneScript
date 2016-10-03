@@ -178,12 +178,20 @@ namespace ScriptEngine.Compiler
                 else if(_lastExtractedLexem.Type == LexemType.Directive)
                 {
                     HandleDirective(isCodeEntered);
+                    UpdateCompositeContext(); // костыль для #330
                 }
                 else
                 {
                     throw CompilerException.UnexpectedOperation();
                 }
             }
+        }
+
+        private void UpdateCompositeContext()
+        {
+            var modCtx = _ctx as ModuleCompilerContext;
+            if (modCtx != null)
+                modCtx.Update();
         }
 
         private void BuildVariableDefinitions()
