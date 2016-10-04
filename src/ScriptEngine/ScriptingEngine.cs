@@ -45,14 +45,19 @@ namespace ScriptEngine
             SetDefaultEnvironmentIfNeeded();
 
             var symbolsContext = Environment.SymbolsContext;
+            UpdateContexts();
+
+            _attachedScriptsFactory = new AttachedScriptsFactory(this);
+            AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
+        }
+
+        public void UpdateContexts()
+        {
             _machine.Cleanup();
             foreach (var item in Environment.AttachedContexts)
             {
                 _machine.AttachContext(item, false);
             }
-
-            _attachedScriptsFactory = new AttachedScriptsFactory(this);
-            AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
         }
 
         private void SetDefaultEnvironmentIfNeeded()
