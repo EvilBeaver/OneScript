@@ -1,0 +1,11 @@
+_opm_complete()
+{
+	local cur opts
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	opts="build prepare install update app help"
+	COMPREPLY=( $(compgen -W "$opts" -- ${cur}) )
+	return 0
+}
+complete -F _opm_complete opm
+
