@@ -185,6 +185,9 @@
     <Compile Include="ScriptingEngine.cs" />
     <Compile Include="SystemLogger.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="Machine\Contexts\EnumerationTypeAttribute.cs" />
+    <Compile Include="Machine\Contexts\EnumerationGlobalPropertyAttribute.cs" />
+    <Compile Include="Machine\Contexts\FieldContextAttribute.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

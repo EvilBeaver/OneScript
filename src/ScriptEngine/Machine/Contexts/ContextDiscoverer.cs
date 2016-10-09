@@ -33,6 +33,12 @@ namespace ScriptEngine.Machine.Contexts
                 RegisterSystemEnum(item, environment);
             }
 
+            var simpleEnums = GetMarkedTypes(allTypes.AsParallel(), typeof(EnumerationTypeAttribute));
+            foreach (var item in simpleEnums)
+            {
+                RegisterSimpleEnum(item, environment);
+            }
+
             var contexts = GetMarkedTypes(allTypes.AsParallel(), typeof(GlobalContextAttribute));
             foreach (var item in contexts)
             {
@@ -69,6 +75,48 @@ namespace ScriptEngine.Machine.Contexts
             environment.InjectGlobalProperty(instance, enumMetadata.GetName(), true);
             if(enumMetadata.GetAlias() != String.Empty)
                 environment.InjectGlobalProperty(instance, enumMetadata.GetAlias(), true);
+        }
+
+        private static void RegisterSimpleEnum(Type enumType, RuntimeEnvironment environment)
+        {
+            var enumTypeAttribute = (EnumerationTypeAttribute)enumType.GetCustomAttributes (typeof (EnumerationTypeAttribute), false)[0];
+
+            var type = TypeManager.RegisterType ("Перечисление" + enumTypeAttribute.Name, typeof (EnumerationContext));
+            if (enumTypeAttribute.Alias != null)
+                TypeManager.RegisterAliasFor (type, "Enum" + enumTypeAttribute.Alias);
+            
+            var enumValueType = TypeManager.RegisterType (enumTypeAttribute.Name, enumType);
+
+            var properties = enumType.GetCustomAttributes (typeof (EnumerationGlobalPropertyAttribute), false);
+            var instance = new EnumerationContext (type, enumValueType);
+
+            var wrapperTypeUndefined = typeof (CLREnumValueWrapper<>);
+            var wrapperType = wrapperTypeUndefined.MakeGenericType (new Type [] { enumType } );
+            var constructor = wrapperType.GetConstructor (new Type [] { typeof(EnumerationContext), enumType, typeof(DataType) });
+
+            foreach (var field in enumType.GetFields())
+            {
+                foreach (var contextFieldAttribute in field.GetCustomAttributes (typeof (FieldContextAttribute), false))
+                {
+                    var contextField = (FieldContextAttribute)contextFieldAttribute;
+                    var osValue = (EnumerationValue)constructor.Invoke (new object [] { instance, field.GetValue (null), DataType.Enumeration } );
+
+                    if (contextField.Alias == null)
+                        instance.AddValue (contextField.Name, osValue);
+                    else
+                        instance.AddValue (contextField.Name, contextField.Alias, osValue);
+                }
+            }
+
+            GlobalsManager.RegisterInstance(instance);
+            foreach (var p in properties)
+            {
+                var propertyAttribute = (EnumerationGlobalPropertyAttribute)p;
+                environment.InjectGlobalProperty (instance, propertyAttribute.Name, true);
+                if (propertyAttribute.Alias != null)
+                    environment.InjectGlobalProperty (instance, propertyAttribute.Alias, true);
+            }
+
         }
 
 

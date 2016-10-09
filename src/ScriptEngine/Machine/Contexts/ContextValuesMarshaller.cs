@@ -37,7 +37,13 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return null;
             }
-            else if (type == typeof(IValue))
+
+            if (Nullable.GetUnderlyingType(type) != null)
+            {
+                return ConvertParam(value, Nullable.GetUnderlyingType(type));
+            }
+
+            if (type == typeof(IValue))
             {
                 valueObj = value;
             }

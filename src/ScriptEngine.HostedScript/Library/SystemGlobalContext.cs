@@ -68,7 +68,7 @@ namespace ScriptEngine.HostedScript.Library
             if(status == null)
                 ApplicationHost.Echo(message);
             else
-                ApplicationHost.Echo(message, status.UnderlyingObject);
+                ApplicationHost.Echo(message, status.UnderlyingValue);
         }
 
         /// <summary>
