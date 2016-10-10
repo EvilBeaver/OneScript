@@ -181,10 +181,10 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         }
 
         [ContextMethod("СортироватьПоЗначению", "SortByValue")]
-        public void SortByValue(SelfAwareEnumValue<SortDirectionEnum> direction)
+        public void SortByValue(SelfAwareEnumValue<SortDirectionEnum> direction = null)
         {
             var enumInstance = GlobalsManager.GetEnum<SortDirectionEnum>();
-            if(direction == enumInstance.Asc)
+            if(direction == null || direction == enumInstance.Asc)
             {
                 _items.Sort((x, y) => SafeCompare(x.Value, y.Value));
             }
