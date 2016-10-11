@@ -11,6 +11,7 @@ using System.Text;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 
 namespace oscript
@@ -57,7 +58,7 @@ namespace oscript
 
         #region IHostApplication Members
 
-        public void Echo(string text, EchoStatus status = EchoStatus.Undefined)
+        public void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
             ConsoleHostImpl.Echo(text, status);
         }

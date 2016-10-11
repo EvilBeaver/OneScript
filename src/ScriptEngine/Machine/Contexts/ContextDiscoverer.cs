@@ -84,7 +84,7 @@ namespace ScriptEngine.Machine.Contexts
             var type = TypeManager.RegisterType ("Перечисление" + enumTypeAttribute.Name, typeof (EnumerationContext));
             if (enumTypeAttribute.Alias != null)
                 TypeManager.RegisterAliasFor (type, "Enum" + enumTypeAttribute.Alias);
-            
+
             var enumValueType = TypeManager.RegisterType (enumTypeAttribute.Name, enumType);
 
             var properties = enumType.GetCustomAttributes (typeof (EnumerationGlobalPropertyAttribute), false);
@@ -108,7 +108,6 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
 
-            GlobalsManager.RegisterInstance(instance);
             foreach (var p in properties)
             {
                 var propertyAttribute = (EnumerationGlobalPropertyAttribute)p;
