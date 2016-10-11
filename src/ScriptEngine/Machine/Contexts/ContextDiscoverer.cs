@@ -95,9 +95,9 @@ namespace ScriptEngine.Machine.Contexts
 
             foreach (var field in enumType.GetFields())
             {
-                foreach (var contextFieldAttribute in field.GetCustomAttributes (typeof (FieldContextAttribute), false))
+                foreach (var contextFieldAttribute in field.GetCustomAttributes (typeof (ContextFieldAttribute), false))
                 {
-                    var contextField = (FieldContextAttribute)contextFieldAttribute;
+                    var contextField = (ContextFieldAttribute)contextFieldAttribute;
                     var osValue = (EnumerationValue)constructor.Invoke (new object [] { instance, field.GetValue (null), DataType.Enumeration } );
 
                     if (contextField.Alias == null)

@@ -2,9 +2,9 @@
 namespace ScriptEngine
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class FieldContextAttribute : Attribute
+    public class ContextFieldAttribute : Attribute
     {
-        public FieldContextAttribute (string name, string alias = null)
+        public ContextFieldAttribute (string name, string alias = null)
         {
             Name = name;
             Alias = alias;
