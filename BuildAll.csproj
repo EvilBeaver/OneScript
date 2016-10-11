@@ -172,7 +172,7 @@
 	
   </Target>
   
-  <Target Name="PublishNuget"/>
+  <Target Name="PublishNuget">
 	<ItemGroup>
 		<FileToPush Include="$(DistPath)\*.nupkg" />
 	</ItemGroup>
