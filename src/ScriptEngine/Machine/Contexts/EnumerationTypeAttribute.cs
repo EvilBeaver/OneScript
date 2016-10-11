@@ -10,13 +10,15 @@ namespace ScriptEngine
     [AttributeUsage(AttributeTargets.Enum)]
     public class EnumerationTypeAttribute : Attribute
     {
-        public EnumerationTypeAttribute (string name, string alias = null)
-        {
-            Name = name;
-            Alias = alias;
-        }
+        public EnumerationTypeAttribute (string name, string alias = null, bool createProperty = true)
+		{
+			Name = name;
+			Alias = alias;
+			CreateGlobalProperty = createProperty;
+		}
 
-        public string Name { get; }
-        public string Alias { get; }
+		public string Name { get; }
+		public string Alias { get; }
+		public bool CreateGlobalProperty { get; }
     }
 }

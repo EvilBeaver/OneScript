@@ -87,7 +87,6 @@ namespace ScriptEngine.Machine.Contexts
 
             var enumValueType = TypeManager.RegisterType (enumTypeAttribute.Name, enumType);
 
-            var properties = enumType.GetCustomAttributes (typeof (EnumerationGlobalPropertyAttribute), false);
             var instance = new EnumerationContext (type, enumValueType);
 
             var wrapperTypeUndefined = typeof (CLREnumValueWrapper<>);
@@ -108,14 +107,12 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
 
-            foreach (var p in properties)
-            {
-                var propertyAttribute = (EnumerationGlobalPropertyAttribute)p;
-                environment.InjectGlobalProperty (instance, propertyAttribute.Name, true);
-                if (propertyAttribute.Alias != null)
-                    environment.InjectGlobalProperty (instance, propertyAttribute.Alias, true);
-            }
-
+			if (enumTypeAttribute.CreateGlobalProperty)
+			{
+				environment.InjectGlobalProperty(instance, enumTypeAttribute.Name, true);
+				if (enumTypeAttribute.Alias != null)
+					environment.InjectGlobalProperty(instance, enumTypeAttribute.Alias, true);
+			}
         }
 
 

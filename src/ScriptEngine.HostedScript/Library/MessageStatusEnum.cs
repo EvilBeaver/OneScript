@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 namespace ScriptEngine.HostedScript.Library
 {
     [EnumerationType("СтатусСообщения", "MessageStatus")]
-	[EnumerationGlobalProperty("СтатусСообщения", "MessageStatus")]
 	public enum MessageStatusEnum
     {
         [FieldContext("БезСтатуса", "WithoutStatus")]

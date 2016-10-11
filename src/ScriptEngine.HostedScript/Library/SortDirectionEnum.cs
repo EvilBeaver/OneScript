@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 namespace ScriptEngine.HostedScript.Library
 {
     [EnumerationType("НаправлениеСортировки", "SortDirection")]
-    [EnumerationGlobalProperty("НаправлениеСортировки", "SortDirection")]
     public enum SortDirectionEnum
     {
         [FieldContext("Возр", "ASC")]
