@@ -176,7 +176,7 @@
 	<ItemGroup>
 		<FileToPush Include="$(DistPath)\*.nupkg" />
 	</ItemGroup>
-	<Exec Command="$(NugetExecutable) push &quot;$(DistPath)\%(FileToPush.Identity)&quot; $(NugetApiKey) -Source https://www.nuget.org/api/v2/package"/>
+	<Exec Command="$(NugetExecutable) push &quot;%(FileToPush.Identity)&quot; $(NugetApiKey) -Source https://www.nuget.org/api/v2/package"/>
   </Target>
   
   <!--aditional tasks-->
