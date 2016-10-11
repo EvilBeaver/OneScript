@@ -174,7 +174,7 @@
   
   <Target Name="PublishNuget">
 	<ItemGroup>
-		<FileToPush Include="$(DistPath)\*.nupkg" />
+		<FileToPush Include="$(DistPath)*.nupkg" />
 	</ItemGroup>
 	<Exec Command="$(NugetExecutable) push &quot;%(FileToPush.Identity)&quot; $(NugetApiKey) -Source https://www.nuget.org/api/v2/package"/>
   </Target>
