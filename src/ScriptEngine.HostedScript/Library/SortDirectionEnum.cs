@@ -10,10 +10,10 @@ namespace ScriptEngine.HostedScript.Library
     [EnumerationType("НаправлениеСортировки", "SortDirection")]
     public enum SortDirectionEnum
     {
-        [ContextField("Возр", "ASC")]
+        [EnumItem("Возр", "ASC")]
         Asc,
 
-        [ContextField("Убыв", "DESC")]
+        [EnumItem("Убыв", "DESC")]
         Desc
     }
 }

@@ -2,9 +2,9 @@
 namespace ScriptEngine
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class ContextFieldAttribute : Attribute
+    public class EnumItemAttribute : Attribute
     {
-        public ContextFieldAttribute (string name, string alias = null)
+        public EnumItemAttribute (string name, string alias = null)
         {
             Name = name;
             Alias = alias;

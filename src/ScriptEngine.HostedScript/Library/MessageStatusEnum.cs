@@ -10,22 +10,22 @@ namespace ScriptEngine.HostedScript.Library
     [EnumerationType("СтатусСообщения", "MessageStatus")]
 	public enum MessageStatusEnum
     {
-        [ContextField("БезСтатуса", "WithoutStatus")]
+        [EnumItem("БезСтатуса", "WithoutStatus")]
 		WithoutStatus,
 
-		[ContextField("Важное", "Important")]
+		[EnumItem("Важное", "Important")]
 		Important,
 
-		[ContextField("Внимание", "Attention")]
+		[EnumItem("Внимание", "Attention")]
 		Attention,
 
-		[ContextField("Информация", "Information")]
+		[EnumItem("Информация", "Information")]
 		Information,
 
-		[ContextField("Обычное", "Ordinary")]
+		[EnumItem("Обычное", "Ordinary")]
 		Ordinary,
 
-		[ContextField("ОченьВажное", "VeryImportant")]
+		[EnumItem("ОченьВажное", "VeryImportant")]
 		VeryImportant
 
     }
