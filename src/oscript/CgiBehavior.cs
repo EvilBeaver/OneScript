@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
@@ -105,7 +106,7 @@ namespace oscript
             return _headersWritten.Contains(header);
         }
 
-        public void Echo(string str, EchoStatus status = EchoStatus.Undefined)
+        public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
             if(!_isContentEchoed)
             {

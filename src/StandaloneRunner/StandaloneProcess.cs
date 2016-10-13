@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine;
 using oscript;
@@ -100,7 +101,7 @@ namespace StandaloneRunner
 
         #region IHostApplication Members
 
-        public void Echo(string text, EchoStatus status = EchoStatus.Undefined)
+        public void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
             ConsoleHostImpl.Echo(text, status);
         }

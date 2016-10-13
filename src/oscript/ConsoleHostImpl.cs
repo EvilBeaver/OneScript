@@ -7,15 +7,15 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using ScriptEngine;
-using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Library;
 
 namespace oscript
 {
     static class ConsoleHostImpl
     {
-        public static void Echo(string text, EchoStatus status = EchoStatus.Undefined)
+        public static void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
-            if (status == EchoStatus.Undefined || status == EchoStatus.Ordinary)
+            if (status == MessageStatusEnum.Ordinary)
                 Output.WriteLine(text);
             else
             {
@@ -24,14 +24,14 @@ namespace oscript
 
                 switch (status)
                 {
-                    case EchoStatus.Information:
+                    case MessageStatusEnum.Information:
                         newColor = ConsoleColor.Green;
                         break;
-                    case EchoStatus.Attention:
+                    case MessageStatusEnum.Attention:
                         newColor = ConsoleColor.Yellow;
                         break;
-                    case EchoStatus.Important:
-                    case EchoStatus.VeryImportant:
+                    case MessageStatusEnum.Important:
+                    case MessageStatusEnum.VeryImportant:
                         newColor = ConsoleColor.Red;
                         break;
                     default:

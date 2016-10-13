@@ -123,7 +123,7 @@ namespace ScriptEngine.HostedScript.Library
             set
             {
                 var typed = value.GetRawValue() as CLREnumValueWrapper<ConsoleColor>;
-                Console.ForegroundColor = typed.UnderlyingObject;
+                Console.ForegroundColor = typed.UnderlyingValue;
             }
         }
 
@@ -137,7 +137,7 @@ namespace ScriptEngine.HostedScript.Library
             set
             {
                 var typed = value.GetRawValue() as CLREnumValueWrapper<ConsoleColor>;
-                Console.BackgroundColor = typed.UnderlyingObject;
+                Console.BackgroundColor = typed.UnderlyingValue;
             }
         }
 

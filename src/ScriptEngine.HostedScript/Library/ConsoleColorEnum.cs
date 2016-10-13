@@ -34,7 +34,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
-                val = ValuesInternal.First(x => ((CLREnumValueWrapper<ConsoleColor>)x).UnderlyingObject == native);
+                val = ValuesInternal.First(x => ((CLREnumValueWrapper<ConsoleColor>)x).UnderlyingValue == native);
                 _valuesCache.Add(native, val);
             }
 

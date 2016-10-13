@@ -37,7 +37,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
             }
             else
             {
-                val = this.ValuesInternal.First(x => ((CLREnumValueWrapper<XmlNodeType>)x).UnderlyingObject == native);
+                val = this.ValuesInternal.First(x => ((CLREnumValueWrapper<XmlNodeType>)x).UnderlyingValue == native);
                 _valuesCache.Add(native, val);
             }
 

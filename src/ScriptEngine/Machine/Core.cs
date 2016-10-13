@@ -155,6 +155,7 @@ namespace ScriptEngine.Machine
         Type,
         Object,
         NotAValidValue, // default argument value
+        Enumeration,
         GenericValue
     }
 
