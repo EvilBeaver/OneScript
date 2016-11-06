@@ -124,8 +124,10 @@
 	|
 	|II. Special mode: oscript.exe <mode> <script_path> [script arguments..]
 	|Mode can be one of these:
-	|  -measure   measures execution time
-	|  -compile   shows compiled module without execution
+	|  -measure    measures execution time
+	|  -compile    shows compiled module without execution
+	|  -check      provides syntax check
+	|  -check -cgi provides syntax check in CGI-mode
 	|  -encoding=<encoding-name> set output encoding
 	|
 	|III. Build standalone executable: oscript.exe -make <script_path> <output_exe>
