@@ -48,13 +48,23 @@ namespace oscript
                 {
                     if (cmdLineArgs.Length > 1)
                     {
-                        var path = cmdLineArgs[1];
-                        string env = null;
-                        if(cmdLineArgs.Length>2 && cmdLineArgs[2].StartsWith("-env="))
+                        bool cgi_mode = false;
+                        int paramIndex = 1;
+                        if (cmdLineArgs [paramIndex].ToLower () == "-cgi")
                         {
-                            env = cmdLineArgs[2].Substring(5);
+                            ++paramIndex;
+                            cgi_mode = true;
                         }
-                        return new CheckSyntaxBehavior(path, env);
+
+                        var path = cmdLineArgs[paramIndex];
+                        ++paramIndex;
+                        string env = null;
+                        if(cmdLineArgs.Length > paramIndex && cmdLineArgs[paramIndex].StartsWith("-env="))
+                        {
+                            env = cmdLineArgs[paramIndex].Substring(5);
+                        }
+
+                        return new CheckSyntaxBehavior(path, env, cgi_mode);
                     }
                 }
                 else if (cmdLineArgs[0].ToLower() == "-make")
