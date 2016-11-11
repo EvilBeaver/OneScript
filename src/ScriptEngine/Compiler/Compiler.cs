@@ -1255,7 +1255,7 @@ namespace ScriptEngine.Compiler
                 if (_lastExtractedLexem.Token == Token.Dot)
                 {
                     NextToken();
-                    if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                    if (!IsValidPropertyName(ref _lastExtractedLexem))
                         throw CompilerException.IdentifierExpected();
 
                     string identifier = _lastExtractedLexem.Content;
@@ -1301,6 +1301,14 @@ namespace ScriptEngine.Compiler
                 }
             }
 
+        }
+
+        private bool IsValidPropertyName(ref Lexem lex)
+        {
+            return LanguageDef.IsIdentifier(ref lex) 
+                || lex.Type == LexemType.BooleanLiteral
+                || lex.Type == LexemType.NullLiteral
+                || lex.Type == LexemType.UndefinedLiteral;
         }
 
         private void ResolveProperty(string identifier)
