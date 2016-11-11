@@ -123,7 +123,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                     else if (type == JsonToken.Float)
                         return ValueFactory.Create((decimal)_reader.Value);
                     else
-                        throw new Exception("Ошибка при получении значения атрибута контекста (ТекущееЗначение): Текущее значение JSON не может быть получено:" + type.ToString());
+                        throw new Exception("Ошибка при получении значения атрибута контекста (ТекущееЗначение): Текущее значение JSON не может быть получено");
                 }
                 else
                     throw new Exception("Источник данных JSON не открыт");
