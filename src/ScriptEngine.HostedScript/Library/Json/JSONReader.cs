@@ -115,13 +115,11 @@ namespace ScriptEngine.HostedScript.Library.Json
                         return ValueFactory.Create((string)_reader.Value);
                     else if (type == JsonToken.Boolean)
                         return ValueFactory.Create((bool)_reader.Value);
-                    else if (type == JsonToken.Integer)
+                    else if (type == JsonToken.Integer || type == JsonToken.Float)
                     {
                         decimal d = Convert.ToDecimal(_reader.Value);
                         return ValueFactory.Create(d);
                     }
-                    else if (type == JsonToken.Float)
-                        return ValueFactory.Create((decimal)_reader.Value);
                     else
                         throw new Exception("Ошибка при получении значения атрибута контекста (ТекущееЗначение): Текущее значение JSON не может быть получено");
                 }

@@ -4,7 +4,8 @@
    "address": {
        "streetAddress": "Московское ш., 101, кв.101",
        "city": "Ленинград",
-       "postalCode": 101101
+       "postalCode": 101101,
+	   "float":1.54
    },
    "phoneNumbers": [
        "812 123-1234",
