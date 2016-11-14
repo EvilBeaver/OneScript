@@ -14,8 +14,6 @@ namespace ScriptEngine.HostedScript.Library.Json
     class JSONReader : AutoContext<JSONReader>
     {
 
-        private StringReader _stringReader; // Используется, если json текст задан с помощью функции "УстановитьСтрока"
-        private StreamReader _fileReader; // Используется, если json текст задан с помощью функции "ОткрытьФайл"
         private JsonTextReader _reader; // Объект из библиотеки Newtonsoft для работы с форматом JSON 
 
         /// <summary>
@@ -121,10 +119,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                         return ValueFactory.Create(d);
                     }
                     else
-                        throw new Exception("Ошибка при получении значения атрибута контекста (ТекущееЗначение): Текущее значение JSON не может быть получено");
+                        throw new RuntimeException("Ошибка при получении значения атрибута контекста (ТекущееЗначение): Текущее значение JSON не может быть получено");
                 }
                 else
-                    throw new Exception("Источник данных JSON не открыт");
+                    throw new RuntimeException("Источник данных JSON не открыт");
             }
         }
 
@@ -187,7 +185,7 @@ namespace ScriptEngine.HostedScript.Library.Json
 
                 }
                 else
-                    throw new Exception("Источник данных JSON не открыт");
+                    throw new RuntimeException("Источник данных JSON не открыт");
             }
 
         }
@@ -202,11 +200,6 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("Закрыть", "Close")]
         public void Close()
         {
-            if (_fileReader != null)
-            {
-                _fileReader.Dispose();
-                _fileReader = null;
-            }
 
             if (_reader != null)
             {
@@ -228,20 +221,25 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string JSONFileName, IValue Encoding = null)
         {
-            if (_fileReader != null)
+   
+            if (IsOpen())
+                Close();
+
+            StreamReader _fileReader;
+
+            try
             {
-                _fileReader.Dispose();
+                if (Encoding != null)
+                    _fileReader = Environment.FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(Encoding));
+                else
+                    _fileReader = Environment.FileOpener.OpenReader(JSONFileName);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e.Message, e);
             }
 
-            if (Encoding != null)
-                _fileReader = Environment.FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(Encoding));
-            else
-                _fileReader = Environment.FileOpener.OpenReader(JSONFileName);
-
-
             _reader = new JsonTextReader(_fileReader);
-
-            _stringReader = null;
 
         }
 
@@ -275,10 +273,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                     else
                         return false;
                 }
-                    
+
             }
             else
-                throw new Exception("Источник данных JSON не открыт");
+                throw new RuntimeException("Источник данных JSON не открыт");
 
         }
 
@@ -306,14 +304,10 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("УстановитьСтроку", "SetString")]
         public void SetString(string JSONString)
         {
+            if (IsOpen())
+                Close();
 
-            _stringReader = new StringReader(JSONString);
-            _reader = new JsonTextReader(_stringReader);
-            if (_fileReader != null)
-            {
-                _fileReader.Dispose();
-                _fileReader = null;
-            }
+            _reader = new JsonTextReader(new StringReader(JSONString));
         }
 
     }
