@@ -100,6 +100,16 @@
     <Compile Include="LibraryResolver.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
     <Compile Include="Library\BinaryDataContext.cs" />
+    <Compile Include="Library\Binary\BinaryData.cs" />
+    <Compile Include="Library\Binary\BinaryDataBuffer.cs" />
+    <Compile Include="Library\Binary\DataReader.cs" />
+    <Compile Include="Library\Binary\DataWriter.cs" />
+    <Compile Include="Library\Binary\FileStreamEnums.cs" />
+    <Compile Include="Library\Binary\FileStream.cs" />
+    <Compile Include="Library\Binary\FileStreamsManager.cs" />
+    <Compile Include="Library\Binary\MemoryStream.cs" />
+    <Compile Include="Library\Binary\ReadDataResult.cs" />
+    <Compile Include="Library\Binary\GenericStream.cs" />
     <Compile Include="Library\CommandLineArguments.cs" />
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\FileContext.cs" />
