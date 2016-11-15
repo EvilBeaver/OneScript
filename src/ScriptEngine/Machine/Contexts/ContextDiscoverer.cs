@@ -101,7 +101,7 @@ namespace ScriptEngine.Machine.Contexts
                     var osValue = (EnumerationValue)constructor.Invoke (new object [] { instance, field.GetValue (null), DataType.Enumeration } );
 
                     if (contextField.Alias == null)
-                        instance.AddValue (contextField.Name, osValue);
+                        instance.AddValue (contextField.Name, field.Name, osValue);
                     else
                         instance.AddValue (contextField.Name, contextField.Alias, osValue);
                 }
