@@ -14,12 +14,17 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Method)]
     public class ContextMethodAttribute : Attribute
     {
-        readonly string _name;
-
-        readonly string _alias;
+        private readonly string _name;
+        private readonly string _alias;
 
         public ContextMethodAttribute(string name, string alias = "")
         {
+            if(!Utils.IsValidIdentifier(name))
+                throw new ArgumentException("Name must be a valid identifier");
+
+            if(!string.IsNullOrEmpty(alias) && !Utils.IsValidIdentifier(alias))
+                throw new ArgumentException("Alias must be a valid identifier");
+
             _name = name;
             _alias = alias;
         }
@@ -142,7 +147,10 @@ namespace ScriptEngine.Machine.Contexts
                     var scriptMethInfo = new ScriptEngine.Machine.MethodInfo();
                     scriptMethInfo.IsFunction = isFunc;
                     scriptMethInfo.Name = item.Binding.GetName().ToLower();
-                    scriptMethInfo.Alias = item.Binding.GetAlias().ToLower();
+                    scriptMethInfo.Alias = string.IsNullOrEmpty(scriptMethInfo.Alias) ? 
+                        item.Method.Name.ToLower()
+                        :item.Binding.GetAlias().ToLower();
+
                     scriptMethInfo.Params = paramDefs;
 
                     _methodPtrs.Add(new InternalMethInfo()
