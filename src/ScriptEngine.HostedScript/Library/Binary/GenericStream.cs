@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
-
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -30,14 +28,12 @@ namespace ScriptEngine.HostedScript.Library.Binary
             _isReadOnly = false;
         }
 
-        public static GenericStream CreateReadOnlyStream(GenericStream source)
+        public GenericStream(Stream underlyingStream, bool readOnly)
         {
-            var newStream = new GenericStream(source._underlyingStream);
-            newStream._isReadOnly = true;
-
-            return newStream;
+            _underlyingStream = underlyingStream;
+            _isReadOnly = readOnly;
         }
-
+        
         /// <summary>
         /// 
         /// Признак доступности записи в поток.
@@ -171,7 +167,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("ПолучитьПотокТолькоДляЧтения", "GetReadonlyStream")]
         public GenericStream GetReadonlyStream()
         {
-            return CreateReadOnlyStream(this);
+            return new GenericStream(_underlyingStream, true);
         }
 
 
