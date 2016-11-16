@@ -7,6 +7,7 @@ using ScriptEngine.Machine.Contexts;
 using System.Security.Cryptography;
 using System.IO;
 using ScriptEngine.HostedScript.Library;
+using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library.Hash
 {

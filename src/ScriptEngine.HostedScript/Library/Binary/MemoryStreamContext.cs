@@ -7,64 +7,65 @@ using ScriptEngine.Machine.Contexts;
 
 /// <summary>
 /// 
-/// Специализированная версия объекта Поток для работы данными, расположенными в файле на диске. Предоставляет возможность чтения из потока, записи в поток и изменения текущей позиции. 
-/// По умолчанию, все операции с файловым потоком являются буферизированными, размер буфера по умолчанию - 8 КБ.
-/// Размер буфера можно изменить, в том числе - полностью отключить буферизацию при вызове конструктора. 
-/// Следует учитывать, что помимо буферизации существует кэширование чтения и записи файлов в операционной системе, на которое невозможно повлиять программно.
+/// Специализированный вариант объекта Поток для работы с данными, расположенными в оперативной памяти.
 /// </summary>
-[ContextClass("ФайловыйПоток", "FileStream")]
-class FileStream : AutoContext<FileStream>
+[ContextClass("ПотокВПамяти", "MemoryStream")]
+class MemoryStreamContext : AutoContext<MemoryStreamContext>
 {
 private bool _CanWrite
 private bool _CanSeek
 private bool _CanRead
-private string _FileName
 
-public FileStream()
+public MemoryStreamContext()
 {
 }
 
 
 /// <summary>
 /// 
-/// Открывает заданный файл в указанном режиме с возможностью чтения и записи, с общим доступом на чтение.
+/// Создает поток, в качестве нижележащего хранилища для которого используется заданный байтовый буфер. Ёмкость потока ограничена размером буфера. При выходе за границы буфера будет сгенерировано исключение.
+/// Возможность записи в поток зависит от возможности изменения передаваемого буфера.
 /// </summary>
 ///
-/// <param name="FileName">
-/// Имя открываемого файла. </param>
-/// <param name="OpeningMode">
-/// Режим открытия файла. </param>
-/// <param name="BufferSize">
-/// Размер временного буфера, используемого для работы. </param>
+/// <param name="Buffer">
+/// Буфер, на основании которого будет создан поток. </param>
 
 ///
 
 [ScriptConstructor]
-public static IRuntimeContextInstance Constructor( string FileName, IValue OpeningMode, int BufferSize = null)
+public static IRuntimeContextInstance Constructor( IValue Buffer)
 {
-	return new FileStream();
+	return new MemoryStreamContext();
 }
 
 /// <summary>
 /// 
-/// Открывает выбранный файл в заданном режиме с указанным уровнем доступа.
+/// Создает поток в памяти с расширяемой емкостью. Данный вариант можно использовать для работы с достаточно большими объемами данных, т.к. данные хранятся постранично, а не в виде одного последовательного блока.
 /// </summary>
 ///
-/// <param name="FileName">
-/// Имя открываемого файла. </param>
-/// <param name="OpeningMode">
-/// Режим открытия файла. </param>
-/// <param name="AccessLevel">
-/// Уровень доступа к файлу (чтение, запись). </param>
-/// <param name="BufferSize">
-/// Размер временного буфера, используемого для работы. </param>
 
 ///
 
 [ScriptConstructor]
-public static IRuntimeContextInstance Constructor( string FileName, IValue OpeningMode, IValue AccessLevel, int BufferSize = null)
+public static IRuntimeContextInstance Constructor()
 {
-	return new FileStream();
+	return new MemoryStreamContext();
+}
+
+/// <summary>
+/// 
+/// Создает поток в памяти с заданной начальной емкостью, которая при необходимости автоматически расширяется. Данный вариант подходит для работы с достаточно большими объемами данных за счет того, что данные хранятся постранично, а не в виде одного последовательного блока.
+/// </summary>
+///
+/// <param name="InitialCapacity">
+/// Начальная емкость. </param>
+
+///
+
+[ScriptConstructor]
+public static IRuntimeContextInstance Constructor( int InitialCapacity)
+{
+	return new MemoryStreamContext();
 }
 
 /// <summary>
@@ -108,19 +109,6 @@ public bool CanRead
 
 /// <summary>
 /// 
-/// Содержит полное имя файла, включая путь.
-/// </summary>
-/// <value>Строка (String)</value>
-[ContextProperty("ИмяФайла", "FileName")]
-public string FileName
-{
-	get { return _FileName; }
-	
-}
-
-
-/// <summary>
-/// 
 /// Вызов данного метода завершает работу с потоком. При попытке вызвать любой метод объекта, кроме метода Закрыть, будет вызвано исключение. 
 /// При повторном вызове данного метода никаких действий выполняться не будет.
 /// Выполняемое действие зависит от используемого типа потока.
@@ -134,6 +122,25 @@ public string FileName
 public void Close()
 {
 	
+}
+
+
+/// <summary>
+/// 
+/// Возвращает экземпляр объекта ДвоичныеДанные, содержащего данные, записанные в поток.
+/// </summary>
+///
+
+///
+/// <returns name="BinaryData">
+/// Значение содержит двоичные данные, которые считываются из файла. Значение может быть сохранено в ХранилищеЗначения.
+/// Хранимые данные могут быть записаны в файл.</returns>
+
+///
+[ContextMethod("ЗакрытьИПолучитьДвоичныеДанные", "CloseAndGetBinaryData")]
+public IValue CloseAndGetBinaryData()
+{
+	 return null;
 }
 
 

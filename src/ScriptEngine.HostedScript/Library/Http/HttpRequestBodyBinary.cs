@@ -7,6 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using System;
 
+using ScriptEngine.HostedScript.Library.Binary;
+
 namespace ScriptEngine.HostedScript.Library.Http
 {
     class HttpRequestBodyBinary : IHttpRequestBody
