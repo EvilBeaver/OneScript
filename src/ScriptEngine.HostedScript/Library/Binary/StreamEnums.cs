@@ -43,4 +43,13 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [EnumItem("Текущая")]
         Current
     }
+
+    [EnumerationType("ПорядокБайтов", "ByteOrder")]
+    public enum ByteOrderEnum
+    {
+        [EnumItem("BigEndian")]
+        BigEndian,
+        [EnumItem("LittleEndian")]
+        LittleEndian
+    }
 }
