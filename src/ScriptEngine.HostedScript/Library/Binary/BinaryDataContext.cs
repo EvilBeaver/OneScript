@@ -65,17 +65,16 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Открывает поток для чтения двоичных данных.
         /// </summary>
         ///
-
         ///
         /// <returns name="Stream">
         /// Представляет собой поток данных, который можно последовательно читать и/или в который можно последовательно писать. 
         /// Экземпляры объектов данного типа можно получить с помощью различных методов других объектов.</returns>
-
         ///
         [ContextMethod("ОткрытьПотокДляЧтения", "OpenStreamForRead")]
-        public IValue OpenStreamForRead()
+        public GenericStream OpenStreamForRead()
         {
-            return null;
+            var stream = new MemoryStream(_buffer);
+            return new GenericStream(stream);
         }
 
         [ScriptConstructor(Name="На основании файла")]
