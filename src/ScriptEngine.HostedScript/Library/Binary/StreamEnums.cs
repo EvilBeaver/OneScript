@@ -32,4 +32,15 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [EnumItem("ЧтениеИЗапись")]
         ReadAndWrite
     }
+
+    [EnumerationType("ПозицияВПотоке", "StreamPosition")]
+    public enum StreamPositionEnum
+    {
+        [EnumItem("Конец")]
+        End,
+        [EnumItem("Начало")]
+        Begin,
+        [EnumItem("Текущая")]
+        Current
+    }
 }
