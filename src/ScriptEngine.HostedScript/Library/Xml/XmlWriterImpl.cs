@@ -229,10 +229,13 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ОткрытьФайл","OpenFile")]
-		public void OpenFile(string path, string encoding = null)
+		public void OpenFile(string path, string encoding = null, IValue addBOM = null)
 		{
             Encoding enc;
-            enc = EncodingFromName(encoding);
+            if (addBOM == null)
+                enc = TextEncodingEnum.GetEncodingByName(encoding, true);
+            else
+                enc = TextEncodingEnum.GetEncodingByName(encoding, addBOM.AsBoolean());
 
             _writer = new XmlTextWriter(path, enc);
             _stringWriter = null;
@@ -242,8 +245,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("УстановитьСтроку","SetString")]
 		public void SetString(string encoding = null)
 		{
-            Encoding enc = EncodingFromName(encoding);
-
+            Encoding enc = TextEncodingEnum.GetEncodingByName(encoding, true);
             _stringWriter = new StringWriterWithEncoding(enc);            
             _writer = new XmlTextWriter(_stringWriter);
             SetDefaultOptions();
@@ -253,16 +255,6 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             _writer.Indentation = INDENT_SIZE;
             this.Indent = true;
-        }
-
-        private static Encoding EncodingFromName(string encoding)
-        {
-            Encoding enc;
-            if (encoding == null)
-                enc = new UTF8Encoding(true);
-            else
-                enc = Encoding.GetEncoding(encoding);
-            return enc;
         }
 
         #endregion
