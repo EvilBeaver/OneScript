@@ -110,7 +110,7 @@ namespace ScriptEngine.HostedScript.Library
             return EnumContextHelper.CreateEnumInstance<TextEncodingEnum>((t,v)=>new TextEncodingEnum(t,v));
         }
 
-        public static Encoding GetEncodingByName(string encoding, bool addBOM)
+        public static Encoding GetEncodingByName(string encoding, bool addBOM = true)
         {
             Encoding enc;
             if (encoding == null)
