@@ -9,6 +9,8 @@ init:
 - ps: Restart-Computer
 install:
 - cmd: git submodule update --init --recursive
+before_build:
+- nuget restore src/1Script_Mono.sln
 build:
   project: src/1Script_Mono.sln
   verbosity: minimal
