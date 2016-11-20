@@ -175,9 +175,9 @@ namespace ScriptEngine.HostedScript.Library
                 else if (encValue == encodingEnum.Oem)
                     enc = Encoding.GetEncoding(866);
                 else if (encValue == encodingEnum.Utf16)
-                    enc = new UnicodeEncoding(false, true);
+                    enc = new UnicodeEncoding(false, addBOM);
                 else if (encValue == encodingEnum.Utf8)
-                    enc = new UTF8Encoding(true);
+                    enc = new UTF8Encoding(addBOM);
                 else if (encValue == encodingEnum.Utf8NoBOM)
                     enc = new UTF8Encoding(false);
                 else if (encValue == encodingEnum.System)
