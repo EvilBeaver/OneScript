@@ -80,17 +80,18 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Запись в поток возможна только, если поток поддерживает запись. В противном случае при вызове метода будет вызвано исключение.
         /// </summary>
         ///
-        /// <param name="Buffer">
+        /// <param name="buffer">
         /// Буфер, из которого выбираются данные для записи. </param>
-        /// <param name="PositionInBuffer">
+        /// <param name="positionInBuffer">
         /// Позиция в буфере, начиная с которой данные будут получены для записи в поток. </param>
-        /// <param name="Number">
+        /// <param name="number">
         /// Количество байт, которые требуется записать. </param>
         ///
         [ContextMethod("Записать", "Write")]
-        public void Write(IValue Buffer, int PositionInBuffer, int Number)
+        public void Write(BinaryDataBuffer buffer, int positionInBuffer, int number)
         {
-            throw new NotImplementedException();
+            buffer.ThrowIfReadonly();
+            _underlyingStream.Write(buffer.Bytes, positionInBuffer, number);
         }
 
 
