@@ -23,8 +23,6 @@ using ScriptEngine.Machine.Contexts;
 public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContext
 {
     private bool _readOnly;
-    private Stream _readWriteStream;
-
     private readonly byte[] _buffer;
 
     public BinaryDataBuffer(byte[] buffer, ByteOrderEnum byteOrder = ByteOrderEnum.LittleEndian)
@@ -37,7 +35,14 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
 
     private EndianBitConverter Converter { get; }
 
-    /// <param name="size">
+    // для операций с содержимым буфера внутри 1Script
+    //
+    public byte[] Bytes
+    {
+        get { return _buffer; }
+    }
+
+/// <param name="size">
     /// Размер буфера в байтах. </param>
     /// <param name="byteOrder">
     /// Порядок байтов.
@@ -60,8 +65,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
 
     public override void SetIndexedValue(IValue index, IValue val)
     {
-        if (_readOnly)
-            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+        ThrowIfReadonly();
 
         int value = (int)val.AsNumber();
         if (value < byte.MinValue || value > byte.MaxValue)
@@ -114,8 +118,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("Записать", "Write")]
     public void Write(int position, BinaryDataBuffer bytes, int number = 0)
     {
-        if (_readOnly)
-            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+        ThrowIfReadonly();
 
         if (number == 0)
             Array.Copy(bytes._buffer, _buffer, bytes._buffer.Length);
@@ -171,8 +174,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
     public void WriteInt16(int position, int value, IValue byteOrder = null)
     {
-        if (_readOnly)
-            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+        ThrowIfReadonly();
 
         if (value < short.MinValue || value > short.MaxValue)
             throw RuntimeException.InvalidArgumentValue();
@@ -197,8 +199,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("ЗаписатьЦелое32", "WriteInt32")]
     public void WriteInt32(int position, int value, IValue byteOrder = null)
     {
-        if (_readOnly)
-            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+        ThrowIfReadonly();
 
         var bytes = GetBytes(Converter.GetBytes, value, byteOrder);
         CopyBytes(position, bytes);
@@ -225,8 +226,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("ЗаписатьЦелое64", "WriteInt64")]
     public void WriteInt64(int position, long value, IValue byteOrder = null)
     {
-        if (_readOnly)
-            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+        ThrowIfReadonly();
 
         var bytes = GetBytes(Converter.GetBytes, value, byteOrder);
         CopyBytes(position, bytes);
@@ -239,14 +239,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     /// </summary>
     ///
     ///
-    /// <returns name="BinaryDataBuffer">
-    /// Коллекция байтов фиксированного размера с возможностью произвольного доступа и изменения по месту.
-    /// Размер буфера формально не ограничен, но поскольку все данные буфера полностью находятся в оперативной памяти, при попытке создать буфер слишком большого размера доступной памяти может оказаться недостаточно, в результате чего будет вызвано исключение. Поэтому при работе с буферами двоичных данных необходимо соотносить их размер с доступным объемом оперативной памяти.
-    /// При создании буфера можно указать порядок байтов, который будет использован для операций с целыми числами. При этом если буфер не создан явно, а получен с помощью вызова метода другого объекта, то порядок байтов в полученном буфере будет унаследован от порядка байтов, заданного для того объекта, метод которого вызывается.
-    /// Например, если буфер получен с помощью вызова метода ПрочитатьВБуферДвоичныхДанных, то порядок байтов в полученном буфере будет равен значению свойства ПорядокБайтов.
-    /// Возможен также более сложный случай наследования порядка байтов. Если буфер получен с помощью вызова метода ПолучитьБуферДвоичныхДанных, то порядок байтов у полученного буфера будет выбираться из объекта ЧтениеДанных, из которого был получен объект РезультатЧтенияДанных. 
-    /// Порядок байтов, заданный для объекта ЧтениеДанных, будет использован во всех объектах, полученных на его основании.</returns>
-
+    /// <returns name="BinaryDataBuffer"/>
     ///
     [ContextMethod("Перевернуть", "Reverse")]
     public BinaryDataBuffer Reverse()
@@ -308,16 +301,8 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     /// Позиция, начиная с которой требуется прочитать байты. </param>
     /// <param name="number">
     /// Количество байтов, которое требуется прочитать. </param>
-
     ///
-    /// <returns name="BinaryDataBuffer">
-    /// Коллекция байтов фиксированного размера с возможностью произвольного доступа и изменения по месту.
-    /// Размер буфера формально не ограничен, но поскольку все данные буфера полностью находятся в оперативной памяти, при попытке создать буфер слишком большого размера доступной памяти может оказаться недостаточно, в результате чего будет вызвано исключение. Поэтому при работе с буферами двоичных данных необходимо соотносить их размер с доступным объемом оперативной памяти.
-    /// При создании буфера можно указать порядок байтов, который будет использован для операций с целыми числами. При этом если буфер не создан явно, а получен с помощью вызова метода другого объекта, то порядок байтов в полученном буфере будет унаследован от порядка байтов, заданного для того объекта, метод которого вызывается.
-    /// Например, если буфер получен с помощью вызова метода ПрочитатьВБуферДвоичныхДанных, то порядок байтов в полученном буфере будет равен значению свойства ПорядокБайтов.
-    /// Возможен также более сложный случай наследования порядка байтов. Если буфер получен с помощью вызова метода ПолучитьБуферДвоичныхДанных, то порядок байтов у полученного буфера будет выбираться из объекта ЧтениеДанных, из которого был получен объект РезультатЧтенияДанных. 
-    /// Порядок байтов, заданный для объекта ЧтениеДанных, будет использован во всех объектах, полученных на его основании.</returns>
-
+    /// <returns name="BinaryDataBuffer"/>
     ///
     [ContextMethod("Прочитать", "Read")]
     public BinaryDataBuffer Read(int position, int number)
@@ -371,7 +356,6 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     /// Порядок байтов, используемый при чтении числа.
     /// Если не задан, используется порядок, определенный для текущего экземпляра ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. </param>
-
     ///
     /// <returns name="Number">
     /// Числовым типом может быть представлено любое десятичное число. Над данными числового типа определены основные арифметические операции: сложение, вычитание, умножение и деление. Максимально допустимая разрядность числа 38 знаков.</returns>
@@ -482,8 +466,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("Установить", "Set")]
     public void Set(int position, int value)
     {
-        if(_readOnly)
-            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+        ThrowIfReadonly();
 
         if (value < byte.MinValue || value > byte.MaxValue)
             throw RuntimeException.InvalidArgumentValue();
@@ -526,19 +509,9 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
         }
     }
 
-    private BinaryWriter GetWriter()
+    public void ThrowIfReadonly()
     {
-        return new BinaryWriter(InternalStream);
-    }
-
-    private Stream InternalStream
-    {
-        get
-        {
-            if(_readWriteStream == null)
-                _readWriteStream = new MemoryStream(_buffer);
-
-            return _readWriteStream;
-        }
+        if (_readOnly)
+            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
     }
 }
