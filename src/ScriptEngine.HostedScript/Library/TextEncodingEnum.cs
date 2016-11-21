@@ -128,20 +128,20 @@ namespace ScriptEngine.HostedScript.Library
                     // зависят от платформы x86\m68k\SPARC. Пока нет понимания как корректно это обработать.
                     // Сейчас сделано исходя из предположения что PlatformEndian должен быть LE поскольку 
                     // платформа x86 более широко распространена
-                    case "UTF16_PlatformEndian":
+                    case "UTF16_PLATFORMENDIAN":
                         enc = new UnicodeEncoding(false, addBOM);
                         break;
                     case "UTF-16BE":
-                    case "UTF16_OppositeEndian":
+                    case "UTF16_OPPOSITEENDIAN":
                         enc = new UnicodeEncoding(true, addBOM);
                         break;
                     case "UTF-32":
                     case "UTF-32LE":
-                    case "UTF32_PlatformEndian":
+                    case "UTF32_PLATFORMENDIAN":
                         enc = new UTF32Encoding(false, addBOM);
                         break;
                     case "UTF-32BE":
-                    case "UTF32_OppositeEndian":
+                    case "UTF32_OPPOSITEENDIAN":
                         enc = new UTF32Encoding(true, addBOM);
                         break;
                     default:
