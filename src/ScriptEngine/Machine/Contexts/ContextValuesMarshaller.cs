@@ -106,9 +106,17 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((int)objParam);
             }
+            else if (type == typeof(uint))
+            {
+                return ValueFactory.Create((uint)objParam);
+            }
             else if (type == typeof(long))
             {
                 return ValueFactory.Create((long)objParam);
+            }
+            else if (type == typeof(ulong))
+            {
+                return ValueFactory.Create((ulong)objParam);
             }
             else if (type == typeof(decimal))
             {

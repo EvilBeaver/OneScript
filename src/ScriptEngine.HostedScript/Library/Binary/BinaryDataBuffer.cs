@@ -35,7 +35,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
         Converter.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
     }
 
-    private EndianBitConverter Converter { get; set; }
+    private EndianBitConverter Converter { get; }
 
     /// <param name="size">
     /// Размер буфера в байтах. </param>
@@ -44,9 +44,13 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     /// Значение по умолчанию: LittleEndian. </param>
     ///
     [ScriptConstructor]
-    public static BinaryDataBuffer Constructor(long size, ByteOrderEnum byteOrder = ByteOrderEnum.LittleEndian)
+    public static BinaryDataBuffer Constructor(IValue size, IValue byteOrder = null)
     {
-        return new BinaryDataBuffer(new byte[size], byteOrder);
+        var orderValue = byteOrder == null ? ByteOrderEnum.LittleEndian : ContextValuesMarshaller.ConvertParam<ByteOrderEnum>(byteOrder);
+
+        return new BinaryDataBuffer(
+            new byte[ContextValuesMarshaller.ConvertParam<int>(size)],
+            orderValue);
     }
 
     public override IValue GetIndexedValue(IValue index)
@@ -108,12 +112,15 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     /// Количество байт, которые требуется заменить. </param>
     ///
     [ContextMethod("Записать", "Write")]
-    public void Write(long position, BinaryDataBuffer bytes, long number = 0)
+    public void Write(int position, BinaryDataBuffer bytes, int number = 0)
     {
         if (_readOnly)
             throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
 
-        Array.Copy(bytes._buffer, _buffer, number);
+        if (number == 0)
+            Array.Copy(bytes._buffer, _buffer, bytes._buffer.Length);
+        else
+            Array.Copy(bytes._buffer, _buffer, number);
     }
 
     private byte[] GetBytes<T>(Converter<T, byte[]> converterOverload, T value, IValue byteOrder = null)
@@ -162,10 +169,13 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     ///
     ///
     [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
-    public void WriteInt16(int position, short value, IValue byteOrder = null)
+    public void WriteInt16(int position, int value, IValue byteOrder = null)
     {
         if (_readOnly)
             throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+
+        if (value < short.MinValue || value > short.MaxValue)
+            throw RuntimeException.InvalidArgumentValue();
 
         var bytes = GetBytes(Converter.GetBytes, value, byteOrder);
         CopyBytes(position, bytes);
@@ -322,7 +332,8 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     {
         ByteOrderEnum order = ByteOrder;
         if (byteOrder != null)
-            order = (ByteOrderEnum)(object)byteOrder.GetRawValue();
+            order = ((CLREnumValueWrapper<ByteOrderEnum>)byteOrder.GetRawValue()).UnderlyingValue;
+
         Converter.IsLittleEndian = order == ByteOrderEnum.LittleEndian;
 
         return converterOverload(_buffer, position);
@@ -343,7 +354,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     /// <returns name="Number"/>
     ///
     [ContextMethod("ПрочитатьЦелое16", "ReadInt16")]
-    public short ReadInt16(int position, IValue byteOrder = null)
+    public int ReadInt16(int position, IValue byteOrder = null)
     {
         return FromBytes(Converter.ToInt16, position, byteOrder);
     }
@@ -367,9 +378,9 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
 
     ///
     [ContextMethod("ПрочитатьЦелое32", "ReadInt32")]
-    public int ReadInt32(int position, IValue byteOrder = null)
+    public uint ReadInt32(int position, IValue byteOrder = null)
     {
-        return FromBytes(Converter.ToInt32, position, byteOrder);
+        return FromBytes(Converter.ToUInt32, position, byteOrder);
     }
 
 
@@ -390,9 +401,9 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
 
     ///
     [ContextMethod("ПрочитатьЦелое64", "ReadInt64")]
-    public long ReadInt64(int position, IValue byteOrder = null)
+    public ulong ReadInt64(int position, IValue byteOrder = null)
     {
-        return FromBytes(Converter.ToInt64, position, byteOrder);
+        return FromBytes(Converter.ToUInt64, position, byteOrder);
     }
 
 

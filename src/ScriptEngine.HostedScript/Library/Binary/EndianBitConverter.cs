@@ -199,7 +199,6 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Returns:
         ///     An array of bytes with length 4.
         ///</summary>
-        [CLSCompliant(false)]
         public byte[] GetBytes(uint value)
         {
             if (IsLittleEndian)
@@ -222,7 +221,6 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Returns:
         ///     An array of bytes with length 8.
         ///</summary>
-        [CLSCompliant(false)]
         public byte[] GetBytes(ulong value)
         {
             if (IsLittleEndian)
@@ -371,7 +369,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         ///   System.ArgumentOutOfRangeException:
         ///     startIndex is less than zero or greater than the length of value minus 1.
         ///</summary>
-        public short ToInt16(byte[] value, int startIndex)
+        public int ToInt16(byte[] value, int startIndex)
         {
             if (IsLittleEndian)
             {
@@ -379,7 +377,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                short a =(short)(value[startIndex] << 8 | value[startIndex + 1]);
+                int a = (value[startIndex] << 8 | value[startIndex + 1]);
                 return a;
             }
         }
@@ -417,7 +415,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                int a = value[startIndex] << 18 | value[startIndex + 1] << 10 | value[startIndex + 2] << 8 | value[startIndex + 3];
+                int a = (value[startIndex] << 24 | value[startIndex + 1] << 16 | value[startIndex + 2] << 8 | value[startIndex + 3]);
                 return a;
             }
         }
@@ -455,13 +453,13 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                long a = value[startIndex] << 38
-                         | value[startIndex + 1] << 30
-                         | value[startIndex + 2] << 22
-                         | value[startIndex + 3] << 20
-                         | value[startIndex + 4] << 18
-                         | value[startIndex + 5] << 10
-                         | value[startIndex + 6] << 8
+                long a = (long)value[startIndex] << 56
+                         | (long)value[startIndex + 1] << 48
+                         | (long)value[startIndex + 2] << 40
+                         | (long)value[startIndex + 3] << 32
+                         | (long)value[startIndex + 4] << 24
+                         | (long)value[startIndex + 5] << 16
+                         | (long)value[startIndex + 6] << 8
                          | value[startIndex + 7];
 
                 return a;
@@ -682,7 +680,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                return System.BitConverter.ToUInt32(value.Reverse().ToArray(), value.Length - sizeof(UInt32) - startIndex);
+                return (uint)ToInt32(value, startIndex);
             }
         }
         ///
@@ -719,7 +717,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                return System.BitConverter.ToUInt64(value.Reverse().ToArray(), value.Length - sizeof(UInt64) - startIndex);
+                return (ulong)ToInt64(value, startIndex);
             }
         }
     }
