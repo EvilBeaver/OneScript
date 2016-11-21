@@ -59,8 +59,12 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
         if (_readOnly)
             throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
 
+        int value = (int)val.AsNumber();
+        if (value < byte.MinValue || value > byte.MaxValue)
+            throw RuntimeException.InvalidArgumentValue();
+
         var idx = (int)index.AsNumber();
-        _buffer[idx] = (byte)val.AsNumber();
+        _buffer[idx] = (byte) value;
     }
 
     /// <summary>
@@ -106,6 +110,9 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("Записать", "Write")]
     public void Write(long position, BinaryDataBuffer bytes, long number = 0)
     {
+        if (_readOnly)
+            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+
         Array.Copy(bytes._buffer, _buffer, number);
     }
 
@@ -157,6 +164,9 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
     public void WriteInt16(int position, short value, IValue byteOrder = null)
     {
+        if (_readOnly)
+            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+
         var bytes = GetBytes(Converter.GetBytes, value, byteOrder);
         CopyBytes(position, bytes);
     }
@@ -177,6 +187,9 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("ЗаписатьЦелое32", "WriteInt32")]
     public void WriteInt32(int position, int value, IValue byteOrder = null)
     {
+        if (_readOnly)
+            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+
         var bytes = GetBytes(Converter.GetBytes, value, byteOrder);
         CopyBytes(position, bytes);
     }
@@ -202,6 +215,9 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("ЗаписатьЦелое64", "WriteInt64")]
     public void WriteInt64(int position, long value, IValue byteOrder = null)
     {
+        if (_readOnly)
+            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+
         var bytes = GetBytes(Converter.GetBytes, value, byteOrder);
         CopyBytes(position, bytes);
     }
