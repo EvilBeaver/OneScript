@@ -302,18 +302,12 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
 
     private T FromBytes<T>(Func<byte[],int,T> converterOverload, int position, IValue byteOrder = null) where T : struct
     {
-        byte[] bytes = new byte[System.Runtime.InteropServices.Marshal.SizeOf(typeof(T))];
-        for (int i = 0; i < bytes.Length; i++)
-        {
-            bytes[i] = _buffer[position + i];
-        }
-
         ByteOrderEnum order = ByteOrder;
         if (byteOrder != null)
             order = (ByteOrderEnum)(object)byteOrder.GetRawValue();
         Converter.IsLittleEndian = order == ByteOrderEnum.LittleEndian;
 
-        return converterOverload(bytes, 0);
+        return converterOverload(_buffer, position);
     }
 
     /// <summary>

@@ -379,7 +379,8 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                return System.BitConverter.ToInt16(value.Reverse().ToArray(), value.Length - sizeof(Int16) - startIndex);
+                short a =(short)(value[startIndex] << 8 | value[startIndex + 1]);
+                return a;
             }
         }
         ///
@@ -416,7 +417,8 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                return System.BitConverter.ToInt32(value.Reverse().ToArray(), value.Length - sizeof(Int32) - startIndex);
+                int a = value[startIndex] << 18 | value[startIndex + 1] << 10 | value[startIndex + 2] << 8 | value[startIndex + 3];
+                return a;
             }
         }
         ///
@@ -453,7 +455,16 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                return System.BitConverter.ToInt64(value.Reverse().ToArray(), value.Length - sizeof(Int64) - startIndex);
+                long a = value[startIndex] << 38
+                         | value[startIndex + 1] << 30
+                         | value[startIndex + 2] << 22
+                         | value[startIndex + 3] << 20
+                         | value[startIndex + 4] << 18
+                         | value[startIndex + 5] << 10
+                         | value[startIndex + 6] << 8
+                         | value[startIndex + 7];
+
+                return a;
             }
         }
         ///
