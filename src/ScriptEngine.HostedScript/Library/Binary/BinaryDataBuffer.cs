@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -57,6 +56,9 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
 
     public override void SetIndexedValue(IValue index, IValue val)
     {
+        if (_readOnly)
+            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
+
         var idx = (int)index.AsNumber();
         _buffer[idx] = (byte)val.AsNumber();
     }
@@ -411,7 +413,9 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("Скопировать", "Copy")]
     public BinaryDataBuffer Copy()
     {
-        
+        byte[] copy = new byte[_buffer.Length];
+        Array.Copy(_buffer, copy, _buffer.Length);
+        return new BinaryDataBuffer(copy, ByteOrder);
     }
 
 
@@ -420,23 +424,21 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     /// Создает новый буфер, содержащий элементы текущего буфера и, за ними, элементы заданного буфера.
     /// </summary>
     ///
-    /// <param name="Buffer">
+    /// <param name="buffer">
     /// Буфер, который будет соединен с исходным. </param>
-
     ///
-    /// <returns name="BinaryDataBuffer">
-    /// Коллекция байтов фиксированного размера с возможностью произвольного доступа и изменения по месту.
-    /// Размер буфера формально не ограничен, но поскольку все данные буфера полностью находятся в оперативной памяти, при попытке создать буфер слишком большого размера доступной памяти может оказаться недостаточно, в результате чего будет вызвано исключение. Поэтому при работе с буферами двоичных данных необходимо соотносить их размер с доступным объемом оперативной памяти.
-    /// При создании буфера можно указать порядок байтов, который будет использован для операций с целыми числами. При этом если буфер не создан явно, а получен с помощью вызова метода другого объекта, то порядок байтов в полученном буфере будет унаследован от порядка байтов, заданного для того объекта, метод которого вызывается.
-    /// Например, если буфер получен с помощью вызова метода ПрочитатьВБуферДвоичныхДанных, то порядок байтов в полученном буфере будет равен значению свойства ПорядокБайтов.
-    /// Возможен также более сложный случай наследования порядка байтов. Если буфер получен с помощью вызова метода ПолучитьБуферДвоичныхДанных, то порядок байтов у полученного буфера будет выбираться из объекта ЧтениеДанных, из которого был получен объект РезультатЧтенияДанных. 
-    /// Порядок байтов, заданный для объекта ЧтениеДанных, будет использован во всех объектах, полученных на его основании.</returns>
-
+    /// <returns name="BinaryDataBuffer"/>
     ///
     [ContextMethod("Соединить", "Concat")]
-    public IValue Concat(IValue Buffer)
+    public BinaryDataBuffer Concat(BinaryDataBuffer buffer)
     {
-        return null;
+        var source = buffer._buffer;
+        var totalLength = _buffer.Length + source.Length;
+        var joinedArray = new byte[totalLength];
+        Array.Copy(_buffer, joinedArray, _buffer.Length);
+        Array.Copy(source, 0, joinedArray, _buffer.Length, source.Length);
+
+        return new BinaryDataBuffer(joinedArray, ByteOrder);
     }
 
 
@@ -445,19 +447,21 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     /// Устанавливает значение элемента на заданной позиции (нумерация начинается с 0).
     /// </summary>
     ///
-    /// <param name="Position">
+    /// <param name="position">
     /// Позиция, на которую требуется поместить новое значение. </param>
-    /// <param name="Value">
+    /// <param name="value">
     /// Значение, которое требуется установить в заданную позицию буфера.
     /// Если значение больше 255 или меньше 0, будет выдана ошибка о неверном значении параметра. </param>
-
-    ///
-
-    ///
     [ContextMethod("Установить", "Set")]
-    public void Set(int Position, int Value)
+    public void Set(int position, int value)
     {
+        if(_readOnly)
+            throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
 
+        if (value < byte.MinValue || value > byte.MaxValue)
+            throw RuntimeException.InvalidArgumentValue();
+
+        _buffer[position] = (byte)value;
     }
 
 
