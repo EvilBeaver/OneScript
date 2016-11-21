@@ -36,10 +36,10 @@ namespace ScriptEngine.HostedScript.Library.Binary
     [EnumerationType("ПозицияВПотоке", "StreamPosition")]
     public enum StreamPositionEnum
     {
-        [EnumItem("Конец")]
-        End,
         [EnumItem("Начало")]
         Begin,
+        [EnumItem("Конец")]
+        End,
         [EnumItem("Текущая")]
         Current
     }
