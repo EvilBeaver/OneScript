@@ -204,9 +204,7 @@ namespace ScriptEngine.HostedScript.Library.Json
             if (IsOpenForString())
             {
                 res = _stringWriter.ToString();
-                //_stringWriter.Close();
-                //_stringWriter = null;
-            }
+			}
 
             if (_writer != null)
             {
@@ -255,8 +253,7 @@ namespace ScriptEngine.HostedScript.Library.Json
             switch (Value.DataType)
             {
                 case DataType.String:
-                    //_writer.WriteValue(Value.AsString());
-                    WriteStringValue(Value.AsString());
+                     WriteStringValue(Value.AsString());
                     break;
                 case DataType.Number:
                     decimal d = Value.AsNumber();
