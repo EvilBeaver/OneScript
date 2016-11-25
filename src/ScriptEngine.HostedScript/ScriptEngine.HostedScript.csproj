@@ -122,8 +122,12 @@
     <Compile Include="Library\Http\HttpResponseContext.cs" />
     <Compile Include="Library\Http\InternetProxyContext.cs" />
     <Compile Include="Library\ConsoleColorEnum.cs" />
+    <Compile Include="Library\Json\JSONCharactersEscapeMode.cs" />
+    <Compile Include="Library\Json\JSONLineBreak.cs" />
     <Compile Include="Library\Json\JSONReader.cs" />
     <Compile Include="Library\Json\JSONValueTypeEnum.cs" />
+    <Compile Include="Library\Json\JSONWriter.cs" />
+    <Compile Include="Library\Json\JSONWriterSettings.cs" />
     <Compile Include="Library\MessageStatusEnum.cs" />
     <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\Net\TCPClient.cs" />
