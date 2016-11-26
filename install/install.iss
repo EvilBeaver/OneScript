@@ -41,6 +41,7 @@ Source: "build\bin\oscript.exe"; DestDir: "{app}\bin"; Components: main
 Source: "build\bin\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
 Source: "build\bin\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
 Source: "build\bin\Ionic.Zip.dll"; DestDir: "{app}\bin"; Components: main
+Source: "build\bin\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
 Source: "build\bin\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
 
 Source: "build\examples\*"; DestDir: "{app}\examples"; Components: main
