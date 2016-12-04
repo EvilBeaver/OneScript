@@ -53,7 +53,10 @@ namespace oscript
                 return 1;
             }
 
-            return process.Start();
+            var result = process.Start();
+            hostedScript.Finalize();
+
+            return result;
         }
 
         #region IHostApplication Members

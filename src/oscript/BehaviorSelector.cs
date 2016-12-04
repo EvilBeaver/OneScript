@@ -27,30 +27,27 @@ namespace oscript
                 {
                     var path = cmdLineArgs[0];
                     return new ExecuteScriptBehavior(path, cmdLineArgs.Skip(1).ToArray());
-                }
-                else if (cmdLineArgs[0].ToLower() == "-measure")
+                } else if (cmdLineArgs[0].ToLower() == "-measure")
                 {
                     if (cmdLineArgs.Length > 1)
                     {
                         var path = cmdLineArgs[1];
                         return new MeasureBehavior(path, cmdLineArgs.Skip(2).ToArray());
                     }
-                }
-                else if (cmdLineArgs[0].ToLower() == "-compile")
+                } else if (cmdLineArgs[0].ToLower() == "-compile")
                 {
                     if (cmdLineArgs.Length > 1)
                     {
                         var path = cmdLineArgs[1];
                         return new ShowCompiledBehavior(path);
                     }
-                }
-                else if (cmdLineArgs[0].ToLower() == "-check")
+                } else if (cmdLineArgs[0].ToLower() == "-check")
                 {
                     if (cmdLineArgs.Length > 1)
                     {
                         bool cgi_mode = false;
                         int paramIndex = 1;
-                        if (cmdLineArgs [paramIndex].ToLower () == "-cgi")
+                        if (cmdLineArgs[paramIndex].ToLower() == "-cgi")
                         {
                             ++paramIndex;
                             cgi_mode = true;
@@ -59,15 +56,14 @@ namespace oscript
                         var path = cmdLineArgs[paramIndex];
                         ++paramIndex;
                         string env = null;
-                        if(cmdLineArgs.Length > paramIndex && cmdLineArgs[paramIndex].StartsWith("-env="))
+                        if (cmdLineArgs.Length > paramIndex && cmdLineArgs[paramIndex].StartsWith("-env="))
                         {
                             env = cmdLineArgs[paramIndex].Substring(5);
                         }
 
                         return new CheckSyntaxBehavior(path, env, cgi_mode);
                     }
-                }
-                else if (cmdLineArgs[0].ToLower() == "-make")
+                } else if (cmdLineArgs[0].ToLower() == "-make")
                 {
                     if (cmdLineArgs.Length == 3)
                     {
@@ -75,27 +71,23 @@ namespace oscript
                         var output = cmdLineArgs[2];
                         return new MakeAppBehavior(codepath, output);
                     }
-                }
-                else if(cmdLineArgs[0].ToLower() == "-cgi")
+                } else if (cmdLineArgs[0].ToLower() == "-cgi")
                 {
                     return new CgiBehavior();
-                }
-                else if (cmdLineArgs[0].ToLower() == "-version")
+                } else if (cmdLineArgs[0].ToLower() == "-version")
                 {
                     return new ShowVersionBehavior();
-                }
-                else if(cmdLineArgs[0].StartsWith("-encoding="))
+                } else if (cmdLineArgs[0].StartsWith("-encoding="))
                 {
                     var prefixLen = ("-encoding=").Length;
-                    if(cmdLineArgs[0].Length > prefixLen)
+                    if (cmdLineArgs[0].Length > prefixLen)
                     {
                         var encValue = cmdLineArgs[0].Substring(prefixLen);
                         Encoding encoding;
                         try
                         {
                             encoding = Encoding.GetEncoding(encValue);
-                        }
-                        catch
+                        } catch
                         {
                             Output.WriteLine("Wrong console encoding");
                             encoding = null;
@@ -104,6 +96,14 @@ namespace oscript
                         if (encoding != null)
                             Program.ConsoleOutputEncoding = encoding;
 
+                        return Select(cmdLineArgs.Skip(1).ToArray());
+                    }
+                } else if (cmdLineArgs[0].StartsWith("-codestat=")) {
+                    var prefixLen = ("-codestat=").Length;
+                    if (cmdLineArgs[0].Length > prefixLen)
+                    {
+                        var outputStatFile = cmdLineArgs[0].Substring(prefixLen);
+                        ScriptFileHelper.EnableCodeStatistics(outputStatFile);
                         return Select(cmdLineArgs.Skip(1).ToArray());
                     }
                 }

@@ -142,6 +142,10 @@ namespace ScriptEngine
             }
         }
 
+        public void SetCodeStatisticsCollector(ICodeStatCollector collector)
+        {
+            _machine.SetCodeStatisticsCollector(collector);
+        }
 
         #region IDisposable Members
 

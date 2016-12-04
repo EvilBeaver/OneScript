@@ -15,6 +15,10 @@ namespace oscript
 {
     static class ScriptFileHelper
     {
+
+        public static bool CodeStatisticsEnabled { get; private set; }
+        public static string CodeStatisticsFileName { get; private set; }
+
         public static string CustomConfigPath(string scriptPath)
         {
             var dir = Path.GetDirectoryName(scriptPath);
@@ -23,6 +27,12 @@ namespace oscript
                 return cfgPath;
             else
                 return null;
+        }
+
+        public static void EnableCodeStatistics(string fileName)
+        {
+            CodeStatisticsEnabled = fileName != null;
+            CodeStatisticsFileName = fileName;
         }
 
         // http://www.cookcomputing.com/blog/archives/000556.html
@@ -99,6 +109,9 @@ namespace oscript
             {
                 SetAllowUnsafeHeaderParsing();
             }
+
+            if (CodeStatisticsEnabled)
+                engine.EnableCodeStatistics(CodeStatisticsFileName);
         }
     }
 }
