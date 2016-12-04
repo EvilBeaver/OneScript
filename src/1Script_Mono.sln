@@ -111,7 +111,7 @@ Global
 		$1.ResourceNamePolicy = FileFormatDefault
 		$0.TextStylePolicy = $2
 		$2.inheritsSet = null
-		$2.scope = application/config+xml
+		$2.scope = application/xml
 		$2.FileWidth = 120
 		$2.inheritsScope = text/plain
 		$0.CSharpFormattingPolicy = $3

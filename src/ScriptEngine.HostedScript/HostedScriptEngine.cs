@@ -23,6 +23,8 @@ namespace ScriptEngine.HostedScript
         bool _isInitialized;
         bool _configInitialized;
 
+        private CodeStatProcessor _codeStat;
+
         public HostedScriptEngine()
         {
             _engine = new ScriptingEngine();
@@ -217,6 +219,17 @@ namespace ScriptEngine.HostedScript
             Initialize();
             var process = new Process(host, module, _engine);
             return process;
+        }
+
+        public void EnableCodeStatistics(string outputFileName)
+        {
+            _codeStat = new CodeStatProcessor(outputFileName);
+            _engine.SetCodeStatisticsCollector(_codeStat);
+        }
+
+        public void Finalize()
+        {
+            _codeStat?.OutputCodeStat();
         }
 
     }

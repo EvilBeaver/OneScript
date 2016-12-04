@@ -128,7 +128,9 @@
 	|  -compile    shows compiled module without execution
 	|  -check      provides syntax check
 	|  -check -cgi provides syntax check in CGI-mode
+	|
 	|  -encoding=<encoding-name> set output encoding
+	|  -codestat=<filename> write code statistics
 	|
 	|III. Build standalone executable: oscript.exe -make <script_path> <output_exe>
 	|  Builds a standalone executable module based on script specified

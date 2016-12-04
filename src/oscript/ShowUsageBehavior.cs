@@ -27,7 +27,9 @@ namespace oscript
             Output.WriteLine(String.Format("  {0,-12}shows compiled module without execution", "-compile"));
             Output.WriteLine(String.Format("  {0,-12}provides syntax check", "-check"));
             Output.WriteLine(String.Format("  {0,-12}provides syntax check in CGI-mode", "-check -cgi"));
+            Output.WriteLine();
             Output.WriteLine(String.Format("  {0} set output encoding", "-encoding=<encoding-name>"));
+            Output.WriteLine(String.Format("  {0} write code statistics", "-codestat=<filename>"));
             Output.WriteLine();
             Output.WriteLine("III. Build standalone executable: oscript.exe -make <script_path> <output_exe>");
             Output.WriteLine("  Builds a standalone executable module based on script specified");

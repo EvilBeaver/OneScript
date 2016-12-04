@@ -22,6 +22,7 @@ namespace ScriptEngine.Machine
         private Stack<ExceptionJumpInfo> _exceptionsStack;
         private Stack<MachineState> _states;
         private LoadedModule _module;
+        private ICodeStatCollector _codeStatCollector = null;
 
         internal MachineInstance() 
         {
@@ -332,6 +333,25 @@ namespace ScriptEngine.Machine
             }
         }
 
+        public void SetCodeStatisticsCollector(ICodeStatCollector collector)
+        {
+            _codeStatCollector = collector;
+        }
+
+        private void AddCodeStatStart()
+        {
+            if (_codeStatCollector == null)
+                return;
+
+            var entry = new CodeStatEntry() {
+                ScriptFileName = CurrentScript?.Source,
+                SubName = _currentFrame.MethodName,
+                LineNumber = _currentFrame.LineNumber
+            };
+
+            _codeStatCollector.MarkEntryReached(entry);
+        }
+
         private void MainCommandLoop()
         {
             try
@@ -341,6 +361,10 @@ namespace ScriptEngine.Machine
                 {
                     var command = _module.Code[_currentFrame.InstructionPointer];
                     _commands[(int)command.Code](command.Argument);
+
+                    if (command.Code == OperationCode.LineNum)
+                        AddCodeStatStart();
+
                 }
             }
             catch (RuntimeException)
