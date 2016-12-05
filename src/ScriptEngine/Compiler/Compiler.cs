@@ -311,6 +311,9 @@ namespace ScriptEngine.Compiler
 
         private void BuildSingleMethod()
         {
+            var entryPoint = _module.Code.Count;
+            AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+
             if (_lastExtractedLexem.Token == Token.Procedure)
             {
                 PushStructureToken(Token.EndProcedure);
@@ -327,10 +330,6 @@ namespace ScriptEngine.Compiler
             {
                 throw CompilerException.UnexpectedOperation();
             }
-
-            var entryPoint = _module.Code.Count;
-            // Запоминаем строку, в которой встретилось слово Процедура/Функция
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
 
             #region Method signature
             // сигнатура
@@ -508,7 +507,8 @@ namespace ScriptEngine.Compiler
             {
                 if (endTokens.Contains(_lastExtractedLexem.Token))
                 {
-                    AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+                    if (_lastExtractedLexem.LineNumber != 0)
+                        AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
                     return;
                 }
                 if (_lastExtractedLexem.Token == Token.Semicolon)
@@ -611,7 +611,7 @@ namespace ScriptEngine.Compiler
                     Code = OperationCode.JmpFalse,
                     Argument = _module.Code.Count
                 };
-                AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
 
                 NextToken();
                 BuildExpression(Token.Then);
@@ -632,7 +632,7 @@ namespace ScriptEngine.Compiler
                     Code = OperationCode.JmpFalse,
                     Argument = _module.Code.Count
                 };
-                AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
 
                 NextToken();
                 PushStructureToken(Token.EndIf);
