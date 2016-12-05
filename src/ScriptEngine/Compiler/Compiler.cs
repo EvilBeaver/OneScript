@@ -328,6 +328,10 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.UnexpectedOperation();
             }
 
+            var entryPoint = _module.Code.Count;
+            // Запоминаем строку, в которой встретилось слово Процедура/Функция
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+
             #region Method signature
             // сигнатура
             if (!IsUserSymbol(ref _lastExtractedLexem))
@@ -427,7 +431,6 @@ namespace ScriptEngine.Compiler
 
             #region Body
             // тело
-            var entryPoint = _module.Code.Count;
 
             try
             {
