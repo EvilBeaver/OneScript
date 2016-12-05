@@ -508,6 +508,7 @@ namespace ScriptEngine.Compiler
             {
                 if (endTokens.Contains(_lastExtractedLexem.Token))
                 {
+                    AddCommand(OperationCode.LineNum, _parser.CurrentLine);
                     return;
                 }
                 if (_lastExtractedLexem.Token == Token.Semicolon)
@@ -610,6 +611,8 @@ namespace ScriptEngine.Compiler
                     Code = OperationCode.JmpFalse,
                     Argument = _module.Code.Count
                 };
+                AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+
                 NextToken();
                 BuildExpression(Token.Then);
                 PushStructureToken(Token.Else, Token.ElseIf, Token.EndIf);
@@ -629,6 +632,8 @@ namespace ScriptEngine.Compiler
                     Code = OperationCode.JmpFalse,
                     Argument = _module.Code.Count
                 };
+                AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+
                 NextToken();
                 PushStructureToken(Token.EndIf);
                 BuildCodeBatch();
@@ -767,6 +772,7 @@ namespace ScriptEngine.Compiler
         {
             NextToken();
             var conditionIndex = _module.Code.Count;
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
@@ -779,6 +785,7 @@ namespace ScriptEngine.Compiler
             BuildCodeBatch();
             SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
+
             AddCommand(OperationCode.Jmp, conditionIndex);
             
             var endLoop = AddCommand(OperationCode.Nop, 0);
