@@ -16,3 +16,9 @@ build:
   verbosity: minimal
 test_script:
 - cmd: appveyor-runtests.cmd
+after_build:
+- 7z a oscript.zip %APPVEYOR_BUILD_FOLDER%/src/oscript/bin/x86/Release/*.dll
+- 7z a oscript.zip %APPVEYOR_BUILD_FOLDER%/src/oscript/bin/x86/Release/*.exe
+artifacts:
+- path: oscript.zip
+  name: oscript.zip
