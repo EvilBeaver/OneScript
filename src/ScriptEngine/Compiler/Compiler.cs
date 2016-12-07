@@ -507,8 +507,6 @@ namespace ScriptEngine.Compiler
             {
                 if (endTokens.Contains(_lastExtractedLexem.Token))
                 {
-                    if (_lastExtractedLexem.LineNumber != 0)
-                        AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
                     return;
                 }
                 if (_lastExtractedLexem.Token == Token.Semicolon)
@@ -640,16 +638,26 @@ namespace ScriptEngine.Compiler
                 PopStructureToken();
             }
 
+            int exitIndex;
+            if (_lastExtractedLexem.Token == Token.EndIf)
+            {
+                exitIndex = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            }
+            else
+            {
+                // Вообще, такого быть не должно...
+                exitIndex = AddCommand(OperationCode.Nop, 0);
+            }
+
             if (!hasAlternativeBranches)
             {
                 _module.Code[jumpFalseIndex] = new Command()
                 {
                     Code = OperationCode.JmpFalse,
-                    Argument = _module.Code.Count
+                    Argument = exitIndex
                 };
             }
 
-            var exitIndex = AddCommand(OperationCode.Nop, 0);
             foreach (var indexToWrite in exitIndices)
             {
                 _module.Code[indexToWrite] = new Command()

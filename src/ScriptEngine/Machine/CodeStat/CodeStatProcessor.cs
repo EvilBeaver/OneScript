@@ -50,7 +50,7 @@ namespace ScriptEngine.Machine
                     jwriter.WritePropertyName(method.Key, true);
                     jwriter.WriteStartObject();
 
-                    foreach (var entry in method)
+                    foreach (var entry in method.OrderBy((kv) => kv.Key.LineNumber))
                     {
                         jwriter.WritePropertyName(entry.Key.LineNumber.ToString());
                         jwriter.WriteValue(entry.Value);
