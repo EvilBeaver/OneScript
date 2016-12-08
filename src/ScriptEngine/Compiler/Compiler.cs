@@ -705,7 +705,8 @@ namespace ScriptEngine.Compiler
             NextToken();
             BuildExpression(Token.Loop);
             AddCommand(OperationCode.PushIterator, 0);
-            var loopBegin = AddCommand(OperationCode.IteratorNext, 0);
+            var loopBegin = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            AddCommand(OperationCode.IteratorNext, 0);
             var condition = AddCommand(OperationCode.JmpFalse, -1);
             BuildLoadVariable(identifier);
             PushStructureToken(Token.EndLoop);
@@ -719,6 +720,9 @@ namespace ScriptEngine.Compiler
             BuildCodeBatch();
             SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
+
+            if (_lastExtractedLexem.Token == Token.EndLoop)
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
 
             AddCommand(OperationCode.Jmp, loopBegin);
             var cmd = _module.Code[condition];
@@ -745,9 +749,26 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.MakeRawValue, 0);
             AddCommand(OperationCode.PushTmp, 0);
             var lastIdx = _module.Code.Count;
-            AddCommand(OperationCode.Jmp, lastIdx + 4);
-            // increment
-            var indexLoopBegin = BuildPushVariable(counter);
+            int indexLoopBegin = -1;
+
+            // TODO: костыль
+            if (_lastExtractedLexem.Token == Token.Loop)
+            {
+                AddCommand(OperationCode.Jmp, lastIdx + 5);
+                indexLoopBegin = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            }
+            else
+            {
+                AddCommand(OperationCode.Jmp, lastIdx + 4);
+            }
+
+            {
+                // increment
+                var indexLoopBeginNew = BuildPushVariable(counter);
+                if (indexLoopBegin == -1)
+                    indexLoopBegin = indexLoopBeginNew;
+            }
+
             AddCommand(OperationCode.Inc, 0);
             BuildLoadVariable(counter);
 
@@ -762,6 +783,9 @@ namespace ScriptEngine.Compiler
             BuildCodeBatch();
             SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
+
+            if (_lastExtractedLexem.Token == Token.EndLoop)
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
 
             // jmp to start
             AddCommand(OperationCode.Jmp, indexLoopBegin);
@@ -793,6 +817,9 @@ namespace ScriptEngine.Compiler
             BuildCodeBatch();
             SetTryBlockFlag(savedTryFlag);
             PopStructureToken();
+
+            if (_lastExtractedLexem.Token == Token.EndLoop)
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
 
             AddCommand(OperationCode.Jmp, conditionIndex);
             
