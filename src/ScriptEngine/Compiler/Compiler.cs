@@ -929,18 +929,21 @@ namespace ScriptEngine.Compiler
             SetTryBlockFlag(savedTryFlag);
             var jmpIndex = AddCommand(OperationCode.Jmp, -1);
 
-            CorrectCommandArgument(beginTryIndex, _module.Code.Count);
-
             Assert(_lastExtractedLexem.Token == Token.Exception);
-            if(StringComparer.OrdinalIgnoreCase.Compare(_lastExtractedLexem.Content, "Exception") == 0)
+            if (StringComparer.OrdinalIgnoreCase.Compare(_lastExtractedLexem.Content, "Exception") == 0)
                 SystemLogger.Write("WARNING! BREAKING CHANGE: Keyword 'Exception' is not supported anymore. Consider using 'Except'");
+
+            var beginHandler = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+
+            CorrectCommandArgument(beginTryIndex, beginHandler);
 
             PushStructureToken(Token.EndTry);
             NextToken();
             BuildCodeBatch();
             PopStructureToken();
 
-            var endIndex = AddCommand(OperationCode.EndTry, 0);
+            var endIndex = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            AddCommand(OperationCode.EndTry, 0);
             CorrectCommandArgument(jmpIndex, endIndex);
             
             NextToken();
