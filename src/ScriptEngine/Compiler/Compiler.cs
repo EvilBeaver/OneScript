@@ -482,7 +482,11 @@ namespace ScriptEngine.Compiler
             _inMethodScope = true;
             BuildVariableDefinitions();
             _isStatementsDefined = true;
+
+            var codeStart = _module.Code.Count;
+
             BuildCodeBatch();
+
             if (_isFunctionProcessed)
             {
                 var undefConst = new ConstDefinition()
@@ -494,7 +498,28 @@ namespace ScriptEngine.Compiler
                 AddCommand(OperationCode.PushConst, GetConstNumber(ref undefConst));
                 
             }
+
+            var codeEnd = _module.Code.Count;
+
+            if (_lastExtractedLexem.Token == Token.EndProcedure
+                || _lastExtractedLexem.Token == Token.EndFunction)
+            {
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            }
+
             AddCommand(OperationCode.Return, 0);
+
+            {
+                // заменим Return на Jmp <сюда>
+                for (var i = codeStart; i < codeEnd; i++)
+                {
+                    if (_module.Code[i].Code == OperationCode.Return)
+                    {
+                        _module.Code[i] = new Command() { Code = OperationCode.Jmp, Argument = codeEnd };
+                    }
+                }
+            }
+
             _isStatementsDefined = false;
             _inMethodScope = false;
         }
