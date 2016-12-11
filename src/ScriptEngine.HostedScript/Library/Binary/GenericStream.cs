@@ -179,21 +179,21 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// При чтении размер целевого буфера не меняется, а его содержимое перезаписывается фактически прочитанными данными. Если в буфере недостаточно места для записи прочитанных данных, происходит ошибка переполнения.
         /// </summary>
         ///
-        /// <param name="Buffer">
+        /// <param name="buffer">
         /// Буфер, в который выполняется чтение. </param>
-        /// <param name="PositionInBuffer">
+        /// <param name="positionInBuffer">
         /// Позиция в целевом буфере, начиная с которой требуется записывать данные из потока. </param>
-        /// <param name="Number">
+        /// <param name="number">
         /// Количество байт, которые требуется записать в целевой буфер. </param>
         ///
-        /// <returns name="Number">
+        /// <returns name="number">
         /// Возвращает число прочитанных байт
         /// </returns>
         /// 
         [ContextMethod("Прочитать", "Read")]
-        public long Read(IValue Buffer, int PositionInBuffer, int Number)
+        public long Read(BinaryDataBuffer buffer, int positionInBuffer, int number)
         {
-            throw new NotImplementedException();
+            return _underlyingStream.Read(buffer.Bytes, positionInBuffer, number);
         }
 
 
