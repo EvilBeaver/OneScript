@@ -297,8 +297,44 @@ namespace ScriptEngine.Machine
             SetFrame(frame);
         }
 
+        private void PrepareCodeStatisticsData()
+        {
+            foreach (var method in _module.Methods)
+            {
+                var instructionPointer = method.EntryPoint;
+                while (instructionPointer < _module.Code.Length)
+                {
+                    if (_module.Code[instructionPointer].Code == OperationCode.LineNum)
+                    {
+                        var entry = new CodeStatEntry(
+                            CurrentScript?.Source,
+                            method.Signature.Name,
+                            _module.Code[instructionPointer].Argument
+                        );
+                        _codeStatCollector.MarkEntryReached(entry, count: 0);
+                    }
+
+                    if (_module.Code[instructionPointer].Code == OperationCode.Return)
+                    {
+                        break;
+                    }
+
+                    instructionPointer++;
+                }
+            }
+        }
+
         private void ExecuteCode()
         {
+            if (_codeStatCollector != null)
+            {
+                if (!_codeStatCollector.IsPrepared(CurrentScript?.Source))
+                {
+                    PrepareCodeStatisticsData();
+                    _codeStatCollector.MarkPrepared(CurrentScript?.Source);
+                }
+            }
+
             while (true)
             {
                 try
@@ -343,12 +379,7 @@ namespace ScriptEngine.Machine
             if (_codeStatCollector == null)
                 return;
 
-            var entry = new CodeStatEntry() {
-                ScriptFileName = CurrentScript?.Source,
-                SubName = _currentFrame.MethodName,
-                LineNumber = _currentFrame.LineNumber
-            };
-
+            var entry = new CodeStatEntry(CurrentScript?.Source, _currentFrame.MethodName, _currentFrame.LineNumber);
             _codeStatCollector.MarkEntryReached(entry);
         }
 

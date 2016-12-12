@@ -17,17 +17,28 @@ namespace ScriptEngine.Machine
     {
         private Dictionary<CodeStatEntry, int> _codeStat = new Dictionary<CodeStatEntry, int>();
         private readonly string _outputFileName;
+        private HashSet<string> _preparedScripts = new HashSet<string>();
 
         public CodeStatProcessor(string fileName)
         {
             _outputFileName = fileName;
         }
 
-        public void MarkEntryReached(CodeStatEntry entry)
+        public bool IsPrepared(string ScriptFileName)
+        {
+            return _preparedScripts.Contains(ScriptFileName);
+        }
+
+        public void MarkEntryReached(CodeStatEntry entry, int count = 1)
         {
             int oldValue = 0;
             _codeStat.TryGetValue(entry, out oldValue);
-            _codeStat[entry] = oldValue + 1;
+            _codeStat[entry] = oldValue + count;
+        }
+
+        public void MarkPrepared(string ScriptFileName)
+        {
+            _preparedScripts.Add(ScriptFileName);
         }
 
         public void OutputCodeStat()
