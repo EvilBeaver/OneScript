@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
@@ -16,6 +17,8 @@ namespace ScriptEngine.Machine
     public class CodeStatProcessor : ICodeStatCollector
     {
         private Dictionary<CodeStatEntry, int> _codeStat = new Dictionary<CodeStatEntry, int>();
+        private Dictionary<CodeStatEntry, Stopwatch> _watchers = new Dictionary<CodeStatEntry, Stopwatch>();
+        private Stopwatch _activeStopwatch = null;
         private readonly string _outputFileName;
         private HashSet<string> _preparedScripts = new HashSet<string>();
 
@@ -34,6 +37,20 @@ namespace ScriptEngine.Machine
             int oldValue = 0;
             _codeStat.TryGetValue(entry, out oldValue);
             _codeStat[entry] = oldValue + count;
+
+            if (count == 0)
+            {
+                if (!_watchers.ContainsKey(entry))
+                {
+                    _watchers.Add(entry, new Stopwatch());
+                }
+            }
+            else
+            {
+                _activeStopwatch?.Stop();
+                _activeStopwatch = _watchers[entry];
+                _activeStopwatch.Start();
+            }
         }
 
         public void MarkPrepared(string ScriptFileName)
@@ -43,6 +60,7 @@ namespace ScriptEngine.Machine
 
         public void OutputCodeStat()
         {
+            _activeStopwatch?.Stop();
 
             var w = new StreamWriter(_outputFileName);
             var jwriter = new JsonTextWriter(w);
@@ -64,7 +82,20 @@ namespace ScriptEngine.Machine
                     foreach (var entry in method.OrderBy((kv) => kv.Key.LineNumber))
                     {
                         jwriter.WritePropertyName(entry.Key.LineNumber.ToString());
+                        jwriter.WriteStartObject();
+
+                        jwriter.WritePropertyName("count");
                         jwriter.WriteValue(entry.Value);
+
+                        if (_watchers.ContainsKey(entry.Key))
+                        {
+                            var elapsed = _watchers[entry.Key].ElapsedMilliseconds;
+
+                            jwriter.WritePropertyName("time");
+                            jwriter.WriteValue(elapsed);
+                        }
+
+                        jwriter.WriteEndObject();
                     }
 
                     jwriter.WriteEndObject();
@@ -75,6 +106,25 @@ namespace ScriptEngine.Machine
             jwriter.Flush();
 
             _codeStat.Clear();
+        }
+
+        public void StopWatch(CodeStatEntry entry)
+        {
+            if (_watchers.ContainsKey(entry))
+            {
+                _watchers[entry].Stop();
+            }
+        }
+
+        public void ResumeWatch(CodeStatEntry entry)
+        {
+            _activeStopwatch?.Stop();
+
+            if (_watchers.ContainsKey(entry))
+            {
+                _activeStopwatch = _watchers[entry];
+                _activeStopwatch.Start();
+            }
         }
     }
 }

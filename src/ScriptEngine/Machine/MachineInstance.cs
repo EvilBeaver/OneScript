@@ -216,11 +216,14 @@ namespace ScriptEngine.Machine
         {
             if(_currentFrame != null)
                 _callStack.Push(_currentFrame);
+
+            CodeStat_StopFrameStatistics();
         }
 
         private void PopFrame()
         {
             _currentFrame = _callStack.Pop();
+            CodeStat_ResumeFrameStatistics();
         }
 
         private void SetFrame(ExecutionFrame frame)
@@ -374,13 +377,27 @@ namespace ScriptEngine.Machine
             _codeStatCollector = collector;
         }
 
-        private void AddCodeStatStart()
+        private CodeStatEntry CurrentCodeEntry()
+        {
+            return new CodeStatEntry(CurrentScript?.Source, _currentFrame.MethodName, _currentFrame.LineNumber);
+        }
+
+        private void CodeStat_LineReached()
         {
             if (_codeStatCollector == null)
                 return;
 
-            var entry = new CodeStatEntry(CurrentScript?.Source, _currentFrame.MethodName, _currentFrame.LineNumber);
-            _codeStatCollector.MarkEntryReached(entry);
+            _codeStatCollector.MarkEntryReached(CurrentCodeEntry());
+        }
+
+        private void CodeStat_StopFrameStatistics()
+        {
+            _codeStatCollector?.StopWatch(CurrentCodeEntry());
+        }
+
+        private void CodeStat_ResumeFrameStatistics()
+        {
+            _codeStatCollector?.ResumeWatch(CurrentCodeEntry());
         }
 
         private void MainCommandLoop()
@@ -394,7 +411,7 @@ namespace ScriptEngine.Machine
                     _commands[(int)command.Code](command.Argument);
 
                     if (command.Code == OperationCode.LineNum)
-                        AddCodeStatStart();
+                        CodeStat_LineReached();
 
                 }
             }
