@@ -749,17 +749,14 @@ namespace ScriptEngine.Machine
 
         private void CallFunc(int arg)
         {
-            bool needsDiscrding = MethodCallImpl(arg, true);
-            _currentFrame.DiscardReturnValue = needsDiscrding;
+            bool needsDiscarding = MethodCallImpl(arg, true);
+            _currentFrame.DiscardReturnValue = needsDiscarding;
         }
 
         private void CallProc(int arg)
         {
             bool needsDiscarding = MethodCallImpl(arg, false);
-            if (needsDiscarding)
-                _currentFrame.DiscardReturnValue = true;
-            else
-                _currentFrame.DiscardReturnValue = false;
+            _currentFrame.DiscardReturnValue = needsDiscarding;
         }
 
         private bool MethodCallImpl(int arg, bool asFunc)
