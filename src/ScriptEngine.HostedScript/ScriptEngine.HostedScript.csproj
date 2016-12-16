@@ -101,6 +101,7 @@
     <Compile Include="Library\ArrayImpl.cs" />
     <Compile Include="Library\Binary\BinaryDataContext.cs" />
     <Compile Include="Library\Binary\BinaryDataBuffer.cs" />
+    <Compile Include="Library\Binary\GenericStreamImpl.cs" />
     <Compile Include="Library\Binary\EndianBitConverter.cs" />
     <Compile Include="Library\Binary\DataReader.cs" />
     <Compile Include="Library\Binary\DataWriter.cs" />

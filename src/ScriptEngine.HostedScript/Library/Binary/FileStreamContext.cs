@@ -40,7 +40,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
             FileName = fileName;
             _underlyingStream = openedStream;
         }
-        
+
+        public bool IsReadOnly => CanWrite;
+
         /// <summary>
         /// 
         /// Признак доступности записи в поток.

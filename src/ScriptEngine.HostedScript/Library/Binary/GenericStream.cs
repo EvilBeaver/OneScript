@@ -8,6 +8,8 @@ namespace ScriptEngine.HostedScript.Library.Binary
     internal interface IStreamWrapper
     {
         Stream GetUnderlyingStream();
+
+        bool IsReadOnly { get; }
     }
     
     /// <summary>
@@ -18,13 +20,15 @@ namespace ScriptEngine.HostedScript.Library.Binary
     [ContextClass("Поток", "Stream")]
     public class GenericStream : AutoContext<GenericStream>, IDisposable, IStreamWrapper
     {
-
-        private bool _isReadOnly;
         private readonly Stream _underlyingStream;
+        private readonly bool _isReadOnly;
+
+        private readonly GenericStreamImpl _commonImpl;
 
         public GenericStream(Stream underlyingStream)
         {
             _underlyingStream = underlyingStream;
+            _commonImpl = new GenericStreamImpl(_underlyingStream);
             _isReadOnly = false;
         }
 
@@ -33,7 +37,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
             _underlyingStream = underlyingStream;
             _isReadOnly = readOnly;
         }
-        
+
+        public bool IsReadOnly => CanWrite;
+
         /// <summary>
         /// 
         /// Признак доступности записи в поток.
@@ -90,8 +96,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("Записать", "Write")]
         public void Write(BinaryDataBuffer buffer, int positionInBuffer, int number)
         {
-            buffer.ThrowIfReadonly();
-            _underlyingStream.Write(buffer.Bytes, positionInBuffer, number);
+            _commonImpl.Write(buffer, positionInBuffer, number);
         }
 
 
@@ -109,15 +114,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("КопироватьВ", "CopyTo")]
         public void CopyTo(IValue targetStream, int bufferSize = 0)
         {
-            IStreamWrapper sw = targetStream.GetRawValue() as IStreamWrapper;
-            if(sw == null)
-                throw RuntimeException.InvalidArgumentType("targetStream");
-
-            var stream = sw.GetUnderlyingStream();
-            if(bufferSize == 0)
-                _underlyingStream.CopyTo(stream);
-            else
-                _underlyingStream.CopyTo(stream, bufferSize);
+            _commonImpl.CopyTo(targetStream, bufferSize);
         }
 
         ///  <summary>
@@ -135,21 +132,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("Перейти", "Seek")]
         public long Seek(int offset, StreamPositionEnum initialPosition = StreamPositionEnum.Begin)
         {
-            SeekOrigin origin;
-            switch (initialPosition)
-            {
-                case StreamPositionEnum.End:
-                    origin = SeekOrigin.End;
-                    break;
-                case StreamPositionEnum.Current:
-                    origin = SeekOrigin.Current;
-                    break;
-                default:
-                    origin = SeekOrigin.Begin;
-                    break;
-            }
-
-            return _underlyingStream.Seek(offset, origin);
+            return _commonImpl.Seek(offset, initialPosition);
         }
 
 
