@@ -72,7 +72,7 @@ namespace ScriptEngine.Machine
                 jwriter.WritePropertyName(source.Key, true);
                 jwriter.WriteStartObject();
 
-                jwriter.WritePropertyName("path");
+                jwriter.WritePropertyName("#path");
                 jwriter.WriteValue(source.Key);
                 foreach (var method in source.GroupBy((arg) => arg.Key.SubName))
                 {
