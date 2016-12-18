@@ -829,7 +829,6 @@ namespace ScriptEngine.Compiler
         {
             NextToken();
             var conditionIndex = _module.Code.Count;
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
