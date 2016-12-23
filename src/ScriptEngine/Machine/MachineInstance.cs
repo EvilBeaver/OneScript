@@ -409,10 +409,6 @@ namespace ScriptEngine.Machine
                 {
                     var command = _module.Code[_currentFrame.InstructionPointer];
                     _commands[(int)command.Code](command.Argument);
-
-                    if (command.Code == OperationCode.LineNum)
-                        CodeStat_LineReached();
-
                 }
             }
             catch (RuntimeException)
@@ -1372,7 +1368,11 @@ namespace ScriptEngine.Machine
 
         private void LineNum(int arg)
         {
-            _currentFrame.LineNumber = arg;
+            if (_currentFrame.LineNumber != arg)
+            {
+                _currentFrame.LineNumber = arg;
+                CodeStat_LineReached();
+            }
             NextInstruction();
         }
 
