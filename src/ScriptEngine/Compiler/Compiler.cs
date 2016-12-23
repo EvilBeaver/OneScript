@@ -61,6 +61,8 @@ namespace ScriptEngine.Compiler
             
         }
 
+        public bool ProduceExtraCode { get; set; }
+
         public ModuleImage Compile(Parser parser, ICompilerContext context)
         {
             _module = new ModuleImage();
@@ -1257,6 +1259,7 @@ namespace ScriptEngine.Compiler
         private void ProcessPrimaryIdentifier()
         {
             var identifier = _lastExtractedLexem.Content;
+            var lineNumber = _lastExtractedLexem.LineNumber;
             NextToken();
             if (IsContinuationToken(ref _lastExtractedLexem))
             {
@@ -1265,7 +1268,7 @@ namespace ScriptEngine.Compiler
             }
             else if (_lastExtractedLexem.Token == Token.OpenPar)
             {
-                BuildFunctionCall(identifier);
+                BuildFunctionCall(identifier, lineNumber);
                 BuildContinuationRightHand();
             }
             else
@@ -1497,15 +1500,10 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.PushIndexed, 0);
         }
 
-        private void BuildProcedureCall(string identifier)
-        {
-            var args = PushMethodArgumentsBeforeCall();
-            BuildMethodCall(identifier, args, false);
-        }
-
-        private void BuildFunctionCall(string identifier)
+        private void BuildFunctionCall(string identifier, int callLineNumber)
         {
             bool[] args = PushMethodArgumentsBeforeCall();
+            AddCommand(OperationCode.LineNum, callLineNumber, isExtraCode: true);
             BuildMethodCall(identifier, args, true);
         }
 
@@ -1533,7 +1531,7 @@ namespace ScriptEngine.Compiler
                     }
                     CheckFactArguments(methInfo, argsPassed);
                 }
-                
+
                 if(asFunction)
                     AddCommand(OperationCode.CallFunc, GetMethodRefNumber(ref methBinding));
                 else
@@ -1789,8 +1787,11 @@ namespace ScriptEngine.Compiler
             return tok;
         }
 
-        private int AddCommand(OperationCode code, int arg)
+        private int AddCommand(OperationCode code, int arg, bool isExtraCode = false)
         {
+            if (isExtraCode && !ProduceExtraCode)
+                return -1;
+
             var addr = _module.Code.Count;
             _module.Code.Add(new Command() { Code = code, Argument = arg });
             return addr;
