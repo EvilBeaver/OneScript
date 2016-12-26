@@ -14,6 +14,8 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.IO;
 
+using ScriptEngine.HostedScript.Library.Binary;
+
 namespace ScriptEngine.HostedScript.Library.Net
 {
     /// <summary>

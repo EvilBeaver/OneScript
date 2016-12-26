@@ -12,6 +12,8 @@ using System;
 using System.IO;
 using System.Text;
 
+using ScriptEngine.HostedScript.Library.Binary;
+
 namespace oscript.Web.Multipart
 {
     [ContextClass("ДанныеPOSTЗапроса", "PostRequestData")]

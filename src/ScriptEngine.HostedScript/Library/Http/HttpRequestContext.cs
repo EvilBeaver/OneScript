@@ -12,6 +12,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using ScriptEngine.HostedScript.Library.Binary;
+
 namespace ScriptEngine.HostedScript.Library.Http
 {
     /// <summary>
