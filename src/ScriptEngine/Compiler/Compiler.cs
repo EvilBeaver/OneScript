@@ -551,9 +551,6 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.LineNum, _parser.CurrentLine);
             switch (_lastExtractedLexem.Token)
             {
-                case Token.VarDef:
-                    BuildVariableDefinitions();
-                    break;
                 case Token.If:
                     BuildIfStatement();
                     break;
