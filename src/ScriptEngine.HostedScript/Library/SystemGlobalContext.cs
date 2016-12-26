@@ -27,8 +27,12 @@ namespace ScriptEngine.HostedScript.Library
 
         public SystemGlobalContext()
         {
-            RegisterProperty("АргументыКоманднойСтроки", new Func<IValue>(()=>(IValue)CommandLineArguments));
-            RegisterProperty("CommandLineArguments", new Func<IValue>(() => (IValue)CommandLineArguments));
+            RegisterProperty("АргументыКоманднойСтроки", ()=>(IValue)CommandLineArguments);
+            RegisterProperty("CommandLineArguments", () => (IValue)CommandLineArguments);
+
+            FileStreams = new FileStreamsManager();
+            RegisterProperty("ФайловыеПотоки", () => FileStreams);
+            RegisterProperty("FileStreams", () => FileStreams);
         }
 
         private void RegisterProperty(string name, Func<IValue> getter)
@@ -56,6 +60,13 @@ namespace ScriptEngine.HostedScript.Library
 
         public IHostApplication ApplicationHost { get; set; }
         public ICodeSource CodeSource { get; set; }
+
+
+        /// <summary>
+        /// Менеджер файловых потоков.
+        /// </summary>
+        [ContextProperty("ФайловыеПотоки","FileStreams")]
+        private FileStreamsManager FileStreams { get; }
 
         /// <summary>
         /// Выдает сообщение в консоль.
