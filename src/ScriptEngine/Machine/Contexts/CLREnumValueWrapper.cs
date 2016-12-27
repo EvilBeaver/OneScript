@@ -12,7 +12,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class CLREnumValueWrapper<T> : EnumerationValue, IObjectWrapper
+    public class CLREnumValueWrapper<T> : EnumerationValue, IObjectWrapper where T :struct
     {
         private readonly T _realValue;
         private DataType _redefinedDataType;

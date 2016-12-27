@@ -14,8 +14,8 @@ namespace ScriptEngine.Machine
 {
     static class ValueFormatter
     {
-        static readonly string[] BOOLEAN_FALSE = { "БЛ", "BT" };
-        static readonly string[] BOOLEAN_TRUE = { "БИ", "BF" };
+        static readonly string[] BOOLEAN_FALSE = { "БЛ", "BF" };
+        static readonly string[] BOOLEAN_TRUE = { "БИ", "BT" };
         static readonly string[] LOCALE = { "Л", "L" };
         static readonly string[] NUM_MAX_SIZE = { "ЧЦ", "ND" };
         static readonly string[] NUM_DECIMAL_SIZE = { "ЧДЦ", "NFD" };

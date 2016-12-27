@@ -12,6 +12,8 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 
+using ScriptEngine.HostedScript.Library.Binary;
+
 namespace ScriptEngine.HostedScript.Library.Xml
 {
     [GlobalContext(Category="Функции работы с XML")]
