@@ -66,7 +66,7 @@ namespace ScriptEngine.HostedScript.Library
         /// Менеджер файловых потоков.
         /// </summary>
         [ContextProperty("ФайловыеПотоки","FileStreams")]
-        private FileStreamsManager FileStreams { get; }
+        public FileStreamsManager FileStreams { get; }
 
         /// <summary>
         /// Выдает сообщение в консоль.
