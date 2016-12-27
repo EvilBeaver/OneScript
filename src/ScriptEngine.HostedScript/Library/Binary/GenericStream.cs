@@ -38,7 +38,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             _isReadOnly = readOnly;
         }
 
-        public bool IsReadOnly => CanWrite;
+        public bool IsReadOnly => !CanWrite;
 
         /// <summary>
         /// 
@@ -151,7 +151,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("ПолучитьПотокТолькоДляЧтения", "GetReadonlyStream")]
         public GenericStream GetReadonlyStream()
         {
-            return new GenericStream(_underlyingStream, true);
+            return _commonImpl.GetReadonlyStream();
         }
 
 
@@ -176,7 +176,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("Прочитать", "Read")]
         public long Read(BinaryDataBuffer buffer, int positionInBuffer, int number)
         {
-            return _underlyingStream.Read(buffer.Bytes, positionInBuffer, number);
+            return _commonImpl.Read(buffer, positionInBuffer, number);
         }
 
 
@@ -188,7 +188,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("Размер", "Size")]
         public long Size()
         {
-            return _underlyingStream.Length;
+            return _commonImpl.Size();
         }
 
 
@@ -200,7 +200,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("СброситьБуферы", "Flush")]
         public void Flush()
         {
-            _underlyingStream.Flush();
+            _commonImpl.Flush();
         }
 
 
@@ -209,16 +209,13 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Возвращает текущую позицию в потоке.
         /// </summary>
         ///
-
         ///
-        /// <returns name="Number">
-        /// Числовым типом может быть представлено любое десятичное число. Над данными числового типа определены основные арифметические операции: сложение, вычитание, умножение и деление. Максимально допустимая разрядность числа 38 знаков.</returns>
-
+        /// <returns name="Number"/>
         ///
         [ContextMethod("ТекущаяПозиция", "CurrentPosition")]
         public long CurrentPosition()
         {
-            return _underlyingStream.Position;
+            return _commonImpl.CurrentPosition();
         }
 
 
@@ -235,7 +232,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("УстановитьРазмер", "SetSize")]
         public void SetSize(long size)
         {
-            _underlyingStream.SetLength(size);
+            _commonImpl.SetSize(size);
         }
 
         public void Dispose()

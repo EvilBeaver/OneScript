@@ -17,6 +17,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
     {
 
         private readonly FileStream _underlyingStream;
+        private readonly GenericStreamImpl _commonImpl;
 
         public FileStreamContext(string filename, FileOpenModeEnum openMode, FileAccessEnum access, int bufferSize = 0)
         {
@@ -33,15 +34,18 @@ namespace ScriptEngine.HostedScript.Library.Binary
                     FileShare.Read,
                     bufferSize);
 
-        }
+            _commonImpl = new GenericStreamImpl(_underlyingStream);
+
+    }
 
         public FileStreamContext(string fileName, FileStream openedStream)
         {
             FileName = fileName;
             _underlyingStream = openedStream;
+            _commonImpl = new GenericStreamImpl(_underlyingStream);
         }
 
-        public bool IsReadOnly => CanWrite;
+        public bool IsReadOnly => !CanWrite;
 
         /// <summary>
         /// 
@@ -104,8 +108,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("Записать", "Write")]
         public void Write(BinaryDataBuffer buffer, int positionInBuffer, int number)
         {
-            buffer.ThrowIfReadonly();
-            _underlyingStream.Write(buffer.Bytes, positionInBuffer, number);
+            _commonImpl.Write(buffer, positionInBuffer, number);
         }
 
 
@@ -123,15 +126,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("КопироватьВ", "CopyTo")]
         public void CopyTo(IValue targetStream, int bufferSize = 0)
         {
-            IStreamWrapper sw = targetStream.GetRawValue() as IStreamWrapper;
-            if (sw == null)
-                throw RuntimeException.InvalidArgumentType("targetStream");
-
-            var stream = sw.GetUnderlyingStream();
-            if (bufferSize == 0)
-                _underlyingStream.CopyTo(stream);
-            else
-                _underlyingStream.CopyTo(stream, bufferSize);
+            _commonImpl.CopyTo(targetStream, bufferSize);
         }
 
         ///  <summary>
@@ -149,21 +144,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("Перейти", "Seek")]
         public long Seek(int offset, StreamPositionEnum initialPosition = StreamPositionEnum.Begin)
         {
-            SeekOrigin origin;
-            switch (initialPosition)
-            {
-                case StreamPositionEnum.End:
-                    origin = SeekOrigin.End;
-                    break;
-                case StreamPositionEnum.Current:
-                    origin = SeekOrigin.Current;
-                    break;
-                default:
-                    origin = SeekOrigin.Begin;
-                    break;
-            }
-
-            return _underlyingStream.Seek(offset, origin);
+            return _commonImpl.Seek(offset, initialPosition);
         }
 
 
@@ -172,17 +153,12 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Возвращает поток, который разделяет данные и текущую позицию с данным потоком, но не разрешает запись.
         /// </summary>
         ///
-
-        ///
-        /// <returns name="Stream">
-        /// Представляет собой поток данных, который можно последовательно читать и/или в который можно последовательно писать. 
-        /// Экземпляры объектов данного типа можно получить с помощью различных методов других объектов.</returns>
-
+        /// <returns name="Stream"></returns>
         ///
         [ContextMethod("ПолучитьПотокТолькоДляЧтения", "GetReadonlyStream")]
         public GenericStream GetReadonlyStream()
         {
-            return new GenericStream(_underlyingStream, true);
+            return _commonImpl.GetReadonlyStream();
         }
 
 
@@ -207,7 +183,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("Прочитать", "Read")]
         public long Read(BinaryDataBuffer buffer, int positionInBuffer, int number)
         {
-            return _underlyingStream.Read(buffer.Bytes, positionInBuffer, number);
+            return _commonImpl.Read(buffer, positionInBuffer, number);
         }
 
 
@@ -219,7 +195,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("Размер", "Size")]
         public long Size()
         {
-            return _underlyingStream.Length;
+            return _commonImpl.Size();
         }
 
 
@@ -231,7 +207,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("СброситьБуферы", "Flush")]
         public void Flush()
         {
-            _underlyingStream.Flush();
+            _commonImpl.Flush();
         }
 
 
@@ -249,7 +225,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("ТекущаяПозиция", "CurrentPosition")]
         public long CurrentPosition()
         {
-            return _underlyingStream.Position;
+            return _commonImpl.CurrentPosition();
         }
 
 
@@ -266,7 +242,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("УстановитьРазмер", "SetSize")]
         public void SetSize(long size)
         {
-            _underlyingStream.SetLength(size);
+            _commonImpl.SetSize(size);
         }
 
         public void Dispose()

@@ -9,9 +9,9 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.Binary
 {
-    class GenericStreamImpl
+    internal class GenericStreamImpl
     {
-        Stream _underlyingStream;
+        private Stream _underlyingStream;
 
         public GenericStreamImpl(Stream stream)
         {
@@ -54,6 +54,36 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
 
             return _underlyingStream.Seek(offset, origin);
+        }
+
+        public GenericStream GetReadonlyStream()
+        {
+            return new GenericStream(_underlyingStream, true);
+        }
+
+        public long Read(BinaryDataBuffer buffer, int positionInBuffer, int number)
+        {
+            return _underlyingStream.Read(buffer.Bytes, positionInBuffer, number);
+        }
+
+        public long Size()
+        {
+            return _underlyingStream.Length;
+        }
+
+        public void Flush()
+        {
+            _underlyingStream.Flush();
+        }
+
+        public long CurrentPosition()
+        {
+            return _underlyingStream.Position;
+        }
+
+        public void SetSize(long size)
+        {
+            _underlyingStream.SetLength(size);
         }
 
     }
