@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework, Version=3.5.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -50,8 +54,22 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="EngineWrapperNUnit.cs" />
     <Compile Include="TestRunnerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
+      <Project>{f09a46bd-5737-45e7-ba60-a47c9f7821a9}</Project>
+      <Name>ScriptEngine.HostedScript</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
+      <Project>{f062d1d9-d307-492a-a56b-ff3c55f8f6c0}</Project>
+      <Name>ScriptEngine</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

@@ -1,15 +1,38 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using NUnit.Framework;
 
 namespace NUnitTests
 {
-    [TestClass]
+    [TestFixture]
     public class UnitTestWrapper
     {
-        [TestMethod]
+        private EngineWrapperNUnit host;
+
+        [OneTimeSetUp]
+        public void Initialize()
+        {
+            host = new EngineWrapperNUnit();
+            host.StartEngine();
+        }
+
+        [Test]
         public void RunEngineTests()
         {
-            Equals("", "");
+            host = new EngineWrapperNUnit();
+            host.StartEngine();
+
+            String testRunnerPath = System.IO.Path.Combine(
+                NUnit.Framework.TestContext.CurrentContext.TestDirectory, "..","..","..","..",
+                "tests", "testrunner.os"
+              );
+
+            NUnit.Framework.Assert.IsTrue(System.IO.File.Exists(testRunnerPath),
+                "Запускатель тестов отсутствует по пути " + testRunnerPath);
+
+
+
+            host.RunTestScriptFromPath(testRunnerPath, "-runall .");
 
         }
     }

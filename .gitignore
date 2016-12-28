@@ -56,5 +56,6 @@ src/ScriptEngine.Snegopat/Snegopat_h.h
 build.user.bat
 src/packages/
 
-# Visual Studio OpenCover
+# Visual Studio OpenCover and Test result
 src/OpenCover
+TestResult.xml
