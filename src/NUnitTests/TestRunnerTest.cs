@@ -32,7 +32,7 @@ namespace NUnitTests
 
 
 
-            host.RunTestScriptFromPath(testRunnerPath, "-runall .");
+            host.RunTestScriptFromPath(testRunnerPath, "-runall " + new System.IO.FileInfo(testRunnerPath).Directory.FullName);
 
         }
     }
