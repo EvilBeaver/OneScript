@@ -199,6 +199,7 @@
     <Compile Include="DirectiveMultiResolver.cs" />
     <Compile Include="DirectiveIgnorer.cs" />
     <Compile Include="Library\CustomLineFeedStreamReader.cs" />
+    <Compile Include="Library\Xml\XmlNamespaceContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
