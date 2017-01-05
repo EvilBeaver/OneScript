@@ -199,6 +199,16 @@
     <Compile Include="DirectiveMultiResolver.cs" />
     <Compile Include="DirectiveIgnorer.cs" />
     <Compile Include="Library\CustomLineFeedStreamReader.cs" />
+    <Compile Include="Library\TypeDescription\AllowedSignEnum.cs" />
+    <Compile Include="Library\TypeDescription\AllowedLengthEnum.cs" />
+    <Compile Include="Library\TypeDescription\DateFractionsEnum.cs" />
+    <Compile Include="Library\TypeDescription\NumberQualifiersImpl.cs" />
+    <Compile Include="Library\TypeDescription\StringQualifiersImpl.cs" />
+    <Compile Include="Library\TypeDescription\DateQualifiersImpl.cs" />
+    <Compile Include="Library\TypeDescription\BinaryDataQualifiersImpl.cs" />
+    <Compile Include="Library\TypeDescription\TypeDescriptionImpl.cs" />
+    <Compile Include="Library\TypeDescription\IValueAdjuster.cs" />
+    <Compile Include="Library\TypeDescription\BooleanTypeAdjuster.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
@@ -213,6 +223,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Library\TypeDescription\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
