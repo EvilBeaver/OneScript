@@ -7,6 +7,8 @@ namespace NUnitTests
     [TestFixture]
     public class UnitTestWrapper
     {
+        const int TEST_STATE_FAILED = 3;
+
         private EngineWrapperNUnit host;
 
         [OneTimeSetUp]
@@ -32,8 +34,12 @@ namespace NUnitTests
 
 
 
-            host.RunTestScriptFromPath(testRunnerPath, "-runall " + new System.IO.FileInfo(testRunnerPath).Directory.FullName);
+            var result = host.RunTestScriptFromPath(testRunnerPath, "-runall " + new System.IO.FileInfo(testRunnerPath).Directory.FullName);
 
+            if (result == TEST_STATE_FAILED)
+            {
+                NUnit.Framework.Assert.Fail("Есть непройденные тесты!");
+            }
         }
     }
 }

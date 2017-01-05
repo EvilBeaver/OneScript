@@ -29,7 +29,7 @@ namespace NUnitTests
             return engine;
         }
 
-        private void RunTestScript(ICodeSource source, string resourceName)
+        private int RunTestScript(ICodeSource source, string resourceName)
         {
             var module = engine.GetCompilerService().CreateModule(source);
 
@@ -41,30 +41,19 @@ namespace NUnitTests
             });
 
             var process = engine.CreateProcess(this, source);
-            process.Start();
-
+            return process.Start();
         }
 
-        internal void RunTestScriptFromPath(string scriptFilePath, String argsScript = "")
+        internal int RunTestScriptFromPath(string scriptFilePath, String argsScript = "")
         {
-            string codeSource;
-
-            using (Stream s = File.OpenRead(scriptFilePath))
-            {
-                using (StreamReader r = new StreamReader(s))
-                {
-                    codeSource = r.ReadToEnd();
-                }
-            }
-
             if (argsScript != "")
             {
                 commandLineArgs = argsScript.Split(' ');
             }
 
-            ICodeSource sourceToCompile = engine.Loader.FromString(codeSource);
+            ICodeSource sourceToCompile = engine.Loader.FromFile(scriptFilePath);
 
-            RunTestScript(sourceToCompile, scriptFilePath);
+            return RunTestScript(sourceToCompile, scriptFilePath);
         }
 
         public EngineWrapperNUnit()
