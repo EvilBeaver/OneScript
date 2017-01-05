@@ -111,7 +111,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IEquatable<IValue> Members
 
-        public bool Equals(IValue other)
+        public virtual bool Equals(IValue other)
         {
             if (other.SystemType.Equals(this.SystemType))
             {
