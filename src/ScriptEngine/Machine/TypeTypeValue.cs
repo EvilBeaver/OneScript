@@ -11,7 +11,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    class TypeTypeValue : IValue
+    public class TypeTypeValue : IValue
     {
         TypeDescriptor _instance;
 
