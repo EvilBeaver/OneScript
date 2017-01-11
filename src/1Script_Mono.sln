@@ -111,11 +111,10 @@ Global
 		$1.ResourceNamePolicy = FileFormatDefault
 		$0.TextStylePolicy = $2
 		$2.inheritsSet = null
-		$2.scope = text/x-csharp
+		$2.scope = application/xml
 		$2.FileWidth = 120
 		$2.inheritsScope = text/plain
 		$2.TabsToSpaces = False
-		$2.NoTabsAfterNonTabs = True
 		$0.CSharpFormattingPolicy = $3
 		$3.AfterDelegateDeclarationParameterComma = True
 		$3.inheritsSet = Mono

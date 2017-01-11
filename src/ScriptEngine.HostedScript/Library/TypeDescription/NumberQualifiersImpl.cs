@@ -64,7 +64,16 @@ namespace ScriptEngine.HostedScript.Library
 			try
 			{
 				// TODO: Вменяемое преобразование без Попытки
-				return ValueFactory.Create(value.AsNumber());
+				var numericValue = value.AsNumber();
+
+				if (AllowedSign == AllowedSignEnum.Nonnegative && numericValue < 0)
+				{
+					numericValue = 0;
+				}
+
+				numericValue = Math.Round(numericValue, FractionDigits);
+
+				return ValueFactory.Create(numericValue);
 
 			} catch
 			{
@@ -80,6 +89,12 @@ namespace ScriptEngine.HostedScript.Library
 		{
 			var paramDigits         = ContextValuesMarshaller.ConvertParam<int>(digits);
 			var paramFractionDigits = ContextValuesMarshaller.ConvertParam<int>(fractionDigits);
+
+			if (paramDigits < 0 || paramFractionDigits < 0)
+			{
+				throw RuntimeException.InvalidArgumentValue();
+			}
+
 			var paramAllowedSign    = ContextValuesMarshaller.ConvertParam<AllowedSignEnum>(allowedSign);
 			return new NumberQualifiersImpl(paramDigits, paramFractionDigits, paramAllowedSign);
 		}

@@ -85,8 +85,7 @@ namespace ScriptEngine.HostedScript.Library
 
 			if (_types.Count == 0)
 			{
-				// нет типов - только Неопределено
-				return ValueFactory.Create();
+				return value;
 			}
 
 			TypeTypeValue typeToCast = null;
