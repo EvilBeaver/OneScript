@@ -20,11 +20,27 @@ namespace ScriptEngine.HostedScript.Library.Xml
     {
         private XmlTextWriter _writer;
         private StringWriter _stringWriter;
+        private int _depth;
+        private Stack<Dictionary<string, string>> _nsmap = new Stack<Dictionary<string, string>>();
 
         private const int INDENT_SIZE = 4;
 
         public XmlWriterImpl()
         {
+            _nsmap.Push(new Dictionary<string, string>());
+        }
+
+        private void EnterScope()
+        {
+            ++_depth;
+            var newMap = _nsmap.Peek().ToDictionary((kv) => kv.Key, (kv) => kv.Value);
+            _nsmap.Push(newMap);
+        }
+
+        private void ExitScope()
+        {
+            _nsmap.Pop();
+            --_depth;
         }
 
         #region Properties
@@ -50,11 +66,11 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextProperty("КонтекстПространствИмен", "NamespaceContext")]
-        public object NamespaceContext
+        public XmlNamespaceContext NamespaceContext
         {
             get
             {
-                throw new NotImplementedException();
+                return new XmlNamespaceContext(_depth, _nsmap.Peek());
             }
         }
 
@@ -112,6 +128,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
 		public void WriteEndElement()
 		{
             _writer.WriteEndElement();
+            ExitScope();
         }
 
         [ContextMethod("ЗаписатьНачалоАтрибута","WriteStartAttribute")]
@@ -139,6 +156,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
             {
                 _writer.WriteStartElement(name, ns);
             }
+            EnterScope();
         }
 
         [ContextMethod("ЗаписатьОбъявлениеXML","WriteXMLDeclaration")]
@@ -157,6 +175,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
 		public void WriteNamespaceMapping(string prefix, string uri)
 		{
             _writer.WriteAttributeString("xmlns", prefix, null, uri);
+            _nsmap.Peek()[prefix] = uri;
         }
 
         [ContextMethod("ЗаписатьСсылкуНаСущность","WriteEntityReference")]
