@@ -10,8 +10,32 @@ namespace ScriptEngine.Machine
 {
     public struct CodeStatEntry
     {
-        public string ScriptFileName;
-        public string SubName;
-        public int LineNumber;
+        public readonly string ScriptFileName;
+        public readonly string SubName;
+        public readonly int LineNumber;
+
+        public CodeStatEntry(string ScriptFileName, string SubName, int LineNumber)
+        {
+            this.ScriptFileName = ScriptFileName;
+            this.SubName = SubName;
+            this.LineNumber = LineNumber;
+        }
+
+        public override int GetHashCode()
+        {
+            return ScriptFileName.GetHashCode() + SubName.GetHashCode() + LineNumber;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is CodeStatEntry)
+            {
+                var other = (CodeStatEntry)obj;
+                return ScriptFileName.Equals(other.ScriptFileName, StringComparison.Ordinal)
+                                     && SubName.Equals(other.SubName, StringComparison.Ordinal)
+                                     && (LineNumber == other.LineNumber);
+            }
+            return false;
+        }
     }
 }

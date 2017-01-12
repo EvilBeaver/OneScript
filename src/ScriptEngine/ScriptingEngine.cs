@@ -27,6 +27,8 @@ namespace ScriptEngine
             _scriptFactory = new ScriptSourceFactory();
         }
 
+        public bool ProduceExtraCode { get; set; }
+
         public void AttachAssembly(System.Reflection.Assembly asm)
         {
             ContextDiscoverer.DiscoverClasses(asm);
@@ -79,6 +81,7 @@ namespace ScriptEngine
         public CompilerService GetCompilerService()
         {
             var cs = new CompilerService(Environment.SymbolsContext);
+            cs.ProduceExtraCode = ProduceExtraCode;
             cs.DirectiveResolver = DirectiveResolver;
             return cs;
         }
@@ -144,6 +147,7 @@ namespace ScriptEngine
 
         public void SetCodeStatisticsCollector(ICodeStatCollector collector)
         {
+            ProduceExtraCode = true;
             _machine.SetCodeStatisticsCollector(collector);
         }
 
