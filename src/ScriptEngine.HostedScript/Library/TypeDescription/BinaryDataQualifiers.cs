@@ -11,9 +11,9 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
 	[ContextClass("КвалификаторыДвоичныхДанных", "BinaryDataQualifiers")]
-	public sealed class BinaryDataQualifiersImpl : AutoContext<BinaryDataQualifiersImpl>
+	public sealed class BinaryDataQualifiers : AutoContext<BinaryDataQualifiers>
 	{
-		public BinaryDataQualifiersImpl(int length = 0,
+		public BinaryDataQualifiers(int length = 0,
 		                                AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
 		{
 			Length = length;
@@ -28,7 +28,7 @@ namespace ScriptEngine.HostedScript.Library
 
 		public override bool Equals(object obj)
 		{
-			var asThis = obj as BinaryDataQualifiersImpl;
+			var asThis = obj as BinaryDataQualifiers;
 			if (asThis == null)
 				return false;
 
@@ -52,7 +52,7 @@ namespace ScriptEngine.HostedScript.Library
 		{
 			var paramLength = ContextValuesMarshaller.ConvertParam<int>(length);
 			var paramAllowedLength = ContextValuesMarshaller.ConvertParam<AllowedLengthEnum>(allowedLength);
-			return new BinaryDataQualifiersImpl(paramLength, paramAllowedLength);
+			return new BinaryDataQualifiers(paramLength, paramAllowedLength);
 		}
 	}
 }

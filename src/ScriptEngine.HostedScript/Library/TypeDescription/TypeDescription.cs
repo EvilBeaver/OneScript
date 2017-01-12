@@ -12,34 +12,34 @@ using System.Collections.Generic;
 namespace ScriptEngine.HostedScript.Library
 {
 	[ContextClass("ОписаниеТипов", "TypeDescription")]
-	public class TypeDescriptionImpl : AutoContext<TypeDescriptionImpl>
+	public class TypeDescription : AutoContext<TypeDescription>
 	{
 		private readonly List<TypeTypeValue> _types = new List<TypeTypeValue>();
 
-		public TypeDescriptionImpl(IEnumerable<TypeTypeValue> types,
-		                           NumberQualifiersImpl numberQualifiers = null,
-		                           StringQualifiersImpl stringQualifiers = null,
-		                           DateQualifiersImpl   dateQualifiers = null,
-		                           BinaryDataQualifiersImpl binaryDataQualifiers = null)
+		public TypeDescription(IEnumerable<TypeTypeValue> types,
+		                           NumberQualifiers numberQualifiers = null,
+		                           StringQualifiers stringQualifiers = null,
+		                           DateQualifiers   dateQualifiers = null,
+		                           BinaryDataQualifiers binaryDataQualifiers = null)
 		{
 			_types.AddRange(types);
-			NumberQualifiers = numberQualifiers ?? new NumberQualifiersImpl();
-			StringQualifiers = stringQualifiers ?? new StringQualifiersImpl();
-			DateQualifiers = dateQualifiers ?? new DateQualifiersImpl();
-			BinaryDataQualifiers = binaryDataQualifiers ?? new BinaryDataQualifiersImpl();
+			NumberQualifiers = numberQualifiers ?? new NumberQualifiers();
+			StringQualifiers = stringQualifiers ?? new StringQualifiers();
+			DateQualifiers = dateQualifiers ?? new DateQualifiers();
+			BinaryDataQualifiers = binaryDataQualifiers ?? new BinaryDataQualifiers();
 		}
 
 		[ContextProperty("КвалификаторыЧисла")]
-		public NumberQualifiersImpl NumberQualifiers { get; }
+		public NumberQualifiers NumberQualifiers { get; }
 
 		[ContextProperty("КвалификаторыСтроки")]
-		public StringQualifiersImpl StringQualifiers { get; }
+		public StringQualifiers StringQualifiers { get; }
 
 		[ContextProperty("КвалификаторыДаты")]
-		public DateQualifiersImpl DateQualifiers { get; }
+		public DateQualifiers DateQualifiers { get; }
 
 		[ContextProperty("КвалификаторыДвоичныхДанных")]
-		public BinaryDataQualifiersImpl BinaryDataQualifiers { get; }
+		public BinaryDataQualifiers BinaryDataQualifiers { get; }
 
 		[ContextMethod("Типы")]
 		public ArrayImpl Types()
@@ -166,7 +166,7 @@ namespace ScriptEngine.HostedScript.Library
 				return ConstructByOtherDescription(null, p1, p2, p3, p4, p5, p6);
 			}
 
-			if (rawSource is TypeDescriptionImpl)
+			if (rawSource is TypeDescription)
 			{
 				return ConstructByOtherDescription(rawSource, p1, p2, p3, p4, p5, p6);
 			}
@@ -191,12 +191,12 @@ namespace ScriptEngine.HostedScript.Library
 			if (_types == null)
 				throw RuntimeException.InvalidArgumentType(nameof(types));
 
-			var paramNumberQ = numberQualifiers?.GetRawValue() as NumberQualifiersImpl;
-			var paramStringQ = stringQualifiers?.GetRawValue() as StringQualifiersImpl;
-			var paramDateQ = dateQualifiers?.GetRawValue() as DateQualifiersImpl;
-			var paramBinaryDataQ = binaryDataQualifiers?.GetRawValue() as BinaryDataQualifiersImpl;
+			var paramNumberQ = numberQualifiers?.GetRawValue() as NumberQualifiers;
+			var paramStringQ = stringQualifiers?.GetRawValue() as StringQualifiers;
+			var paramDateQ = dateQualifiers?.GetRawValue() as DateQualifiers;
+			var paramBinaryDataQ = binaryDataQualifiers?.GetRawValue() as BinaryDataQualifiers;
 
-			return new TypeDescriptionImpl(_types, paramNumberQ, paramStringQ, paramDateQ, paramBinaryDataQ);
+			return new TypeDescription(_types, paramNumberQ, paramStringQ, paramDateQ, paramBinaryDataQ);
 		}
 
 		public static IRuntimeContextInstance ConstructByOtherDescription(
@@ -208,7 +208,7 @@ namespace ScriptEngine.HostedScript.Library
 			IValue dateQualifiers = null,
 			IValue binaryDataQualifiers = null)
 		{
-			var td = typeDescription as TypeDescriptionImpl;
+			var td = typeDescription as TypeDescription;
 
 			var removeTypesList = ConstructTypeList(removeTypes);
 			if (removeTypesList == null)
@@ -233,12 +233,12 @@ namespace ScriptEngine.HostedScript.Library
 				throw RuntimeException.InvalidArgumentType(nameof(addTypes));
 			_types.AddRange(addTypesList);
 
-			var paramNumberQ = numberQualifiers?.GetRawValue() as NumberQualifiersImpl ?? td?.NumberQualifiers;
-			var paramStringQ = stringQualifiers?.GetRawValue() as StringQualifiersImpl ?? td?.StringQualifiers;
-			var paramDateQ = dateQualifiers?.GetRawValue() as DateQualifiersImpl ?? td?.DateQualifiers;
-			var paramBinaryDataQ = binaryDataQualifiers?.GetRawValue() as BinaryDataQualifiersImpl ?? td?.BinaryDataQualifiers;
+			var paramNumberQ = numberQualifiers?.AsObject() as NumberQualifiers ?? td?.NumberQualifiers;
+			var paramStringQ = stringQualifiers?.AsObject() as StringQualifiers ?? td?.StringQualifiers;
+			var paramDateQ = dateQualifiers?.AsObject() as DateQualifiers ?? td?.DateQualifiers;
+			var paramBinaryDataQ = binaryDataQualifiers?.AsObject() as BinaryDataQualifiers ?? td?.BinaryDataQualifiers;
 
-			return new TypeDescriptionImpl(_types, paramNumberQ, paramStringQ, paramDateQ, paramBinaryDataQ);
+			return new TypeDescription(_types, paramNumberQ, paramStringQ, paramDateQ, paramBinaryDataQ);
 		}
 	}
 }

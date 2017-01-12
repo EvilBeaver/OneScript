@@ -11,9 +11,9 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
 	[ContextClass("КвалификаторыСтроки", "StringQualifiers")]
-	public sealed class StringQualifiersImpl : AutoContext<StringQualifiersImpl>, IValueAdjuster
+	public sealed class StringQualifiers : AutoContext<StringQualifiers>, IValueAdjuster
 	{
-		public StringQualifiersImpl(int length = 0,
+		public StringQualifiers(int length = 0,
 		                            AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
 		{
 			Length = length;
@@ -28,7 +28,7 @@ namespace ScriptEngine.HostedScript.Library
 
 		public override bool Equals(object obj)
 		{
-			var asThis = obj as StringQualifiersImpl;
+			var asThis = obj as StringQualifiers;
 			if (asThis == null)
 				return false;
 
@@ -81,7 +81,7 @@ namespace ScriptEngine.HostedScript.Library
 		{
 			var paramLength        = ContextValuesMarshaller.ConvertParam<int>(length);
 			var paramAllowedLength = ContextValuesMarshaller.ConvertParam<AllowedLengthEnum>(allowedLength);
-			return new StringQualifiersImpl(paramLength, paramAllowedLength);
+			return new StringQualifiers(paramLength, paramAllowedLength);
 		}
 	}
 }

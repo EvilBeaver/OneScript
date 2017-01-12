@@ -11,9 +11,9 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
 	[ContextClass("КвалификаторыЧисла", "NumberQualifiers")]
-	public sealed class NumberQualifiersImpl : AutoContext<NumberQualifiersImpl>, IValueAdjuster
+	public sealed class NumberQualifiers : AutoContext<NumberQualifiers>, IValueAdjuster
 	{
-		public NumberQualifiersImpl(int digits = 0,
+		public NumberQualifiers(int digits = 0,
 		                            int fractionDigits = 0,
 		                            AllowedSignEnum allowedSign = AllowedSignEnum.Any)
 		{
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library
 
 		public override bool Equals(object obj)
 		{
-			var asThis = obj as NumberQualifiersImpl;
+			var asThis = obj as NumberQualifiers;
 			if (asThis == null)
 				return false;
 
@@ -71,8 +71,10 @@ namespace ScriptEngine.HostedScript.Library
 					numericValue = 0;
 				}
 
-				numericValue = Math.Round(numericValue, FractionDigits);
-
+				if (Digits > 0)
+				{
+					ValueFormatter.ApplyNumericSizeRestrictions(ref numericValue, Digits, FractionDigits);
+				}
 				return ValueFactory.Create(numericValue);
 
 			} catch
@@ -96,7 +98,7 @@ namespace ScriptEngine.HostedScript.Library
 			}
 
 			var paramAllowedSign    = ContextValuesMarshaller.ConvertParam<AllowedSignEnum>(allowedSign);
-			return new NumberQualifiersImpl(paramDigits, paramFractionDigits, paramAllowedSign);
+			return new NumberQualifiers(paramDigits, paramFractionDigits, paramAllowedSign);
 		}
 	}
 }

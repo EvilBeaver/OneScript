@@ -11,9 +11,9 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
 	[ContextClass("КвалификаторыДаты", "DateQualifiers")]
-	public sealed class DateQualifiersImpl : AutoContext<DateQualifiersImpl>, IValueAdjuster
+	public sealed class DateQualifiers : AutoContext<DateQualifiers>, IValueAdjuster
 	{
-		public DateQualifiersImpl(DateFractionsEnum dateFractions = DateFractionsEnum.Date)
+		public DateQualifiers(DateFractionsEnum dateFractions = DateFractionsEnum.Date)
 		{
 			DateFractions = dateFractions;
 		}
@@ -23,7 +23,7 @@ namespace ScriptEngine.HostedScript.Library
 
 		public override bool Equals(object obj)
 		{
-			var asThis = obj as DateQualifiersImpl;
+			var asThis = obj as DateQualifiers;
 			if (asThis == null)
 				return false;
 
@@ -68,7 +68,7 @@ namespace ScriptEngine.HostedScript.Library
 		public static IRuntimeContextInstance Constructor(IValue dateFractions = null)
 		{
 			var paramDateFractions = ContextValuesMarshaller.ConvertParam<DateFractionsEnum>(dateFractions);
-			return new DateQualifiersImpl(paramDateFractions);
+			return new DateQualifiers(paramDateFractions);
 		}
 	}
 }
