@@ -209,6 +209,7 @@
     <Compile Include="Library\TypeDescription\TypeDescription.cs" />
     <Compile Include="Library\TypeDescription\IValueAdjuster.cs" />
     <Compile Include="Library\TypeDescription\BooleanTypeAdjuster.cs" />
+    <Compile Include="Library\Xml\XmlNamespaceContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
