@@ -12,7 +12,7 @@ using System.Globalization;
 
 namespace ScriptEngine.Machine
 {
-    static class ValueFormatter
+    public static class ValueFormatter
     {
         static readonly string[] BOOLEAN_FALSE = { "БЛ", "BF" };
         static readonly string[] BOOLEAN_TRUE = { "БИ", "BT" };
@@ -221,7 +221,7 @@ namespace ScriptEngine.Machine
             return (int)digit - 0x30; // keycode offset
         }
 
-        private static void ApplyNumericSizeRestrictions(ref decimal p, int totalDigits, int fractionDigits)
+        public static void ApplyNumericSizeRestrictions(ref decimal p, int totalDigits, int fractionDigits)
         {
             if (totalDigits == 0)
                 return;
