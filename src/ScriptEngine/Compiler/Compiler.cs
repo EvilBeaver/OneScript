@@ -314,7 +314,7 @@ namespace ScriptEngine.Compiler
         private void BuildSingleMethod()
         {
             var entryPoint = _module.Code.Count;
-            AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
 
             if (_lastExtractedLexem.Token == Token.Procedure)
             {
@@ -506,7 +506,7 @@ namespace ScriptEngine.Compiler
             if (_lastExtractedLexem.Token == Token.EndProcedure
                 || _lastExtractedLexem.Token == Token.EndFunction)
             {
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
             }
 
             AddCommand(OperationCode.Return, 0);
@@ -746,7 +746,9 @@ namespace ScriptEngine.Compiler
             PopStructureToken();
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            {
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+            }
 
             AddCommand(OperationCode.Jmp, loopBegin);
             var cmd = _module.Code[condition];
@@ -809,12 +811,14 @@ namespace ScriptEngine.Compiler
             PopStructureToken();
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            {
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+            }
 
             // jmp to start
             AddCommand(OperationCode.Jmp, indexLoopBegin);
             var indexLoopEnd = AddCommand(OperationCode.PopTmp, 1);
-            
+
             var cmd = _module.Code[conditionIndex];
             cmd.Argument = indexLoopEnd;
             _module.Code[conditionIndex] = cmd;
@@ -842,13 +846,14 @@ namespace ScriptEngine.Compiler
             PopStructureToken();
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            {
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+            }
 
             AddCommand(OperationCode.Jmp, conditionIndex);
-            
+
             var endLoop = AddCommand(OperationCode.Nop, 0);
-            _module.Code[jumpFalseIndex] = new Command()
-            {
+            _module.Code[jumpFalseIndex] = new Command() {
                 Code = OperationCode.JmpFalse,
                 Argument = endLoop
             };
@@ -931,7 +936,7 @@ namespace ScriptEngine.Compiler
             if (StringComparer.OrdinalIgnoreCase.Compare(_lastExtractedLexem.Content, "Exception") == 0)
                 SystemLogger.Write("WARNING! BREAKING CHANGE: Keyword 'Exception' is not supported anymore. Consider using 'Except'");
 
-            var beginHandler = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            var beginHandler = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
 
             CorrectCommandArgument(beginTryIndex, beginHandler);
 
@@ -940,7 +945,7 @@ namespace ScriptEngine.Compiler
             BuildCodeBatch();
             PopStructureToken();
 
-            var endIndex = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+            var endIndex = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
             AddCommand(OperationCode.EndTry, 0);
             CorrectCommandArgument(jmpIndex, endIndex);
             
@@ -1786,11 +1791,11 @@ namespace ScriptEngine.Compiler
 
         private int AddCommand(OperationCode code, int arg, bool isExtraCode = false)
         {
-            if (isExtraCode && !ProduceExtraCode)
-                return -1;
-
             var addr = _module.Code.Count;
-            _module.Code.Add(new Command() { Code = code, Argument = arg });
+            if (!isExtraCode || ProduceExtraCode)
+            {
+                _module.Code.Add(new Command() { Code = code, Argument = arg });
+            }
             return addr;
         }
 
