@@ -217,7 +217,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// <param name="JSONFileName">
         /// Имя файла, содержащего текст JSON. </param>
         /// <param name="Encoding">
-        /// Позволяет задать кодировку входного файла.
+        /// Позволяет задать кодировку входного файла.</param>
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string JSONFileName, IValue Encoding = null)
         {
