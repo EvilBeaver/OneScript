@@ -44,11 +44,16 @@
     <Compile Include="SimpleEnum.cs" />
     <Compile Include="SimpleCollection.cs" />
     <Compile Include="ISimple.cs" />
+    <Compile Include="UseLibrary.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
       <Project>{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}</Project>
       <Name>ScriptEngine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
+      <Project>{F09A46BD-5737-45E7-BA60-A47C9F7821A9}</Project>
+      <Name>ScriptEngine.HostedScript</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
