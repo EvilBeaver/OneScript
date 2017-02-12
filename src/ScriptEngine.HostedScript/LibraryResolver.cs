@@ -242,9 +242,13 @@ namespace ScriptEngine.HostedScript
             if(existedLib != null)
             {
                 if (existedLib.state == ProcessingState.Discovered)
-                    throw new RuntimeException(String.Format("Ошибка загрузки библиотеки {0}. Обнаружены циклические зависимости", id));
-                else
-                    return true;
+                {
+                    string libStack = listToStringStack(_libs, id);
+                    throw new RuntimeException($"Ошибка загрузки библиотеки {id}. Обнаружены циклические зависимости.\n" +
+                                               $"{libStack}");
+                }
+                
+                return true;
             }
 
             var newLib = new Library() { id = id, state = ProcessingState.Discovered };
@@ -268,6 +272,25 @@ namespace ScriptEngine.HostedScript
             }
 
             return hasFiles;
+        }
+
+        private string listToStringStack(List<Library> libs, string stopToken)
+        {
+            var builder = new StringBuilder();
+            string offset = "";
+            foreach (var library in libs)
+            {
+                builder.Append(offset);
+                builder.Append("-> ");
+                builder.Append(library.id);
+                offset += "  ";
+                if (library.id == stopToken)
+                {
+                    break;
+                }
+            }
+
+            return builder.ToString();
         }
 
         private string GetLibraryId(string libraryPath)
