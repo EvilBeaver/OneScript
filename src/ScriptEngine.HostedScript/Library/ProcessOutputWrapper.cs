@@ -16,6 +16,8 @@ namespace ScriptEngine.HostedScript.Library
         private StringBuilder _buffer = new StringBuilder(4096);
         private ReaderWriterLockSlim _locker;
 
+        private ManualResetEventSlim _finalWriteEvent = new ManualResetEventSlim();
+
         private int _bufferIndex = 0;
 
         private bool AlreadyReading { get; set; }
@@ -81,6 +83,10 @@ namespace ScriptEngine.HostedScript.Library
 
                         _buffer.Append(e.Data);
                     }
+                    else
+                    {
+                        _finalWriteEvent.Set();
+                    }
                 }
             }
             finally
@@ -94,7 +100,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             try
             {
-                _locker.EnterReadLock();
+                EnterReadLock();
                 if (_bufferIndex >= _buffer.Length)
                     return -1; // no data
 
@@ -112,7 +118,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             try
             {
-                _locker.EnterReadLock();
+                EnterReadLock();
                 return ReadInternal();
             }
             finally
@@ -143,7 +149,7 @@ namespace ScriptEngine.HostedScript.Library
 
             try
             {
-                _locker.EnterReadLock();
+                EnterReadLock();
                 int n = 0;
                 do
                 {
@@ -166,7 +172,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             try
             {
-                _locker.EnterReadLock();
+                EnterReadLock();
                 var sb = new StringBuilder();
                 while (true)
                 {
@@ -193,7 +199,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             try
             {
-                _locker.EnterReadLock();
+                EnterReadLock();
                 string data = base.ReadToEnd();
                 ResetBuffer();
                 return data;
@@ -209,6 +215,16 @@ namespace ScriptEngine.HostedScript.Library
         {
             _buffer.Clear();
             _bufferIndex = 0;
+        }
+
+        private void EnterReadLock()
+        {
+            if (_process.HasExited)
+            {
+                _finalWriteEvent.Wait();
+            }
+
+            _locker.EnterReadLock();
         }
 
         protected override void Dispose(bool disposing)
