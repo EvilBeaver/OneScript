@@ -96,6 +96,11 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Неверное значение аргумента");
         }
 
+        public static RuntimeException InvalidArgumentValue(object value)
+        {
+            return new RuntimeException("Неверное значение аргумента {"+value.ToString()+"}");
+        }
+
         public static RuntimeException ComparisonNotSupportedException()
         {
             return new RuntimeException("Сравнение на больше/меньше для данного типа не поддерживается");
