@@ -1620,7 +1620,7 @@ namespace ScriptEngine.Machine
             var needle = _operationStack.Pop().AsString();
             var haystack = _operationStack.Pop().AsString();
 
-            var result = haystack.IndexOf(needle) + 1;
+            var result = haystack.IndexOf(needle, StringComparison.Ordinal) + 1;
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
         }
