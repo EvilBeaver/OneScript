@@ -282,7 +282,7 @@ namespace ScriptEngine.HostedScript
             {
                 builder.Append(offset);
                 builder.Append("-> ");
-                builder.Append(library.id);
+                builder.AppendLine(library.id);
                 offset += "  ";
                 if (library.id == stopToken)
                 {
