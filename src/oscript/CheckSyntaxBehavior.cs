@@ -40,6 +40,7 @@ namespace oscript
 
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
+            hostedScript.SetGlobalEnvironment(new SimpleConsoleHost(), source);
 
             try
             {
