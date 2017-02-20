@@ -368,7 +368,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// Определяет, будет ли добавлен маркер порядка байт (BOM) к результирующему файлу JSON.
         /// Внимание. Стандарт RFC7159 настоятельно рекомендует не добавлять маркер порядка байт (BOM) к документу JSON .
         /// Значение по умолчанию: Ложь. </param>
-        /// <param name="parameters">
+        /// <param name="settings">
         /// Параметры, используемые при открытии файла для настройки записи в формате JSON. </param>
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string fileName, string encoding = null, IValue addBOM = null, IValue settings = null)

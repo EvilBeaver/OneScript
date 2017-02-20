@@ -58,9 +58,13 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                if(_stdOutContext == null)
-                    _stdOutContext = new StdTextReadStream(_p.StandardOutput);
-                    
+                if (_stdOutContext == null)
+                {
+                    var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stdout);
+                    stream.StartReading();
+
+                    _stdOutContext = new StdTextReadStream(stream);
+                }
                 return _stdOutContext;
             }
         }
@@ -74,7 +78,12 @@ namespace ScriptEngine.HostedScript.Library
             get
             {
                 if (_stdErrContext == null)
-                    _stdErrContext = new StdTextReadStream(_p.StandardError);
+                {
+                    var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stderr);
+                    stream.StartReading();
+
+                    _stdErrContext = new StdTextReadStream(stream);
+                }
                 return _stdErrContext;
             }
         }
