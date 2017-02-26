@@ -10,6 +10,7 @@ using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ScriptEngine.HostedScript
 {
@@ -207,7 +208,7 @@ namespace ScriptEngine.HostedScript
             return InitProcess(host, ref module);
         }
 
-        public void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
+        private void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
         {
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;
@@ -217,8 +218,21 @@ namespace ScriptEngine.HostedScript
         private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
         {
             Initialize();
+            CompileDelayedModules();
+
             var process = new Process(host, module, _engine);
             return process;
+        }
+
+        private void CompileDelayedModules()
+        {
+            var scripts = GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module);
+            foreach (var script in scripts)
+            {
+                var loaded = _engine.LoadModuleImage(script.Module);
+                var instance = (IValue)_engine.NewObject(loaded);
+                _env.SetGlobalProperty(script.Symbol, instance);
+            }
         }
 
         public void EnableCodeStatistics(string outputFileName)
