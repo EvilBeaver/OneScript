@@ -168,6 +168,16 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
+        public virtual int GetPropCount()
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual string GetPropName(int propNum)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual IEnumerable<MethodInfo> GetMethods()
         {
             throw new NotImplementedException();

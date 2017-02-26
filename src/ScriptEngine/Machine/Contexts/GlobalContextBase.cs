@@ -87,6 +87,16 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        public int GetPropCount()
+        {
+            return Properties.Count;
+        }
+
+        public string GetPropName(int propNum)
+        {
+            var prop = Properties.GetProperty(propNum);
+            return prop.Name;
+        }
 
         public virtual int FindMethod(string name)
         {

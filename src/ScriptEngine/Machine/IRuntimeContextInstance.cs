@@ -25,6 +25,9 @@ namespace ScriptEngine.Machine
         IValue GetPropValue(int propNum);
         void SetPropValue(int propNum, IValue newVal);
 
+        int GetPropCount();
+        string GetPropName(int propNum);
+
         IEnumerable<MethodInfo> GetMethods();
         int FindMethod(string name);
         MethodInfo GetMethodInfo(int methodNumber);

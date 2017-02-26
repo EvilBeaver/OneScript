@@ -325,6 +325,16 @@ namespace ScriptEngine.Machine.Contexts
             _instance.SetPropValue(propNum, newVal);
         }
 
+        public int GetPropCount()
+        {
+            return _instance.GetPropCount();
+        }
+
+        public string GetPropName(int propNum)
+        {
+            return _instance.GetPropName(propNum);
+        }
+
         public IEnumerable<MethodInfo> GetMethods()
         {
             return _instance.GetMethods();
