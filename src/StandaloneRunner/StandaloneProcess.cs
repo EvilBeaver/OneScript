@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using ScriptEngine.Environment;
@@ -26,6 +27,8 @@ namespace StandaloneRunner
                 var engine = new HostedScriptEngine();
                 engine.Initialize();
 
+                List<UserAddedScript> scriptsToLoad = new List<UserAddedScript>();
+
                 using(Stream codeStream = LocateCode())
                 using (var binReader = new BinaryReader(codeStream))
                 {
@@ -42,7 +45,7 @@ namespace StandaloneRunner
                     while (modulesCount-- > 0)
                     {
                         var userScript = reader.Read(codeStream);
-                        engine.LoadUserScript(userScript);
+                        scriptsToLoad.Add(userScript);
                     }
 
                     module = entry.Module;
@@ -50,6 +53,12 @@ namespace StandaloneRunner
                 }
 
                 var src = new BinaryCodeSource(module);
+                engine.SetGlobalEnvironment(this, src);
+                foreach (var script in scriptsToLoad)
+                {
+                    engine.LoadUserScript(script);
+                }
+
                 var process = engine.CreateProcess(this, module, src);
 
                 return process.Start();
@@ -141,7 +150,7 @@ namespace StandaloneRunner
 
         public string SourceDescription
         {
-            get { return "Compiled binary module"; }
+            get { return System.Reflection.Assembly.GetExecutingAssembly().Location; }
         }
 
         public string Code

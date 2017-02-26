@@ -42,6 +42,7 @@ namespace oscript
                 engine.Initialize();
                 ScriptFileHelper.OnBeforeScriptRead(engine);
                 var source = engine.Loader.FromFile(_codePath);
+                engine.SetGlobalEnvironment(new SimpleConsoleHost(), source);
                 var compiler = engine.GetCompilerService();
                 var entry = compiler.CreateModule(source);
 
