@@ -160,6 +160,12 @@ namespace ScriptEngine.HostedScript.Library
             return File.GetLastWriteTime(FullName);
         }
 
+        [ContextMethod("ПолучитьВремяСоздания", "GetCreationTime")]
+        public DateTime GetCreationTime()
+        {
+            return File.GetCreationTime(FullName);
+        }
+
         [ContextMethod("УстановитьНевидимость", "SetHidden")]
         public void SetHidden(bool value)
         {
