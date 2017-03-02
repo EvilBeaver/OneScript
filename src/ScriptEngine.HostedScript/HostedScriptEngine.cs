@@ -219,6 +219,7 @@ namespace ScriptEngine.HostedScript
         {
             Initialize();
             CompileDelayedModules();
+            _env.EnvironmentChanged += LoadUserModuleAsProperty;
 
             var process = new Process(host, module, _engine);
             return process;
@@ -229,10 +230,15 @@ namespace ScriptEngine.HostedScript
             var scripts = GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module);
             foreach (var script in scripts)
             {
-                var loaded = _engine.LoadModuleImage(script.Module);
-                var instance = (IValue)_engine.NewObject(loaded);
-                _env.SetGlobalProperty(script.Symbol, instance);
+                LoadUserModuleAsProperty(script);
             }
+        }
+
+        private void LoadUserModuleAsProperty(UserAddedScript script)
+        {
+            var loaded = _engine.LoadModuleImage(script.Module);
+            var instance = (IValue) _engine.NewObject(loaded);
+            _env.SetGlobalProperty(script.Symbol, instance);
         }
 
         public void EnableCodeStatistics(string outputFileName)
@@ -244,6 +250,7 @@ namespace ScriptEngine.HostedScript
         public void Finalize()
         {
             _codeStat?.OutputCodeStat();
+            _env.EnvironmentChanged -= LoadUserModuleAsProperty;
         }
     }
 }

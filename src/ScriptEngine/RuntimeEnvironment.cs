@@ -14,6 +14,8 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine
 {
+    public delegate void EnvironmentChangedHandler(UserAddedScript script);
+
     public class RuntimeEnvironment
     {
         private readonly List<IAttachableContext> _objects = new List<IAttachableContext>();
@@ -88,14 +90,19 @@ namespace ScriptEngine
 
         public void NotifyModuleAdded(ScriptModuleHandle module, string symbol)
         {
-            _externalScripts.Add(new UserAddedScript()
+            var script = new UserAddedScript()
             {
                 Type = UserAddedScriptType.Module,
                 Symbol = symbol,
                 Module = module
-            });
+            };
+
+            _externalScripts.Add(script);
+            EnvironmentChanged?.Invoke(script);
         }
 
+        public event EnvironmentChangedHandler EnvironmentChanged;
+        
         public IEnumerable<UserAddedScript> GetUserAddedScripts()
         {
             return _externalScripts;
