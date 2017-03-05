@@ -223,7 +223,7 @@ namespace ScriptEngine.Compiler
                             }
 
                             _module.VariableRefs.Add(definition);
-                            _module.VariableFrameSize++;
+                            _module.Variables.Add(symbolicName);
                         }
                         NextToken();
                         if (_lastExtractedLexem.Token == Token.Export)
@@ -286,8 +286,8 @@ namespace ScriptEngine.Compiler
                 var descriptor = new MethodDescriptor();
                 descriptor.EntryPoint = entry;
                 descriptor.Signature = bodyMethod;
-                descriptor.VariableFrameSize = localCtx.VariableCount;
-                
+                FillVariablesFrame(descriptor, localCtx);
+
                 var entryRefNumber = _module.MethodRefs.Count;
                 var bodyBinding = new SymbolBinding()
                 {
@@ -298,6 +298,17 @@ namespace ScriptEngine.Compiler
                 _module.MethodRefs.Add(bodyBinding);
                 _module.EntryMethodIndex = entryRefNumber;
             }
+        }
+
+        private static void FillVariablesFrame(MethodDescriptor descriptor, SymbolScope localCtx)
+        {
+            descriptor.Variables = new VariablesFrame();
+
+            for (int i = 0; i < localCtx.VariableCount; i++)
+            {
+                descriptor.Variables.Add(localCtx.GetVariable(i).Identifier);
+            }
+            
         }
 
         private void HandleDirective(bool codeEntered)
@@ -448,7 +459,8 @@ namespace ScriptEngine.Compiler
             var descriptor = new MethodDescriptor();
             descriptor.EntryPoint = entryPoint;
             descriptor.Signature = method;
-            descriptor.VariableFrameSize = methodCtx.VariableCount;
+            FillVariablesFrame(descriptor, methodCtx);
+
             SymbolBinding binding;
             try
             {

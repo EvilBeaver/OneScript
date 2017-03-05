@@ -55,14 +55,14 @@ namespace ScriptEngine.Machine.Contexts
             VARIABLE_COUNT = GetOwnVariableCount();
             METHOD_COUNT = GetOwnMethodCount();
 
-            int stateSize = VARIABLE_COUNT + _module.VariableFrameSize;
+            int stateSize = VARIABLE_COUNT + _module.Variables.Count;
             _state = new IVariable[stateSize];
             for (int i = 0; i < stateSize; i++)
             {
                 if (i < VARIABLE_COUNT)
-                    _state[i] = Variable.CreateContextPropertyReference(this, i);
+                    _state[i] = Variable.CreateContextPropertyReference(this, i, GetPropName(i));
                 else
-                    _state[i] = Variable.Create(ValueFactory.Create());
+                    _state[i] = Variable.Create(ValueFactory.Create(), _module.Variables[i]);
             }
 
             ReadExportedSymbols(_module.ExportedMethods, _methodSearchCache);

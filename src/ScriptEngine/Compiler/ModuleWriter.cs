@@ -36,7 +36,9 @@ namespace ScriptEngine.Compiler
 
         private void WriteImage(TextWriter output, ModuleImage module)
         {
-            output.WriteLine(".variableFrame:" + module.VariableFrameSize.ToString());
+            output.WriteLine(".variableFrame:");
+            module.Variables.ForEach(x=>output.WriteLine(" " + x));
+
             output.WriteLine(".constants");
             for (int i = 0; i < module.Constants.Count; i++)
             {
@@ -88,7 +90,7 @@ namespace ScriptEngine.Compiler
             output.Write(string.Format("{0} entryPoint: {1}, frameSize:{2}\n",
                 item.Signature.Name,
                 item.EntryPoint,
-                item.VariableFrameSize));
+                item.Variables.Count));
             output.Write(string.Format(".args {0}\n", item.Signature.ArgCount));
             if (item.Signature.Params != null)
             {
@@ -105,6 +107,9 @@ namespace ScriptEngine.Compiler
                     }
                 }
             }
+            output.WriteLine(".variables [");
+            item.Variables.ForEach(x=>output.WriteLine(" " + x));
+            output.Write("]");
         }
 
         private void WriteExports(TextWriter output, IList<ExportedSymbol> exports)

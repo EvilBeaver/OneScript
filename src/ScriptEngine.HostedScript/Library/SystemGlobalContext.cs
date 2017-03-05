@@ -52,9 +52,10 @@ namespace ScriptEngine.HostedScript.Library
         {
             _state = new IVariable[_properties.Count];
 
+            var propNames = _propHolder.GetProperties().OrderBy(x=>x.Value).Select(x=>x.Key).ToArray();
             for (int i = 0; i < _properties.Count; i++)
             {
-                _state[i] = Variable.CreateContextPropertyReference(this, i);
+                _state[i] = Variable.CreateContextPropertyReference(this, i, propNames[i]);
             }
         }
 
@@ -568,6 +569,16 @@ namespace ScriptEngine.HostedScript.Library
         public void SetPropValue(int propNum, IValue newVal)
         {
             throw new InvalidOperationException("global props are not writable");
+        }
+
+        public int GetPropCount()
+        {
+            return _properties.Count;
+        }
+
+        public string GetPropName(int index)
+        {
+            return _propHolder.GetProperties().First(x => x.Value == index).Key;
         }
 
         public int FindMethod(string name)

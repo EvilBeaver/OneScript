@@ -90,14 +90,15 @@ namespace ScriptEngine.Machine
         internal IValue ExecuteMethod(int methodIndex, IValue[] arguments)
         {
             PrepareMethodExecutionDirect(methodIndex);
+            var method = _module.Methods[methodIndex];
             for (int i = 0; i < arguments.Length; i++)
             {
                 if (arguments[i] is IVariable)
-                    _currentFrame.Locals[i] = (IVariable)arguments[i];
+                    _currentFrame.Locals[i] = Variable.CreateReference((IVariable)arguments[i], method.Variables[i]);
                 else if(arguments[i] == null)
-                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i));
+                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
                 else
-                    _currentFrame.Locals[i] = Variable.Create(arguments[i]);
+                    _currentFrame.Locals[i] = Variable.Create(arguments[i], method.Variables[i]);
             }
             ExecuteCode();
 
@@ -105,8 +106,8 @@ namespace ScriptEngine.Machine
             {
                 return _operationStack.Pop();
             }
-            else
-                return null;
+
+            return null;
         }
 
         internal ScriptInformationContext CurrentScript
@@ -290,10 +291,10 @@ namespace ScriptEngine.Machine
             var methDescr = _module.Methods[methodIndex];
             var frame = new ExecutionFrame();
             frame.MethodName = methDescr.Signature.Name;
-            frame.Locals = new IVariable[methDescr.VariableFrameSize];
-            for (int i = 0; i < methDescr.VariableFrameSize; i++)
+            frame.Locals = new IVariable[methDescr.Variables.Count];
+            for (int i = 0; i < frame.Locals.Length; i++)
             {
-                frame.Locals[i] = Variable.Create(ValueFactory.Create());
+                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
             }
 
             frame.InstructionPointer = methDescr.EntryPoint;
@@ -592,7 +593,7 @@ namespace ScriptEngine.Machine
         {
             var vm = _module.VariableRefs[arg];
             var scope = _scopes[vm.ContextIndex];
-            var reference = Variable.CreateContextPropertyReference(scope.Instance, vm.CodeIndex);
+            var reference = Variable.CreateContextPropertyReference(scope.Instance, vm.CodeIndex, "$stackvar");
             _operationStack.Push(reference);
             NextInstruction();
         }
@@ -817,8 +818,8 @@ namespace ScriptEngine.Machine
                     var methDescr = _module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
                     var frame = new ExecutionFrame();
                     frame.MethodName = methInfo.Name;
-                    frame.Locals = new IVariable[methDescr.VariableFrameSize];
-                    for (int i = 0; i < methDescr.VariableFrameSize; i++)
+                    frame.Locals = new IVariable[methDescr.Variables.Count];
+                    for (int i = 0; i < frame.Locals.Length; i++)
                     {
                         if (i < argValues.Length)
                         {
@@ -828,16 +829,16 @@ namespace ScriptEngine.Machine
                                 if (paramDef.IsByValue)
                                 {
                                     var value = ((IVariable)argValues[i]).Value;
-                                    frame.Locals[i] = Variable.Create(value);
+                                    frame.Locals[i] = Variable.Create(value, methDescr.Variables[i]);
                                 }
                                 else
                                 {
-                                    frame.Locals[i] = (IVariable)argValues[i];
+                                    frame.Locals[i] = Variable.CreateReference((IVariable)argValues[i], methDescr.Variables[i]);
                                 }
                             }
                             else
                             {
-                                frame.Locals[i] = Variable.Create(argValues[i]);
+                                frame.Locals[i] = Variable.Create(argValues[i], methDescr.Variables[i]);
                             }
 
                         }
@@ -845,15 +846,15 @@ namespace ScriptEngine.Machine
                         {
                             if (methInfo.Params[i].DefaultValueIndex == ParameterDefinition.UNDEFINED_VALUE_INDEX)
                             {
-                                frame.Locals[i] = Variable.Create(ValueFactory.Create());
+                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
                             }
                             else
                             {
-                                frame.Locals[i] = Variable.Create(_module.Constants[methInfo.Params[i].DefaultValueIndex]);
+                                frame.Locals[i] = Variable.Create(_module.Constants[methInfo.Params[i].DefaultValueIndex], methDescr.Variables[i]);
                             }
                         }
                         else
-                            frame.Locals[i] = Variable.Create(ValueFactory.Create());
+                            frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
 
                     }
 
@@ -942,7 +943,7 @@ namespace ScriptEngine.Machine
             var propName = _module.Constants[arg].AsString();
             var propNum = context.FindProperty(propName);
 
-            var propReference = Variable.CreateContextPropertyReference(context, propNum);
+            var propReference = Variable.CreateContextPropertyReference(context, propNum, "stackvar");
             _operationStack.Push(propReference);
             NextInstruction();
 
@@ -1099,7 +1100,7 @@ namespace ScriptEngine.Machine
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
             }
 
-            _operationStack.Push(Variable.CreateIndexedPropertyReference(context, index));
+            _operationStack.Push(Variable.CreateIndexedPropertyReference(context, index, "$stackvar"));
             NextInstruction();
 
         }

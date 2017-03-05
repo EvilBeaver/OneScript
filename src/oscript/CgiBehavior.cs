@@ -229,6 +229,16 @@ namespace oscript
             throw new InvalidOperationException("global props are not writable");
         }
 
+        public int GetPropCount()
+        {
+            return 0;
+        }
+
+        public string GetPropName(int index)
+        {
+            throw new ArgumentOutOfRangeException();
+        }
+
         public int FindMethod(string name)
         {
             return _methods.FindMethod(name);

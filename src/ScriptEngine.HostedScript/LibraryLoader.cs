@@ -210,8 +210,8 @@ namespace ScriptEngine.HostedScript
         private bool CustomizedProcessing(string libraryPath)
         {
             var libPathValue = ValueFactory.Create(libraryPath);
-            var defaultLoading = Variable.Create(ValueFactory.Create(true));
-            var cancelLoading = Variable.Create(ValueFactory.Create(false));
+            var defaultLoading = Variable.Create(ValueFactory.Create(true), "$internalDefaultLoading");
+            var cancelLoading = Variable.Create(ValueFactory.Create(false), "$internalCancelLoading");
 
             int eventIdx = GetScriptMethod("ПриЗагрузкеБиблиотеки", "OnLibraryLoad");
             if(eventIdx == -1)

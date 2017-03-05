@@ -29,5 +29,13 @@ namespace ScriptEngine
 
             return true;
         }
+
+        public static void ForEach<T>(this IEnumerable<T> input, Action<T> action)
+        {
+            foreach (var data in input)
+            {
+                action(data);
+            }
+        }
     }
 }

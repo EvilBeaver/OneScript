@@ -195,10 +195,9 @@
     <Compile Include="Machine\CodeStat\CodeStatEntry.cs" />
     <Compile Include="Machine\CodeStat\CodeStatProcessor.cs" />
     <Compile Include="Machine\CodeStat\ICodeStatCollector.cs" />
+    <Compile Include="VariablesFrame.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Machine\CodeStat\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
