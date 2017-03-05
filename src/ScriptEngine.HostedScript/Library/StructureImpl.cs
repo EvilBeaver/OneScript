@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             var props = strProperties.Split(',');
             if (props.Length < values.Length)
-                throw new RuntimeException("Неверное значение аргумента");
+                throw RuntimeException.InvalidArgumentValue();
 
             for (int i = 0; i < props.Length; i++)
             {
@@ -95,6 +95,16 @@ namespace ScriptEngine.HostedScript.Library
         public override void SetPropValue(int propNum, IValue newVal)
         {
             _values[propNum] = newVal;
+        }
+
+        public override int GetPropCount()
+        {
+            return _values.Count;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return GetPropertyName(propNum);
         }
 
         public override MethodInfo GetMethodInfo(int methodNumber)

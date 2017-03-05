@@ -52,6 +52,16 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        public override int GetPropCount()
+        {
+            return _properties.Count;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return _properties.GetProperty(propNum).Name;
+        }
+
         public override int FindMethod(string name)
         {
             return _methods.FindMethod(name);

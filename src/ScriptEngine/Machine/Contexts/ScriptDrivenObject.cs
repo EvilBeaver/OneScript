@@ -60,7 +60,7 @@ namespace ScriptEngine.Machine.Contexts
             for (int i = 0; i < stateSize; i++)
             {
                 if (i < VARIABLE_COUNT)
-                    _state[i] = Variable.CreateContextPropertyReference(this, i, GetPropName(i));
+                    _state[i] = Variable.CreateContextPropertyReference(this, i, GetOwnPropName(i));
                 else
                     _state[i] = Variable.Create(ValueFactory.Create(), _module.Variables[i]);
             }
@@ -163,6 +163,11 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         protected virtual IValue GetOwnPropValue(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected virtual string GetOwnPropName(int index)
         {
             throw new NotImplementedException();
         }

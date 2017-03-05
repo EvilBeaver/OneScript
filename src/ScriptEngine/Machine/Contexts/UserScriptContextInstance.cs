@@ -77,6 +77,12 @@ namespace ScriptEngine.Machine.Contexts
             return _ownProperties[index];
         }
 
+        protected override string GetOwnPropName(int index)
+        {
+            var prop = _module.ExportedProperies[index];
+            return prop.SymbolicName;
+        }
+
         #region IReflectableContext Members
 
         public override IEnumerable<VariableInfo> GetProperties()

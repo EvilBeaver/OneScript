@@ -40,6 +40,11 @@ namespace ScriptEngine.Machine.Contexts
             _propHolder.ClearProperties();
         }
 
+        protected string GetPropertyName(int idx)
+        {
+            return _propHolder.GetPropertyName(idx);
+        }
+
         protected virtual IEnumerable<KeyValuePair<string, int>> GetProperties()
         {
             return _propHolder.GetProperties();
