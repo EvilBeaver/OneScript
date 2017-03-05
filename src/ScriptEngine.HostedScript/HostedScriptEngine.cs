@@ -247,7 +247,7 @@ namespace ScriptEngine.HostedScript
             _engine.SetCodeStatisticsCollector(_codeStat);
         }
 
-        public void Finalize()
+        public void Dispose()
         {
             _codeStat?.OutputCodeStat();
             _env.EnvironmentChanged -= LoadUserModuleAsProperty;

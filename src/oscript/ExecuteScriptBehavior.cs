@@ -54,7 +54,7 @@ namespace oscript
             }
 
             var result = process.Start();
-            hostedScript.Finalize();
+            hostedScript.Dispose();
 
             return result;
         }
