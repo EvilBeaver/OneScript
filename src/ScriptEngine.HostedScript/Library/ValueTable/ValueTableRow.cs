@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("СтрокаТаблицыЗначений", "ValueTableRow")]
-    public class ValueTableRow : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<IValue>
+    public class ValueTableRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTable _owner;
@@ -175,14 +175,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return _methods.FindMethod(name);
         }
 
-        protected override IEnumerable<KeyValuePair<string, int>> GetProperties()
-        {
-            return Owner().Columns
-                .Select(x=>
-                    {
-                        var column = x as ValueTableColumn;
-                        return new KeyValuePair<string, int>(column.Name, column.ID);
-                    });
-        }
+        // FIXME: это был костыль для ЗаполнитьЗначенияСвойств
+        //protected override IEnumerable<KeyValuePair<string, int>> GetProperties()
+        //{
+        //    return Owner().Columns
+        //        .Select(x=>
+        //            {
+        //                var column = x as ValueTableColumn;
+        //                return new KeyValuePair<string, int>(column.Name, column.ID);
+        //            });
+        //}
     }
 }
