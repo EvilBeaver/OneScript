@@ -17,23 +17,23 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     public class ValueTableRow : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<IValue>
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
-        private readonly WeakReference _owner;
+        private readonly ValueTable _owner;
 
-        public ValueTableRow(ValueTable Owner)
+        public ValueTableRow(ValueTable owner)
         {
-            _owner = new WeakReference(Owner);
+            _owner = owner;
         }
 
         public int Count()
         {
-            var Owner = _owner.Target as ValueTable;
+            var Owner = _owner;
             return Owner.Columns.Count();
         }
 
         [ContextMethod("Владелец", "Owner")]
         public ValueTable Owner()
         {
-            return _owner.Target as ValueTable;
+            return _owner;
         }
 
         private IValue TryValue(ValueTableColumn Column)
