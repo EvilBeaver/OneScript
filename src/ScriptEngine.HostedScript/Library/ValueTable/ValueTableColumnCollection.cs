@@ -159,6 +159,34 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             throw RuntimeException.InvalidArgumentType();
         }
 
+        public int GetColumnNumericIndex(IValue index)
+        {
+            if (index.DataType == DataType.String)
+            {
+                ValueTableColumn Column = FindColumnByName(index.AsString());
+                if (Column == null)
+                    throw RuntimeException.PropNotFoundException(index.AsString());
+                return Column.ID;
+            }
+
+            if (index.DataType == DataType.Number)
+            {
+                int iIndex = Decimal.ToInt32(index.AsNumber());
+                if (iIndex < 0 || iIndex >= Count())
+                    throw RuntimeException.InvalidArgumentValue();
+
+                return iIndex;
+            }
+
+            var column = index.GetRawValue() as ValueTableColumn;
+            if (column != null)
+            {
+                return column.ID;
+            }
+
+            throw RuntimeException.InvalidArgumentType();
+        }
+
         public override IValue GetIndexedValue(IValue index)
         {
             return GetColumnByIIndex(index);
