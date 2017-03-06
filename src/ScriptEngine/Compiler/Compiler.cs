@@ -286,7 +286,7 @@ namespace ScriptEngine.Compiler
                 var descriptor = new MethodDescriptor();
                 descriptor.EntryPoint = entry;
                 descriptor.Signature = bodyMethod;
-                FillVariablesFrame(descriptor, localCtx);
+                FillVariablesFrame(ref descriptor, localCtx);
 
                 var entryRefNumber = _module.MethodRefs.Count;
                 var bodyBinding = new SymbolBinding()
@@ -300,7 +300,7 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private static void FillVariablesFrame(MethodDescriptor descriptor, SymbolScope localCtx)
+        private static void FillVariablesFrame(ref MethodDescriptor descriptor, SymbolScope localCtx)
         {
             descriptor.Variables = new VariablesFrame();
 
@@ -459,7 +459,7 @@ namespace ScriptEngine.Compiler
             var descriptor = new MethodDescriptor();
             descriptor.EntryPoint = entryPoint;
             descriptor.Signature = method;
-            FillVariablesFrame(descriptor, methodCtx);
+            FillVariablesFrame(ref descriptor, methodCtx);
 
             SymbolBinding binding;
             try
