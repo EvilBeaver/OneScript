@@ -109,7 +109,7 @@ namespace ScriptEngine.Compiler
             }
             output.WriteLine(".variables [");
             item.Variables.ForEach(x=>output.WriteLine(" " + x));
-            output.Write("]");
+            output.WriteLine("]");
         }
 
         private void WriteExports(TextWriter output, IList<ExportedSymbol> exports)
