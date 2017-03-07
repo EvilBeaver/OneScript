@@ -26,8 +26,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public int Count()
         {
-            var Owner = _owner;
-            return Owner.Columns.Count();
+            return Owner().Columns.Count();
         }
 
         [ContextMethod("Владелец", "Owner")]
@@ -61,7 +60,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
             return TryValue(C);
         }
-
+        
         [ContextMethod("Установить", "Set")]
         public void Set(int index, IValue Value)
         {
@@ -78,6 +77,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         public void Set(ValueTableColumn Column, IValue Value)
         {
             _data[Column] = Value;
+        }
+
+        public void OnOwnerColumnRemoval(ValueTableColumn column)
+        {
+            _data.Remove(column);
         }
 
         public IEnumerator<IValue> GetEnumerator()
@@ -175,15 +179,5 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return _methods.FindMethod(name);
         }
 
-        // FIXME: это был костыль для ЗаполнитьЗначенияСвойств
-        //protected override IEnumerable<KeyValuePair<string, int>> GetProperties()
-        //{
-        //    return Owner().Columns
-        //        .Select(x=>
-        //            {
-        //                var column = x as ValueTableColumn;
-        //                return new KeyValuePair<string, int>(column.Name, column.ID);
-        //            });
-        //}
     }
 }

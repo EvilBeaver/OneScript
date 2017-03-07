@@ -160,11 +160,6 @@ namespace oscript
             instance = this;
         }
 
-        public IEnumerable<VariableInfo> GetProperties()
-        {
-            return new VariableInfo[0];
-        }
-
         public IEnumerable<MethodInfo> GetMethods()
         {
             var array = new MethodInfo[_methods.Count];

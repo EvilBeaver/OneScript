@@ -19,8 +19,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
         private int _internal_counter = 0; // Нарастающий счётчик определителей колонок
 
-        public ValueTableColumnCollection()
+        private readonly ValueTable _owner;
+
+        public ValueTableColumnCollection(ValueTable owner)
         {
+            _owner = owner;
         }
 
         [ContextMethod("Добавить", "Add")]
@@ -78,7 +81,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         public void Delete(IValue Column)
         {
             Column = Column.GetRawValue();
-            _columns.Remove(GetColumnByIIndex(Column));
+            var vtColumn = GetColumnByIIndex(Column);
+            _owner.ForEach(x=>x.OnOwnerColumnRemoval(vtColumn));
+            _columns.Remove(vtColumn);
         }
 
         public ValueTableColumn FindColumnByName(string Name)

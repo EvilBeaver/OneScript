@@ -235,15 +235,6 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-        #region IReflectableContext Members
-
-        public virtual IEnumerable<VariableInfo> GetProperties()
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
         #region IRuntimeContextInstance Members
 
         public override int FindProperty(string name)

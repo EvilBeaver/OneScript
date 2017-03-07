@@ -108,25 +108,24 @@ namespace ScriptEngine
             return _externalScripts;
         }
 
-        private void RegisterSymbolScope(IReflectableContext provider, bool asDynamicScope)
+        private void RegisterSymbolScope(IAttachableContext provider, bool asDynamicScope)
         {
             var scope = new SymbolScope();
             scope.IsDynamicScope = asDynamicScope;
 
+            IVariable[] vars;
+            MethodInfo[] methods;
+            IRuntimeContextInstance inst;
+
+            provider.OnAttach(null, out vars, out methods, out inst);
+
             _symbolScopes.PushScope(scope);
-            foreach (var item in provider.GetProperties())
+            foreach (var item in vars)
             {
-                if (item.Type == SymbolType.Variable)
-                {
-                    _symbolScopes.DefineVariable(item.Identifier);
-                }
-                else
-                {
-                    _symbolScopes.DefineProperty(item.Identifier);
-                }
+                _symbolScopes.DefineVariable(item.Name);
             }
 
-            foreach (var item in provider.GetMethods())
+            foreach (var item in methods)
             {
                 _symbolScopes.DefineMethod(item);
             }

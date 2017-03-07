@@ -94,19 +94,5 @@ namespace ScriptEngine.Machine
         }
 
         #endregion
-
-        #region IReflectableContext Members
-
-        IEnumerable<VariableInfo> IReflectableContext.GetProperties()
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerable<MethodInfo> IReflectableContext.GetMethods()
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
     }
 }

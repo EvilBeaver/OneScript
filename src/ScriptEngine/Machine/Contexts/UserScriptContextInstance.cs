@@ -84,20 +84,7 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         #region IReflectableContext Members
-
-        public override IEnumerable<VariableInfo> GetProperties()
-        {
-            foreach (var item in _module.ExportedProperies)
-            {
-                var vi = new VariableInfo();
-                vi.Identifier = item.SymbolicName;
-                vi.Index = item.Index;
-                vi.Type = SymbolType.ContextProperty;
-                
-                yield return vi;
-            }
-        }
-
+        
         public override IEnumerable<MethodInfo> GetMethods()
         {
             foreach (var item in _module.ExportedMethods)

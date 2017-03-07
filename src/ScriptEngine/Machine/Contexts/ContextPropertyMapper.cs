@@ -201,11 +201,5 @@ namespace ScriptEngine.Machine.Contexts
                 return _properties.Count;
             }
         }
-
-        public string[] GetProperties()
-        {
-            return _properties.Select(x => x.Name).ToArray();
-        }
-
     }
 }

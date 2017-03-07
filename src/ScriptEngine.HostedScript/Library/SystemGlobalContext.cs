@@ -422,19 +422,18 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
         public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
         {
-            var accReflector = acceptor as IReflectableContext;
-            if (accReflector == null)
-                throw RuntimeException.InvalidArgumentValue();
-            
-            var srcReflector = source as IReflectableContext;
-            if (srcReflector == null)
-                throw RuntimeException.InvalidArgumentValue();
-
             IEnumerable<string> sourceProperties;
             IEnumerable<string> ignoredPropCollection;
-            if(filledProperties == null)
+            
+            if (filledProperties == null)
             {
-                sourceProperties = srcReflector.GetProperties().Select(x => x.Identifier);
+                string[] names = new string[source.GetPropCount()];
+                for (int i = 0; i < names.Length; i++)
+                {
+                    names[i] = source.GetPropName(i);
+                }
+
+                sourceProperties = names;
             }
             else
             {

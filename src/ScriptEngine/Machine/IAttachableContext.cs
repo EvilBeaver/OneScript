@@ -11,7 +11,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    public interface IAttachableContext : IReflectableContext
+    public interface IAttachableContext
     {
         void OnAttach(MachineInstance machine,
             out IVariable[] variables, 

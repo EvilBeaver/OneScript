@@ -128,20 +128,7 @@ namespace ScriptEngine.Machine.Contexts
             methods = GetMethods().ToArray();
             instance = this;
         }
-
-        public virtual IEnumerable<VariableInfo> GetProperties()
-        {
-            int i = 0;
-
-            return _properties.GetProperties()
-                .Select(x => new VariableInfo()
-                {
-                    Identifier = x,
-                    Index = i++,
-                    Type = SymbolType.ContextProperty
-                });
-        }
-
+        
         public virtual IEnumerable<MethodInfo> GetMethods()
         {
             var array = new MethodInfo[_methods.Count];

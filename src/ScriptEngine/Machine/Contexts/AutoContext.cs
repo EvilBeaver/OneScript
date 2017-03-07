@@ -6,12 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class AutoContext<TInstance> : LibraryContextBase where TInstance : AutoContext<TInstance>
+    public abstract class AutoContext<TInstance> : PropertyNameIndexAccessor where TInstance : AutoContext<TInstance>
     {
         public override bool IsPropReadable(int propNum)
         {
@@ -36,6 +37,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.Reflection.TargetInvocationException e)
             {
+                Debug.Assert(e.InnerException != null);
                 throw e.InnerException;
             }
         }
@@ -88,6 +90,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.Reflection.TargetInvocationException e)
             {
+                Debug.Assert(e.InnerException != null);
                 throw e.InnerException;
             }
         }
@@ -100,26 +103,9 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.Reflection.TargetInvocationException e)
             {
+                Debug.Assert(e.InnerException != null);
                 throw e.InnerException;
             }
-        }
-
-        public override IEnumerable<VariableInfo> GetProperties()
-        {
-            var allProps = _properties.GetProperties();
-            var result = new VariableInfo[allProps.Length];
-            for (int i = 0; i < allProps.Length; i++)
-            {
-                result[i] = new VariableInfo()
-                {
-                    Identifier = allProps[i],
-                    Index = i,
-                    Type = SymbolType.ContextProperty
-                };
-            }
-
-            return result;
-
         }
 
         private static readonly ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
