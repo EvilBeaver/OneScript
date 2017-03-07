@@ -17,21 +17,19 @@ namespace ScriptEngine.Compiler
         private char _currentSymbol;
         private readonly string _code;
         private int _lineCounter = 1;
-        private readonly List<int> _lineBounds;
+        private readonly Dictionary<int, int> _lineBounds;
 
         public ParseIterator(string code)
         {
             _code = code;
-            _index = 0;
             _startPosition = 0;
-            _lineBounds = new List<int>();
-            _lineBounds.Add(0);// first line
+            _lineBounds = new Dictionary<int, int>();
 
-            if (_code.Length > 0)
-            {
-                _currentSymbol = _code[0];
-            }
-            else
+            _lineCounter = 1;
+            _lineBounds.Add(_lineCounter, 0);
+
+            _index = -1;
+            if (!MoveNext())
                 _currentSymbol = '\0';
         }
 
@@ -109,7 +107,7 @@ namespace ScriptEngine.Compiler
                 if (_currentSymbol == '\n')
                 {
                     _lineCounter++;
-                    _lineBounds.Add(_index + 1);
+                    _lineBounds[_lineCounter] = _index + 1;
                 }
                 return true;
             }

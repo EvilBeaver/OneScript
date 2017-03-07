@@ -20,9 +20,9 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("ПотокВыводаТекста","TextOutputStream")]
     public class StdTextReadStream : AutoContext<StdTextReadStream>, IDisposable
     {
-        private readonly StreamReader _reader;
+        private readonly TextReader _reader;
 
-        public StdTextReadStream(StreamReader source)
+        public StdTextReadStream(TextReader source)
         {
             _reader = source;
         }
@@ -40,7 +40,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                return !_reader.EndOfStream;
+                return _reader.Peek() != -1;
             }
         }
 

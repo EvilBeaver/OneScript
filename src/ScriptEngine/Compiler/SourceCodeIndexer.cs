@@ -14,9 +14,9 @@ namespace ScriptEngine.Compiler
     class SourceCodeIndexer : ISourceCodeIndexer
     {
         private readonly string _code;
-        private readonly IList<int> _lineBounds;
+        private readonly IDictionary<int, int> _lineBounds;
 
-        public SourceCodeIndexer(string code, IList<int> lineBounds)
+        public SourceCodeIndexer(string code, IDictionary<int, int> lineBounds)
         {
             _code = code;
             _lineBounds = lineBounds;
@@ -38,7 +38,7 @@ namespace ScriptEngine.Compiler
 
         private int GetLineBound(int lineNumber)
         {
-            return _lineBounds[lineNumber - 1];
+            return _lineBounds[lineNumber];
         }
 
     }

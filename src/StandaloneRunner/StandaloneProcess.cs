@@ -141,7 +141,7 @@ namespace StandaloneRunner
 
         public string SourceDescription
         {
-            get { return "Compiled binary module"; }
+            get { return System.Reflection.Assembly.GetExecutingAssembly().Location; }
         }
 
         public string Code

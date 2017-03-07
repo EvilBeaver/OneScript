@@ -146,6 +146,7 @@
     <Compile Include="Library\Net\TCPClient.cs" />
     <Compile Include="Library\Net\TCPServer.cs" />
     <Compile Include="Library\ProcessContext.cs" />
+    <Compile Include="Library\ProcessOutputWrapper.cs" />
     <Compile Include="Library\Regex\MatchCollectionImpl.cs" />
     <Compile Include="Library\Regex\MatchImpl.cs" />
     <Compile Include="Library\Regex\Regex.cs" />
@@ -199,6 +200,17 @@
     <Compile Include="DirectiveMultiResolver.cs" />
     <Compile Include="DirectiveIgnorer.cs" />
     <Compile Include="Library\CustomLineFeedStreamReader.cs" />
+    <Compile Include="Library\TypeDescription\AllowedSignEnum.cs" />
+    <Compile Include="Library\TypeDescription\AllowedLengthEnum.cs" />
+    <Compile Include="Library\TypeDescription\DateFractionsEnum.cs" />
+    <Compile Include="Library\TypeDescription\NumberQualifiers.cs" />
+    <Compile Include="Library\TypeDescription\StringQualifiers.cs" />
+    <Compile Include="Library\TypeDescription\DateQualifiers.cs" />
+    <Compile Include="Library\TypeDescription\BinaryDataQualifiers.cs" />
+    <Compile Include="Library\TypeDescription\TypeDescription.cs" />
+    <Compile Include="Library\TypeDescription\IValueAdjuster.cs" />
+    <Compile Include="Library\TypeDescription\BooleanTypeAdjuster.cs" />
+    <Compile Include="Library\Xml\XmlNamespaceContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
@@ -212,6 +224,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

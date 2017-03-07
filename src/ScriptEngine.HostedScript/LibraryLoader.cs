@@ -267,12 +267,11 @@ namespace ScriptEngine.HostedScript
                 }
                 else
                 {                    
-                    var loaded = _engine.LoadModuleImage(module);
-                    var instance = (IValue)_engine.NewObject(loaded);
-                    _env.SetGlobalProperty(script.identifier, instance);
                     _env.NotifyModuleAdded(module, script.identifier);
                 }
             }
+
+            _engine.CompileEnvironmentModules(_env);
 
         }
     }

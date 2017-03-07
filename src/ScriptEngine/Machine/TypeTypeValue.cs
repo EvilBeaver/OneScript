@@ -11,9 +11,9 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    class TypeTypeValue : IValue
+    public class TypeTypeValue : IValue
     {
-        TypeDescriptor _instance;
+        readonly TypeDescriptor _instance;
 
         public TypeTypeValue(string name)
         {
@@ -82,6 +82,18 @@ namespace ScriptEngine.Machine
                 return false;
             }
         }
+
+		public override bool Equals(object obj)
+		{
+			if (obj is TypeTypeValue)
+				return Equals(obj as TypeTypeValue);
+			return false;
+		}
+
+		public override int GetHashCode()
+		{
+			return _instance.GetHashCode();
+		}
 
         public TypeDescriptor Value
         {

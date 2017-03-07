@@ -10,6 +10,7 @@ using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ScriptEngine.HostedScript
 {
@@ -22,6 +23,8 @@ namespace ScriptEngine.HostedScript
         readonly RuntimeEnvironment _env;
         bool _isInitialized;
         bool _configInitialized;
+
+        private CodeStatProcessor _codeStat;
 
         public HostedScriptEngine()
         {
@@ -215,9 +218,20 @@ namespace ScriptEngine.HostedScript
         private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
         {
             Initialize();
+            
             var process = new Process(host, module, _engine);
             return process;
         }
+        
+        public void EnableCodeStatistics(string outputFileName)
+        {
+            _codeStat = new CodeStatProcessor(outputFileName);
+            _engine.SetCodeStatisticsCollector(_codeStat);
+        }
 
+        public void Finalize()
+        {
+            _codeStat?.OutputCodeStat();
+        }
     }
 }

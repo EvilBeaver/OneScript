@@ -52,21 +52,27 @@ namespace ScriptEngine.HostedScript.Library
 
         /// <summary>
         /// ПотокВыводаТекста. Стандартный поток вывода (stdout)
+        ///     в методе "Завершен" смотрите пример правильной обработки цикла ожидания завершения процесса:
         /// </summary>
         [ContextProperty("ПотокВывода", "StdOut")]
         public StdTextReadStream StdOut
         {
             get
             {
-                if(_stdOutContext == null)
-                    _stdOutContext = new StdTextReadStream(_p.StandardOutput);
-                    
+                if (_stdOutContext == null)
+                {
+                    var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stdout);
+                    stream.StartReading();
+
+                    _stdOutContext = new StdTextReadStream(stream);
+                }
                 return _stdOutContext;
             }
         }
 
         /// <summary>
         /// ПотокВыводаТекста. Стандартный поток вывода ошибок (stderr)
+        ///     в методе "Завершен" смотрите пример правильной обработки цикла ожидания завершения процесса:
         /// </summary>
         [ContextProperty("ПотокОшибок", "StdErr")]
         public StdTextReadStream StdErr
@@ -74,7 +80,12 @@ namespace ScriptEngine.HostedScript.Library
             get
             {
                 if (_stdErrContext == null)
-                    _stdErrContext = new StdTextReadStream(_p.StandardError);
+                {
+                    var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stderr);
+                    stream.StartReading();
+
+                    _stdErrContext = new StdTextReadStream(stream);
+                }
                 return _stdErrContext;
             }
         }
@@ -95,6 +106,7 @@ namespace ScriptEngine.HostedScript.Library
 
         /// <summary>
         /// Запустить процесс на выполнение.
+        ///     в методе "Завершен" смотрите пример правильной обработки цикла ожидания завершения процесса:
         /// </summary>
         [ContextMethod("Запустить", "Start")]
         public void Start()
@@ -105,6 +117,28 @@ namespace ScriptEngine.HostedScript.Library
         /// <summary>
         /// Флаг указывает, что процесс завершен (или нет)
         /// </summary>
+        ///
+        /// <example>
+        /// Пример правильной обработки цикла ожидания завершения процесса:
+        ///     Процесс не завершается, пока любоой из потоков (stdout, stderr) открыт для чтения.
+        ///     Процесс висит и ждет, пока его освободят от текста в обоих потоках.
+        ///
+        /// Пока НЕ Процесс.Завершен ИЛИ Процесс.ПотокВывода.ЕстьДанные ИЛИ Процесс.ПотокОшибок.ЕстьДанные Цикл
+        /// 	    Если ПериодОпросаВМиллисекундах <> 0 Тогда
+        /// 	    	Приостановить(ПериодОпросаВМиллисекундах);
+        /// 	    КонецЕсли;
+        ///    
+        /// 	    ОчереднаяСтрокаВывода = Процесс.ПотокВывода.Прочитать();
+        /// 	    ОчереднаяСтрокаОшибок = Процесс.ПотокОшибок.Прочитать();
+        /// 	    Если Не ПустаяСтрока(ОчереднаяСтрокаВывода) Тогда
+        /// 	    	Сообщить(ОчереднаяСтрокаВывода, СтатусСообщения.Информация);
+        /// 	    КонецЕсли;
+        ///    
+        /// 	    Если Не ПустаяСтрока(ОчереднаяСтрокаОшибок) Тогда
+        /// 	    	Сообщить(ОчереднаяСтрокаОшибок, СтатусСообщения.Важное);
+        /// 	    КонецЕсли;
+        ///  КонецЦикла;        
+        /// </example>
         [ContextProperty("Завершен","HasExited")]
         public bool HasExited
         {

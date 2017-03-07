@@ -85,6 +85,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -189,6 +192,15 @@
     <Compile Include="Utils.cs" />
     <Compile Include="Machine\Contexts\EnumerationTypeAttribute.cs" />
     <Compile Include="Machine\Contexts\EnumItemAttribute.cs" />
+    <Compile Include="Machine\CodeStat\CodeStatEntry.cs" />
+    <Compile Include="Machine\CodeStat\CodeStatProcessor.cs" />
+    <Compile Include="Machine\CodeStat\ICodeStatCollector.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Machine\CodeStat\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -152,16 +152,13 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="occurance">Указывает номер вхождения искомой подстроки в исходной строке</param>
         /// <returns>Позицию искомой строки в исходной строке. Возвращает 0, если подстрока не найдена.</returns>
         [ContextMethod("СтрНайти", "StrFind")]
-        public int StrFind(string haystack, string needle, SelfAwareEnumValue<SearchDirectionEnum> direction = null, int startPos = 0, int occurance = 0)
+        public int StrFind(string haystack, string needle, SearchDirection direction = SearchDirection.FromBegin, int startPos = 0, int occurance = 0)
         {
             int len = haystack.Length;
             if (len == 0 || needle.Length == 0)
                 return 0;
 
-            if (direction == null)
-                direction = GlobalsManager.GetEnum<SearchDirectionEnum>().FromBegin as SelfAwareEnumValue<SearchDirectionEnum>;
-
-            bool fromBegin = direction == GlobalsManager.GetEnum<SearchDirectionEnum>().FromBegin;
+            bool fromBegin = direction == SearchDirection.FromBegin;
 
             if(startPos == 0)
             {
@@ -182,7 +179,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 while(foundTimes < occurance && index >= 0)
                 {
-                    index = haystack.IndexOf(needle, startIndex);
+                    index = haystack.IndexOf(needle, startIndex, StringComparison.Ordinal);
                     if (index >= 0)
                     {
                         startIndex = index + 1;
@@ -197,7 +194,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 while(foundTimes < occurance && index >= 0)
                 {
-                    index = haystack.LastIndexOf(needle, startIndex);
+                    index = haystack.LastIndexOf(needle, startIndex, StringComparison.Ordinal);
                     if (index >= 0)
                     {
                         startIndex = index - 1;
@@ -293,7 +290,7 @@ namespace ScriptEngine.HostedScript.Library
 
             var re = new System.Text.RegularExpressions.Regex(@"(%%)|(%\d+)|(%\D)");
             int matchCount = 0;
-            int passedArgsCount = arguments.Skip(1).Where(x => x != null && x.DataType != DataType.Undefined).Count();
+            int passedArgsCount = arguments.Skip(1).Count(x => x != null && x.DataType != DataType.Undefined);
             var result = re.Replace(srcFormat, (m) =>
             {
                 if (m.Groups[1].Success)
@@ -329,40 +326,14 @@ namespace ScriptEngine.HostedScript.Library
 
     }
 
-
-    [SystemEnum("НаправлениеПоиска", "SearchDirection")]
-    public class SearchDirectionEnum : EnumerationContext
+    [EnumerationType("НаправлениеПоиска", "SearchDirection")]
+    public enum SearchDirection
     {
-        const string FROM_BEGIN = "СНачала";
-        const string FROM_END = "СКонца";
-
-        public SearchDirectionEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-            : base(typeRepresentation, valuesType)
-        {
-
-        }
-
-        [EnumValue(FROM_BEGIN, "FromBegin")]
-        public EnumerationValue FromBegin 
-        {
-            get
-            {
-                return this[FROM_BEGIN];
-            }
-        }
-
-        [EnumValue(FROM_END, "FromEnd")]
-        public EnumerationValue FromEnd
-        {
-            get
-            {
-                return this[FROM_END];
-            }
-        }
-
-        public static SearchDirectionEnum CreateInstance()
-        {
-            return EnumContextHelper.CreateEnumInstance<SearchDirectionEnum>((t, v) => new SearchDirectionEnum(t, v));
-        }
+        [EnumItem("СНачала")]
+        FromBegin,
+        [EnumItem("СКонца")]
+        FromEnd
     }
+
+    
 }

@@ -134,6 +134,7 @@ namespace ScriptEngine.Compiler
         public LexemType Type;
         public string Content;
         public Token Token;
+        public int LineNumber;
 
         public static Lexem Empty()
         {
@@ -215,6 +216,7 @@ namespace ScriptEngine.Compiler
         {
             bool isEndOfText = false;
             char cs = '\0';
+            int currentLine = iterator.CurrentLine;
             while (true)
             {
                 if (!isEndOfText)
@@ -233,7 +235,8 @@ namespace ScriptEngine.Compiler
                         {
                             Type = LexemType.Operator,
                             Token = LanguageDef.GetToken(content),
-                            Content = content
+                            Content = content,
+                            LineNumber = currentLine
                         };
                     }
                     else if (_booleanLiterals.Contains(content))
@@ -241,7 +244,8 @@ namespace ScriptEngine.Compiler
                         lex = new Lexem()
                         {
                             Type = LexemType.BooleanLiteral,
-                            Content = content
+                            Content = content,
+                            LineNumber = currentLine
                         };
                     }
                     else if (_undefined.Contains(content))
@@ -249,7 +253,8 @@ namespace ScriptEngine.Compiler
                         lex = new Lexem()
                         {
                             Type = LexemType.UndefinedLiteral,
-                            Content = content
+                            Content = content,
+                            LineNumber = currentLine
                         };
 
                     }
@@ -258,7 +263,8 @@ namespace ScriptEngine.Compiler
                         lex = new Lexem()
                         {
                             Type = LexemType.NullLiteral,
-                            Content = content
+                            Content = content,
+                            LineNumber = currentLine
                         };
 
                     }
@@ -268,7 +274,8 @@ namespace ScriptEngine.Compiler
                         {
                             Type = LexemType.Identifier,
                             Content = content,
-                            Token = LanguageDef.GetToken(content)
+                            Token = LanguageDef.GetToken(content),
+                            LineNumber = currentLine
                         };
 
                         if (LanguageDef.IsBuiltInFunction(lex.Token))
