@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Строка дерева значений.
     /// </summary>
     [ContextClass("СтрокаДереваЗначений", "ValueTreeRow")]
-    public class ValueTreeRow : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<IValue>
+    public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTreeRow _parent;
@@ -241,15 +241,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         {
             return _methods.FindMethod(name);
         }
-
-        protected override IEnumerable<KeyValuePair<string, int>> GetProperties()
-        {
-            return Owner().Columns
-                .Select(x =>
-                {
-                    var column = x as ValueTreeColumn;
-                    return new KeyValuePair<string, int>(column.Name, column.ID);
-                });
-        }
+        
     }
 }
