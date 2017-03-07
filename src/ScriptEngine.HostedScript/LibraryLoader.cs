@@ -271,6 +271,8 @@ namespace ScriptEngine.HostedScript
                 }
             }
 
+            _engine.CompileEnvironmentModules(_env);
+
         }
     }
 }
