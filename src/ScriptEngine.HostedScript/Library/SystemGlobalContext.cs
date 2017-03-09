@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library
     /// Глобальный контекст. Представляет глобально доступные свойства и методы.
     /// </summary>
     [GlobalContext(Category="Процедуры и функции взаимодействия с системой", ManualRegistration=true)]
-    class SystemGlobalContext : IRuntimeContextInstance, IAttachableContext
+    class SystemGlobalContext : IAttachableContext
     {
         private IVariable[] _state;
         private CommandLineArguments _args;
@@ -572,6 +572,11 @@ namespace ScriptEngine.HostedScript.Library
         public MethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);
+        }
+
+        public int GetMethodsCount()
+        {
+            return _methods.Count;
         }
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments)

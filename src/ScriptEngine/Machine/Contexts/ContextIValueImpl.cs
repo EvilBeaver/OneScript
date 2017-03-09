@@ -178,7 +178,7 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual IEnumerable<MethodInfo> GetMethods()
+        public virtual int GetMethodsCount()
         {
             throw new NotImplementedException();
         }

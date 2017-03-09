@@ -34,7 +34,6 @@ namespace ScriptEngine.Machine.Contexts
 
         public void RemoveProperty(string name)
         {
-            var idx = _propNumbers[name];
             _propNumbers.Remove(name);
         }
 

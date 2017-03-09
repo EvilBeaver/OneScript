@@ -56,9 +56,9 @@ namespace ScriptEngine.HostedScript.Library
                 throw RuntimeException.MethodNotFoundException(name);
         }
 
-        public override IEnumerable<MethodInfo> GetMethods()
+        public override int GetMethodsCount()
         {
-            yield return GetMethodInfo(0);
+            return 1;
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)

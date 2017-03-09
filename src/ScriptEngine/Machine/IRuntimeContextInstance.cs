@@ -27,9 +27,9 @@ namespace ScriptEngine.Machine
 
         int GetPropCount();
         string GetPropName(int propNum);
-
-        IEnumerable<MethodInfo> GetMethods();
+        
         int FindMethod(string name);
+        int GetMethodsCount();
         MethodInfo GetMethodInfo(int methodNumber);
         void CallAsProcedure(int methodNumber, IValue[] arguments);
         void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue);
@@ -38,10 +38,15 @@ namespace ScriptEngine.Machine
 
     public static class RCIHelperExtensions
     {
-        // TODO: kill GetMethods in IRuntimeContextInstance
-        public static IEnumerable<MethodInfo> _GetMethods(this IRuntimeContextInstance context)
+        public static IEnumerable<MethodInfo> GetMethods(this IRuntimeContextInstance context)
         {
-            return context.GetMethods();
+            MethodInfo[] methods = new MethodInfo[context.GetMethodsCount()];
+            for (int i = 0; i < methods.Length; i++)
+            {
+                methods[i] = context.GetMethodInfo(i);
+            }
+
+            return methods;
         }
 
         public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextInstance context)

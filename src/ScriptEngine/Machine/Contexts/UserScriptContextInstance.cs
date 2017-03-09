@@ -82,17 +82,11 @@ namespace ScriptEngine.Machine.Contexts
             var prop = _module.ExportedProperies[index];
             return prop.SymbolicName;
         }
-
-        #region IReflectableContext Members
         
-        public override IEnumerable<MethodInfo> GetMethods()
+        public override int GetMethodsCount()
         {
-            foreach (var item in _module.ExportedMethods)
-            {
-                yield return GetMethodInfo(item.Index);
-            }
+            return _module.ExportedMethods.Length;
         }
-
-        #endregion
+        
     }
 }

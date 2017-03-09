@@ -335,9 +335,9 @@ namespace ScriptEngine.Machine.Contexts
             return _instance.GetPropName(propNum);
         }
 
-        public IEnumerable<MethodInfo> GetMethods()
+        public int GetMethodsCount()
         {
-            return _instance.GetMethods();
+            return _instance.GetMethodsCount();
         }
 
         public int FindMethod(string name)

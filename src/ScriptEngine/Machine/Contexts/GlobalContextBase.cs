@@ -125,18 +125,12 @@ namespace ScriptEngine.Machine.Contexts
         public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
         {
             variables = new IVariable[0];
-            methods = GetMethods().ToArray();
+            methods = this.GetMethods().ToArray();
         }
         
-        public virtual IEnumerable<MethodInfo> GetMethods()
+        public virtual int GetMethodsCount()
         {
-            var array = new MethodInfo[_methods.Count];
-            for (int i = 0; i < _methods.Count; i++)
-            {
-                array[i] = _methods.GetMethodInfo(i);
-            }
-
-            return array;
+            return _methods.Count;
         }
 
         #endregion

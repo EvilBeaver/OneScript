@@ -16,7 +16,7 @@ using System.Text;
 
 namespace oscript
 {
-    class CgiBehavior : AppBehavior,  IHostApplication, IRuntimeContextInstance, IAttachableContext
+    class CgiBehavior : AppBehavior,  IHostApplication, IAttachableContext
     {
         private bool _isContentEchoed;
         private readonly HashSet<string> _headersWritten = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -156,18 +156,12 @@ namespace oscript
         public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
         {
             variables = new IVariable[0];
-            methods = (MethodInfo[])GetMethods();
+            methods = this.GetMethods().ToArray();
         }
 
-        public IEnumerable<MethodInfo> GetMethods()
+        public int GetMethodsCount()
         {
-            var array = new MethodInfo[_methods.Count];
-            for (int i = 0; i < _methods.Count; i++)
-            {
-                array[i] = _methods.GetMethodInfo(i);
-            }
-
-            return array;
+            return _methods.Count;
         }
 
         #region IRuntimeContextInstance Members
