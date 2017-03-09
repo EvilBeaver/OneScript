@@ -129,23 +129,11 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int FindProperty(string name)
         {
-            int knownDIIndex;
-            if (!_dispIdIndexes.TryGetValue(name, out knownDIIndex))
-            {
-                int dispId;
-                if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
-                {
-                    knownDIIndex = _dispIds.Count;
-                    _dispIds.Add(dispId);
-                    _dispIdIndexes.Add(name, knownDIIndex);
-                }
-                else
-                {
-                    throw RuntimeException.PropNotFoundException(name);
-                }
-            }
+            var idx = FindMemberIndex(name);
+            if (idx < 0)
+                throw RuntimeException.PropNotFoundException(name);
 
-            return knownDIIndex;
+            return idx;
         }
 
         private int GetDispIdByIndex(int index)
@@ -227,7 +215,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override int FindMethod(string name)
+        public int FindMemberIndex(string name)
         {
             int knownDiIndex;
             if (!_dispIdIndexes.TryGetValue(name, out knownDiIndex))
@@ -241,11 +229,20 @@ namespace ScriptEngine.Machine.Contexts
                 }
                 else
                 {
-                    throw RuntimeException.MethodNotFoundException(name);
+                    knownDiIndex = -1;
                 }
             }
 
             return knownDiIndex;
+        }
+
+        public override int FindMethod(string name)
+        {
+            var idx = FindMemberIndex(name);
+            if (idx < 0)
+                throw RuntimeException.MethodNotFoundException(name);
+            
+            return idx;
         }
 
         public override MethodInfo GetMethodInfo(int methodNumber)
