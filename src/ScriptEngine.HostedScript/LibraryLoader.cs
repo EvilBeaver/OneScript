@@ -139,6 +139,14 @@ namespace ScriptEngine.HostedScript
             return base.FindOwnProperty(name);
         }
 
+        protected override string GetOwnPropName(int index)
+        {
+            if (index == 0)
+                return "ЭтотОбъект";
+
+            throw new ArgumentException();
+        }
+
         protected override bool IsOwnPropReadable(int index)
         {
             return true;

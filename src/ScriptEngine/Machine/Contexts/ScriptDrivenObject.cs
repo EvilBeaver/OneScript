@@ -62,7 +62,7 @@ namespace ScriptEngine.Machine.Contexts
                 if (i < VARIABLE_COUNT)
                     _state[i] = Variable.CreateContextPropertyReference(this, i, GetOwnPropName(i));
                 else
-                    _state[i] = Variable.Create(ValueFactory.Create(), _module.Variables[i]);
+                    _state[i] = Variable.Create(ValueFactory.Create(), _module.Variables[i-VARIABLE_COUNT]);
             }
 
             ReadExportedSymbols(_module.ExportedMethods, _methodSearchCache);
