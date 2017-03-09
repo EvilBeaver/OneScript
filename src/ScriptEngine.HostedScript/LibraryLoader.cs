@@ -30,14 +30,7 @@ namespace ScriptEngine.HostedScript
             public string identifier;
             public bool asClass;
         }
-
-        private enum MethodNumbers
-        {
-            AddClass,
-            AddProperty,
-            LastNotAMethod
-        }
-
+        
         private LibraryLoader(LoadedModuleHandle moduleHandle, RuntimeEnvironment _env, ScriptingEngine _engine): base(moduleHandle)
         {
             this._env = _env;
