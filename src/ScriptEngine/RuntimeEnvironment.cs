@@ -112,20 +112,14 @@ namespace ScriptEngine
         {
             var scope = new SymbolScope();
             scope.IsDynamicScope = asDynamicScope;
-
-            IVariable[] vars;
-            MethodInfo[] methods;
-            IRuntimeContextInstance inst;
-
-            provider.OnAttach(null, out vars, out methods, out inst);
-
+            
             _symbolScopes.PushScope(scope);
-            foreach (var item in vars)
+            foreach (var item in provider.GetProperties())
             {
-                _symbolScopes.DefineVariable(item.Name);
+                _symbolScopes.DefineVariable(item.Identifier);
             }
 
-            foreach (var item in methods)
+            foreach (var item in provider.GetMethods())
             {
                 _symbolScopes.DefineMethod(item);
             }

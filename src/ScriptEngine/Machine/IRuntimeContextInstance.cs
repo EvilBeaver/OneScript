@@ -36,4 +36,29 @@ namespace ScriptEngine.Machine
 
     }
 
+    public static class RCIHelperExtensions
+    {
+        // TODO: kill GetMethods in IRuntimeContextInstance
+        public static IEnumerable<MethodInfo> _GetMethods(this IRuntimeContextInstance context)
+        {
+            return context.GetMethods();
+        }
+
+        public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextInstance context)
+        {
+            VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
+            for (int i = 0; i < infos.Length; i++)
+            {
+                infos[i] = new VariableInfo()
+                {
+                    Identifier = context.GetPropName(i),
+                    Type = SymbolType.ContextProperty,
+                    Index = i
+                };
+            }
+
+            return infos;
+        }
+    }
+
 }
