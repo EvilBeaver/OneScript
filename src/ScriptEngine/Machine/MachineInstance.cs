@@ -51,13 +51,12 @@ namespace ScriptEngine.Machine
         {
             IVariable[] vars;
             MethodInfo[] methods;
-            IRuntimeContextInstance instance;
-            context.OnAttach(this, out vars, out methods, out instance);
+            context.OnAttach(this, out vars, out methods);
             var scope = new Scope()
             {
                 Variables = vars,
                 Methods = methods,
-                Instance = instance,
+                Instance = context,
                 Detachable = detachable
             };
 

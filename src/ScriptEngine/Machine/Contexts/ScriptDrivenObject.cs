@@ -196,13 +196,12 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
         {
             UpdateState();
 
             variables = _state;
             methods = AttachMethods();
-            instance = this;
 
             _machine = machine;
 

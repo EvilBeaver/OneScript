@@ -78,7 +78,7 @@ namespace ScriptEngine.Machine
 
         #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
         {
             variables = new IVariable[this.Count];
             var props = GetProperties().OrderBy(x => x.Value).Select(x=>x.Key).ToArray();
@@ -90,7 +90,6 @@ namespace ScriptEngine.Machine
             }
 
             methods = new MethodInfo[0];
-            instance = this;
         }
 
         #endregion

@@ -11,12 +11,11 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    public interface IAttachableContext
+    public interface IAttachableContext : IRuntimeContextInstance
     {
         void OnAttach(MachineInstance machine,
             out IVariable[] variables, 
-            out MethodInfo[] methods, 
-            out IRuntimeContextInstance instance);
+            out MethodInfo[] methods);
 
     }
 }

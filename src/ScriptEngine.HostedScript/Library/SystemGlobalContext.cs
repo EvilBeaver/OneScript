@@ -482,28 +482,12 @@ namespace ScriptEngine.HostedScript.Library
 
         public void OnAttach(MachineInstance machine, 
             out IVariable[] variables, 
-            out MethodInfo[] methods, 
-            out IRuntimeContextInstance instance)
+            out MethodInfo[] methods)
         {
             variables = _state;
             methods = GetMethods().ToArray();
-            instance = this;
         }
-
-        public IEnumerable<VariableInfo> GetProperties()
-        {
-            VariableInfo[] array = new VariableInfo[_properties.Count];
-            foreach (var propKeyValue in _propHolder.GetProperties())
-            {
-                var descr = new VariableInfo();
-                descr.Identifier = propKeyValue.Key;
-                descr.Type = SymbolType.ContextProperty;
-                array[propKeyValue.Value] = descr;
-            }
-            
-            return array;
-        }
-
+        
         public IEnumerable<MethodInfo> GetMethods()
         {
             var array = new MethodInfo[_methods.Count];

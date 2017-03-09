@@ -122,11 +122,10 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext members
 
-        public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+        public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
         {
             variables = new IVariable[0];
             methods = GetMethods().ToArray();
-            instance = this;
         }
         
         public virtual IEnumerable<MethodInfo> GetMethods()

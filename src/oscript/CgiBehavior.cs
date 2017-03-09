@@ -153,11 +153,10 @@ namespace oscript
 
         #endregion
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
         {
             variables = new IVariable[0];
             methods = (MethodInfo[])GetMethods();
-            instance = this;
         }
 
         public IEnumerable<MethodInfo> GetMethods()
