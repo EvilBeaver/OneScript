@@ -43,14 +43,14 @@ namespace ScriptEngine.HostedScript.Library
             if (_variant == OutputVariant.Stdout)
             {
                 Encoding = _process.StartInfo.StandardOutputEncoding;
-                _process.BeginOutputReadLine();
                 _process.OutputDataReceived += StreamDataReceived;
+                _process.BeginOutputReadLine();
             }
             else
             {
                 Encoding = _process.StartInfo.StandardErrorEncoding;
-                _process.BeginErrorReadLine();
                 _process.ErrorDataReceived += StreamDataReceived;
+                _process.BeginErrorReadLine();
             }
 
             AlreadyReading = true;
