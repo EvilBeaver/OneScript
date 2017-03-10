@@ -15,9 +15,7 @@ namespace ScriptEngine.HostedScript.Library
         private OutputVariant _variant;
         private StringBuilder _buffer = new StringBuilder(4096);
         private ReaderWriterLockSlim _locker;
-
-        private ManualResetEventSlim _finalWriteEvent = new ManualResetEventSlim();
-
+        
         private int _bufferIndex = 0;
 
         private bool AlreadyReading { get; set; }
@@ -74,19 +72,13 @@ namespace ScriptEngine.HostedScript.Library
         {
             try
             {
-                _locker.EnterWriteLock();
+                if (e.Data != null)
                 {
-                    if (e.Data != null)
-                    {
-                        if (_buffer.Length != 0)
-                            _buffer.Append(System.Environment.NewLine);
+                    _locker.EnterWriteLock();
+                    if (_buffer.Length != 0)
+                        _buffer.Append(System.Environment.NewLine);
 
-                        _buffer.Append(e.Data);
-                    }
-                    else
-                    {
-                        _finalWriteEvent.Set();
-                    }
+                    _buffer.Append(e.Data);
                 }
             }
             finally
@@ -221,7 +213,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (_process.HasExited)
             {
-                _finalWriteEvent.Wait();
+                _process.WaitForExit(); // ожидание закрытия потоков
             }
 
             _locker.EnterReadLock();
