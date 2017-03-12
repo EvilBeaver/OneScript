@@ -27,6 +27,8 @@ namespace oscript
             _path = path;
         }
         
+        public IDebugController DebugController { get; set; }
+
         public override int Execute()
         {
             if (!System.IO.File.Exists(_path))
@@ -38,6 +40,7 @@ namespace oscript
             SystemLogger.SetWriter(this);
 
             var hostedScript = new HostedScriptEngine();
+            hostedScript.DebugController = DebugController;
             hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);

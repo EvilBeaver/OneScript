@@ -96,6 +96,8 @@
     <Compile Include="CheckSyntaxBehavior.cs" />
     <Compile Include="CmdLineHelper.cs" />
     <Compile Include="ConsoleHostImpl.cs" />
+    <Compile Include="DebugBehavior.cs" />
+    <Compile Include="DebugCommandDispatcher.cs" />
     <Compile Include="ExecuteScriptBehavior.cs" />
     <Compile Include="MakeAppBehavior.cs" />
     <Compile Include="MeasureBehavior.cs" />

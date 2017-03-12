@@ -33,6 +33,7 @@ namespace ScriptEngine.HostedScript
         {
             try
             {
+                _engine.DebugController?.WaitForExecutionSignal();
                 _engine.UpdateContexts();
                 _engine.NewObject(_module);
                 return 0;
@@ -48,6 +49,7 @@ namespace ScriptEngine.HostedScript
             }
             finally
             {
+                _engine.DebugController?.NotifyProcessExit();
                 _engine.Dispose();
                 _engine = null;
             }

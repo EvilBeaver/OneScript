@@ -147,6 +147,8 @@ namespace ScriptEngine
             }
         }
 
+        public IDebugController DebugController { get; set; }
+
         public void SetCodeStatisticsCollector(ICodeStatCollector collector)
         {
             ProduceExtraCode = true;

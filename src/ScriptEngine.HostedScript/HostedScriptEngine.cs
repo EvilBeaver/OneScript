@@ -143,6 +143,12 @@ namespace ScriptEngine.HostedScript
             }
         }
 
+        public IDebugController DebugController
+        {
+            get { return _engine.DebugController; }
+            set { _engine.DebugController = value; }
+        }
+
         private void InitializeDirectiveResolver()
         {
             var ignoreDirectiveResolver = new DirectiveIgnorer();
