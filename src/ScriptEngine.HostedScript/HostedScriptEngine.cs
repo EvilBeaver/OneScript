@@ -232,7 +232,6 @@ namespace ScriptEngine.HostedScript
         public void Dispose()
         {
             _codeStat?.OutputCodeStat();
-            _env.EnvironmentChanged -= LoadUserModuleAsProperty;
         }
     }
 }
