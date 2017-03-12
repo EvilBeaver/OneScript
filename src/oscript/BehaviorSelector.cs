@@ -58,25 +58,7 @@ namespace oscript
             }
             else if (param == "-check")
             {
-                if (helper.Next() != null)
-                {
-                    bool cgi_mode = false;
-                    var arg = helper.Current();
-                    if (arg.ToLowerInvariant() == "-cgi")
-                    {
-                        cgi_mode = true;
-                        arg = helper.Next();
-                    }
-
-                    var path = arg;
-                    var env = helper.Next();
-                    if (env != null && env.StartsWith("-env="))
-                    {
-                        env = env.Substring(5);
-                    }
-
-                    return new CheckSyntaxBehavior(path, env, cgi_mode);
-                }
+                return ProcessCheckKey(helper);
             }
             else if (param == "-make")
             {
@@ -98,26 +80,7 @@ namespace oscript
             }
             else if (param.StartsWith("-encoding="))
             {
-                var prefixLen = ("-encoding=").Length;
-                if (param.Length > prefixLen)
-                {
-                    var encValue = param.Substring(prefixLen);
-                    Encoding encoding;
-                    try
-                    {
-                        encoding = Encoding.GetEncoding(encValue);
-                    }
-                    catch
-                    {
-                        Output.WriteLine("Wrong console encoding");
-                        encoding = null;
-                    }
-
-                    if (encoding != null)
-                        Program.ConsoleOutputEncoding = encoding;
-
-                    return Select(helper.Tail());
-                }
+                return ProcessEncodingKey(helper);
             }
             else if (param.StartsWith("-codestat="))
             {
@@ -128,6 +91,58 @@ namespace oscript
                     ScriptFileHelper.EnableCodeStatistics(outputStatFile);
                     return Select(helper.Tail());
                 }
+            }
+
+            return null;
+        }
+
+        private static AppBehavior ProcessCheckKey(CmdLineHelper helper)
+        {
+            if (helper.Next() != null)
+            {
+                bool cgi_mode = false;
+                var arg = helper.Current();
+                if (arg.ToLowerInvariant() == "-cgi")
+                {
+                    cgi_mode = true;
+                    arg = helper.Next();
+                }
+
+                var path = arg;
+                var env = helper.Next();
+                if (env != null && env.StartsWith("-env="))
+                {
+                    env = env.Substring(5);
+                }
+
+                return new CheckSyntaxBehavior(path, env, cgi_mode);
+            }
+
+            return null;
+        }
+
+        private static AppBehavior ProcessEncodingKey(CmdLineHelper helper)
+        {
+            var param = helper.Current();
+            var prefixLen = ("-encoding=").Length;
+            if (param.Length > prefixLen)
+            {
+                var encValue = param.Substring(prefixLen);
+                Encoding encoding;
+                try
+                {
+                    encoding = Encoding.GetEncoding(encValue);
+                }
+                catch
+                {
+                    Output.WriteLine("Wrong console encoding");
+                    encoding = null;
+                }
+
+                if (encoding != null)
+                    Program.ConsoleOutputEncoding = encoding;
+
+                return Select(helper.Tail());
             }
 
             return null;
