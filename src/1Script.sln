@@ -87,7 +87,6 @@ Global
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|x86.ActiveCfg = Release|Any CPU
-		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
