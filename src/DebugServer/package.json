@@ -1,0 +1,105 @@
+{
+  "name": "oscript-debug",
+  "displayName": "OneScript Debug",
+  "version": "0.1.0",
+  "publisher": "EvilBeaver",
+  "description": "Visual Studio Code debugger extension for OneScript",
+  "icon": "images/mono-debug-icon.svg",
+  "categories": [
+    "Debuggers"
+  ],
+  "author": {
+    "name": "EvilBeaver <ovsiankin.aa@gmail.com>"
+  },
+  "license": "MPL-2.0",
+  "private": true,
+  "engines": {
+    "vscode": "^1.0.0"
+  },
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EvilBeaver/OneScript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EvilBeaver/OneScript/issues"
+  },
+  "contributes": {
+    "breakpoints": [
+      {
+        "language": "bsl"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "oscript",
+        "label": "1Script Debugger",
+        "program": "./bin/DebugServer.exe",
+        "osx": {
+          "runtime": "mono"
+        },
+        "linux": {
+          "runtime": "mono"
+        },
+        "initialConfigurations": [
+          {
+            "name": "%oscript.launch.config.name%",
+            "type": "oscript",
+            "request": "launch",
+            "program": "${workspaceRoot}/main.os",
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": "",
+            "runtimeExecutable": null,
+            "env": {},
+            "debugPort": null 
+          }
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [ "program" ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "%oscript.launch.program.description%"
+              },
+              "args": {
+                "type": "array",
+                "description": "%oscript.launch.args.description%",
+                "items": { "type": "string" },
+                "default": []
+              },
+              "cwd": {
+                "type": "string",
+                "description": "%oscript.launch.cwd.description%",
+                "default": "."
+              },
+              "runtimeExecutable": {
+                "type": [ "string", "null" ],
+                "description": "%oscript.launch.runtimeExecutable.description%",
+                "default": null
+              },
+              "runtimeArgs": {
+                "type": "array",
+                "description": "%oscript.launch.runtimeArgs.description%",
+                "items": { "type": "string" },
+                "default": []
+              },
+              "env": {
+                "type": "object",
+                "description": "%oscript.launch.env.description%",
+                "default": {}
+              },
+              "debugPort": {
+                "type": "number",
+                "description": "%oscript.launch.debugPort.description%",
+                "default": 2801
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
