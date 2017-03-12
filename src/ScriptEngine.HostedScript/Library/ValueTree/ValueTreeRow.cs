@@ -162,6 +162,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return column.ID;
         }
 
+        public override bool IsPropReadable(int propNum)
+        {
+            return true;
+        }
+
+        public override bool IsPropWritable(int propNum)
+        {
+            return true;
+        }
+
         public override IValue GetPropValue(int propNum)
         {
             var column = Owner().Columns.FindColumnById(propNum);

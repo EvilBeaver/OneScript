@@ -112,6 +112,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return C.ID;
         }
 
+        public override bool IsPropReadable(int propNum)
+        {
+            return true;
+        }
+
+        public override bool IsPropWritable(int propNum)
+        {
+            return true;
+        }
+
         public override IValue GetPropValue(int propNum)
         {
             ValueTableColumn C = Owner().Columns.FindColumnById(propNum);
