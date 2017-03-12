@@ -14,8 +14,6 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine
 {
-    public delegate void EnvironmentChangedHandler(UserAddedScript script);
-
     public class RuntimeEnvironment
     {
         private readonly List<IAttachableContext> _objects = new List<IAttachableContext>();
@@ -62,6 +60,12 @@ namespace ScriptEngine
             _injectedProperties.SetPropValue(propId, value);
         }
 
+        public IValue GetGlobalProperty(string propertyName)
+        {
+            int propId = _injectedProperties.FindProperty(propertyName);
+            return _injectedProperties.GetPropValue(propId);
+        }
+
         internal CompilerContext SymbolsContext
         {
             get
@@ -98,10 +102,8 @@ namespace ScriptEngine
             };
 
             _externalScripts.Add(script);
-            EnvironmentChanged?.Invoke(script);
+            SetGlobalProperty(script.Symbol, null);
         }
-
-        public event EnvironmentChangedHandler EnvironmentChanged;
         
         public IEnumerable<UserAddedScript> GetUserAddedScripts()
         {

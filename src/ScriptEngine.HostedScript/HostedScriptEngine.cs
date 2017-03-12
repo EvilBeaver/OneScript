@@ -218,29 +218,11 @@ namespace ScriptEngine.HostedScript
         private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
         {
             Initialize();
-            CompileDelayedModules();
-            _env.EnvironmentChanged += LoadUserModuleAsProperty;
-
+            
             var process = new Process(host, module, _engine);
             return process;
         }
-
-        private void CompileDelayedModules()
-        {
-            var scripts = GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module);
-            foreach (var script in scripts)
-            {
-                LoadUserModuleAsProperty(script);
-            }
-        }
-
-        private void LoadUserModuleAsProperty(UserAddedScript script)
-        {
-            var loaded = _engine.LoadModuleImage(script.Module);
-            var instance = (IValue) _engine.NewObject(loaded);
-            _env.SetGlobalProperty(script.Symbol, instance);
-        }
-
+        
         public void EnableCodeStatistics(string outputFileName)
         {
             _codeStat = new CodeStatProcessor(outputFileName);
