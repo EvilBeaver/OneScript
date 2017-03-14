@@ -15,9 +15,7 @@ namespace ScriptEngine.HostedScript.Library
         private OutputVariant _variant;
         private StringBuilder _buffer = new StringBuilder(4096);
         private ReaderWriterLockSlim _locker;
-
-        private ManualResetEventSlim _finalWriteEvent = new ManualResetEventSlim();
-
+        
         private int _bufferIndex = 0;
 
         private bool AlreadyReading { get; set; }
@@ -45,14 +43,14 @@ namespace ScriptEngine.HostedScript.Library
             if (_variant == OutputVariant.Stdout)
             {
                 Encoding = _process.StartInfo.StandardOutputEncoding;
-                _process.BeginOutputReadLine();
                 _process.OutputDataReceived += StreamDataReceived;
+                _process.BeginOutputReadLine();
             }
             else
             {
                 Encoding = _process.StartInfo.StandardErrorEncoding;
-                _process.BeginErrorReadLine();
                 _process.ErrorDataReceived += StreamDataReceived;
+                _process.BeginErrorReadLine();
             }
 
             AlreadyReading = true;
@@ -74,19 +72,13 @@ namespace ScriptEngine.HostedScript.Library
         {
             try
             {
-                _locker.EnterWriteLock();
+                if (e.Data != null)
                 {
-                    if (e.Data != null)
-                    {
-                        if (_buffer.Length != 0)
-                            _buffer.Append(System.Environment.NewLine);
+                    _locker.EnterWriteLock();
+                    if (_buffer.Length != 0)
+                        _buffer.Append(System.Environment.NewLine);
 
-                        _buffer.Append(e.Data);
-                    }
-                    else
-                    {
-                        _finalWriteEvent.Set();
-                    }
+                    _buffer.Append(e.Data);
                 }
             }
             finally
@@ -221,7 +213,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (_process.HasExited)
             {
-                _finalWriteEvent.Wait();
+                _process.WaitForExit(); // ожидание закрытия потоков
             }
 
             _locker.EnterReadLock();
