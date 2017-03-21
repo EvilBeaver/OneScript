@@ -150,6 +150,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         private static readonly ContextPropertyMapper<ValueTreeRow> _properties = new ContextPropertyMapper<ValueTreeRow>();
 
+        public override int GetPropCount()
+        {
+            return Count();
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return Owner().Columns.GetPropName(propNum);
+        }
+
         public override int FindProperty(string name)
         {
             var column = Owner().Columns.FindColumnByName(name);

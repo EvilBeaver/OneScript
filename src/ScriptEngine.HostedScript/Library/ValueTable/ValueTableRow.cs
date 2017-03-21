@@ -102,6 +102,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return new CollectionEnumerator(GetEnumerator());
         }
 
+        public override int GetPropCount()
+        {
+            return Count();
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return Owner().Columns.GetPropName(propNum);
+        }
+
         public override int FindProperty(string name)
         {
             ValueTableColumn C = Owner().Columns.FindColumnByName(name);
