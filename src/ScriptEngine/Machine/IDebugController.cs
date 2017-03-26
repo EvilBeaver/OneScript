@@ -7,7 +7,7 @@ namespace ScriptEngine.Machine
 {
     public interface IDebugController
     {
-        void WaitForExecutionSignal();
+        void WaitForDebugEvent(DebugEvent theEvent);
 
         void NotifyProcessExit();
     }

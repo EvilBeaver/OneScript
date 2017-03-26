@@ -8,7 +8,7 @@ namespace oscript
     class CmdLineHelper
     {
         private string[] _args;
-        private int _index = 0;
+        private int _index = -1;
 
         public CmdLineHelper(string[] args)
         {
@@ -17,10 +17,11 @@ namespace oscript
 
         public string Next()
         {
+            _index++;
             if (_index == _args.Length)
                 return null;
 
-            return _args[_index++];
+            return _args[_index];
         }
 
         public string Current()
@@ -33,7 +34,7 @@ namespace oscript
 
         public string[] Tail()
         {
-            return _args.Skip(_index).ToArray();
+            return _args.Skip(_index+1).ToArray();
         }
     }
 }

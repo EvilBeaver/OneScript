@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,6 +11,20 @@ namespace DebugServer
     static class Utilities
     {
         private static readonly Regex VARIABLE = new Regex(@"\{(\w+)\}");
+
+        public static string ConcatArguments(IEnumerable args)
+        {
+            var sb = new StringBuilder();
+            foreach (var stringArg in args)
+            {
+                sb.Append(' ');
+                sb.Append('\"');
+                sb.Append(stringArg.ToString());
+                sb.Append('\"');
+            }
+
+            return sb.ToString();
+        }
 
         public static string ExpandVariables(string format, dynamic variables, bool underscoredOnly = true)
         {

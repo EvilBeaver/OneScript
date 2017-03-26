@@ -97,7 +97,8 @@
     <Compile Include="CmdLineHelper.cs" />
     <Compile Include="ConsoleHostImpl.cs" />
     <Compile Include="DebugBehavior.cs" />
-    <Compile Include="DebugCommandDispatcher.cs" />
+    <Compile Include="DebugServer\DebugCommandCommunicator.cs" />
+    <Compile Include="DebugServer\OscriptDebugController.cs" />
     <Compile Include="ExecuteScriptBehavior.cs" />
     <Compile Include="MakeAppBehavior.cs" />
     <Compile Include="MeasureBehavior.cs" />
@@ -133,6 +134,7 @@
   <ItemGroup>
     <EmbeddedResource Include="StandaloneRunner.exe" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

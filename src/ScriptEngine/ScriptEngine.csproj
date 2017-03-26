@@ -135,6 +135,7 @@
     <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
     <Compile Include="Machine\Contexts\SystemEnumAttribute.cs" />
     <Compile Include="Machine\Contexts\UnmanagedRCWComContext.cs" />
+    <Compile Include="Machine\DebugEvent.cs" />
     <Compile Include="Machine\ExternalContextData.cs" />
     <Compile Include="Machine\ExternalSystemException.cs" />
     <Compile Include="Machine\GenericIValueComparer.cs" />

@@ -10,19 +10,6 @@
 				"--extensionDevelopmentPath=${workspaceRoot}"
 			],
 			"stopOnEntry": false
-		},
-		{
-			"type": "oscript",
-			"request": "launch",
-			"name": "Server",
-			"program": "${workspaceRoot}/bin/x86/Debug/DebugServer.exe",
-			"args": [ "-trace" ]
-		}
-	],
-	"compounds": [
-		{
-			"name": "Extension + Server",
-			"configurations": [ "Extension", "Server" ]
 		}
 	]
 }

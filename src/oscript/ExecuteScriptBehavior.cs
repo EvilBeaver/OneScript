@@ -33,7 +33,7 @@ namespace oscript
         {
             if (!System.IO.File.Exists(_path))
             {
-                Echo(String.Format("Script file is not found '{0}'", _path));
+                Echo($"Script file is not found '{_path}'");
                 return 2;
             }
 

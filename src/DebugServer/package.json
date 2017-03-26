@@ -35,7 +35,7 @@
       {
         "type": "oscript",
         "label": "1Script Debugger",
-        "program": "./bin/DebugServer.exe",
+        "program": "./bin/Debug/DebugServer.exe",
         "osx": {
           "runtime": "mono"
         },
@@ -50,10 +50,8 @@
             "program": "${workspaceRoot}/main.os",
             "args": [],
             "cwd": "${workspaceRoot}",
-            "preLaunchTask": "",
             "runtimeExecutable": null,
-            "env": {},
-            "debugPort": null 
+            "debugPort": 2801 
           }
         ],
         "configurationAttributes": {
@@ -86,14 +84,18 @@
                 "items": { "type": "string" },
                 "default": []
               },
-              "env": {
-                "type": "object",
-                "description": "%oscript.launch.env.description%",
-                "default": {}
-              },
               "debugPort": {
                 "type": "number",
                 "description": "%oscript.launch.debugPort.description%",
+                "default": 2801
+              }
+            }
+          },
+          "attach": {
+            "properties": {
+            "debugPort": {
+                "type": "number",
+                "description": "%oscript.attach.debugPort.description%",
                 "default": 2801
               }
             }

@@ -394,7 +394,8 @@ namespace VSCodeDebug
 				}
 			}
 			catch (Exception e) {
-				SendErrorResponse(response, 1104, "error while processing request '{_request}' (exception: {_exception})", new { _request = command, _exception = e.Message });
+                SessionLog.WriteLine(e.ToString());
+                SendErrorResponse(response, 1104, "error while processing request '{_request}' (exception: {_exception})", new { _request = command, _exception = e.Message });
 			}
 
 			if (command == "disconnect") {

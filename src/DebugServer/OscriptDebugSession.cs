@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace DebugServer
         public OscriptDebugSession() : base(true, false)
         {
         }
-
+        
         public override void Initialize(Response response, dynamic args)
         {
             SendResponse(response, new Capabilities()
@@ -41,7 +42,7 @@ namespace DebugServer
 
             if (!File.Exists(startupScript) && !Directory.Exists(startupScript))
             {
-                SendErrorResponse(response, 1002, "Program '{path}' does not exist.", new { path = startupScript });
+                SendErrorResponse(response, 1002, "Script '{path}' does not exist.", new { path = startupScript });
                 return;
             }
 
@@ -73,6 +74,10 @@ namespace DebugServer
                     return;
                 }
             }
+            else
+            {
+                workingDirectory = Path.GetDirectoryName(startupScript);
+            }
 
             // validate argument 'runtimeExecutable'
             var runtimeExecutable = (string)args.runtimeExecutable;
@@ -84,14 +89,90 @@ namespace DebugServer
                     SendErrorResponse(response, 3005, "Property 'runtimeExecutable' is empty.");
                     return;
                 }
+
                 runtimeExecutable = ConvertClientPathToDebugger(runtimeExecutable);
                 if (!File.Exists(runtimeExecutable))
                 {
-                    SendErrorResponse(response, 3006, "Runtime executable '{path}' does not exist.", new { path = runtimeExecutable });
+                    SendErrorResponse(response, 3006, "Runtime executable '{path}' does not exist.", new
+                    {
+                        path = runtimeExecutable
+                    });
                     return;
                 }
             }
+            else
+            {
+                runtimeExecutable = "oscript.exe";
+            }
+            
+            var process = new DebugeeProcess();
+            process.RuntimeExecutable = runtimeExecutable;
+            process.RuntimeArguments = Utilities.ConcatArguments(args.runtimeArgs);
+            process.StartupScript = startupScript;
+            process.ScriptArguments = Utilities.ConcatArguments(args.args);
+            process.WorkingDirectory = workingDirectory;
+
+            process.OutputReceived += (s, e) =>
+            {
+                SendOutput(e.Category, e.Content);
+            };
+
+            process.ProcessExited += (s, e) =>
+            {
+                SendEvent(new ExitedEvent(((DebugeeProcess)s).ExitCode));
+            };
+
+            try
+            {
+                process.Start();
+            }
+            catch (Exception e)
+            {
+                SendErrorResponse(response, 3012, "Can't launch debugee ({reason}).", new { reason = e.Message });
+                return;
+            }
+            
+            var port = getInt(args, "debugPort", 2801);
+            try
+            {
+                process.Connect(port);
+            }
+            catch (Exception)
+            {
+                process.Kill();
+                SendErrorResponse(response, 4550, "Process socket doesn't respond");
+                return;
+            }
+
+            SendResponse(response);
+
         }
+
+        private void SendOutput(string category, string data)
+        {
+            if (!String.IsNullOrEmpty(data))
+            {
+                if (data[data.Length - 1] != '\n')
+                {
+                    data += '\n';
+                }
+                SendEvent(new OutputEvent(category, data));
+            }
+        }
+
+        private static int getInt(dynamic container, string propertyName, int dflt = 0)
+        {
+            try
+            {
+                return (int)container[propertyName];
+            }
+            catch (Exception)
+            {
+                // ignore and return default value
+            }
+            return dflt;
+        }
+
 
         public override void Attach(Response response, dynamic arguments)
         {
