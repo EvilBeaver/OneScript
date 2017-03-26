@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 
 using ScriptEngine.Machine;
@@ -35,7 +37,7 @@ namespace oscript.DebugServer
                 return true;
 
             ThreadPool.QueueUserWorkItem(GetMessageFromNetwork);
-
+            
             _queueAddedEvent.WaitOne();
 
             return GetCommandFromQueue(out command);
@@ -43,19 +45,11 @@ namespace oscript.DebugServer
 
         private void GetMessageFromNetwork(object state)
         {
-            using (var stream = _connection.GetStream())
-            {
-                var fmt = new BinaryFormatter();
-                var msg = (string)fmt.Deserialize(stream);
-                if (msg == null)
-                {
-                    // TODO: when it happens?
-                    PostMessage(QUIT_MESSAGE);
-                    return;
-                }
+            var stream = _connection.GetStream();
+            var reader = new BinaryReader(stream, Encoding.UTF8);
+            var msg = reader.ReadString();
 
-                PostMessage(msg);
-            }
+            PostMessage(msg);
         }
 
         private void PostMessage(string message)

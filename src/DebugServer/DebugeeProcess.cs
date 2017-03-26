@@ -71,13 +71,18 @@ namespace DebugServer
             _client = new TcpClient("localhost", port);
         }
 
-        public void Send(object something)
+        public void Send(string something)
         {
-            var fmt = new BinaryFormatter();
-            using (var s = _client.GetStream())
-            {
-                fmt.Serialize(s, something);
-            }
+            SessionLog.WriteLine("Sending " + something);
+            var ms = new MemoryStream();
+            var writer = new BinaryWriter(ms, Encoding.UTF8, true);
+            writer.Write(something);
+            writer.Dispose();
+
+            var s = _client.GetStream();
+            var bytes = ms.GetBuffer();
+            s.Write(bytes, 0, (int)ms.Length);
+            ms.Dispose();
         }
 
         public event EventHandler<DebugeeOutputEventArgs> OutputReceived;
