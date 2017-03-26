@@ -13,6 +13,8 @@ namespace DebugServer
 {
     class OscriptDebugSession : DebugSession
     {
+        private DebugeeProcess _process;
+
         public OscriptDebugSession() : base(true, false)
         {
         }
@@ -106,6 +108,8 @@ namespace DebugServer
             }
             
             var process = new DebugeeProcess();
+            _process = process;
+
             process.RuntimeExecutable = runtimeExecutable;
             process.RuntimeArguments = Utilities.ConcatArguments(args.runtimeArgs);
             process.StartupScript = startupScript;
@@ -114,12 +118,15 @@ namespace DebugServer
 
             process.OutputReceived += (s, e) =>
             {
+                SessionLog.WriteLine("output received: " + e.Content);
                 SendOutput(e.Category, e.Content);
             };
 
             process.ProcessExited += (s, e) =>
             {
+                SessionLog.WriteLine("process exited");
                 SendEvent(new ExitedEvent(((DebugeeProcess)s).ExitCode));
+                SendEvent(new TerminatedEvent());
             };
 
             try
@@ -181,12 +188,14 @@ namespace DebugServer
 
         public override void Disconnect(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            _process.Kill();
+            SendResponse(response);
         }
 
         public override void SetBreakpoints(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            RequestDummy("SetBreakpoints request accepted", response, null);
+            _process.Send("go");
         }
 
         public override void Continue(Response response, dynamic arguments)
@@ -231,12 +240,21 @@ namespace DebugServer
 
         public override void Threads(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            var threads = new List<Thread>();
+            threads.Add(new Thread(1, "main"));
+            SessionLog.WriteLine("Threads request accepted");
+            SendResponse(response, new ThreadsResponseBody(threads));
         }
 
         public override void Evaluate(Response response, dynamic arguments)
         {
             throw new NotImplementedException();
+        }
+
+        private void RequestDummy(string message, Response response, dynamic arguments)
+        {
+            SessionLog.WriteLine(message);
+            SendResponse(response, arguments);
         }
     }
 }

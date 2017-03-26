@@ -14,6 +14,9 @@ namespace DebugServer
 
         public static string ConcatArguments(IEnumerable args)
         {
+            if (args == null)
+                return string.Empty;
+
             var sb = new StringBuilder();
             foreach (var stringArg in args)
             {
