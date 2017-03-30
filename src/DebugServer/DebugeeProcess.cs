@@ -40,6 +40,7 @@ namespace DebugServer
         public string ScriptArguments { get; set; }
         public string RuntimeArguments { get; set; }
 
+        public bool HasExited => _process.HasExited;
         public int ExitCode => _process.ExitCode;
 
         public void Start()

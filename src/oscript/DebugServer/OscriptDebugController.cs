@@ -38,7 +38,7 @@ namespace oscript.DebugServer
 
         public void NotifyProcessExit()
         {
-            _connection.Send("exited");
+            Console.WriteLine("Sending stop to debug listener");
             _connection.Stop();
         }
 

@@ -48,7 +48,6 @@ namespace oscript.DebugServer
             var stream = _connection.GetStream();
             var reader = new BinaryReader(stream, Encoding.UTF8);
             var msg = reader.ReadString();
-
             PostMessage(msg);
         }
 

@@ -125,7 +125,7 @@ namespace DebugServer
             process.ProcessExited += (s, e) =>
             {
                 SessionLog.WriteLine("process exited");
-                SendEvent(new ExitedEvent(((DebugeeProcess)s).ExitCode));
+                //SendEvent(new ExitedEvent(((DebugeeProcess)s).ExitCode));
                 SendEvent(new TerminatedEvent());
             };
 
@@ -242,7 +242,7 @@ namespace DebugServer
         {
             var threads = new List<Thread>();
             threads.Add(new Thread(1, "main"));
-            SessionLog.WriteLine("Threads request accepted");
+            SessionLog.WriteLine("Threads request accepted: " + _process?.HasExited);
             SendResponse(response, new ThreadsResponseBody(threads));
         }
 
