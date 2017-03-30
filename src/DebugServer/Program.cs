@@ -25,6 +25,12 @@ namespace DebugServer
                 }
             }
 
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            currentDomain.UnhandledException += (s, e) =>
+            {
+                SessionLog.WriteLine(e.ExceptionObject.ToString());
+            };
+
             StartSession(showTrace, Console.OpenStandardInput(), Console.OpenStandardOutput());
         }
         
@@ -37,6 +43,10 @@ namespace DebugServer
             try
             {
                 session.Start(input, output).Wait();
+            }
+            catch (Exception e)
+            {
+                SessionLog.WriteLine(e.ToString());
             }
             finally
             {

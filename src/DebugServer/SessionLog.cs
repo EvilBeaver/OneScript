@@ -12,9 +12,11 @@ namespace DebugServer
     {
         private static StreamWriter _log;
 
+        private static string _path;
         [Conditional("DEBUG")]
         public static void Open(string path)
         {
+            _path = path;
             _log = new StreamWriter(path);
             _log.AutoFlush = true;
             _log.WriteLine("started: " + DateTime.Now);
@@ -23,6 +25,13 @@ namespace DebugServer
         public static void WriteLine(string text)
         {
 #if DEBUG
+            if (_log == null)
+            {
+                _log = new StreamWriter(_path);
+                _log.AutoFlush = true;
+                _log.WriteLine("started: " + DateTime.Now);
+            }
+
             _log.WriteLine(text);
 #endif
         }
@@ -32,6 +41,7 @@ namespace DebugServer
         {
             _log.WriteLine("closed: " + DateTime.Now);
             _log.Dispose();
+            _log = null;
         }
     }
 }

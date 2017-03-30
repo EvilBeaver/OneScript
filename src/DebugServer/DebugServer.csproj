@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DebugeeProcess.cs" />
+    <Compile Include="DebugEventListener.cs" />
     <Compile Include="DebugSession.cs" />
     <Compile Include="OscriptDebugSession.cs" />
     <Compile Include="Program.cs" />

@@ -85,6 +85,7 @@ namespace oscript.DebugServer
         public void Stop()
         {
             PostMessage(QUIT_MESSAGE);
+            Send("onStop");
             _socket.Stop();
             _connection.Close();
             _connection = null;

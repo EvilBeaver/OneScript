@@ -125,7 +125,6 @@ namespace DebugServer
             process.ProcessExited += (s, e) =>
             {
                 SessionLog.WriteLine("process exited");
-                //SendEvent(new ExitedEvent(((DebugeeProcess)s).ExitCode));
                 SendEvent(new TerminatedEvent());
             };
 
@@ -144,42 +143,16 @@ namespace DebugServer
             {
                 process.Connect(port);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 process.Kill();
-                SendErrorResponse(response, 4550, "Process socket doesn't respond");
+                SendErrorResponse(response, 4550, "Process socket doesn't respond: " + e.ToString());
                 return;
             }
 
             SendResponse(response);
 
         }
-
-        private void SendOutput(string category, string data)
-        {
-            if (!String.IsNullOrEmpty(data))
-            {
-                if (data[data.Length - 1] != '\n')
-                {
-                    data += '\n';
-                }
-                SendEvent(new OutputEvent(category, data));
-            }
-        }
-
-        private static int getInt(dynamic container, string propertyName, int dflt = 0)
-        {
-            try
-            {
-                return (int)container[propertyName];
-            }
-            catch (Exception)
-            {
-                // ignore and return default value
-            }
-            return dflt;
-        }
-
 
         public override void Attach(Response response, dynamic arguments)
         {
@@ -195,7 +168,14 @@ namespace DebugServer
         public override void SetBreakpoints(Response response, dynamic arguments)
         {
             RequestDummy("SetBreakpoints request accepted", response, null);
+            _process.DebugEventReceived += ProcessOnDebugEventReceived;
+            _process.ListenToEvents();
             _process.Send("go");
+        }
+
+        private void ProcessOnDebugEventReceived(object sender, DebuggeeEventEventArgs args)
+        {
+            SessionLog.WriteLine($"got event: {args.Event},\n {args.Body}");
         }
 
         public override void Continue(Response response, dynamic arguments)
@@ -250,6 +230,33 @@ namespace DebugServer
         {
             throw new NotImplementedException();
         }
+
+
+        private void SendOutput(string category, string data)
+        {
+            if (!String.IsNullOrEmpty(data))
+            {
+                if (data[data.Length - 1] != '\n')
+                {
+                    data += '\n';
+                }
+                SendEvent(new OutputEvent(category, data));
+            }
+        }
+
+        private static int getInt(dynamic container, string propertyName, int dflt = 0)
+        {
+            try
+            {
+                return (int)container[propertyName];
+            }
+            catch (Exception)
+            {
+                // ignore and return default value
+            }
+            return dflt;
+        }
+
 
         private void RequestDummy(string message, Response response, dynamic arguments)
         {

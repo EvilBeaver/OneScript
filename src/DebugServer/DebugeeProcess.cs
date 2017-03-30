@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Threading.Tasks;
-
-using VSCodeDebug;
 
 namespace DebugServer
 {
-    class DebugeeOutputEventArgs : EventArgs
+    internal class DebugeeOutputEventArgs : EventArgs
     {
         public DebugeeOutputEventArgs(string category, string content)
         {
@@ -24,7 +18,13 @@ namespace DebugServer
         public string Content { get; }
     }
 
-    class DebugeeProcess
+    internal class DebuggeeEventEventArgs : EventArgs
+    {
+        public string Event { get; set; }
+        public string Body { get; set; }
+    }
+
+    internal class DebugeeProcess
     {
 
         private Process _process;
@@ -34,6 +34,10 @@ namespace DebugServer
         private bool _stdoutEOF;
         private bool _stderrEOF;
 
+        private DebugEventListener _listener;
+
+        private EventHandler<DebuggeeEventEventArgs> _dbgEventHandler;
+
         public string RuntimeExecutable { get; set; }
         public string WorkingDirectory { get; set; }
         public string StartupScript { get; set; }
@@ -42,6 +46,12 @@ namespace DebugServer
 
         public bool HasExited => _process.HasExited;
         public int ExitCode => _process.ExitCode;
+
+        public DebugeeProcess()
+        {
+            // null handler
+            _dbgEventHandler += (s1, s2) => { };
+        }
 
         public void Start()
         {
@@ -86,10 +96,39 @@ namespace DebugServer
             ms.Dispose();
         }
 
+        private void OnDebugEventReceived(string category, string body)
+        {
+            SessionLog.WriteLine($"on event received {body}");
+            lock (_dbgEventHandler)
+            {
+                _dbgEventHandler(this, new DebuggeeEventEventArgs()
+                {
+                    Event = category,
+                    Body = body
+                });
+            }
+        }
+
         public event EventHandler<DebugeeOutputEventArgs> OutputReceived;
         public event EventHandler ProcessExited;
-
-
+        public event EventHandler<DebuggeeEventEventArgs> DebugEventReceived
+        {
+            add
+            {
+                lock (_dbgEventHandler)
+                {
+                    _dbgEventHandler += value;
+                }
+            }
+            remove
+            {
+                lock (_dbgEventHandler)
+                {
+                    _dbgEventHandler -= value;
+                }
+            }
+        }
+        
         private void Process_Exited(object sender, EventArgs e)
         {
             Terminate();
@@ -132,15 +171,24 @@ namespace DebugServer
                 
                 _terminated = true;
                 _process = null;
+                _listener?.Stop();
             }
         }
 
         public void Kill()
         {
+            _listener?.Stop();
+
             if (_process != null && !_process.HasExited)
             {
                 _process.Kill();
             }
+        }
+
+        public void ListenToEvents()
+        {
+            _listener = new DebugEventListener(_client, OnDebugEventReceived);
+            _listener.Start();
         }
     }
 }
