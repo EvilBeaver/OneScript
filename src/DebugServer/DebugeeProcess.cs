@@ -2,7 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
+using System.Runtime.Serialization;
 using System.Text;
+
+using OneScript.DebugProtocol;
 
 namespace DebugServer
 {
@@ -20,8 +23,7 @@ namespace DebugServer
 
     internal class DebuggeeEventEventArgs : EventArgs
     {
-        public string Event { get; set; }
-        public string Body { get; set; }
+        public EngineDebugEvent EventData;
     }
 
     internal class DebugeeProcess
@@ -82,29 +84,20 @@ namespace DebugServer
             _client = new TcpClient("localhost", port);
         }
 
-        public void Send(string something)
+        public void Send(EngineDebugEvent something)
         {
-            SessionLog.WriteLine("Sending " + something);
-            var ms = new MemoryStream();
-            var writer = new BinaryWriter(ms, Encoding.UTF8, true);
-            writer.Write(something);
-            writer.Dispose();
-
+            SessionLog.WriteLine("Sending " + something.ToSerializedString());
             var s = _client.GetStream();
-            var bytes = ms.GetBuffer();
-            s.Write(bytes, 0, (int)ms.Length);
-            ms.Dispose();
+            EngineDebugEvent.Serialize(s, something);
         }
 
-        private void OnDebugEventReceived(string category, string body)
+        private void OnDebugEventReceived(EngineDebugEvent data)
         {
-            SessionLog.WriteLine($"on event received {body}");
             lock (_dbgEventHandler)
             {
                 _dbgEventHandler(this, new DebuggeeEventEventArgs()
                 {
-                    Event = category,
-                    Body = body
+                    EventData = data
                 });
             }
         }

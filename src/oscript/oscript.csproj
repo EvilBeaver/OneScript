@@ -122,6 +122,10 @@
     <Compile Include="Web\Multipart\SubsequenceFinder.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj">
+      <Project>{727a498f-bf50-42f8-8523-40c0b5b1b233}</Project>
+      <Name>OneScript.DebugProtocol</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
       <Project>{F09A46BD-5737-45E7-BA60-A47C9F7821A9}</Project>
       <Name>ScriptEngine.HostedScript</Name>

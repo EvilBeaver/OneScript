@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
+using OneScript.DebugProtocol;
+
 using VSCodeDebug;
 
 namespace DebugServer
@@ -170,12 +172,12 @@ namespace DebugServer
             RequestDummy("SetBreakpoints request accepted", response, null);
             _process.DebugEventReceived += ProcessOnDebugEventReceived;
             _process.ListenToEvents();
-            _process.Send("go");
+            _process.Send(new EngineDebugEvent(DebugEventType.BeginExecution));
         }
 
         private void ProcessOnDebugEventReceived(object sender, DebuggeeEventEventArgs args)
         {
-            SessionLog.WriteLine($"got event: {args.Event},\n {args.Body}");
+            SessionLog.WriteLine($"got event: {args.EventData.ToSerializedString()}");
         }
 
         public override void Continue(Response response, dynamic arguments)

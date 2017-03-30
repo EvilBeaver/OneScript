@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
+using OneScript.DebugProtocol;
+
 using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
@@ -21,11 +23,11 @@ namespace oscript.DebugServer
             _port = listenerPort;
         }
 
-        public void WaitForDebugEvent(DebugEvent theEvent)
+        public void WaitForDebugEvent(DebugEventType theEvent)
         {
             switch (theEvent)
             {
-                case DebugEvent.BeginExecution:
+                case DebugEventType.BeginExecution:
                     _listenerThread = new Thread(ListenerThreadProc);
                     _listenerThread.Start();
                     _debugCommandEvent.Wait(); // процесс 1скрипт не стартует, пока не получено разрешение от дебагера
@@ -49,11 +51,11 @@ namespace oscript.DebugServer
 
             try
             {
-                string command;
+                EngineDebugEvent command;
                 while (_connection.GetCommand(out command))
                 {
                     Output.WriteLine("DBG Listener:\n" + command);
-                    if(command == "go")
+                    if(command.EventType == DebugEventType.BeginExecution)
                         _debugCommandEvent.Set();
                 }
             }

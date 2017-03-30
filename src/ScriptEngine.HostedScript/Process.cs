@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
+using OneScript.DebugProtocol;
 
 namespace ScriptEngine.HostedScript
 {
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript
         {
             try
             {
-                _engine.DebugController?.WaitForDebugEvent(DebugEvent.BeginExecution);
+                _engine.DebugController?.WaitForDebugEvent(DebugEventType.BeginExecution);
                 _engine.UpdateContexts();
                 _engine.NewObject(_module);
                 return 0;

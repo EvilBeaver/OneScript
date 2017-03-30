@@ -113,7 +113,7 @@ namespace VSCodeDebug
 			_rawData = new ByteBuffer();
 		}
 
-		public async Task Start(Stream inputStream, Stream outputStream)
+		public void Start(Stream inputStream, Stream outputStream)
 		{
 			_outputStream = outputStream;
 
@@ -121,7 +121,7 @@ namespace VSCodeDebug
 
 			_stopRequested = false;
 			while (!_stopRequested) {
-				var read = await inputStream.ReadAsync(buffer, 0, buffer.Length);
+				var read = inputStream.Read(buffer, 0, buffer.Length);
 
 				if (read == 0) {
 					// end of stream

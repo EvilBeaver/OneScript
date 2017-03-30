@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using OneScript.DebugProtocol;
+
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;

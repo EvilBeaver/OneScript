@@ -9,19 +9,21 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using OneScript.DebugProtocol;
+
 namespace DebugServer
 {
     internal class DebugEventListener
     {
         private Thread _networkThread;
-        private readonly Action<string, string> _eventReceivedHandler;
+        private readonly Action<EngineDebugEvent> _eventReceivedHandler;
         private readonly TcpClient _client;
         private readonly AutoResetEvent _readWaitEvent = new AutoResetEvent(false);
         private ConcurrentQueue<string> _q = new ConcurrentQueue<string>();
 
         private bool _listenerCancelled;
 
-        public DebugEventListener(TcpClient client, Action<string, string> handler)
+        public DebugEventListener(TcpClient client, Action<EngineDebugEvent> handler)
         {
             _eventReceivedHandler = handler;
             _client = client;
@@ -51,21 +53,21 @@ namespace DebugServer
                     try
                     {
                         var stream = _client.GetStream();
-                        var reader = new BinaryReader(stream, Encoding.UTF8, true);
-                        var msg = reader.ReadString();
-                        if (msg == "onStop")
+                        var msg = EngineDebugEvent.Deserialize<EngineDebugEvent>(stream);
+
+                        if (msg.EventType == DebugEventType.ProcessExited)
                         {
                             Stop();
                             return;
                         }
 
-                        _eventReceivedHandler("event", msg);
+                        _eventReceivedHandler(msg);
                         _readWaitEvent.Set();
                         
                     }
-                    catch (Exception e)
+                    catch
                     {
-                        _eventReceivedHandler("error", e.ToString());
+                        // ошибки возникают только при обрыве соединения
                         Stop();
                     }
                 });

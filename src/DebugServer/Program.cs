@@ -42,7 +42,7 @@ namespace DebugServer
             SessionLog.Open(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) +  "/debug.log");
             try
             {
-                session.Start(input, output).Wait();
+                session.Start(input, output);
             }
             catch (Exception e)
             {

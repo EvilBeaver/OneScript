@@ -8,24 +8,27 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
+using OneScript.DebugProtocol;
+
 using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
 {
     class DebugCommandCommunicator
     {
-        private const string QUIT_MESSAGE = "quit";
+        private class QuitEvent : EngineDebugEvent { }
+        private readonly QuitEvent QUIT_MESSAGE = new QuitEvent();
 
         private IDebugController _controller;
         private TcpListener _socket;
         private TcpClient _connection;
 
-        private ConcurrentQueue<string> _q = new ConcurrentQueue<string>();
+        private ConcurrentQueue<EngineDebugEvent> _q = new ConcurrentQueue<EngineDebugEvent>();
         private AutoResetEvent _queueAddedEvent = new AutoResetEvent(false);
 
         private bool _isStopped;
 
-        public bool GetCommand(out string command)
+        public bool GetCommand(out EngineDebugEvent command)
         {
             if (_isStopped || _connection == null)
             {
@@ -46,22 +49,21 @@ namespace oscript.DebugServer
         private void GetMessageFromNetwork(object state)
         {
             var stream = _connection.GetStream();
-            var reader = new BinaryReader(stream, Encoding.UTF8);
-            var msg = reader.ReadString();
+            var msg = EngineDebugEvent.Deserialize<EngineDebugEvent>(stream);
             PostMessage(msg);
         }
 
-        private void PostMessage(string message)
+        private void PostMessage(EngineDebugEvent message)
         {
             _q.Enqueue(message);
             _queueAddedEvent.Set();
         }
 
-        private bool GetCommandFromQueue(out string command)
+        private bool GetCommandFromQueue(out EngineDebugEvent command)
         {
             if (_q.TryDequeue(out command))
             {
-                if (command == QUIT_MESSAGE)
+                if (command is QuitEvent)
                     return false;
 
                 return true;
@@ -85,20 +87,16 @@ namespace oscript.DebugServer
         public void Stop()
         {
             PostMessage(QUIT_MESSAGE);
-            Send("onStop");
+            Send(new EngineDebugEvent(DebugEventType.ProcessExited));
             _socket.Stop();
             _connection.Close();
             _connection = null;
             _isStopped = true;
         }
 
-        public void Send(string command)
+        public void Send(EngineDebugEvent dbgEvent)
         {
-            using (var stream = _connection.GetStream())
-            {
-                var fmt = new BinaryFormatter();
-                fmt.Serialize(stream, command);
-            }
+            EngineDebugEvent.Serialize(_connection.GetStream(), dbgEvent);
         }
     }
 }
