@@ -5,5 +5,7 @@
         void WaitForDebugEvent(DebugEventType theEvent);
 
         void NotifyProcessExit();
+
+        int SetBreakpoint(string sourceLocation, int line);
     }
 }

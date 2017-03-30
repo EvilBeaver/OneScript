@@ -7,9 +7,13 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json;
+
 using OneScript.DebugProtocol;
 
 using VSCodeDebug;
+
+using Breakpoint = OneScript.DebugProtocol.Breakpoint;
 
 namespace DebugServer
 {
@@ -169,7 +173,17 @@ namespace DebugServer
 
         public override void SetBreakpoints(Response response, dynamic arguments)
         {
-            RequestDummy("SetBreakpoints request accepted", response, null);
+            var path = (string) arguments.source.path;
+            path = ConvertClientPathToDebugger(path);
+
+            foreach (var srcBreakpoint in arguments.breakpoints)
+            {
+                var bpt = new Breakpoint();
+                bpt.Line = (int) srcBreakpoint.line;
+                bpt.Source = path;
+            }
+
+            //RequestDummy("SetBreakpoints request accepted", response, null);
             _process.DebugEventReceived += ProcessOnDebugEventReceived;
             _process.ListenToEvents();
             _process.Send(new EngineDebugEvent(DebugEventType.BeginExecution));

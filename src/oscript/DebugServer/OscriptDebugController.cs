@@ -44,6 +44,11 @@ namespace oscript.DebugServer
             _connection.Stop();
         }
 
+        public int SetBreakpoint(string sourceLocation, int line)
+        {
+            throw new NotImplementedException();
+        }
+
         private void ListenerThreadProc()
         {
             Output.WriteLine("start listening");
@@ -51,18 +56,30 @@ namespace oscript.DebugServer
 
             try
             {
-                EngineDebugEvent command;
+                DebugProtocolMessage command;
                 while (_connection.GetCommand(out command))
                 {
-                    Output.WriteLine("DBG Listener:\n" + command);
-                    if(command.EventType == DebugEventType.BeginExecution)
-                        _debugCommandEvent.Set();
+                    DispatchMessage(command);
                 }
             }
             catch (Exception e)
             {
                 Output.WriteLine("DBG Listener:\n" + e.ToString());
                 throw;
+            }
+        }
+
+        private void DispatchMessage(DebugProtocolMessage command)
+        {
+            if (command is EngineDebugEvent)
+            {
+                var edb = (EngineDebugEvent) command;
+                if(edb.EventType == DebugEventType.BeginExecution)
+                    _debugCommandEvent.Set();
+            }
+            else if (command.Type == MessageType.Command)
+            {
+                
             }
         }
     }

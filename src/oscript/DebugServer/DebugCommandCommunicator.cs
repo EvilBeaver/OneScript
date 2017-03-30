@@ -16,19 +16,19 @@ namespace oscript.DebugServer
 {
     class DebugCommandCommunicator
     {
-        private class QuitEvent : EngineDebugEvent { }
+        private class QuitEvent : DebugProtocolMessage { }
         private readonly QuitEvent QUIT_MESSAGE = new QuitEvent();
 
         private IDebugController _controller;
         private TcpListener _socket;
         private TcpClient _connection;
 
-        private ConcurrentQueue<EngineDebugEvent> _q = new ConcurrentQueue<EngineDebugEvent>();
+        private ConcurrentQueue<DebugProtocolMessage> _q = new ConcurrentQueue<DebugProtocolMessage>();
         private AutoResetEvent _queueAddedEvent = new AutoResetEvent(false);
 
         private bool _isStopped;
 
-        public bool GetCommand(out EngineDebugEvent command)
+        public bool GetCommand(out DebugProtocolMessage command)
         {
             if (_isStopped || _connection == null)
             {
@@ -49,17 +49,17 @@ namespace oscript.DebugServer
         private void GetMessageFromNetwork(object state)
         {
             var stream = _connection.GetStream();
-            var msg = EngineDebugEvent.Deserialize<EngineDebugEvent>(stream);
+            var msg = DebugProtocolMessage.Deserialize<DebugProtocolMessage>(stream);
             PostMessage(msg);
         }
 
-        private void PostMessage(EngineDebugEvent message)
+        private void PostMessage(DebugProtocolMessage message)
         {
             _q.Enqueue(message);
             _queueAddedEvent.Set();
         }
 
-        private bool GetCommandFromQueue(out EngineDebugEvent command)
+        private bool GetCommandFromQueue(out DebugProtocolMessage command)
         {
             if (_q.TryDequeue(out command))
             {

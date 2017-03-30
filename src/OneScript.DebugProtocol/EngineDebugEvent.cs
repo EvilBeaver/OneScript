@@ -4,22 +4,44 @@ using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Text;
 
+using Newtonsoft.Json;
+using System.Collections.Generic;
+
 namespace OneScript.DebugProtocol
 {
-    [DataContract]
-    public class EngineDebugEvent
+    public enum MessageType
     {
-        [DataMember]
-        public DebugEventType EventType;
+        Command,
+        Event
+    }
 
-        public EngineDebugEvent()
+    public abstract class DebugProtocolMessage
+    {
+        public MessageType Type { get; protected set; }
+        public string TypeName { get; protected set; }
+
+        protected DebugProtocolMessage()
         {
-            
+            TypeName = this.GetType().Name;
         }
 
-        public EngineDebugEvent(DebugEventType type)
+        public static void Serialize(Stream destination, DebugProtocolMessage value)
         {
-            EventType = type;
+            var settings = new JsonSerializerSettings();
+            settings.TypeNameHandling = TypeNameHandling.Auto;
+            var jsonString = JsonConvert.SerializeObject(value, settings);
+            var writer = new BinaryWriter(destination, Encoding.UTF8);
+            writer.Write(jsonString);
+        }
+
+        public static T Deserialize<T>(Stream source) where T : DebugProtocolMessage
+        {
+            var reader = new BinaryReader(source, Encoding.UTF8);
+            var settings = new JsonSerializerSettings();
+            settings.TypeNameHandling = TypeNameHandling.Auto;
+            var obj = JsonConvert.DeserializeObject<T>(reader.ReadString(), settings);
+
+            return obj;
         }
 
         public string ToSerializedString()
@@ -28,29 +50,31 @@ namespace OneScript.DebugProtocol
             Serialize(ms, this);
             return Encoding.UTF8.GetString(ms.ToArray());
         }
+    }
 
-        public static void Serialize(Stream destination, EngineDebugEvent value)
+    public class EngineDebugEvent : DebugProtocolMessage
+    {
+        public DebugEventType EventType;
+
+        public EngineDebugEvent()
         {
-            var ser = new DataContractSerializer(value.GetType());
-            var ms = new MemoryStream();
-            ser.WriteObject(ms, value);
-
-            var writer = new BinaryWriter(destination, Encoding.UTF8);
-            writer.Write(Encoding.UTF8.GetString(ms.ToArray()));
+            Type = MessageType.Event;
         }
 
-        public static T Deserialize<T>(Stream source) where T : EngineDebugEvent
+        public EngineDebugEvent(DebugEventType type) : this()
         {
-            var ser = new DataContractSerializer(typeof(T));
-            var reader = new BinaryReader(source, Encoding.UTF8);
-            var data = reader.ReadString();
-            var ms = new MemoryStream();
-            var bytes = Encoding.UTF8.GetBytes(data);
-            ms.Write(bytes, 0, bytes.Length);
-            ms.Position = 0;
-            return (T)ser.ReadObject(ms);
+            EventType = type;
         }
     }
 
+    public class SetSourceBreakpointsCommand : DebugProtocolMessage
+    {
+        public SetSourceBreakpointsCommand()
+        {
+            Type = MessageType.Command;
+        }
+
+        public Breakpoint[] Breakpoints;
+    }
     
 }
