@@ -127,6 +127,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Column.ID;
         }
 
+        public override string GetPropName(int propNum)
+        {
+            return FindColumnByIndex(propNum).Name;
+        }
+
         public override IValue GetPropValue(int propNum)
         {
             return FindColumnById(propNum);
