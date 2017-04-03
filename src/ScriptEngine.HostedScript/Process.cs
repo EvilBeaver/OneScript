@@ -33,6 +33,7 @@ namespace ScriptEngine.HostedScript
         {
             try
             {
+                _engine.DebugController?.OnMachineReady(_engine.Machine);
                 _engine.DebugController?.WaitForDebugEvent(DebugEventType.BeginExecution);
                 _engine.UpdateContexts();
                 _engine.NewObject(_module);

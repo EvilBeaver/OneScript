@@ -52,7 +52,6 @@
     <Compile Include="Breakpoints.cs" />
     <Compile Include="DebugEventType.cs" />
     <Compile Include="EngineDebugEvent.cs" />
-    <Compile Include="IDebugController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

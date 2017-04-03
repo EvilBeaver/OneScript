@@ -17,6 +17,7 @@ namespace oscript.DebugServer
         private readonly DebugCommandCommunicator _connection = new DebugCommandCommunicator();
 
         private readonly int _port;
+        private MachineInstance _machine;
 
         public OscriptDebugController(int listenerPort)
         {
@@ -44,9 +45,9 @@ namespace oscript.DebugServer
             _connection.Stop();
         }
 
-        public int SetBreakpoint(string sourceLocation, int line)
+        public void OnMachineReady(MachineInstance instance)
         {
-            throw new NotImplementedException();
+            _machine = instance;
         }
 
         private void ListenerThreadProc()
@@ -79,7 +80,10 @@ namespace oscript.DebugServer
             }
             else if (command.Type == MessageType.Command)
             {
-                
+                if (command is SetSourceBreakpointsCommand)
+                {
+                    
+                }
             }
         }
     }
