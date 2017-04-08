@@ -1,29 +1,17 @@
-﻿using System;
-using System.IO;
-using System.Net.Sockets;
-using System.Runtime.Serialization;
-using System.Text;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace OneScript.DebugProtocol
 {
-    public enum MessageType
+    public class DebugProtocolMessage
     {
-        Command,
-        Event
-    }
+        public string Name { get; set; }
+        public object Data { get; set; }
 
-    public abstract class DebugProtocolMessage
-    {
-        public MessageType Type { get; protected set; }
-        public string TypeName { get; protected set; }
-
-        protected DebugProtocolMessage()
-        {
-            TypeName = this.GetType().Name;
-        }
 
         public static void Serialize(Stream destination, DebugProtocolMessage value)
         {
@@ -51,30 +39,4 @@ namespace OneScript.DebugProtocol
             return Encoding.UTF8.GetString(ms.ToArray());
         }
     }
-
-    public class EngineDebugEvent : DebugProtocolMessage
-    {
-        public DebugEventType EventType;
-
-        public EngineDebugEvent()
-        {
-            Type = MessageType.Event;
-        }
-
-        public EngineDebugEvent(DebugEventType type) : this()
-        {
-            EventType = type;
-        }
-    }
-
-    public class SetSourceBreakpointsCommand : DebugProtocolMessage
-    {
-        public SetSourceBreakpointsCommand()
-        {
-            Type = MessageType.Command;
-        }
-
-        public Breakpoint[] Breakpoints;
-    }
-    
 }

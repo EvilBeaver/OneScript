@@ -87,16 +87,15 @@ namespace oscript.DebugServer
         public void Stop()
         {
             PostMessage(QUIT_MESSAGE);
-            Send(new EngineDebugEvent(DebugEventType.ProcessExited));
             _socket.Stop();
             _connection.Close();
             _connection = null;
             _isStopped = true;
         }
 
-        public void Send(EngineDebugEvent dbgEvent)
+        public void Send(DebugProtocolMessage message)
         {
-            EngineDebugEvent.Serialize(_connection.GetStream(), dbgEvent);
+            DebugProtocolMessage.Serialize(_connection.GetStream(), message);
         }
     }
 }

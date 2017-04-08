@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading;
 
 using OneScript.DebugProtocol;
-
 using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
@@ -72,19 +71,38 @@ namespace oscript.DebugServer
 
         private void DispatchMessage(DebugProtocolMessage command)
         {
-            if (command is EngineDebugEvent)
+            switch(command.Name)
             {
-                var edb = (EngineDebugEvent) command;
-                if(edb.EventType == DebugEventType.BeginExecution)
+                case "BeginExecution":
                     _debugCommandEvent.Set();
+                    break;
+                case "SetBreakpoints":
+                    SetMachineBreakpoints(command.Data as Breakpoint[]);
+                    break;
             }
-            else if (command.Type == MessageType.Command)
+        }
+
+        private void SetMachineBreakpoints(Breakpoint[] breaksToSet)
+        {
+            List<Breakpoint> confirmedBreakpoints = new List<Breakpoint>();
+
+            foreach (var bpt in breaksToSet)
             {
-                if (command is SetSourceBreakpointsCommand)
+                int id;
+                if (_machine.SetBreakpoint(bpt.Source, bpt.Line, out id))
                 {
-                    
+                    bpt.Id = id;
+                    confirmedBreakpoints.Add(bpt);
                 }
             }
+
+            var message = new DebugProtocolMessage()
+            {
+                Name = "ConfirmedBreakpoints",
+                Data = confirmedBreakpoints.ToArray()
+            };
+
+            _connection.Send(message);
         }
     }
 }

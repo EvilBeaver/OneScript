@@ -16,16 +16,16 @@ namespace DebugServer
     internal class DebugEventListener
     {
         private Thread _networkThread;
-        private readonly Action<EngineDebugEvent> _eventReceivedHandler;
+        //private readonly Action<EngineDebugEvent> _eventReceivedHandler;
         private readonly TcpClient _client;
         private readonly AutoResetEvent _readWaitEvent = new AutoResetEvent(false);
         private ConcurrentQueue<string> _q = new ConcurrentQueue<string>();
 
         private bool _listenerCancelled;
 
-        public DebugEventListener(TcpClient client, Action<EngineDebugEvent> handler)
+        public DebugEventListener(TcpClient client/*, Action<EngineDebugEvent> handler*/)
         {
-            _eventReceivedHandler = handler;
+            //_eventReceivedHandler = handler;
             _client = client;
         }
 
@@ -53,15 +53,15 @@ namespace DebugServer
                     try
                     {
                         var stream = _client.GetStream();
-                        var msg = EngineDebugEvent.Deserialize<EngineDebugEvent>(stream);
+                        //var msg = EngineDebugEvent.Deserialize<EngineDebugEvent>(stream);
 
-                        if (msg.EventType == DebugEventType.ProcessExited)
-                        {
-                            Stop();
-                            return;
-                        }
+                        //if (msg.EventType == DebugEventType.ProcessExited)
+                        //{
+                        //    Stop();
+                        //    return;
+                        //}
 
-                        _eventReceivedHandler(msg);
+                        //_eventReceivedHandler(msg);
                         _readWaitEvent.Set();
                         
                     }

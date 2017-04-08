@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace OneScript.DebugProtocol
+﻿namespace OneScript.DebugProtocol
 {
     public class Breakpoint
     {

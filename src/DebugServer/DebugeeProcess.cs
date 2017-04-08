@@ -6,6 +6,8 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using OneScript.DebugProtocol;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DebugServer
 {
@@ -21,11 +23,6 @@ namespace DebugServer
         public string Content { get; }
     }
 
-    internal class DebuggeeEventEventArgs : EventArgs
-    {
-        public EngineDebugEvent EventData;
-    }
-
     internal class DebugeeProcess
     {
 
@@ -38,8 +35,6 @@ namespace DebugServer
 
         private DebugEventListener _listener;
 
-        private EventHandler<DebuggeeEventEventArgs> _dbgEventHandler;
-
         public string RuntimeExecutable { get; set; }
         public string WorkingDirectory { get; set; }
         public string StartupScript { get; set; }
@@ -48,12 +43,6 @@ namespace DebugServer
 
         public bool HasExited => _process.HasExited;
         public int ExitCode => _process.ExitCode;
-
-        public DebugeeProcess()
-        {
-            // null handler
-            _dbgEventHandler += (s1, s2) => { };
-        }
 
         public void Start()
         {
@@ -83,44 +72,9 @@ namespace DebugServer
         {
             _client = new TcpClient("localhost", port);
         }
-
-        public void Send(EngineDebugEvent something)
-        {
-            SessionLog.WriteLine("Sending " + something.ToSerializedString());
-            var s = _client.GetStream();
-            EngineDebugEvent.Serialize(s, something);
-        }
-
-        private void OnDebugEventReceived(EngineDebugEvent data)
-        {
-            lock (_dbgEventHandler)
-            {
-                _dbgEventHandler(this, new DebuggeeEventEventArgs()
-                {
-                    EventData = data
-                });
-            }
-        }
-
+        
         public event EventHandler<DebugeeOutputEventArgs> OutputReceived;
         public event EventHandler ProcessExited;
-        public event EventHandler<DebuggeeEventEventArgs> DebugEventReceived
-        {
-            add
-            {
-                lock (_dbgEventHandler)
-                {
-                    _dbgEventHandler += value;
-                }
-            }
-            remove
-            {
-                lock (_dbgEventHandler)
-                {
-                    _dbgEventHandler -= value;
-                }
-            }
-        }
         
         private void Process_Exited(object sender, EventArgs e)
         {
@@ -134,7 +88,7 @@ namespace DebugServer
             {
                 _stdoutEOF = true;
             }
-            SendOutput("stdout", e.Data);
+            RaiseOutputReceivedEvent("stdout", e.Data);
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
@@ -143,10 +97,10 @@ namespace DebugServer
             {
                 _stderrEOF = true;
             }
-            SendOutput("stderr", e.Data);
+            RaiseOutputReceivedEvent("stderr", e.Data);
         }
 
-        private void SendOutput(string category, string data)
+        private void RaiseOutputReceivedEvent(string category, string data)
         {
             OutputReceived?.Invoke(this, new DebugeeOutputEventArgs(category, data));
         }
@@ -178,10 +132,31 @@ namespace DebugServer
             }
         }
 
-        public void ListenToEvents()
+        public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)
         {
-            _listener = new DebugEventListener(_client, OnDebugEventReceived);
-            _listener.Start();
+            var request = new DebugProtocolMessage()
+            {
+                Name = "SetBreakpoints",
+                Data = breakpoints.ToArray()
+            };
+            SessionLog.WriteLine("Sending " + request.ToSerializedString());
+            var stream = _client.GetStream();
+            DebugProtocolMessage.Serialize(stream, request);
+
+            var answer = DebugProtocolMessage.Deserialize<DebugProtocolMessage>(stream);
+            var confirmedBreaks = answer.Data as Breakpoint[];
+            if (confirmedBreaks == null)
+                throw new Exception("Debug protocol violation. Expected type Breakpoint[]");
+
+            return confirmedBreaks;
         }
+
+        public void BeginExecution()
+        {
+            var request = new DebugProtocolMessage() { Name = "BeginExecution" };
+            SessionLog.WriteLine("Sending " + request.ToSerializedString());
+            DebugProtocolMessage.Serialize(_client.GetStream(), request);
+        }
+
     }
 }

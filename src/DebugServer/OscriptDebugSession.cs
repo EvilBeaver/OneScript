@@ -7,19 +7,15 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-using Newtonsoft.Json;
-
 using OneScript.DebugProtocol;
-
 using VSCodeDebug;
-
-using Breakpoint = OneScript.DebugProtocol.Breakpoint;
 
 namespace DebugServer
 {
     class OscriptDebugSession : DebugSession
     {
         private DebugeeProcess _process;
+        private bool _startupPerformed = false;
 
         public OscriptDebugSession() : base(true, false)
         {
@@ -31,7 +27,7 @@ namespace DebugServer
             {
                 supportsConditionalBreakpoints = false,
                 supportsFunctionBreakpoints = false,
-                supportsConfigurationDoneRequest = false,
+                supportsConfigurationDoneRequest = true,
                 exceptionBreakpointFilters = new dynamic[0],
                 supportsEvaluateForHovers = false
             });
@@ -113,30 +109,29 @@ namespace DebugServer
                 runtimeExecutable = "oscript.exe";
             }
             
-            var process = new DebugeeProcess();
-            _process = process;
+            _process = new DebugeeProcess();
 
-            process.RuntimeExecutable = runtimeExecutable;
-            process.RuntimeArguments = Utilities.ConcatArguments(args.runtimeArgs);
-            process.StartupScript = startupScript;
-            process.ScriptArguments = Utilities.ConcatArguments(args.args);
-            process.WorkingDirectory = workingDirectory;
+            _process.RuntimeExecutable = runtimeExecutable;
+            _process.RuntimeArguments = Utilities.ConcatArguments(args.runtimeArgs);
+            _process.StartupScript = startupScript;
+            _process.ScriptArguments = Utilities.ConcatArguments(args.args);
+            _process.WorkingDirectory = workingDirectory;
 
-            process.OutputReceived += (s, e) =>
+            _process.OutputReceived += (s, e) =>
             {
                 SessionLog.WriteLine("output received: " + e.Content);
                 SendOutput(e.Category, e.Content);
             };
 
-            process.ProcessExited += (s, e) =>
+            _process.ProcessExited += (s, e) =>
             {
-                SessionLog.WriteLine("process exited");
+                SessionLog.WriteLine("_process exited");
                 SendEvent(new TerminatedEvent());
             };
 
             try
             {
-                process.Start();
+                _process.Start();
             }
             catch (Exception e)
             {
@@ -147,11 +142,11 @@ namespace DebugServer
             var port = getInt(args, "debugPort", 2801);
             try
             {
-                process.Connect(port);
+                _process.Connect(port);
             }
             catch (Exception e)
             {
-                process.Kill();
+                _process.Kill();
                 SendErrorResponse(response, 4550, "Process socket doesn't respond: " + e.ToString());
                 return;
             }
@@ -173,25 +168,48 @@ namespace DebugServer
 
         public override void SetBreakpoints(Response response, dynamic arguments)
         {
+            SessionLog.WriteLine("Set breakpoints command accepted");
+
+            if ((bool)arguments.sourceModified)
+            {
+                if (_startupPerformed)
+                {
+                    SendErrorResponse(response, 1102, "Нельзя установить точку останова на модифицированный файл.");
+                    return;
+                }
+
+                SendResponse(response, new SetBreakpointsResponseBody());
+                return;
+            }
+
             var path = (string) arguments.source.path;
             path = ConvertClientPathToDebugger(path);
 
+            var breaks = new List<OneScript.DebugProtocol.Breakpoint>();
+
             foreach (var srcBreakpoint in arguments.breakpoints)
             {
-                var bpt = new Breakpoint();
+                var bpt = new OneScript.DebugProtocol.Breakpoint();
                 bpt.Line = (int) srcBreakpoint.line;
                 bpt.Source = path;
             }
 
-            //RequestDummy("SetBreakpoints request accepted", response, null);
-            _process.DebugEventReceived += ProcessOnDebugEventReceived;
-            _process.ListenToEvents();
-            _process.Send(new EngineDebugEvent(DebugEventType.BeginExecution));
+            var confirmedBreaks = _process.SetBreakpoints(breaks);
+            var confirmedBreaksVSCode = new List<VSCodeDebug.Breakpoint>(confirmedBreaks.Length);
+            for (int i = 0; i < confirmedBreaks.Length; i++)
+            {
+                confirmedBreaksVSCode.Add(new VSCodeDebug.Breakpoint(true, confirmedBreaks[i].Line));
+            }
+
+            SendResponse(response, new SetBreakpointsResponseBody(confirmedBreaksVSCode));
+            
         }
 
-        private void ProcessOnDebugEventReceived(object sender, DebuggeeEventEventArgs args)
+        public override void ConfigurationDone(Response response, dynamic args)
         {
-            SessionLog.WriteLine($"got event: {args.EventData.ToSerializedString()}");
+            _process.BeginExecution();
+            _startupPerformed = true;
+            SendResponse(response);
         }
 
         public override void Continue(Response response, dynamic arguments)
@@ -236,8 +254,8 @@ namespace DebugServer
 
         public override void Threads(Response response, dynamic arguments)
         {
-            var threads = new List<Thread>();
-            threads.Add(new Thread(1, "main"));
+            var threads = new List<VSCodeDebug.Thread>();
+            threads.Add(new VSCodeDebug.Thread(1, "main"));
             SessionLog.WriteLine("Threads request accepted: " + _process?.HasExited);
             SendResponse(response, new ThreadsResponseBody(threads));
         }

@@ -23,6 +23,7 @@ namespace ScriptEngine.Machine
         private Stack<MachineState> _states;
         private LoadedModule _module;
         private ICodeStatCollector _codeStatCollector = null;
+        private MachineStopManager _stopManager = null;
 
         internal MachineInstance() 
         {
@@ -108,6 +109,21 @@ namespace ScriptEngine.Machine
 
             return null;
         }
+
+        #region Debug protocol methods
+
+        public void SetDebugMode()
+        {
+            _stopManager = new MachineStopManager();
+        }
+
+        public bool SetBreakpoint(string source, int line, out int id)
+        {
+            id = source.GetHashCode() + line;
+            return true;
+        }
+
+        #endregion
 
         internal ScriptInformationContext CurrentScript
         {

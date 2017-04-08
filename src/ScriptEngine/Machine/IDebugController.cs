@@ -1,5 +1,4 @@
-﻿using OneScript.DebugProtocol;
-
+﻿
 namespace ScriptEngine.Machine
 {
     public interface IDebugController

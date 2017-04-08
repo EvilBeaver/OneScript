@@ -387,6 +387,9 @@ namespace VSCodeDebug
 				case "evaluate":
 					Evaluate(response, args);
 					break;
+                case "configurationDone":
+                    ConfigurationDone(response, args);
+                    break;
 
 				default:
 					SendErrorResponse(response, 1014, "unrecognized request: {_request}", new { _request = command });
@@ -403,7 +406,9 @@ namespace VSCodeDebug
 			}
 		}
 
-		public abstract void Initialize(Response response, dynamic args);
+        public abstract void ConfigurationDone(Response response, dynamic args);
+
+        public abstract void Initialize(Response response, dynamic args);
 
 		public abstract void Launch(Response response, dynamic arguments);
 

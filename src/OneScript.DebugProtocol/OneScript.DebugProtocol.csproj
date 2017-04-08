@@ -49,9 +49,8 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Breakpoints.cs" />
-    <Compile Include="DebugEventType.cs" />
-    <Compile Include="EngineDebugEvent.cs" />
+    <Compile Include="Breakpoint.cs" />
+    <Compile Include="DebugProtocolMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
