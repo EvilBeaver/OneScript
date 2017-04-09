@@ -88,6 +88,6 @@ namespace DebugServer
                 }
             }).Start();
         }
-    }
 #endif
+    }
 }
