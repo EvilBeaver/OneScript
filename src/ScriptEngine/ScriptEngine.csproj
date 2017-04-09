@@ -141,6 +141,7 @@
     <Compile Include="Machine\IDebugController.cs" />
     <Compile Include="Machine\IndexedNamesCollection.cs" />
     <Compile Include="Machine\MachineStopManager.cs" />
+    <Compile Include="Machine\MachineStoppedEventArgs.cs" />
     <Compile Include="Machine\NullValueImpl.cs" />
     <Compile Include="Machine\ParametrizedRuntimeException.cs" />
     <Compile Include="Machine\PropertyBag.cs" />

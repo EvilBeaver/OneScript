@@ -8,6 +8,7 @@ namespace ScriptEngine.Machine
     public enum DebugEventType
     {
         BeginExecution,
-        ProcessExited
+        ProcessExited,
+        Continue
     }
 }

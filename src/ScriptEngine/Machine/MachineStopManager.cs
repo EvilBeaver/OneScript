@@ -13,15 +13,40 @@ namespace ScriptEngine.Machine
         MethodReturn
     }
 
-    struct SourceLineStop
+    struct StopHandle
     {
+        public StopKind kind;
         public string source;
         public int line;
-        public bool isPersisted;
+        public ExecutionFrame frame;
     }
-
 
     class MachineStopManager
     {
+        List<StopHandle> _registeredStops = new List<StopHandle>();
+
+        internal void AddSourceLineStop(string source, int line)
+        {
+            _registeredStops.Add(new StopHandle()
+            {
+                kind = StopKind.SourceLine,
+                line = line,
+                source = source
+            });
+        }
+
+        internal bool ShouldStopHere(string module, ExecutionFrame frame)
+        {
+            //Console.WriteLine($"Should stop?: {module}, line: {frame.LineNumber}");
+            for (int i = _registeredStops.Count-1; i >=0; i--)
+            {
+                var stop = _registeredStops[i];
+                Console.WriteLine($"Check stop: {stop.source}, line: {stop.line}");
+                if (stop.kind == StopKind.SourceLine && stop.source == module && stop.line == frame.LineNumber)
+                    return true;
+            }
+
+            return false;
+        }
     }
 }

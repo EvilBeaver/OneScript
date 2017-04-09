@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -16,16 +15,14 @@ namespace DebugServer
     internal class DebugEventListener
     {
         private Thread _networkThread;
-        //private readonly Action<EngineDebugEvent> _eventReceivedHandler;
+        private readonly Action<DebugProtocolMessage> _eventReceivedHandler;
         private readonly TcpClient _client;
-        private readonly AutoResetEvent _readWaitEvent = new AutoResetEvent(false);
-        private ConcurrentQueue<string> _q = new ConcurrentQueue<string>();
-
+        
         private bool _listenerCancelled;
 
-        public DebugEventListener(TcpClient client/*, Action<EngineDebugEvent> handler*/)
+        public DebugEventListener(TcpClient client, Action<DebugProtocolMessage> handler)
         {
-            //_eventReceivedHandler = handler;
+            _eventReceivedHandler = handler;
             _client = client;
         }
 
@@ -40,7 +37,6 @@ namespace DebugServer
         public void Stop()
         {
             _listenerCancelled = true;
-            _readWaitEvent.Set();
             SessionLog.WriteLine("event listener stopped");
         }
 
@@ -48,31 +44,21 @@ namespace DebugServer
         {
             while (!_listenerCancelled)
             {
-                ThreadPool.QueueUserWorkItem((o) =>
+                try
                 {
-                    try
+                    var stream = _client.GetStream();
+                    var message = DebugProtocolMessage.Deserialize<DebugProtocolMessage>(stream);
+                }
+                catch(IOException e)
+                {
+                    // socket closed
+                    _listenerCancelled = true;
+                    _eventReceivedHandler(new DebugProtocolMessage()
                     {
-                        var stream = _client.GetStream();
-                        //var msg = EngineDebugEvent.Deserialize<EngineDebugEvent>(stream);
-
-                        //if (msg.EventType == DebugEventType.ProcessExited)
-                        //{
-                        //    Stop();
-                        //    return;
-                        //}
-
-                        //_eventReceivedHandler(msg);
-                        _readWaitEvent.Set();
-                        
-                    }
-                    catch
-                    {
-                        // ошибки возникают только при обрыве соединения
-                        Stop();
-                    }
-                });
-
-                _readWaitEvent.WaitOne();
+                        Name = "Internal error: listener stopped",
+                        Data = e
+                    });
+                }
             }
         }
     }

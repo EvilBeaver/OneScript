@@ -31,6 +31,8 @@ namespace ScriptEngine.Machine
             Reset();
         }
 
+        public event EventHandler<MachineStoppedEventArgs> MachineStopped;
+
         private struct ExceptionJumpInfo
         {
             public int handlerAddress;
@@ -112,13 +114,19 @@ namespace ScriptEngine.Machine
 
         #region Debug protocol methods
 
-        public void SetDebugMode()
+        public void SetDebugMode(IDebugController debugContr)
         {
             _stopManager = new MachineStopManager();
         }
 
         public bool SetBreakpoint(string source, int line, out int id)
         {
+            Console.WriteLine($"set break: {source}:{line}");
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.AddSourceLineStop(source, line);
+            
             id = source.GetHashCode() + line;
             return true;
         }
@@ -1389,6 +1397,12 @@ namespace ScriptEngine.Machine
                 _currentFrame.LineNumber = arg;
                 CodeStat_LineReached();
             }
+
+            if(_stopManager != null && _stopManager.ShouldStopHere(_module.ModuleInfo.Origin, _currentFrame))
+            {
+                MachineStopped?.Invoke(this, new MachineStoppedEventArgs(MachineStopReason.Breakpoint));
+            }
+            
             NextInstruction();
         }
 

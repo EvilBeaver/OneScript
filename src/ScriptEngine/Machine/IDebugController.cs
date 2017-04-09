@@ -8,6 +8,5 @@ namespace ScriptEngine.Machine
         void OnMachineReady(MachineInstance instance);
 
         void NotifyProcessExit();
-        
     }
 }

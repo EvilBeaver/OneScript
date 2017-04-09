@@ -12,6 +12,14 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
+    [Flags]
+    public enum CodeGenerationFlags
+    {
+        NoExtraCode,
+        CodeStatistics,
+        DebugCode
+    }
+
     partial class Compiler
     {
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
@@ -55,13 +63,8 @@ namespace ScriptEngine.Compiler
         }
 
         public CompilerDirectiveHandler DirectiveHandler { get; set; }
-
-        public Compiler()
-        {
-            
-        }
-
-        public bool ProduceExtraCode { get; set; }
+    
+        public CodeGenerationFlags ProduceExtraCode { get; set; }
 
         public ModuleImage Compile(Parser parser, ICompilerContext context)
         {
@@ -1804,7 +1807,7 @@ namespace ScriptEngine.Compiler
         private int AddCommand(OperationCode code, int arg, bool isExtraCode = false)
         {
             var addr = _module.Code.Count;
-            if (!isExtraCode || ProduceExtraCode)
+            if (!isExtraCode || ProduceExtraCode.HasFlag(CodeGenerationFlags.CodeStatistics))
             {
                 _module.Code.Add(new Command() { Code = code, Argument = arg });
             }

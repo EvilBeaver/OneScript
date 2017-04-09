@@ -177,7 +177,6 @@ namespace DebugServer
                     SendErrorResponse(response, 1102, "Нельзя установить точку останова на модифицированный файл.");
                     return;
                 }
-
                 SendResponse(response, new SetBreakpointsResponseBody());
                 return;
             }
@@ -192,6 +191,7 @@ namespace DebugServer
                 var bpt = new OneScript.DebugProtocol.Breakpoint();
                 bpt.Line = (int) srcBreakpoint.line;
                 bpt.Source = path;
+                breaks.Add(bpt);
             }
 
             var confirmedBreaks = _process.SetBreakpoints(breaks);
@@ -207,9 +207,21 @@ namespace DebugServer
 
         public override void ConfigurationDone(Response response, dynamic args)
         {
+            _process.ListenToEvents(DebuggeeEventListener);
             _process.BeginExecution();
             _startupPerformed = true;
             SendResponse(response);
+        }
+
+        private void DebuggeeEventListener(DebugProtocolMessage eventData)
+        {
+            SessionLog.WriteLine("Debuggee event: " + eventData.ToSerializedString());
+            switch (eventData.Name)
+            {
+                case "Breakpoint":
+                    SendEvent(new StoppedEvent((int)eventData.Data, "breakpoint hit"));
+                    break;
+            }
         }
 
         public override void Continue(Response response, dynamic arguments)
@@ -239,7 +251,7 @@ namespace DebugServer
 
         public override void StackTrace(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            RequestDummy("stacktrace dummy", response, new StackTraceResponseBody(new List<VSCodeDebug.StackFrame>()));
         }
 
         public override void Scopes(Response response, dynamic arguments)

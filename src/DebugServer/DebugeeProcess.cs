@@ -158,5 +158,10 @@ namespace DebugServer
             DebugProtocolMessage.Serialize(_client.GetStream(), request);
         }
 
+        internal void ListenToEvents(Action<DebugProtocolMessage> listener)
+        {
+            _listener = new DebugEventListener(_client, listener);
+            _listener.Start();
+        }
     }
 }

@@ -47,6 +47,23 @@ namespace oscript.DebugServer
         public void OnMachineReady(MachineInstance instance)
         {
             _machine = instance;
+            _machine.MachineStopped += MachineStopHanlder;
+        }
+
+        private void MachineStopHanlder(object sender, MachineStoppedEventArgs e)
+        {
+            if (e.Reason != MachineStopReason.Breakpoint)
+                throw new NotImplementedException("Not implemented yet");
+
+            var message = new DebugProtocolMessage()
+            {
+                Name = "Breakpoint",
+                Data = 1 // thread id
+            };
+
+            _debugCommandEvent.Reset();
+            _connection.Send(message);
+            _debugCommandEvent.Wait();
         }
 
         private void ListenerThreadProc()
@@ -71,7 +88,8 @@ namespace oscript.DebugServer
 
         private void DispatchMessage(DebugProtocolMessage command)
         {
-            switch(command.Name)
+            Output.WriteLine($"got command: {command.Name}");
+            switch (command.Name)
             {
                 case "BeginExecution":
                     _debugCommandEvent.Set();

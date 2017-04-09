@@ -27,7 +27,7 @@ namespace ScriptEngine
             _currentContext = new ModuleCompilerContext(outerContext);
         }
 
-        public bool ProduceExtraCode { get; set; }
+        public CodeGenerationFlags ProduceExtraCode { get; set; }
 
         public int DefineVariable(string name, SymbolType type)
         {
