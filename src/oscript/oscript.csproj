@@ -97,6 +97,7 @@
     <Compile Include="CmdLineHelper.cs" />
     <Compile Include="ConsoleHostImpl.cs" />
     <Compile Include="DebugBehavior.cs" />
+    <Compile Include="DebugServer\DebugAdapterCommand.cs" />
     <Compile Include="DebugServer\DebugCommandCommunicator.cs" />
     <Compile Include="DebugServer\OscriptDebugController.cs" />
     <Compile Include="ExecuteScriptBehavior.cs" />

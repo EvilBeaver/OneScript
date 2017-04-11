@@ -9,6 +9,8 @@ using OneScript.DebugProtocol;
 using System.Collections.Generic;
 using System.Linq;
 
+using StackFrame = OneScript.DebugProtocol.StackFrame;
+
 namespace DebugServer
 {
     internal class DebugeeOutputEventArgs : EventArgs
@@ -71,6 +73,7 @@ namespace DebugServer
         public void Connect(int port)
         {
             _client = new TcpClient("localhost", port);
+            _listener = new DebugEventListener(port);
         }
         
         public event EventHandler<DebugeeOutputEventArgs> OutputReceived;
@@ -144,6 +147,7 @@ namespace DebugServer
             DebugProtocolMessage.Serialize(stream, request);
 
             var answer = DebugProtocolMessage.Deserialize<DebugProtocolMessage>(stream);
+            SessionLog.WriteLine("Received " + answer.ToSerializedString());
             var confirmedBreaks = answer.Data as Breakpoint[];
             if (confirmedBreaks == null)
                 throw new Exception("Debug protocol violation. Expected type Breakpoint[]");
@@ -158,10 +162,15 @@ namespace DebugServer
             DebugProtocolMessage.Serialize(_client.GetStream(), request);
         }
 
-        internal void ListenToEvents(Action<DebugProtocolMessage> listener)
+        internal void ListenToEvents(Action<DebugEventListener, DebugProtocolMessage> handler)
         {
-            _listener = new DebugEventListener(_client, listener);
+            _listener.DebugEventReceived += handler;
             _listener.Start();
+        }
+
+        public StackFrame GetStackTrace(int firstFrameIdx, int limit)
+        {
+            throw  new NotImplementedException();
         }
     }
 }

@@ -52,6 +52,7 @@
     <Compile Include="Breakpoint.cs" />
     <Compile Include="DebugProtocolMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StackFrame.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

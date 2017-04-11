@@ -213,7 +213,7 @@ namespace DebugServer
             SendResponse(response);
         }
 
-        private void DebuggeeEventListener(DebugProtocolMessage eventData)
+        private void DebuggeeEventListener(DebugEventListener listener, DebugProtocolMessage eventData)
         {
             SessionLog.WriteLine("Debuggee event: " + eventData.ToSerializedString());
             switch (eventData.Name)
@@ -251,6 +251,11 @@ namespace DebugServer
 
         public override void StackTrace(Response response, dynamic arguments)
         {
+            var firstFrameIdx = (int?)arguments.startFrame ?? 0;
+            var limit = (int?) arguments.levels ?? 0;
+
+            var frames = _process.GetStackTrace(firstFrameIdx, limit);
+
             RequestDummy("stacktrace dummy", response, new StackTraceResponseBody(new List<VSCodeDebug.StackFrame>()));
         }
 

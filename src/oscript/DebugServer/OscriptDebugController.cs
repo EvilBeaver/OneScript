@@ -73,7 +73,7 @@ namespace oscript.DebugServer
 
             try
             {
-                DebugProtocolMessage command;
+                DebugAdapterCommand command;
                 while (_connection.GetCommand(out command))
                 {
                     DispatchMessage(command);
@@ -86,23 +86,27 @@ namespace oscript.DebugServer
             }
         }
 
-        private void DispatchMessage(DebugProtocolMessage command)
+        private void DispatchMessage(DebugAdapterCommand command)
         {
-            Output.WriteLine($"got command: {command.Name}");
-            switch (command.Name)
+            using (command)
             {
-                case "BeginExecution":
-                    _debugCommandEvent.Set();
-                    break;
-                case "SetBreakpoints":
-                    SetMachineBreakpoints(command.Data as Breakpoint[]);
-                    break;
+                var message = command.Message;
+                Output.WriteLine($"got command: {message.Name}");
+                switch (message.Name)
+                {
+                    case "BeginExecution":
+                        _debugCommandEvent.Set();
+                        break;
+                    case "SetBreakpoints":
+                        SetMachineBreakpoints(message.Data as Breakpoint[]);
+                        break;
+                }
             }
         }
 
         private void SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
-            List<Breakpoint> confirmedBreakpoints = new List<Breakpoint>();
+            var confirmedBreakpoints = new List<Breakpoint>();
 
             foreach (var bpt in breaksToSet)
             {

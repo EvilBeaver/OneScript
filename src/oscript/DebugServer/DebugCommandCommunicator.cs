@@ -16,60 +16,71 @@ namespace oscript.DebugServer
 {
     class DebugCommandCommunicator
     {
-        private class QuitEvent : DebugProtocolMessage { }
-        private readonly QuitEvent QUIT_MESSAGE = new QuitEvent();
-
         private IDebugController _controller;
-        private TcpListener _socket;
-        private TcpClient _connection;
+        private TcpListener _tcpListener;
+        private TcpClient _eventChannel;
 
-        private ConcurrentQueue<DebugProtocolMessage> _q = new ConcurrentQueue<DebugProtocolMessage>();
-        private AutoResetEvent _queueAddedEvent = new AutoResetEvent(false);
+        private readonly object _eventChannelLock = new object();
 
-        private bool _isStopped;
-
-        public bool GetCommand(out DebugProtocolMessage command)
+        public bool GetCommand(out DebugAdapterCommand command)
         {
-            if (_isStopped || _connection == null)
+            while(true)
             {
-                command = null;
-                return false;
-            }
+                try
+                {
+                    var commandChannel = _tcpListener.AcceptTcpClient();
 
-            if (GetCommandFromQueue(out command))
-                return true;
+                    DebugProtocolMessage message;
+                    lock (_tcpListener) // не разрешим самим себе закрывать коннект во время чтения
+                    {
+                        message = DebugProtocolMessage.Deserialize<DebugProtocolMessage>(commandChannel.GetStream());
+                    }
 
-            ThreadPool.QueueUserWorkItem(GetMessageFromNetwork);
-            
-            _queueAddedEvent.WaitOne();
+                    if (message.Name == "Listener")
+                    {
+                        EventChannelOperation(commandChannel, (string) message.Data);
+                        continue;
+                    }
 
-            return GetCommandFromQueue(out command);
-        }
-
-        private void GetMessageFromNetwork(object state)
-        {
-            var stream = _connection.GetStream();
-            var msg = DebugProtocolMessage.Deserialize<DebugProtocolMessage>(stream);
-            PostMessage(msg);
-        }
-
-        private void PostMessage(DebugProtocolMessage message)
-        {
-            _q.Enqueue(message);
-            _queueAddedEvent.Set();
-        }
-
-        private bool GetCommandFromQueue(out DebugProtocolMessage command)
-        {
-            if (_q.TryDequeue(out command))
-            {
-                if (command is QuitEvent)
+                    command = new DebugAdapterCommand();
+                    command.Client = commandChannel;
+                    command.Message = message;
+                    
+                    return true;
+                    
+                }
+                catch (IOException)
+                {
+                    // операция чтения прервана (кем-то)
+                    // клиент отключился, это сообщение мы выбрасываем
+                    // и ждем следующего
+                }
+                catch (SocketException)
+                {
+                    // сокет ожидащий соединений закрыт. (нами)
+                    command = null;
                     return false;
-
-                return true;
+                }
             }
+            
+        }
 
-            return false;
+        private void EventChannelOperation(TcpClient commandChannel, string operation)
+        {
+            lock (_eventChannelLock)
+            {
+                switch (operation)
+                {
+                    case "start":
+                        _eventChannel?.Close();
+                        _eventChannel = commandChannel;
+                        break;
+                    case "stop":
+                        _eventChannel?.Close();
+                        _eventChannel = null;
+                        break;
+                }
+            }
         }
 
         public void Start(IDebugController controller, int port)
@@ -77,25 +88,29 @@ namespace oscript.DebugServer
             _controller = controller;
 
             var endPoint = new IPEndPoint(IPAddress.Loopback, port);
-            _socket = new TcpListener(endPoint);
-            _socket.Start(1);
+            _tcpListener = new TcpListener(endPoint);
+            _tcpListener.Start(1);
             
-            _connection = _socket.AcceptTcpClient();
-
         }
 
         public void Stop()
         {
-            PostMessage(QUIT_MESSAGE);
-            _socket.Stop();
-            _connection.Close();
-            _connection = null;
-            _isStopped = true;
+            lock (_tcpListener)
+            {
+                _tcpListener.Stop();
+                EventChannelOperation(_eventChannel, "stop");
+            }
         }
 
         public void Send(DebugProtocolMessage message)
         {
-            DebugProtocolMessage.Serialize(_connection.GetStream(), message);
+            lock (_eventChannelLock)
+            {
+                if (_eventChannel == null)
+                    throw new InvalidOperationException("event channel is not open");
+
+                DebugProtocolMessage.Serialize(_eventChannel.GetStream(), message);
+            }
         }
     }
 }
