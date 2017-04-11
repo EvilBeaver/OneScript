@@ -8,6 +8,8 @@ using System.Text;
 using OneScript.DebugProtocol;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Description;
 
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
@@ -35,7 +37,7 @@ namespace DebugServer
         private bool _stdoutEOF;
         private bool _stderrEOF;
 
-        private DebugEventListener _listener;
+        private IDebuggerService _debugger;
 
         public string RuntimeExecutable { get; set; }
         public string WorkingDirectory { get; set; }
@@ -70,10 +72,10 @@ namespace DebugServer
             _process.BeginErrorReadLine();
         }
         
-        public void Connect(int port)
+        public void Connect(int port, IDebugEventListener listener)
         {
-            _client = new TcpClient("localhost", port);
-            _listener = new DebugEventListener(port);
+            var factory = new DuplexChannelFactory<IDebuggerService>(listener, Binder.GetBinding(), new EndpointAddress(Binder.GetDebuggerUri(port)));
+            _debugger = factory.CreateChannel();
         }
         
         public event EventHandler<DebugeeOutputEventArgs> OutputReceived;
@@ -121,14 +123,12 @@ namespace DebugServer
                 
                 _terminated = true;
                 _process = null;
-                _listener?.Stop();
+                _debugger = null;
             }
         }
 
         public void Kill()
         {
-            _listener?.Stop();
-
             if (_process != null && !_process.HasExited)
             {
                 _process.Kill();
@@ -137,40 +137,44 @@ namespace DebugServer
 
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)
         {
-            var request = new DebugProtocolMessage()
-            {
-                Name = "SetBreakpoints",
-                Data = breakpoints.ToArray()
-            };
-            SessionLog.WriteLine("Sending " + request.ToSerializedString());
-            var stream = _client.GetStream();
-            DebugProtocolMessage.Serialize(stream, request);
-
-            var answer = DebugProtocolMessage.Deserialize<DebugProtocolMessage>(stream);
-            SessionLog.WriteLine("Received " + answer.ToSerializedString());
-            var confirmedBreaks = answer.Data as Breakpoint[];
-            if (confirmedBreaks == null)
-                throw new Exception("Debug protocol violation. Expected type Breakpoint[]");
-
+            SessionLog.WriteLine("sending wcf request BP");
+            var confirmedBreaks = _debugger.SetMachineBreakpoints(breakpoints.ToArray());
+            
             return confirmedBreaks;
         }
 
         public void BeginExecution()
         {
-            var request = new DebugProtocolMessage() { Name = "BeginExecution" };
-            SessionLog.WriteLine("Sending " + request.ToSerializedString());
-            DebugProtocolMessage.Serialize(_client.GetStream(), request);
+            SessionLog.WriteLine("sending wcf request Exec");
+            _debugger.Execute();
         }
 
-        internal void ListenToEvents(Action<DebugEventListener, DebugProtocolMessage> handler)
+        internal void ListenToEvents()
         {
-            _listener.DebugEventReceived += handler;
-            _listener.Start();
+            SessionLog.WriteLine("sending wcf request Listen");
+            _debugger.RegisterEventListener();
         }
 
-        public StackFrame GetStackTrace(int firstFrameIdx, int limit)
+        public StackFrame[] GetStackTrace(int firstFrameIdx, int limit)
         {
-            throw  new NotImplementedException();
+            var allFrames = _debugger.GetStackFrames();
+            if (limit == 0)
+                limit = allFrames.Length;
+
+            SessionLog.WriteLine($"Got params {firstFrameIdx}, lim {limit}");
+
+            if(allFrames.Length < firstFrameIdx)
+                return new StackFrame[0];
+
+            var result = new List<StackFrame>();
+            for (int i = firstFrameIdx; i < limit && i < allFrames.Length; i++)
+            {
+                result.Add(allFrames[i]);
+            }
+
+            return result.ToArray();
+
         }
+
     }
 }

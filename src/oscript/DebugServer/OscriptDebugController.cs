@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 
@@ -9,14 +10,16 @@ using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
 {
-    class OscriptDebugController : IDebugController
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
+    class OscriptDebugController : IDebugController, IDebuggerService
     {
-        private Thread _listenerThread;
         private readonly ManualResetEventSlim _debugCommandEvent = new ManualResetEventSlim();
-        private readonly DebugCommandCommunicator _connection = new DebugCommandCommunicator();
 
+        private IDebugEventListener _eventChannel;
         private readonly int _port;
         private MachineInstance _machine;
+
+        private ServiceHost _serviceHost;
 
         public OscriptDebugController(int listenerPort)
         {
@@ -28,8 +31,13 @@ namespace oscript.DebugServer
             switch (theEvent)
             {
                 case DebugEventType.BeginExecution:
-                    _listenerThread = new Thread(ListenerThreadProc);
-                    _listenerThread.Start();
+
+                    var host = new ServiceHost(this);
+                    var binding = Binder.GetBinding();
+                    host.AddServiceEndpoint(typeof(IDebuggerService), binding, Binder.GetDebuggerUri(_port));
+                    _serviceHost = host;
+                    host.Open();
+                    
                     _debugCommandEvent.Wait(); // процесс 1скрипт не стартует, пока не получено разрешение от дебагера
                     break;
                 default:
@@ -40,8 +48,7 @@ namespace oscript.DebugServer
 
         public void NotifyProcessExit()
         {
-            Console.WriteLine("Sending stop to debug listener");
-            _connection.Stop();
+            _serviceHost?.Close();
         }
 
         public void OnMachineReady(MachineInstance instance)
@@ -55,56 +62,32 @@ namespace oscript.DebugServer
             if (e.Reason != MachineStopReason.Breakpoint)
                 throw new NotImplementedException("Not implemented yet");
 
-            var message = new DebugProtocolMessage()
-            {
-                Name = "Breakpoint",
-                Data = 1 // thread id
-            };
+            if (_eventChannel == null)
+                return; // нет подписчика
+
+            Output.WriteLine("breakpoint stopped");
 
             _debugCommandEvent.Reset();
-            _connection.Send(message);
+            _eventChannel.ThreadStopped(1, ThreadStopReason.Breakpoint);
             _debugCommandEvent.Wait();
         }
+        
+        #region WCF Communication methods
 
-        private void ListenerThreadProc()
+        public void Execute()
         {
-            Output.WriteLine("start listening");
-            _connection.Start(this, _port);
-
-            try
-            {
-                DebugAdapterCommand command;
-                while (_connection.GetCommand(out command))
-                {
-                    DispatchMessage(command);
-                }
-            }
-            catch (Exception e)
-            {
-                Output.WriteLine("DBG Listener:\n" + e.ToString());
-                throw;
-            }
+            Output.WriteLine("execute received");
+            _debugCommandEvent.Set();
         }
 
-        private void DispatchMessage(DebugAdapterCommand command)
+        public void RegisterEventListener()
         {
-            using (command)
-            {
-                var message = command.Message;
-                Output.WriteLine($"got command: {message.Name}");
-                switch (message.Name)
-                {
-                    case "BeginExecution":
-                        _debugCommandEvent.Set();
-                        break;
-                    case "SetBreakpoints":
-                        SetMachineBreakpoints(message.Data as Breakpoint[]);
-                        break;
-                }
-            }
+            Output.WriteLine("event listener received");
+            _eventChannel = OperationContext.Current.
+                   GetCallbackChannel<IDebugEventListener>();
         }
 
-        private void SetMachineBreakpoints(Breakpoint[] breaksToSet)
+        public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
             var confirmedBreakpoints = new List<Breakpoint>();
 
@@ -118,13 +101,28 @@ namespace oscript.DebugServer
                 }
             }
 
-            var message = new DebugProtocolMessage()
-            {
-                Name = "ConfirmedBreakpoints",
-                Data = confirmedBreakpoints.ToArray()
-            };
-
-            _connection.Send(message);
+            return confirmedBreakpoints.ToArray();
         }
+
+        public StackFrame[] GetStackFrames()
+        {
+            var frames = _machine.GetExecutionFrames();
+            var result = new StackFrame[frames.Count()];
+            int index = 0;
+            foreach (var frameInfo in frames)
+            {
+                var frame = new StackFrame();
+                frame.LineNumber = frameInfo.LineNumber;
+                frame.Index = index++;
+                frame.MethodName = frameInfo.MethodName;
+                frame.Source = frameInfo.Source;
+                result[frame.Index] = frame;
+
+            }
+
+            return result;
+        }
+
+        #endregion
     }
 }

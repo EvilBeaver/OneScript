@@ -12,7 +12,7 @@ using VSCodeDebug;
 
 namespace DebugServer
 {
-    class OscriptDebugSession : DebugSession
+    internal class OscriptDebugSession : DebugSession, IDebugEventListener
     {
         private DebugeeProcess _process;
         private bool _startupPerformed = false;
@@ -142,12 +142,13 @@ namespace DebugServer
             var port = getInt(args, "debugPort", 2801);
             try
             {
-                _process.Connect(port);
+                _process.Connect(port, this);
             }
             catch (Exception e)
             {
                 _process.Kill();
-                SendErrorResponse(response, 4550, "Process socket doesn't respond: " + e.ToString());
+                _process = null;
+                SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
                 return;
             }
 
@@ -194,6 +195,7 @@ namespace DebugServer
                 breaks.Add(bpt);
             }
 
+            SessionLog.WriteLine("process exited: " + _process.HasExited);
             var confirmedBreaks = _process.SetBreakpoints(breaks);
             var confirmedBreaksVSCode = new List<VSCodeDebug.Breakpoint>(confirmedBreaks.Length);
             for (int i = 0; i < confirmedBreaks.Length; i++)
@@ -205,28 +207,25 @@ namespace DebugServer
             
         }
 
+
+        public void ThreadStopped(int threadId, ThreadStopReason reason)
+        {
+            SessionLog.WriteLine("thread stopped");
+            SendEvent(new StoppedEvent(1, "breakpoint"));
+        }
+
         public override void ConfigurationDone(Response response, dynamic args)
         {
-            _process.ListenToEvents(DebuggeeEventListener);
+            _process.ListenToEvents();
             _process.BeginExecution();
             _startupPerformed = true;
             SendResponse(response);
         }
-
-        private void DebuggeeEventListener(DebugEventListener listener, DebugProtocolMessage eventData)
-        {
-            SessionLog.WriteLine("Debuggee event: " + eventData.ToSerializedString());
-            switch (eventData.Name)
-            {
-                case "Breakpoint":
-                    SendEvent(new StoppedEvent((int)eventData.Data, "breakpoint hit"));
-                    break;
-            }
-        }
-
+        
         public override void Continue(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            SendResponse(response);
+            _process.BeginExecution();
         }
 
         public override void Next(Response response, dynamic arguments)
@@ -254,26 +253,35 @@ namespace DebugServer
             var firstFrameIdx = (int?)arguments.startFrame ?? 0;
             var limit = (int?) arguments.levels ?? 0;
 
-            var frames = _process.GetStackTrace(firstFrameIdx, limit);
+            var processFrames = _process.GetStackTrace(firstFrameIdx, limit);
+            var frames = new VSCodeDebug.StackFrame[processFrames.Length];
+            for (int i = 0; i < processFrames.Length; i++)
+            {
+                frames[i] = new VSCodeDebug.StackFrame(
+                    processFrames[i].Index,
+                    processFrames[i].MethodName,
+                    new Source(processFrames[i].Source),
+                    processFrames[i].LineNumber, 0);
+            }
 
-            RequestDummy("stacktrace dummy", response, new StackTraceResponseBody(new List<VSCodeDebug.StackFrame>()));
+            SendResponse(response, new StackTraceResponseBody(frames));
         }
 
         public override void Scopes(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            RequestDummy("scopes requested", response, new ScopesResponseBody());
         }
 
         public override void Variables(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            RequestDummy("Variables requested", response, new ScopesResponseBody());
         }
 
         public override void Threads(Response response, dynamic arguments)
         {
             var threads = new List<VSCodeDebug.Thread>();
             threads.Add(new VSCodeDebug.Thread(1, "main"));
-            SessionLog.WriteLine("Threads request accepted: " + _process?.HasExited);
+            SessionLog.WriteLine("Threads request accepted");
             SendResponse(response, new ThreadsResponseBody(threads));
         }
 

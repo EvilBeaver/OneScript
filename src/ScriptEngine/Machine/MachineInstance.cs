@@ -2312,5 +2312,37 @@ namespace ScriptEngine.Machine
             return value.GetRawValue();
         }
 
+        public IEnumerable<ExecutionFrameInfo> GetExecutionFrames()
+        {
+            var result = new List<ExecutionFrameInfo>();
+            var callstack = _callStack.ToArray();
+
+            result.Add(FrameInfo(_module, _currentFrame));
+
+            foreach (var executionFrame in callstack)
+            {
+                result.Add(FrameInfo(_module, executionFrame));
+            }
+
+            foreach (var state in _states.ToArray())
+            {
+                foreach (var frame in state.callStack)
+                {
+                    result.Add(FrameInfo(state.module, frame));
+                }
+            }
+
+            return result;
+        }
+
+        private ExecutionFrameInfo FrameInfo(LoadedModule module, ExecutionFrame frame)
+        {
+            return new ExecutionFrameInfo()
+            {
+                LineNumber = frame.LineNumber,
+                MethodName = frame.MethodName,
+                Source = module.ModuleInfo.Origin
+            };
+        }
     }
 }

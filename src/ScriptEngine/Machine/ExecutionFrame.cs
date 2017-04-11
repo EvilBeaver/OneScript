@@ -22,4 +22,11 @@ namespace ScriptEngine.Machine
         
         public Stack<IValue> LocalFrameStack = new Stack<IValue>();
     }
+
+    public struct ExecutionFrameInfo
+    {
+        public string Source;
+        public int LineNumber;
+        public string MethodName;
+    }
 }

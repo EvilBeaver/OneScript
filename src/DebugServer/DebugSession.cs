@@ -191,7 +191,7 @@ namespace VSCodeDebug
 	{
 		public StackFrame[] stackFrames { get; }
 
-		public StackTraceResponseBody(List<StackFrame> frames = null) {
+		public StackTraceResponseBody(IEnumerable<StackFrame> frames = null) {
 			if (frames == null)
 				stackFrames = new StackFrame[0];
 			else

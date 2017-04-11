@@ -37,13 +37,13 @@ namespace ScriptEngine.Machine
 
         internal bool ShouldStopHere(string module, ExecutionFrame frame)
         {
-            //Console.WriteLine($"Should stop?: {module}, line: {frame.LineNumber}");
             for (int i = _registeredStops.Count-1; i >=0; i--)
             {
                 var stop = _registeredStops[i];
-                Console.WriteLine($"Check stop: {stop.source}, line: {stop.line}");
                 if (stop.kind == StopKind.SourceLine && stop.source == module && stop.line == frame.LineNumber)
+                {
                     return true;
+                }
             }
 
             return false;
