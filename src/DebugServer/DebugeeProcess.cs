@@ -137,7 +137,6 @@ namespace DebugServer
 
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)
         {
-            SessionLog.WriteLine("sending wcf request BP");
             var confirmedBreaks = _debugger.SetMachineBreakpoints(breakpoints.ToArray());
             
             return confirmedBreaks;
@@ -145,13 +144,11 @@ namespace DebugServer
 
         public void BeginExecution()
         {
-            SessionLog.WriteLine("sending wcf request Exec");
             _debugger.Execute();
         }
 
         internal void ListenToEvents()
         {
-            SessionLog.WriteLine("sending wcf request Listen");
             _debugger.RegisterEventListener();
         }
 
@@ -160,8 +157,6 @@ namespace DebugServer
             var allFrames = _debugger.GetStackFrames();
             if (limit == 0)
                 limit = allFrames.Length;
-
-            SessionLog.WriteLine($"Got params {firstFrameIdx}, lim {limit}");
 
             if(allFrames.Length < firstFrameIdx)
                 return new StackFrame[0];

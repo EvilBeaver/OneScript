@@ -64,9 +64,7 @@ namespace oscript.DebugServer
 
             if (_eventChannel == null)
                 return; // нет подписчика
-
-            Output.WriteLine("breakpoint stopped");
-
+            
             _debugCommandEvent.Reset();
             _eventChannel.ThreadStopped(1, ThreadStopReason.Breakpoint);
             _debugCommandEvent.Wait();
@@ -82,7 +80,6 @@ namespace oscript.DebugServer
 
         public void RegisterEventListener()
         {
-            Output.WriteLine("event listener received");
             _eventChannel = OperationContext.Current.
                    GetCallbackChannel<IDebugEventListener>();
         }
