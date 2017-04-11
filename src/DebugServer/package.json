@@ -44,7 +44,7 @@
         },
         "initialConfigurations": [
           {
-            "name": "%oscript.launch.config.name%",
+            "name": "Отладка 1Script",
             "type": "oscript",
             "request": "launch",
             "program": "${workspaceRoot}/main.os",
@@ -60,33 +60,33 @@
             "properties": {
               "program": {
                 "type": "string",
-                "description": "%oscript.launch.program.description%"
+                "description": "Файл сценария для запуска отладки"
               },
               "args": {
                 "type": "array",
-                "description": "%oscript.launch.args.description%",
+                "description": "Аргументы, передаваемые в сценарий",
                 "items": { "type": "string" },
                 "default": []
               },
               "cwd": {
                 "type": "string",
-                "description": "%oscript.launch.cwd.description%",
+                "description": "Текущий каталог запуска отладки",
                 "default": "."
               },
               "runtimeExecutable": {
                 "type": [ "string", "null" ],
-                "description": "%oscript.launch.runtimeExecutable.description%",
-                "default": null
+                "description": "Путь к исполняемому файлу oscript.exe",
+                "default": "oscript"
               },
               "runtimeArgs": {
                 "type": "array",
-                "description": "%oscript.launch.runtimeArgs.description%",
+                "description": "Аргументы движка 1Script (encoding, codestat, etc...)",
                 "items": { "type": "string" },
                 "default": []
               },
               "debugPort": {
                 "type": "number",
-                "description": "%oscript.launch.debugPort.description%",
+                "description": "Порт для запуска отладчика. Одновременные сеансы отладки должны быть разделены по портам",
                 "default": 2801
               }
             }
@@ -95,7 +95,7 @@
             "properties": {
             "debugPort": {
                 "type": "number",
-                "description": "%oscript.attach.debugPort.description%",
+                "description": "Присоединиться к работающему процессу (не поддерживается)",
                 "default": 2801
               }
             }
