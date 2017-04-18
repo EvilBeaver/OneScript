@@ -6,9 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Machine.Contexts;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using ScriptEngine.Compiler;
+using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine
 {
@@ -520,6 +524,7 @@ namespace ScriptEngine.Machine
                 MakeBool,
                 PushTmp,
                 PopTmp,
+                Eval,
 
                 //built-ins
                 Bool,
@@ -1437,6 +1442,12 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void Eval(int arg)
+        {
+            IValue value = Evaluate(_operationStack.Pop().AsString());
+            _operationStack.Push(value);
+        }
+
         #endregion
 
         #region Built-in functions
@@ -2301,6 +2312,49 @@ namespace ScriptEngine.Machine
         #endregion
 
         #endregion
+
+        private IValue Evaluate(string expression)
+        {
+            var ctx = new CompilerContext();
+            foreach (var scope in _scopes)
+            {
+                var symbolScope = new SymbolScope();
+                foreach (var methodInfo in scope.Methods)
+                {
+                    symbolScope.DefineMethod(methodInfo);
+                }
+                foreach (var variable in scope.Variables)
+                {
+                    symbolScope.DefineVariable(variable.Name);
+                }
+                ctx.PushScope(symbolScope);
+            }
+
+            ICodeSource stringSource = new StringBasedSource(expression);
+            var parser = new Parser();
+            parser.Code = stringSource.Code;
+            var compiler = new Compiler.Compiler();
+            var modImg = compiler.CompileExpression(parser, ctx);
+            modImg.ModuleInfo = new ModuleInformation();
+            modImg.ModuleInfo.Origin = "<expression>";
+            modImg.ModuleInfo.ModuleName = "<expression>";
+            var code = new LoadedModule(modImg);
+
+            var frame = new ExecutionFrame();
+            frame.MethodName = code.ModuleInfo.ModuleName;
+            frame.Locals = new IVariable[0];
+            frame.InstructionPointer = 0;
+            var curFrame = _currentFrame;
+            try
+            {
+                SetFrame(frame);
+            }
+            finally
+            {
+                
+            }
+
+        }
 
         private void NextInstruction()
         {

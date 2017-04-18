@@ -80,7 +80,7 @@ namespace ScriptEngine
                 _scope = null;
             }
         }
-
+        
         private ScriptModuleHandle Compile(ICodeSource source)
         {
             RegisterScopeIfNeeded();

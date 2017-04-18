@@ -79,6 +79,17 @@ namespace ScriptEngine.Compiler
             return _module;
         }
 
+        public ModuleImage CompileExpression(Parser parser, ICompilerContext context)
+        {
+            _module = new ModuleImage();
+            _ctx = context;
+            _parser = parser;
+            _parser.Start();
+            BuildExpression(Token.EndOfText);
+
+            return _module;
+        }
+
         private void BuildModule()
         {
             NextToken();

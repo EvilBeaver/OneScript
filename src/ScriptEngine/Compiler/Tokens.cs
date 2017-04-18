@@ -364,6 +364,7 @@ namespace ScriptEngine.Compiler
         OpenBracket,
         CloseBracket,
         NewObject,
+        Eval,
 
         // special chars
         Comma,
