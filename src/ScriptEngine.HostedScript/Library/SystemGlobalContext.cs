@@ -117,8 +117,7 @@ namespace ScriptEngine.HostedScript.Library
 
                 foreach (var item in externalContext)
                 {
-                    var kv = item as KeyAndValueImpl;
-                    extData.Add(kv.Key.AsString(), kv.Value);
+                    extData.Add(item.Key.AsString(), item.Value);
                 }
 
                 return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path, extData);
