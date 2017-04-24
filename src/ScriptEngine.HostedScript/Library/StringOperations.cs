@@ -97,7 +97,6 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("СтрРазделить", "StrSplit")]
         public ArrayImpl StrSplit(string inputString, string stringDelimiter, bool includeEmpty = true)
         {
-            ArrayImpl arrResult = new ArrayImpl();
             string[] arrParsed;
             if(!string.IsNullOrEmpty(inputString))
             {
@@ -113,8 +112,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 arrParsed = new string[] { string.Empty };
             }
-            arrResult = new ArrayImpl(arrParsed.Select(x => ValueFactory.Create(x)));
-            return arrResult;
+            return new ArrayImpl(arrParsed.Select(x => ValueFactory.Create(x)));
         }
 
         /// <summary>
