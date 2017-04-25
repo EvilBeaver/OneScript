@@ -110,11 +110,12 @@ namespace ScriptEngine.Compiler
             AddToken(Token.Date, "дата", "date");
             AddToken(Token.Type, "тип", "type");
             AddToken(Token.ValType, "типзнч", "typeof");
- 
+
             #endregion
 
             #region Встроенные функции
 
+            AddToken(Token.Eval, "вычислить", "eval");
             AddToken(Token.StrLen, "стрдлина", "strlen");
             AddToken(Token.TrimL, "сокрл", "triml");
             AddToken(Token.TrimR, "сокрп", "trimr");
@@ -364,7 +365,6 @@ namespace ScriptEngine.Compiler
         OpenBracket,
         CloseBracket,
         NewObject,
-        Eval,
 
         // special chars
         Comma,
@@ -378,6 +378,7 @@ namespace ScriptEngine.Compiler
 
         // built-in functions
         // must be declared last
+        Eval,
         Bool,
         Number,
         Str,

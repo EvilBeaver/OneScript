@@ -85,6 +85,7 @@ namespace ScriptEngine.Compiler
             _ctx = context;
             _parser = parser;
             _parser.Start();
+            NextToken();
             BuildExpression(Token.EndOfText);
 
             return _module;

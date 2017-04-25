@@ -524,9 +524,9 @@ namespace ScriptEngine.Machine
                 MakeBool,
                 PushTmp,
                 PopTmp,
-                Eval,
 
                 //built-ins
+                Eval,
                 Bool,
                 Number,
                 Str,
@@ -1446,6 +1446,7 @@ namespace ScriptEngine.Machine
         {
             IValue value = Evaluate(_operationStack.Pop().AsString());
             _operationStack.Push(value);
+            NextInstruction();
         }
 
         #endregion
@@ -2329,11 +2330,18 @@ namespace ScriptEngine.Machine
                 }
                 ctx.PushScope(symbolScope);
             }
-
+            var locals = new SymbolScope();
+            foreach (var variable in _currentFrame.Locals)
+            {
+                locals.DefineVariable(variable.Name);
+            }
+            ctx.PushScope(locals);
+            
             ICodeSource stringSource = new StringBasedSource(expression);
             var parser = new Parser();
             parser.Code = stringSource.Code;
             var compiler = new Compiler.Compiler();
+            ctx.PushScope(new SymbolScope()); // скоуп выражения
             var modImg = compiler.CompileExpression(parser, ctx);
             modImg.ModuleInfo = new ModuleInformation();
             modImg.ModuleInfo.Origin = "<expression>";
@@ -2344,15 +2352,32 @@ namespace ScriptEngine.Machine
             frame.MethodName = code.ModuleInfo.ModuleName;
             frame.Locals = new IVariable[0];
             frame.InstructionPointer = 0;
-            var curFrame = _currentFrame;
+            var curModule = _module;
+
+            var mlocals = new Scope();
+            mlocals.Instance = new UserScriptContextInstance(code);
+            mlocals.Detachable = true;
+            mlocals.Methods = TopScope.Methods;
+            mlocals.Variables = _currentFrame.Locals;
+            _scopes.Add(mlocals);
+            
             try
             {
+                PushFrame();
                 SetFrame(frame);
+                SetModule(code);
+                MainCommandLoop();
             }
             finally
             {
-                
+                DetachTopScope(out mlocals);
+                PopFrame();
+                SetModule(curModule);
             }
+
+            var result = _operationStack.Pop();
+
+            return result;
 
         }
 
