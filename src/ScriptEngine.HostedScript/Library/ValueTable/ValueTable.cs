@@ -311,12 +311,20 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Result;
         }
 
+        /// <summary>
+        /// Удаляет все строки. Структура колонок не меняется.
+        /// </summary>
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
             _rows.Clear();
         }
 
+        /// <summary>
+        /// Получить строку по индексу
+        /// </summary>
+        /// <param name="index">Число - Индекс строки</param>
+        /// <returns>СтрокаТаблицыЗначений</returns>
         [ContextMethod("Получить", "Get")]
         public ValueTableRow Get(int index)
         {
@@ -325,6 +333,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return _rows[index];
         }
 
+        /// <summary>
+        /// Сворачиваются (группируются) строки по указанным колонкам измерениям, суммируются колонки ресурсов. 
+        /// Колонки не указанные ни в измерениях ни в ресурсах удаляются.
+        /// </summary>
+        /// <param name="GroupColumnNames">Строка - Имена колонок для сворачивания (изменения), разделены запятыми</param>
+        /// <param name="AggregateColumnNames">Строка - Имена колонок для суммирования (ресурсы), разделены запятыми</param>
         [ContextMethod("Свернуть", "GroupBy")]
         public void GroupBy(string GroupColumnNames, string AggregateColumnNames = null)
         {
@@ -402,7 +416,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Сдвигает строку на указанное количество позиций.
+        /// </summary>
+        /// <param name="Row">
+        /// СтрокаТаблицыЗначений - Строка которую сдвигаем
+        /// Число - Индекс сдвигаемой строки
+        /// </param>
+        /// <param name="Offset">Количество строк, на которое сдвигается строка. Если значение положительное - сдвиг вниз, иначе вверх</param>
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(IValue Row, int Offset)
         {
@@ -438,6 +460,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         }
 
+        /// <summary>
+        /// Создает новую таблицу значений с указанными колонками. Данные не копируются.
+        /// </summary>
+        /// <param name="ColumnNames">Строка - Имена колонок для копирования, разделены запятыми</param>
+        /// <returns>ТаблицаЗначений</returns>
         [ContextMethod("СкопироватьКолонки", "CopyColumns")]
         public ValueTable CopyColumns(string ColumnNames = null)
         {
@@ -453,6 +480,17 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Result;
         }
 
+        /// <summary>
+        /// Создает новую таблицу значений с указанными строками и колонками. Если передан отбор - копирует строки удовлетворяющие отбору.
+        /// Если не указаны строки - будут скопированы все строки. Если не указаны колонки - будут скопированы все колонки.
+        /// Если не указаны оба параметра - будет создана полная копия таблицы значений.
+        /// </summary>
+        /// <param name="Rows">
+        /// Массив - Массив строк для отбора
+        /// Структура - Параметры отбора. Ключ - Колонка, Значение - Значение отбора
+        /// </param>
+        /// <param name="ColumnNames">Строка - Имена колонок для копирования, разделены запятыми</param>
+        /// <returns>ТаблицаЗначений</returns>
         [ContextMethod("Скопировать", "Copy")]
         public ValueTable Copy(IValue Rows = null, string ColumnNames = null)
         {
@@ -584,12 +622,25 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             }
         }
 
+        /// <summary>
+        /// Сортировать строки в таблице значений. Строки сортируются по порядку следования колонок для сортировки, с учетом варианта сортировки.
+        /// </summary>
+        /// <param name="columns">Строка - Имена колонок для сортировки. 
+        /// После имени колонки, через пробел, можно указать направление сортировки: "Убыв" ("Desc") - по убыванию. Возр" ("Asc") - по возрастанию
+        /// По умолчанию - по возрастанию.
+        /// </param>
+        /// <param name="comparator">СравнениеЗначений - правила сравнения значений при наличии различных типов данных в колонке.</param>
         [ContextMethod("Сортировать", "Sort")]
         public void Sort(string columns, IValue comparator = null)
         {
             _rows.Sort(new RowComparator(GetSortRules(columns)));
         }
 
+        /// <summary>
+        /// Не поддерживается
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="startRow"></param>
         [ContextMethod("ВыбратьСтроку", "ChooseRow")]
         public void ChooseRow(string title = null, IValue startRow = null)
         {
