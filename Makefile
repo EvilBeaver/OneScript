@@ -23,6 +23,10 @@ ${OSCRIPTEXE}:
 	cp ${SOURCEBINDIR}/*.exe ${BIN_OUTPUTDIR}
 	cp ${SOURCEBINDIR}/*.cfg ${BIN_OUTPUTDIR}
 
+clean:
+	rm -rf ${BIN_OUTPUTDIR}
+	rm -rf ${LIB_OUTPUTDIR}
+
 ${OPMOS}:
 
-.PHONY: all install uninstall dist lib
+.PHONY: all install uninstall dist lib clean
