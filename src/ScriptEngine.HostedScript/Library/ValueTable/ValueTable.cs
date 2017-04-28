@@ -13,6 +13,10 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
+    /// <summary>
+    /// Объект для работы с данными в табличном виде. 
+    /// Представляет из себя коллекцию строк с заранее заданной структурой.
+    /// </summary>
     [ContextClass("ТаблицаЗначений", "ValueTable")]
     public class ValueTable : AutoContext<ValueTable>, ICollectionContext, IEnumerable<ValueTableRow>
     {
@@ -24,24 +28,40 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
         }
 
+        /// <summary>
+        /// Коллекция колонок
+        /// </summary>
+        /// <value>КоллекцияКолонокТаблицыЗначений</value>
         [ContextProperty("Колонки", "Columns")]
         public ValueTableColumnCollection Columns
         {
             get { return _columns; }
         }
 
+        /// <summary>
+        /// Коллекция индексов
+        /// </summary>
+        /// <value>ИндексыКоллекции</value>
         [ContextProperty("Индексы", "Indexes")]
         public CollectionIndexes Indexes
         {
             get { return _indexes; }
         }
 
+        /// <summary>
+        /// Количество строк в Таблице значений
+        /// </summary>
+        /// <returns>Число</returns>
         [ContextMethod("Количество", "Count")]
         public int Count()
         {
             return _rows.Count();
         }
 
+        /// <summary>
+        /// Добавляет строку в конец Таблицы значений
+        /// </summary>
+        /// <returns>СтрокаТаблицыЗначений</returns>
         [ContextMethod("Добавить", "Add")]
         public ValueTableRow Add()
         {
@@ -50,7 +70,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return row;
         }
 
-        [ContextMethod("ВставитЬ", "Insert")]
+        /// <summary>
+        /// Вставляет строку в указанную позицию
+        /// </summary>
+        /// <param name="index">Число - Индекс позиции куда будет произведена вставка</param>
+        /// <returns>СтрокаТаблицыЗначений</returns>
+        [ContextMethod("Вставить", "Insert")]
         public ValueTableRow Insert(int index)
         {
             ValueTableRow row = new ValueTableRow(this);
@@ -58,6 +83,13 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return row;
         }
 
+        /// <summary>
+        /// Удаляет строку
+        /// </summary>
+        /// <param name="Row">
+        /// СтрокаТаблицыЗначений - Удаляемая строка
+        /// Число - Индекс удаляемой строки
+        /// </param>
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue Row)
         {
@@ -76,10 +108,19 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             _rows.RemoveAt(index);
         }
 
+        /// <summary>
+        /// Загружает значения в колонку
+        /// </summary>
+        /// <param name="Values">Массив - Значения для загрузки в колонку</param>
+        /// <param name="ColumnIndex">
+        /// Строка - Имя колонки для загрузки
+        /// Число - Индекс колонки для загрузки
+        /// КолонкаТаблицыЗначений - Колонка для загрузки
+        /// </param>
         [ContextMethod("ЗагрузитьКолонку", "LoadColumn")]
         public void LoadColumn(IValue Values, IValue ColumnIndex)
         {
-            ValueTableColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
+            // ValueTableColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
             var row_iterator = _rows.GetEnumerator();
             var array_iterator = (Values as ArrayImpl).GetEnumerator();
 
@@ -89,6 +130,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             }
         }
 
+        /// <summary>
+        /// Выгружает значения колонки в новый массив
+        /// </summary>
+        /// <param name="Column">
+        /// Строка - Имя колонки для выгрузки
+        /// Число - Индекс колонки для выгрузки
+        /// КолонкаТаблицыЗначений - Колонка для выгрузки
+        /// </param>
+        /// <returns>Массив</returns>
         [ContextMethod("ВыгрузитьКолонку", "UnloadColumn")]
         public ArrayImpl UnloadColumn(IValue Column)
         {
@@ -133,6 +183,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return processing_list;
         }
 
+        /// <summary>
+        /// Заполнить колонку/колонки указанным значением
+        /// </summary>
+        /// <param name="Value">Произвольный - Устанавливаемое значение</param>
+        /// <param name="ColumnNames">Строка - Список имен колонок для установки значения (разделены запятыми)</param>
         [ContextMethod("ЗаполнитьЗначения", "FillValues")]
         public void FillValues(IValue Value, string ColumnNames = null)
         {
@@ -146,6 +201,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             }
         }
 
+        /// <summary>
+        /// Получить индекс указанной строки
+        /// </summary>
+        /// <param name="Row">СтрокаТаблицыЗначений - Строка таблицы значений, для которой необходимо определить индекс</param>
+        /// <returns>Число - Индекс в коллекции, если не найдено возвращает -1</returns>
         [ContextMethod("Индекс", "IndexOf")]
         public int IndexOf(IValue Row)
         {
@@ -157,6 +217,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return -1;
         }
 
+        /// <summary>
+        /// Сумма значений всех строк указанной колонки
+        /// </summary>
+        /// <param name="ColumnIndex">
+        /// Строка - Имя колонки для суммирования
+        /// Число - Индекс колонки для суммирования
+        /// КолонкаТаблицыЗначений - Колонка для суммирования
+        /// </param>
+        /// <returns>Число</returns>
         [ContextMethod("Итог", "Total")]
         public IValue Total(IValue ColumnIndex)
         {
@@ -180,6 +249,13 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return ValueFactory.Create();
         }
 
+        /// <summary>
+        /// Осуществляет поиск значения в указанных колонках
+        /// </summary>
+        /// <param name="Value">Произвольный - Искомое значение</param>
+        /// <param name="ColumnNames">Строка - Список имен колонок для поиска значения (разделены запятыми). 
+        /// Если параметр не указан - ищет по всем колонкам. По умолчанию: пустая строка</param>
+        /// <returns>СтрокаТаблицыЗначений - если строка найдена, иначе Неопределено</returns>
         [ContextMethod("Найти", "Find")]
         public IValue Find(IValue Value, string ColumnNames = null)
         {
@@ -211,6 +287,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return true;
         }
 
+        /// <summary>
+        /// Поиск строк по условию
+        /// </summary>
+        /// <param name="Filter">Структура - Условия поиска. Ключ - имя колонки, значение - искомое значение</param>
+        /// <returns>Массив - Массив ссылок на строки, удовлетворяющих условию поиска</returns>
         [ContextMethod("НайтиСтроки", "FindRows")]
         public ArrayImpl FindRows(IValue Filter)
         {
@@ -230,12 +311,20 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Result;
         }
 
+        /// <summary>
+        /// Удаляет все строки. Структура колонок не меняется.
+        /// </summary>
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
             _rows.Clear();
         }
 
+        /// <summary>
+        /// Получить строку по индексу
+        /// </summary>
+        /// <param name="index">Число - Индекс строки</param>
+        /// <returns>СтрокаТаблицыЗначений</returns>
         [ContextMethod("Получить", "Get")]
         public ValueTableRow Get(int index)
         {
@@ -244,6 +333,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return _rows[index];
         }
 
+        /// <summary>
+        /// Сворачиваются (группируются) строки по указанным колонкам измерениям, суммируются колонки ресурсов. 
+        /// Колонки не указанные ни в измерениях ни в ресурсах удаляются.
+        /// </summary>
+        /// <param name="GroupColumnNames">Строка - Имена колонок для сворачивания (изменения), разделены запятыми</param>
+        /// <param name="AggregateColumnNames">Строка - Имена колонок для суммирования (ресурсы), разделены запятыми</param>
         [ContextMethod("Свернуть", "GroupBy")]
         public void GroupBy(string GroupColumnNames, string AggregateColumnNames = null)
         {
@@ -321,7 +416,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Сдвигает строку на указанное количество позиций.
+        /// </summary>
+        /// <param name="Row">
+        /// СтрокаТаблицыЗначений - Строка которую сдвигаем
+        /// Число - Индекс сдвигаемой строки
+        /// </param>
+        /// <param name="Offset">Количество строк, на которое сдвигается строка. Если значение положительное - сдвиг вниз, иначе вверх</param>
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(IValue Row, int Offset)
         {
@@ -357,6 +460,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         }
 
+        /// <summary>
+        /// Создает новую таблицу значений с указанными колонками. Данные не копируются.
+        /// </summary>
+        /// <param name="ColumnNames">Строка - Имена колонок для копирования, разделены запятыми</param>
+        /// <returns>ТаблицаЗначений</returns>
         [ContextMethod("СкопироватьКолонки", "CopyColumns")]
         public ValueTable CopyColumns(string ColumnNames = null)
         {
@@ -372,6 +480,17 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Result;
         }
 
+        /// <summary>
+        /// Создает новую таблицу значений с указанными строками и колонками. Если передан отбор - копирует строки удовлетворяющие отбору.
+        /// Если не указаны строки - будут скопированы все строки. Если не указаны колонки - будут скопированы все колонки.
+        /// Если не указаны оба параметра - будет создана полная копия таблицы значений.
+        /// </summary>
+        /// <param name="Rows">
+        /// Массив - Массив строк для отбора
+        /// Структура - Параметры отбора. Ключ - Колонка, Значение - Значение отбора
+        /// </param>
+        /// <param name="ColumnNames">Строка - Имена колонок для копирования, разделены запятыми</param>
+        /// <returns>ТаблицаЗначений</returns>
         [ContextMethod("Скопировать", "Copy")]
         public ValueTable Copy(IValue Rows = null, string ColumnNames = null)
         {
@@ -503,12 +622,25 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             }
         }
 
+        /// <summary>
+        /// Сортировать строки в таблице значений. Строки сортируются по порядку следования колонок для сортировки, с учетом варианта сортировки.
+        /// </summary>
+        /// <param name="columns">Строка - Имена колонок для сортировки. 
+        /// После имени колонки, через пробел, можно указать направление сортировки: "Убыв" ("Desc") - по убыванию. Возр" ("Asc") - по возрастанию
+        /// По умолчанию - по возрастанию.
+        /// </param>
+        /// <param name="comparator">СравнениеЗначений - правила сравнения значений при наличии различных типов данных в колонке.</param>
         [ContextMethod("Сортировать", "Sort")]
         public void Sort(string columns, IValue comparator = null)
         {
             _rows.Sort(new RowComparator(GetSortRules(columns)));
         }
 
+        /// <summary>
+        /// Не поддерживается
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="startRow"></param>
         [ContextMethod("ВыбратьСтроку", "ChooseRow")]
         public void ChooseRow(string title = null, IValue startRow = null)
         {
