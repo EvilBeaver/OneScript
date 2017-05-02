@@ -17,7 +17,7 @@ namespace ScriptEngine.Machine.Contexts
     public class LibraryContextBase : PropertyNameIndexAccessor, IReflectableContext
     {
         
-        public virtual IEnumerable<VariableInfo> GetProperties()
+        public override IEnumerable<VariableInfo> GetProperties()
         {
             throw new NotImplementedException();
         }
