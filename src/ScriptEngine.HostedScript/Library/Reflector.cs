@@ -137,8 +137,12 @@ namespace ScriptEngine.HostedScript.Library
 
             var NameColumn = Result.Columns.Add("Имя", ValueFactory.Create(""), "Имя"); // TODO: Доработать после увеличения предела количества параметров
 
+            var SystemVarNames = new string[] { "этотобъект", "thisobject" };
+
             foreach (var propInfo in target.GetProperties())
             {
+                if (SystemVarNames.Contains(propInfo.Identifier.ToLower())) continue;
+
                 ValueTableRow new_row = Result.Add();
                 new_row.Set(NameColumn, ValueFactory.Create(propInfo.Identifier));
             }
