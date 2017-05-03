@@ -15,6 +15,6 @@ namespace OneScript.DebugProtocol
 
         public string Source { get; set; }
 
-        public string Presentation { get; set; }
+        public Variable[] Variables { get; set; }
     }
 }

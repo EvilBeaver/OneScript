@@ -38,6 +38,9 @@ namespace OneScript.DebugProtocol
         /// </summary>
         [OperationContract]
         StackFrame[] GetStackFrames();
+
+        [OperationContract]
+        Variable[] GetVariables(int frameIndex);
     }
 
     public interface IDebugEventListener

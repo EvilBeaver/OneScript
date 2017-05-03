@@ -39,6 +39,8 @@ namespace DebugServer
 
         private IDebuggerService _debugger;
 
+    
+
         public string RuntimeExecutable { get; set; }
         public string WorkingDirectory { get; set; }
         public string StartupScript { get; set; }
@@ -171,5 +173,10 @@ namespace DebugServer
 
         }
 
+        public void FillFrameVariables(StackFrame frame)
+        {
+            var variables = _debugger.GetVariables(frame.Index);
+            frame.Variables = variables;
+        }
     }
 }

@@ -10,15 +10,20 @@ using System.Threading.Tasks;
 using OneScript.DebugProtocol;
 using VSCodeDebug;
 
+
 namespace DebugServer
 {
     internal class OscriptDebugSession : DebugSession, IDebugEventListener
     {
         private DebugeeProcess _process;
         private bool _startupPerformed = false;
+        private Handles<OneScript.DebugProtocol.StackFrame> _framesHandles;
+        private Handles<OneScript.DebugProtocol.StackFrame> _variableHandles;
 
         public OscriptDebugSession() : base(true, false)
         {
+            _framesHandles = new Handles<OneScript.DebugProtocol.StackFrame>();
+            _variableHandles = new Handles<OneScript.DebugProtocol.StackFrame>();
         }
         
         public override void Initialize(Response response, dynamic args)
@@ -139,7 +144,7 @@ namespace DebugServer
                 return;
             }
             
-            var port = getInt(args, "debugPort", 2801);
+            int port = getInt(args, "debugPort", 2801);
             try
             {
                 _process.Connect(port, this);
@@ -211,6 +216,8 @@ namespace DebugServer
         public void ThreadStopped(int threadId, ThreadStopReason reason)
         {
             SessionLog.WriteLine("thread stopped");
+            _framesHandles.Reset();
+            _variableHandles.Reset();
             SendEvent(new StoppedEvent(1, "breakpoint"));
         }
 
@@ -258,7 +265,7 @@ namespace DebugServer
             for (int i = 0; i < processFrames.Length; i++)
             {
                 frames[i] = new VSCodeDebug.StackFrame(
-                    processFrames[i].Index,
+                    _framesHandles.Create(processFrames[i]),
                     processFrames[i].MethodName,
                     new Source(processFrames[i].Source),
                     processFrames[i].LineNumber, 0);
@@ -269,12 +276,45 @@ namespace DebugServer
 
         public override void Scopes(Response response, dynamic arguments)
         {
-            RequestDummy("scopes requested", response, new ScopesResponseBody());
+            int frameId = getInt(arguments, "frameId");
+            var frame = _framesHandles.Get(frameId, null);
+            if (frame == null)
+            {
+                SendErrorResponse(response, 10001, "No active stackframe");
+                return;
+            }
+
+            var scope = new Scope("Locals", frameId);
+            SendResponse(response, new ScopesResponseBody(new Scope[] {scope}));
         }
 
         public override void Variables(Response response, dynamic arguments)
         {
-            RequestDummy("Variables requested", response, new ScopesResponseBody());
+            int frameId = getInt(arguments, "variablesReference");
+            var frame = _framesHandles.Get(frameId, null);
+            if (frame == null)
+            {
+                SendErrorResponse(response, 10001, "No active stackframe");
+                return;
+            }
+
+            if (frame.Variables == null)
+            {
+                _process.FillFrameVariables(frame);
+            }
+
+            var srcArray = frame.Variables;
+            
+            VSCodeDebug.Variable[] responseArray = new VSCodeDebug.Variable[srcArray.Length];
+            for (int i = 0; i < responseArray.Length; i++)
+            {
+                responseArray[i] = new VSCodeDebug.Variable(
+                    srcArray[i].Name,
+                    srcArray[i].Presentation,
+                    srcArray[i].TypeName);
+            }
+
+            SendResponse(response, new VariablesResponseBody(responseArray));
         }
 
         public override void Threads(Response response, dynamic arguments)

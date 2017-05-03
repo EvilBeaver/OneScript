@@ -29,6 +29,10 @@ namespace ScriptEngine.Machine
         private ICodeStatCollector _codeStatCollector = null;
         private MachineStopManager _stopManager = null;
 
+        // для отладчика.
+        // актуален в момент останова машины
+        private IList<ExecutionFrameInfo> _fullCallstackCache;
+
         internal MachineInstance() 
         {
             InitCommands();
@@ -1403,12 +1407,36 @@ namespace ScriptEngine.Machine
                 CodeStat_LineReached();
             }
 
-            if(_stopManager != null && _stopManager.ShouldStopHere(_module.ModuleInfo.Origin, _currentFrame))
+            if(MachineStopped != null && _stopManager != null && _stopManager.ShouldStopHere(_module.ModuleInfo.Origin, _currentFrame))
             {
-                MachineStopped?.Invoke(this, new MachineStoppedEventArgs(MachineStopReason.Breakpoint));
+                CreateFullCallstack();
+                MachineStopped(this, new MachineStoppedEventArgs(MachineStopReason.Breakpoint));
             }
             
             NextInstruction();
+        }
+
+        private void CreateFullCallstack()
+        {
+            var result = new List<ExecutionFrameInfo>();
+            var callstack = _callStack.ToArray();
+
+            result.Add(FrameInfo(_module, _currentFrame));
+
+            foreach (var executionFrame in callstack)
+            {
+                result.Add(FrameInfo(_module, executionFrame));
+            }
+
+            foreach (var state in _states.ToArray())
+            {
+                foreach (var frame in state.callStack)
+                {
+                    result.Add(FrameInfo(state.module, frame));
+                }
+            }
+
+            _fullCallstackCache = result;
         }
 
         private void MakeRawValue(int arg)
@@ -2420,27 +2448,19 @@ namespace ScriptEngine.Machine
             return value.GetRawValue();
         }
 
-        public IEnumerable<ExecutionFrameInfo> GetExecutionFrames()
+        public IList<ExecutionFrameInfo> GetExecutionFrames()
         {
-            var result = new List<ExecutionFrameInfo>();
-            var callstack = _callStack.ToArray();
+            return _fullCallstackCache;
+        }
 
-            result.Add(FrameInfo(_module, _currentFrame));
+        public IList<IVariable> GetFrameLocals(int frameId)
+        {
+            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
+            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
+                return new IVariable[0];
 
-            foreach (var executionFrame in callstack)
-            {
-                result.Add(FrameInfo(_module, executionFrame));
-            }
-
-            foreach (var state in _states.ToArray())
-            {
-                foreach (var frame in state.callStack)
-                {
-                    result.Add(FrameInfo(state.module, frame));
-                }
-            }
-
-            return result;
+            var frame = _fullCallstackCache[frameId];
+            return frame.FrameObject.Locals;
         }
 
         private ExecutionFrameInfo FrameInfo(LoadedModule module, ExecutionFrame frame)
@@ -2449,7 +2469,8 @@ namespace ScriptEngine.Machine
             {
                 LineNumber = frame.LineNumber,
                 MethodName = frame.MethodName,
-                Source = module.ModuleInfo.Origin
+                Source = module.ModuleInfo.Origin,
+                FrameObject = frame
             };
         }
     }

@@ -104,7 +104,7 @@ namespace oscript.DebugServer
         public StackFrame[] GetStackFrames()
         {
             var frames = _machine.GetExecutionFrames();
-            var result = new StackFrame[frames.Count()];
+            var result = new StackFrame[frames.Count];
             int index = 0;
             foreach (var frameInfo in frames)
             {
@@ -115,6 +115,24 @@ namespace oscript.DebugServer
                 frame.Source = frameInfo.Source;
                 result[frame.Index] = frame;
 
+            }
+
+            return result;
+        }
+
+        public OneScript.DebugProtocol.Variable[] GetVariables(int frameId)
+        {
+            var locals =_machine.GetFrameLocals(frameId);
+            var result = new OneScript.DebugProtocol.Variable[locals.Count];
+            for (int i = 0; i < locals.Count; i++)
+            {
+                result[i] = new OneScript.DebugProtocol.Variable()
+                {
+                    Name = locals[i].Name,
+                    IsStructured = locals[i].DataType == DataType.Object,
+                    Presentation = locals[i].AsString(),
+                    TypeName = locals[i].SystemType.Name
+                };
             }
 
             return result;

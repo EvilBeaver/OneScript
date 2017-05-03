@@ -28,5 +28,7 @@ namespace ScriptEngine.Machine
         public string Source;
         public int LineNumber;
         public string MethodName;
+
+        internal ExecutionFrame FrameObject;
     }
 }

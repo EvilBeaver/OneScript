@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="DebugeeProcess.cs" />
     <Compile Include="DebugSession.cs" />
+    <Compile Include="Handles.cs" />
     <Compile Include="OscriptDebugSession.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

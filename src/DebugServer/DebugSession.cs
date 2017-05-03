@@ -203,7 +203,7 @@ namespace VSCodeDebug
 	{
 		public Scope[] scopes { get; }
 
-		public ScopesResponseBody(List<Scope> scps = null) {
+		public ScopesResponseBody(IList<Scope> scps = null) {
 			if (scps == null)
 				scopes = new Scope[0];
 			else
@@ -215,7 +215,7 @@ namespace VSCodeDebug
 	{
 		public Variable[] variables { get; }
 
-		public VariablesResponseBody(List<Variable> vars = null) {
+		public VariablesResponseBody(IList<Variable> vars = null) {
 			if (vars == null)
 				variables = new Variable[0];
 			else
