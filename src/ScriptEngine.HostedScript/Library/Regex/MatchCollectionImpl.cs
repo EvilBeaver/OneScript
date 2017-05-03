@@ -14,7 +14,7 @@ using RegExp = System.Text.RegularExpressions;
 namespace ScriptEngine.HostedScript.Library.Regex
 {
     [ContextClass("КоллекцияСовпаденийРегулярногоВыражения", "RegExMatchCollection")]
-    class MatchCollection : AutoContext<MatchCollection>, ICollectionContext, IEnumerable<MatchImpl>
+    public class MatchCollection : AutoContext<MatchCollection>, ICollectionContext, IEnumerable<MatchImpl>
     {
         private readonly RegExp.MatchCollection _matches;
 
@@ -70,7 +70,7 @@ namespace ScriptEngine.HostedScript.Library.Regex
     }
 
     [ContextClass("КоллекцияГруппРегулярногоВыражения", "RegExGroupCollection")]
-    class GroupCollection : AutoContext<GroupCollection>, ICollectionContext, IEnumerable<GroupImpl>
+    public class GroupCollection : AutoContext<GroupCollection>, ICollectionContext, IEnumerable<GroupImpl>
     {
         private readonly RegExp.GroupCollection _groups;
 

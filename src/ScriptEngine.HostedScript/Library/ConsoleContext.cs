@@ -19,7 +19,7 @@ namespace ScriptEngine.HostedScript.Library
     /// Предназначен для низкоуровнего манипулирования выводом в консоль.
     /// </summary>
     [ContextClass("Консоль", "Console")]
-    class ConsoleContext : AutoContext<ConsoleContext>
+    public class ConsoleContext : AutoContext<ConsoleContext>
     {
         [ContextProperty("НажатаКлавиша", "KeyPressed")]
         public bool HasKey
