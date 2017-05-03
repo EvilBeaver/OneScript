@@ -2314,7 +2314,75 @@ namespace ScriptEngine.Machine
 
         #endregion
 
-        private IValue Evaluate(string expression)
+        private IValue Evaluate(string expression, bool separate = false)
+        {
+            var code = CompileExpressionModule(expression);
+
+            MachineInstance runner;
+            if (separate)
+            {
+                runner = new MachineInstance();
+                runner._scopes = new List<Scope>(_scopes);
+            }
+            else
+                runner = this;
+
+            var frame = new ExecutionFrame();
+            frame.MethodName = code.ModuleInfo.ModuleName;
+            frame.Locals = new IVariable[0];
+            frame.InstructionPointer = 0;
+            var curModule = _module;
+
+            var mlocals = new Scope();
+            mlocals.Instance = new UserScriptContextInstance(code);
+            mlocals.Detachable = true;
+            mlocals.Methods = TopScope.Methods;
+            mlocals.Variables = _currentFrame.Locals;
+            runner._scopes.Add(mlocals);
+            
+            try
+            {
+                if(!separate)
+                    PushFrame();
+
+                runner.SetFrame(frame);
+                runner.SetModule(code);
+                runner.MainCommandLoop();
+            }
+            finally
+            {
+                if (!separate)
+                {
+                    DetachTopScope(out mlocals);
+                    PopFrame();
+                    SetModule(curModule);
+                }
+            }
+
+            var result = _operationStack.Pop();
+
+            return result;
+
+        }
+
+        private LoadedModule CompileExpressionModule(string expression)
+        {
+            var ctx = ExtractCompilerContext();
+
+            ICodeSource stringSource = new StringBasedSource(expression);
+            var parser = new Parser();
+            parser.Code = stringSource.Code;
+            var compiler = new Compiler.Compiler();
+            ctx.PushScope(new SymbolScope()); // скоуп выражения
+            var modImg = compiler.CompileExpression(parser, ctx);
+            modImg.ModuleInfo = new ModuleInformation();
+            modImg.ModuleInfo.Origin = "<expression>";
+            modImg.ModuleInfo.ModuleName = "<expression>";
+            var code = new LoadedModule(modImg);
+            return code;
+        }
+
+        private CompilerContext ExtractCompilerContext()
         {
             var ctx = new CompilerContext();
             foreach (var scope in _scopes)
@@ -2328,57 +2396,18 @@ namespace ScriptEngine.Machine
                 {
                     symbolScope.DefineVariable(variable.Name);
                 }
+
                 ctx.PushScope(symbolScope);
             }
+
             var locals = new SymbolScope();
             foreach (var variable in _currentFrame.Locals)
             {
                 locals.DefineVariable(variable.Name);
             }
+
             ctx.PushScope(locals);
-            
-            ICodeSource stringSource = new StringBasedSource(expression);
-            var parser = new Parser();
-            parser.Code = stringSource.Code;
-            var compiler = new Compiler.Compiler();
-            ctx.PushScope(new SymbolScope()); // скоуп выражения
-            var modImg = compiler.CompileExpression(parser, ctx);
-            modImg.ModuleInfo = new ModuleInformation();
-            modImg.ModuleInfo.Origin = "<expression>";
-            modImg.ModuleInfo.ModuleName = "<expression>";
-            var code = new LoadedModule(modImg);
-
-            var frame = new ExecutionFrame();
-            frame.MethodName = code.ModuleInfo.ModuleName;
-            frame.Locals = new IVariable[0];
-            frame.InstructionPointer = 0;
-            var curModule = _module;
-
-            var mlocals = new Scope();
-            mlocals.Instance = new UserScriptContextInstance(code);
-            mlocals.Detachable = true;
-            mlocals.Methods = TopScope.Methods;
-            mlocals.Variables = _currentFrame.Locals;
-            _scopes.Add(mlocals);
-            
-            try
-            {
-                PushFrame();
-                SetFrame(frame);
-                SetModule(code);
-                MainCommandLoop();
-            }
-            finally
-            {
-                DetachTopScope(out mlocals);
-                PopFrame();
-                SetModule(curModule);
-            }
-
-            var result = _operationStack.Pop();
-
-            return result;
-
+            return ctx;
         }
 
         private void NextInstruction()
