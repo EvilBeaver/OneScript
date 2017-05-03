@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library
     /// Глобальный контекст. Представляет глобально доступные свойства и методы.
     /// </summary>
     [GlobalContext(Category="Процедуры и функции взаимодействия с системой", ManualRegistration=true)]
-    class SystemGlobalContext : IRuntimeContextInstance, IAttachableContext
+    public class SystemGlobalContext : IRuntimeContextInstance, IAttachableContext
     {
         private IVariable[] _state;
         private CommandLineArguments _args;

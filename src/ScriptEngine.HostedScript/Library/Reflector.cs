@@ -125,6 +125,31 @@ namespace ScriptEngine.HostedScript.Library
             return Result;
         }
 
+        /// <summary>
+        /// Получает таблицу свойств для переданного объекта..
+        /// </summary>
+        /// <param name="target">Объект, из которого получаем таблицу свойств.</param>
+        /// <returns>Таблица значений с 1 колонкой - Имя</returns>
+        [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
+        public ValueTable.ValueTable GetPropertiesTable(IRuntimeContextInstance target)
+        {
+            ValueTable.ValueTable Result = new ValueTable.ValueTable();
+
+            var NameColumn = Result.Columns.Add("Имя", ValueFactory.Create(""), "Имя"); // TODO: Доработать после увеличения предела количества параметров
+
+            var SystemVarNames = new string[] { "этотобъект", "thisobject" };
+
+            foreach (var propInfo in target.GetProperties())
+            {
+                if (SystemVarNames.Contains(propInfo.Identifier.ToLower())) continue;
+
+                ValueTableRow new_row = Result.Add();
+                new_row.Set(NameColumn, ValueFactory.Create(propInfo.Identifier));
+            }
+
+            return Result;
+        }
+
         [ScriptConstructor]
         public static IRuntimeContextInstance CreateNew()
         {
