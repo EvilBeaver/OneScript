@@ -24,6 +24,7 @@ namespace ScriptEngine.HostedScript.Library
         private CommandLineArguments _args;
         private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
+        private SystemEnvironmentContext _systemEnvironmentContext;
 
         public SystemGlobalContext()
         {
@@ -33,6 +34,8 @@ namespace ScriptEngine.HostedScript.Library
             FileStreams = new FileStreamsManager();
             RegisterProperty("ФайловыеПотоки", () => FileStreams);
             RegisterProperty("FileStreams", () => FileStreams);
+
+            _systemEnvironmentContext = new SystemEnvironmentContext();
         }
 
         private void RegisterProperty(string name, Func<IValue> getter)
@@ -476,6 +479,85 @@ namespace ScriptEngine.HostedScript.Library
             }
 
         }
+
+        #region СистемнаяИнформация
+
+        /// <summary>
+        /// Имя машины, на которой выполняется сценарий
+        /// </summary>
+        [ContextProperty("ИмяКомпьютера", "MachineName")]
+        public string MachineName
+        {
+            get
+            {
+                return _systemEnvironmentContext.MachineName;
+            }
+        }
+
+        /// <summary>
+        /// Версия операционной системы, на которой выполняется сценарий
+        /// </summary>
+        [ContextProperty("ВерсияОС", "OSVersion")]
+        public string OSVersion
+        {
+            get
+            {
+                return _systemEnvironmentContext.OSVersion;
+            }
+        }
+
+        /// <summary>
+        /// Версия OneScript, выполняющая данный сценарий
+        /// </summary>
+        [ContextProperty("Версия", "Version")]
+        public string Version
+        {
+            get
+            {
+                return _systemEnvironmentContext.Version;
+            }
+        }
+
+        /// <summary>
+        /// Возвращает соответствие переменных среды. Ключом является имя переменной, а значением - значение переменной
+        /// </summary>
+        /// <example>
+        /// СИ = Новый СистемнаяИнформация();
+        /// Для Каждого Переменная Из СИ.ПеременныеСреды() Цикл
+        ///     Сообщить(Переменная.Ключ + " = " + Переменная.Значение);
+        /// КонецЦикла;
+        /// </example>
+        /// <returns>Соответствие</returns>
+        [ContextMethod("ПеременныеСреды", "EnvironmentVariables")]
+        public IRuntimeContextInstance EnvironmentVariables()
+        {
+            return _systemEnvironmentContext.EnvironmentVariables();
+        }
+
+        /// <summary>
+        /// Позволяет установить переменную среды. 
+        /// Переменная устанавливается в области видимости процесса и очищается после его завершения.
+        /// </summary>
+        /// <param name="varName">Имя переменной</param>
+        /// <param name="value">Значение переменной</param>
+        [ContextMethod("УстановитьПеременнуюСреды", "SetEnvironmentVariable")]
+        public void SetEnvironmentVariable(string varName, string value)
+        {
+            _systemEnvironmentContext.SetEnvironmentVariable(varName, value);
+        }
+
+        /// <summary>
+        /// Получить значение переменной среды.
+        /// </summary>
+        /// <param name="varName">Имя переменной</param>
+        /// <returns>Строка. Значение переменной</returns>
+        [ContextMethod("ПолучитьПеременнуюСреды", "GetEnvironmentVariable")]
+        public IValue GetEnvironmentVariable(string varName)
+        {
+            return _systemEnvironmentContext.GetEnvironmentVariable(varName);
+        }
+
+        #endregion
 
         #region IAttachableContext Members
 
