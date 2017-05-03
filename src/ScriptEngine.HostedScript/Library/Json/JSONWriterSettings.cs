@@ -10,7 +10,7 @@ using ScriptEngine.Machine.Contexts;
 /// Определяет набор параметров, используемых при записи JSON.
 /// </summary>
 [ContextClass("ПараметрыЗаписиJSON", "JSONWriterSettings")]
-class JSONWriterSettings : AutoContext<JSONWriterSettings>
+public class JSONWriterSettings : AutoContext<JSONWriterSettings>
 {
 
     private bool _useDoubleQuotes;

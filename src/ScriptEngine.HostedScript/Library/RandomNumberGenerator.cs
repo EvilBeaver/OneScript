@@ -11,7 +11,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("ГенераторСлучайныхЧисел", "RandomNumberGenerator")]
-    class RandomNumberGenerator : AutoContext<RandomNumberGenerator>
+    public class RandomNumberGenerator : AutoContext<RandomNumberGenerator>
     {
         private readonly Random _random;
 

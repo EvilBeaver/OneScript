@@ -16,7 +16,7 @@ using System.Text;
 namespace ScriptEngine.HostedScript.Library.Hash
 {
     [SystemEnum("ХешФункция", "HashFunction")]
-    class HashFunctionEnum : EnumerationContext
+    public class HashFunctionEnum : EnumerationContext
     {
         const string MD5 = "MD5";
         const string SHA1 = "SHA1";
