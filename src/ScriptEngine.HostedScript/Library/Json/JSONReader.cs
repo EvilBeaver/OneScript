@@ -11,7 +11,7 @@ namespace ScriptEngine.HostedScript.Library.Json
     /// Предназначен для последовательного чтения JSON-данных из файла или строки.
     /// </summary>
     [ContextClass("ЧтениеJSON", "JSONReader")]
-    class JSONReader : AutoContext<JSONReader>
+    public class JSONReader : AutoContext<JSONReader>
     {
 
         private JsonTextReader _reader; // Объект из библиотеки Newtonsoft для работы с форматом JSON 

@@ -15,7 +15,7 @@ namespace ScriptEngine.HostedScript.Library.Json
     /// Предназначен для организации последовательной записи объектов и текстов JSON.
     /// </summary>
     [ContextClass("ЗаписьJSON", "JSONWriter")]
-    class JSONWriter : AutoContext<JSONWriter>
+    public class JSONWriter : AutoContext<JSONWriter>
     {
         private const int INDENT_SIZE = 0;
 

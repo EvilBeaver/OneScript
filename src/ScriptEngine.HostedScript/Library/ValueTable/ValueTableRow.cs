@@ -29,6 +29,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Owner().Columns.Count();
         }
 
+        /// <summary>
+        /// Владелец строки
+        /// </summary>
+        /// <returns>ТаблицаЗначений</returns>
         [ContextMethod("Владелец", "Owner")]
         public ValueTable Owner()
         {
@@ -43,6 +47,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return ValueFactory.Create(); // TODO: Определять пустое значение для типа колонки
         }
 
+        /// <summary>
+        /// Получает значение по индексу
+        /// </summary>
+        /// <param name="index">Число - Индекс колонки</param>
+        /// <returns>Произвольный - Значение колонки</returns>
         [ContextMethod("Получить", "Get")]
         public IValue Get(int index)
         {
@@ -61,6 +70,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return TryValue(C);
         }
         
+        /// <summary>
+        /// Установить значение
+        /// </summary>
+        /// <param name="index">Число - Индекс колонки</param>
+        /// <param name="Value">Произвольный - значение для установки</param>
         [ContextMethod("Установить", "Set")]
         public void Set(int index, IValue Value)
         {

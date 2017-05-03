@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library
     /// Глобальный контекст. Представляет глобально доступные свойства и методы.
     /// </summary>
     [GlobalContext(Category="Процедуры и функции взаимодействия с системой", ManualRegistration=true)]
-    class SystemGlobalContext : IAttachableContext
+    public class SystemGlobalContext : IAttachableContext
     {
         private IVariable[] _state;
         private CommandLineArguments _args;
@@ -118,8 +118,7 @@ namespace ScriptEngine.HostedScript.Library
 
                 foreach (var item in externalContext)
                 {
-                    var kv = item as KeyAndValueImpl;
-                    extData.Add(kv.Key.AsString(), kv.Value);
+                    extData.Add(item.Key.AsString(), item.Value);
                 }
 
                 return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path, extData);

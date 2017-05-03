@@ -14,6 +14,9 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
+    /// <summary>
+    /// Колонка таблицы значений. 
+    /// </summary>
     [ContextClass("КолонкаТаблицыЗначений", "ValueTableColumn")]
     public class ValueTableColumn : AutoContext<ValueTableColumn>
     {
@@ -44,6 +47,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             get { return _id; }
         }
 
+        /// <summary>
+        /// Заголовок колонки
+        /// </summary>
+        /// <value>Строка</value>
         [ContextProperty("Заголовок", "Title")]
         public string Title
         {
@@ -51,6 +58,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             set { _title = value; }
         }
 
+        /// <summary>
+        /// Имя колонки
+        /// </summary>
+        /// <value>Строка</value>
         [ContextProperty("Имя", "Name")]
         public string Name
         {
@@ -68,12 +79,21 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             }
         }
+        /// <summary>
+        /// Тип значения колонки
+        /// </summary>
+        /// <value>ОписаниеТипа</value>
         [ContextProperty("ТипЗначения", "ValueType")]
         public IValue ValueType
         {
             get { return _valueType; }
             set { _valueType = value; } // TODO: Проверить тип
         }
+
+        /// <summary>
+        /// Ширина колонки
+        /// </summary>
+        /// <value>Число</value>
         [ContextProperty("Ширина", "Width")]
         public int Width
         {

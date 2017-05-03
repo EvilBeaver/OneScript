@@ -146,6 +146,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw new NotImplementedException();
         }
+
+        public virtual IEnumerable<VariableInfo> GetProperties()
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual int FindProperty(string name)
         {
             throw RuntimeException.PropNotFoundException(name);

@@ -300,6 +300,11 @@ namespace ScriptEngine.Machine.Contexts
             _instance.SetIndexedValue(index, val);
         }
 
+        public IEnumerable<VariableInfo> GetProperties()
+        {
+            return _instance.GetProperties();
+        }
+
         public int FindProperty(string name)
         {
             return _instance.FindProperty(name);

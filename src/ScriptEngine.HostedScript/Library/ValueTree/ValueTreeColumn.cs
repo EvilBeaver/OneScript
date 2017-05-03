@@ -90,7 +90,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         [ContextProperty("Ширина", "Width")]
         public int Width
         {
-            get { return Width; }
+            get { return _width; }
             set { _width = value; } // TOOD: Проверить неотрицательность значения
         }
 
