@@ -36,15 +36,6 @@ namespace ScriptEngine.HostedScript.Library
             RegisterProperty("FileStreams", () => FileStreams);
 
             _systemEnvironmentContext = new SystemEnvironmentContext();
-            RegisterProperty("ИмяКомпьютера", () => (IValue)MachineName);
-            RegisterProperty("MachineName", () => (IValue)MachineName);
-
-            RegisterProperty("ВерсияОС", () => (IValue)OSVersion);
-            RegisterProperty("OSVersion", () => (IValue)OSVersion);
-
-            RegisterProperty("Версия", () => (IValue)Version);
-            RegisterProperty("Version", () => (IValue)Version);
-
         }
 
         private void RegisterProperty(string name, Func<IValue> getter)
@@ -490,42 +481,6 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         #region СистемнаяИнформация
-
-        /// <summary>
-        /// Имя машины, на которой выполняется сценарий
-        /// </summary>
-        [ContextProperty("ИмяКомпьютера", "MachineName")]
-        public IValue MachineName
-        {
-            get
-            {
-                return ValueFactory.Create(_systemEnvironmentContext.MachineName);
-            }
-        }
-
-        /// <summary>
-        /// Версия операционной системы, на которой выполняется сценарий
-        /// </summary>
-        [ContextProperty("ВерсияОС", "OSVersion")]
-        public IValue OSVersion
-        {
-            get
-            {
-                return ValueFactory.Create(_systemEnvironmentContext.OSVersion);
-            }
-        }
-
-        /// <summary>
-        /// Версия OneScript, выполняющая данный сценарий
-        /// </summary>
-        [ContextProperty("Версия", "Version")]
-        public IValue Version
-        {
-            get
-            {
-                return ValueFactory.Create(_systemEnvironmentContext.Version);
-            }
-        }
 
         /// <summary>
         /// Возвращает соответствие переменных среды. Ключом является имя переменной, а значением - значение переменной
