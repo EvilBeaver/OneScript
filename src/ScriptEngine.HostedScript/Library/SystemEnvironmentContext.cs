@@ -108,7 +108,7 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor]
         public static IRuntimeContextInstance Create()
         {
-            System.Console.WriteLine("deprecated");
+            System.Console.WriteLine("SystemInfo deprecated, use GlobalContext");
             return new SystemEnvironmentContext();
         }
     }

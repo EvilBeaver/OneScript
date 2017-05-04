@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library
         private CommandLineArguments _args;
         private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
-        private SystemEnvironmentContext _systemEnvironmentContext;
+        private readonly SystemEnvironmentContext _systemEnvironmentContext;
 
         public SystemGlobalContext()
         {
@@ -36,6 +36,15 @@ namespace ScriptEngine.HostedScript.Library
             RegisterProperty("FileStreams", () => FileStreams);
 
             _systemEnvironmentContext = new SystemEnvironmentContext();
+            RegisterProperty("ИмяКомпьютера", () => (IValue)MachineName);
+            RegisterProperty("MachineName", () => (IValue)MachineName);
+
+            RegisterProperty("ВерсияОС", () => (IValue)OSVersion);
+            RegisterProperty("OSVersion", () => (IValue)OSVersion);
+
+            RegisterProperty("Версия", () => (IValue)Version);
+            RegisterProperty("Version", () => (IValue)Version);
+
         }
 
         private void RegisterProperty(string name, Func<IValue> getter)
@@ -486,11 +495,11 @@ namespace ScriptEngine.HostedScript.Library
         /// Имя машины, на которой выполняется сценарий
         /// </summary>
         [ContextProperty("ИмяКомпьютера", "MachineName")]
-        public string MachineName
+        public IValue MachineName
         {
             get
             {
-                return _systemEnvironmentContext.MachineName;
+                return ValueFactory.Create(_systemEnvironmentContext.MachineName);
             }
         }
 
@@ -498,11 +507,11 @@ namespace ScriptEngine.HostedScript.Library
         /// Версия операционной системы, на которой выполняется сценарий
         /// </summary>
         [ContextProperty("ВерсияОС", "OSVersion")]
-        public string OSVersion
+        public IValue OSVersion
         {
             get
             {
-                return _systemEnvironmentContext.OSVersion;
+                return ValueFactory.Create(_systemEnvironmentContext.OSVersion);
             }
         }
 
@@ -510,11 +519,11 @@ namespace ScriptEngine.HostedScript.Library
         /// Версия OneScript, выполняющая данный сценарий
         /// </summary>
         [ContextProperty("Версия", "Version")]
-        public string Version
+        public IValue Version
         {
             get
             {
-                return _systemEnvironmentContext.Version;
+                return ValueFactory.Create(_systemEnvironmentContext.Version);
             }
         }
 
