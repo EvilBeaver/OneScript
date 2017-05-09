@@ -16,13 +16,16 @@ namespace ScriptEngine.HostedScript.Library
 	{
 		private readonly List<TypeTypeValue> _types = new List<TypeTypeValue>();
 
-		public TypeDescription(IEnumerable<TypeTypeValue> types,
+		public TypeDescription(IEnumerable<TypeTypeValue> types = null,
 		                           NumberQualifiers numberQualifiers = null,
 		                           StringQualifiers stringQualifiers = null,
 		                           DateQualifiers   dateQualifiers = null,
 		                           BinaryDataQualifiers binaryDataQualifiers = null)
 		{
-			_types.AddRange(types);
+			if (types != null)
+			{
+				_types.AddRange(types);
+			}
 			NumberQualifiers = numberQualifiers ?? new NumberQualifiers();
 			StringQualifiers = stringQualifiers ?? new StringQualifiers();
 			DateQualifiers = dateQualifiers ?? new DateQualifiers();
@@ -85,7 +88,7 @@ namespace ScriptEngine.HostedScript.Library
 
 			if (_types.Count == 0)
 			{
-				return value;
+				return value ?? ValueFactory.Create();
 			}
 
 			TypeTypeValue typeToCast = null;
@@ -146,6 +149,25 @@ namespace ScriptEngine.HostedScript.Library
 				return null;
 			}
 			return _types;
+		}
+
+		public static TypeDescription StringType(int length = 0,
+		                                         AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
+		{
+			var stringQualifier = new StringQualifiers(length, allowedLength);
+			return new TypeDescription(ConstructTypeList(ValueFactory.Create("Строка")), null, stringQualifier);
+		}
+
+		public static TypeDescription IntegerType(int length = 10,
+		                                          AllowedSignEnum allowedSign = AllowedSignEnum.Any)
+		{
+			var numberQualifier = new NumberQualifiers(length, 0, allowedSign);
+			return new TypeDescription(ConstructTypeList(ValueFactory.Create("Число")), numberQualifier);
+		}
+
+		public static TypeDescription BooleanType()
+		{
+			return new TypeDescription(ConstructTypeList(ValueFactory.Create("Булево")));
 		}
 
 		[ScriptConstructor]

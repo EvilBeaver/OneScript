@@ -34,18 +34,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <param name="Title">Строка - Заголовок колонки</param>
         /// <returns>КолонкаТаблицыЗначений</returns>
         [ContextMethod("Добавить", "Add")]
-        public ValueTableColumn Add(string Name, IValue Type = null, string Title = null)
-        {
-            if (FindColumnByName(Name) != null)
-                throw new RuntimeException("Неверное имя колонки " + Name);
+		public ValueTableColumn Add(string Name, TypeDescription Type = null, string Title = null, int Width = 0)
+		{
+			if (FindColumnByName(Name) != null)
+				throw new RuntimeException("Неверное имя колонки " + Name);
 
-            var Width = 0; // затычка
+			var column = new ValueTableColumn(this, ++_internal_counter, Name, Title, Type, Width);
+			_columns.Add(column);
 
-            ValueTableColumn column = new ValueTableColumn(this, ++_internal_counter, Name, Title, Type, Width);
-            _columns.Add(column);
-
-            return column;
-        }
+			return column;
+		}
 
         /// <summary>
         /// Вставить колонку в указанную позицию
@@ -55,20 +53,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <param name="Type">ОписаниеТипов - Тип данных колонки</param>
         /// <returns>КолонкаТаблицыЗначений</returns>
         [ContextMethod("Вставить", "Insert")]
-        public ValueTableColumn Insert(int index, string Name, IValue Type = null)
-            // TODO: добавить Title и Width после того, как количество обрабатываемых параметров будет увеличено хотя бы до 5
-        {
-            if (FindColumnByName(Name) != null)
-                throw new RuntimeException("Неверное имя колонки " + Name);
+		public ValueTableColumn Insert(int index, string Name, TypeDescription Type = null, string Title = null, int Width = 0)
+		{
+			if (FindColumnByName(Name) != null)
+				throw new RuntimeException("Неверное имя колонки " + Name);
 
-            var Title = Name; // TODO: Затычка
-            var Width = 0; // TODO: Затычка
+			ValueTableColumn column = new ValueTableColumn(this, ++_internal_counter, Name, Title, Type, Width);
+			_columns.Insert(index, column);
 
-            ValueTableColumn column = new ValueTableColumn(this, ++_internal_counter, Name, Title, Type, Width);
-            _columns.Insert(index, column);
-
-            return column;
-        }
+			return column;
+		}
 
         /// <summary>
         /// Индекс указанной колонки

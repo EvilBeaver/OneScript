@@ -22,7 +22,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     {
         private string _title;
         private string _name;
-        private IValue _valueType;
+        private TypeDescription _valueType;
         private int _width;
         private readonly WeakReference _owner;
 
@@ -30,11 +30,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         // Порядковый номер колонки не может быть использовать из-за своей изменчивости.
         private readonly int _id;
 
-        public ValueTableColumn(ValueTableColumnCollection Owner, int id, string Name, string Title, IValue Type, int Width)
+        public ValueTableColumn(ValueTableColumnCollection Owner, int id, string Name, string Title, TypeDescription Type, int Width)
         {
             _name = Name;
             _title = Title;
-            _valueType = Type;
+			_valueType = Type ?? new TypeDescription();
             _width = Width;
 
             _owner = new WeakReference(Owner);
@@ -54,7 +54,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextProperty("Заголовок", "Title")]
         public string Title
         {
-            get { return _title == null ? _name : _title; }
+            get { return _title ?? _name; }
             set { _title = value; }
         }
 
@@ -84,10 +84,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// </summary>
         /// <value>ОписаниеТипа</value>
         [ContextProperty("ТипЗначения", "ValueType")]
-        public IValue ValueType
+		public TypeDescription ValueType
         {
             get { return _valueType; }
-            set { _valueType = value; } // TODO: Проверить тип
         }
 
         /// <summary>
@@ -98,7 +97,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         public int Width
         {
             get { return _width; }
-            set { _width = value; } // TOOD: Проверить неотрицательность значения
+            set { _width = value; }
         }
     }
 }
