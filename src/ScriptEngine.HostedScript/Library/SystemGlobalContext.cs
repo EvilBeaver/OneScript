@@ -480,49 +480,6 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
-        #region СистемнаяИнформация
-
-        /// <summary>
-        /// Возвращает соответствие переменных среды. Ключом является имя переменной, а значением - значение переменной
-        /// </summary>
-        /// <example>
-        /// СИ = Новый СистемнаяИнформация();
-        /// Для Каждого Переменная Из СИ.ПеременныеСреды() Цикл
-        ///     Сообщить(Переменная.Ключ + " = " + Переменная.Значение);
-        /// КонецЦикла;
-        /// </example>
-        /// <returns>Соответствие</returns>
-        [ContextMethod("ПеременныеСреды", "EnvironmentVariables")]
-        public IRuntimeContextInstance EnvironmentVariables()
-        {
-            return _systemEnvironmentContext.EnvironmentVariables();
-        }
-
-        /// <summary>
-        /// Позволяет установить переменную среды. 
-        /// Переменная устанавливается в области видимости процесса и очищается после его завершения.
-        /// </summary>
-        /// <param name="varName">Имя переменной</param>
-        /// <param name="value">Значение переменной</param>
-        [ContextMethod("УстановитьПеременнуюСреды", "SetEnvironmentVariable")]
-        public void SetEnvironmentVariable(string varName, string value)
-        {
-            _systemEnvironmentContext.SetEnvironmentVariable(varName, value);
-        }
-
-        /// <summary>
-        /// Получить значение переменной среды.
-        /// </summary>
-        /// <param name="varName">Имя переменной</param>
-        /// <returns>Строка. Значение переменной</returns>
-        [ContextMethod("ПолучитьПеременнуюСреды", "GetEnvironmentVariable")]
-        public IValue GetEnvironmentVariable(string varName)
-        {
-            return _systemEnvironmentContext.GetEnvironmentVariable(varName);
-        }
-
-        #endregion
-
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 

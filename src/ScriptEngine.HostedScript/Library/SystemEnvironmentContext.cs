@@ -85,7 +85,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПеременныеСреды", "EnvironmentVariables")]
         public IRuntimeContextInstance EnvironmentVariables()
         {
-            System.Console.WriteLine("DeprecationWarning: 'SystemInfo.EnvironmentVariables' is deprecated, use 'EnvironmentVariables' from global context");
+            SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.EnvironmentVariables' is deprecated, use 'EnvironmentVariables' from global context");
             var varsMap = new MapImpl();
             var allVars = System.Environment.GetEnvironmentVariables();
             foreach (DictionaryEntry item in allVars)
@@ -107,7 +107,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("УстановитьПеременнуюСреды","SetEnvironmentVariable")]
         public void SetEnvironmentVariable(string varName, string value)
         {
-            System.Console.WriteLine("DeprecationWarning: 'SystemInfo.SetEnvironmentVariable' is deprecated, use 'SetEnvironmentVariable' from global context");
+            SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.SetEnvironmentVariable' is deprecated, use 'SetEnvironmentVariable' from global context");
             System.Environment.SetEnvironmentVariable(varName, value);
         }
 
@@ -119,7 +119,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьПеременнуюСреды", "GetEnvironmentVariable")]
         public IValue GetEnvironmentVariable(string varName)
         {
-            System.Console.WriteLine("DeprecationWarning: 'SystemInfo.GetEnvironmentVariable' is deprecated, use 'GetEnvironmentVariable' from global context");
+            SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.GetEnvironmentVariable' is deprecated, use 'GetEnvironmentVariable' from global context");
             string value = System.Environment.GetEnvironmentVariable(varName);
             if (value == null)
                 return ValueFactory.Create();

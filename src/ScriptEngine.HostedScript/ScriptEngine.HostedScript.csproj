@@ -115,6 +115,7 @@
     <Compile Include="Library\Binary\GenericStream.cs" />
     <Compile Include="Library\CommandLineArguments.cs" />
     <Compile Include="Library\ConsoleContext.cs" />
+    <Compile Include="Library\EnvironmentVariablesImpl.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
     <Compile Include="Library\FixedArrayImpl.cs" />
