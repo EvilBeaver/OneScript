@@ -53,6 +53,7 @@
     <Compile Include="StackFrame.cs" />
     <Compile Include="ThreadStopReason.cs" />
     <Compile Include="Variable.cs" />
+    <Compile Include="VariableLocator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
