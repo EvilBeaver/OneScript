@@ -1410,7 +1410,7 @@ namespace ScriptEngine.Machine
             if(MachineStopped != null && _stopManager != null && _stopManager.ShouldStopHere(_module.ModuleInfo.Origin, _currentFrame))
             {
                 CreateFullCallstack();
-                MachineStopped(this, new MachineStoppedEventArgs(MachineStopReason.Breakpoint));
+                MachineStopped?.Invoke(this, new MachineStoppedEventArgs(MachineStopReason.Breakpoint));
             }
             
             NextInstruction();
