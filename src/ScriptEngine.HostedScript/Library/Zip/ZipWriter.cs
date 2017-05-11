@@ -56,6 +56,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip.Comment = comment;
             _zip.CompressionMethod = MakeZipCompressionMethod(compressionMethod);
             _zip.CompressionLevel = MakeZipCompressionLevel(compressionLevel);
+            _zip.UseZip64WhenSaving = Zip64Option.AsNecessary;
             // Zlib падает с NullReferenceException, если задать шифрование
             //_zip.Encryption = MakeZipEncryption(encryptionMethod);
         }
