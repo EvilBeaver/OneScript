@@ -161,7 +161,6 @@
     <Compile Include="Library\MapImpl.cs" />
     <Compile Include="Library\RandomNumberGenerator.cs" />
     <Compile Include="Library\Reflector.cs" />
-    <Compile Include="Library\SymbolsEnum.cs" />
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextDocumentContext.cs" />
     <Compile Include="Library\TextEncodingEnum.cs" />
@@ -212,6 +211,7 @@
     <Compile Include="Library\TypeDescription\IValueAdjuster.cs" />
     <Compile Include="Library\TypeDescription\BooleanTypeAdjuster.cs" />
     <Compile Include="Library\Xml\XmlNamespaceContext.cs" />
+    <Compile Include="Library\SymbolsContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
