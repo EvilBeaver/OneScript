@@ -22,6 +22,7 @@ namespace ScriptEngine.HostedScript.Library
     {
         private IVariable[] _state;
         private CommandLineArguments _args;
+		private SymbolsContext _symbols;
         private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
 
@@ -33,6 +34,9 @@ namespace ScriptEngine.HostedScript.Library
             FileStreams = new FileStreamsManager();
             RegisterProperty("ФайловыеПотоки", () => FileStreams);
             RegisterProperty("FileStreams", () => FileStreams);
+
+			RegisterProperty("Символы", () => (IValue)Chars);
+			RegisterProperty("Chars", () => (IValue)Chars);
         }
 
         private void RegisterProperty(string name, Func<IValue> getter)
@@ -261,6 +265,24 @@ namespace ScriptEngine.HostedScript.Library
             }
 
         }
+
+		/// <summary>
+		/// Содержит набор системных символов.
+		/// </summary>
+		/// <value>Набор системных символов.</value>
+		[ContextProperty("Символы")]
+		public IRuntimeContextInstance Chars
+		{
+			get
+			{
+				if (_symbols == null)
+				{
+					_symbols = new SymbolsContext();
+				}
+
+				return _symbols;
+			}
+		}
 
         /// <summary>
         /// Запуск приложения в операционной системе
