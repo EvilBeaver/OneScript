@@ -9,7 +9,6 @@ using OneScript.DebugProtocol;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using System.ServiceModel.Description;
 
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
@@ -37,10 +36,8 @@ namespace DebugServer
         private bool _stdoutEOF;
         private bool _stderrEOF;
 
-        private IDebuggerService _debugger;
-
-    
-
+        private ServiceProxy<IDebuggerService> _debugger;
+        
         public string RuntimeExecutable { get; set; }
         public string WorkingDirectory { get; set; }
         public string StartupScript { get; set; }
@@ -76,8 +73,10 @@ namespace DebugServer
         
         public void Connect(int port, IDebugEventListener listener)
         {
-            var factory = new DuplexChannelFactory<IDebuggerService>(listener, Binder.GetBinding(), new EndpointAddress(Binder.GetDebuggerUri(port)));
-            _debugger = factory.CreateChannel();
+            var channelFactory = new DuplexChannelFactory<IDebuggerService>(listener, Binder.GetBinding(), new EndpointAddress(Binder.GetDebuggerUri(port)));
+
+            _debugger = new ServiceProxy<IDebuggerService>(channelFactory.CreateChannel);
+            
         }
         
         public event EventHandler<DebugeeOutputEventArgs> OutputReceived;
@@ -139,24 +138,20 @@ namespace DebugServer
 
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)
         {
-            var confirmedBreaks = _debugger.SetMachineBreakpoints(breakpoints.ToArray());
+            var confirmedBreaks = _debugger.Instance.SetMachineBreakpoints(breakpoints.ToArray());
             
             return confirmedBreaks;
         }
 
         public void BeginExecution()
         {
-            _debugger.Execute();
+            _debugger.Instance.Execute();
         }
-
-        internal void ListenToEvents()
-        {
-            _debugger.RegisterEventListener();
-        }
-
+        
         public StackFrame[] GetStackTrace(int firstFrameIdx, int limit)
         {
-            var allFrames = _debugger.GetStackFrames();
+            var allFrames = _debugger.Instance.GetStackFrames();
+            
             if (limit == 0)
                 limit = allFrames.Length;
 
@@ -175,8 +170,14 @@ namespace DebugServer
 
         public void FillFrameVariables(StackFrame frame)
         {
-            var variables = _debugger.GetVariables(frame.Index);
-            frame.Variables = variables;
+            SessionLog.WriteLine("trying hydrate frame variables");
+            var locator = (IVariableLocator) frame;
+            locator.Hydrate(_debugger.Instance);
+        }
+
+        public Variable Evaluate(StackFrame frame, string expression)
+        {
+            throw new NotImplementedException();
         }
     }
 }

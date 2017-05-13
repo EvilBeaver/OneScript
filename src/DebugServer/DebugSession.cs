@@ -397,7 +397,7 @@ namespace VSCodeDebug
 				}
 			}
 			catch (Exception e) {
-                SessionLog.WriteLine(e.ToString());
+                OnRequestError(e);
                 SendErrorResponse(response, 1104, "error while processing request '{_request}' (exception: {_exception})", new { _request = command, _exception = e.Message });
 			}
 
@@ -423,6 +423,11 @@ namespace VSCodeDebug
 		public virtual void SetExceptionBreakpoints(Response response, dynamic arguments)
 		{
 		}
+
+	    protected virtual void OnRequestError(Exception e)
+	    {
+	        SessionLog.WriteLine(e.ToString());
+        }
 
 		public abstract void SetBreakpoints(Response response, dynamic arguments);
 

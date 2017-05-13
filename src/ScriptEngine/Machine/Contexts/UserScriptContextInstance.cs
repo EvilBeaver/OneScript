@@ -87,6 +87,15 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _module.ExportedMethods.Length;
         }
-        
+
+        public override int GetPropCount()
+        {
+            return _module.ExportedProperies.Length;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return _module.ExportedProperies[propNum].SymbolicName;
+        }
     }
 }

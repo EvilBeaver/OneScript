@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,13 +18,13 @@ namespace DebugServer
     {
         private DebugeeProcess _process;
         private bool _startupPerformed = false;
-        private Handles<OneScript.DebugProtocol.StackFrame> _framesHandles;
-        private Handles<OneScript.DebugProtocol.StackFrame> _variableHandles;
+        private readonly Handles<OneScript.DebugProtocol.StackFrame> _framesHandles;
+        private readonly Handles<IVariableLocator> _variableHandles;
 
         public OscriptDebugSession() : base(true, false)
         {
             _framesHandles = new Handles<OneScript.DebugProtocol.StackFrame>();
-            _variableHandles = new Handles<OneScript.DebugProtocol.StackFrame>();
+            _variableHandles = new Handles<IVariableLocator>();
         }
         
         public override void Initialize(Response response, dynamic args)
@@ -160,7 +161,7 @@ namespace DebugServer
             SendResponse(response);
 
         }
-
+        
         public override void Attach(Response response, dynamic arguments)
         {
             throw new NotImplementedException();
@@ -223,7 +224,6 @@ namespace DebugServer
 
         public override void ConfigurationDone(Response response, dynamic args)
         {
-            _process.ListenToEvents();
             _process.BeginExecution();
             _startupPerformed = true;
             SendResponse(response);
@@ -283,35 +283,39 @@ namespace DebugServer
                 SendErrorResponse(response, 10001, "No active stackframe");
                 return;
             }
-
-            var scope = new Scope("Locals", frameId);
-            SendResponse(response, new ScopesResponseBody(new Scope[] {scope}));
-        }
-
-        public override void Variables(Response response, dynamic arguments)
-        {
-            int frameId = getInt(arguments, "variablesReference");
-            var frame = _framesHandles.Get(frameId, null);
-            if (frame == null)
-            {
-                SendErrorResponse(response, 10001, "No active stackframe");
-                return;
-            }
-
+            SessionLog.WriteLine("Scopes try get variables");
             if (frame.Variables == null)
             {
                 _process.FillFrameVariables(frame);
             }
 
-            var srcArray = frame.Variables;
+            Debug.Assert(frame.Variables != null);
+
+            var frameVariablesHandle = _variableHandles.Create(frame);
+            var scope = new Scope("Локальные переменные", frameVariablesHandle);
+            SendResponse(response, new ScopesResponseBody(new Scope[] {scope}));
+            SessionLog.WriteLine("Scopes done");
+        }
+
+        public override void Variables(Response response, dynamic arguments)
+        {
+            int varsHandle = getInt(arguments, "variablesReference");
+            var variables = _variableHandles.Get(varsHandle, null);
+            if (variables == null)
+            {
+                SendErrorResponse(response, 10001, "No active stackframe");
+                return;
+            }
             
-            VSCodeDebug.Variable[] responseArray = new VSCodeDebug.Variable[srcArray.Length];
+            var responseArray = new VSCodeDebug.Variable[variables.Count];
+
             for (int i = 0; i < responseArray.Length; i++)
             {
                 responseArray[i] = new VSCodeDebug.Variable(
-                    srcArray[i].Name,
-                    srcArray[i].Presentation,
-                    srcArray[i].TypeName);
+                    variables[i].Name,
+                    variables[i].Presentation,
+                    variables[i].TypeName,
+                    variables[i].IsStructured? _variableHandles.Create(variables.CreateChildLocator(i)) : 0 );
             }
 
             SendResponse(response, new VariablesResponseBody(responseArray));
@@ -327,7 +331,17 @@ namespace DebugServer
 
         public override void Evaluate(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            // expression, frameId, context
+            int frameId = getInt(arguments, "frameId");
+            var frame = _framesHandles.Get(frameId, null);
+            if (frame == null)
+            {
+                SendErrorResponse(response, 10001, "No active stackframe");
+                return;
+            }
+
+            var expression = (string) arguments.expression;
+            var evalResult = _process.Evaluate(frame, expression);
         }
 
 

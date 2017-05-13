@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DebugeeProcess.cs" />
+    <Compile Include="ServiceProxy.cs" />
     <Compile Include="DebugSession.cs" />
     <Compile Include="Handles.cs" />
     <Compile Include="OscriptDebugSession.cs" />

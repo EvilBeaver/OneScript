@@ -18,13 +18,7 @@ namespace OneScript.DebugProtocol
         /// </summary>
         [OperationContract(IsOneWay = true)]
         void Execute();
-
-        /// <summary>
-        /// Регистрирует адаптер отладки в качестве подписчика событий от Машины
-        /// </summary>
-        [OperationContract(IsOneWay = true)]
-        void RegisterEventListener();
-
+        
         /// <summary>
         /// Установка точек остановки
         /// </summary>
@@ -39,8 +33,14 @@ namespace OneScript.DebugProtocol
         [OperationContract]
         StackFrame[] GetStackFrames();
 
+        /// <summary>
+        /// Получает значения переменных
+        /// </summary>
+        /// <param name="frameIndex"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
         [OperationContract]
-        Variable[] GetVariables(int frameIndex);
+        Variable[] GetVariables(int frameIndex, int[] path);
     }
 
     public interface IDebugEventListener

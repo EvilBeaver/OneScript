@@ -10,7 +10,7 @@ using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
 {
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IncludeExceptionDetailInFaults = true)]
     class OscriptDebugController : IDebugController, IDebuggerService
     {
         private readonly ManualResetEventSlim _debugCommandEvent = new ManualResetEventSlim();
@@ -61,24 +61,34 @@ namespace oscript.DebugServer
         {
             if (e.Reason != MachineStopReason.Breakpoint)
                 throw new NotImplementedException("Not implemented yet");
-
-            if (_eventChannel == null)
+            
+            if (!CallbackChannelIsReady())
                 return; // нет подписчика
             
             _debugCommandEvent.Reset();
             _eventChannel.ThreadStopped(1, ThreadStopReason.Breakpoint);
             _debugCommandEvent.Wait();
         }
-        
+
+        private bool CallbackChannelIsReady()
+        {
+            if (_eventChannel != null)
+            {
+                var ico = (ICommunicationObject) _eventChannel;
+                return ico.State == CommunicationState.Opened;
+            }
+            return false;
+        }
+
         #region WCF Communication methods
 
         public void Execute()
         {
-            Output.WriteLine("execute received");
+            RegisterEventListener();
             _debugCommandEvent.Set();
         }
 
-        public void RegisterEventListener()
+        private void RegisterEventListener()
         {
             _eventChannel = OperationContext.Current.
                    GetCallbackChannel<IDebugEventListener>();
@@ -116,26 +126,52 @@ namespace oscript.DebugServer
                 result[frame.Index] = frame;
 
             }
-
             return result;
         }
 
-        public OneScript.DebugProtocol.Variable[] GetVariables(int frameId)
+        public OneScript.DebugProtocol.Variable[] GetVariables(int frameId, int[] path)
         {
             var locals =_machine.GetFrameLocals(frameId);
+            
+            foreach (var step in path)
+            {
+                var variable = locals[step];
+                if (HasProperties(variable))
+                {
+                    var obj = variable.AsObject();
+                    locals = new List<IVariable>();
+                    var propsCount = obj.GetPropCount();
+                    for (int i = 0; i < propsCount; i++)
+                    {
+                        locals.Add(ScriptEngine.Machine.Variable.Create(obj.GetPropValue(i), obj.GetPropName(i)));
+                    }
+                }
+            }
+
             var result = new OneScript.DebugProtocol.Variable[locals.Count];
             for (int i = 0; i < locals.Count; i++)
             {
                 result[i] = new OneScript.DebugProtocol.Variable()
                 {
                     Name = locals[i].Name,
-                    IsStructured = locals[i].DataType == DataType.Object,
+                    IsStructured = HasProperties(locals[i]),
                     Presentation = locals[i].AsString(),
                     TypeName = locals[i].SystemType.Name
                 };
             }
 
             return result;
+        }
+
+        private static bool HasProperties(IVariable variable)
+        {
+            if (variable.DataType == DataType.Object)
+            {
+                var obj = variable.AsObject();
+                return obj.GetPropCount() > 0;
+            }
+
+            return false;
         }
 
         #endregion
