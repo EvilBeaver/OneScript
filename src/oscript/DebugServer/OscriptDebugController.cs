@@ -8,6 +8,8 @@ using System.Threading;
 using OneScript.DebugProtocol;
 using ScriptEngine.Machine;
 
+using Variable = OneScript.DebugProtocol.Variable;
+
 namespace oscript.DebugServer
 {
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IncludeExceptionDetailInFaults = true)]
@@ -162,7 +164,26 @@ namespace oscript.DebugServer
             return result;
         }
 
-        private static bool HasProperties(IVariable variable)
+        public Variable Evaluate(int contextFrame, string expression)
+        {
+            try
+            {
+                var value = _machine.Evaluate(expression, true);
+                return new Variable()
+                {
+                    Name = "$evalResult",
+                    Presentation = value.AsString(),
+                    TypeName = value.SystemType.Name,
+                    IsStructured = HasProperties(value)
+                };
+            }
+            catch (RuntimeException e)
+            {
+                throw new FaultException(e.ErrorDescription);
+            }
+        }
+
+        private static bool HasProperties(IValue variable)
         {
             if (variable.DataType == DataType.Object)
             {

@@ -2342,7 +2342,7 @@ namespace ScriptEngine.Machine
 
         #endregion
 
-        private IValue Evaluate(string expression, bool separate = false)
+        public IValue Evaluate(string expression, bool separate = false)
         {
             var code = CompileExpressionModule(expression);
 
@@ -2387,7 +2387,7 @@ namespace ScriptEngine.Machine
                 }
             }
 
-            var result = _operationStack.Pop();
+            var result = runner._operationStack.Pop();
 
             return result;
 

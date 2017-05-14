@@ -343,7 +343,18 @@ namespace DebugServer
             }
 
             var expression = (string) arguments.expression;
-            var evalResult = _process.Evaluate(frame, expression);
+            OneScript.DebugProtocol.Variable evalResult;
+            try
+            {
+                evalResult = _process.Evaluate(frame, expression);
+            }
+            catch (Exception e)
+            {
+                evalResult = new OneScript.DebugProtocol.Variable() { Presentation = e.Message };
+            }
+
+            var protResult = new EvaluateResponseBody(evalResult.Presentation) {type = evalResult.TypeName};
+            SendResponse(response, protResult);
         }
 
 

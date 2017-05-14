@@ -41,6 +41,9 @@ namespace OneScript.DebugProtocol
         /// <returns></returns>
         [OperationContract]
         Variable[] GetVariables(int frameIndex, int[] path);
+
+        [OperationContract]
+        Variable Evaluate(int contextFrame, string expression);
     }
 
     public interface IDebugEventListener

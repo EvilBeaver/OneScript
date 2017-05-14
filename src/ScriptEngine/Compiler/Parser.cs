@@ -347,20 +347,24 @@ namespace ScriptEngine.Compiler
 
                 if (cs == SpecialChars.StringQuote)
                 {
-                    iterator.MoveNext();
-                    if (iterator.CurrentSymbol == SpecialChars.StringQuote)
-                    { /* Двойная кавычка */
-                        ContentBuilder.Append("\"");
-                        continue;
-                    }
+                    if (iterator.MoveNext())
+                    {
+                        if (iterator.CurrentSymbol == SpecialChars.StringQuote)
+                        {
+                            /* Двойная кавычка */
+                            ContentBuilder.Append("\"");
+                            continue;
+                        }
 
-                    /* Завершение строки */
-                    SkipSpacesAndComments(iterator);
+                        /* Завершение строки */
+                        SkipSpacesAndComments(iterator);
 
-                    if (iterator.CurrentSymbol == SpecialChars.StringQuote)
-                    {   /* Сразу же началась новая строка */
-                        ContentBuilder.Append('\n');
-                        continue;
+                        if (iterator.CurrentSymbol == SpecialChars.StringQuote)
+                        {
+                            /* Сразу же началась новая строка */
+                            ContentBuilder.Append('\n');
+                            continue;
+                        }
                     }
 
                     var lex = new Lexem

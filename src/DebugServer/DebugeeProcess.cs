@@ -174,7 +174,14 @@ namespace DebugServer
 
         public Variable Evaluate(StackFrame frame, string expression)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return _debugger.Instance.Evaluate(0, expression);
+            }
+            catch (FaultException e)
+            {
+                throw new Exception(e.Message);
+            }
         }
     }
 }

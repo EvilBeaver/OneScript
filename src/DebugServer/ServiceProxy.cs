@@ -25,7 +25,8 @@ namespace DebugServer
                 lock (_lock)
                 {
                     var ico = (ICommunicationObject) _instance;
-                    if (ico?.State == CommunicationState.Faulted)
+                    
+                    if (ico != null && (ico.State == CommunicationState.Faulted || ico.State == CommunicationState.Closed))
                     {
                         ico.Abort();
                         _instance = null;
