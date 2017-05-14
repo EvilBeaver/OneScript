@@ -64,6 +64,8 @@ namespace OneScript.DebugProtocol
 
         void IVariableLocator.Hydrate(IDebuggerService process)
         {
+            if (Variables != null)
+                return;
             var variables = process.GetVariables(Index, new int[0]);
             Variables = variables;
         }

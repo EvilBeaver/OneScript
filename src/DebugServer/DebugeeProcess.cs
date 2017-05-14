@@ -30,7 +30,6 @@ namespace DebugServer
     {
 
         private Process _process;
-        private TcpClient _client;
 
         private bool _terminated;
         private bool _stdoutEOF;
@@ -168,10 +167,8 @@ namespace DebugServer
 
         }
 
-        public void FillFrameVariables(StackFrame frame)
+        public void FillVariables(IVariableLocator locator)
         {
-            SessionLog.WriteLine("trying hydrate frame variables");
-            var locator = (IVariableLocator) frame;
             locator.Hydrate(_debugger.Instance);
         }
 

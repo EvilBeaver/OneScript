@@ -132,7 +132,6 @@ namespace oscript.DebugServer
         public OneScript.DebugProtocol.Variable[] GetVariables(int frameId, int[] path)
         {
             var locals =_machine.GetFrameLocals(frameId);
-            
             foreach (var step in path)
             {
                 var variable = locals[step];

@@ -9,6 +9,7 @@ namespace OneScript.DebugProtocol
     public interface IVariableLocator : IEnumerable<Variable>
     {
         int Count { get; }
+
         Variable this[int index] { get; }
 
         void Hydrate(IDebuggerService process);
@@ -83,6 +84,8 @@ namespace OneScript.DebugProtocol
 
         void IVariableLocator.Hydrate(IDebuggerService process)
         {
+            if(_variables != null)
+                return;
             var variables = process.GetVariables(_stackFrameIndex, _path);
             _variables = variables;
         }

@@ -283,14 +283,7 @@ namespace DebugServer
                 SendErrorResponse(response, 10001, "No active stackframe");
                 return;
             }
-            SessionLog.WriteLine("Scopes try get variables");
-            if (frame.Variables == null)
-            {
-                _process.FillFrameVariables(frame);
-            }
-
-            Debug.Assert(frame.Variables != null);
-
+            
             var frameVariablesHandle = _variableHandles.Create(frame);
             var scope = new Scope("Локальные переменные", frameVariablesHandle);
             SendResponse(response, new ScopesResponseBody(new Scope[] {scope}));
@@ -306,16 +299,25 @@ namespace DebugServer
                 SendErrorResponse(response, 10001, "No active stackframe");
                 return;
             }
-            
+
+            _process.FillVariables(variables);
+
             var responseArray = new VSCodeDebug.Variable[variables.Count];
 
             for (int i = 0; i < responseArray.Length; i++)
             {
+                var variable = variables[i];
+
+                if (variable.IsStructured && variable.ChildrenHandleID == 0)
+                {
+                    variable.ChildrenHandleID = _variableHandles.Create(variables.CreateChildLocator(i));
+                }
+
                 responseArray[i] = new VSCodeDebug.Variable(
-                    variables[i].Name,
-                    variables[i].Presentation,
-                    variables[i].TypeName,
-                    variables[i].IsStructured? _variableHandles.Create(variables.CreateChildLocator(i)) : 0 );
+                    variable.Name,
+                    variable.Presentation,
+                    variable.TypeName,
+                    variable.ChildrenHandleID);
             }
 
             SendResponse(response, new VariablesResponseBody(responseArray));
