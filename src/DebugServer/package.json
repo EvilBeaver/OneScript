@@ -47,7 +47,7 @@
             "name": "Отладка 1Script",
             "type": "oscript",
             "request": "launch",
-            "program": "${workspaceRoot}/main.os",
+            "program": "${file}",
             "args": [],
             "cwd": "${workspaceRoot}",
             "runtimeExecutable": null,
