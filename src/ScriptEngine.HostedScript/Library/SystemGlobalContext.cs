@@ -25,6 +25,7 @@ namespace ScriptEngine.HostedScript.Library
 		private SymbolsContext _symbols;
         private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
+        private readonly SystemEnvironmentContext _systemEnvironmentContext;
 
         public SystemGlobalContext()
         {
