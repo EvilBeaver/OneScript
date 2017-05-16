@@ -151,23 +151,38 @@ namespace ScriptEngine.HostedScript.Library
 			return _types;
 		}
 
+		static TypeTypeValue TypeNumber()
+		{
+			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.Number));
+		}
+
+		static TypeTypeValue TypeBoolean()
+		{
+			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.Boolean));
+		}
+
+		static TypeTypeValue TypeString()
+		{
+			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.String));
+		}
+
 		public static TypeDescription StringType(int length = 0,
 		                                         AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
 		{
 			var stringQualifier = new StringQualifiers(length, allowedLength);
-			return new TypeDescription(ConstructTypeList(ValueFactory.Create("Строка")), null, stringQualifier);
+			return new TypeDescription(new TypeTypeValue[] { TypeString() }, null, stringQualifier);
 		}
 
 		public static TypeDescription IntegerType(int length = 10,
 		                                          AllowedSignEnum allowedSign = AllowedSignEnum.Any)
 		{
 			var numberQualifier = new NumberQualifiers(length, 0, allowedSign);
-			return new TypeDescription(ConstructTypeList(ValueFactory.Create("Число")), numberQualifier);
+			return new TypeDescription(new TypeTypeValue[] { TypeNumber() }, numberQualifier);
 		}
 
 		public static TypeDescription BooleanType()
 		{
-			return new TypeDescription(ConstructTypeList(ValueFactory.Create("Булево")));
+			return new TypeDescription(new TypeTypeValue[] { TypeBoolean() });
 		}
 
 		[ScriptConstructor]
