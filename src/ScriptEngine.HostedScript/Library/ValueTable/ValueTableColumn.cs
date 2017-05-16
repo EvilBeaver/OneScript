@@ -5,9 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
 
@@ -34,7 +31,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
             _name = Name;
             _title = Title;
-			_valueType = Type ?? new TypeDescription();
+            _valueType = Type ?? new TypeDescription();
             _width = Width;
 
             _owner = new WeakReference(Owner);
@@ -84,7 +81,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// </summary>
         /// <value>ОписаниеТипа</value>
         [ContextProperty("ТипЗначения", "ValueType")]
-		public TypeDescription ValueType
+        public TypeDescription ValueType
         {
             get { return _valueType; }
         }
