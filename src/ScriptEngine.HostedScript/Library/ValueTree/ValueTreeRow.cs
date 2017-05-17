@@ -65,13 +65,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return _owner;
         }
 
-        private IValue TryValue(ValueTreeColumn column)
-        {
-            IValue value;
-            if (_data.TryGetValue(column, out value))
-                return value;
-            return ValueFactory.Create(); // TODO: Определять пустое значение для типа колонки
-        }
+		private IValue TryValue(ValueTreeColumn column)
+		{
+			IValue value;
+			if (_data.TryGetValue(column, out value))
+			{
+				return value;
+			}
+			return column.ValueType.AdjustValue();
+		}
 
         /// <summary>
         /// Получает значение по индексу.
@@ -96,28 +98,28 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return TryValue(column);
         }
 
-        /// <summary>
-        /// Устанавливает значение по индексу.
-        /// </summary>
-        /// <param name="index">Число. Индекс параметра, которому задаётся значение.</param>
-        /// <param name="value">Произвольный. Новое значение.</param>
-        [ContextMethod("Установить", "Set")]
-        public void Set(int index, IValue value)
-        {
-            var column = Owner().Columns.FindColumnByIndex(index);
-            _data[column] = value;
-        }
+		/// <summary>
+		/// Устанавливает значение по индексу.
+		/// </summary>
+		/// <param name="index">Число. Индекс параметра, которому задаётся значение.</param>
+		/// <param name="value">Произвольный. Новое значение.</param>
+		[ContextMethod("Установить", "Set")]
+		public void Set(int index, IValue value)
+		{
+			var column = Owner().Columns.FindColumnByIndex(index);
+			_data[column] = column.ValueType.AdjustValue(value);
+		}
 
-        public void Set(IValue index, IValue value)
-        {
-            var column = Owner().Columns.GetColumnByIIndex(index);
-            _data[column] = value;
-        }
+		public void Set(IValue index, IValue value)
+		{
+			var column = Owner().Columns.GetColumnByIIndex(index);
+			_data[column] = column.ValueType.AdjustValue(value);
+		}
 
-        public void Set(ValueTreeColumn column, IValue value)
-        {
-            _data[column] = value;
-        }
+		public void Set(ValueTreeColumn column, IValue value)
+		{
+			_data[column] = column.ValueType.AdjustValue(value);
+		}
 
         /// <summary>
         /// Возвращает уровень вложенности строки в дереве.
@@ -183,7 +185,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             }
             else
             {
-                _data[column] = newVal;
+                _data[column] = column.ValueType.AdjustValue(newVal);
             }
         }
 
@@ -200,7 +202,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            _data[GetColumnByIIndex(index)] = val;
+            var column = GetColumnByIIndex(index);
+            _data[GetColumnByIIndex(index)] = column.ValueType.AdjustValue(val);
         }
 
 
