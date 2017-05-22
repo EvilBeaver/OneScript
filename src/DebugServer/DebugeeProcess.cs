@@ -183,5 +183,10 @@ namespace DebugServer
                 throw new Exception(e.Message);
             }
         }
+
+        public void Next()
+        {
+            _debugger.Instance.Next();
+        }
     }
 }

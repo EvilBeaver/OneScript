@@ -129,7 +129,6 @@ namespace ScriptEngine.Machine
 
         public bool SetBreakpoint(string source, int line, out int id)
         {
-            Console.WriteLine($"set break: {source}:{line}");
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
@@ -138,6 +137,67 @@ namespace ScriptEngine.Machine
             id = source.GetHashCode() + line;
             return true;
         }
+
+        public void StopAtNextLine()
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+    
+            _stopManager.AddNextLineStop(_currentFrame);
+        }
+
+
+        public IValue Evaluate(string expression, bool separate = false)
+        {
+            var code = CompileExpressionModule(expression);
+
+            MachineInstance runner;
+            if (separate)
+            {
+                runner = new MachineInstance();
+                runner._scopes = new List<Scope>(_scopes);
+            }
+            else
+                runner = this;
+
+            var frame = new ExecutionFrame();
+            frame.MethodName = code.ModuleInfo.ModuleName;
+            frame.Locals = new IVariable[0];
+            frame.InstructionPointer = 0;
+            var curModule = _module;
+
+            var mlocals = new Scope();
+            mlocals.Instance = new UserScriptContextInstance(code);
+            mlocals.Detachable = true;
+            mlocals.Methods = TopScope.Methods;
+            mlocals.Variables = _currentFrame.Locals;
+            runner._scopes.Add(mlocals);
+
+            try
+            {
+                if (!separate)
+                    PushFrame();
+
+                runner.SetFrame(frame);
+                runner.SetModule(code);
+                runner.MainCommandLoop();
+            }
+            finally
+            {
+                if (!separate)
+                {
+                    DetachTopScope(out mlocals);
+                    PopFrame();
+                    SetModule(curModule);
+                }
+            }
+
+            var result = runner._operationStack.Pop();
+
+            return result;
+
+        }
+
 
         #endregion
 
@@ -906,7 +966,7 @@ namespace ScriptEngine.Machine
             else
             {
                 // при вызове библиотечного метода (из другого scope)
-                // статус вызова текущего frame не должен изменяться.
+                // статус вызова текущего frames не должен изменяться.
                 //
                 needsDiscarding = _currentFrame.DiscardReturnValue;
                 CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
@@ -2342,57 +2402,6 @@ namespace ScriptEngine.Machine
 
         #endregion
 
-        public IValue Evaluate(string expression, bool separate = false)
-        {
-            var code = CompileExpressionModule(expression);
-
-            MachineInstance runner;
-            if (separate)
-            {
-                runner = new MachineInstance();
-                runner._scopes = new List<Scope>(_scopes);
-            }
-            else
-                runner = this;
-
-            var frame = new ExecutionFrame();
-            frame.MethodName = code.ModuleInfo.ModuleName;
-            frame.Locals = new IVariable[0];
-            frame.InstructionPointer = 0;
-            var curModule = _module;
-
-            var mlocals = new Scope();
-            mlocals.Instance = new UserScriptContextInstance(code);
-            mlocals.Detachable = true;
-            mlocals.Methods = TopScope.Methods;
-            mlocals.Variables = _currentFrame.Locals;
-            runner._scopes.Add(mlocals);
-            
-            try
-            {
-                if(!separate)
-                    PushFrame();
-
-                runner.SetFrame(frame);
-                runner.SetModule(code);
-                runner.MainCommandLoop();
-            }
-            finally
-            {
-                if (!separate)
-                {
-                    DetachTopScope(out mlocals);
-                    PopFrame();
-                    SetModule(curModule);
-                }
-            }
-
-            var result = runner._operationStack.Pop();
-
-            return result;
-
-        }
-
         private LoadedModule CompileExpressionModule(string expression)
         {
             var ctx = ExtractCompilerContext();
@@ -2473,5 +2482,7 @@ namespace ScriptEngine.Machine
                 FrameObject = frame
             };
         }
+
+      
     }
 }

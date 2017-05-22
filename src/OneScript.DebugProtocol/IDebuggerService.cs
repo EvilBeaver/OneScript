@@ -42,8 +42,23 @@ namespace OneScript.DebugProtocol
         [OperationContract]
         Variable[] GetVariables(int frameIndex, int[] path);
 
+        /// <summary>
+        /// Вычисление выражения на остановленном процессе
+        /// </summary>
+        /// <param name="contextFrame">Кадр стека, относительно которого вычисляем</param>
+        /// <param name="expression">Выражение</param>
+        /// <returns>Переменная с результатом</returns>
         [OperationContract]
         Variable Evaluate(int contextFrame, string expression);
+
+        [OperationContract]
+        void Next();
+
+        [OperationContract]
+        void StepIn();
+
+        [OperationContract]
+        void StepOut();
     }
 
     public interface IDebugEventListener

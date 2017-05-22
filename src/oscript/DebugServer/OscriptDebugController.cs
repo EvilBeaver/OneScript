@@ -183,6 +183,22 @@ namespace oscript.DebugServer
             }
         }
 
+        public void Next()
+        {
+            _machine.StopAtNextLine();
+            _debugCommandEvent.Set();
+        }
+
+        public void StepIn()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void StepOut()
+        {
+            throw new NotImplementedException();
+        }
+
         private static bool HasProperties(IValue variable)
         {
             if (variable.DataType == DataType.Object)

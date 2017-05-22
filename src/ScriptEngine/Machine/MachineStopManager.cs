@@ -10,7 +10,8 @@ namespace ScriptEngine.Machine
     {
         SourceLine,
         MethodEntry,
-        MethodReturn
+        MethodReturn,
+        NextLine
     }
 
     struct StopHandle
@@ -18,7 +19,7 @@ namespace ScriptEngine.Machine
         public StopKind kind;
         public string source;
         public int line;
-        public ExecutionFrame frame;
+        public ExecutionFrame[] frames;
     }
 
     class MachineStopManager
@@ -35,6 +36,15 @@ namespace ScriptEngine.Machine
             });
         }
 
+        internal void AddNextLineStop(ExecutionFrame currentFrame)
+        {
+            _registeredStops.Add(new StopHandle()
+            {
+                kind = StopKind.NextLine,
+                frames = new []{ currentFrame }
+            });
+        }
+
         internal bool ShouldStopHere(string module, ExecutionFrame frame)
         {
             for (int i = _registeredStops.Count-1; i >=0; i--)
@@ -42,6 +52,12 @@ namespace ScriptEngine.Machine
                 var stop = _registeredStops[i];
                 if (stop.kind == StopKind.SourceLine && stop.source == module && stop.line == frame.LineNumber)
                 {
+                    return true;
+                }
+
+                if (stop.kind == StopKind.NextLine && stop.frames.Contains(frame))
+                {
+                    _registeredStops.RemoveAt(i);
                     return true;
                 }
             }
