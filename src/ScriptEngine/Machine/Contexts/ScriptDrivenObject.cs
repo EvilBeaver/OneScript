@@ -23,6 +23,16 @@ namespace ScriptEngine.Machine.Contexts
         private readonly Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
+        ~ScriptDrivenObject()
+        {
+            var methId = GetScriptMethod("деструктор");
+            if (methId > -1)
+            {
+                CallAsProcedure(methId, new IValue[0]);
+            }
+
+        }
+
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
         }
