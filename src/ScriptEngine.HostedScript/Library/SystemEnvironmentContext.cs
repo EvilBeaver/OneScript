@@ -53,6 +53,26 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
+        /// Имя пользователя ОС с учетом домена
+        /// Формат строки: \\ИмяДомена\ИмяПользователя. 
+        /// </summary>
+        [ContextProperty("ПользовательОС", "OSUser")]
+        public string OSUser
+        {
+            get
+            {
+                string DomainName = System.Environment.UserDomainName;
+
+                if (DomainName != "")
+                {
+                    return @"\\" + DomainName + @"\" + System.Environment.UserName;
+                }
+
+                return System.Environment.UserName;
+            }
+        }
+
+        /// <summary>
         /// Возвращает соответствие переменных среды. Ключом является имя переменной, а значением - значение переменной
         /// </summary>
         /// <example>
@@ -65,6 +85,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПеременныеСреды", "EnvironmentVariables")]
         public IRuntimeContextInstance EnvironmentVariables()
         {
+            SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.EnvironmentVariables' is deprecated, use 'EnvironmentVariables' from global context");
             var varsMap = new MapImpl();
             var allVars = System.Environment.GetEnvironmentVariables();
             foreach (DictionaryEntry item in allVars)
@@ -86,6 +107,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("УстановитьПеременнуюСреды","SetEnvironmentVariable")]
         public void SetEnvironmentVariable(string varName, string value)
         {
+            SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.SetEnvironmentVariable' is deprecated, use 'SetEnvironmentVariable' from global context");
             System.Environment.SetEnvironmentVariable(varName, value);
         }
 
@@ -97,6 +119,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьПеременнуюСреды", "GetEnvironmentVariable")]
         public IValue GetEnvironmentVariable(string varName)
         {
+            SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.GetEnvironmentVariable' is deprecated, use 'GetEnvironmentVariable' from global context");
             string value = System.Environment.GetEnvironmentVariable(varName);
             if (value == null)
                 return ValueFactory.Create();
