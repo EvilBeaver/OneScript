@@ -1463,18 +1463,43 @@ namespace ScriptEngine.Compiler
 
             PushStructureToken(Token.ClosePar);
             List<bool> arguments = new List<bool>();
-            
-            NextToken();
-            while (_lastExtractedLexem.Token != Token.ClosePar)
+
+            try
             {
-                if (_lastExtractedLexem.Token == Token.Comma)
+                NextToken(); // съели открывающую скобку
+                while (_lastExtractedLexem.Token != Token.ClosePar)
+                {
+                    PushPassedArgument(arguments);
+                }
+
+                if (_lastExtractedLexem.Token != Token.ClosePar)
+                    throw CompilerException.TokenExpected(")");
+
+                NextToken(); // съели закрывающую скобку
+            }
+            finally
+            {
+                PopStructureToken();
+            }
+            
+            return arguments.ToArray();
+        }
+
+        private void PushPassedArgument(IList<bool> arguments)
+        {
+            if (_lastExtractedLexem.Token == Token.Comma)
+            {
+                AddCommand(OperationCode.PushDefaultArg, 0);
+                arguments.Add(false);
+                NextToken();
+                if (_lastExtractedLexem.Token == Token.ClosePar)
                 {
                     AddCommand(OperationCode.PushDefaultArg, 0);
                     arguments.Add(false);
-                    NextToken();
-                    continue;
                 }
-
+            }
+            else if (_lastExtractedLexem.Token != Token.ClosePar)
+            {
                 BuildExpression(Token.Comma);
                 arguments.Add(true);
                 if (_lastExtractedLexem.Token == Token.Comma)
@@ -1482,20 +1507,11 @@ namespace ScriptEngine.Compiler
                     NextToken();
                     if (_lastExtractedLexem.Token == Token.ClosePar)
                     {
-                        // список аргументов кончился
                         AddCommand(OperationCode.PushDefaultArg, 0);
                         arguments.Add(false);
                     }
                 }
             }
-
-            if (_lastExtractedLexem.Token != Token.ClosePar)
-                throw CompilerException.TokenExpected(")");
-
-            NextToken(); // съели закрывающую скобку
-            PopStructureToken();
-
-            return arguments.ToArray();
         }
 
         private void BuildLoadVariable(string identifier)
