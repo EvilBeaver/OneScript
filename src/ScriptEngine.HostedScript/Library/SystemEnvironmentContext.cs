@@ -120,14 +120,35 @@ namespace ScriptEngine.HostedScript.Library
         //{
         //    get
         //    {
-        //        return new SpecialFolder();
+        //        return new ServiceStartModeEnum();
         //    }
         //}
 
         [ContextMethod("ПолучитьПутьПапки")]
         public string GetFolderPath(IValue folder)
         {
-            return System.Environment.GetFolderPath((System.Environment.SpecialFolder)folder.AsNumber());
+            var val = "";
+            System.Console.WriteLine(folder.SystemType.Name);
+
+            switch (((CLREnumValueWrapper<SpecialFolder>)folder).UnderlyingValue)
+            {
+                case SpecialFolder.ApplicationData: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.ApplicationData)); break;
+                case SpecialFolder.CommonApplicationData: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.CommonApplicationData)); break;
+                case SpecialFolder.CommonTemplates: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.CommonTemplates)); break;
+                case SpecialFolder.Desktop: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.Desktop)); break;
+                case SpecialFolder.DesktopDirectory: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.DesktopDirectory)); break;
+                case SpecialFolder.Fonts: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.Fonts)); break;
+                case SpecialFolder.LocalApplicationData: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.LocalApplicationData)); break;
+                case SpecialFolder.MyMusic: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.MyMusic)); break;
+                case SpecialFolder.MyPictures: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.MyPictures)); break;
+                case SpecialFolder.MyVideos: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.MyVideos)); break;
+                case SpecialFolder.Personal: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.Personal)); break;
+                case SpecialFolder.Templates: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.Templates)); break;
+                case SpecialFolder.UserProfile: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.UserProfile)); break;
+            }
+            return val;
+
+            //return System.Environment.GetFolderPath((System.Environment.SpecialFolder)folder.AsNumber());
         }
 
         /// <summary>
@@ -210,56 +231,5 @@ namespace ScriptEngine.HostedScript.Library
         {
             return new SystemEnvironmentContext();
         }
-    }
-
-    [SystemEnum("СпециальнаяПапка", "SpecialFolder")]
-    class ServiceStartModeEnum : EnumerationContext
-    {
-        private ServiceStartModeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-            : base(typeRepresentation, valuesType)
-        {
-
-        }
-
-        public static ServiceStartModeEnum CreateInstance()
-        {
-            ServiceStartModeEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеРежимЗапуска", typeof(ServiceStartModeEnum));
-            var enumValueType = TypeManager.RegisterType("РежимЗапуска", typeof(CLREnumValueWrapper<SpecialFolder>));
-
-            instance = new ServiceStartModeEnum(type, enumValueType);
-
-            instance.AddValue("РепозиторийДокументов", "Personal", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.Personal));
-            instance.AddValue("ДанныеПриложений", "ApplicationData", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.ApplicationData));
-            instance.AddValue("ЛокальныйКаталогДанныхПриложений", "LocalApplicationData", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.LocalApplicationData));
-            instance.AddValue("КаталогРабочийСтол", "Desktop", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.Desktop));
-            instance.AddValue("Вручную", "DesktopDirectory", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.DesktopDirectory));
-            instance.AddValue("System", "MyMusic", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.MyMusic));
-            instance.AddValue("System", "MyPictures", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.MyPictures));
-            instance.AddValue("System", "Templates", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.Templates));
-            instance.AddValue("System", "MyVideos", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.MyVideos));
-            instance.AddValue("System", "CommonTemplates", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.CommonTemplates));
-            instance.AddValue("System", "UserProfile", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.UserProfile));
-            instance.AddValue("System", "CommonApplicationData", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.CommonApplicationData));
-
-            return instance;
-        }
-    }
-
-    public enum SpecialFolder
-    {
-        Personal = 0x05,
-        ApplicationData = 0x1a,
-        LocalApplicationData = 0x1c,
-        Desktop = 0x00,
-        DesktopDirectory = 0x10,
-        MyMusic = 0x0d,
-        MyPictures = 0x27,
-        Templates = 0x15,
-        MyVideos = 0x0e,
-        CommonTemplates = 0x2d,
-        Fonts = 0x14,
-        UserProfile = 0x28,
-        CommonApplicationData = 0x23
     }
 }
