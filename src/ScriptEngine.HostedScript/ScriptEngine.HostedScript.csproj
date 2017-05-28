@@ -94,6 +94,8 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Library\DriveInfo\DriveInfo.cs" />
+    <Compile Include="Library\DriveInfo\DriveTypeEnum.cs" />
     <Compile Include="EngineConfigProvider.cs" />
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
