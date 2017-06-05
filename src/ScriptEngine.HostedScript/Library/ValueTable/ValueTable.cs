@@ -477,7 +477,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             foreach (ValueTableColumn Column in columns)
             {
-                Result.Columns.Add(Column.Name, Column.ValueType, Column.Title); // TODO: Доработать после увеличения предела количества параметров
+                Result.Columns.Add(Column.Name, Column.ValueType, Column.Title, Column.Width);
             }
 
             return Result;

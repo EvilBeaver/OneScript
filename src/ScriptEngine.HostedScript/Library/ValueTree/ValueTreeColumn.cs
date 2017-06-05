@@ -21,7 +21,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     {
         private string _title;
         private string _name;
-        private IValue _valueType;
+        private TypeDescription _valueType;
         private int _width;
         private readonly ValueTreeColumnCollection _owner;
 
@@ -29,11 +29,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         // Порядковый номер колонки не может быть использовать из-за своей изменчивости.
         private readonly int _id;
 
-        public ValueTreeColumn(ValueTreeColumnCollection Owner, int id, string Name, string Title, IValue Type, int Width)
+        public ValueTreeColumn(ValueTreeColumnCollection Owner, int id, string Name, string Title, TypeDescription Type, int Width)
         {
             _name = Name;
             _title = Title ?? Name;
-            _valueType = Type;
+            _valueType = Type ?? new TypeDescription();
             _width = Width;
 
             _owner = Owner;
@@ -60,7 +60,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         [ContextProperty("Заголовок", "Title")]
         public string Title
         {
-            get { return _title == null ? _name : _title; }
+            get { return _title ?? _name; }
             set { _title = value; }
         }
 
@@ -81,10 +81,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         }
 
         [ContextProperty("ТипЗначения", "ValueType")]
-        public IValue ValueType
+        public TypeDescription ValueType
         {
             get { return _valueType; }
-            set { _valueType = value; } // TODO: Проверить тип
         }
 
         [ContextProperty("Ширина", "Width")]

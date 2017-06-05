@@ -1877,35 +1877,10 @@ namespace ScriptEngine.Machine
             string result = "";
             if (lineNumber >= 1)
             {
-                int lineStart = 0;
-                int currentLineNumber = 1;
-                while (true)
-                {
-                    int lineEnd = strArg.IndexOf('\n', lineStart);
-                    if (lineEnd > 0)
-                    {
-                        if (currentLineNumber == lineNumber)
-                        {
-                            if (lineEnd > lineStart)
-                                result = strArg.Substring(lineStart, lineEnd - lineStart);
-
-                            break;
-                        }
-
-                        lineStart = lineEnd + 1;
-                        currentLineNumber++;
-                    }
-                    else
-                    {
-                        if (currentLineNumber == lineNumber)
-                        {
-                            result = strArg.Substring(lineStart);
-                        }
-                        break;
-                    }
-                }
+                string[] subStrVals = strArg.Split(new Char[] { '\n' }, lineNumber + 1);
+                result = subStrVals[lineNumber - 1];
             }
-            
+
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
         }
