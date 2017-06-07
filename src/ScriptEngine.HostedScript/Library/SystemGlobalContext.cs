@@ -89,10 +89,9 @@ namespace ScriptEngine.HostedScript.Library
         /// Подключенный сценарий выступает, как самостоятельный класс, создаваемый оператором Новый
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
-        /// <param name="typeName">Имя типа, которое будет иметь новый класс. Экземпляры класса создаются оператором Новый.
+        /// <param name="typeName">Имя типа, которое будет иметь новый класс. Экземпляры класса создаются оператором Новый. </param>
         /// <example>ПодключитьСценарий("C:\file.os", "МойОбъект");
         /// А = Новый МойОбъект();</example>
-        /// </param>
         [ContextMethod("ПодключитьСценарий", "AttachScript")]
         public void AttachScript(string path, string typeName)
         {
@@ -134,11 +133,11 @@ namespace ScriptEngine.HostedScript.Library
         /// Подключает внешнюю сборку среды .NET (*.dll) и регистрирует классы 1Script, объявленные в этой сборке.
         /// Публичные классы, отмеченные в dll атрибутом ContextClass, будут импортированы аналогично встроенным классам 1Script.
         /// Загружаемая сборка должна ссылаться на сборку ScriptEngine.dll
+	/// </summary>
         /// <example>
         /// ПодключитьВнешнююКомпоненту("C:\MyAssembly.dll");
         /// КлассИзКомпоненты = Новый КлассИзКомпоненты(); // тип объявлен внутри компоненты
         /// </example>
-        /// </summary>
         /// <param name="dllPath">Путь к внешней компоненте</param>
         [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
         public void AttachAddIn(string dllPath)
