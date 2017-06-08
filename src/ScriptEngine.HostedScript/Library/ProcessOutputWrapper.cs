@@ -213,7 +213,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (_process.HasExited)
             {
-                _process.WaitForExit(); // ожидание закрытия потоков
+                _process.WaitForExit(15000); // ожидание закрытия потоков
             }
 
             _locker.EnterReadLock();

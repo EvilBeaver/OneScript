@@ -210,7 +210,7 @@ namespace ScriptEngine.HostedScript.Library
             _p.Dispose();
         }
 
-        public static ProcessContext Create(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
+        public static ProcessContext Create(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null, MapImpl env = null)
         {
             var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
             sInfo.UseShellExecute = false;
@@ -229,6 +229,14 @@ namespace ScriptEngine.HostedScript.Library
 
                 sInfo.StandardOutputEncoding = enc;
                 sInfo.StandardErrorEncoding = enc;
+            }
+
+            if (env != null)
+            {
+                foreach (var kv in env)
+                {
+                    sInfo.EnvironmentVariables[kv.Key.AsString()] = kv.Value.AsString();
+                }
             }
 
             var p = new System.Diagnostics.Process();

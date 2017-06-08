@@ -322,9 +322,9 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="redirectInput">Перехватывать стандартный поток stdin</param>
         /// <param name="encoding">Кодировка стандартных потоков вывода и ошибок</param>
         [ContextMethod("СоздатьПроцесс", "CreateProcess")]
-        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
+        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null, MapImpl env = null)
         {
-            return ProcessContext.Create(cmdLine, currentDir, redirectOutput, redirectInput, encoding);
+            return ProcessContext.Create(cmdLine, currentDir, redirectOutput, redirectInput, encoding, env);
         }
 
         /// <summary>
