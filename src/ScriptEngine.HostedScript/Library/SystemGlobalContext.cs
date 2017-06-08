@@ -7,7 +7,11 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Threading;
+
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -499,6 +503,48 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
+
+        /// <summary>
+        /// Получает объект класса COM по его имени или пути. Подробнее см. синтакс-помощник от 1С.
+        /// </summary>
+        /// <param name="pathName">Путь к библиотеке</param>
+        /// <param name="className">Имя класса</param>
+        /// <returns>COMОбъект</returns>
+        [ContextMethod("ПолучитьCOMОбъект", "GetCOMObject")]
+        public IValue GetCOMObject(string pathName = null, string className = null)
+        {
+            var comObject = GetCOMObjectInternal(pathName, className);
+
+            return COMWrapperContext.Create(comObject);
+        }
+
+        /// <summary>
+        /// Ported from Microsoft.VisualBasic, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+        /// By JetBrains dotPeek decompiler
+        /// </summary>
+        private object GetCOMObjectInternal(string pathName = null, string className = null)
+        {
+            if (String.IsNullOrEmpty(className))
+            {
+                return Marshal.BindToMoniker(pathName);
+            }
+            else if (pathName == null)
+            {
+                return Marshal.GetActiveObject(className);
+            }
+            else if (pathName.Length == 0)
+            {
+                return Activator.CreateInstance(System.Type.GetTypeFromProgID(className));
+            }
+            else
+            {
+                var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
+                persistFile.Load(pathName, 0);
+                
+                return (object)persistFile;
+            }
+        }
+
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
@@ -619,7 +665,6 @@ namespace ScriptEngine.HostedScript.Library
         {
             _methods = new ContextMethodsMapper<SystemGlobalContext>();
         }
-
-
+        
     }
 }
