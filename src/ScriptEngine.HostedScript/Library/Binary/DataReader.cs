@@ -1,4 +1,10 @@
-﻿
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
 //using System;
 //using ScriptEngine.Machine;
 //using ScriptEngine.Machine.Contexts;
@@ -18,11 +24,16 @@
 //[ContextClass("ЧтениеДанных", "DataReader")]
 //class DataReader : AutoContext<DataReader>
 //{
-//private IValue _TextEncoding
-//private string _ConvertibleSplitterOfLines
-//private IValue _ByteOrder
-//private string _LineSplitter
-//private bool _ReadCompleted
+
+//private IValue _TextEncoding
+
+//private string _ConvertibleSplitterOfLines
+
+//private IValue _ByteOrder
+
+//private string _LineSplitter
+
+//private bool _ReadCompleted
 
 //public DataReader()
 //{
