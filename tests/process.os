@@ -134,7 +134,7 @@
 	|Mode can be one of these:
 	|  -measure    measures execution time
 	|  -compile    shows compiled module without execution
-	|  -check      provides syntax check
+	|  -check [-env=<entrypoint-file>]provides syntax check
 	|  -check -cgi provides syntax check in CGI-mode
 	|
 	|  -encoding=<encoding-name> set output encoding
