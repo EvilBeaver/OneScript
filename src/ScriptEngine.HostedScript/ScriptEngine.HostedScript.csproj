@@ -113,7 +113,6 @@
     <Compile Include="Library\Binary\MemoryStreamContext.cs" />
     <Compile Include="Library\Binary\ReadDataResult.cs" />
     <Compile Include="Library\Binary\GenericStream.cs" />
-    <Compile Include="Library\CommandLineArguments.cs" />
     <Compile Include="Library\ConsoleContext.cs" />
     <Compile Include="Library\EnvironmentVariablesImpl.cs" />
     <Compile Include="Library\FileContext.cs" />
