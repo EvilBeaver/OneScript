@@ -115,6 +115,7 @@
     <Compile Include="Library\Binary\GenericStream.cs" />
     <Compile Include="Library\CommandLineArguments.cs" />
     <Compile Include="Library\ConsoleContext.cs" />
+    <Compile Include="Library\EnvironmentVariablesImpl.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
     <Compile Include="Library\FixedArrayImpl.cs" />
@@ -146,6 +147,7 @@
     <Compile Include="Library\Net\TCPClient.cs" />
     <Compile Include="Library\Net\TCPServer.cs" />
     <Compile Include="Library\ProcessContext.cs" />
+    <Compile Include="Library\ProcessOutputWrapper.cs" />
     <Compile Include="Library\Regex\MatchCollectionImpl.cs" />
     <Compile Include="Library\Regex\MatchImpl.cs" />
     <Compile Include="Library\Regex\Regex.cs" />
@@ -159,7 +161,6 @@
     <Compile Include="Library\MapImpl.cs" />
     <Compile Include="Library\RandomNumberGenerator.cs" />
     <Compile Include="Library\Reflector.cs" />
-    <Compile Include="Library\SymbolsEnum.cs" />
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextDocumentContext.cs" />
     <Compile Include="Library\TextEncodingEnum.cs" />
@@ -210,6 +211,7 @@
     <Compile Include="Library\TypeDescription\IValueAdjuster.cs" />
     <Compile Include="Library\TypeDescription\BooleanTypeAdjuster.cs" />
     <Compile Include="Library\Xml\XmlNamespaceContext.cs" />
+    <Compile Include="Library\SymbolsContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
@@ -224,9 +226,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Library\TypeDescription\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

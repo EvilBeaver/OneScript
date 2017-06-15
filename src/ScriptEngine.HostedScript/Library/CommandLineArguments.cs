@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library
     /// Коллекция представляет собой массив в режиме "ТолькоДляЧтения". Обращение к аргументам осуществляется по порядковому индексу.
     /// </summary>
     [ContextClass("КоллекцияАргументовКоманднойСтроки", "CommandLineArgumentsCollection")]
-    class CommandLineArguments : ContextIValueImpl, ICollectionContext
+    public class CommandLineArguments : ContextIValueImpl, ICollectionContext
     {
         private readonly string[] _values;
 

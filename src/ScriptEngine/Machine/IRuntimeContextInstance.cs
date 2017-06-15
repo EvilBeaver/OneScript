@@ -19,6 +19,7 @@ namespace ScriptEngine.Machine
         IValue GetIndexedValue(IValue index);
         void SetIndexedValue(IValue index, IValue val);
 
+        IEnumerable<VariableInfo> GetProperties();
         int FindProperty(string name);
         bool IsPropReadable(int propNum);
         bool IsPropWritable(int propNum);
