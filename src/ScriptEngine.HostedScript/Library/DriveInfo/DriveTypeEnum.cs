@@ -1,90 +1,47 @@
 ﻿using ScriptEngine.Machine.Contexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ScriptEngine.Machine;
 
-namespace onescript_extensions.DriveInfo
+namespace ScriptEngine.HostedScript.Library.DriveInfo
 {
+    /// <summary>
+    /// Типы дисков:
+    /// - Диск является устройством оптических дисков, такие как компакт-ДИСК или DVD-диск.
+    /// - Диск является жестким диском.
+    /// - Диск является сетевым диском.
+    /// - Диск не имеет корневой каталог.
+    /// - Диск является диском ОЗУ.
+    /// - Диск является съемное запоминающее устройство, например, дисковод гибких дисков или USB-устройство флэш-памяти.
+    /// - Тип диска неизвестен.
+    /// </summary>
     [SystemEnum("ТипДиска", "DriveType")]
-    class DriveTypeEnum : EnumerationContext
+    public class DriveTypeEnum : EnumerationContext
     {
 
-        const System.IO.DriveType CDRom = System.IO.DriveType.CDRom;
-        //const int SHA1 = "SHA1";
-        //const int SHA256 = "SHA256";
-        //const int SHA384 = "SHA384";
-        //const int SHA512 = "SHA512";
-        //const int CRC32 = "CRC32";
-
-        //public DriveTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) : base(typeRepresentation, valuesType)
-        //{
-        //}
-
-        /// <summary>
-        /// Диск является устройством оптических дисков, такие как компакт-ДИСК или DVD-диск.
-        /// </summary>
-        [ContextProperty("ОптическийДиск")]
-        public int CDRom
+        private DriveTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
+            : base(typeRepresentation, valuesType)
         {
-            get { return (int)System.IO.DriveType.CDRom; }
+
         }
 
-        /// <summary>
-        /// Диск является жестким диском.
-        /// </summary>
-        [ContextProperty("ЖесткийДиск")]
-        public int Fixed
+        public static DriveTypeEnum CreateInstance()
         {
-            get { return (int)System.IO.DriveType.Fixed; }
-        }
+            DriveTypeEnum instance;
+            var type = TypeManager.RegisterType("ПеречислениеТипДиска", typeof(DriveTypeEnum));
+            var enumValueType = TypeManager.RegisterType("ТипДиска", typeof(CLREnumValueWrapper<System.IO.DriveType>));
 
-        /// <summary>
-        /// Диск является сетевым диском.
-        /// </summary>
-        [ContextProperty("СетевойДиск")]
-        public int Network
-        {
-            get { return (int)System.IO.DriveType.Network; }
-        }
+            instance = new DriveTypeEnum(type, enumValueType);
 
-        /// <summary>
-        /// Диск не имеет корневой каталог.
-        /// </summary>
-        [ContextProperty("НеИмеетКорневойКаталог")]
-        public int NoRootDirectory
-        {
-            get { return (int)System.IO.DriveType.NoRootDirectory; }
-        }
+            instance.AddValue("Неизвестный", "Unknown", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Unknown));
+            instance.AddValue("НеИмеетКорневойКаталог", "NoRootDirectory", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.NoRootDirectory));
+            instance.AddValue("СъемноеЗапоминающееУстройство", "Removable", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Removable));
+            instance.AddValue("ЖесткийДиск", "Fixed", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Fixed));
+            instance.AddValue("СетевойДиск", "Network", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Network));
+            instance.AddValue("ОптическийДиск", "CDRom", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.CDRom));
+            instance.AddValue("ДискОЗУ", "Ram", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Ram));
 
-        /// <summary>
-        /// Диск является диском ОЗУ.
-        /// </summary>
-        [ContextProperty("ДискОЗУ")]
-        public int Ram
-        {
-            get { return (int)System.IO.DriveType.Ram; }
-        }
-
-        /// <summary>
-        /// Диск является съемное запоминающее устройство, например, дисковод гибких дисков или USB-устройство флэш-памяти.
-        /// </summary>
-        [ContextProperty("СъемноеЗапоминающееУстройство")]
-        public int Removable
-        {
-            get { return (int)System.IO.DriveType.Removable; }
-        }
-
-        /// <summary>
-        /// Тип диска неизвестен.
-        /// </summary>
-        [ContextProperty("Неизвестный")]
-        public int Unknown
-        {
-            get { return (int)System.IO.DriveType.Unknown; }
+            return instance;
         }
 
     }
+
 }

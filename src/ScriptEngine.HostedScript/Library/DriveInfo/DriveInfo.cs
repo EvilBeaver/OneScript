@@ -2,13 +2,8 @@
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 
-namespace onescript_extensions.DriveInfo
+namespace ScriptEngine.HostedScript.Library.DriveInfo
 {
     [ContextClass("ИнформацияОДиске", "DriveInfo")]
     public class DriveInfo : AutoContext<DriveInfo>
@@ -17,7 +12,7 @@ namespace onescript_extensions.DriveInfo
 
         public DriveInfo(string driveName)
         {
-            DriveInfo = new System.IO.DriveInfo(driveName);
+            SystemDriveInfo = new System.IO.DriveInfo(driveName);
         }
 
         [ScriptConstructor]
@@ -33,7 +28,7 @@ namespace onescript_extensions.DriveInfo
         [ContextProperty("Доступно")]
         public Int64 AvailableFreeSpace
         {
-            get { return DriveInfo.AvailableFreeSpace; }
+            get { return SystemDriveInfo.AvailableFreeSpace; }
         }
 
         /// <summary>
@@ -42,13 +37,17 @@ namespace onescript_extensions.DriveInfo
         [ContextProperty("ИмяФС")]
         public string DriveFormat
         {
-            get { return DriveInfo.DriveFormat; }
+            get { return SystemDriveInfo.DriveFormat; }
         }
 
         [ContextProperty("ТипДиска", "DriveType")]
-        public DriveType DriveTypeProp
+        public IValue DriveTypeProp
         {
-            get { return ValueFactory.Create( DriveInfo.DriveType ); }
+            get {
+                var dte = DriveTypeEnum.CreateInstance();
+                //Console.WriteLine("index::"  + ((int)_driveInfo.DriveType) + "::" + dte.IndexOf(new CLREnumValueWrapper<System.IO.DriveType>(dte, _driveInfo.DriveType)));
+                return dte.GetPropValue((int)_driveInfo.DriveType);
+            }
         }
 
         /// <summary>
@@ -59,7 +58,7 @@ namespace onescript_extensions.DriveInfo
         {
             get
             {
-                return DriveInfo.IsReady;
+                return SystemDriveInfo.IsReady;
             }
         }
 
@@ -71,7 +70,7 @@ namespace onescript_extensions.DriveInfo
         {
             get
             {
-                return DriveInfo.Name;
+                return SystemDriveInfo.Name;
             }
         }
 
@@ -83,7 +82,7 @@ namespace onescript_extensions.DriveInfo
         {
             get
             {
-                return new FileContext(DriveInfo.RootDirectory.FullName);
+                return new FileContext(SystemDriveInfo.RootDirectory.FullName);
             }
         }
 
@@ -93,7 +92,7 @@ namespace onescript_extensions.DriveInfo
         [ContextProperty("ОбщийОбъемСвободногоМеста")]
         public Int64 TotalFreeSpace
         {
-            get { return DriveInfo.TotalFreeSpace; }
+            get { return SystemDriveInfo.TotalFreeSpace; }
         }
 
         /// <summary>
@@ -102,7 +101,7 @@ namespace onescript_extensions.DriveInfo
         [ContextProperty("РазмерДиска")]
         public Int64 TotalSize
         {
-            get { return DriveInfo.TotalSize; }
+            get { return SystemDriveInfo.TotalSize; }
         }
 
         /// <summary>
@@ -113,15 +112,15 @@ namespace onescript_extensions.DriveInfo
         {
             get
             {
-                return DriveInfo.VolumeLabel;
+                return SystemDriveInfo.VolumeLabel;
             }
             set
             {
-                DriveInfo.VolumeLabel = value;
+                SystemDriveInfo.VolumeLabel = value;
             }
         }
 
-        public System.IO.DriveInfo DriveInfo
+        public System.IO.DriveInfo SystemDriveInfo
         {
             get
             {

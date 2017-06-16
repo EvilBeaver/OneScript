@@ -8,21 +8,21 @@ using System.Text;
 namespace ScriptEngine.HostedScript.Library
 {
     [SystemEnum("СпециальнаяПапка", "SpecialFolder")]
-    class ServiceStartModeEnum : EnumerationContext
+    class SpecialFolderEnum : EnumerationContext
     {
-        private ServiceStartModeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
+        private SpecialFolderEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
 
         }
 
-        public static ServiceStartModeEnum CreateInstance()
+        public static SpecialFolderEnum CreateInstance()
         {
-            ServiceStartModeEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеСпециальнаяПапка", typeof(ServiceStartModeEnum));
+            SpecialFolderEnum instance;
+            var type = TypeManager.RegisterType("ПеречислениеСпециальнаяПапка", typeof(SpecialFolderEnum));
             var enumValueType = TypeManager.RegisterType("СпециальнаяПапка", typeof(CLREnumValueWrapper<SpecialFolder>));
 
-            instance = new ServiceStartModeEnum(type, enumValueType);
+            instance = new SpecialFolderEnum(type, enumValueType);
 
             instance.AddValue("РепозиторийДокументов", "Personal", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.Personal));
             instance.AddValue("ДанныеПриложений", "ApplicationData", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.ApplicationData));

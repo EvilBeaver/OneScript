@@ -153,7 +153,7 @@
     <Compile Include="Library\Regex\MatchCollectionImpl.cs" />
     <Compile Include="Library\Regex\MatchImpl.cs" />
     <Compile Include="Library\Regex\Regex.cs" />
-    <Compile Include="Library\ServiceStartModeEnum.cs" />
+    <Compile Include="Library\SpecialFolderEnum.cs" />
     <Compile Include="Library\SortDirectionEnum.cs" />
     <Compile Include="Library\StdTextReadStream.cs" />
     <Compile Include="Library\StdTextWriteStream.cs" />
