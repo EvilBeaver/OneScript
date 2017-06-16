@@ -119,7 +119,7 @@ namespace ScriptEngine.Machine.Contexts
                 _machine.ExecuteModuleBody();
             });
 
-            var methId = GetScriptMethod("конструктор", "constructor");
+            var methId = GetScriptMethod("ПриСозданииОбъекта", "OnObjectCreate");
             int constructorParamsCount = ConstructorParams.Count();
             
             if (methId > -1)

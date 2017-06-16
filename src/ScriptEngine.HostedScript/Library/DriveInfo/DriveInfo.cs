@@ -40,12 +40,15 @@ namespace ScriptEngine.HostedScript.Library.DriveInfo
             get { return SystemDriveInfo.DriveFormat; }
         }
 
+        /// <summary>
+        /// Возвращает тип диска
+        /// </summary>
+        /// <value>ТипДиска</value>
         [ContextProperty("ТипДиска", "DriveType")]
         public IValue DriveTypeProp
         {
             get {
                 var dte = DriveTypeEnum.CreateInstance();
-                //Console.WriteLine("index::"  + ((int)_driveInfo.DriveType) + "::" + dte.IndexOf(new CLREnumValueWrapper<System.IO.DriveType>(dte, _driveInfo.DriveType)));
                 return dte.GetPropValue((int)_driveInfo.DriveType);
             }
         }
