@@ -110,7 +110,25 @@ namespace ScriptEngine.HostedScript.Library
         {
             get { return System.Environment.TickCount; }
         }
-        
+
+        /// <summary>
+        /// Возвращает путь для специальной папки. Поддерживаемые значения:
+        /// 
+        /// * МоиДокументы / MyDocuments            
+        /// * ДанныеПриложений / ApplicationData
+        /// * ЛокальныйКаталогДанныхПриложений / LocalApplicationData            
+        /// * РабочийСтол / Desktop
+        /// * КаталогРабочийСтол / DesktopDirectory
+        /// * МояМузыка / MyMusic
+        /// * МоиРисунки / MyPictures
+        /// * Шаблоны / Templates
+        /// * МоиВидеозаписи / MyVideos
+        /// * ОбщиеШаблоны / CommonTemplates
+        /// * ПрофильПользователя / UserProfile
+        /// * ОбщийКаталогДанныхПриложения / CommonApplicationData
+        /// </summary>
+        /// <param name="folder">Тип: СпециальнаяПапка</param>
+        /// <returns>Строка</returns>
         [ContextMethod("ПолучитьПутьПапки")]
         public string GetFolderPath(IValue folder)
         {

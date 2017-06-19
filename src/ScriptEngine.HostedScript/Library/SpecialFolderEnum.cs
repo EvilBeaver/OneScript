@@ -12,6 +12,9 @@ using sysFolder = System.Environment.SpecialFolder;
 
 namespace ScriptEngine.HostedScript.Library
 {
+    /// <summary>
+    /// Системное перечисление для специальных папок.
+    /// </summary>
     [SystemEnum("СпециальнаяПапка", "SpecialFolder")]
     class SpecialFolderEnum : EnumerationContext
     {
