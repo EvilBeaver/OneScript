@@ -147,8 +147,7 @@ namespace ScriptEngine.HostedScript.Library
                 case SpecialFolder.UserProfile: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.UserProfile)); break;
             }
             return val;
-
-            //return System.Environment.GetFolderPath((System.Environment.SpecialFolder)folder.AsNumber());
+            
         }
 
         /// <summary>
