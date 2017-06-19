@@ -94,6 +94,8 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Library\DriveInfo\DriveInfo.cs" />
+    <Compile Include="Library\DriveInfo\DriveTypeEnum.cs" />
     <Compile Include="EngineConfigProvider.cs" />
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
@@ -150,6 +152,7 @@
     <Compile Include="Library\Regex\MatchCollectionImpl.cs" />
     <Compile Include="Library\Regex\MatchImpl.cs" />
     <Compile Include="Library\Regex\Regex.cs" />
+    <Compile Include="Library\SpecialFolderEnum.cs" />
     <Compile Include="Library\SortDirectionEnum.cs" />
     <Compile Include="Library\StdTextReadStream.cs" />
     <Compile Include="Library\StdTextWriteStream.cs" />

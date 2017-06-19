@@ -159,6 +159,15 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        /// <summary>
+        /// Воспроизводит звуковой сигнал.
+        /// </summary>
+        [ContextMethod("Сигнал")]
+        public void Beep()
+        {
+            System.Media.SystemSounds.Beep.Play();
+        }
+
         [ScriptConstructor]
         public static IRuntimeContextInstance Constructor()
         {
