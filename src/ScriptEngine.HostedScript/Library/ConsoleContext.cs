@@ -165,7 +165,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Сигнал")]
         public void Beep()
         {
-            System.Media.SystemSounds.Beep.Play();
+            Console.Beep();
         }
 
         [ScriptConstructor]
