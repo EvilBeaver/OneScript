@@ -154,17 +154,17 @@ namespace ScriptEngine.HostedScript.Library
         /// Возвращает массив строк, содержащий имена логических дисков текущего компьютера.
         /// </summary>
         [ContextProperty("ИменаЛогическихДисков")]
-        public ArrayImpl GetLogicalDrives
+        public FixedArrayImpl GetLogicalDrives
         {
             get
             {
-                ArrayImpl arr = new ArrayImpl();
+                var arr = new ArrayImpl();
                 var data = System.Environment.GetLogicalDrives();
                 foreach (var itm in data)
                 {
                     arr.Add(ValueFactory.Create(itm));
                 }
-                return arr;
+                return new FixedArrayImpl(arr);
             }
         }
 
