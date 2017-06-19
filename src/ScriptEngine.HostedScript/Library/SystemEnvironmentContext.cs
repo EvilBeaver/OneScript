@@ -128,8 +128,7 @@ namespace ScriptEngine.HostedScript.Library
         public string GetFolderPath(IValue folder)
         {
             var val = "";
-            System.Console.WriteLine(folder.SystemType.Name);
-
+            
             switch (((CLREnumValueWrapper<SpecialFolder>)folder).UnderlyingValue)
             {
                 case SpecialFolder.ApplicationData: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.ApplicationData)); break;
