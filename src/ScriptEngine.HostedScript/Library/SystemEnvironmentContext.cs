@@ -127,25 +127,11 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьПутьПапки")]
         public string GetFolderPath(IValue folder)
         {
-            var val = "";
-            
-            switch (((CLREnumValueWrapper<SpecialFolder>)folder).UnderlyingValue)
-            {
-                case SpecialFolder.ApplicationData: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.ApplicationData)); break;
-                case SpecialFolder.CommonApplicationData: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.CommonApplicationData)); break;
-                case SpecialFolder.CommonTemplates: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.CommonTemplates)); break;
-                case SpecialFolder.Desktop: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.Desktop)); break;
-                case SpecialFolder.DesktopDirectory: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.DesktopDirectory)); break;
-                case SpecialFolder.Fonts: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.Fonts)); break;
-                case SpecialFolder.LocalApplicationData: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.LocalApplicationData)); break;
-                case SpecialFolder.MyMusic: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.MyMusic)); break;
-                case SpecialFolder.MyPictures: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.MyPictures)); break;
-                case SpecialFolder.MyVideos: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.MyVideos)); break;
-                case SpecialFolder.Personal: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.Personal)); break;
-                case SpecialFolder.Templates: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.Templates)); break;
-                case SpecialFolder.UserProfile: val = System.Environment.GetFolderPath((System.Environment.SpecialFolder.UserProfile)); break;
-            }
-            return val;
+            var typedValue = folder as CLREnumValueWrapper<System.Environment.SpecialFolder>;
+            if (typedValue == null)
+                throw RuntimeException.InvalidArgumentType();
+
+            return System.Environment.GetFolderPath(typedValue.UnderlyingValue);
             
         }
 
