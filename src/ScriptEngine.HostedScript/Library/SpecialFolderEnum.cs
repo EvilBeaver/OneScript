@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library
 
             instance = new SpecialFolderEnum(type, enumValueType);
 
-            instance.AddValue("РепозиторийДокументов", "Personal", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.Personal));
+            instance.AddValue("МоиДокументы", "Personal", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.Personal));
             instance.AddValue("ДанныеПриложений", "ApplicationData", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.ApplicationData));
             instance.AddValue("ЛокальныйКаталогДанныхПриложений", "LocalApplicationData", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.LocalApplicationData));
             instance.AddValue("РабочийСтол", "Desktop", new CLREnumValueWrapper<SpecialFolder>(instance, SpecialFolder.Desktop));
