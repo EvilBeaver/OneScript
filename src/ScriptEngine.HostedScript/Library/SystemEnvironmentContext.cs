@@ -110,20 +110,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             get { return System.Environment.TickCount; }
         }
-
-
-        ///// <summary>
-        ///// Список специальных папок
-        ///// </summary>
-        //[ContextProperty("СпециальнаяПапка")]
-        //public IValue SpecialFolder
-        //{
-        //    get
-        //    {
-        //        return new ServiceStartModeEnum();
-        //    }
-        //}
-
+        
         [ContextMethod("ПолучитьПутьПапки")]
         public string GetFolderPath(IValue folder)
         {
