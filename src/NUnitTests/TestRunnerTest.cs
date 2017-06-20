@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.IO;
 using NUnit.Framework;
 
 namespace NUnitTests
@@ -10,29 +10,24 @@ namespace NUnitTests
         const int TEST_STATE_FAILED = 3;
 
         private EngineWrapperNUnit host;
+        private string solutionRoot;
 
         [OneTimeSetUp]
         public void Initialize()
         {
             host = new EngineWrapperNUnit();
             host.StartEngine();
+            solutionRoot = Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..");
+            host.Engine.InitExternalLibraries(Path.Combine(solutionRoot, "oscript-library", "src"), null);
         }
 
         [Test]
         public void RunEngineTests()
         {
-            host = new EngineWrapperNUnit();
-            host.StartEngine();
+            String testRunnerPath = Path.Combine(solutionRoot, "tests", "testrunner.os");
 
-            String testRunnerPath = System.IO.Path.Combine(
-                NUnit.Framework.TestContext.CurrentContext.TestDirectory, "..","..","..","..",
-                "tests", "testrunner.os"
-              );
-
-            NUnit.Framework.Assert.IsTrue(System.IO.File.Exists(testRunnerPath),
+            Assert.IsTrue(File.Exists(testRunnerPath),
                 "Запускатель тестов отсутствует по пути " + testRunnerPath);
-
-
 
             var result = host.RunTestScriptFromPath(testRunnerPath, "-runall " + new System.IO.FileInfo(testRunnerPath).Directory.FullName);
 
