@@ -216,11 +216,14 @@ namespace ScriptEngine.Machine
         {
             if(_currentFrame != null)
                 _callStack.Push(_currentFrame);
+
+            CodeStat_StopFrameStatistics();
         }
 
         private void PopFrame()
         {
             _currentFrame = _callStack.Pop();
+            CodeStat_ResumeFrameStatistics();
         }
 
         private void SetFrame(ExecutionFrame frame)
@@ -297,8 +300,44 @@ namespace ScriptEngine.Machine
             SetFrame(frame);
         }
 
+        private void PrepareCodeStatisticsData()
+        {
+            foreach (var method in _module.Methods)
+            {
+                var instructionPointer = method.EntryPoint;
+                while (instructionPointer < _module.Code.Length)
+                {
+                    if (_module.Code[instructionPointer].Code == OperationCode.LineNum)
+                    {
+                        var entry = new CodeStatEntry(
+                            CurrentScript?.Source,
+                            method.Signature.Name,
+                            _module.Code[instructionPointer].Argument
+                        );
+                        _codeStatCollector.MarkEntryReached(entry, count: 0);
+                    }
+
+                    if (_module.Code[instructionPointer].Code == OperationCode.Return)
+                    {
+                        break;
+                    }
+
+                    instructionPointer++;
+                }
+            }
+        }
+
         private void ExecuteCode()
         {
+            if (_codeStatCollector != null)
+            {
+                if (!_codeStatCollector.IsPrepared(CurrentScript?.Source))
+                {
+                    PrepareCodeStatisticsData();
+                    _codeStatCollector.MarkPrepared(CurrentScript?.Source);
+                }
+            }
+
             while (true)
             {
                 try
@@ -338,18 +377,27 @@ namespace ScriptEngine.Machine
             _codeStatCollector = collector;
         }
 
-        private void AddCodeStatStart()
+        private CodeStatEntry CurrentCodeEntry()
+        {
+            return new CodeStatEntry(CurrentScript?.Source, _currentFrame.MethodName, _currentFrame.LineNumber);
+        }
+
+        private void CodeStat_LineReached()
         {
             if (_codeStatCollector == null)
                 return;
 
-            var entry = new CodeStatEntry() {
-                ScriptFileName = CurrentScript?.Source,
-                SubName = _currentFrame.MethodName,
-                LineNumber = _currentFrame.LineNumber
-            };
+            _codeStatCollector.MarkEntryReached(CurrentCodeEntry());
+        }
 
-            _codeStatCollector.MarkEntryReached(entry);
+        private void CodeStat_StopFrameStatistics()
+        {
+            _codeStatCollector?.StopWatch(CurrentCodeEntry());
+        }
+
+        private void CodeStat_ResumeFrameStatistics()
+        {
+            _codeStatCollector?.ResumeWatch(CurrentCodeEntry());
         }
 
         private void MainCommandLoop()
@@ -361,10 +409,6 @@ namespace ScriptEngine.Machine
                 {
                     var command = _module.Code[_currentFrame.InstructionPointer];
                     _commands[(int)command.Code](command.Argument);
-
-                    if (command.Code == OperationCode.LineNum)
-                        AddCodeStatStart();
-
                 }
             }
             catch (RuntimeException)
@@ -718,17 +762,14 @@ namespace ScriptEngine.Machine
 
         private void CallFunc(int arg)
         {
-            bool needsDiscrding = MethodCallImpl(arg, true);
-            _currentFrame.DiscardReturnValue = needsDiscrding;
+            bool needsDiscarding = MethodCallImpl(arg, true);
+            _currentFrame.DiscardReturnValue = needsDiscarding;
         }
 
         private void CallProc(int arg)
         {
             bool needsDiscarding = MethodCallImpl(arg, false);
-            if (needsDiscarding)
-                _currentFrame.DiscardReturnValue = true;
-            else
-                _currentFrame.DiscardReturnValue = false;
+            _currentFrame.DiscardReturnValue = needsDiscarding;
         }
 
         private bool MethodCallImpl(int arg, bool asFunc)
@@ -1327,7 +1368,11 @@ namespace ScriptEngine.Machine
 
         private void LineNum(int arg)
         {
-            _currentFrame.LineNumber = arg;
+            if (_currentFrame.LineNumber != arg)
+            {
+                _currentFrame.LineNumber = arg;
+                CodeStat_LineReached();
+            }
             NextInstruction();
         }
 
@@ -1575,7 +1620,7 @@ namespace ScriptEngine.Machine
             var needle = _operationStack.Pop().AsString();
             var haystack = _operationStack.Pop().AsString();
 
-            var result = haystack.IndexOf(needle) + 1;
+            var result = haystack.IndexOf(needle, StringComparison.Ordinal) + 1;
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
         }
@@ -1702,35 +1747,10 @@ namespace ScriptEngine.Machine
             string result = "";
             if (lineNumber >= 1)
             {
-                int lineStart = 0;
-                int currentLineNumber = 1;
-                while (true)
-                {
-                    int lineEnd = strArg.IndexOf('\n', lineStart);
-                    if (lineEnd > 0)
-                    {
-                        if (currentLineNumber == lineNumber)
-                        {
-                            if (lineEnd > lineStart)
-                                result = strArg.Substring(lineStart, lineEnd - lineStart);
-
-                            break;
-                        }
-
-                        lineStart = lineEnd + 1;
-                        currentLineNumber++;
-                    }
-                    else
-                    {
-                        if (currentLineNumber == lineNumber)
-                        {
-                            result = strArg.Substring(lineStart);
-                        }
-                        break;
-                    }
-                }
+                string[] subStrVals = strArg.Split(new Char[] { '\n' }, lineNumber + 1);
+                result = subStrVals[lineNumber - 1];
             }
-            
+
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
         }

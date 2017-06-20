@@ -1,4 +1,10 @@
-﻿
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
 using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -15,7 +21,7 @@ namespace ScriptEngine.HostedScript.Library.Json
     /// Предназначен для организации последовательной записи объектов и текстов JSON.
     /// </summary>
     [ContextClass("ЗаписьJSON", "JSONWriter")]
-    class JSONWriter : AutoContext<JSONWriter>
+    public class JSONWriter : AutoContext<JSONWriter>
     {
         private const int INDENT_SIZE = 0;
 
@@ -368,7 +374,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// Определяет, будет ли добавлен маркер порядка байт (BOM) к результирующему файлу JSON.
         /// Внимание. Стандарт RFC7159 настоятельно рекомендует не добавлять маркер порядка байт (BOM) к документу JSON .
         /// Значение по умолчанию: Ложь. </param>
-        /// <param name="parameters">
+        /// <param name="settings">
         /// Параметры, используемые при открытии файла для настройки записи в формате JSON. </param>
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string fileName, string encoding = null, IValue addBOM = null, IValue settings = null)

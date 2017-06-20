@@ -27,6 +27,8 @@ namespace ScriptEngine
             _currentContext = new ModuleCompilerContext(outerContext);
         }
 
+        public bool ProduceExtraCode { get; set; }
+
         public int DefineVariable(string name, SymbolType type)
         {
             RegisterScopeIfNeeded();
@@ -87,6 +89,7 @@ namespace ScriptEngine
             parser.Code = source.Code;
 
             var compiler = new Compiler.Compiler();
+            compiler.ProduceExtraCode = ProduceExtraCode;
             compiler.DirectiveHandler = ResolveDirective;
 
             if (DirectiveResolver != null)

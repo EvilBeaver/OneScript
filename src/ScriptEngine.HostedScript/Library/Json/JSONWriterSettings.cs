@@ -1,4 +1,10 @@
-﻿
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
 using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -10,7 +16,7 @@ using ScriptEngine.Machine.Contexts;
 /// Определяет набор параметров, используемых при записи JSON.
 /// </summary>
 [ContextClass("ПараметрыЗаписиJSON", "JSONWriterSettings")]
-class JSONWriterSettings : AutoContext<JSONWriterSettings>
+public class JSONWriterSettings : AutoContext<JSONWriterSettings>
 {
 
     private bool _useDoubleQuotes;
@@ -64,13 +70,13 @@ public JSONWriterSettings(IValue NewLines = null, string PaddingSymbols = null, 
     /// Определяет используемый способ экранирования (замены) символов при записи данных JSON.
     /// Значение по умолчанию: Нет. </param>
     /// <param name="EscapeAngleBrackets">
-    /// Определяет, будут ли при записи экранироваться символы "<" и ">".
+    /// Определяет, будут ли при записи экранироваться символы '&lt;' и '&gt;'.
     /// Значение по умолчанию: Ложь. </param>
     /// <param name="EscapeLineTerminators">
     /// Определяет, будут ли экранироваться разделители строк - U+2028 (line-separator) и U+2029 (page-separator).
     /// Значение по умолчанию: Истина. </param>
     /// <param name="EscapeAmpersand">
-    /// Определяет, будет ли при записи экранироваться символ амперсанда "&".
+    /// Определяет, будет ли при записи экранироваться символ амперсанда '&amp;'.
     /// Значение по умолчанию: Ложь. </param>
     /// <param name="EscapeSingleQuotes">
     /// Определяет, будут ли экранироваться одинарные кавычки.

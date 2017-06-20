@@ -9,6 +9,11 @@ namespace ScriptEngine.Machine
 {
     public interface ICodeStatCollector
     {
-        void MarkEntryReached(CodeStatEntry entry);
+        bool IsPrepared(string ScriptFileName);
+        void MarkEntryReached(CodeStatEntry entry, int count = 1);
+        void MarkPrepared(string ScriptFileName);
+
+        void StopWatch(CodeStatEntry entry);
+        void ResumeWatch(CodeStatEntry entry);
     }
 }

@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.IO;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -156,7 +162,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// 
         ///  <param name="offset">
         ///  Количество байтов, на которое нужно передвинуть позицию в потоке. </param>
-        /// <param name="initialPosition"></param>
+        /// <param name="initialPosition">
         ///  Начальная позиция, от которой отсчитывается смещение. </param>
         /// <returns name="Number">
         ///  Числовым типом может быть представлено любое десятичное число. Над данными числового типа определены основные арифметические операции: сложение, вычитание, умножение и деление. Максимально допустимая разрядность числа 38 знаков.</returns>

@@ -232,10 +232,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IReflectableContext Members
 
-        public virtual IEnumerable<VariableInfo> GetProperties()
-        {
-            throw new NotImplementedException();
-        }
+
 
         #endregion
 

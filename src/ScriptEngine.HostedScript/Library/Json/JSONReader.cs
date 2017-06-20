@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.IO;
@@ -11,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.Json
     /// Предназначен для последовательного чтения JSON-данных из файла или строки.
     /// </summary>
     [ContextClass("ЧтениеJSON", "JSONReader")]
-    class JSONReader : AutoContext<JSONReader>
+    public class JSONReader : AutoContext<JSONReader>
     {
 
         private JsonTextReader _reader; // Объект из библиотеки Newtonsoft для работы с форматом JSON 
@@ -217,7 +223,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// <param name="JSONFileName">
         /// Имя файла, содержащего текст JSON. </param>
         /// <param name="Encoding">
-        /// Позволяет задать кодировку входного файла.
+        /// Позволяет задать кодировку входного файла.</param>
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string JSONFileName, IValue Encoding = null)
         {
