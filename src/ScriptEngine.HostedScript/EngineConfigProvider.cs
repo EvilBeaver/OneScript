@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -104,12 +105,24 @@ namespace ScriptEngine.HostedScript
             }
         }
 
+        private void ReadEnvironmentOverrides()
+        {
+            var env = System.Environment.GetEnvironmentVariable("OSCRIPT_CONFIG");
+            if(env == null)
+                return;
+
+            var paramList = new FormatParametersList(env);
+            _currentConfig.Merge(paramList.ToDictionary());
+        }
+
         public KeyValueConfig ReadConfig()
         {
             ReadDefaultConfig();
             ReadCustomConfig();
+            ReadEnvironmentOverrides();
 
             return _currentConfig;
         }
+        
     }
 }
