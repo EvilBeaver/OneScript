@@ -12,6 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oscript", "oscript\oscript.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandaloneRunner", "StandaloneRunner\StandaloneRunner.csproj", "{795AA2F5-3074-4BC5-A30F-1B6354044D9B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTests", "NUnitTests\NUnitTests.csproj", "{93ACC849-E7E1-4695-B59D-54B3737E48A6}"
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Component", "Component\Component.csproj", "{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}"
 EndProject
 Global
@@ -105,6 +106,22 @@ Global
 		{618F7216-6576-410D-818C-C79BB6BEEA0C}.Release|Win32.Build.0 = Release|Win32
 		{618F7216-6576-410D-818C-C79BB6BEEA0C}.Release|x86.ActiveCfg = Release|Win32
 		{618F7216-6576-410D-818C-C79BB6BEEA0C}.Release|x86.Build.0 = Release|Win32
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|Win32.Build.0 = Debug|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|x86.Build.0 = Debug|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|Win32.ActiveCfg = Release|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|Win32.Build.0 = Release|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|x86.ActiveCfg = Release|Any CPU
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|x86.Build.0 = Release|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
