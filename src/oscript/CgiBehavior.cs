@@ -29,10 +29,10 @@ namespace oscript
         public override int Execute()
         {
             string scriptFile;
-            scriptFile = Environment.GetEnvironmentVariable("PATH_TRANSLATED");
+            scriptFile = Environment.GetEnvironmentVariable("SCRIPT_FILENAME");
             if (scriptFile == null)
             {
-                scriptFile = Environment.GetEnvironmentVariable("SCRIPT_FILENAME");
+                scriptFile = Environment.GetEnvironmentVariable("PATH_TRANSLATED");
             }
 
             if (scriptFile == null)
