@@ -100,7 +100,7 @@ namespace oscript
             _headersWritten.Add(header);
         }
 
-        [ContextMethod("ОтдатьФайл", "SendFile")]
+        [ContextMethod("ОтправитьФайл", "SendFile")]
         public void SendFile(string filePath, string downloadFileName = null)
         {
             if (_isContentEchoed)
