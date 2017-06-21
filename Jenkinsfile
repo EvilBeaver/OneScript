@@ -15,7 +15,7 @@ pipeline {
                 git 'https://github.com/EvilBeaver/OneScript.git'
                 bat 'git submodule update --init --recursive'
 
-                bat "chcp 1251 > nul\r\n\"${tool 'nuget'}\" restore 1Script.sln"
+                bat "chcp 1251 > nul\r\n\"${tool 'nuget'}\" restore src/1Script.sln"
                 bat "chcp 1251 > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /p:ReleaseNumber=$releaseNumber /t:Build"
                 bat "chcp 1251 > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /p:ReleaseNumber=$releaseNumber /t:xUnitTest"
 
