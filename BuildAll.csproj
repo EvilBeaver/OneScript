@@ -201,7 +201,7 @@
 	</Target>
 
 	<Target Name="CreateZip" DependsOnTargets="PrepareDistOutputFolder">		
-		<Exec Command="&quot;$(BinFolder)oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(DistPath)*&quot; &quot;$(DistPath)OneScript-1.0.$(ReleaseNumber).zip&quot;"/>
+		<Exec Command="&quot;$(BinFolder)oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(OutputPathForBuild)*&quot; &quot;$(DistPath)OneScript-1.0.$(ReleaseNumber).zip&quot;"/>
 	</Target>
 	
 </Project>
