@@ -98,28 +98,28 @@
 
 	<Target Name="PreparePackage">
 	
-	<!--Сборка документации-->
-	<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
-	
-		<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
-			<Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
-		</CreateItem>
-	
-		<Delete Files="@(RemoveUnnessesaryFiles)" />
-	
-	<ItemGroup>
-		<BinaryFiles Include="$(OutputPathForBuild)\*"/>
-		<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*"/>
-		<ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
-	</ItemGroup>
-	
-	<Move SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)"/> 
-	<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
-	<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
-	
-	<!-- Копирование скрипта запуска для opm -->
-	<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
-	
+		<!--Сборка документации-->
+		<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
+		
+			<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
+				<Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
+			</CreateItem>
+		
+			<Delete Files="@(RemoveUnnessesaryFiles)" />
+		
+		<ItemGroup>
+			<BinaryFiles Include="$(OutputPathForBuild)\*"/>
+			<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*"/>
+			<ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
+		</ItemGroup>
+		
+		<Move SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)"/> 
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
+		<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
+		
+		<!-- Копирование скрипта запуска для opm -->
+		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
+		
 	</Target>
 	
 	<Target Name="CreateInstall" DependsOnTargets="PrepareDistOutputFolder">
