@@ -15,7 +15,7 @@ pipeline {
             // пути к инструментам доступны только когда
             // нода уже определена
             environment {
-                NugetPath = "${tool 'nuget}"
+                NugetPath = "${tool 'nuget'}"
             }
 
             steps {
@@ -57,6 +57,7 @@ pipeline {
             agent { label 'windows' }
 
             environment {
+                NugetPath = "${tool 'nuget'}"
                 InnoSetupPath = "${tool 'InnoSetup'}"
             }
             
