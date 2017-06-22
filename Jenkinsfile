@@ -13,9 +13,7 @@ pipeline {
            agent { label 'windows' }
 
             steps {
-                git 'https://github.com/EvilBeaver/OneScript.git'
-                bat 'git submodule update --init --recursive'
-
+                
                 bat "chcp $outputEnc > nul\r\n\"${tool 'nuget'}\" restore src/1Script.sln"
                 bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /p:ReleaseNumber=$releaseNumber /t:Build"
                 
