@@ -76,56 +76,39 @@ namespace ScriptEngine.HostedScript.Library
 
         private void StreamDataReceived(object sender, sys.DataReceivedEventArgs e)
         {
-            try
+            if (e.Data != null)
             {
-                if (e.Data != null)
+                lock(_buffer)
                 {
-                    _locker.EnterWriteLock();
                     if (_buffer.Length != 0)
-                        _buffer.Append(System.Environment.NewLine);
+                    _buffer.Append(System.Environment.NewLine);
 
                     _buffer.Append(e.Data);
                 }
-            }
-            finally
-            {
-                if(_locker.IsWriteLockHeld) // При else бросит правильное исключение, из-за которого не захватил блокировку
-                    _locker.ExitWriteLock();
             }
         }
 
         public override int Peek()
         {
-            try
+            lock (_buffer)
             {
-                EnterReadLock();
                 if (_bufferIndex >= _buffer.Length)
                     return -1; // no data
 
-                return _buffer[_bufferIndex];
+                return _buffer[_bufferIndex]; 
             }
-            finally
-            {
-                if (_locker.IsReadLockHeld) // При else бросит правильное исключение, из-за которого не захватил блокировку
-                    _locker.ExitReadLock();
-            }
-
         }
 
         public override int Read()
         {
-            try
+            lock (_buffer)
             {
-                EnterReadLock();
                 return ReadInternal();
-            }
-            finally
-            {
-                if (_locker.IsReadLockHeld)
-                    _locker.ExitReadLock();
             }
         }
 
+        // неблокирующий доступ к буферу.
+        // должна вызываться ТОЛЬКО внутри вышестоящего блока lock.
         private int ReadInternal()
         {
             if (_bufferIndex < _buffer.Length)
@@ -145,33 +128,27 @@ namespace ScriptEngine.HostedScript.Library
             if (destBuffer.Length - index < count)
                 throw new ArgumentException("Invalid offset");
 
-            try
+           
+            int n = 0;
+            lock (_buffer)
             {
-                EnterReadLock();
-                int n = 0;
                 do
                 {
                     int ch = ReadInternal();
                     if (ch == -1) break;
 
-                    destBuffer[index + n++] = (char) ch;
-                } while (n < count);
+                    destBuffer[index + n++] = (char)ch;
+                } while (n < count); 
+            }
 
-                return n;
-            }
-            finally
-            {
-                if (_locker.IsReadLockHeld)
-                    _locker.ExitReadLock();
-            }
+            return n;
         }
 
         public override string ReadLine()
         {
-            try
+            var sb = new StringBuilder();
+            lock (_buffer)
             {
-                EnterReadLock();
-                var sb = new StringBuilder();
                 while (true)
                 {
                     int ch = ReadInternal();
@@ -182,30 +159,21 @@ namespace ScriptEngine.HostedScript.Library
                         return sb.ToString();
                     }
                     sb.Append((char)ch);
-                }
-                if (sb.Length > 0) return sb.ToString();
-                return null; 
+                } 
             }
-            finally
-            {
-                if (_locker.IsReadLockHeld)
-                    _locker.ExitReadLock();
-            }
+            if (sb.Length > 0)
+                return sb.ToString();
+
+            return null; 
         }
 
         public override string ReadToEnd()
         {
-            try
+            lock (_buffer)
             {
-                EnterReadLock();
                 string data = base.ReadToEnd();
                 ResetBuffer();
-                return data;
-            }
-            finally
-            {
-                if (_locker.IsReadLockHeld)
-                    _locker.ExitReadLock();
+                return data; 
             }
         }
 
@@ -213,16 +181,6 @@ namespace ScriptEngine.HostedScript.Library
         {
             _buffer.Clear();
             _bufferIndex = 0;
-        }
-
-        private void EnterReadLock()
-        {
-            if (_process.HasExited)
-            {
-                _process.WaitForExit(15000); // ожидание закрытия потоков
-            }
-
-            _locker.EnterReadLock();
         }
 
         protected override void Dispose(bool disposing)
