@@ -51,10 +51,12 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Прочитать", "Read")]
         public IValue Read()
         {
-            if (_reader.Peek() == -1)
+            var readResult = _reader.ReadToEnd();
+            
+            if(readResult == String.Empty)
                 return ValueFactory.Create();
 
-            return ValueFactory.Create(_reader.ReadToEnd());
+            return ValueFactory.Create(readResult);
         }
         
         /// <summary>

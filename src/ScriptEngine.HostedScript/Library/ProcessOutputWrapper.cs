@@ -81,7 +81,7 @@ namespace ScriptEngine.HostedScript.Library
                 lock(_buffer)
                 {
                     if (_buffer.Length != 0)
-                    _buffer.Append(System.Environment.NewLine);
+                        _buffer.Append(System.Environment.NewLine);
 
                     _buffer.Append(e.Data);
                 }
@@ -169,6 +169,25 @@ namespace ScriptEngine.HostedScript.Library
 
         public override string ReadToEnd()
         {
+            // ситуация:
+            // 1.Процесс.ОжидатьЗавершения()
+            // 2.Данные = Процесс.ПотокВывода.Прочитать(); // Ожидаем.Что(прочитается все что есть и больше данных не будет).
+            //
+            // В момент вызова 1, сразу после завершения процесса, фоновые читатели .NET (читают поток процесса)
+            // начинают досброс потоков в очередь, для последующей отдачи нам через StreamDataReceived.
+            //
+            // Мы ушли на вызов 2 и залочили буфер. Теперь досброс (вызов StreamDataReceived) будет ждать пока мы прочитаем.
+            // А нам читать нечего, мы вернули Неопределено и освободили буфер.
+            // 3. Происходит досброс.
+            //
+            // Именно это пытался я починить в коммите 65f0c46b25c4 и потом допивал в 2a80a9ce79b
+            //
+
+            if (_process.HasExited)
+                _process.WaitForExit(); // здесь ничего не блокируем, ждем пока процесс нам все сбросит.
+
+            // Оставлено в назидание самому себе (с) EvilBeaver
+
             lock (_buffer)
             {
                 string data = base.ReadToEnd();
