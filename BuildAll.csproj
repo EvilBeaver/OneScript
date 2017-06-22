@@ -104,23 +104,37 @@
 	
 		<!--Сборка документации-->
 		<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
+
+		<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
+			<Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
+		</CreateItem>
 		
-			<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
-				<Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
-			</CreateItem>
-		
-			<Delete Files="@(RemoveUnnessesaryFiles)" />
-		
+		<Delete Files="@(RemoveUnnessesaryFiles)" />
+
 		<ItemGroup>
-			<BinaryFiles Include="$(OutputPathForBuild)\*"/>
+			
+			<BinaryFiles Include="$(OutputPathForBuild)\oscript.exe"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\TestApp.exe"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\ScriptEngine.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\ScriptEngine.HostedScript.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\Ionic.Zip.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\Newtonsoft.Json.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\ICSharpCode.AvalonEdit.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\oscript.cfg"/>
+
 			<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*"/>
+			
 			<ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
+
 		</ItemGroup>
 		
 		<Move SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)"/> 
 		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
 		<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
 		
+		<!-- Удаление артефактов NUnit -->
+		<Delete Files="$(OutputPathForBuild)\*.dll"/>
+
 		<!-- Копирование скрипта запуска для opm -->
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
 		
