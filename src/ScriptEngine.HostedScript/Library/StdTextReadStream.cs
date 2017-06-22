@@ -49,9 +49,12 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <returns>Строка</returns>
         [ContextMethod("Прочитать", "Read")]
-        public string Read()
+        public IValue Read()
         {
-            return _reader.ReadToEnd();
+            if (_reader.Peek() == -1)
+                return ValueFactory.Create();
+
+            return ValueFactory.Create(_reader.ReadToEnd());
         }
         
         /// <summary>

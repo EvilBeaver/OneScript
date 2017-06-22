@@ -52,6 +52,7 @@ namespace ScriptEngine.HostedScript.Library
 
         /// <summary>
         /// ПотокВыводаТекста. Стандартный поток вывода (stdout)
+        ///     в методе "Завершен" смотрите пример правильной обработки цикла ожидания завершения процесса:
         /// </summary>
         [ContextProperty("ПотокВывода", "StdOut")]
         public StdTextReadStream StdOut
@@ -71,6 +72,7 @@ namespace ScriptEngine.HostedScript.Library
 
         /// <summary>
         /// ПотокВыводаТекста. Стандартный поток вывода ошибок (stderr)
+        ///     в методе "Завершен" смотрите пример правильной обработки цикла ожидания завершения процесса:
         /// </summary>
         [ContextProperty("ПотокОшибок", "StdErr")]
         public StdTextReadStream StdErr
@@ -104,6 +106,7 @@ namespace ScriptEngine.HostedScript.Library
 
         /// <summary>
         /// Запустить процесс на выполнение.
+        ///     в методе "Завершен" смотрите пример правильной обработки цикла ожидания завершения процесса:
         /// </summary>
         [ContextMethod("Запустить", "Start")]
         public void Start()
@@ -114,6 +117,28 @@ namespace ScriptEngine.HostedScript.Library
         /// <summary>
         /// Флаг указывает, что процесс завершен (или нет)
         /// </summary>
+        ///
+        /// <example>
+        /// Пример правильной обработки цикла ожидания завершения процесса:
+        ///     Процесс не завершается, пока любой из потоков (stdout, stderr) открыт для чтения.
+        ///     Процесс висит и ждет, пока его освободят от текста в обоих потоках.
+        ///
+        /// Пока НЕ Процесс.Завершен ИЛИ Процесс.ПотокВывода.ЕстьДанные ИЛИ Процесс.ПотокОшибок.ЕстьДанные Цикл
+        /// 	    Если ПериодОпросаВМиллисекундах &lt;&gt; 0 Тогда
+        /// 	    	Приостановить(ПериодОпросаВМиллисекундах);
+        /// 	    КонецЕсли;
+        ///    
+        /// 	    ОчереднаяСтрокаВывода = Процесс.ПотокВывода.Прочитать();
+        /// 	    ОчереднаяСтрокаОшибок = Процесс.ПотокОшибок.Прочитать();
+        /// 	    Если Не ПустаяСтрока(ОчереднаяСтрокаВывода) Тогда
+        /// 	    	Сообщить(ОчереднаяСтрокаВывода, СтатусСообщения.Информация);
+        /// 	    КонецЕсли;
+        ///    
+        /// 	    Если Не ПустаяСтрока(ОчереднаяСтрокаОшибок) Тогда
+        /// 	    	Сообщить(ОчереднаяСтрокаОшибок, СтатусСообщения.Важное);
+        /// 	    КонецЕсли;
+        ///  КонецЦикла;        
+        /// </example>
         [ContextProperty("Завершен","HasExited")]
         public bool HasExited
         {
@@ -185,7 +210,7 @@ namespace ScriptEngine.HostedScript.Library
             _p.Dispose();
         }
 
-        public static ProcessContext Create(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
+        public static ProcessContext Create(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null, MapImpl env = null)
         {
             var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
             sInfo.UseShellExecute = false;
@@ -204,6 +229,14 @@ namespace ScriptEngine.HostedScript.Library
 
                 sInfo.StandardOutputEncoding = enc;
                 sInfo.StandardErrorEncoding = enc;
+            }
+
+            if (env != null)
+            {
+                foreach (var kv in env)
+                {
+                    sInfo.EnvironmentVariables[kv.Key.AsString()] = kv.Value.AsString();
+                }
             }
 
             var p = new System.Diagnostics.Process();

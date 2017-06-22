@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Linq;
+
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
@@ -160,5 +162,17 @@ namespace ScriptEngine
 
         #endregion
 
+        public void CompileEnvironmentModules(RuntimeEnvironment env)
+        {
+            var scripts = env.GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module && env.GetGlobalProperty(x.Symbol) == null);
+
+            foreach (var script in scripts)
+            {
+                var loaded = LoadModuleImage(script.Module);
+                var instance = (IValue)NewObject(loaded);
+                env.SetGlobalProperty(script.Symbol, instance);
+            }
+        }
+        
     }
 }

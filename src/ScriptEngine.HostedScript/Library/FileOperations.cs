@@ -204,6 +204,10 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
+                // bugfix #419
+                if (!Directory.Exists(path))
+                    return;
+
                 var entries = System.IO.Directory.EnumerateFileSystemEntries(path, mask)
                     .AsParallel()
                     .ToArray();

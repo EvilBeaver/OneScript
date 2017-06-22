@@ -1,4 +1,10 @@
-﻿
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
 using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -10,7 +16,7 @@ using ScriptEngine.Machine.Contexts;
 /// Определяет набор параметров, используемых при записи JSON.
 /// </summary>
 [ContextClass("ПараметрыЗаписиJSON", "JSONWriterSettings")]
-class JSONWriterSettings : AutoContext<JSONWriterSettings>
+public class JSONWriterSettings : AutoContext<JSONWriterSettings>
 {
 
     private bool _useDoubleQuotes;

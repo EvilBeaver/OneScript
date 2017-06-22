@@ -10,6 +10,7 @@ using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ScriptEngine.HostedScript
 {
@@ -217,10 +218,11 @@ namespace ScriptEngine.HostedScript
         private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
         {
             Initialize();
+            
             var process = new Process(host, module, _engine);
             return process;
         }
-
+        
         public void EnableCodeStatistics(string outputFileName)
         {
             _codeStat = new CodeStatProcessor(outputFileName);

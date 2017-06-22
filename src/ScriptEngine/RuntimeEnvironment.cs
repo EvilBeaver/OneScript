@@ -60,6 +60,12 @@ namespace ScriptEngine
             _injectedProperties.SetPropValue(propId, value);
         }
 
+        public IValue GetGlobalProperty(string propertyName)
+        {
+            int propId = _injectedProperties.FindProperty(propertyName);
+            return _injectedProperties.GetPropValue(propId);
+        }
+
         internal CompilerContext SymbolsContext
         {
             get
@@ -88,14 +94,17 @@ namespace ScriptEngine
 
         public void NotifyModuleAdded(ScriptModuleHandle module, string symbol)
         {
-            _externalScripts.Add(new UserAddedScript()
+            var script = new UserAddedScript()
             {
                 Type = UserAddedScriptType.Module,
                 Symbol = symbol,
                 Module = module
-            });
-        }
+            };
 
+            _externalScripts.Add(script);
+            SetGlobalProperty(script.Symbol, null);
+        }
+        
         public IEnumerable<UserAddedScript> GetUserAddedScripts()
         {
             return _externalScripts;
