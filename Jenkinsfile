@@ -5,15 +5,18 @@ pipeline {
 
     environment {
         ReleaseNumber = 17
-        NugetPath = tool 'nuget'
-        InnoSetupPath = tool 'InnoSetup'
-
         outputEnc = '65001'
     }
 
     stages {
         stage('01. Windows Build') {
-           agent { label 'windows' }
+            agent { label 'windows' }
+
+            // пути к инструментам доступны только когда
+            // нода уже определена
+            environment {
+                NugetPath = "${tool 'nuget}"
+            }
 
             steps {
                 
@@ -53,6 +56,10 @@ pipeline {
         stage('03. Packaging') {
             agent { label 'windows' }
 
+            environment {
+                InnoSetupPath = "${tool 'InnoSetup'}"
+            }
+            
             steps {
                 ws("$workspace".replaceAll("%", "_"))
                 {
