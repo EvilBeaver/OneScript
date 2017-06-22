@@ -38,6 +38,8 @@ namespace ScriptEngine.HostedScript.Library
         {
         }
 
+        private bool IsOutputRedirected => _p.StartInfo.RedirectStandardOutput && _p.StartInfo.RedirectStandardError;
+
         /// <summary>
         /// Устанавливает кодировку в которой будут считываться стандартные потоки вывода и ошибок.
         /// </summary>
@@ -59,13 +61,6 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                if (_stdOutContext == null)
-                {
-                    var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stdout);
-                    stream.StartReading();
-
-                    _stdOutContext = new StdTextReadStream(stream);
-                }
                 return _stdOutContext;
             }
         }
@@ -79,13 +74,6 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                if (_stdErrContext == null)
-                {
-                    var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stderr);
-                    stream.StartReading();
-
-                    _stdErrContext = new StdTextReadStream(stream);
-                }
                 return _stdErrContext;
             }
         }
@@ -112,6 +100,19 @@ namespace ScriptEngine.HostedScript.Library
         public void Start()
         {
             _p.Start();
+
+            if (IsOutputRedirected)
+            {
+                var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stdout);
+                stream.StartReading();
+                _stdOutContext = new StdTextReadStream(stream);
+
+                stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stderr);
+                stream.StartReading();
+
+                _stdErrContext = new StdTextReadStream(stream);
+
+            }
         }
 
         /// <summary>
