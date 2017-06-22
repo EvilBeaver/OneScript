@@ -1,16 +1,16 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
 	<PropertyGroup>
-		<Configuration>Release</Configuration>
-		<OutputPathForBuild>$(MSBuildProjectDirectory)\install\build\</OutputPathForBuild>
-		<DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
+	<Configuration>Release</Configuration>
+	<OutputPathForBuild>$(MSBuildProjectDirectory)\install\build\</OutputPathForBuild>
+	<DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
 	<BinFolder>$(OutputPathForBuild)\bin\</BinFolder>
 	<LibFolder>$(OutputPathForBuild)\lib\</LibFolder>
 	<DocFolder>$(OutputPathForBuild)\doc\</DocFolder>
 	<MDDocFolder>$(MSBuildProjectDirectory)\mddoc\</MDDocFolder>
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
-		<Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
-		<InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
+	<Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
+	<InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
 	<NugetExecutable>"$(NugetPath)\nuget.exe"</NugetExecutable>
 
 		<Major>1</Major>
