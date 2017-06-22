@@ -4,7 +4,10 @@ pipeline {
     agent none
 
     environment {
-        releaseNumber = 17
+        ReleaseNumber = 17
+        NugetPath = tool 'nuget'
+        InnoSetupPath = tool 'InnoSetup'
+
         outputEnc = '65001'
     }
 
@@ -25,8 +28,7 @@ pipeline {
                 {
                     checkout scm
 
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'nuget'}\" restore src/1Script.sln"
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /p:ReleaseNumber=$releaseNumber /t:Build"
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:Build"
                     
                     stash includes: 'tests, install/build/**', name: 'buildResults'
                 }
@@ -55,7 +57,7 @@ pipeline {
                 ws("$workspace".replaceAll("%", "_"))
                 {
                     unstash 'buildResults'
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /p:ReleaseNumber=$releaseNumber /p:InnoSetupPath=\"${tool 'InnoSetup'}\" /t:CreateZip;CreateNuget"
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:CreateZip;CreateNuget"
                     archiveArtifacts artifacts: '**/dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg, **/tests/*.xml', fingerprint: true
                 }
             }

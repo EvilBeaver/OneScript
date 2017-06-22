@@ -90,10 +90,14 @@
 
 	</Target>
 
-	<Target Name="Compile">
+	<Target Name="Compile" DependsOnTargets="RestoreNugetPackages">
 		
 		<MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForBuild)" />
 
+	</Target>
+
+	<Target Name="RestoreNugetPackages">
+		<Exec WorkingDirectory="$(MSBuildProjectDirectory)\src" Command="$(NugetExecutable) restore 1Script.sln"/>
 	</Target>
 
 	<Target Name="PreparePackage">
