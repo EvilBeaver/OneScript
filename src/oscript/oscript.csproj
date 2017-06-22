@@ -95,6 +95,7 @@
     <Compile Include="CgiBehavior.cs" />
     <Compile Include="CheckSyntaxBehavior.cs" />
     <Compile Include="ConsoleHostImpl.cs" />
+    <Compile Include="DoNothingHost.cs" />
     <Compile Include="ExecuteScriptBehavior.cs" />
     <Compile Include="MakeAppBehavior.cs" />
     <Compile Include="MeasureBehavior.cs" />

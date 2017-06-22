@@ -159,14 +159,22 @@ namespace ScriptEngine.HostedScript.Library
                 return _p.ExitCode;
             }
         }
-
+        
         /// <summary>
         /// Приостановить выполнение скрипта и ожидать завершения процесса.
         /// </summary>
+        /// <param name="timeout">Число. Таймаут в миллисекундах.</param>
+        /// <returns>Булево. Ложь, если таймаут истек.</returns>
         [ContextMethod("ОжидатьЗавершения", "WaitForExit")]
-        public void WaitForExit()
+        public bool WaitForExit(IValue timeout = null)
         {
-            _p.WaitForExit();
+            if (timeout == null)
+            {
+                _p.WaitForExit();
+                return true;
+            }
+
+            return _p.WaitForExit((int) timeout.AsNumber());
         }
 
         /// <summary>
