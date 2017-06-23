@@ -9,7 +9,7 @@ pipeline {
     }
 
     stages {
-        stage('01. Windows Build') {
+        stage('Windows Build') {
             agent { label 'windows' }
 
             // пути к инструментам доступны только когда
@@ -39,7 +39,7 @@ pipeline {
 
         }
 
-        stage('02. Windows testing') {
+        stage('Windows testing') {
             agent { label 'windows' }
 
             steps {
@@ -52,8 +52,34 @@ pipeline {
                 }
             }
         }
+
+        stage('Linux testing') {
+
+            agent { label 'master' }
+
+            steps {
+                unstash 'buildResults'
+
+                sh '''\
+                if [ ! -d lintests ]; then
+                    mkdir lintests
+                fi
+
+                rm lintests/*.xml -f
+                cd tests
+                mono ./install/build/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests
+                exit 0
+                '''.stripIndent()
+
+                junit 'lintests/*.xml'
+                archiveArtifacts artifacts: 'lintests/*.xml', fingerprint: true
+            }
+
+
+
+        }
         
-        stage('03. Packaging') {
+        stage('Packaging') {
             agent { label 'windows' }
 
             environment {
@@ -69,6 +95,72 @@ pipeline {
                     archiveArtifacts artifacts: '**/dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg, **/tests/*.xml', fingerprint: true
                 }
             }
+        }
+
+        stage ('Packaging DEB and RPM') {
+            agent { label 'master' }
+
+            steps {
+
+                checkout scm
+                unstash 'buildResults'
+
+                echo 'Building DEB'
+                sh '''\
+                chmod +x deb-build.sh
+                DISTPATH=`pwd`/install/build
+                TMPDIR=oscript-tmp
+
+                if [ -d "$TMPDIR" ] ; then
+                    rm -rf $TMPDIR
+                fi
+
+                mkdir $TMPDIR
+
+                cp -r $DISTPATH/* $TMPDIR
+                sh ./deb-build.sh $TMPDIR
+
+                TARGET=`pwd`/output
+
+                if [ ! -d "$TARGET" ] ; then
+                    mkdir $TARGET
+                fi
+
+                rm -f $TARGET/*
+                cp -v $TMPDIR/bin/*.deb $TARGET
+                rm -rf $TMPDIR
+                '''.stripIndent()
+
+                echo 'Building RPM'
+                sh '''\
+                chmod +x rpm-build.sh
+                DISTPATH=`pwd`/install/build
+                TMPDIR=oscript-tmp
+
+                if [ -d "$TMPDIR" ] ; then
+                    rm -rf $TMPDIR
+                fi
+
+                mkdir $TMPDIR
+
+                cp -r $DISTPATH/* $TMPDIR
+                ./rpm-build.sh $TMPDIR
+
+                TARGET=`pwd`/output
+
+                if [ ! -d "$TARGET" ] ; then
+                    mkdir $TARGET
+                fi
+
+                cp $TMPDIR/bin/*.rpm $TARGET
+
+                rm -rf $TMPDIR
+                '''.stripIndent()
+
+                archiveArtifacts artifacts: 'output/*', fingerprint: true
+
+            }
+
         }
 
     }
