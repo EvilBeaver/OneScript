@@ -107,8 +107,9 @@ pipeline {
 
                 echo 'Building DEB'
                 sh '''\
+                cd install
                 chmod +x deb-build.sh
-                DISTPATH=`pwd`/install/build
+                DISTPATH=`pwd`/build
                 TMPDIR=oscript-tmp
 
                 if [ -d "$TMPDIR" ] ; then
@@ -120,7 +121,7 @@ pipeline {
                 cp -r $DISTPATH/* $TMPDIR
                 sh ./deb-build.sh $TMPDIR
 
-                TARGET=`pwd`/output
+                TARGET=$WORKSPACE/output
 
                 if [ ! -d "$TARGET" ] ; then
                     mkdir $TARGET
@@ -133,8 +134,9 @@ pipeline {
 
                 echo 'Building RPM'
                 sh '''\
+                cd install
                 chmod +x rpm-build.sh
-                DISTPATH=`pwd`/install/build
+                DISTPATH=`pwd`/build
                 TMPDIR=oscript-tmp
 
                 if [ -d "$TMPDIR" ] ; then
@@ -146,7 +148,7 @@ pipeline {
                 cp -r $DISTPATH/* $TMPDIR
                 ./rpm-build.sh $TMPDIR
 
-                TARGET=`pwd`/output
+                TARGET=$WORKSPACE/output
 
                 if [ ! -d "$TARGET" ] ; then
                     mkdir $TARGET
