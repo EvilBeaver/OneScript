@@ -67,7 +67,7 @@ pipeline {
 
                 rm lintests/*.xml -f
                 cd tests
-                mono ./install/build/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests
+                mono ../install/build/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
                 exit 0
                 '''.stripIndent()
 
