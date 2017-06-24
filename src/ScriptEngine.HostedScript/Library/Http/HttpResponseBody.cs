@@ -25,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         public HttpResponseBody(HttpWebResponse response, string dumpToFile)
         {
-            if (dumpToFile == null || dumpToFile == String.Empty)
+            if (String.IsNullOrEmpty(dumpToFile))
             {
                 InitInMemoryResponse(response);
             }
