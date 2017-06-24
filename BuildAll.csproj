@@ -1,16 +1,16 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
 	<PropertyGroup>
-		<Configuration>Release</Configuration>
-		<OutputPathForBuild>$(MSBuildProjectDirectory)\install\build\</OutputPathForBuild>
-		<DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
+	<Configuration>Release</Configuration>
+	<OutputPathForBuild>$(MSBuildProjectDirectory)\install\build\</OutputPathForBuild>
+	<DistPath>$(MSBuildProjectDirectory)\dist\</DistPath>
 	<BinFolder>$(OutputPathForBuild)\bin\</BinFolder>
 	<LibFolder>$(OutputPathForBuild)\lib\</LibFolder>
 	<DocFolder>$(OutputPathForBuild)\doc\</DocFolder>
 	<MDDocFolder>$(MSBuildProjectDirectory)\mddoc\</MDDocFolder>
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
-		<Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
-		<InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
+	<Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
+	<InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
 	<NugetExecutable>"$(NugetPath)\nuget.exe"</NugetExecutable>
 
 		<Major>1</Major>
@@ -90,33 +90,51 @@
 
 	</Target>
 
-	<Target Name="Compile">
+	<Target Name="Compile" DependsOnTargets="RestoreNugetPackages">
 		
 		<MSBuild Projects="$(Solution)" Properties="Configuration=$(Configuration);OutputPath=$(OutputPathForBuild)" />
 
+	</Target>
+
+	<Target Name="RestoreNugetPackages">
+		<Exec WorkingDirectory="$(MSBuildProjectDirectory)\src" Command="$(NugetExecutable) restore 1Script.sln"/>
 	</Target>
 
 	<Target Name="PreparePackage">
 	
 		<!--Сборка документации-->
 		<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
+
+		<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
+			<Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
+		</CreateItem>
 		
-			<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
-				<Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
-			</CreateItem>
-		
-			<Delete Files="@(RemoveUnnessesaryFiles)" />
-		
+		<Delete Files="@(RemoveUnnessesaryFiles)" />
+
 		<ItemGroup>
-			<BinaryFiles Include="$(OutputPathForBuild)\*"/>
+			
+			<BinaryFiles Include="$(OutputPathForBuild)\oscript.exe"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\TestApp.exe"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\ScriptEngine.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\ScriptEngine.HostedScript.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\Ionic.Zip.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\Newtonsoft.Json.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\ICSharpCode.AvalonEdit.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\oscript.cfg"/>
+
 			<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*"/>
+			
 			<ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
+
 		</ItemGroup>
 		
 		<Move SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)"/> 
 		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
 		<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
 		
+		<!-- Удаление артефактов NUnit -->
+		<Delete Files="$(OutputPathForBuild)\*.dll"/>
+
 		<!-- Копирование скрипта запуска для opm -->
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
 		

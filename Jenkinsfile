@@ -4,13 +4,19 @@ pipeline {
     agent none
 
     environment {
-        releaseNumber = 17
+        ReleaseNumber = 17
         outputEnc = '65001'
     }
 
     stages {
-        stage('01. Windows Build') {
-           agent { label 'windows' }
+        stage('Windows Build') {
+            agent { label 'windows' }
+
+            // пути к инструментам доступны только когда
+            // нода уже определена
+            environment {
+                NugetPath = "${tool 'nuget'}"
+            }
 
             steps {
                 
@@ -25,8 +31,7 @@ pipeline {
                 {
                     checkout scm
 
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'nuget'}\" restore src/1Script.sln"
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /p:ReleaseNumber=$releaseNumber /t:Build"
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:Build"
                     
                     stash includes: 'tests, install/build/**', name: 'buildResults'
                 }
@@ -34,7 +39,7 @@ pipeline {
 
         }
 
-        stage('02. Windows testing') {
+        stage('Windows testing') {
             agent { label 'windows' }
 
             steps {
@@ -47,18 +52,117 @@ pipeline {
                 }
             }
         }
+
+        stage('Linux testing') {
+
+            agent { label 'master' }
+
+            steps {
+                unstash 'buildResults'
+
+                sh '''\
+                if [ ! -d lintests ]; then
+                    mkdir lintests
+                fi
+
+                rm lintests/*.xml -f
+                cd tests
+                mono ../install/build/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
+                exit 0
+                '''.stripIndent()
+
+                junit 'lintests/*.xml'
+                archiveArtifacts artifacts: 'lintests/*.xml', fingerprint: true
+            }
+
+
+
+        }
         
-        stage('03. Packaging') {
+        stage('Packaging') {
             agent { label 'windows' }
 
+            environment {
+                NugetPath = "${tool 'nuget'}"
+                InnoSetupPath = "${tool 'InnoSetup'}"
+            }
+            
             steps {
                 ws("$workspace".replaceAll("%", "_"))
                 {
                     unstash 'buildResults'
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /p:ReleaseNumber=$releaseNumber /p:InnoSetupPath=\"${tool 'InnoSetup'}\" /t:CreateZip;CreateNuget"
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:CreateZip;CreateNuget"
                     archiveArtifacts artifacts: '**/dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg, **/tests/*.xml', fingerprint: true
                 }
             }
+        }
+
+        stage ('Packaging DEB and RPM') {
+            agent { label 'master' }
+
+            steps {
+
+                checkout scm
+                unstash 'buildResults'
+
+                echo 'Building DEB'
+                sh '''\
+                cd install
+                chmod +x deb-build.sh
+                DISTPATH=`pwd`/build
+                TMPDIR=oscript-tmp
+
+                if [ -d "$TMPDIR" ] ; then
+                    rm -rf $TMPDIR
+                fi
+
+                mkdir $TMPDIR
+
+                cp -r $DISTPATH/* $TMPDIR
+                sh ./deb-build.sh $TMPDIR
+
+                TARGET=$WORKSPACE/output
+
+                if [ ! -d "$TARGET" ] ; then
+                    mkdir $TARGET
+                fi
+
+                rm -f $TARGET/*
+                cp -v $TMPDIR/bin/*.deb $TARGET
+                rm -rf $TMPDIR
+                '''.stripIndent()
+
+                echo 'Building RPM'
+                sh '''\
+                cd install
+                chmod +x rpm-build.sh
+                DISTPATH=`pwd`/build
+                TMPDIR=oscript-tmp
+
+                if [ -d "$TMPDIR" ] ; then
+                    rm -rf $TMPDIR
+                fi
+
+                mkdir $TMPDIR
+
+                cp -r $DISTPATH/* $TMPDIR
+                ./rpm-build.sh $TMPDIR
+
+                TARGET=$WORKSPACE/output
+
+                if [ ! -d "$TARGET" ] ; then
+                    mkdir $TARGET
+                fi
+
+                cp $TMPDIR/bin/*.rpm $TARGET
+
+                rm -rf $TMPDIR
+                '''.stripIndent()
+
+                archiveArtifacts artifacts: 'output/*', fingerprint: true
+
+            }
+
         }
 
     }
