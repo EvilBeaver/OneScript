@@ -88,6 +88,7 @@ namespace ScriptEngine.Machine
         StrGetLine,
         StrLineCount,
         StrEntryCount,
+        StrTemplate,
         Year,
         Month,
         Day,

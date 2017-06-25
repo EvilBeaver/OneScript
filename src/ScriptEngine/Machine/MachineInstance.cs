@@ -522,6 +522,7 @@ namespace ScriptEngine.Machine
                 StrGetLine,
                 StrLineCount,
                 StrEntryCount,
+                StrTemplate,
                 Year,
                 Month,
                 Day,
@@ -1793,6 +1794,46 @@ namespace ScriptEngine.Machine
             }
 
             _operationStack.Push(ValueFactory.Create(entryCount));
+
+            NextInstruction();
+        }
+
+        private void StrTemplate(int arg)
+        {
+
+            int templateArgs = arg - 1;
+
+            string[] templatesValue = new string[templateArgs];
+
+            for (int i = 1; i <= templateArgs; i++)
+                templatesValue[templateArgs - i] = _operationStack.Pop().AsString();
+
+            string str = _operationStack.Pop().AsString();
+            string pattern = @"(?<!%)%\d{1,}";
+
+            var options = System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
+
+            System.Text.RegularExpressions.MatchCollection matches = System.Text.RegularExpressions.Regex.Matches(str, pattern, options);
+
+            Dictionary<string,string> templates = new Dictionary<string, string>();
+
+            int min = 1;
+            int max = 10;
+
+            foreach (System.Text.RegularExpressions.Match item in matches)
+            {
+                int currentIndex;
+                if(Int32.TryParse(item.Value.Remove(0,1), out currentIndex) || (currentIndex < min || currentIndex > max))
+
+                    if (templatesValue.Length < currentIndex)
+                        throw RuntimeException.TooLittleArgumentsPassed();
+                    else if (!templates.ContainsKey(item.Value))
+                        templates.Add(item.Value, templatesValue[currentIndex-1]);
+                else
+                    throw new RuntimeException($"Incorrect argument in position {item.Index + item.Length}");
+            }
+            
+            _operationStack.Push(ValueFactory.Create(System.Text.RegularExpressions.Regex.Replace(str, pattern, m => templates[m.Value], options)));
 
             NextInstruction();
         }

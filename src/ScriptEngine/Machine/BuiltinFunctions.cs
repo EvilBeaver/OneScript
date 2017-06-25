@@ -71,7 +71,8 @@ namespace ScriptEngine.Machine
             AddFunc(OperationCode.StrGetLine,    MANDATORY_BYVAL, MANDATORY_BYVAL);
             AddFunc(OperationCode.StrLineCount,  MANDATORY_BYVAL);
             AddFunc(OperationCode.StrEntryCount, MANDATORY_BYVAL, MANDATORY_BYVAL);
-            
+            AddFunc(OperationCode.StrTemplate, MANDATORY_BYVAL, OPTIONAL_BYVAL, OPTIONAL_BYVAL, OPTIONAL_BYVAL, OPTIONAL_BYVAL, OPTIONAL_BYVAL, OPTIONAL_BYVAL, OPTIONAL_BYVAL, OPTIONAL_BYVAL, OPTIONAL_BYVAL, OPTIONAL_BYVAL);
+
             // date
             AddFunc(OperationCode.Year,         MANDATORY_BYVAL);
             AddFunc(OperationCode.Month,        MANDATORY_BYVAL);
