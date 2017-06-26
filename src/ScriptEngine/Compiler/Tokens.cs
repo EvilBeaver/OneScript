@@ -133,6 +133,7 @@ namespace ScriptEngine.Compiler
             AddToken(Token.StrGetLine, "стрполучитьстроку", "strgetline");
             AddToken(Token.StrLineCount, "стрчислострок", "strlinecount");
             AddToken(Token.StrEntryCount, "стрчисловхождений", "stroccurrencecount");
+            AddToken(Token.StrTemplate, "стршаблон", "strtemplate");
             AddToken(Token.Year, "год", "year");
             AddToken(Token.Month, "месяц", "month");
             AddToken(Token.Day, "день", "day");
@@ -401,6 +402,7 @@ namespace ScriptEngine.Compiler
         StrGetLine,
         StrLineCount,
         StrEntryCount,
+        StrTemplate,
         Year,
         Month,
         Day,

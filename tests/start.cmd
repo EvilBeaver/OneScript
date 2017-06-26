@@ -7,7 +7,7 @@ rem echo сами тесты %CD%
 rem echo скрипты тестирования %pathdir%
 
 echo on
-"%ProgramFiles(x86)%\OneScript\oscript.exe" %pathdir%\testrunner.os -run %1 %2 %3 %4 %5
+"%ProgramFiles(x86)%\OneScript\bin\oscript.exe" %pathdir%\testrunner.os -run %1 %2 %3 %4 %5
 @echo off
 
 rem echo %ERRORLEVEL%
