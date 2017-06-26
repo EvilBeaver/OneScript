@@ -1809,7 +1809,7 @@ namespace ScriptEngine.Machine
                 templatesValue[templateArgs - i] = _operationStack.Pop().AsString();
 
             string str = _operationStack.Pop().AsString();
-            string pattern = @"%(\d*\$)?(\d{1,}|%|.)";
+            string pattern = @"%(\d{1,}|.)";
 
             var options = System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
 
@@ -1828,7 +1828,7 @@ namespace ScriptEngine.Machine
                 if (item.Value == "%%")
                     continue;
                 int currentIndex;
-                if(Int32.TryParse(item.Groups[2].Value, out currentIndex) && !(currentIndex < min || currentIndex > max))
+                if(Int32.TryParse(item.Groups[1].Value, out currentIndex) && !(currentIndex < min || currentIndex > max))
                 {
                     if (templatesValue.Length < currentIndex)
                         throw RuntimeException.TooLittleArgumentsPassed();
