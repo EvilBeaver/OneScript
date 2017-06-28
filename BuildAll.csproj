@@ -133,7 +133,10 @@
 		<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
 		
 		<!-- Удаление артефактов NUnit -->
-		<Delete Files="$(OutputPathForBuild)\*.dll"/>
+		<ItemGroup>
+			<NUnitArtifacts Include="$(OutputPathForBuild)\*.dll"/>
+		</ItemGroup>
+		<Delete Files="@(NUnitArtifacts)"/>
 
 		<!-- Копирование скрипта запуска для opm -->
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
