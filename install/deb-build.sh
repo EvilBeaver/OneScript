@@ -24,7 +24,7 @@ fi
 cat $VERSIONFILE
 
 mkdir -p $DISTPATH/deb
-cp -r ${PWD}/builders/deb/* $DISTPATH/deb
+cp -rv ${PWD}/builders/deb/* $DISTPATH/deb
 
 docker build -t onescript:deb ${PWD}/builders/deb/
 docker run --rm -v ${DISTPATH}:/media onescript:deb 
