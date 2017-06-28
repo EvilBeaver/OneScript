@@ -20,7 +20,9 @@ if [ ! -f "$VERSIONFILE" ] ; then
 	echo "No version file created"
 	exit 1
 fi
-		
+
+cat $VERSIONFILE
+
 mkdir -p $DISTPATH/deb
 cp -r ${PWD}/builders/deb/* $DISTPATH/deb
 

@@ -112,13 +112,15 @@ pipeline {
                 DISTPATH=`pwd`/build
                 TMPDIR=oscript-tmp
 
+                echo "Dist path: ${DISTPATH}"
+
                 if [ -d "$TMPDIR" ] ; then
                     rm -rf $TMPDIR
                 fi
 
                 mkdir $TMPDIR
 
-                cp -r $DISTPATH/* $TMPDIR
+                cp -rv $DISTPATH/* $TMPDIR
                 sh ./deb-build.sh $TMPDIR
 
                 TARGET=$WORKSPACE/output
