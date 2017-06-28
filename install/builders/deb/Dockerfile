@@ -28,7 +28,6 @@ RUN locale-gen --lang ru_RU.UTF-8
 ENV LANG ru_RU.UTF-8
 
 ADD ./build.sh /root/
-VOLUME /media
 
 ENTRYPOINT /root/build.sh
 
