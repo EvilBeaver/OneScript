@@ -1,6 +1,8 @@
 #!/bin/bash
 
 #set -exf
+echo "Building RPM"
+
 PROJECT=oscript
 echo "$0"
 echo "$1"
