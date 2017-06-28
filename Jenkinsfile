@@ -105,33 +105,15 @@ pipeline {
                 checkout scm
                 unstash 'buildResults'
 
+                sh 'prepare-build.sh'
+
                 echo 'Building DEB'
                 sh '''\
                 cd install
                 chmod +x deb-build.sh
                 DISTPATH=`pwd`/build
-                TMPDIR=oscript-tmp
-
-                echo "Dist path: ${DISTPATH}"
-
-                if [ -d "$TMPDIR" ] ; then
-                    rm -rf $TMPDIR
-                fi
-
-                mkdir $TMPDIR
-
-                cp -rv $DISTPATH/* $TMPDIR
-                sh ./deb-build.sh $TMPDIR
-
-                TARGET=$WORKSPACE/output
-
-                if [ ! -d "$TARGET" ] ; then
-                    mkdir $TARGET
-                fi
-
-                rm -f $TARGET/*
-                cp -v $TMPDIR/bin/*.deb $TARGET
-                rm -rf $TMPDIR
+                
+                sh ./deb-build.sh $DISTPATH
                 '''.stripIndent()
 
                 echo 'Building RPM'
