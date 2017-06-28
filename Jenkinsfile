@@ -105,44 +105,20 @@ pipeline {
                 checkout scm
                 unstash 'buildResults'
 
-                sh 'prepare-build.sh'
-
-                echo 'Building DEB'
-                sh '''\
+                sh '''
                 cd install
+                chmod +x prepare-build.sh
                 chmod +x deb-build.sh
-                DISTPATH=`pwd`/build
-                
-                sh ./deb-build.sh $DISTPATH
-                '''.stripIndent()
-
-                echo 'Building RPM'
-                sh '''\
-                cd install
                 chmod +x rpm-build.sh
+
+                sh ./prepare-build.sh
+                
                 DISTPATH=`pwd`/build
-                TMPDIR=oscript-tmp
 
-                if [ -d "$TMPDIR" ] ; then
-                    rm -rf $TMPDIR
-                fi
-
-                mkdir $TMPDIR
-
-                cp -r $DISTPATH/* $TMPDIR
-                ./rpm-build.sh $TMPDIR
-
-                TARGET=$WORKSPACE/output
-
-                if [ ! -d "$TARGET" ] ; then
-                    mkdir $TARGET
-                fi
-
-                cp $TMPDIR/bin/*.rpm $TARGET
-
-                rm -rf $TMPDIR
+                sh ./deb-build.sh $DISTPATH
+                sh ./rpm-build.sh $DISTPATH
                 '''.stripIndent()
-
+                
                 archiveArtifacts artifacts: 'output/*', fingerprint: true
 
             }
