@@ -103,6 +103,7 @@
 	<Target Name="PreparePackage">
 	
 		<!--Сборка документации-->
+		<Message Text="$(OneScriptDocumenter) doesn't exist. Skipping doc generation" Condition="!Exists($(OneScriptDocumenter))"/>
 		<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
 
 		<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
