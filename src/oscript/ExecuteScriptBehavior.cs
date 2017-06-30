@@ -56,6 +56,8 @@ namespace oscript
             var result = process.Start();
             hostedScript.Finalize();
 
+            ScriptFileHelper.OnAfterScriptExecute(hostedScript);
+
             return result;
         }
 
