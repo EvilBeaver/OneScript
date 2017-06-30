@@ -106,9 +106,13 @@ namespace ScriptEngine.HostedScript.Library
         /// Возвращает время, истекшее с момента загрузки системы (в миллисекундах).
         /// </summary>
         [ContextProperty("ВремяРаботыСМоментаЗагрузки")]
-        public System.Int32 TickCount
+        public long TickCount
         {
-            get { return System.Environment.TickCount; }
+            get
+            {
+                var unsig = (uint)System.Environment.TickCount;
+                return unsig;
+            }
         }
 
         /// <summary>
