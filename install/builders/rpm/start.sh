@@ -10,6 +10,7 @@ DISTPATH=/media/src
 VERSION=$(cat ${VERSIONFILE})
 BLDTMP=/tmp
 TMPDIR=${BLDTMP}/OneScript-$VERSION
+mkdir -p $TMPDIR
 
 echo "Copying sources to tmpdir"
 cp -r -v $DISTPATH/* $TMPDIR
