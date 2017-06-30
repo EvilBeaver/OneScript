@@ -16,6 +16,7 @@ pipeline {
             // нода уже определена
             environment {
                 NugetPath = "${tool 'nuget'}"
+                OneScriptDocumenter = "${tool 'documenter'}"
             }
 
             steps {
@@ -91,7 +92,7 @@ pipeline {
                 ws("$workspace".replaceAll("%", "_"))
                 {
                     unstash 'buildResults'
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:CreateZip;CreateNuget"
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:CreateZip;CreateInstall;CreateNuget"
                     archiveArtifacts artifacts: '**/dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg, **/tests/*.xml', fingerprint: true
                 }
             }
