@@ -24,6 +24,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-mv $TMPOUT/RPMS/noarch/*.rpm $TMPOUT
-mv $TMPOUT/SRPMS/*.rpm $TMPOUT
+mv $TMPOUT/rpm/RPMS/noarch/*.rpm $TMPOUT
+mv $TMPOUT/rpm/SRPMS/*.rpm $TMPOUT
 rm -rf $TMPOUT/rpm
