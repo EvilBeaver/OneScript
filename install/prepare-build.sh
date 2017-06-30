@@ -26,3 +26,9 @@ fi
 docker cp $VERSIONFILE bldxchg:/bld
 rm $VERSIONFILE
 docker cp build/* bldxchg:/bld/src
+
+OUTPUT="../output"
+if [ -d "$OUTPUT" ]; then
+	rm -rf ${OUTPUT}
+fi
+mkdir ${OUTPUT}

@@ -1,5 +1,31 @@
 #!/bin/bash
 # script run inside the container
+
+
+#/media/src/bin;lib;examples;etc
+#/media/VERSIONFILE
+VERSIONFILE=/media/VERSION
+DISTPATH=/media/src
+
+VERSION=$(cat ${VERSIONFILE})
+BLDTMP=/tmp
+TMPDIR=${BLDTMP}/OneScript-$VERSION
+
+echo "Copying sources to tmpdir"
+cp -r -v $DISTPATH/* $TMPDIR
+cp -r -v ${BLDTMP}/oscript $TMPDIR/oscript
+
+pushd ${BLDTMP}
+echo "Compressing OneScript-$VERSION to tar"
+tar -czvf OneScript-$VERSION.tar.gz OneScript-$VERSION/
+popd
+
+BUILDDIR=/media/rpm
+mkdir -p ${BUILDDIR}
+
+cp -ra $BUILDTMP/OneScript-$VERSION.tar.gz $BUILDDIR/
+cp -rf $BUILDTMP/oscript.spec $BUILDDIR/
+
 rpmdev-setuptree
 define=""
 if [ -z $VERSION ]; then
@@ -15,16 +41,16 @@ else
 fi
 
 echo $define
-sudo cp -arv /media/* rpmbuild/SOURCES/
-sudo cp -arv /media/*.spec rpmbuild/SPECS/ 
+sudo cp -arv $BUILDDIR/* rpmbuild/SOURCES/
+sudo cp -arv $BUILDDIR/*.spec rpmbuild/SPECS/ 
 rpmbuild -ba \
 	--define "_version ${VERSION:-1.0.13}" \
 	rpmbuild/SPECS/oscript.spec || exit 1
 
-[[ -d /media ]] || exit 0
+[[ -d $BUILDDIR ]] || exit 0
 
-sudo mkdir -p /media/RPMS
-sudo mkdir -p /media/SRPMS
+sudo mkdir -p $BUILDDIR/RPMS
+sudo mkdir -p $BUILDDIR/SRPMS
 
-sudo cp -ar rpmbuild/RPMS/ /media/
-sudo cp -ar rpmbuild/SRPMS/ /media/
+sudo cp -ar rpmbuild/RPMS/ $BUILDDIR/
+sudo cp -ar rpmbuild/SRPMS/ $BUILDDIR/

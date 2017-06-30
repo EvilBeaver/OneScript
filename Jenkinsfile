@@ -114,7 +114,7 @@ pipeline {
                 sh ./prepare-build.sh
                 
                 DISTPATH=`pwd`/build
-
+                
                 sh ./deb-build.sh $DISTPATH
                 sh ./rpm-build.sh $DISTPATH
                 '''.stripIndent()
