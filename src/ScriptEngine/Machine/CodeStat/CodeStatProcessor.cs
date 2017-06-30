@@ -64,50 +64,6 @@ namespace ScriptEngine.Machine
             }
             
             return data;
-            //var w = new StreamWriter(_outputFileName);
-            //var jwriter = new JsonTextWriter(w);
-            //jwriter.Formatting = Formatting.Indented;
-
-            //jwriter.WriteStartObject();
-            //foreach (var source in _codeStat.GroupBy((arg) => arg.Key.ScriptFileName))
-            //{
-            //    jwriter.WritePropertyName(source.Key, true);
-            //    jwriter.WriteStartObject();
-
-            //    jwriter.WritePropertyName("#path");
-            //    jwriter.WriteValue(source.Key);
-            //    foreach (var method in source.GroupBy((arg) => arg.Key.SubName))
-            //    {
-            //        jwriter.WritePropertyName(method.Key, true);
-            //        jwriter.WriteStartObject();
-
-            //        foreach (var entry in method.OrderBy((kv) => kv.Key.LineNumber))
-            //        {
-            //            jwriter.WritePropertyName(entry.Key.LineNumber.ToString());
-            //            jwriter.WriteStartObject();
-
-            //            jwriter.WritePropertyName("count");
-            //            jwriter.WriteValue(entry.Value);
-
-            //            if (_watchers.ContainsKey(entry.Key))
-            //            {
-            //                var elapsed = _watchers[entry.Key].ElapsedMilliseconds;
-
-            //                jwriter.WritePropertyName("time");
-            //                jwriter.WriteValue(elapsed);
-            //            }
-
-            //            jwriter.WriteEndObject();
-            //        }
-
-            //        jwriter.WriteEndObject();
-            //    }
-            //    jwriter.WriteEndObject();
-            //}
-            //jwriter.WriteEndObject();
-            //jwriter.Flush();
-
-            //_codeStat.Clear();
         }
 
         public void EndCodeStat()
