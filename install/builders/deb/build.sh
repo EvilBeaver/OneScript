@@ -6,7 +6,7 @@ BINPATH=${SRCPATH}/bin/
 DEBBUILDROOT=${DATAROOT}/deb/
 BUILDERROOT=/opt/deb/
 
-if [ -d "$DEBBUILDROOT"]; then
+if [ -d "$DEBBUILDROOT" ]; then
     rm -rf $DEBBUILDROOT
     mkdir $DEBBUILDROOT
 fi

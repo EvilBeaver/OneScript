@@ -8,4 +8,10 @@ echo "Current dir: {$PWD}"
 
 docker build -t onescript:deb ${PWD}/builders/deb/
 docker run --rm -v os_bld_output:/media onescript:deb 
-docker cp bldxchg:/bld/deb/*.deb ../output
+
+TMPOUT=../output
+rm -rf $TMPOUT/deb
+
+docker cp bldxchg:/bld/deb/ $TMPOUT
+mv $TMPOUT/deb/*.deb $TMPOUT
+rm -rf $TMPOUT/deb

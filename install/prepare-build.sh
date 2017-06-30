@@ -7,7 +7,14 @@ BINPATH=${DISTPATH}/bin
 cd `dirname $0`
 
 docker volume create os_bld_output
-docker run --name bldxchg -v os_bld_output:/bld busybox true
+
+if [ "$(docker ps -aq -f name=bldxchg)" ]; then
+        echo 'Exchange exist. Run it'
+        docker start bldxchg
+else
+        echo 'Creating Exchange'
+        docker run --name bldxchg -v os_bld_output:/bld busybox rm -rf /bld/
+fi
 
 VERSIONFILE=$DISTPATH/VERSION
 if [ -f "$VERSIONFILE" ] ; then

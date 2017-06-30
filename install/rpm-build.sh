@@ -43,9 +43,12 @@ echo "Current dir: {$PWD}"
 	
 docker build -t onescript:rpm ${PWD}/builders/rpm/
 docker run --rm -v os_bld_output:/media onescript:rpm 
-docker cp bldxchg:/bld/rpm/RPMS/noarch/*.rpm ../output
-docker cp bldxchg:/bld/rpm/SRPMS/*.rpm ../output
 
-#cp $BUILDDIR/RPMS/noarch/*.rpm $BINPATH/
-#cp $BUILDDIR/SRPMS/*.rpm $BINPATH/
-#rm -rd $BUILDDIR
+TMPOUT=../output
+rm -rf $TMPOUT/rpm
+
+docker cp bldxchg:/bld/rpm/ $TMPOUT
+
+mv $TMPOUT/RPMS/noarch/*.rpm $TMPOUT
+mv $TMPOUT/SRPMS/*.rpm $TMPOUT
+rm -rf $TMPOUT/rpm
