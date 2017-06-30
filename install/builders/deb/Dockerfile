@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
 RUN locale-gen --lang ru_RU.UTF-8
 ENV LANG ru_RU.UTF-8
 
-COPY * /opt/deb
+COPY * /opt/deb/
 
 ENTRYPOINT /opt/deb/build.sh
 
