@@ -21,10 +21,10 @@ tar -czvf OneScript-$VERSION.tar.gz OneScript-$VERSION/
 popd
 
 BUILDDIR=/media/rpm
-mkdir -p ${BUILDDIR}
+sudo mkdir -p ${BUILDDIR}
 
-cp -ra $BUILDTMP/OneScript-$VERSION.tar.gz $BUILDDIR/
-cp -rf $BUILDTMP/oscript.spec $BUILDDIR/
+#cp -ra $BLDTMP/OneScript-$VERSION.tar.gz $BUILDDIR/
+#cp -rf $BLDTMP/oscript.spec $BUILDDIR/
 
 rpmdev-setuptree
 define=""
@@ -41,8 +41,8 @@ else
 fi
 
 echo $define
-sudo cp -arv $BUILDDIR/* rpmbuild/SOURCES/
-sudo cp -arv $BUILDDIR/*.spec rpmbuild/SPECS/ 
+sudo cp -arv $BLDTMP/* rpmbuild/SOURCES/
+sudo cp -arv $BLDTMP/*.spec rpmbuild/SPECS/ 
 rpmbuild -ba \
 	--define "_version ${VERSION:-1.0.13}" \
 	rpmbuild/SPECS/oscript.spec || exit 1
