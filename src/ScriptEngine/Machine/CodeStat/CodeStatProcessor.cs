@@ -10,7 +10,6 @@ using System.IO;
 using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace ScriptEngine.Machine
 {
@@ -19,12 +18,10 @@ namespace ScriptEngine.Machine
         private Dictionary<CodeStatEntry, int> _codeStat = new Dictionary<CodeStatEntry, int>();
         private Dictionary<CodeStatEntry, Stopwatch> _watchers = new Dictionary<CodeStatEntry, Stopwatch>();
         private Stopwatch _activeStopwatch = null;
-        private readonly string _outputFileName;
         private HashSet<string> _preparedScripts = new HashSet<string>();
 
-        public CodeStatProcessor(string fileName)
+        public CodeStatProcessor()
         {
-            _outputFileName = fileName;
         }
 
         public bool IsPrepared(string ScriptFileName)
@@ -58,54 +55,20 @@ namespace ScriptEngine.Machine
             _preparedScripts.Add(ScriptFileName);
         }
 
-        public void OutputCodeStat()
+        public CodeStatDataCollection GetStatData()
+        {
+            CodeStatDataCollection data = new CodeStatDataCollection();
+            foreach (var item in _codeStat)
+            {
+                data.Add(new CodeStatData(item.Key, _watchers[item.Key].ElapsedMilliseconds, item.Value));
+            }
+            
+            return data;
+        }
+
+        public void EndCodeStat()
         {
             _activeStopwatch?.Stop();
-
-            var w = new StreamWriter(_outputFileName);
-            var jwriter = new JsonTextWriter(w);
-            jwriter.Formatting = Formatting.Indented;
-
-            jwriter.WriteStartObject();
-            foreach (var source in _codeStat.GroupBy((arg) => arg.Key.ScriptFileName))
-            {
-                jwriter.WritePropertyName(source.Key, true);
-                jwriter.WriteStartObject();
-
-                jwriter.WritePropertyName("#path");
-                jwriter.WriteValue(source.Key);
-                foreach (var method in source.GroupBy((arg) => arg.Key.SubName))
-                {
-                    jwriter.WritePropertyName(method.Key, true);
-                    jwriter.WriteStartObject();
-
-                    foreach (var entry in method.OrderBy((kv) => kv.Key.LineNumber))
-                    {
-                        jwriter.WritePropertyName(entry.Key.LineNumber.ToString());
-                        jwriter.WriteStartObject();
-
-                        jwriter.WritePropertyName("count");
-                        jwriter.WriteValue(entry.Value);
-
-                        if (_watchers.ContainsKey(entry.Key))
-                        {
-                            var elapsed = _watchers[entry.Key].ElapsedMilliseconds;
-
-                            jwriter.WritePropertyName("time");
-                            jwriter.WriteValue(elapsed);
-                        }
-
-                        jwriter.WriteEndObject();
-                    }
-
-                    jwriter.WriteEndObject();
-                }
-                jwriter.WriteEndObject();
-            }
-            jwriter.WriteEndObject();
-            jwriter.Flush();
-
-            _codeStat.Clear();
         }
 
         public void StopWatch(CodeStatEntry entry)
