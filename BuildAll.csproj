@@ -104,7 +104,7 @@
 	
 		<!--Сборка документации-->
 		<Message Text="$(OneScriptDocumenter)"/>
-		<CallTarget Targets="GenerateDocs"/>
+		<CallTarget Targets="GenerateDocs" Condition="Exists($(OneScriptDocumenter))"/>
 
 		<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
 			<Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
