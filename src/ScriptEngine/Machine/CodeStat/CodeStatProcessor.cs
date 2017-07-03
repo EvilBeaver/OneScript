@@ -50,9 +50,9 @@ namespace ScriptEngine.Machine
             }
         }
 
-        public void MarkPrepared(string ScriptFileName)
+        public void MarkPrepared(string scriptFileName)
         {
-            _preparedScripts.Add(ScriptFileName);
+            _preparedScripts.Add(scriptFileName);
         }
 
         public CodeStatDataCollection GetStatData()
