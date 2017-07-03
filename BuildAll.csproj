@@ -7,7 +7,7 @@
 	<BinFolder>$(OutputPathForBuild)\bin\</BinFolder>
 	<LibFolder>$(OutputPathForBuild)\lib\</LibFolder>
 	<DocFolder>$(OutputPathForBuild)\doc\</DocFolder>
-	<MDDocFolder>$(MSBuildProjectDirectory)\mddoc\</MDDocFolder>
+	<MDDocFolder>$(MSBuildProjectDirectory)\mddoc</MDDocFolder>
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
 	<Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
 	<InstallerStandartPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandartPath>
@@ -154,7 +154,7 @@
 	
 		<Exec Command="$(OneScriptDocumenter) $(TMP)\tempdoc.xml &quot;$(OutputPathForBuild)\ScriptEngine.dll&quot; &quot;$(OutputPathForBuild)\ScriptEngine.HostedScript.dll&quot; &quot;$(OutputPathForBuild)\oscript.exe&quot;"/>
 		<Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)\&quot;"/>
-		<Exec Command="$(OneScriptDocumenter) markdown $(TMP)\tempdoc.xml &quot;$(MDDocFolder)\&quot; /syntax/page"/>
+		<Exec Command="$(OneScriptDocumenter) markdown $(TMP)\tempdoc.xml &quot;$(MDDocFolder)&quot; /syntax/page"/>
 	
 	</Target>
 	
