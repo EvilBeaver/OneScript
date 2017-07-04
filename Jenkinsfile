@@ -36,7 +36,6 @@ pipeline {
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:Build"
                     
                     stash includes: 'tests, install/build/**', name: 'buildResults'
-                    stash includes: 'mddoc', name: 'sitedoc'
                 }
            }
 
@@ -94,7 +93,7 @@ pipeline {
                 ws("$workspace".replaceAll("%", "_"))
                 {
                     unstash 'buildResults'
-                    unstash 'sitedoc'
+                    //unstash 'sitedoc'
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:CreateZip;CreateInstall;CreateNuget"
                     archiveArtifacts artifacts: '**/dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg, **/tests/*.xml, mddoc/**', fingerprint: true
                 }
