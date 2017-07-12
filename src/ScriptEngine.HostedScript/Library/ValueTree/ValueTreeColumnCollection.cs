@@ -36,7 +36,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <param name="width">Число. Ширина колонки. Необязательный параметр.</param>
         /// <returns>КолонкаДереваЗначений. Добавленная колонка.</returns>
         [ContextMethod("Добавить", "Add")]
-        public ValueTreeColumn Add(string name, IValue type = null, string title = null, int width = 0)
+        public ValueTreeColumn Add(string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);
@@ -57,7 +57,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <param name="width">Число. Ширина колонки. Необязательный параметр.</param>
         /// <returns>КолонкаДереваЗначений. Добавленная колонка.</returns>
         [ContextMethod("Вставить", "Insert")]
-        public ValueTreeColumn Insert(int index, string name, IValue type = null, string title = null, int width = 0)
+        public ValueTreeColumn Insert(int index, string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);

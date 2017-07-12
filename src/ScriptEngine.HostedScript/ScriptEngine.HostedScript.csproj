@@ -78,8 +78,8 @@
     <Reference Include="Ionic.Zip">
       <HintPath>..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -94,6 +94,8 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Library\DriveInfo\DriveInfo.cs" />
+    <Compile Include="Library\DriveInfo\DriveTypeEnum.cs" />
     <Compile Include="EngineConfigProvider.cs" />
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
@@ -113,8 +115,8 @@
     <Compile Include="Library\Binary\MemoryStreamContext.cs" />
     <Compile Include="Library\Binary\ReadDataResult.cs" />
     <Compile Include="Library\Binary\GenericStream.cs" />
-    <Compile Include="Library\CommandLineArguments.cs" />
     <Compile Include="Library\ConsoleContext.cs" />
+    <Compile Include="Library\EnvironmentVariablesImpl.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
     <Compile Include="Library\FixedArrayImpl.cs" />
@@ -150,6 +152,7 @@
     <Compile Include="Library\Regex\MatchCollectionImpl.cs" />
     <Compile Include="Library\Regex\MatchImpl.cs" />
     <Compile Include="Library\Regex\Regex.cs" />
+    <Compile Include="Library\SpecialFolderEnum.cs" />
     <Compile Include="Library\SortDirectionEnum.cs" />
     <Compile Include="Library\StdTextReadStream.cs" />
     <Compile Include="Library\StdTextWriteStream.cs" />
@@ -160,7 +163,6 @@
     <Compile Include="Library\MapImpl.cs" />
     <Compile Include="Library\RandomNumberGenerator.cs" />
     <Compile Include="Library\Reflector.cs" />
-    <Compile Include="Library\SymbolsEnum.cs" />
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextDocumentContext.cs" />
     <Compile Include="Library\TextEncodingEnum.cs" />
@@ -211,6 +213,7 @@
     <Compile Include="Library\TypeDescription\IValueAdjuster.cs" />
     <Compile Include="Library\TypeDescription\BooleanTypeAdjuster.cs" />
     <Compile Include="Library\Xml\XmlNamespaceContext.cs" />
+    <Compile Include="Library\SymbolsContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">

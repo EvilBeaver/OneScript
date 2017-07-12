@@ -38,6 +38,8 @@ namespace ScriptEngine.HostedScript.Library
         {
         }
 
+        private bool IsOutputRedirected => _p.StartInfo.RedirectStandardOutput && _p.StartInfo.RedirectStandardError;
+
         /// <summary>
         /// Устанавливает кодировку в которой будут считываться стандартные потоки вывода и ошибок.
         /// </summary>
@@ -59,13 +61,6 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                if (_stdOutContext == null)
-                {
-                    var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stdout);
-                    stream.StartReading();
-
-                    _stdOutContext = new StdTextReadStream(stream);
-                }
                 return _stdOutContext;
             }
         }
@@ -79,13 +74,6 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                if (_stdErrContext == null)
-                {
-                    var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stderr);
-                    stream.StartReading();
-
-                    _stdErrContext = new StdTextReadStream(stream);
-                }
                 return _stdErrContext;
             }
         }
@@ -112,6 +100,19 @@ namespace ScriptEngine.HostedScript.Library
         public void Start()
         {
             _p.Start();
+
+            if (IsOutputRedirected)
+            {
+                var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stdout);
+                stream.StartReading();
+                _stdOutContext = new StdTextReadStream(stream);
+
+                stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stderr);
+                stream.StartReading();
+
+                _stdErrContext = new StdTextReadStream(stream);
+
+            }
         }
 
         /// <summary>
@@ -159,14 +160,22 @@ namespace ScriptEngine.HostedScript.Library
                 return _p.ExitCode;
             }
         }
-
+        
         /// <summary>
         /// Приостановить выполнение скрипта и ожидать завершения процесса.
         /// </summary>
+        /// <param name="timeout">Число. Таймаут в миллисекундах.</param>
+        /// <returns>Булево. Ложь, если таймаут истек.</returns>
         [ContextMethod("ОжидатьЗавершения", "WaitForExit")]
-        public void WaitForExit()
+        public bool WaitForExit(IValue timeout = null)
         {
-            _p.WaitForExit();
+            if (timeout == null)
+            {
+                _p.WaitForExit();
+                return true;
+            }
+
+            return _p.WaitForExit((int) timeout.AsNumber());
         }
 
         /// <summary>
@@ -210,7 +219,7 @@ namespace ScriptEngine.HostedScript.Library
             _p.Dispose();
         }
 
-        public static ProcessContext Create(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
+        public static ProcessContext Create(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null, MapImpl env = null)
         {
             var sInfo = PrepareProcessStartupInfo(cmdLine, currentDir);
             sInfo.UseShellExecute = false;
@@ -229,6 +238,14 @@ namespace ScriptEngine.HostedScript.Library
 
                 sInfo.StandardOutputEncoding = enc;
                 sInfo.StandardErrorEncoding = enc;
+            }
+
+            if (env != null)
+            {
+                foreach (var kv in env)
+                {
+                    sInfo.EnvironmentVariables[kv.Key.AsString()] = kv.Value.AsString();
+                }
             }
 
             var p = new System.Diagnostics.Process();
