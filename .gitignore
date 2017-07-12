@@ -59,3 +59,4 @@ src/packages/
 # Visual Studio OpenCover and Test result
 src/OpenCover
 TestResult.xml
+tests/component/Component.dll

@@ -208,7 +208,7 @@ namespace ScriptEngine.HostedScript
             return InitProcess(host, ref module);
         }
 
-        private void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
+        public void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
         {
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;

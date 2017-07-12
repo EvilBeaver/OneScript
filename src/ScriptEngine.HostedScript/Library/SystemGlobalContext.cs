@@ -25,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library
     public class SystemGlobalContext : IRuntimeContextInstance, IAttachableContext
     {
         private IVariable[] _state;
-        private CommandLineArguments _args;
+        private FixedArrayImpl  _args;
 		private SymbolsContext _symbols;
         private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
@@ -255,14 +255,15 @@ namespace ScriptEngine.HostedScript.Library
             {
                 if (_args == null)
                 {
-                    if (ApplicationHost == null)
+                    var argsArray = new ArrayImpl();
+                    if (ApplicationHost != null)
                     {
-                        _args = Library.CommandLineArguments.Empty;
+                        foreach (var arg in ApplicationHost.GetCommandLineArguments())
+                        {
+                            argsArray.Add(ValueFactory.Create(arg));
+                        }
                     }
-                    else
-                    {
-                        _args = new CommandLineArguments(ApplicationHost.GetCommandLineArguments());
-                    }
+                    _args = new FixedArrayImpl(argsArray);
                 }
 
                 return _args;
