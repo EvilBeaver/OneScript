@@ -3,8 +3,12 @@ _opm_complete()
 	local cur opts
 	COMPREPLY=()
 	cur="${COMP_WORDS[COMP_CWORD]}"
-	opts="build prepare install update app help config list run test version"
-	COMPREPLY=( $(compgen -W "$opts" -- ${cur}) )
+	if [[ $COMP_CWORD == 1 ]] ; then
+		opts="build prepare install update app help config list run test version"
+		COMPREPLY=( $(compgen -W "$opts" -- ${cur}) )
+		return 0
+	fi
+	COMPREPLY=( $(compgen -df ${cur}) )
 	return 0
 }
 complete -F _opm_complete opm
