@@ -14,7 +14,7 @@ using ScriptEngine.HostedScript;
 using System.Collections.Generic;
 using ScriptEngine;
 using ScriptEngine.Environment;
-
+using ScriptEngine.HostedScript.Library;
 
 namespace TestApp
 {
@@ -405,7 +405,7 @@ namespace TestApp
 
         #region IHostApplication Members
 
-        public void Echo(string str, EchoStatus status = EchoStatus.Undefined)
+        public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
             _output.AppendText(str + '\n');
             _output.ScrollToEnd();

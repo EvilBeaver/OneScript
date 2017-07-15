@@ -26,24 +26,35 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public int Count()
         {
-            var Owner = _owner.Target as ValueTable;
-            return Owner.Columns.Count();
+			var owner = _owner.Target as ValueTable;
+            return owner.Columns.Count();
         }
 
+        /// <summary>
+        /// Владелец строки
+        /// </summary>
+        /// <returns>ТаблицаЗначений</returns>
         [ContextMethod("Владелец", "Owner")]
         public ValueTable Owner()
         {
             return _owner.Target as ValueTable;
         }
 
-        private IValue TryValue(ValueTableColumn Column)
-        {
-            IValue Value;
-            if (_data.TryGetValue(Column, out Value))
-                return Value;
-            return ValueFactory.Create(); // TODO: Определять пустое значение для типа колонки
-        }
+		private IValue TryValue(ValueTableColumn Column)
+		{
+			IValue Value;
+			if (_data.TryGetValue(Column, out Value))
+			{
+				return Value;
+			}
+			return Column.ValueType.AdjustValue();
+		}
 
+        /// <summary>
+        /// Получает значение по индексу
+        /// </summary>
+        /// <param name="index">Число - Индекс колонки</param>
+        /// <returns>Произвольный - Значение колонки</returns>
         [ContextMethod("Получить", "Get")]
         public IValue Get(int index)
         {
@@ -62,22 +73,27 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return TryValue(C);
         }
 
+        /// <summary>
+        /// Установить значение
+        /// </summary>
+        /// <param name="index">Число - Индекс колонки</param>
+        /// <param name="Value">Произвольный - значение для установки</param>
         [ContextMethod("Установить", "Set")]
         public void Set(int index, IValue Value)
         {
             var C = Owner().Columns.FindColumnByIndex(index);
-            _data[C] = Value;
+            _data[C] = C.ValueType.AdjustValue(Value);
         }
 
         public void Set(IValue index, IValue Value)
         {
             var C = Owner().Columns.GetColumnByIIndex(index);
-            _data[C] = Value;
+            _data[C] = C.ValueType.AdjustValue(Value);
         }
 
         public void Set(ValueTableColumn Column, IValue Value)
         {
-            _data[Column] = Value;
+            _data[Column] = Column.ValueType.AdjustValue(Value);
         }
 
         public IEnumerator<IValue> GetEnumerator()
@@ -114,11 +130,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return TryValue(C);
         }
 
-        public override void SetPropValue(int propNum, IValue newVal)
-        {
-            ValueTableColumn C = Owner().Columns.FindColumnById(propNum);
-            _data[C] = newVal;
-        }
+		public override void SetPropValue(int propNum, IValue newVal)
+		{
+			ValueTableColumn C = Owner().Columns.FindColumnById(propNum);
+			_data[C] = C.ValueType.AdjustValue(newVal);
+		}
 
         private ValueTableColumn GetColumnByIIndex(IValue index)
         {
@@ -131,10 +147,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return TryValue(C);
         }
 
-        public override void SetIndexedValue(IValue index, IValue val)
-        {
-            _data[GetColumnByIIndex(index)] = val;
-        }
+		public override void SetIndexedValue(IValue index, IValue val)
+		{
+			var C = GetColumnByIIndex(index);
+			_data[C] = C.ValueType.AdjustValue(val);
+		}
 
 
         private static readonly ContextMethodsMapper<ValueTableRow> _methods = new ContextMethodsMapper<ValueTableRow>();

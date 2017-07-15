@@ -40,7 +40,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ContextMethod("Вставить", "Insert")]
+        [ContextMethod("Вставить")]
         public void Insert(string name, IValue val = null)
         {
             var num = RegisterProperty(name);

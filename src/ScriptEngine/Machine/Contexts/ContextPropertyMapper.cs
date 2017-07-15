@@ -15,12 +15,17 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Property)]
     public class ContextPropertyAttribute : Attribute
     {
-        readonly string _name;
-
-        readonly string _alias;
+        private readonly string _name;
+        private readonly string _alias;
 
         public ContextPropertyAttribute(string name, string alias = "")
         {
+            if (!Utils.IsValidIdentifier(name))
+                throw new ArgumentException("Name must be a valid identifier");
+
+            if (!string.IsNullOrEmpty(alias) && !Utils.IsValidIdentifier(alias))
+                throw new ArgumentException("Alias must be a valid identifier");
+
             _name = name;
             _alias = alias;
             CanRead = true;
@@ -54,6 +59,8 @@ namespace ScriptEngine.Machine.Contexts
             var attrib = (ContextPropertyAttribute)propInfo.GetCustomAttributes(typeof(ContextPropertyAttribute), false)[0];
             _name = attrib.GetName();
             _alias = attrib.GetAlias();
+            if (string.IsNullOrEmpty(_alias))
+                _alias = _name;
 
             Func<TInstance, IValue> cantReadAction = (inst) => { throw RuntimeException.PropIsNotReadableException(_name); };
             Action<TInstance, IValue> cantWriteAction = (inst, val) => { throw RuntimeException.PropIsNotWritableException(_name); };

@@ -12,6 +12,8 @@ using ScriptEngine.Machine.Contexts;
 using ScriptEngine.HostedScript.Library;
 using oscript.Web.Multipart;
 
+using ScriptEngine.HostedScript.Library.Binary;
+
 namespace oscript.Web
 {
     [ContextClass ("ВебЗапрос", "WebRequest")]

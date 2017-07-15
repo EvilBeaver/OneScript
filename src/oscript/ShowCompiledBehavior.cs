@@ -30,6 +30,7 @@ namespace oscript
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
             var compiler = hostedScript.GetCompilerService();
+            hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);
             var writer = new ScriptEngine.Compiler.ModuleWriter(compiler);
             try
             {

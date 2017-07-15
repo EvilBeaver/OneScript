@@ -37,7 +37,13 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return null;
             }
-            else if (type == typeof(IValue))
+
+            if (Nullable.GetUnderlyingType(type) != null)
+            {
+                return ConvertParam(value, Nullable.GetUnderlyingType(type));
+            }
+
+            if (type == typeof(IValue))
             {
                 valueObj = value;
             }
@@ -100,9 +106,17 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((int)objParam);
             }
+            else if (type == typeof(uint))
+            {
+                return ValueFactory.Create((uint)objParam);
+            }
             else if (type == typeof(long))
             {
                 return ValueFactory.Create((long)objParam);
+            }
+            else if (type == typeof(ulong))
+            {
+                return ValueFactory.Create((ulong)objParam);
             }
             else if (type == typeof(decimal))
             {
@@ -119,6 +133,13 @@ namespace ScriptEngine.Machine.Contexts
             else if (type == typeof(bool))
             {
                 return ValueFactory.Create((bool)objParam);
+            }
+            else if (type.IsEnum)
+            {
+                var wrapperType = typeof(CLREnumValueWrapper<>).MakeGenericType(new Type[] { type });
+                var constructor = wrapperType.GetConstructor(new Type[] { typeof(EnumerationContext), type, typeof(DataType) });
+                var osValue = (EnumerationValue)constructor.Invoke(new object[] { null, param, DataType.Enumeration });
+                return osValue;
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {

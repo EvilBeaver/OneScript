@@ -1,4 +1,10 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -181,10 +187,9 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         }
 
         [ContextMethod("СортироватьПоЗначению", "SortByValue")]
-        public void SortByValue(SelfAwareEnumValue<SortDirectionEnum> direction)
+        public void SortByValue(SortDirectionEnum? direction = null)
         {
-            var enumInstance = GlobalsManager.GetEnum<SortDirectionEnum>();
-            if(direction == enumInstance.Asc)
+            if (direction == null || direction == SortDirectionEnum.Asc)
             {
                 _items.Sort((x, y) => SafeCompare(x.Value, y.Value));
             }
@@ -208,10 +213,9 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         }
 
         [ContextMethod("СортироватьПоПредставлению", "SortByPresentation")]
-        public void SortByPresentation(SelfAwareEnumValue<SortDirectionEnum> direction)
+        public void SortByPresentation(SortDirectionEnum direction)
         {
-            var enumInstance = GlobalsManager.GetEnum<SortDirectionEnum>();
-            if (direction == enumInstance.Asc)
+            if (direction == SortDirectionEnum.Asc)
             {
                 _items.Sort((x, y) => x.Presentation.CompareTo(y.Presentation));
             }

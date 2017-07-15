@@ -6,13 +6,14 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
+    /// <summary>
+    /// Коллекция колонок таблицы значений
+    /// </summary>
     [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection")]
     public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTableColumn>
     {
@@ -23,29 +24,37 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
         }
 
+        /// <summary>
+        /// Добавляет колонку в таблицу значений
+        /// </summary>
+        /// <param name="Name">Строка - Имя колонки</param>
+        /// <param name="Type">ОписаниеТипов - Тип данных колонки</param>
+        /// <param name="Title">Строка - Заголовок колонки</param>
+        /// <returns>КолонкаТаблицыЗначений</returns>
         [ContextMethod("Добавить", "Add")]
-        public ValueTableColumn Add(string Name, IValue Type = null, string Title = null)
+        public ValueTableColumn Add(string Name, TypeDescription Type = null, string Title = null, int Width = 0)
         {
             if (FindColumnByName(Name) != null)
                 throw new RuntimeException("Неверное имя колонки " + Name);
 
-            var Width = 0; // затычка
-
-            ValueTableColumn column = new ValueTableColumn(this, ++_internal_counter, Name, Title, Type, Width);
+            var column = new ValueTableColumn(this, ++_internal_counter, Name, Title, Type, Width);
             _columns.Add(column);
 
             return column;
         }
 
+        /// <summary>
+        /// Вставить колонку в указанную позицию
+        /// </summary>
+        /// <param name="index">Число - Индекс расположения колонки</param>
+        /// <param name="Name">Строка - Имя колонки</param>
+        /// <param name="Type">ОписаниеТипов - Тип данных колонки</param>
+        /// <returns>КолонкаТаблицыЗначений</returns>
         [ContextMethod("Вставить", "Insert")]
-        public ValueTableColumn Insert(int index, string Name, IValue Type = null)
-            // TODO: добавить Title и Width после того, как количество обрабатываемых параметров будет увеличено хотя бы до 5
+        public ValueTableColumn Insert(int index, string Name, TypeDescription Type = null, string Title = null, int Width = 0)
         {
             if (FindColumnByName(Name) != null)
                 throw new RuntimeException("Неверное имя колонки " + Name);
-
-            var Title = Name; // TODO: Затычка
-            var Width = 0; // TODO: Затычка
 
             ValueTableColumn column = new ValueTableColumn(this, ++_internal_counter, Name, Title, Type, Width);
             _columns.Insert(index, column);
@@ -53,18 +62,32 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return column;
         }
 
+        /// <summary>
+        /// Индекс указанной колонки
+        /// </summary>
+        /// <param name="column">КолонкаТаблицыЗначений - Колонка, для которой определяется индекс</param>
+        /// <returns>Число</returns>
         [ContextMethod("Индекс", "IndexOf")]
         public int IndexOf(ValueTableColumn column)
         {
             return _columns.IndexOf(column);
         }
 
+        /// <summary>
+        /// Количество колонок в таблице значений
+        /// </summary>
+        /// <returns>Число</returns>
         [ContextMethod("Количество", "Count")]
         public int Count()
         {
             return _columns.Count;
         }
 
+        /// <summary>
+        /// Поиск колонки по имени
+        /// </summary>
+        /// <param name="Name">Строка - Имя колонки</param>
+        /// <returns>КолонкаТаблицыЗначений - Найденная колонка таблицы значений, иначе Неопределено.</returns>
         [ContextMethod("Найти", "Find")]
         public IValue Find(string Name)
         {
@@ -74,6 +97,14 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Column;
         }
 
+        /// <summary>
+        /// Удалить колонку значений
+        /// </summary>
+        /// <param name="Column">
+        /// Строка - Имя колонки для удаления
+        /// Число - Индекс колонки для удаления
+        /// КолонкаТаблицыЗначений - Колонка для удаления
+        /// </param>
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue Column)
         {
@@ -152,7 +183,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 return Column;
             }
 
-            if (index is ValueTableColumn) {
+            if (index is ValueTableColumn)
+            {
                 return index as ValueTableColumn;
             }
 
@@ -177,8 +209,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             try
             {
                 binding(this, arguments);
-            }
-            catch (System.Reflection.TargetInvocationException e)
+            } catch (System.Reflection.TargetInvocationException e)
             {
                 throw e.InnerException;
             }
@@ -190,8 +221,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             try
             {
                 retValue = binding(this, arguments);
-            }
-            catch (System.Reflection.TargetInvocationException e)
+            } catch (System.Reflection.TargetInvocationException e)
             {
                 throw e.InnerException;
             }

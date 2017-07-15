@@ -11,12 +11,17 @@ namespace ScriptEngine.Machine.Contexts
     [AttributeUsage(AttributeTargets.Class)]
     public class ContextClassAttribute : Attribute
     {
-        readonly string _name;
-
-        readonly string _alias;
+        private readonly string _name;
+        private readonly string _alias;
 
         public ContextClassAttribute(string typeName, string typeAlias = "")
         {
+            if (!Utils.IsValidIdentifier(typeName))
+                throw new ArgumentException("Name must be a valid identifier");
+
+            if (!string.IsNullOrEmpty(typeAlias) && !Utils.IsValidIdentifier(typeAlias))
+                throw new ArgumentException("Alias must be a valid identifier");
+
             _name = typeName;
             _alias = typeAlias;
         }

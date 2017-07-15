@@ -28,6 +28,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\ScriptEngine.HostedScript.XML</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -76,6 +78,10 @@
     <Reference Include="Ionic.Zip">
       <HintPath>..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -88,6 +94,8 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Library\DriveInfo\DriveInfo.cs" />
+    <Compile Include="Library\DriveInfo\DriveTypeEnum.cs" />
     <Compile Include="EngineConfigProvider.cs" />
     <Compile Include="HostedScriptEngine.cs" />
     <Compile Include="IHostApplication.cs" />
@@ -95,9 +103,20 @@
     <Compile Include="LibraryLoader.cs" />
     <Compile Include="LibraryResolver.cs" />
     <Compile Include="Library\ArrayImpl.cs" />
-    <Compile Include="Library\BinaryDataContext.cs" />
-    <Compile Include="Library\CommandLineArguments.cs" />
+    <Compile Include="Library\Binary\BinaryDataContext.cs" />
+    <Compile Include="Library\Binary\BinaryDataBuffer.cs" />
+    <Compile Include="Library\Binary\GenericStreamImpl.cs" />
+    <Compile Include="Library\Binary\EndianBitConverter.cs" />
+    <Compile Include="Library\Binary\DataReader.cs" />
+    <Compile Include="Library\Binary\DataWriter.cs" />
+    <Compile Include="Library\Binary\StreamEnums.cs" />
+    <Compile Include="Library\Binary\FileStreamContext.cs" />
+    <Compile Include="Library\Binary\FileStreamsManager.cs" />
+    <Compile Include="Library\Binary\MemoryStreamContext.cs" />
+    <Compile Include="Library\Binary\ReadDataResult.cs" />
+    <Compile Include="Library\Binary\GenericStream.cs" />
     <Compile Include="Library\ConsoleContext.cs" />
+    <Compile Include="Library\EnvironmentVariablesImpl.cs" />
     <Compile Include="Library\FileContext.cs" />
     <Compile Include="Library\FileOperations.cs" />
     <Compile Include="Library\FixedArrayImpl.cs" />
@@ -118,14 +137,22 @@
     <Compile Include="Library\Http\HttpResponseContext.cs" />
     <Compile Include="Library\Http\InternetProxyContext.cs" />
     <Compile Include="Library\ConsoleColorEnum.cs" />
+    <Compile Include="Library\Json\JSONCharactersEscapeMode.cs" />
+    <Compile Include="Library\Json\JSONLineBreak.cs" />
+    <Compile Include="Library\Json\JSONReader.cs" />
+    <Compile Include="Library\Json\JSONValueTypeEnum.cs" />
+    <Compile Include="Library\Json\JSONWriter.cs" />
+    <Compile Include="Library\Json\JSONWriterSettings.cs" />
     <Compile Include="Library\MessageStatusEnum.cs" />
     <Compile Include="Library\MiscGlobalFunctions.cs" />
     <Compile Include="Library\Net\TCPClient.cs" />
     <Compile Include="Library\Net\TCPServer.cs" />
     <Compile Include="Library\ProcessContext.cs" />
+    <Compile Include="Library\ProcessOutputWrapper.cs" />
     <Compile Include="Library\Regex\MatchCollectionImpl.cs" />
     <Compile Include="Library\Regex\MatchImpl.cs" />
     <Compile Include="Library\Regex\Regex.cs" />
+    <Compile Include="Library\SpecialFolderEnum.cs" />
     <Compile Include="Library\SortDirectionEnum.cs" />
     <Compile Include="Library\StdTextReadStream.cs" />
     <Compile Include="Library\StdTextWriteStream.cs" />
@@ -136,7 +163,6 @@
     <Compile Include="Library\MapImpl.cs" />
     <Compile Include="Library\RandomNumberGenerator.cs" />
     <Compile Include="Library\Reflector.cs" />
-    <Compile Include="Library\SymbolsEnum.cs" />
     <Compile Include="Library\SystemEnvironmentContext.cs" />
     <Compile Include="Library\TextDocumentContext.cs" />
     <Compile Include="Library\TextEncodingEnum.cs" />
@@ -176,6 +202,18 @@
     <Compile Include="DirectiveMultiResolver.cs" />
     <Compile Include="DirectiveIgnorer.cs" />
     <Compile Include="Library\CustomLineFeedStreamReader.cs" />
+    <Compile Include="Library\TypeDescription\AllowedSignEnum.cs" />
+    <Compile Include="Library\TypeDescription\AllowedLengthEnum.cs" />
+    <Compile Include="Library\TypeDescription\DateFractionsEnum.cs" />
+    <Compile Include="Library\TypeDescription\NumberQualifiers.cs" />
+    <Compile Include="Library\TypeDescription\StringQualifiers.cs" />
+    <Compile Include="Library\TypeDescription\DateQualifiers.cs" />
+    <Compile Include="Library\TypeDescription\BinaryDataQualifiers.cs" />
+    <Compile Include="Library\TypeDescription\TypeDescription.cs" />
+    <Compile Include="Library\TypeDescription\IValueAdjuster.cs" />
+    <Compile Include="Library\TypeDescription\BooleanTypeAdjuster.cs" />
+    <Compile Include="Library\Xml\XmlNamespaceContext.cs" />
+    <Compile Include="Library\SymbolsContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
@@ -189,6 +227,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

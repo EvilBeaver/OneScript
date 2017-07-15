@@ -9,6 +9,7 @@
       <Component Id="HostedLib" Guid="A98FCBE4-04BB-44EA-809F-A375CE5B11D3">
         <File Source="$(var.OutputPathForBuild)bin\ScriptEngine.HostedScript.dll"></File>
         <File Source="$(var.OutputPathForBuild)bin\Ionic.Zip.dll"></File>
+        <File Source="$(var.OutputPathForBuild)bin\Newtonsoft.Json.dll"></File>
       </Component>
 
       <Component Id="ConsoleApp" Guid="D42B2795-B9DF-490F-B469-AB06E25085D7">

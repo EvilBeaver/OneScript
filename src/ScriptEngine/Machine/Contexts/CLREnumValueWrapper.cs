@@ -12,16 +12,24 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class CLREnumValueWrapper<T> : EnumerationValue
+    public class CLREnumValueWrapper<T> : EnumerationValue, IObjectWrapper where T :struct
     {
         private readonly T _realValue;
+        private DataType _redefinedDataType;
 
         public CLREnumValueWrapper(EnumerationContext owner, T realValue):base(owner)
         {
             _realValue = realValue;
+            _redefinedDataType = DataType.GenericValue;
         }
 
-        public T UnderlyingObject
+        public CLREnumValueWrapper (EnumerationContext owner, T realValue, DataType newDataType) : base (owner)
+        {
+            _realValue = realValue;
+            _redefinedDataType = newDataType;
+        }
+
+        public object UnderlyingObject
         {
             get
             {
@@ -29,13 +37,29 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        public T UnderlyingValue
+        {
+            get
+            {
+                return _realValue;
+            }
+        }
+
+        public override DataType DataType
+        {
+            get
+            {
+                return _redefinedDataType;
+            }
+         }
+
         public override bool Equals(IValue other)
         {
             var otherWrapper = other.GetRawValue() as CLREnumValueWrapper<T>;
             if (otherWrapper == null)
                 return false;
 
-            return UnderlyingObject.Equals(otherWrapper.UnderlyingObject);
+            return UnderlyingValue.Equals(otherWrapper.UnderlyingValue);
         }
     }
 }

@@ -97,7 +97,7 @@ namespace ScriptEngine.Compiler
             }
             else
             {
-                throw new InvalidOperationException("Symbol already defined in the scope");
+                throw new InvalidOperationException($"Symbol already defined in the scope ({name})");
             }
         }
 

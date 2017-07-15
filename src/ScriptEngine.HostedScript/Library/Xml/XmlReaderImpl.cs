@@ -166,12 +166,26 @@ namespace ScriptEngine.HostedScript.Library.Xml
             }
         }
 
-        [ContextProperty("КонтекстПространствИмен", "NamespaceContext")]
-        public object NamespaceContext
+        private int Depth
         {
             get
             {
-                throw new NotSupportedException();
+                if (_reader.NodeType == XmlNodeType.EndElement)
+                    return _reader.Depth;
+
+                if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
+                    return _reader.Depth;
+                
+                return _reader.Depth + 1;
+            }
+        }
+
+        [ContextProperty("КонтекстПространствИмен", "NamespaceContext")]
+        public XmlNamespaceContext NamespaceContext
+        {
+            get
+            {
+                return new XmlNamespaceContext(Depth, _reader.GetNamespacesInScope(XmlNamespaceScope.All));
             }
         }
 

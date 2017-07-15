@@ -15,7 +15,7 @@ using System.Text;
 namespace ScriptEngine.HostedScript.Library
 {
     [SystemEnum("ЦветКонсоли", "ConsoleColor")]
-    class ConsoleColorEnum : EnumerationContext
+    public class ConsoleColorEnum : EnumerationContext
     {
         readonly Dictionary<ConsoleColor, IValue> _valuesCache = new Dictionary<ConsoleColor, IValue>();
 
@@ -34,7 +34,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
-                val = ValuesInternal.First(x => ((CLREnumValueWrapper<ConsoleColor>)x).UnderlyingObject == native);
+                val = ValuesInternal.First(x => ((CLREnumValueWrapper<ConsoleColor>)x).UnderlyingValue == native);
                 _valuesCache.Add(native, val);
             }
 

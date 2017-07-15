@@ -17,11 +17,13 @@ namespace oscript
     {
         string _path;
         string _envFile;
+        bool   _isCgi;
 
-        public CheckSyntaxBehavior(string path, string envFile)
+        public CheckSyntaxBehavior(string path, string envFile, bool isCgi = false)
         {
             _path = path;
             _envFile = envFile;
+            _isCgi = isCgi;
         } 
 
         public override int Execute()
@@ -29,8 +31,17 @@ namespace oscript
             var hostedScript = new HostedScriptEngine();
             hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
             hostedScript.Initialize();
+
+            if (_isCgi) {
+                var request = ScriptEngine.Machine.ValueFactory.Create ();
+                hostedScript.InjectGlobalProperty ("ВебЗапрос", request, true);
+                hostedScript.InjectGlobalProperty ("WebRequest", request, true);
+            }
+
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
+
+            hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);
 
             try
             {

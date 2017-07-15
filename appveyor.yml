@@ -1,16 +1,33 @@
-version: 1.0.14.{build}
+version: 1.0.17-alpha{build}
 pull_requests:
   do_not_increment_build_number: true
 configuration: Release
 platform: x86
+assembly_info:
+  patch: true
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
+nuget:
+  project_feed: true
+  disable_publish_on_pr: true
 init:
 - ps: Set-WinSystemLocale ru-RU
 - ps: Start-Sleep -s 5
 - ps: Restart-Computer
 install:
 - cmd: git submodule update --init --recursive
+before_build:
+- nuget restore src/1Script_Mono.sln
 build:
   project: src/1Script_Mono.sln
+  publish_nuget: true
   verbosity: minimal
 test_script:
 - cmd: appveyor-runtests.cmd
+after_build:
+- 7z a oscript.zip %APPVEYOR_BUILD_FOLDER%/src/oscript/bin/x86/Release/*.dll
+- 7z a oscript.zip %APPVEYOR_BUILD_FOLDER%/src/oscript/bin/x86/Release/*.exe
+artifacts:
+- path: oscript.zip
+  name: oscript.zip

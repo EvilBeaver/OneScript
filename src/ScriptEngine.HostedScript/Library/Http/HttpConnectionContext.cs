@@ -56,6 +56,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
             User = user == null ? String.Empty : user;
             Password = password == null ? String.Empty : password;
+
             Timeout = timeout;
             _proxy = proxy;
             UseOSAuthentication = useOSAuth;
@@ -222,8 +223,14 @@ namespace ScriptEngine.HostedScript.Library.Http
             if(_proxy != null)
                 request.Proxy = _proxy.GetProxy(uriBuilder.Scheme);
 
-            if (Timeout > 0)
-                request.Timeout = Timeout;
+            if (Timeout == 0)
+            {
+                request.Timeout = System.Threading.Timeout.Infinite;
+            }
+            else
+            {
+                request.Timeout = Timeout * 1000;
+            }
 
             return request;
             

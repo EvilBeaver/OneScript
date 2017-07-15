@@ -111,7 +111,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IEquatable<IValue> Members
 
-        public bool Equals(IValue other)
+        public virtual bool Equals(IValue other)
         {
             if (other.SystemType.Equals(this.SystemType))
             {
@@ -146,6 +146,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw new NotImplementedException();
         }
+
+        public virtual IEnumerable<VariableInfo> GetProperties()
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual int FindProperty(string name)
         {
             throw RuntimeException.PropNotFoundException(name);

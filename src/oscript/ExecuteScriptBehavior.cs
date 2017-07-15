@@ -11,6 +11,7 @@ using System.Text;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 
 namespace oscript
@@ -52,12 +53,17 @@ namespace oscript
                 return 1;
             }
 
-            return process.Start();
+            var result = process.Start();
+            hostedScript.Finalize();
+
+            ScriptFileHelper.OnAfterScriptExecute(hostedScript);
+
+            return result;
         }
 
         #region IHostApplication Members
 
-        public void Echo(string text, EchoStatus status = EchoStatus.Undefined)
+        public void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
             ConsoleHostImpl.Echo(text, status);
         }

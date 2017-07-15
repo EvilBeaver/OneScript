@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Linq;
+
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
@@ -27,6 +29,8 @@ namespace ScriptEngine
             _scriptFactory = new ScriptSourceFactory();
         }
 
+        public bool ProduceExtraCode { get; set; }
+
         public void AttachAssembly(System.Reflection.Assembly asm)
         {
             ContextDiscoverer.DiscoverClasses(asm);
@@ -45,14 +49,19 @@ namespace ScriptEngine
             SetDefaultEnvironmentIfNeeded();
 
             var symbolsContext = Environment.SymbolsContext;
+            UpdateContexts();
+
+            _attachedScriptsFactory = new AttachedScriptsFactory(this);
+            AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
+        }
+
+        public void UpdateContexts()
+        {
             _machine.Cleanup();
             foreach (var item in Environment.AttachedContexts)
             {
                 _machine.AttachContext(item, false);
             }
-
-            _attachedScriptsFactory = new AttachedScriptsFactory(this);
-            AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
         }
 
         private void SetDefaultEnvironmentIfNeeded()
@@ -74,6 +83,7 @@ namespace ScriptEngine
         public CompilerService GetCompilerService()
         {
             var cs = new CompilerService(Environment.SymbolsContext);
+            cs.ProduceExtraCode = ProduceExtraCode;
             cs.DirectiveResolver = DirectiveResolver;
             return cs;
         }
@@ -137,6 +147,11 @@ namespace ScriptEngine
             }
         }
 
+        public void SetCodeStatisticsCollector(ICodeStatCollector collector)
+        {
+            ProduceExtraCode = true;
+            _machine.SetCodeStatisticsCollector(collector);
+        }
 
         #region IDisposable Members
 
@@ -147,5 +162,17 @@ namespace ScriptEngine
 
         #endregion
 
+        public void CompileEnvironmentModules(RuntimeEnvironment env)
+        {
+            var scripts = env.GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module && env.GetGlobalProperty(x.Symbol) == null);
+
+            foreach (var script in scripts)
+            {
+                var loaded = LoadModuleImage(script.Module);
+                var instance = (IValue)NewObject(loaded);
+                env.SetGlobalProperty(script.Symbol, instance);
+            }
+        }
+        
     }
 }
