@@ -208,7 +208,7 @@ namespace ScriptEngine.HostedScript
             return InitProcess(host, ref module);
         }
 
-        private void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
+        public void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
         {
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;
@@ -223,15 +223,20 @@ namespace ScriptEngine.HostedScript
             return process;
         }
         
-        public void EnableCodeStatistics(string outputFileName)
+        public void EnableCodeStatistics()
         {
-            _codeStat = new CodeStatProcessor(outputFileName);
+            _codeStat = new CodeStatProcessor();
             _engine.SetCodeStatisticsCollector(_codeStat);
+        }
+
+        public CodeStatDataCollection GetCodeStatData()
+        {
+            return _codeStat.GetStatData();
         }
 
         public void Finalize()
         {
-            _codeStat?.OutputCodeStat();
+            _codeStat?.EndCodeStat();
         }
     }
 }

@@ -41,6 +41,8 @@ namespace oscript
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
 
+            hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);
+
             try
             {
                 if(_envFile != null)

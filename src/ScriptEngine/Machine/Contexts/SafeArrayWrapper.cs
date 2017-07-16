@@ -58,6 +58,12 @@ namespace ScriptEngine.Machine.Contexts
             _array[index] = newValue;
         }
 
+        [ContextMethod("Выгрузить", "Unload")]
+        public object Unload()
+        {
+            throw new NotSupportedException("FIXME: Method 'Unload' is not supported. Consider use SafeArrayWrapper as V8.Array directly.");
+        }
+
         public override IValue GetIndexedValue(IValue index)
         {
             var intIndex = (int)index.AsNumber();

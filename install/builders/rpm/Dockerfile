@@ -13,6 +13,8 @@ RUN sed -i.bak -n -e '/^Defaults.*requiretty/ { s/^/# /;};/^%wheel.*ALL$/ { s/^/
 # This is an optimisation for caching, since using the auto generated one will
 # make docker always run the builddep steps since new file
 ADD oscript.spec /tmp/
+ADD oscript /tmp/
+
 RUN dnf builddep -y --spec /tmp/oscript.spec
 
 ADD start.sh /start.sh
