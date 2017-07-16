@@ -52,6 +52,7 @@ uninstall: uninstall_lib uninstall_bin
 uninstall_bin:
 	rm -rf ${PREFIX}/share/oscript/bin
 	rm ${PREFIX}/bin/oscript
+	rm ${PREFIX}/bin/oscript-cgi
 
 uninstall_lib:
 	rm ${PREFIX}/bin/opm
