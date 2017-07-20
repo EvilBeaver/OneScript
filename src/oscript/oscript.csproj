@@ -77,6 +77,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceModel" />
@@ -95,10 +99,12 @@
     <Compile Include="BehaviorSelector.cs" />
     <Compile Include="CgiBehavior.cs" />
     <Compile Include="CheckSyntaxBehavior.cs" />
+    <Compile Include="CodeStatWriter.cs" />
     <Compile Include="CmdLineHelper.cs" />
     <Compile Include="ConsoleHostImpl.cs" />
     <Compile Include="DebugBehavior.cs" />
     <Compile Include="DebugServer\OscriptDebugController.cs" />
+    <Compile Include="DoNothingHost.cs" />
     <Compile Include="ExecuteScriptBehavior.cs" />
     <Compile Include="MakeAppBehavior.cs" />
     <Compile Include="MeasureBehavior.cs" />
@@ -138,7 +144,9 @@
   <ItemGroup>
     <EmbeddedResource Include="StandaloneRunner.exe" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

@@ -111,7 +111,17 @@ namespace oscript
             }
 
             if (CodeStatisticsEnabled)
-                engine.EnableCodeStatistics(CodeStatisticsFileName);
+                engine.EnableCodeStatistics();
+        }
+
+        public static void OnAfterScriptExecute(HostedScriptEngine engine)
+        {
+            if (CodeStatisticsEnabled)
+            {
+                var codeStat = engine.GetCodeStatData();
+                CodeStatWriter statsWriter = new CodeStatWriter(CodeStatisticsFileName, CodeStatWriterType.JSON);
+                statsWriter.Write(codeStat);
+            }
         }
     }
 }

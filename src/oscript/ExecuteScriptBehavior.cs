@@ -62,6 +62,8 @@ namespace oscript
             var result = process.Start();
             hostedScript.Dispose();
 
+            ScriptFileHelper.OnAfterScriptExecute(hostedScript);
+
             return result;
         }
 

@@ -12,6 +12,7 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 
 namespace oscript
@@ -29,10 +30,10 @@ namespace oscript
         public override int Execute()
         {
             string scriptFile;
-            scriptFile = Environment.GetEnvironmentVariable("PATH_TRANSLATED");
+            scriptFile = Environment.GetEnvironmentVariable("SCRIPT_FILENAME");
             if (scriptFile == null)
             {
-                scriptFile = Environment.GetEnvironmentVariable("SCRIPT_FILENAME");
+                scriptFile = Environment.GetEnvironmentVariable("PATH_TRANSLATED");
             }
 
             if (scriptFile == null)
@@ -97,6 +98,36 @@ namespace oscript
 
             Output(header + ": " + value + "\r\n");
             _headersWritten.Add(header);
+        }
+
+        [ContextMethod("ОтправитьФайл", "SendFile")]
+        public void SendFile(string filePath, string downloadFileName = null)
+        {
+            if (_isContentEchoed)
+            {
+                throw new InvalidOperationException("Content already sent!");
+            }
+
+            if (!IsHeaderWritten("Content-type"))
+            {
+                Header("Content-type", "application/octet-stream");
+            }
+            if (string.IsNullOrEmpty(downloadFileName))
+            {
+                var finfo = new FileInfo(filePath);
+                downloadFileName = finfo.Name;
+            }
+            using (var fs = new FileStream(filePath, FileMode.Open))
+            {
+                Header("Content-disposition", string.Format("inline; filename=\"{0}\"", downloadFileName));
+                Header("Content-length", fs.Length.ToString());
+                oscript.Output.WriteLine();
+
+                using (var stdout = Console.OpenStandardOutput())
+                {
+                    fs.CopyTo(stdout);
+                }
+            }
         }
 
         public Encoding Encoding { get; set; }

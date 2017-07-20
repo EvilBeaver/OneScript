@@ -18,16 +18,24 @@ namespace ScriptEngine.Machine.Contexts
         Dictionary<string, int> _ownPropertyIndexes;
         List<IValue> _ownProperties;
         
+        
         internal UserScriptContextInstance(LoadedModule module) : base(module)
         {
             _module = module;
         }
 
-        internal UserScriptContextInstance(LoadedModule module, string asObjectOfType)
+        internal UserScriptContextInstance(LoadedModule module, string asObjectOfType, IValue[] args = null)
             : base(module, true)
         {
             DefineType(TypeManager.GetTypeByName(asObjectOfType));
             _module = module;
+
+            ConstructorParams = args;
+            if (args == null)
+            {
+                ConstructorParams = new IValue[0];
+            }
+
         }
 
         public void AddProperty(string name, IValue value)

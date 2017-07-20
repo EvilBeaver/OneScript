@@ -366,6 +366,13 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.IdentifierExpected();
             }
 
+            // issue #375
+            if (String.Compare(_lastExtractedLexem.Content, "выполнить", StringComparison.OrdinalIgnoreCase) == 0
+                || String.Compare(_lastExtractedLexem.Content, "execute", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                SystemLogger.Write($"WARNING! Method name '{_lastExtractedLexem.Content}' is DEPRECATED. Rename it");
+            }
+
             int definitionLine = _parser.CurrentLine;
             MethodInfo method = new MethodInfo();
             method.Name = _lastExtractedLexem.Content;
