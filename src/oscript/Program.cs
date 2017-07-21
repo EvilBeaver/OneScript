@@ -16,7 +16,6 @@ namespace oscript
         static int Main(string[] args)
         {
             int returnCode;
-            
             var behavior = BehaviorSelector.Select(args);
             try
             {

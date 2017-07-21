@@ -250,7 +250,14 @@ namespace DebugServer
 
         public override void StepIn(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            SendResponse(response);
+            lock (_process)
+            {
+                if (!_process.HasExited)
+                {
+                    _process.StepIn();
+                }
+            }
         }
 
         public override void StepOut(Response response, dynamic arguments)

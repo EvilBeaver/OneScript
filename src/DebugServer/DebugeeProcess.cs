@@ -188,5 +188,10 @@ namespace DebugServer
         {
             _debugger.Instance.Next();
         }
+
+        public void StepIn()
+        {
+            _debugger.Instance.StepIn();
+        }
     }
 }

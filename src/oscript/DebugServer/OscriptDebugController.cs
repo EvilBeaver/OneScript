@@ -87,6 +87,7 @@ namespace oscript.DebugServer
         public void Execute()
         {
             RegisterEventListener();
+            _machine.PrepareDebugContinuation();
             _debugCommandEvent.Set();
         }
 
@@ -191,7 +192,8 @@ namespace oscript.DebugServer
 
         public void StepIn()
         {
-            throw new NotImplementedException();
+            _machine.StepIn();
+            _debugCommandEvent.Set();
         }
 
         public void StepOut()

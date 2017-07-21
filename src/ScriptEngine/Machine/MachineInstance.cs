@@ -146,6 +146,21 @@ namespace ScriptEngine.Machine
             _stopManager.AddNextLineStop(_currentFrame);
         }
 
+        public void StepIn()
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.StopOnMethodEntry();
+        }
+
+        public void PrepareDebugContinuation()
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.ClearSteppingStops();
+        }
 
         public IValue Evaluate(string expression, bool separate = false)
         {
@@ -953,6 +968,10 @@ namespace ScriptEngine.Machine
                     frame.InstructionPointer = methDescr.EntryPoint;
                     PushFrame();
                     SetFrame(frame);
+                    if (_stopManager != null)
+                    {
+                        _stopManager.OnFrameEntered(frame);
+                    }
 
                     needsDiscarding = methInfo.IsFunction && !asFunc;
                 }
