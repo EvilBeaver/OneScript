@@ -122,8 +122,7 @@
 			<BinaryFiles Include="$(OutputPathForBuild)\ICSharpCode.AvalonEdit.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\oscript.cfg"/>
 
-			<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*"/>
-			
+			<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*" Exclude="$(MSBuildProjectDirectory)\oscript-library\**\*.git"/>
 			<ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
 
 		</ItemGroup>
