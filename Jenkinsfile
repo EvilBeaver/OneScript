@@ -132,18 +132,19 @@ pipeline {
             when { branch 'develop' }
             agent { label 'master' }
 
-            dir('artifacts') {
-                deleteDir()
-                unstash 'winDist'
-                unstash 'linDist'
+            steps {
+                dir('artifacts') {
+                    deleteDir()
+                    unstash 'winDist'
+                    unstash 'linDist'
 
-                fileOperations(
-                    [fileCopyOperation(flattenFiles: false, includes: './*', targetLocation: '/var/www/oscript.io/download/versions/night-nuild/')]
-                    )
+                    fileOperations(
+                        [fileCopyOperation(flattenFiles: false, includes: './*', targetLocation: '/var/www/oscript.io/download/versions/night-nuild/')]
+                        )
 
-                archiveArtifacts artifacts: '*', fingerprint: true
+                    archiveArtifacts artifacts: '*', fingerprint: true
+                }
             }
-
         }
 
     }
