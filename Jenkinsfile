@@ -95,7 +95,8 @@ pipeline {
                     unstash 'buildResults'
                     //unstash 'sitedoc'
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:CreateZip;CreateInstall;CreateNuget"
-                    stash includes: 'dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg', name: 'winDist'
+                    archiveArtifacts artifacts: '**/dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg', fingerprint: true
+                    stash includes: 'dist/*.exe, **/dist/*.msi, **/dist/*.zip', name: 'winDist'
                 }
             }
         }
@@ -122,6 +123,7 @@ pipeline {
                 sh ./rpm-build.sh $DISTPATH
                 '''.stripIndent()
                 
+                archiveArtifacts artifacts: 'output/*', fingerprint: true
                 stash includes: 'output/*', name: 'linDist'
                 
             }
@@ -133,17 +135,14 @@ pipeline {
             agent { label 'master' }
 
             steps {
-                dir('artifacts') {
-                    deleteDir()
-                    unstash 'winDist'
-                    unstash 'linDist'
-
-                    fileOperations(
-                        [fileCopyOperation(flattenFiles: false, includes: './*', targetLocation: '/var/www/oscript.io/download/versions/night-nuild/')]
-                        )
-
-                    archiveArtifacts artifacts: '*', fingerprint: true
-                }
+                unstash 'winDist'
+                unstash 'linDist'
+                
+                sh '''
+                TARGET="/var/www/oscript.io/download/versions/night-nuild/"
+                sudo rsync -v --delete --include 'dist/*.exe' --include '**/dist/*.msi' --include '**/dist/*.zip' $TARGET
+                sudo rsync -v --delete --include 'output/*' $TARGET
+                '''.stripIndent()
             }
         }
 
