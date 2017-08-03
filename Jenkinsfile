@@ -95,7 +95,7 @@ pipeline {
                     unstash 'buildResults'
                     //unstash 'sitedoc'
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:CreateZip;CreateInstall;CreateNuget"
-                    archiveArtifacts artifacts: '**/dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg, **/tests/*.xml', fingerprint: true
+                    stash includes: 'dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg', name: 'winDist'
                 }
             }
         }
@@ -122,8 +122,26 @@ pipeline {
                 sh ./rpm-build.sh $DISTPATH
                 '''.stripIndent()
                 
-                archiveArtifacts artifacts: 'output/*', fingerprint: true
+                stash includes: 'output/*', name: 'linDist'
+                
+            }
 
+        }
+
+        stage ('Publishing night-build') {
+            when { branch 'develop' }
+            agent { label 'master' }
+
+            dir('artifacts') {
+                deleteDir()
+                unstash 'winDist'
+                unstash 'linDist'
+
+                fileOperations(
+                    [fileCopyOperation(flattenFiles: false, includes: './*', targetLocation: '/var/www/oscript.io/download/versions/night-nuild/')]
+                    )
+
+                archiveArtifacts artifacts: '*', fingerprint: true
             }
 
         }
