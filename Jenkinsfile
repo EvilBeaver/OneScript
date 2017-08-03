@@ -140,8 +140,8 @@ pipeline {
                 
                 sh '''
                 TARGET="/var/www/oscript.io/download/versions/night-build/"
-                sudo rsync -v --delete --include 'dist/*.exe' --include '**/dist/*.msi' --include '**/dist/OneScript*.zip' $TARGET
-                sudo rsync -v --delete --include 'output/*' $TARGET
+                sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.nuget dist/* $TARGET
+                sudo rsync -rv --delete --exclude *.src.rpm output/* $TARGET
                 '''.stripIndent()
             }
         }
