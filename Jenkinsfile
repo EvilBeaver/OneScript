@@ -139,7 +139,7 @@ pipeline {
                 unstash 'linDist'
                 
                 sh '''
-                TARGET="/var/www/oscript.io/download/versions/night-nuild/"
+                TARGET="/var/www/oscript.io/download/versions/night-build/"
                 sudo rsync -v --delete --include 'dist/*.exe' --include '**/dist/*.msi' --include '**/dist/*.zip' $TARGET
                 sudo rsync -v --delete --include 'output/*' $TARGET
                 '''.stripIndent()
