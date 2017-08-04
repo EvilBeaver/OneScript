@@ -151,14 +151,14 @@ namespace ScriptEngine.Machine
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
-            _stopManager.StopOnMethodEntry();
+            _stopManager.AddStopAtMethodEntry();
         }
 
         public void PrepareDebugContinuation()
         {
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
-
+            // ??
             _stopManager.ClearSteppingStops();
         }
 
@@ -1486,7 +1486,7 @@ namespace ScriptEngine.Machine
                 CodeStat_LineReached();
             }
 
-            if(MachineStopped != null && _stopManager != null && _stopManager.ShouldStopHere(_module.ModuleInfo.Origin, _currentFrame))
+            if(MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.ModuleInfo.Origin, _currentFrame))
             {
                 CreateFullCallstack();
                 MachineStopped?.Invoke(this, new MachineStoppedEventArgs(MachineStopReason.Breakpoint));

@@ -19,12 +19,15 @@ namespace ScriptEngine.Machine
         public StopKind kind;
         public string source;
         public int line;
-        public ExecutionFrame[] frames;
+        public ExecutionFrame frame;
     }
 
     class MachineStopManager
     {
         List<StopHandle> _registeredStops = new List<StopHandle>();
+        Stack<ExecutionFrame> _callStack = new Stack<ExecutionFrame>();
+
+        private bool _mustStopOnMethodEntry = false;
 
         internal void AddSourceLineStop(string source, int line)
         {
@@ -36,43 +39,59 @@ namespace ScriptEngine.Machine
             });
         }
 
+        internal void AddStopAtMethodEntry()
+        {
+            _mustStopOnMethodEntry = true;
+        }
+
         internal void AddNextLineStop(ExecutionFrame currentFrame)
         {
             _registeredStops.Add(new StopHandle()
             {
                 kind = StopKind.NextLine,
-                frames = new []{ currentFrame }
+                frame = currentFrame
             });
         }
 
-        internal void StopOnMethodEntry(ExecutionFrame returnFrame)
+        internal void AddStopOnMethodExit()
         {
             _registeredStops.Add(new StopHandle()
             {
-                kind = StopKind.MethodEntry,
-                frames = new ExecutionFrame[2]
-                {
-                    null,
-                    returnFrame
-                }
+                kind = StopKind.MethodReturn,
+                frame = _callStack.Peek()
             });
         }
-        
+
         internal void OnFrameEntered(ExecutionFrame frame)
         {
-            int idx = _registeredStops.FindIndex(x => x.kind == StopKind.MethodEntry);
-            if (idx >= 0)
+            _callStack.Push(frame);
+            if (_mustStopOnMethodEntry)
             {
-                _registeredStops[idx].frames[0] = frame;
+                _registeredStops.Add(new StopHandle()
+                {
+                    frame = frame,
+                    kind = StopKind.MethodEntry
+                });
+                _mustStopOnMethodEntry = false;
             }
         }
 
-        internal void OnFrameExited(ExecutionFrame frame)
+        internal void OnFrameExited(out bool shouldStop)
         {
-
+            var frame = _callStack.Pop();
+            var itemIdx = _registeredStops.FindIndex(x => x.kind == StopKind.MethodReturn && x.frame == frame);
+            if (itemIdx >= 0)
+            {
+                shouldStop = true;
+                _registeredStops.RemoveAt(itemIdx);
+            }
+            else
+            {
+                shouldStop = false;
+            }
         }
-
-        internal bool ShouldStopHere(string module, ExecutionFrame frame)
+        
+        internal bool ShouldStopAtThisLine(string module, ExecutionFrame frame)
         {
             for (int i = _registeredStops.Count-1; i >=0; i--)
             {
@@ -82,7 +101,7 @@ namespace ScriptEngine.Machine
                     return true;
                 }
 
-                if ((stop.kind == StopKind.NextLine||stop.kind == StopKind.MethodEntry) && stop.frames.Contains(frame))
+                if ((stop.kind == StopKind.NextLine||stop.kind == StopKind.MethodEntry) && stop.frame == frame)
                 {
                     _registeredStops.RemoveAt(i);
                     return true;
