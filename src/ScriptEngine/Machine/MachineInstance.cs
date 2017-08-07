@@ -132,9 +132,9 @@ namespace ScriptEngine.Machine
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
-            _stopManager.AddSourceLineStop(source, line);
+            throw new NotImplementedException();
+            //id = _stopManager.AddSourceLineStop(source, line);
             
-            id = source.GetHashCode() + line;
             return true;
         }
 
@@ -142,8 +142,9 @@ namespace ScriptEngine.Machine
         {
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
-    
-            _stopManager.AddNextLineStop(_currentFrame);
+
+            throw new NotImplementedException();
+            //_stopManager.AddNextLineStop(_currentFrame);
         }
 
         public void StepIn()
@@ -151,7 +152,7 @@ namespace ScriptEngine.Machine
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
-            _stopManager.AddStopAtMethodEntry();
+           // _stopManager.AddStopAtMethodEntry();
         }
 
         public void PrepareDebugContinuation()
@@ -159,7 +160,7 @@ namespace ScriptEngine.Machine
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
             // ??
-            _stopManager.ClearSteppingStops();
+            //_stopManager.ClearSteppingStops();
         }
 
         public IValue Evaluate(string expression, bool separate = false)
@@ -970,7 +971,7 @@ namespace ScriptEngine.Machine
                     SetFrame(frame);
                     if (_stopManager != null)
                     {
-                        _stopManager.OnFrameEntered(frame);
+                        //_stopManager.OnFrameEntered(frame);
                     }
 
                     needsDiscarding = methInfo.IsFunction && !asFunc;
@@ -1486,7 +1487,7 @@ namespace ScriptEngine.Machine
                 CodeStat_LineReached();
             }
 
-            if(MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.ModuleInfo.Origin, _currentFrame))
+            if(MachineStopped != null && _stopManager != null /*&& _stopManager.ShouldStopAtThisLine(_module.ModuleInfo.Origin, _currentFrame)*/)
             {
                 CreateFullCallstack();
                 MachineStopped?.Invoke(this, new MachineStoppedEventArgs(MachineStopReason.Breakpoint));

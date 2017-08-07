@@ -3,118 +3,72 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using ScriptEngine.Environment;
+
 namespace ScriptEngine.Machine
 {
-   
-    enum StopKind
+
+    internal enum DebugState
     {
-        SourceLine,
-        MethodEntry,
-        MethodReturn,
-        NextLine
+        Running,
+        SteppingOver,
+        SteppingIn,
+        SteppingOut
     }
 
-    struct StopHandle
+    internal class Breakpoint
     {
-        public StopKind kind;
-        public string source;
-        public int line;
-        public ExecutionFrame frame;
+        public string Module;
+        public ExecutionFrame HitFrame;
+        public int LineNumber;
+
+        public Breakpoint(int id)
+        {
+            BreakpointId = id;
+        }
+
+        public int BreakpointId { get; }
     }
 
-    class MachineStopManager
+
+    internal class MachineStopManager
     {
-        List<StopHandle> _registeredStops = new List<StopHandle>();
-        Stack<ExecutionFrame> _callStack = new Stack<ExecutionFrame>();
+        private DebugState _currentState;
+        private List<Breakpoint> _breakpoints;
 
-        private bool _mustStopOnMethodEntry = false;
+        private int _bpIdsGenerator;
 
-        internal void AddSourceLineStop(string source, int line)
+        public int SetBreakpoint(string module, int line)
         {
-            _registeredStops.Add(new StopHandle()
+            return (new Breakpoint(_bpIdsGenerator++)
             {
-                kind = StopKind.SourceLine,
-                line = line,
-                source = source
-            });
+                LineNumber = line,
+                Module = module
+            }).BreakpointId;
         }
 
-        internal void AddStopAtMethodEntry()
+        public void RemoveBreakpoint(int bpId)
         {
-            _mustStopOnMethodEntry = true;
+            int index = _breakpoints.FindIndex(x => x.BreakpointId == bpId);
+            if(index >= 0)
+                _breakpoints.RemoveAt(index);
         }
 
-        internal void AddNextLineStop(ExecutionFrame currentFrame)
+        public bool LineHit(string module, ExecutionFrame currentFrame)
         {
-            _registeredStops.Add(new StopHandle()
+            switch (_currentState)
             {
-                kind = StopKind.NextLine,
-                frame = currentFrame
-            });
-        }
-
-        internal void AddStopOnMethodExit()
-        {
-            _registeredStops.Add(new StopHandle()
-            {
-                kind = StopKind.MethodReturn,
-                frame = _callStack.Peek()
-            });
-        }
-
-        internal void OnFrameEntered(ExecutionFrame frame)
-        {
-            _callStack.Push(frame);
-            if (_mustStopOnMethodEntry)
-            {
-                _registeredStops.Add(new StopHandle()
-                {
-                    frame = frame,
-                    kind = StopKind.MethodEntry
-                });
-                _mustStopOnMethodEntry = false;
-            }
-        }
-
-        internal void OnFrameExited(out bool shouldStop)
-        {
-            var frame = _callStack.Pop();
-            var itemIdx = _registeredStops.FindIndex(x => x.kind == StopKind.MethodReturn && x.frame == frame);
-            if (itemIdx >= 0)
-            {
-                shouldStop = true;
-                _registeredStops.RemoveAt(itemIdx);
-            }
-            else
-            {
-                shouldStop = false;
-            }
-        }
-        
-        internal bool ShouldStopAtThisLine(string module, ExecutionFrame frame)
-        {
-            for (int i = _registeredStops.Count-1; i >=0; i--)
-            {
-                var stop = _registeredStops[i];
-                if (stop.kind == StopKind.SourceLine && stop.source == module && stop.line == frame.LineNumber)
-                {
-                    return true;
-                }
-
-                if ((stop.kind == StopKind.NextLine||stop.kind == StopKind.MethodEntry) && stop.frame == frame)
-                {
-                    _registeredStops.RemoveAt(i);
-                    return true;
-                }
+                case DebugState.Running:
+                    throw new NotImplementedException();
+                case DebugState.SteppingIn:
+                    throw new NotImplementedException();
+                case DebugState.SteppingOut:
+                    throw new NotImplementedException();
+                case DebugState.SteppingOver:
+                    throw new NotImplementedException();
             }
 
-            return false;
-        }
-
-        public void ClearSteppingStops()
-        {
-            var copy = _registeredStops.Where(x => x.kind == StopKind.SourceLine).ToList();
-            _registeredStops = copy;
+            throw new NotImplementedException();
         }
     }
 }
