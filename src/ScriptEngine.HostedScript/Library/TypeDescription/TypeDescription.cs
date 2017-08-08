@@ -32,19 +32,19 @@ namespace ScriptEngine.HostedScript.Library
 			BinaryDataQualifiers = binaryDataQualifiers ?? new BinaryDataQualifiers();
 		}
 
-		[ContextProperty("КвалификаторыЧисла", "NumberQualifiers")]
+		[ContextProperty("КвалификаторыЧисла")]
 		public NumberQualifiers NumberQualifiers { get; }
 
-		[ContextProperty("КвалификаторыСтроки", "StringQualifiers")]
+		[ContextProperty("КвалификаторыСтроки")]
 		public StringQualifiers StringQualifiers { get; }
 
-		[ContextProperty("КвалификаторыДаты", "DateQualifiers")]
+		[ContextProperty("КвалификаторыДаты")]
 		public DateQualifiers DateQualifiers { get; }
 
-		[ContextProperty("КвалификаторыДвоичныхДанных", "BinaryDataQualifiers")]
+		[ContextProperty("КвалификаторыДвоичныхДанных")]
 		public BinaryDataQualifiers BinaryDataQualifiers { get; }
 
-		[ContextMethod("Типы", "Types")]
+		[ContextMethod("Типы")]
 		public ArrayImpl Types()
 		{
 			var result = ArrayImpl.Constructor() as ArrayImpl;
@@ -57,7 +57,7 @@ namespace ScriptEngine.HostedScript.Library
 			return result;
 		}
 
-		[ContextMethod("СодержитТип", "ContainsType")]
+		[ContextMethod("СодержитТип")]
 		public bool ContainsType(IValue type)
 		{
 			if (type is TypeTypeValue)
@@ -82,7 +82,7 @@ namespace ScriptEngine.HostedScript.Library
 			return null;
 		}
 
-		[ContextMethod("ПривестиЗначение", "AdjustValue")]
+		[ContextMethod("ПривестиЗначение")]
 		public IValue AdjustValue(IValue value = null)
 		{
 

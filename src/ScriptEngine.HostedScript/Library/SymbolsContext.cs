@@ -16,7 +16,7 @@ namespace ScriptEngine.HostedScript.Library
 		/// Символ перевода строки.
 		/// </summary>
 		/// <value>Символ перевода строки.</value>
-		[ContextProperty("ПС", "LF")]
+		[ContextProperty("ПС")]
 		public string LF
 		{
 			get
@@ -29,7 +29,7 @@ namespace ScriptEngine.HostedScript.Library
 		/// Символ возврата каретки.
 		/// </summary>
 		/// <value>Символ возврата каретки.</value>
-		[ContextProperty("ВК", "CR")]
+		[ContextProperty("ВК")]
 		public string CR
 		{
 			get
@@ -42,7 +42,7 @@ namespace ScriptEngine.HostedScript.Library
 		/// Символ вертикальной табуляции.
 		/// </summary>
 		/// <value>Символ вертикальной табуляции.</value>
-		[ContextProperty("ВТаб", "VTab")]
+		[ContextProperty("ВТаб")]
 		public string VTab
 		{
 			get
@@ -55,7 +55,7 @@ namespace ScriptEngine.HostedScript.Library
 		/// Символ табуляции.
 		/// </summary>
 		/// <value>Символ горизонтальной табуляции.</value>
-		[ContextProperty("Таб", "Tab")]
+		[ContextProperty("Таб")]
 		public string Tab
 		{
 			get
@@ -68,7 +68,7 @@ namespace ScriptEngine.HostedScript.Library
 		/// Символ промотки.
 		/// </summary>
 		/// <value>Символ промотки.</value>
-		[ContextProperty("ПФ", "FF")]
+		[ContextProperty("ПФ")]
 		public string FF
 		{
 			get
@@ -81,7 +81,7 @@ namespace ScriptEngine.HostedScript.Library
 		/// Символ неразрывного пробела.
 		/// </summary>
 		/// <value>Символ неразрывного пробела.</value>
-		[ContextProperty("НПП", "Nbsp")]
+		[ContextProperty("НПП")]
 		public string Nbsp
 		{
 			get

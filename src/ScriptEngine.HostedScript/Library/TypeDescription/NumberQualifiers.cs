@@ -22,13 +22,13 @@ namespace ScriptEngine.HostedScript.Library
 			AllowedSign = allowedSign;
 		}
 
-		[ContextProperty("ДопустимыйЗнак", "AllowedSign")]
+		[ContextProperty("ДопустимыйЗнак")]
 		public AllowedSignEnum AllowedSign { get; }
 
-		[ContextProperty("Разрядность", "Digits")]
+		[ContextProperty("Разрядность")]
 		public int Digits { get; }
 
-		[ContextProperty("РазрядностьДробнойЧасти", "FractionDigits")]
+		[ContextProperty("РазрядностьДробнойЧасти")]
 		public int FractionDigits { get; }
 
 		public override bool Equals(object obj)

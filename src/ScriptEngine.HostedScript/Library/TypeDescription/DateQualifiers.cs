@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library
 			DateFractions = dateFractions;
 		}
 
-		[ContextProperty("ЧастиДаты", "DateFractions")]
+		[ContextProperty("ЧастиДаты")]
 		public DateFractionsEnum DateFractions { get; }
 
 		public override bool Equals(object obj)
