@@ -22,7 +22,7 @@ namespace ScriptEngine.Machine
 
         readonly List<PropertyInfo> _propertyCache;
 
-        readonly List<System.Reflection.MethodInfo> _methodsCache;
+        readonly List<Func<IValue[], object>> _methodsCache;
 
         public ComReflectionNameToIdMapper(Type type)
         {
@@ -30,7 +30,7 @@ namespace ScriptEngine.Machine
             _propertyNames = new IndexedNamesCollection();
             _methodNames = new IndexedNamesCollection();
             _propertyCache = new List<PropertyInfo>();
-            _methodsCache = new List<System.Reflection.MethodInfo>();
+            _methodsCache = new List<Func<IValue[], object>>();
         }
 
         public int FindProperty(string name)
@@ -53,20 +53,51 @@ namespace ScriptEngine.Machine
             return id;
         }
 
-        public int FindMethod(string name)
+        private System.Reflection.MethodInfo[] GetMethods(string name)
+        {
+            return _reflectedType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
+                .Where((x) => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)).ToArray();
+        }
+
+        private static System.Reflection.MethodInfo ChooseBestMatchingMethod(System.Reflection.MethodInfo[] methods, IValue[] callParams)
+        {
+            // TODO: анализ типов, анализ параметров по-умолчанию
+            foreach (var mi in methods)
+            {
+                if (mi.GetParameters().Length == callParams.Length)
+                {
+                    return mi;
+                }
+            }
+            return methods[0];
+        }
+
+        private static object InvokeMethod(object instance, System.Reflection.MethodInfo[] methods, IValue[] callParams)
+        {
+            var mi = ChooseBestMatchingMethod(methods, callParams);
+            object[] castedParams = Contexts.COMWrapperContext.MarshalArgumentsStrict(mi, callParams);
+            return mi.Invoke(instance, castedParams);
+        }
+
+        public delegate object InvokationDelegate(IValue[] callParams);
+
+        public int FindMethod(object instance, string name)
         {
             int id;
             var hasMethod = _methodNames.TryGetIdOfName(name, out id);
             if (!hasMethod)
             {
-                var methodInfo = _reflectedType.GetMethod(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                if(methodInfo == null)
+                var allMethodsInfo = GetMethods(name);
+                if (allMethodsInfo.Length == 0)
                     throw RuntimeException.MethodNotFoundException(name);
+
+                var methodInfo = allMethodsInfo[0];
+                Func< IValue[], object > invoker = (IValue[] callParams) => { return InvokeMethod(instance, allMethodsInfo, callParams); };
 
                 id = _methodNames.RegisterName(name);
                 System.Diagnostics.Debug.Assert(_methodsCache.Count == id);
 
-                _methodsCache.Add(methodInfo);
+                _methodsCache.Add(invoker);
             }
 
             return id;
@@ -77,7 +108,7 @@ namespace ScriptEngine.Machine
             return _propertyCache[id];
         }
 
-        public System.Reflection.MethodInfo GetMethod(int id)
+        public Func<IValue[], object> GetMethod(int id)
         {
             return _methodsCache[id];
         }
