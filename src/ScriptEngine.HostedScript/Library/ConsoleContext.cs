@@ -19,7 +19,7 @@ namespace ScriptEngine.HostedScript.Library
     /// Предназначен для низкоуровнего манипулирования выводом в консоль.
     /// </summary>
     [ContextClass("Консоль", "Console")]
-    class ConsoleContext : AutoContext<ConsoleContext>
+    public class ConsoleContext : AutoContext<ConsoleContext>
     {
         [ContextProperty("НажатаКлавиша", "KeyPressed")]
         public bool HasKey
@@ -157,6 +157,15 @@ namespace ScriptEngine.HostedScript.Library
             {
                 Console.InputEncoding = TextEncodingEnum.GetEncoding(value);                
             }
+        }
+
+        /// <summary>
+        /// Воспроизводит звуковой сигнал.
+        /// </summary>
+        [ContextMethod("Сигнал")]
+        public void Beep()
+        {
+            Console.Beep();
         }
 
         [ScriptConstructor]

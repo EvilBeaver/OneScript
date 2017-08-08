@@ -7,7 +7,11 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Threading;
+
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -18,12 +22,14 @@ namespace ScriptEngine.HostedScript.Library
     /// Глобальный контекст. Представляет глобально доступные свойства и методы.
     /// </summary>
     [GlobalContext(Category="Процедуры и функции взаимодействия с системой", ManualRegistration=true)]
-    class SystemGlobalContext : IRuntimeContextInstance, IAttachableContext
+    public class SystemGlobalContext : IRuntimeContextInstance, IAttachableContext
     {
         private IVariable[] _state;
-        private CommandLineArguments _args;
+        private FixedArrayImpl  _args;
+		private SymbolsContext _symbols;
         private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
+        private readonly SystemEnvironmentContext _systemEnvironmentContext;
 
         public SystemGlobalContext()
         {
@@ -33,6 +39,9 @@ namespace ScriptEngine.HostedScript.Library
             FileStreams = new FileStreamsManager();
             RegisterProperty("ФайловыеПотоки", () => FileStreams);
             RegisterProperty("FileStreams", () => FileStreams);
+
+			RegisterProperty("Символы", () => (IValue)Chars);
+			RegisterProperty("Chars", () => (IValue)Chars);
         }
 
         private void RegisterProperty(string name, Func<IValue> getter)
@@ -84,10 +93,9 @@ namespace ScriptEngine.HostedScript.Library
         /// Подключенный сценарий выступает, как самостоятельный класс, создаваемый оператором Новый
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
-        /// <param name="typeName">Имя типа, которое будет иметь новый класс. Экземпляры класса создаются оператором Новый.
+        /// <param name="typeName">Имя типа, которое будет иметь новый класс. Экземпляры класса создаются оператором Новый. </param>
         /// <example>ПодключитьСценарий("C:\file.os", "МойОбъект");
         /// А = Новый МойОбъект();</example>
-        /// </param>
         [ContextMethod("ПодключитьСценарий", "AttachScript")]
         public void AttachScript(string path, string typeName)
         {
@@ -117,8 +125,7 @@ namespace ScriptEngine.HostedScript.Library
 
                 foreach (var item in externalContext)
                 {
-                    var kv = item as KeyAndValueImpl;
-                    extData.Add(kv.Key.AsString(), kv.Value);
+                    extData.Add(item.Key.AsString(), item.Value);
                 }
 
                 return EngineInstance.AttachedScriptsFactory.LoadFromPath(compiler, path, extData);
@@ -130,11 +137,11 @@ namespace ScriptEngine.HostedScript.Library
         /// Подключает внешнюю сборку среды .NET (*.dll) и регистрирует классы 1Script, объявленные в этой сборке.
         /// Публичные классы, отмеченные в dll атрибутом ContextClass, будут импортированы аналогично встроенным классам 1Script.
         /// Загружаемая сборка должна ссылаться на сборку ScriptEngine.dll
+	/// </summary>
         /// <example>
         /// ПодключитьВнешнююКомпоненту("C:\MyAssembly.dll");
         /// КлассИзКомпоненты = Новый КлассИзКомпоненты(); // тип объявлен внутри компоненты
         /// </example>
-        /// </summary>
         /// <param name="dllPath">Путь к внешней компоненте</param>
         [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
         public void AttachAddIn(string dllPath)
@@ -248,20 +255,39 @@ namespace ScriptEngine.HostedScript.Library
             {
                 if (_args == null)
                 {
-                    if (ApplicationHost == null)
+                    var argsArray = new ArrayImpl();
+                    if (ApplicationHost != null)
                     {
-                        _args = Library.CommandLineArguments.Empty;
+                        foreach (var arg in ApplicationHost.GetCommandLineArguments())
+                        {
+                            argsArray.Add(ValueFactory.Create(arg));
+                        }
                     }
-                    else
-                    {
-                        _args = new CommandLineArguments(ApplicationHost.GetCommandLineArguments());
-                    }
+                    _args = new FixedArrayImpl(argsArray);
                 }
 
                 return _args;
             }
 
         }
+
+		/// <summary>
+		/// Содержит набор системных символов.
+		/// </summary>
+		/// <value>Набор системных символов.</value>
+		[ContextProperty("Символы")]
+		public IRuntimeContextInstance Chars
+		{
+			get
+			{
+				if (_symbols == null)
+				{
+					_symbols = new SymbolsContext();
+				}
+
+				return _symbols;
+			}
+		}
 
         /// <summary>
         /// Запуск приложения в операционной системе
@@ -297,9 +323,9 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="redirectInput">Перехватывать стандартный поток stdin</param>
         /// <param name="encoding">Кодировка стандартных потоков вывода и ошибок</param>
         [ContextMethod("СоздатьПроцесс", "CreateProcess")]
-        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
+        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null, MapImpl env = null)
         {
-            return ProcessContext.Create(cmdLine, currentDir, redirectOutput, redirectInput, encoding);
+            return ProcessContext.Create(cmdLine, currentDir, redirectOutput, redirectInput, encoding, env);
         }
 
         /// <summary>
@@ -478,6 +504,48 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
+
+        /// <summary>
+        /// Получает объект класса COM по его имени или пути. Подробнее см. синтакс-помощник от 1С.
+        /// </summary>
+        /// <param name="pathName">Путь к библиотеке</param>
+        /// <param name="className">Имя класса</param>
+        /// <returns>COMОбъект</returns>
+        [ContextMethod("ПолучитьCOMОбъект", "GetCOMObject")]
+        public IValue GetCOMObject(string pathName = null, string className = null)
+        {
+            var comObject = GetCOMObjectInternal(pathName, className);
+
+            return COMWrapperContext.Create(comObject);
+        }
+
+        /// <summary>
+        /// Ported from Microsoft.VisualBasic, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+        /// By JetBrains dotPeek decompiler
+        /// </summary>
+        private object GetCOMObjectInternal(string pathName = null, string className = null)
+        {
+            if (String.IsNullOrEmpty(className))
+            {
+                return Marshal.BindToMoniker(pathName);
+            }
+            else if (pathName == null)
+            {
+                return Marshal.GetActiveObject(className);
+            }
+            else if (pathName.Length == 0)
+            {
+                return Activator.CreateInstance(System.Type.GetTypeFromProgID(className));
+            }
+            else
+            {
+                var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
+                persistFile.Load(pathName, 0);
+                
+                return (object)persistFile;
+            }
+        }
+
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
@@ -598,7 +666,6 @@ namespace ScriptEngine.HostedScript.Library
         {
             _methods = new ContextMethodsMapper<SystemGlobalContext>();
         }
-
-
+        
     }
 }

@@ -85,9 +85,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -112,6 +109,8 @@
     <Compile Include="Environment\ModuleInformation.cs" />
     <Compile Include="FormatParametersList.cs" />
     <Compile Include="IDirectiveResolver.cs" />
+    <Compile Include="Machine\CodeStat\CodeStatData.cs" />
+    <Compile Include="Machine\CodeStat\CodeStatDataCollection.cs" />
     <Compile Include="Machine\ComReflectionNameToIdMapper.cs" />
     <Compile Include="Machine\Contexts\CLREnumValueWrapper.cs" />
     <Compile Include="Machine\Contexts\EnumContextHelper.cs" />
@@ -196,12 +195,7 @@
     <Compile Include="Machine\CodeStat\CodeStatProcessor.cs" />
     <Compile Include="Machine\CodeStat\ICodeStatCollector.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Machine\CodeStat\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

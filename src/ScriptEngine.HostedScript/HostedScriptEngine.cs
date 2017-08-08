@@ -208,7 +208,7 @@ namespace ScriptEngine.HostedScript
             return InitProcess(host, ref module);
         }
 
-        private void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
+        public void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
         {
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;
@@ -218,32 +218,25 @@ namespace ScriptEngine.HostedScript
         private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
         {
             Initialize();
-            CompileDelayedModules();
-
+            
             var process = new Process(host, module, _engine);
             return process;
         }
-
-        private void CompileDelayedModules()
+        
+        public void EnableCodeStatistics()
         {
-            var scripts = GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module);
-            foreach (var script in scripts)
-            {
-                var loaded = _engine.LoadModuleImage(script.Module);
-                var instance = (IValue)_engine.NewObject(loaded);
-                _env.SetGlobalProperty(script.Symbol, instance);
-            }
+            _codeStat = new CodeStatProcessor();
+            _engine.SetCodeStatisticsCollector(_codeStat);
         }
 
-        public void EnableCodeStatistics(string outputFileName)
+        public CodeStatDataCollection GetCodeStatData()
         {
-            _codeStat = new CodeStatProcessor(outputFileName);
-            _engine.SetCodeStatisticsCollector(_codeStat);
+            return _codeStat.GetStatData();
         }
 
         public void Finalize()
         {
-            _codeStat?.OutputCodeStat();
+            _codeStat?.EndCodeStat();
         }
     }
 }

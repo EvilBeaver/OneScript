@@ -117,8 +117,10 @@ namespace ScriptEngine.Machine
             if (_knownTypesIndexes.ContainsKey(name))
             {
                 var td = GetTypeByName(name);
-                if (GetImplementingClass(td.ID) != implementingClass)
-                    throw new InvalidOperationException("Name already registered");
+				if (GetImplementingClass(td.ID) != implementingClass)
+				{
+					throw new InvalidOperationException(string.Format("Name `{0}` is already registered", name));
+				}
 
                 return td;
             }
