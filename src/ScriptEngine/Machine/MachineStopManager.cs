@@ -19,7 +19,7 @@ namespace ScriptEngine.Machine
     internal class Breakpoint
     {
         public string Module;
-        public ExecutionFrame HitFrame;
+        //public ExecutionFrame HitFrame;
         public int LineNumber;
 
         public Breakpoint(int id)
@@ -33,18 +33,23 @@ namespace ScriptEngine.Machine
 
     internal class MachineStopManager
     {
-        private DebugState _currentState;
-        private List<Breakpoint> _breakpoints;
+        private DebugState _currentState = DebugState.Running;
+        private List<Breakpoint> _breakpoints = new List<Breakpoint>();
+
+        private ExecutionFrame _stopFrame;
 
         private int _bpIdsGenerator;
 
         public int SetBreakpoint(string module, int line)
         {
-            return (new Breakpoint(_bpIdsGenerator++)
+            var bp = new Breakpoint(_bpIdsGenerator++)
             {
                 LineNumber = line,
                 Module = module
-            }).BreakpointId;
+            };
+
+            _breakpoints.Add(bp);
+            return bp.BreakpointId;
         }
 
         public void RemoveBreakpoint(int bpId)
@@ -54,12 +59,12 @@ namespace ScriptEngine.Machine
                 _breakpoints.RemoveAt(index);
         }
 
-        public bool LineHit(string module, ExecutionFrame currentFrame)
+        public bool ShouldStopAtThisLine(string module, ExecutionFrame currentFrame)
         {
             switch (_currentState)
             {
                 case DebugState.Running:
-                    throw new NotImplementedException();
+                    return HitBreakpointOnLine(module, currentFrame);
                 case DebugState.SteppingIn:
                     throw new NotImplementedException();
                 case DebugState.SteppingOut:
@@ -70,5 +75,12 @@ namespace ScriptEngine.Machine
 
             throw new NotImplementedException();
         }
+
+        private bool HitBreakpointOnLine(string module, ExecutionFrame currentFrame)
+        {
+            var found = _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == currentFrame.LineNumber);
+            return found != null;
+        }
+
     }
 }

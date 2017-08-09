@@ -132,19 +132,17 @@ namespace ScriptEngine.Machine
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
-            throw new NotImplementedException();
-            //id = _stopManager.AddSourceLineStop(source, line);
+            id = _stopManager.SetBreakpoint(source, line);
             
             return true;
         }
 
-        public void StopAtNextLine()
+        public void StepOver()
         {
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
-            throw new NotImplementedException();
-            //_stopManager.AddNextLineStop(_currentFrame);
+            //_stopManager.StepOver(_currentFrame);
         }
 
         public void StepIn()
@@ -1487,7 +1485,7 @@ namespace ScriptEngine.Machine
                 CodeStat_LineReached();
             }
 
-            if(MachineStopped != null && _stopManager != null /*&& _stopManager.ShouldStopAtThisLine(_module.ModuleInfo.Origin, _currentFrame)*/)
+            if(MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.ModuleInfo.Origin, _currentFrame))
             {
                 CreateFullCallstack();
                 MachineStopped?.Invoke(this, new MachineStoppedEventArgs(MachineStopReason.Breakpoint));
