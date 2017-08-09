@@ -91,7 +91,7 @@
       <Word>If</Word>
       <Word>Then</Word>
       <Word>Else</Word>
-      <Word>ElseIf</Word>
+      <Word>ElsIf</Word>
       <Word>EndIf</Word>
       <Word>For</Word>
       <Word>Each</Word>
