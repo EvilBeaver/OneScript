@@ -23,6 +23,20 @@ namespace ScriptEngine.Machine.Contexts
         {
 
         }
+
+        public static void RegisterClrTypeSupport(Type clrType, string typeName)
+        {
+            if (!TypeManager.IsKnownType(typeName))
+            {
+                TypeManager.RegisterType(typeName, clrType);
+            }
+        }
+
+        public static void RegisterClrTypeSupport(Type clrType)
+        {
+            // clrType.FullName выдаёт значение вместе со сборкой, несмотря на описание
+            RegisterClrTypeSupport(clrType, string.Format("{0}.{1}", clrType.Namespace, clrType.Name));
+        }
         
         public static COMWrapperContext Create(string progId, IValue[] arguments)
         {
@@ -43,6 +57,8 @@ namespace ScriptEngine.Machine.Contexts
                 }
                 type = type.MakeGenericType(genericTypes.ToArray());
             }
+
+            RegisterClrTypeSupport(type, progId);
 
             object instance = Activator.CreateInstance(type, MarshalArguments(arguments));
 

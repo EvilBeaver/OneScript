@@ -26,6 +26,8 @@ namespace ScriptEngine.Machine.Contexts
             _instanceType = instance.GetType();
             _instance = instance;
             _nameMapper = new ComReflectionNameToIdMapper(_instanceType);
+            RegisterClrTypeSupport(_instanceType);
+            DefineType(TypeManager.GetTypeByFrameworkType(_instanceType));
         }
 
         public override bool IsIndexed
