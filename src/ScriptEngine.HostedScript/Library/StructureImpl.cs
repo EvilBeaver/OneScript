@@ -40,6 +40,14 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        public StructureImpl(IEnumerable<KeyAndValueImpl> structure)
+        {
+            foreach (KeyAndValueImpl keyValue in structure)
+            {
+                Insert(keyValue.Key.AsString(), keyValue.Value);
+            }
+        }
+
         [ContextMethod("Вставить")]
         public void Insert(string name, IValue val = null)
         {
@@ -206,6 +214,10 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name="На основании свойств и значений")]
         public static IRuntimeContextInstance Constructor(IValue strProperties, IValue[] args)
         {
+            if (strProperties is IEnumerable<KeyAndValueImpl>)
+            {
+                return new StructureImpl(strProperties as IEnumerable<KeyAndValueImpl>);
+            }
             return new StructureImpl(strProperties.AsString(), args);
         }
 
