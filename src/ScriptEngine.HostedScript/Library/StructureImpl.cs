@@ -214,11 +214,12 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name="На основании свойств и значений")]
         public static IRuntimeContextInstance Constructor(IValue strProperties, IValue[] args)
         {
-            if (strProperties is IEnumerable<KeyAndValueImpl>)
+            var rawArgument = strProperties.GetRawValue();
+            if (rawArgument is IEnumerable<KeyAndValueImpl>)
             {
-                return new StructureImpl(strProperties as IEnumerable<KeyAndValueImpl>);
+                return new StructureImpl(rawArgument as IEnumerable<KeyAndValueImpl>);
             }
-            return new StructureImpl(strProperties.AsString(), args);
+            return new StructureImpl(rawArgument.AsString(), args);
         }
 
     }
