@@ -12,7 +12,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    partial class Compiler
+    class Compiler
     {
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
