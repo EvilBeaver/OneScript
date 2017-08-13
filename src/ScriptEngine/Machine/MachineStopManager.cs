@@ -16,49 +16,19 @@ namespace ScriptEngine.Machine
         SteppingOut
     }
 
-    internal class Breakpoint
-    {
-        public string Module;
-        //public ExecutionFrame HitFrame;
-        public int LineNumber;
-
-        public Breakpoint(int id)
-        {
-            BreakpointId = id;
-        }
-
-        public int BreakpointId { get; }
-    }
-
+    
 
     internal class MachineStopManager
     {
         private DebugState _currentState = DebugState.Running;
-        private List<Breakpoint> _breakpoints = new List<Breakpoint>();
-
+        private Breakpoints _breakpoints = new Breakpoints();
         private ExecutionFrame _stopFrame;
-
-        private int _bpIdsGenerator;
-
+        
         public int SetBreakpoint(string module, int line)
         {
-            var bp = new Breakpoint(_bpIdsGenerator++)
-            {
-                LineNumber = line,
-                Module = module
-            };
-
-            _breakpoints.Add(bp);
-            return bp.BreakpointId;
+            return _breakpoints.SetBreakpoint(module, line);
         }
-
-        public void RemoveBreakpoint(int bpId)
-        {
-            int index = _breakpoints.FindIndex(x => x.BreakpointId == bpId);
-            if(index >= 0)
-                _breakpoints.RemoveAt(index);
-        }
-
+        
         public bool ShouldStopAtThisLine(string module, ExecutionFrame currentFrame)
         {
             switch (_currentState)
@@ -78,8 +48,7 @@ namespace ScriptEngine.Machine
 
         private bool HitBreakpointOnLine(string module, ExecutionFrame currentFrame)
         {
-            var found = _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == currentFrame.LineNumber);
-            return found != null;
+            return _breakpoints.Find(module, currentFrame.LineNumber);
         }
 
     }

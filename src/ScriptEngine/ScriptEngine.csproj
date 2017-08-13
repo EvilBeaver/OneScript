@@ -111,6 +111,7 @@
     <Compile Include="Environment\ModuleInformation.cs" />
     <Compile Include="FormatParametersList.cs" />
     <Compile Include="IDirectiveResolver.cs" />
+    <Compile Include="Machine\Breakpoints.cs" />
     <Compile Include="Machine\CodeStat\CodeStatData.cs" />
     <Compile Include="Machine\CodeStat\CodeStatDataCollection.cs" />
     <Compile Include="Machine\ComReflectionNameToIdMapper.cs" />
