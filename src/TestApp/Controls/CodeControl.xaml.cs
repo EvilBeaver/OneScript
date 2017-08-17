@@ -51,7 +51,7 @@ namespace V8Reader.Controls
 
             InitializeComponent();
 
-            editor.TextArea.DefaultInputHandler.NestedInputHandlers.Add(new SearchInputHandler(editor.TextArea));
+            SearchPanel.Install(editor.TextArea);
             editor.ShowLineNumbers = true;
 
             foldingManager = FoldingManager.Install(editor.TextArea);
