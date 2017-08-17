@@ -148,7 +148,7 @@ namespace ScriptEngine.Machine.Contexts
                     scriptMethInfo.IsFunction = isFunc;
                     scriptMethInfo.Name = item.Binding.GetName().ToLower();
                     scriptMethInfo.Alias = string.IsNullOrEmpty(item.Binding.GetAlias()) ?
-                        item.Method.Name.ToLower()
+                       scriptMethInfo.Name
                         :item.Binding.GetAlias().ToLower();
 
                     scriptMethInfo.Params = paramDefs;
