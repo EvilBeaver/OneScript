@@ -20,8 +20,7 @@ namespace ScriptEngine.Compiler
         DebugCode
     }
 
-    partial class Compiler
-    {
+    class Compiler    {
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
         private Parser _parser;
@@ -1419,7 +1418,10 @@ namespace ScriptEngine.Compiler
             return LanguageDef.IsIdentifier(ref lex) 
                 || lex.Type == LexemType.BooleanLiteral
                 || lex.Type == LexemType.NullLiteral
-                || lex.Type == LexemType.UndefinedLiteral;
+                || lex.Type == LexemType.UndefinedLiteral
+                || lex.Token == Token.And
+                || lex.Token == Token.Or
+                || lex.Token == Token.Not;
         }
 
         private void ResolveProperty(string identifier)
