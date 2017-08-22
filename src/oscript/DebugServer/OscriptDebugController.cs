@@ -186,7 +186,7 @@ namespace oscript.DebugServer
 
         public void Next()
         {
-            _machine.StopAtNextLine();
+            _machine.StepOver();
             _debugCommandEvent.Set();
         }
 
