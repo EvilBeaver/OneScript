@@ -63,6 +63,7 @@ namespace ScriptEngine
             {
                 _machine.AttachContext(item, false);
             }
+            _machine.ContextsAttached();
         }
 
         private void SetDefaultEnvironmentIfNeeded()

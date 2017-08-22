@@ -19,8 +19,16 @@ namespace ScriptEngine.Machine
         public bool DiscardReturnValue;
         public string MethodName;
         public RuntimeException LastException;
+        public LoadedModule Module;
         
         public Stack<IValue> LocalFrameStack = new Stack<IValue>();
+
+        public Scope ModuleScope { get; set; }
+
+        public override string ToString()
+        {
+            return $"{MethodName}: {LineNumber} ({Module.ModuleInfo.ModuleName})";
+        }
     }
 
     public struct ExecutionFrameInfo

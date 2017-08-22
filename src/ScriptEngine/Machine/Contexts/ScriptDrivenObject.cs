@@ -12,7 +12,7 @@ using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IAttachableContext
+    public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable
     {
         private readonly LoadedModule _module;
         private MachineInstance _machine;
@@ -27,14 +27,6 @@ namespace ScriptEngine.Machine.Contexts
 
         public IValue[] ConstructorParams { get { return constructorParams; } set { constructorParams = value; } }
 
-        //~ScriptDrivenObject()
-        //{
-        //    var methId = GetScriptMethod("деструктор", "destructor");
-        //    if (methId > -1)
-        //    {
-        //        CallAsProcedure(methId, new IValue[0]);
-        //    }
-
 
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
@@ -43,6 +35,11 @@ namespace ScriptEngine.Machine.Contexts
         public ScriptDrivenObject(LoadedModuleHandle module, bool deffered) : this(module.Module, deffered)
         {
         }
+
+        public LoadedModuleHandle Module => new LoadedModuleHandle()
+        {
+            Module = _module
+        };
 
         internal ScriptDrivenObject(LoadedModule module, bool deffered)
             : base(TypeManager.GetTypeByName("Object"))
@@ -112,13 +109,8 @@ namespace ScriptEngine.Machine.Contexts
         public void Initialize(MachineInstance runner)
         {
             _machine = runner;
-            _machine.StateConsistentOperation(() =>
-            {
-                _machine.SetModule(_module);
-                _machine.AttachContext(this, true);
-                _machine.ExecuteModuleBody();
-            });
-
+            _machine.ExecuteModuleBody(this);
+            
             var methId = GetScriptMethod("ПриСозданииОбъекта", "OnObjectCreate");
             int constructorParamsCount = ConstructorParams.Count();
             
@@ -182,14 +174,7 @@ namespace ScriptEngine.Machine.Contexts
 
         protected IValue CallScriptMethod(int methodIndex, IValue[] parameters)
         {
-            IValue returnValue = null;
-
-            _machine.StateConsistentOperation(() =>
-            {
-                _machine.SetModule(_module);
-                _machine.AttachContext(this, true);
-                returnValue = _machine.ExecuteMethod(methodIndex, parameters);
-            });
+            var returnValue = _machine.ExecuteMethod(this, methodIndex, parameters);
 
             return returnValue;
         }
@@ -390,12 +375,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                _machine.StateConsistentOperation(() =>
-                {
-                    _machine.AttachContext(this, true);
-                    _machine.SetModule(_module);
-                    _machine.ExecuteMethod(methodNumber - METHOD_COUNT, arguments);
-                });
+                _machine.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
             }
             else
             {
@@ -407,15 +387,9 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                IValue returnClosure = null;
-                _machine.StateConsistentOperation(() =>
-                {
-                    _machine.AttachContext(this, true);
-                    _machine.SetModule(_module);
-                    returnClosure = _machine.ExecuteMethod(methodNumber, arguments);
-                });
-
-                retValue = returnClosure;
+                _machine.AttachContext(this, true);
+                _machine.SetModule(_module);
+                retValue = _machine.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
             }
             else
             {

@@ -24,7 +24,7 @@ namespace ScriptEngine.Machine
         private ExecutionFrame _currentFrame;
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
-        private Stack<MachineState> _states;
+        
         private LoadedModule _module;
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
@@ -46,15 +46,7 @@ namespace ScriptEngine.Machine
             public int handlerAddress;
             public ExecutionFrame handlerFrame;
         }
-
-        private struct MachineState
-        {
-            public Scope topScope;
-            public LoadedModule module;
-            public bool hasScope;
-            public IValue[] operationStack;
-        }
-
+        
         public void AttachContext(IAttachableContext context, bool detachable)
         {
             IVariable[] vars;
@@ -69,24 +61,33 @@ namespace ScriptEngine.Machine
             };
 
             _scopes.Add(scope);
-
         }
 
-        internal void StateConsistentOperation(Action action)
+        private void AttachModuleContext(IAttachableContext context)
         {
-            PushState();
-            try
+            IVariable[] vars;
+            MethodInfo[] methods;
+            context.OnAttach(this, out vars, out methods);
+            var scope = new Scope()
             {
-                action();
-            }
-            finally
-            {
-                PopState();
-            }
+                Variables = vars,
+                Methods = methods,
+                Instance = context
+            };
+
+            _scopes[_scopes.Count - 1] = scope;
         }
 
-        internal void ExecuteModuleBody()
+        public void ContextsAttached()
         {
+            // module scope
+            _scopes.Add(default(Scope));
+        }
+
+        internal void ExecuteModuleBody(IRunnable sdo)
+        {
+            SetModule(sdo.Module.Module);
+            AttachModuleContext(sdo);
             if (_module.EntryMethodIndex >= 0)
             {
                 var entryRef = _module.MethodRefs[_module.EntryMethodIndex];
@@ -95,8 +96,10 @@ namespace ScriptEngine.Machine
             }
         }
 
-        internal IValue ExecuteMethod(int methodIndex, IValue[] arguments)
+        internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
+            SetModule(sdo.Module.Module);
+            AttachModuleContext(sdo);
             PrepareMethodExecutionDirect(methodIndex);
             var method = _module.Methods[methodIndex];
             for (int i = 0; i < arguments.Length; i++)
@@ -176,6 +179,7 @@ namespace ScriptEngine.Machine
             frame.MethodName = code.ModuleInfo.ModuleName;
             frame.Locals = new IVariable[0];
             frame.InstructionPointer = 0;
+            frame.Module = code;
             var curModule = _module;
 
             var mlocals = new Scope();
@@ -184,13 +188,13 @@ namespace ScriptEngine.Machine
             mlocals.Methods = TopScope.Methods;
             mlocals.Variables = _currentFrame.Locals;
             runner._scopes.Add(mlocals);
+            frame.ModuleScope = mlocals;
 
             try
             {
                 if (!separate)
                     PushFrame(frame);
 
-                //runner.SetFrame(frame);
                 runner.SetModule(code);
                 runner.MainCommandLoop();
             }
@@ -244,82 +248,26 @@ namespace ScriptEngine.Machine
             Reset();
             GC.Collect();
         }
-
-        private void PushState()
-        {
-            var stateToSave = new MachineState();
-            stateToSave.hasScope = DetachTopScope(out stateToSave.topScope);
-            stateToSave.module = _module;
-            StackToArray(ref stateToSave.operationStack, _operationStack);
-
-            _states.Push(stateToSave);
-
-            _operationStack.Clear();
-        }
-
-        private void StackToArray<T>(ref T[] destination, Stack<T> source)
-        {
-            if (source != null)
-            {
-                destination = new T[source.Count];
-                source.CopyTo(destination, 0);
-            }
-        }
-
-        private void RestoreStack<T>(ref Stack<T> destination, T[] source)
-        {
-            if (source != null)
-            {
-                destination = new Stack<T>();
-                for (int i = source.Length-1; i >=0 ; i--)
-                {
-                    destination.Push(source[i]);
-                }
-            }
-            else
-            {
-                destination = null;
-            }
-        }
-
-        private void PopState()
-        {
-            var savedState = _states.Pop();
-            if (savedState.hasScope)
-            {
-                if (_scopes[_scopes.Count - 1].Detachable)
-                {
-                    _scopes[_scopes.Count - 1] = savedState.topScope;
-                }
-                else
-                {
-                    _scopes.Add(savedState.topScope);
-                }
-            }
-            else if (_scopes[_scopes.Count - 1].Detachable)
-            {
-                Scope s;
-                DetachTopScope(out s);
-            }
-
-            _module = savedState.module;
-
-            RestoreStack(ref _operationStack, savedState.operationStack);
-
-        }
-
+        
         private void PushFrame(ExecutionFrame frame)
         {
             CodeStat_StopFrameStatistics();
             _callStack.Push(frame);
-            _currentFrame = frame;
+            SetFrame(frame);
         }
 
         private void PopFrame()
         {
             _callStack.Pop();
-            _currentFrame = _callStack.Peek();
+            SetFrame(_callStack.Peek());
             CodeStat_ResumeFrameStatistics();
+        }
+
+        private void SetFrame(ExecutionFrame frame)
+        {
+            SetModule(frame.Module);
+            _scopes[_scopes.Count - 1] = frame.ModuleScope;
+            _currentFrame = frame;
         }
 
         private bool DetachTopScope(out Scope topScope)
@@ -365,7 +313,6 @@ namespace ScriptEngine.Machine
             _operationStack = new Stack<IValue>();
             _callStack = new Stack<ExecutionFrame>();
             _exceptionsStack = new Stack<ExceptionJumpInfo>();
-            _states = new Stack<MachineState>();
             _module = null;
             _currentFrame = null;
         }
@@ -376,6 +323,8 @@ namespace ScriptEngine.Machine
             var frame = new ExecutionFrame();
             frame.MethodName = methDescr.Signature.Name;
             frame.Locals = new IVariable[methDescr.Variables.Count];
+            frame.Module = _module;
+            frame.ModuleScope = TopScope;
             for (int i = 0; i < frame.Locals.Length; i++)
             {
                 frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
@@ -448,7 +397,6 @@ namespace ScriptEngine.Machine
                         PopFrame();
                     }
 
-                    //SetFrame(handler.handlerFrame);
                     _currentFrame.InstructionPointer = handler.handlerAddress;
                     _currentFrame.LastException = exc;
                     
@@ -900,8 +848,13 @@ namespace ScriptEngine.Machine
 
                 if (sdo.MethodDefinedInScript(methodRef.CodeIndex))
                 {
+                    // заранее переведем указатель на адрес возврата. В опкоде Return инкремента нет.
+                    NextInstruction();
+
                     var methDescr = _module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
                     var frame = new ExecutionFrame();
+                    frame.Module = _module;
+                    frame.ModuleScope = TopScope;
                     frame.MethodName = methInfo.Name;
                     frame.Locals = new IVariable[methDescr.Variables.Count];
                     for (int i = 0; i < frame.Locals.Length; i++)
@@ -1204,8 +1157,6 @@ namespace ScriptEngine.Machine
             }
             
             PopFrame();
-            NextInstruction();
-            
         }
 
         private void JmpCounter(int arg)
