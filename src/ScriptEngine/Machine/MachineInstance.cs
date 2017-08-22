@@ -26,8 +26,8 @@ namespace ScriptEngine.Machine
         private Stack<ExceptionJumpInfo> _exceptionsStack;
         private Stack<MachineState> _states;
         private LoadedModule _module;
-        private ICodeStatCollector _codeStatCollector = null;
-        private MachineStopManager _stopManager = null;
+        private ICodeStatCollector _codeStatCollector;
+        private MachineStopManager _stopManager;
 
         // для отладчика.
         // актуален в момент останова машины
@@ -50,12 +50,9 @@ namespace ScriptEngine.Machine
         private struct MachineState
         {
             public Scope topScope;
-            public ExecutionFrame currentFrame;
             public LoadedModule module;
             public bool hasScope;
             public IValue[] operationStack;
-            public ExecutionFrame[] callStack;
-            public ExceptionJumpInfo[] exceptionsStack;
         }
 
         public void AttachContext(IAttachableContext context, bool detachable)
@@ -92,7 +89,8 @@ namespace ScriptEngine.Machine
         {
             if (_module.EntryMethodIndex >= 0)
             {
-                PrepareMethodExecution(_module.EntryMethodIndex);
+                var entryRef = _module.MethodRefs[_module.EntryMethodIndex];
+                PrepareMethodExecutionDirect(entryRef.CodeIndex);
                 ExecuteCode();
             }
         }
@@ -190,9 +188,9 @@ namespace ScriptEngine.Machine
             try
             {
                 if (!separate)
-                    PushFrame();
+                    PushFrame(frame);
 
-                runner.SetFrame(frame);
+                //runner.SetFrame(frame);
                 runner.SetModule(code);
                 runner.MainCommandLoop();
             }
@@ -251,16 +249,11 @@ namespace ScriptEngine.Machine
         {
             var stateToSave = new MachineState();
             stateToSave.hasScope = DetachTopScope(out stateToSave.topScope);
-            stateToSave.currentFrame = _currentFrame;
             stateToSave.module = _module;
-            StackToArray(ref stateToSave.callStack, _callStack);
-            StackToArray(ref stateToSave.exceptionsStack, _exceptionsStack);
             StackToArray(ref stateToSave.operationStack, _operationStack);
 
             _states.Push(stateToSave);
 
-            _callStack.Clear();
-            _exceptionsStack.Clear();
             _operationStack.Clear();
         }
 
@@ -311,30 +304,22 @@ namespace ScriptEngine.Machine
 
             _module = savedState.module;
 
-            RestoreStack(ref _callStack, savedState.callStack);
             RestoreStack(ref _operationStack, savedState.operationStack);
-            RestoreStack(ref _exceptionsStack, savedState.exceptionsStack);
 
-            SetFrame(savedState.currentFrame);
         }
 
-        private void PushFrame()
+        private void PushFrame(ExecutionFrame frame)
         {
-            if(_currentFrame != null)
-                _callStack.Push(_currentFrame);
-
             CodeStat_StopFrameStatistics();
+            _callStack.Push(frame);
+            _currentFrame = frame;
         }
 
         private void PopFrame()
         {
-            _currentFrame = _callStack.Pop();
+            _callStack.Pop();
+            _currentFrame = _callStack.Peek();
             CodeStat_ResumeFrameStatistics();
-        }
-
-        private void SetFrame(ExecutionFrame frame)
-        {
-            _currentFrame = frame;
         }
 
         private bool DetachTopScope(out Scope topScope)
@@ -384,13 +369,7 @@ namespace ScriptEngine.Machine
             _module = null;
             _currentFrame = null;
         }
-
-        private void PrepareMethodExecution(int methodIndex)
-        {
-            var entryRef = _module.MethodRefs[methodIndex];
-            PrepareMethodExecutionDirect(entryRef.CodeIndex);
-        }
-
+        
         private void PrepareMethodExecutionDirect(int methodIndex)
         {
             var methDescr = _module.Methods[methodIndex];
@@ -403,7 +382,7 @@ namespace ScriptEngine.Machine
             }
 
             frame.InstructionPointer = methDescr.EntryPoint;
-            SetFrame(frame);
+            PushFrame(frame);
         }
 
         private void PrepareCodeStatisticsData()
@@ -469,7 +448,7 @@ namespace ScriptEngine.Machine
                         PopFrame();
                     }
 
-                    SetFrame(handler.handlerFrame);
+                    //SetFrame(handler.handlerFrame);
                     _currentFrame.InstructionPointer = handler.handlerAddress;
                     _currentFrame.LastException = exc;
                     
@@ -965,8 +944,7 @@ namespace ScriptEngine.Machine
                     }
 
                     frame.InstructionPointer = methDescr.EntryPoint;
-                    PushFrame();
-                    SetFrame(frame);
+                    PushFrame(frame);
                     if (_stopManager != null)
                     {
                         //_stopManager.OnFrameEntered(frame);
@@ -1225,13 +1203,8 @@ namespace ScriptEngine.Machine
                 _exceptionsStack.Pop();
             }
             
-            if (_callStack.Count != 0)
-            {
-                PopFrame();
-                NextInstruction();
-            }
-            else
-                _currentFrame.InstructionPointer = -1;
+            PopFrame();
+            NextInstruction();
             
         }
 
@@ -1497,7 +1470,7 @@ namespace ScriptEngine.Machine
         private void CreateFullCallstack()
         {
             var result = new List<ExecutionFrameInfo>();
-            var callstack = _callStack.ToArray();
+            /*var callstack = _callStack.ToArray();
 
             result.Add(FrameInfo(_module, _currentFrame));
 
@@ -1513,7 +1486,7 @@ namespace ScriptEngine.Machine
                     result.Add(FrameInfo(state.module, frame));
                 }
             }
-
+            */
             _fullCallstackCache = result;
         }
 
