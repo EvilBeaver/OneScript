@@ -89,14 +89,14 @@ namespace ScriptEngine.Machine
             if (module.EntryMethodIndex >= 0)
             {
                 var entryRef = module.MethodRefs[module.EntryMethodIndex];
-                PrepareMethodExecutionDirect(sdo, entryRef.CodeIndex);
+                PrepareReentrantMethodExecution(sdo, entryRef.CodeIndex);
                 ExecuteCode();
             }
         }
 
         internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
-            PrepareMethodExecutionDirect(sdo, methodIndex);
+            PrepareReentrantMethodExecution(sdo, methodIndex);
             var method = _module.Methods[methodIndex];
             for (int i = 0; i < arguments.Length; i++)
             {
@@ -109,14 +109,23 @@ namespace ScriptEngine.Machine
             }
             ExecuteCode();
 
+            IValue methodResult = null;
             if (_module.Methods[methodIndex].Signature.IsFunction)
             {
-                return _operationStack.Pop();
+                methodResult = _operationStack.Pop();
             }
 
-            return null;
-        }
+            // Этот Pop связан с методом Return. 
+            // Если идет возврат из вложенного вызова, то Pop делается здесь, а не в Return,
+            // т.к. мы должны выйти из MainCommandLoop и вернуться в предыдущий цикл машины
+            //
+            // P.S. it's fuckin spaghetti (
+            if (_callStack.Count > 0)
+                PopFrame();
 
+            return methodResult;
+        }
+        
         #region Debug protocol methods
 
         public void SetDebugMode(IDebugController debugContr)
@@ -313,7 +322,7 @@ namespace ScriptEngine.Machine
             _currentFrame = null;
         }
         
-        private void PrepareMethodExecutionDirect(IRunnable sdo, int methodIndex)
+        private void PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
         {
             var module = sdo.Module.Module;
             var methDescr = module.Methods[methodIndex];
@@ -322,6 +331,7 @@ namespace ScriptEngine.Machine
             frame.Locals = new IVariable[methDescr.Variables.Count];
             frame.Module = module;
             frame.ModuleScope = CreateModuleScope(sdo);
+            frame.IsReentrantCall = true;
             for (int i = 0; i < frame.Locals.Length; i++)
             {
                 frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
@@ -1152,10 +1162,13 @@ namespace ScriptEngine.Machine
             {
                 _exceptionsStack.Pop();
             }
-            
-            PopFrame();
-        }
 
+            if (_currentFrame.IsReentrantCall)
+                _currentFrame.InstructionPointer = -1;
+            else
+                PopFrame();
+        }
+        
         private void JmpCounter(int arg)
         {
             var counter = _operationStack.Pop();

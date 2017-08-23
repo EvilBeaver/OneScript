@@ -387,8 +387,6 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                _machine.AttachContext(this, true);
-                _machine.SetModule(_module);
                 retValue = _machine.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
             }
             else

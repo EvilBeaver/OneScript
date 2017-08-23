@@ -20,8 +20,10 @@ namespace ScriptEngine.Machine
         public string MethodName;
         public RuntimeException LastException;
         public LoadedModule Module;
+        public bool IsReentrantCall;
         
         public Stack<IValue> LocalFrameStack = new Stack<IValue>();
+
 
         public Scope ModuleScope { get; set; }
 
