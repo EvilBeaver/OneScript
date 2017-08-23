@@ -63,7 +63,7 @@ namespace ScriptEngine.Machine
             _scopes.Add(scope);
         }
 
-        private void AttachModuleContext(IAttachableContext context)
+        private Scope CreateModuleScope(IAttachableContext context)
         {
             IVariable[] vars;
             MethodInfo[] methods;
@@ -74,8 +74,7 @@ namespace ScriptEngine.Machine
                 Methods = methods,
                 Instance = context
             };
-
-            _scopes[_scopes.Count - 1] = scope;
+            return scope;
         }
 
         public void ContextsAttached()
@@ -86,21 +85,18 @@ namespace ScriptEngine.Machine
 
         internal void ExecuteModuleBody(IRunnable sdo)
         {
-            SetModule(sdo.Module.Module);
-            AttachModuleContext(sdo);
-            if (_module.EntryMethodIndex >= 0)
+            var module = sdo.Module.Module;
+            if (module.EntryMethodIndex >= 0)
             {
-                var entryRef = _module.MethodRefs[_module.EntryMethodIndex];
-                PrepareMethodExecutionDirect(entryRef.CodeIndex);
+                var entryRef = module.MethodRefs[module.EntryMethodIndex];
+                PrepareMethodExecutionDirect(sdo, entryRef.CodeIndex);
                 ExecuteCode();
             }
         }
 
         internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
-            SetModule(sdo.Module.Module);
-            AttachModuleContext(sdo);
-            PrepareMethodExecutionDirect(methodIndex);
+            PrepareMethodExecutionDirect(sdo, methodIndex);
             var method = _module.Methods[methodIndex];
             for (int i = 0; i < arguments.Length; i++)
             {
@@ -317,14 +313,15 @@ namespace ScriptEngine.Machine
             _currentFrame = null;
         }
         
-        private void PrepareMethodExecutionDirect(int methodIndex)
+        private void PrepareMethodExecutionDirect(IRunnable sdo, int methodIndex)
         {
-            var methDescr = _module.Methods[methodIndex];
+            var module = sdo.Module.Module;
+            var methDescr = module.Methods[methodIndex];
             var frame = new ExecutionFrame();
             frame.MethodName = methDescr.Signature.Name;
             frame.Locals = new IVariable[methDescr.Variables.Count];
-            frame.Module = _module;
-            frame.ModuleScope = TopScope;
+            frame.Module = module;
+            frame.ModuleScope = CreateModuleScope(sdo);
             for (int i = 0; i < frame.Locals.Length; i++)
             {
                 frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
