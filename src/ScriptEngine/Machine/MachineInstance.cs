@@ -91,6 +91,8 @@ namespace ScriptEngine.Machine
                 var entryRef = module.MethodRefs[module.EntryMethodIndex];
                 PrepareReentrantMethodExecution(sdo, entryRef.CodeIndex);
                 ExecuteCode();
+                if (_callStack.Count > 1)
+                    PopFrame();
             }
         }
 
@@ -120,7 +122,7 @@ namespace ScriptEngine.Machine
             // т.к. мы должны выйти из MainCommandLoop и вернуться в предыдущий цикл машины
             //
             // P.S. it's fuckin spaghetti (
-            if (_callStack.Count > 0)
+            if (_callStack.Count > 1)
                 PopFrame();
 
             return methodResult;
