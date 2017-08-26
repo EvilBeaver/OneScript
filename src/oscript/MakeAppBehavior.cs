@@ -43,6 +43,7 @@ namespace oscript
                 ScriptFileHelper.OnBeforeScriptRead(engine);
                 var source = engine.Loader.FromFile(_codePath);
                 var compiler = engine.GetCompilerService();
+                engine.SetGlobalEnvironment(new DoNothingHost(), source);
                 var entry = compiler.CreateModule(source);
 
                 var embeddedContext = engine.GetUserAddedScripts();
@@ -78,5 +79,4 @@ namespace oscript
             return 0;
         }
     }
-
 }
