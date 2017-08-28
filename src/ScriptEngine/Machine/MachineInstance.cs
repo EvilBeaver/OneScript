@@ -258,7 +258,7 @@ namespace ScriptEngine.Machine
         
         private void PushFrame(ExecutionFrame frame)
         {
-            CodeStat_StopFrameStatistics();
+            //CodeStat_StopFrameStatistics();
             _callStack.Push(frame);
             SetFrame(frame);
         }
@@ -267,7 +267,7 @@ namespace ScriptEngine.Machine
         {
             _callStack.Pop();
             SetFrame(_callStack.Peek());
-            CodeStat_ResumeFrameStatistics();
+            //CodeStat_ResumeFrameStatistics();
         }
 
         private void SetFrame(ExecutionFrame frame)
