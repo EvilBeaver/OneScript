@@ -4,6 +4,8 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
+using System.Collections.Generic;
 using System.Linq;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -53,7 +55,10 @@ namespace ScriptEngine.HostedScript.Library
             {
                 for (int i = 0; i < argsToPass.Length; i++)
                 {
-                    arguments.Set(i, argsToPass[i].GetRawValue());
+                    if (i < arguments.Count())
+                    {
+                        arguments.Set(i, argsToPass[i]?.GetRawValue());
+                    }
                 }
             }
 
@@ -62,21 +67,30 @@ namespace ScriptEngine.HostedScript.Library
 
         private static IValue[] GetArgsToPass(ArrayImpl arguments, MethodInfo methInfo)
         {
-            var argsToPass = arguments == null ? new IValue[0] : arguments.ToArray();
+            var argsToPass = new List<IValue>();
+            if (arguments != null)
+            {
+                argsToPass.AddRange(arguments);
+            }
 
-            if (methInfo.ArgCount < argsToPass.Length)
+            if (methInfo.ArgCount < argsToPass.Count)
                 throw RuntimeException.TooManyArgumentsPassed();
 
-            if (methInfo.ArgCount > argsToPass.Length)
-                throw RuntimeException.TooLittleArgumentsPassed();
-
-            for (int i = 0; i < argsToPass.Length; i++)
+            for (int i = 0; i < argsToPass.Count; i++)
             {
                 if (!methInfo.Params[i].IsByValue)
                     argsToPass[i] = Variable.Create(argsToPass[i]);
             }
+            while (argsToPass.Count < methInfo.ArgCount)
+            {
+                if (!methInfo.Params[argsToPass.Count].HasDefaultValue)
+                {
+                    throw RuntimeException.TooLittleArgumentsPassed();
+                }
+                argsToPass.Add(null);
+            }
 
-            return argsToPass;
+            return argsToPass.ToArray();
         }
 
         /// <summary>
