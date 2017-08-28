@@ -187,8 +187,7 @@ namespace ScriptEngine.Machine
             frame.Locals = new IVariable[0];
             frame.InstructionPointer = 0;
             frame.Module = code;
-            var curModule = _module;
-
+            
             var mlocals = new Scope();
             mlocals.Instance = new UserScriptContextInstance(code);
             mlocals.Detachable = true;
@@ -202,16 +201,14 @@ namespace ScriptEngine.Machine
                 if (!separate)
                     PushFrame(frame);
 
-                runner.SetModule(code);
                 runner.MainCommandLoop();
             }
             finally
             {
                 if (!separate)
                 {
-                    DetachTopScope(out mlocals);
+                    _scopes.RemoveAt(_scopes.Count - 1);
                     PopFrame();
-                    SetModule(curModule);
                 }
             }
 
@@ -276,29 +273,7 @@ namespace ScriptEngine.Machine
             _scopes[_scopes.Count - 1] = frame.ModuleScope;
             _currentFrame = frame;
         }
-
-        private bool DetachTopScope(out Scope topScope)
-        {
-            if (_scopes.Count > 0)
-            {
-                topScope = _scopes[_scopes.Count - 1];
-                if (topScope.Detachable)
-                {
-                    _scopes.RemoveAt(_scopes.Count - 1);
-                    return true;
-                }
-                else
-                {
-                    topScope = default(Scope);
-                    return false;
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("Nothing is attached");
-            }
-        }
-
+        
         private Scope TopScope
         {
             get
@@ -403,6 +378,13 @@ namespace ScriptEngine.Machine
                     // Раскрутка стека вызовов
                     while (_currentFrame != handler.handlerFrame)
                     {
+                        if (_currentFrame.IsReentrantCall)
+                        {
+                            _exceptionsStack.Push(handler);
+                            PopFrame();
+                            throw;
+                        }
+
                         PopFrame();
                     }
 
