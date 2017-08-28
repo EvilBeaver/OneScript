@@ -117,6 +117,7 @@
 			<BinaryFiles Include="$(OutputPathForBuild)\TestApp.exe"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\ScriptEngine.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\ScriptEngine.HostedScript.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\OneScript.DebugProtocol.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\Ionic.Zip.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\Newtonsoft.Json.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\ICSharpCode.AvalonEdit.dll"/>
