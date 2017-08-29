@@ -49,6 +49,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="uncompilableScript.os">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -58,7 +61,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="NearlyEmptyScript.os">
+    <None Include="simpleScript.os">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

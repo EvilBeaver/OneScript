@@ -7,13 +7,15 @@ namespace oscript
     [TestFixture]
     public class oscriptTests
     {
-        private string _osFullPath;
+        private string _simpleScriptFullPath;
+        private string _uncompilableScriptFullPath;
 
         [SetUp]
         public void SetUp()
         {
             var path = AppDomain.CurrentDomain.BaseDirectory;
-            _osFullPath = Path.Combine(path, "NearlyEmptyScript.os");
+            _simpleScriptFullPath = Path.Combine(path, "simpleScript.os");
+            _uncompilableScriptFullPath = Path.Combine(path, "uncompilableScript.os");
         }
 
         [Test, Category("NoArgs")]
@@ -53,7 +55,7 @@ namespace oscript
                 var args = new[]
                 {
                     "-make",
-                    _osFullPath,
+                    _simpleScriptFullPath,
                     exeFullPath
                 };
 
@@ -63,7 +65,41 @@ namespace oscript
                 var expected = "Make completed";
                 var result = GetLastOutput(sw.ToString());
                 Assert.AreEqual(expected, result);
-                Assert.IsTrue(exeExists);
+                Assert.IsTrue(exeExists, "Exptected file: " + exeFullPath);
+            }
+        }
+
+        [Test, Category("Make")]
+        public void BasicMakeBehaviourNonsenseFileReturnsError()
+        {
+            using (var sw = new StringWriter())
+            {
+                Console.SetOut(sw);
+
+                var tempFolder = Path.GetTempPath();
+                const string exeName = "test.exe";
+
+                var exeFullPath = Path.Combine(tempFolder, exeName);
+
+                if (File.Exists(exeFullPath))
+                {
+                    File.Delete(exeFullPath);
+                }
+
+                var args = new[]
+                {
+                    "-make",
+                    "nonsense.os",
+                    exeFullPath
+                };
+
+                Program.Main(args);
+
+                var exeExists = File.Exists(exeFullPath);
+                var unexpected = "Make completed";
+                var result = GetLastOutput(sw.ToString());
+                Assert.AreNotEqual(unexpected, result);
+                //Assert.IsFalse(exeExists); //TODO Когда-нибудь -make перестанет создавать файл в случае провала.
             }
         }
 
@@ -73,7 +109,7 @@ namespace oscript
             var args = new[]
             {
                 "-compile",
-                _osFullPath
+                _simpleScriptFullPath
             };
 
             Program.Main(args);
@@ -107,12 +143,52 @@ namespace oscript
 
                 var args = new[]
                 {
-                    _osFullPath
+                    _simpleScriptFullPath
                 };
 
                 Program.Main(args);
                 var result = sw.ToString();
                 Assert.IsEmpty(result);
+            }
+        }
+
+        [Test, Category("Check")]
+        public void UncompilableScriptFailsCheck()
+        {
+            using (var sw = new StringWriter())
+            {
+                Console.SetOut(sw);
+
+                var args = new[]
+                {
+                    "-check",
+                    _uncompilableScriptFullPath
+                };
+
+                Program.Main(args);
+                var result = sw.ToString();
+                var unexpected = "No errors.\r\n";
+                Assert.AreNotEqual(unexpected, result);
+            }
+        }
+
+        [Test, Category("Check")]
+        public void SimpleScriptChecksOut()
+        {
+            using (var sw = new StringWriter())
+            {
+                Console.SetOut(sw);
+
+                var args = new[]
+                {
+                    "-check",
+                    _simpleScriptFullPath
+                };
+
+                Program.Main(args);
+                var result = sw.ToString();
+                var expected = "No errors.\r\n";
+                Assert.AreEqual(expected, result);
             }
         }
 
