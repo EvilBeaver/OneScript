@@ -46,7 +46,8 @@ namespace ScriptEngine.Compiler
             AddToken(Token.If, "если", "if");
             AddToken(Token.Then, "тогда", "then");
             AddToken(Token.Else, "иначе", "else");
-            AddToken(Token.ElseIf, "иначеесли", "elseif");
+            AddToken(Token.ElseIf, "иначеесли", "elsif");
+            AddToken(Token.ElseIf_Deprecated, "elseif"); // TODO: устаревшее ключевое слово
             AddToken(Token.EndIf, "конецесли", "endif");
             AddToken(Token.VarDef, "перем", "var");
             AddToken(Token.ByValParam, "знач", "val");
@@ -196,6 +197,11 @@ namespace ScriptEngine.Compiler
             Token result;
             if(_stringToToken.TryGetValue(tokText, out result))
             {
+                if (result == Token.ElseIf_Deprecated)
+                {
+                    SystemLogger.Write("English 'ElseIf' is deprecated! Use 'ElsIf' instead!");
+                    return Token.ElseIf;
+                }
                 return result;
             }
             else
@@ -324,6 +330,7 @@ namespace ScriptEngine.Compiler
         Then,
         Else,
         ElseIf,
+        ElseIf_Deprecated,
         EndIf,
         For,
         While,
