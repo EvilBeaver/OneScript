@@ -57,5 +57,9 @@ namespace ScriptEngine.Machine
             return _breakpoints.Find(module, currentFrame.LineNumber);
         }
 
+        public void ClearBreakpoints()
+        {
+            _breakpoints.Clear();
+        }
     }
 }

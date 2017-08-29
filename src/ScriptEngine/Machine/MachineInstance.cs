@@ -135,6 +135,11 @@ namespace ScriptEngine.Machine
             _stopManager = new MachineStopManager();
         }
 
+        public void ClearBreakpoints()
+        {
+            _stopManager.ClearBreakpoints();
+        }
+
         public bool SetBreakpoint(string source, int line, out int id)
         {
             if (_stopManager == null)
@@ -2375,6 +2380,6 @@ namespace ScriptEngine.Machine
             };
         }
 
-      
+        
     }
 }

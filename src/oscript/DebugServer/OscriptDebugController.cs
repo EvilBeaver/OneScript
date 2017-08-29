@@ -107,6 +107,7 @@ namespace oscript.DebugServer
         {
             var confirmedBreakpoints = new List<Breakpoint>();
 
+            _machine.ClearBreakpoints();
             foreach (var bpt in breaksToSet)
             {
                 int id;

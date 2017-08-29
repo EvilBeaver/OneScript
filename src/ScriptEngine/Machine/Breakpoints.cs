@@ -49,6 +49,12 @@ namespace ScriptEngine.Machine
                 _breakpoints.RemoveAt(index);
         }
 
+        public void Clear()
+        {
+            _breakpoints.Clear();
+            idsGenerator = 0;
+        }
+
         public bool Find(string module, int line)
         {
             var found = _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line);
