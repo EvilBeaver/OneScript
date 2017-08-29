@@ -198,9 +198,7 @@ namespace ScriptEngine.Machine
 
             try
             {
-                if (!separate)
-                    PushFrame(frame);
-
+                runner.PushFrame(frame);
                 runner.MainCommandLoop();
             }
             finally
@@ -1414,24 +1412,7 @@ namespace ScriptEngine.Machine
 
         private void CreateFullCallstack()
         {
-            var result = new List<ExecutionFrameInfo>();
-            /*var callstack = _callStack.ToArray();
-
-            result.Add(FrameInfo(_module, _currentFrame));
-
-            foreach (var executionFrame in callstack)
-            {
-                result.Add(FrameInfo(_module, executionFrame));
-            }
-
-            foreach (var state in _states.ToArray())
-            {
-                foreach (var frame in state.callStack)
-                {
-                    result.Add(FrameInfo(state.module, frame));
-                }
-            }
-            */
+            var result = _callStack.Select(x => FrameInfo(x.Module, x)).ToList();
             _fullCallstackCache = result;
         }
 
