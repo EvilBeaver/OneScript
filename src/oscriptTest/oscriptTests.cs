@@ -167,7 +167,7 @@ namespace oscript
 
                 Program.Main(args);
                 var result = sw.ToString();
-                var unexpected = "No errors.\r\n";
+                var unexpected = $"No errors.{Environment.NewLine}";
                 Assert.AreNotEqual(unexpected, result);
             }
         }
@@ -187,7 +187,7 @@ namespace oscript
 
                 Program.Main(args);
                 var result = sw.ToString();
-                var expected = "No errors.\r\n";
+                var expected = $"No errors.{Environment.NewLine}";
                 Assert.AreEqual(expected, result);
             }
         }
