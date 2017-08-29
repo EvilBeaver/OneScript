@@ -132,7 +132,7 @@ namespace ScriptEngine.Machine
 
         public void SetDebugMode(IDebugController debugContr)
         {
-            _stopManager = new MachineStopManager();
+            _stopManager = new MachineStopManager(this);
         }
 
         public void ClearBreakpoints()
@@ -155,7 +155,7 @@ namespace ScriptEngine.Machine
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
-            //_stopManager.StepOver(_currentFrame);
+            _stopManager.StepOver(_currentFrame);
         }
 
         public void StepIn()
