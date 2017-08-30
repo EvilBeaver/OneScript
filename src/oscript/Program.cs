@@ -11,9 +11,9 @@ using System.Text;
 
 namespace oscript
 {
-    class Program
+    public class Program
     {
-        static int Main(string[] args)
+        public static int Main(string[] args)
         {
             int returnCode;
             
