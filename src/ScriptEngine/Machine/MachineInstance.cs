@@ -163,7 +163,7 @@ namespace ScriptEngine.Machine
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
-           // _stopManager.AddStopAtMethodEntry();
+           _stopManager.StepIn();
         }
 
         public void PrepareDebugContinuation()
@@ -224,7 +224,7 @@ namespace ScriptEngine.Machine
 
         #endregion
 
-        internal ScriptInformationContext CurrentScript
+        private ScriptInformationContext CurrentScript
         {
             get
             {
@@ -245,7 +245,7 @@ namespace ScriptEngine.Machine
             return _module.Constants[param.DefaultValueIndex];
         }
 
-        internal void SetModule(LoadedModule module)
+        private void SetModule(LoadedModule module)
         {
             _module = module;
         }

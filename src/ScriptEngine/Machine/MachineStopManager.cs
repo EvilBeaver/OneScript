@@ -51,7 +51,8 @@ namespace ScriptEngine.Machine
                     mustStop = HitBreakpointOnLine(module, currentFrame);
                     break;
                 case DebugState.SteppingIn:
-                    throw new NotImplementedException();
+                    mustStop = true;
+                    break;
                 case DebugState.SteppingOut:
                     throw new NotImplementedException();
                 case DebugState.SteppingOver:
@@ -86,6 +87,11 @@ namespace ScriptEngine.Machine
             _currentState = DebugState.SteppingOver;
             _stopFrames = _machine.GetExecutionFrames().Select(x => x.FrameObject).ToArray();
 
+        }
+
+        public void StepIn()
+        {
+            _currentState = DebugState.SteppingIn;
         }
     }
 }

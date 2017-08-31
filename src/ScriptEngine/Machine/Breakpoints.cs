@@ -28,11 +28,11 @@ namespace ScriptEngine.Machine
     class Breakpoints
     {
         private readonly List<Breakpoint> _breakpoints = new List<Breakpoint>();
-        private int idsGenerator = 0;
+        private int _idsGenerator = 0;
 
         public int SetBreakpoint(string module, int line)
         {
-            var bp = new Breakpoint(idsGenerator++)
+            var bp = new Breakpoint(_idsGenerator++)
             {
                 LineNumber = line,
                 Module = module
@@ -52,7 +52,7 @@ namespace ScriptEngine.Machine
         public void Clear()
         {
             _breakpoints.Clear();
-            idsGenerator = 0;
+            _idsGenerator = 0;
         }
 
         public bool Find(string module, int line)
