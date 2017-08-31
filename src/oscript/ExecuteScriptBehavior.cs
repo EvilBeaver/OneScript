@@ -17,80 +17,81 @@ using ScriptEngine.HostedScript.Library;
 
 namespace oscript
 {
-    internal class ExecuteScriptBehavior : AppBehavior, IHostApplication, ISystemLogWriter
-    {
-        private readonly string _path;
-        private readonly string[] _scriptArgs;
+	internal class ExecuteScriptBehavior : AppBehavior, IHostApplication, ISystemLogWriter
+	{
+		private readonly string _path;
 
-        public ExecuteScriptBehavior(string path, string[] args)
-        {
-            _scriptArgs = args;
-            _path = path;
-        }
+		private readonly string[] _scriptArgs;
 
-        public override int Execute()
-        {
-            if (!File.Exists(_path))
-            {
-                Echo($"Script file is not found '{_path}'");
-                return 2;
-            }
+		public ExecuteScriptBehavior(string path, string[] args)
+		{
+			_scriptArgs = args;
+			_path = path;
+		}
 
-            SystemLogger.SetWriter(this);
+		public override int Execute()
+		{
+			if (!File.Exists(_path))
+			{
+				Echo($"Script file is not found '{_path}'");
+				return 2;
+			}
 
-            var hostedScript = new HostedScriptEngine
-            {
-                CustomConfig = ScriptFileHelper.CustomConfigPath(_path)
-            };
-            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
-            var source = hostedScript.Loader.FromFile(_path);
+			SystemLogger.SetWriter(this);
 
-            Process process;
-            try
-            {
-                process = hostedScript.CreateProcess(this, source);
-            }
-            catch (Exception e)
-            {
-                ShowExceptionInfo(e);
-                return 1;
-            }
+			var hostedScript = new HostedScriptEngine
+			{
+				CustomConfig = ScriptFileHelper.CustomConfigPath(_path)
+			};
+			ScriptFileHelper.OnBeforeScriptRead(hostedScript);
+			var source = hostedScript.Loader.FromFile(_path);
 
-            var result = process.Start();
-            hostedScript.Finalize();
+			Process process;
+			try
+			{
+				process = hostedScript.CreateProcess(this, source);
+			}
+			catch (Exception e)
+			{
+				ShowExceptionInfo(e);
+				return 1;
+			}
 
-            ScriptFileHelper.OnAfterScriptExecute(hostedScript);
+			var result = process.Start();
+			hostedScript.Finalize();
 
-            return result;
-        }
+			ScriptFileHelper.OnAfterScriptExecute(hostedScript);
 
-        public void Write(string text)
-        {
-            Console.Error.WriteLine(text);
-        }
+			return result;
+		}
 
-        #region IHostApplication Members
+		public void Write(string text)
+		{
+			Console.Error.WriteLine(text);
+		}
 
-        public void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
-        {
-            ConsoleHostImpl.Echo(text, status);
-        }
+		#region IHostApplication Members
 
-        public void ShowExceptionInfo(Exception exc)
-        {
-            ConsoleHostImpl.ShowExceptionInfo(exc);
-        }
+		public void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
+		{
+			ConsoleHostImpl.Echo(text, status);
+		}
 
-        public bool InputString(out string result, int maxLen)
-        {
-            return ConsoleHostImpl.InputString(out result, maxLen);
-        }
+		public void ShowExceptionInfo(Exception exc)
+		{
+			ConsoleHostImpl.ShowExceptionInfo(exc);
+		}
 
-        public string[] GetCommandLineArguments()
-        {
-            return _scriptArgs;
-        }
+		public bool InputString(out string result, int maxLen)
+		{
+			return ConsoleHostImpl.InputString(out result, maxLen);
+		}
 
-        #endregion
-    }
+		public string[] GetCommandLineArguments()
+		{
+			return _scriptArgs;
+		}
+
+		#endregion
+	}
 }

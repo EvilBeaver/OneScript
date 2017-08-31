@@ -13,34 +13,34 @@ using System.Text;
 
 namespace StandaloneRunner
 {
-    internal static class Program
-    {
-        private static int Main(string[] args)
-        {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+	internal static class Program
+	{
+		private static int Main(string[] args)
+		{
+			AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            return Run(args);
-        }
+			return Run(args);
+		}
 
-        private static int Run(string[] args)
-        {
-            var sp = new StandaloneProcess
-            {
-                CommandLineArguments = args
-            };
-            return sp.Run();
-        }
+		private static int Run(string[] args)
+		{
+			var sp = new StandaloneProcess
+			{
+				CommandLineArguments = args
+			};
+			return sp.Run();
+		}
 
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            var resourceName = "StandaloneRunner." + new AssemblyName(args.Name).Name + ".dll";
+		private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+		{
+			var resourceName = "StandaloneRunner." + new AssemblyName(args.Name).Name + ".dll";
 
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
-            {
-                var asmData = new byte[stream.Length];
-                stream.Read(asmData, 0, asmData.Length);
-                return Assembly.Load(asmData);
-            }
-        }
-    }
+			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+			{
+				var asmData = new byte[stream.Length];
+				stream.Read(asmData, 0, asmData.Length);
+				return Assembly.Load(asmData);
+			}
+		}
+	}
 }

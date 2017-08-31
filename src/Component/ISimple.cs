@@ -9,7 +9,7 @@ using System;
 
 namespace Component
 {
-    public interface ISimple
-    {
-    }
+	public interface ISimple
+	{
+	}
 }

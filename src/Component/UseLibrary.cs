@@ -18,79 +18,79 @@ using ScriptEngine.Machine;
 
 namespace Component
 {
-    public static class UseLibrary
-    {
-        public static void Use<T>() where T : IValue
-        {
-        }
+	public static class UseLibrary
+	{
+		public static void Use<T>() where T : IValue
+		{
+		}
 
-        public static void Use()
-        {
-            /* Суть следующих выражений в том, что они перестанут компилироваться, 
-            если какой-либо из классов поменяет область видимости 
-            или переедет в иное пространство имён
-            (https://github.com/EvilBeaver/OneScript/commit/20e48fa7692b5430b819eb4b6982be1b591e536f)*/
+		public static void Use()
+		{
+			/* Суть следующих выражений в том, что они перестанут компилироваться, 
+			если какой-либо из классов поменяет область видимости 
+			или переедет в иное пространство имён
+			(https://github.com/EvilBeaver/OneScript/commit/20e48fa7692b5430b819eb4b6982be1b591e536f)*/
 
-            Use<ArrayImpl>();
-            Use<FixedArrayImpl>();
-            Use<MapImpl>();
-            Use<FixedMapImpl>();
-            Use<StructureImpl>();
-            Use<FixedStructureImpl>();
-            Use<KeyAndValueImpl>();
+			Use<ArrayImpl>();
+			Use<FixedArrayImpl>();
+			Use<MapImpl>();
+			Use<FixedMapImpl>();
+			Use<StructureImpl>();
+			Use<FixedStructureImpl>();
+			Use<KeyAndValueImpl>();
 
-            Use<ValueTable>();
-            Use<ValueTableRow>();
-            Use<ValueTableColumn>();
-            Use<ValueTableColumnCollection>();
+			Use<ValueTable>();
+			Use<ValueTableRow>();
+			Use<ValueTableColumn>();
+			Use<ValueTableColumnCollection>();
 
-            Use<BinaryDataQualifiers>();
-            Use<DateQualifiers>();
-            Use<FileContext>();
-            Use<GuidWrapper>();
-            Use<NumberQualifiers>();
-            Use<ProcessContext>();
-            Use<ReflectorContext>();
-            Use<TypeDescription>();
-            Use<TextWriteImpl>();
-            Use<TextReadImpl>();
-            Use<TextDocumentContext>();
-            Use<SystemEnvironmentContext>();
-            Use<StringQualifiers>();
+			Use<BinaryDataQualifiers>();
+			Use<DateQualifiers>();
+			Use<FileContext>();
+			Use<GuidWrapper>();
+			Use<NumberQualifiers>();
+			Use<ProcessContext>();
+			Use<ReflectorContext>();
+			Use<TypeDescription>();
+			Use<TextWriteImpl>();
+			Use<TextReadImpl>();
+			Use<TextDocumentContext>();
+			Use<SystemEnvironmentContext>();
+			Use<StringQualifiers>();
 
-            Use<BinaryDataContext>();
-            Use<FileStreamContext>();
-            Use<GenericStream>();
-            Use<MemoryStreamContext>();
+			Use<BinaryDataContext>();
+			Use<FileStreamContext>();
+			Use<GenericStream>();
+			Use<MemoryStreamContext>();
 
-            Use<TCPClient>();
-            Use<TCPServer>();
+			Use<TCPClient>();
+			Use<TCPServer>();
 
-            Use<HttpConnectionContext>();
-            Use<HttpRequestContext>();
-            Use<HttpResponseContext>();
-            Use<InternetProxyContext>();
+			Use<HttpConnectionContext>();
+			Use<HttpRequestContext>();
+			Use<HttpResponseContext>();
+			Use<InternetProxyContext>();
 
-            Use<ValueListImpl>();
-            Use<ValueListItem>();
+			Use<ValueListImpl>();
+			Use<ValueListItem>();
 
-            Use<ValueTree>();
-            Use<ValueTreeRow>();
-            Use<ValueTreeRowCollection>();
-            Use<ValueTreeColumn>();
-            Use<ValueTreeColumnCollection>();
+			Use<ValueTree>();
+			Use<ValueTreeRow>();
+			Use<ValueTreeRowCollection>();
+			Use<ValueTreeColumn>();
+			Use<ValueTreeColumnCollection>();
 
-            Use<ZipReader>();
-            Use<ZipWriter>();
-            Use<ZipFileEntryContext>();
-            Use<ZipFileEntriesCollection>();
+			Use<ZipReader>();
+			Use<ZipWriter>();
+			Use<ZipFileEntryContext>();
+			Use<ZipFileEntriesCollection>();
 
-            Use<XmlNamespaceContext>();
-            Use<XmlReaderImpl>();
-            Use<XmlWriterImpl>();
+			Use<XmlNamespaceContext>();
+			Use<XmlReaderImpl>();
+			Use<XmlWriterImpl>();
 
-            Use<StdTextReadStream>();
-            Use<StdTextWriteStream>();
-        }
-    }
+			Use<StdTextReadStream>();
+			Use<StdTextWriteStream>();
+		}
+	}
 }

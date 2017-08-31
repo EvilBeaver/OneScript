@@ -16,59 +16,61 @@ using ScriptEngine.Machine;
 
 namespace oscript
 {
-    internal class CheckSyntaxBehavior : AppBehavior
-    {
-        private readonly string _envFile;
-        private readonly bool _isCgi;
-        private readonly string _path;
+	internal class CheckSyntaxBehavior : AppBehavior
+	{
+		private readonly string _envFile;
 
-        public CheckSyntaxBehavior(string path, string envFile, bool isCgi = false)
-        {
-            _path = path;
-            _envFile = envFile;
-            _isCgi = isCgi;
-        }
+		private readonly bool _isCgi;
 
-        public override int Execute()
-        {
-            var hostedScript = new HostedScriptEngine
-            {
-                CustomConfig = ScriptFileHelper.CustomConfigPath(_path)
-            };
-            hostedScript.Initialize();
+		private readonly string _path;
 
-            if (_isCgi)
-            {
-                var request = ValueFactory.Create();
-                hostedScript.InjectGlobalProperty("ВебЗапрос", request, true);
-                hostedScript.InjectGlobalProperty("WebRequest", request, true);
-            }
+		public CheckSyntaxBehavior(string path, string envFile, bool isCgi = false)
+		{
+			_path = path;
+			_envFile = envFile;
+			_isCgi = isCgi;
+		}
 
-            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
-            var source = hostedScript.Loader.FromFile(_path);
+		public override int Execute()
+		{
+			var hostedScript = new HostedScriptEngine
+			{
+				CustomConfig = ScriptFileHelper.CustomConfigPath(_path)
+			};
+			hostedScript.Initialize();
 
-            hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);
+			if (_isCgi)
+			{
+				var request = ValueFactory.Create();
+				hostedScript.InjectGlobalProperty("ВебЗапрос", request, true);
+				hostedScript.InjectGlobalProperty("WebRequest", request, true);
+			}
 
-            try
-            {
-                if (_envFile != null)
-                {
-                    var envCompiler = hostedScript.GetCompilerService();
-                    var envSrc = hostedScript.Loader.FromFile(_envFile);
-                    envCompiler.CreateModule(envSrc);
-                }
-                var compiler = hostedScript.GetCompilerService();
-                compiler.CreateModule(source);
-            }
-            catch (ScriptException e)
-            {
-                Output.WriteLine(e.Message);
-                return 1;
-            }
+			ScriptFileHelper.OnBeforeScriptRead(hostedScript);
+			var source = hostedScript.Loader.FromFile(_path);
 
-            Output.WriteLine("No errors.");
+			hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);
 
-            return 0;
-        }
-    }
+			try
+			{
+				if (_envFile != null)
+				{
+					var envCompiler = hostedScript.GetCompilerService();
+					var envSrc = hostedScript.Loader.FromFile(_envFile);
+					envCompiler.CreateModule(envSrc);
+				}
+				var compiler = hostedScript.GetCompilerService();
+				compiler.CreateModule(source);
+			}
+			catch (ScriptException e)
+			{
+				Output.WriteLine(e.Message);
+				return 1;
+			}
+
+			Output.WriteLine("No errors.");
+
+			return 0;
+		}
+	}
 }

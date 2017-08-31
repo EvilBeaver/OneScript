@@ -11,11 +11,11 @@ using ScriptEngine;
 
 namespace Component
 {
-    [EnumerationType("ПростоПеречисление")]
-    public enum SimpleEnum
-    {
-        [EnumItem("Элемент1")] Item1,
+	[EnumerationType("ПростоПеречисление")]
+	public enum SimpleEnum
+	{
+		[EnumItem("Элемент1")] Item1,
 
-        [EnumItem("Элемент2")] Item2
-    }
+		[EnumItem("Элемент2")] Item2
+	}
 }

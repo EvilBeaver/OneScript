@@ -16,38 +16,38 @@ using ScriptEngine.HostedScript;
 
 namespace oscript
 {
-    internal class ShowCompiledBehavior : AppBehavior
-    {
-        private readonly string _path;
+	internal class ShowCompiledBehavior : AppBehavior
+	{
+		private readonly string _path;
 
-        public ShowCompiledBehavior(string path)
-        {
-            _path = path;
-        }
+		public ShowCompiledBehavior(string path)
+		{
+			_path = path;
+		}
 
-        public override int Execute()
-        {
-            var hostedScript = new HostedScriptEngine
-            {
-                CustomConfig = ScriptFileHelper.CustomConfigPath(_path)
-            };
-            hostedScript.Initialize();
-            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
-            var source = hostedScript.Loader.FromFile(_path);
-            var compiler = hostedScript.GetCompilerService();
-            hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);
-            var writer = new ModuleWriter(compiler);
-            try
-            {
-                writer.Write(Console.Out, source);
-            }
-            catch (ScriptException e)
-            {
-                Output.WriteLine(e.Message);
-                return 1;
-            }
+		public override int Execute()
+		{
+			var hostedScript = new HostedScriptEngine
+			{
+				CustomConfig = ScriptFileHelper.CustomConfigPath(_path)
+			};
+			hostedScript.Initialize();
+			ScriptFileHelper.OnBeforeScriptRead(hostedScript);
+			var source = hostedScript.Loader.FromFile(_path);
+			var compiler = hostedScript.GetCompilerService();
+			hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);
+			var writer = new ModuleWriter(compiler);
+			try
+			{
+				writer.Write(Console.Out, source);
+			}
+			catch (ScriptException e)
+			{
+				Output.WriteLine(e.Message);
+				return 1;
+			}
 
-            return 0;
-        }
-    }
+			return 0;
+		}
+	}
 }

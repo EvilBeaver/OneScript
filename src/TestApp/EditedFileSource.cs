@@ -15,30 +15,30 @@ using ScriptEngine.Environment;
 
 namespace TestApp
 {
-    internal class EditedFileSource : ICodeSource
-    {
-        private readonly string _code;
+	internal class EditedFileSource : ICodeSource
+	{
+		private readonly string _code;
 
-        private readonly string _path = "";
+		private readonly string _path = "";
 
-        public EditedFileSource(string code, string path)
-        {
-            if (path != "")
-                _path = Path.GetFullPath(path);
-            _code = code;
-        }
+		public EditedFileSource(string code, string path)
+		{
+			if (path != "")
+				_path = Path.GetFullPath(path);
+			_code = code;
+		}
 
-        private string GetCodeString()
-        {
-            return _code;
-        }
+		private string GetCodeString()
+		{
+			return _code;
+		}
 
-        #region ICodeSource Members
+		#region ICodeSource Members
 
-        string ICodeSource.Code => GetCodeString();
+		string ICodeSource.Code => GetCodeString();
 
-        string ICodeSource.SourceDescription => _path != "" ? _path : "<string>";
+		string ICodeSource.SourceDescription => _path != "" ? _path : "<string>";
 
-        #endregion
-    }
+		#endregion
+	}
 }

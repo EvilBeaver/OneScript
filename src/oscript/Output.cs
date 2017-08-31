@@ -12,65 +12,65 @@ using System.Text;
 
 namespace oscript
 {
-    internal static class Output
-    {
-        private static Encoding _encoding;
+	internal static class Output
+	{
+		private static Encoding _encoding;
 
-        static Output()
-        {
-            Init();
-        }
+		static Output()
+		{
+			Init();
+		}
 
-        public static Action<string> Write { get; private set; }
+		public static Action<string> Write { get; private set; }
 
-        public static ConsoleColor TextColor
-        {
-            get => Console.ForegroundColor;
-            set => Console.ForegroundColor = value;
-        }
+		public static ConsoleColor TextColor
+		{
+			get => Console.ForegroundColor;
+			set => Console.ForegroundColor = value;
+		}
 
-        public static Encoding ConsoleOutputEncoding
-        {
-            get => _encoding;
-            set
-            {
-                _encoding = value;
-                Init();
-            }
-        }
+		public static Encoding ConsoleOutputEncoding
+		{
+			get => _encoding;
+			set
+			{
+				_encoding = value;
+				Init();
+			}
+		}
 
-        private static void Init()
-        {
-            if (ConsoleOutputEncoding == null)
-                Write = WriteStandardConsole;
-            else
-                Write = WriteEncodedStream;
-        }
+		private static void Init()
+		{
+			if (ConsoleOutputEncoding == null)
+				Write = WriteStandardConsole;
+			else
+				Write = WriteEncodedStream;
+		}
 
-        public static void WriteLine(string text)
-        {
-            Write(text);
-            WriteLine();
-        }
+		public static void WriteLine(string text)
+		{
+			Write(text);
+			WriteLine();
+		}
 
-        public static void WriteLine()
-        {
-            Write(Environment.NewLine);
-        }
+		public static void WriteLine()
+		{
+			Write(Environment.NewLine);
+		}
 
-        private static void WriteStandardConsole(string text)
-        {
-            Console.Write(text);
-        }
+		private static void WriteStandardConsole(string text)
+		{
+			Console.Write(text);
+		}
 
-        private static void WriteEncodedStream(string text)
-        {
-            using (var stdout = Console.OpenStandardOutput())
-            {
-                var enc = ConsoleOutputEncoding;
-                var bytes = enc.GetBytes(text);
-                stdout.Write(bytes, 0, bytes.Length);
-            }
-        }
-    }
+		private static void WriteEncodedStream(string text)
+		{
+			using (var stdout = Console.OpenStandardOutput())
+			{
+				var enc = ConsoleOutputEncoding;
+				var bytes = enc.GetBytes(text);
+				stdout.Write(bytes, 0, bytes.Length);
+			}
+		}
+	}
 }

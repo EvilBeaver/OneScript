@@ -13,22 +13,22 @@ using System.Text;
 
 namespace oscript
 {
-    internal class MeasureBehavior : ExecuteScriptBehavior
-    {
-        public MeasureBehavior(string path, string[] args) : base(path, args)
-        {
-        }
+	internal class MeasureBehavior : ExecuteScriptBehavior
+	{
+		public MeasureBehavior(string path, string[] args) : base(path, args)
+		{
+		}
 
-        public override int Execute()
-        {
-            var sw = new Stopwatch();
-            Output.WriteLine("Script started: " + DateTime.Now + "\n");
-            sw.Start();
-            var exitCode = base.Execute();
-            sw.Stop();
-            Output.WriteLine("\nScript completed: " + DateTime.Now);
-            Output.WriteLine("\nDuration: " + sw.Elapsed);
-            return exitCode;
-        }
-    }
+		public override int Execute()
+		{
+			var sw = new Stopwatch();
+			Output.WriteLine("Script started: " + DateTime.Now + "\n");
+			sw.Start();
+			var exitCode = base.Execute();
+			sw.Stop();
+			Output.WriteLine("\nScript completed: " + DateTime.Now);
+			Output.WriteLine("\nDuration: " + sw.Elapsed);
+			return exitCode;
+		}
+	}
 }

@@ -10,12 +10,12 @@ using System.Reflection;
 
 namespace oscript
 {
-    internal class ShowVersionBehavior : AppBehavior
-    {
-        public override int Execute()
-        {
-            Output.WriteLine($"{Assembly.GetExecutingAssembly().GetName().Version}");
-            return 0;
-        }
-    }
+	internal class ShowVersionBehavior : AppBehavior
+	{
+		public override int Execute()
+		{
+			Output.WriteLine($"{Assembly.GetExecutingAssembly().GetName().Version}");
+			return 0;
+		}
+	}
 }

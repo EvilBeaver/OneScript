@@ -12,30 +12,30 @@ using ScriptEngine.Machine.Contexts;
 
 namespace Component
 {
-    [ContextClass("ПростоКласс")]
-    public sealed class SimpleClass : AutoContext<SimpleClass>, ISimple
-    {
-        [ContextProperty("СвойствоПеречисление")]
-        public SimpleEnum EnumProperty { get; set; }
+	[ContextClass("ПростоКласс")]
+	public sealed class SimpleClass : AutoContext<SimpleClass>, ISimple
+	{
+		[ContextProperty("СвойствоПеречисление")]
+		public SimpleEnum EnumProperty { get; set; }
 
-        [ContextProperty("ЦелочисленноеСвойство")]
-        public int IntProperty { get; set; }
+		[ContextProperty("ЦелочисленноеСвойство")]
+		public int IntProperty { get; set; }
 
-        [ContextProperty("СвойствоСПроизвольнымЗначением")]
-        public IValue AnyValueProperty { get; set; }
+		[ContextProperty("СвойствоСПроизвольнымЗначением")]
+		public IValue AnyValueProperty { get; set; }
 
-        [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
-        {
-            return new SimpleClass();
-        }
+		[ScriptConstructor]
+		public static IRuntimeContextInstance Constructor()
+		{
+			return new SimpleClass();
+		}
 
-        [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor(IValue initialProperty)
-        {
-            var result = new SimpleClass();
-            result.IntProperty = ContextValuesMarshaller.ConvertParam<int>(initialProperty);
-            return result;
-        }
-    }
+		[ScriptConstructor]
+		public static IRuntimeContextInstance Constructor(IValue initialProperty)
+		{
+			var result = new SimpleClass();
+			result.IntProperty = ContextValuesMarshaller.ConvertParam<int>(initialProperty);
+			return result;
+		}
+	}
 }

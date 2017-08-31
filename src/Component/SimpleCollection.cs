@@ -14,42 +14,42 @@ using ScriptEngine.Machine.Contexts;
 
 namespace Component
 {
-    [ContextClass("ПростоКоллекция")]
-    public sealed class SimpleCollection : AutoContext<SimpleCollection>, ICollectionContext, IEnumerable<SimpleClass>
-    {
-        private readonly List<SimpleClass> _data = new List<SimpleClass>();
+	[ContextClass("ПростоКоллекция")]
+	public sealed class SimpleCollection : AutoContext<SimpleCollection>, ICollectionContext, IEnumerable<SimpleClass>
+	{
+		private readonly List<SimpleClass> _data = new List<SimpleClass>();
 
-        [ContextMethod("Добавить")]
-        public void Add(SimpleClass item)
-        {
-            _data.Add(item);
-        }
+		[ContextMethod("Добавить")]
+		public void Add(SimpleClass item)
+		{
+			_data.Add(item);
+		}
 
-        [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
-        {
-            return new SimpleCollection();
-        }
+		[ScriptConstructor]
+		public static IRuntimeContextInstance Constructor()
+		{
+			return new SimpleCollection();
+		}
 
-        [ContextMethod("Количество")]
-        public int Count()
-        {
-            return _data.Count;
-        }
+		[ContextMethod("Количество")]
+		public int Count()
+		{
+			return _data.Count;
+		}
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
+		public CollectionEnumerator GetManagedIterator()
+		{
+			return new CollectionEnumerator(GetEnumerator());
+		}
 
-        public IEnumerator<SimpleClass> GetEnumerator()
-        {
-            return ((IEnumerable<SimpleClass>) _data).GetEnumerator();
-        }
+		public IEnumerator<SimpleClass> GetEnumerator()
+		{
+			return ((IEnumerable<SimpleClass>) _data).GetEnumerator();
+		}
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable<SimpleClass>) _data).GetEnumerator();
-        }
-    }
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return ((IEnumerable<SimpleClass>) _data).GetEnumerator();
+		}
+	}
 }

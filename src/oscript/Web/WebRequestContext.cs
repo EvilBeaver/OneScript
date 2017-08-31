@@ -18,106 +18,107 @@ using ScriptEngine.Machine.Contexts;
 
 namespace oscript.Web
 {
-    [ContextClass("ВебЗапрос", "WebRequest")]
-    public class WebRequestContext : AutoContext<WebRequestContext>
-    {
-        [Obsolete]
-        [ContextProperty("GET")]
-        public IValue GET => _post.Params;
+	[ContextClass("ВебЗапрос", "WebRequest")]
+	public class WebRequestContext : AutoContext<WebRequestContext>
+	{
+		private PostRequestData _post;
 
-        [Obsolete]
-        [ContextProperty("POST")]
-        public IValue POST => _post;
+		private byte[] _postRaw;
 
-        /// <summary>
-        ///     Параметры запроса
-        /// </summary>
-        [ContextProperty("Параметры", "Params")]
-        public FixedMapImpl Params => _post.Params;
+		public WebRequestContext()
+		{
+			var get = Environment.GetEnvironmentVariable("QUERY_STRING");
+			if (get != null) FillGetMap(get);
 
-        /// <summary>
-        ///     Загруженные файлы
-        /// </summary>
-        [ContextProperty("Файлы", "Files")]
-        public FixedMapImpl Files => _post.Files;
+			ProcessPostData();
 
-        /// <summary>
-        ///     Переменные среды
-        /// </summary>
-        [ContextProperty("ENV")]
-        public FixedMapImpl ENV { get; private set; }
+			FillEnvironmentVars();
+		}
 
-        private PostRequestData _post;
-        private byte[] _postRaw;
+		[Obsolete]
+		[ContextProperty("GET")]
+		public IValue GET => _post.Params;
 
-        public WebRequestContext()
-        {
-            var get = Environment.GetEnvironmentVariable("QUERY_STRING");
-            if (get != null) FillGetMap(get);
+		[Obsolete]
+		[ContextProperty("POST")]
+		public IValue POST => _post;
 
-            ProcessPostData();
+		/// <summary>
+		///     Параметры запроса
+		/// </summary>
+		[ContextProperty("Параметры", "Params")]
+		public FixedMapImpl Params => _post.Params;
 
-            FillEnvironmentVars();
-        }
+		/// <summary>
+		///     Загруженные файлы
+		/// </summary>
+		[ContextProperty("Файлы", "Files")]
+		public FixedMapImpl Files => _post.Files;
 
-        private void ProcessPostData()
-        {
-            var contentLen = Environment.GetEnvironmentVariable("CONTENT_LENGTH");
-            if (contentLen == null)
-                return;
+		/// <summary>
+		///     Переменные среды
+		/// </summary>
+		[ContextProperty("ENV")]
+		public FixedMapImpl ENV { get; private set; }
 
-            var len = int.Parse(contentLen);
-            if (len == 0)
-                return;
+		private void ProcessPostData()
+		{
+			var contentLen = Environment.GetEnvironmentVariable("CONTENT_LENGTH");
+			if (contentLen == null)
+				return;
 
-            _postRaw = new byte[len];
-            using (var stdin = Console.OpenStandardInput())
-            {
-                stdin.Read(_postRaw, 0, len);
-            }
+			var len = int.Parse(contentLen);
+			if (len == 0)
+				return;
 
-            var type = Environment.GetEnvironmentVariable("CONTENT_TYPE");
-            if (type != null && type.StartsWith("multipart/"))
-            {
-                var boundary = type.Substring(type.IndexOf('=') + 1);
-                _post = new PostRequestData(_postRaw, boundary);
-            }
-            else
-            {
-                _post = new PostRequestData(Encoding.UTF8.GetString(_postRaw));
-            }
-        }
+			_postRaw = new byte[len];
+			using (var stdin = Console.OpenStandardInput())
+			{
+				stdin.Read(_postRaw, 0, len);
+			}
 
-        private void FillEnvironmentVars()
-        {
-            var vars = new MapImpl();
-            foreach (DictionaryEntry item in Environment.GetEnvironmentVariables())
-                vars.Insert(
-                    ValueFactory.Create((string) item.Key),
-                    ValueFactory.Create((string) item.Value));
+			var type = Environment.GetEnvironmentVariable("CONTENT_TYPE");
+			if (type != null && type.StartsWith("multipart/"))
+			{
+				var boundary = type.Substring(type.IndexOf('=') + 1);
+				_post = new PostRequestData(_postRaw, boundary);
+			}
+			else
+			{
+				_post = new PostRequestData(Encoding.UTF8.GetString(_postRaw));
+			}
+		}
 
-            ENV = new FixedMapImpl(vars);
-        }
+		private void FillEnvironmentVars()
+		{
+			var vars = new MapImpl();
+			foreach (DictionaryEntry item in Environment.GetEnvironmentVariables())
+				vars.Insert(
+					ValueFactory.Create((string) item.Key),
+					ValueFactory.Create((string) item.Value));
 
-        private void FillGetMap(string get)
-        {
-            _post = new PostRequestData(get);
-        }
+			ENV = new FixedMapImpl(vars);
+		}
 
-        [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
-        public BinaryDataContext GetBodyAsBinaryData()
-        {
-            return new BinaryDataContext(_postRaw);
-        }
+		private void FillGetMap(string get)
+		{
+			_post = new PostRequestData(get);
+		}
 
-        [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
-        public string GetBodyAsString(IValue encoding = null)
-        {
-            var enc = encoding == null || ValueFactory.Create().Equals(encoding)
-                ? new UTF8Encoding(false)
-                : TextEncodingEnum.GetEncoding(encoding);
+		[ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
+		public BinaryDataContext GetBodyAsBinaryData()
+		{
+			return new BinaryDataContext(_postRaw);
+		}
 
-            return enc.GetString(_postRaw);
-        }
-    }
+		[ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
+		public string GetBodyAsString(IValue encoding = null)
+		{
+			var enc = encoding == null || ValueFactory.Create().Equals(encoding)
+				? new UTF8Encoding(false)
+				: TextEncodingEnum.GetEncoding(encoding);
+
+			return enc.GetString(_postRaw);
+		}
+	}
 }

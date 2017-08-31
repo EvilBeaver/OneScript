@@ -12,8 +12,8 @@ using System.Text;
 
 namespace oscript
 {
-    internal abstract class AppBehavior
-    {
-        public abstract int Execute();
-    }
+	internal abstract class AppBehavior
+	{
+		public abstract int Execute();
+	}
 }
