@@ -26,7 +26,9 @@ namespace oscript
     internal class CgiBehavior : AppBehavior, IHostApplication, IRuntimeContextInstance, IAttachableContext
     {
         private static readonly ContextMethodsMapper<CgiBehavior> _methods = new ContextMethodsMapper<CgiBehavior>();
+
         private readonly HashSet<string> _headersWritten = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         private bool _isContentEchoed;
 
         public CgiBehavior()
