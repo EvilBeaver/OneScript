@@ -4,57 +4,69 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
-using System.IO;
 using System.Text;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using ScriptEngine.HostedScript;
-using System.Collections.Generic;
+
+using Microsoft.Win32;
+
 using ScriptEngine;
+using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
+using ScriptEngine.HostedScript;
 using ScriptEngine.HostedScript.Library;
+
+using Application = System.Windows.Forms.Application;
+using Process = ScriptEngine.HostedScript.Process;
 
 namespace TestApp
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    ///     Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private string _currentDocPath = "";
-        private bool _isModified = false;
 
-        public bool IsModified
-        {
-            get { return _isModified; }
-            set 
-            { 
-                _isModified = value;
-                if (_isModified)
-                    this.Title = _currentDocPath + " *";
-                else
-                    this.Title = _currentDocPath;
-            }
-        }
-        
+        private bool _isModified;
+
+        // Определяем путь к AppData\Local
+        private readonly string _localPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        // Определяем путь к AppData\Local
-        private string localPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        public bool IsModified
+        {
+            get => _isModified;
+            set
+            {
+                _isModified = value;
+                if (_isModified)
+                    Title = _currentDocPath + " *";
+                else
+                    Title = _currentDocPath;
+            }
+        }
 
         private void SaveLastCode()
         {
-            string filename = Path.Combine(localPath, "TestApp.os");
+            var filename = Path.Combine(_localPath, "TestApp.os");
             using (var writer = new StreamWriter(filename, false, Encoding.UTF8))
             {
                 // первой строкой запишем имя открытого файла
-                writer.Write("//");  // знаки комментария, чтобы сохранить код правильным
+                writer.Write("//"); // знаки комментария, чтобы сохранить код правильным
                 writer.WriteLine(_currentDocPath);
+
                 // второй строкой - признак изменённости
                 writer.Write("//");
                 writer.WriteLine(_isModified);
@@ -65,9 +77,9 @@ namespace TestApp
                 writer.Write("//");
                 writer.WriteLine(args.LineCount);
 
-                for (var i = 0; i < args.LineCount; ++i )
+                for (var i = 0; i < args.LineCount; ++i)
                 {
-                    string s = args.GetLineText(i).TrimEnd('\r', '\n');
+                    var s = args.GetLineText(i).TrimEnd('\r', '\n');
                     writer.Write("//");
                     writer.WriteLine(s);
                 }
@@ -79,20 +91,18 @@ namespace TestApp
 
         private void RestoreLastCode()
         {
-            string filename = Path.Combine(localPath, "TestApp.os");
+            var filename = Path.Combine(_localPath, "TestApp.os");
             if (!File.Exists(filename))
-            {
                 return;
-            }
 
             using (var reader = new StreamReader(filename, Encoding.UTF8))
             {
-                string lastOpened = reader.ReadLine().Substring(2);
-                string wasModified = reader.ReadLine().Substring(2);
+                var lastOpened = reader.ReadLine()?.Substring(2);
+                var wasModified = reader.ReadLine()?.Substring(2);
 
-                string argsline = reader.ReadLine().Substring(2);
-                string argstail = ""; // если не распознали строку с параметром, здесь будет "хвост" нераспознанной строки
-                int argscount = 0;
+                var argsline = reader.ReadLine()?.Substring(2);
+                var argstail = ""; // если не распознали строку с параметром, здесь будет "хвост" нераспознанной строки
+                var argscount = 0;
 
                 try
                 {
@@ -105,9 +115,9 @@ namespace TestApp
                 }
 
                 args.Text = "";
-                for (int i = 0; i < argscount; ++i )
+                for (var i = 0; i < argscount; ++i)
                 {
-                    string param = reader.ReadLine().Substring(2);
+                    var param = reader.ReadLine()?.Substring(2);
                     args.Text += param + "\n";
                 }
 
@@ -117,23 +127,24 @@ namespace TestApp
                 {
                     // был открыт какой-то файл, сделаем вид, что открыли его
                     _currentDocPath = lastOpened;
-                    IsModified = (wasModified == "True");
+                    IsModified = wasModified == "True";
                 }
-
             }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var hostedScript = new HostedScriptEngine();
-            hostedScript.CustomConfig = CustomConfigPath(_currentDocPath);
+            var hostedScript = new HostedScriptEngine
+            {
+                CustomConfig = CustomConfigPath(_currentDocPath)
+            };
             hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
             using (var writer = new StringWriter())
             {
                 try
                 {
-                    var moduleWriter = new ScriptEngine.Compiler.ModuleWriter(hostedScript.GetCompilerService());
+                    var moduleWriter = new ModuleWriter(hostedScript.GetCompilerService());
                     moduleWriter.Write(writer, src);
                     result.Text = writer.GetStringBuilder().ToString();
                 }
@@ -142,7 +153,6 @@ namespace TestApp
                     result.Text = exc.Message;
                 }
             }
-            
         }
 
         private void Run_Execute(object sender, ExecutedRoutedEventArgs e)
@@ -155,25 +165,27 @@ namespace TestApp
             SaveLastCode(); // Сохраним набранный текст на случай зависания или вылета
 
             result.Text = "";
-            var sw = new System.Diagnostics.Stopwatch();
+            var sw = new Stopwatch();
 
-            List<string> l_args = new List<string>();
+            var lArgs = new List<string>();
             for (var i = 0; i < args.LineCount; i++)
             {
-                string s = args.GetLineText(i);
+                var s = args.GetLineText(i);
                 if (s.IndexOf('#') != 0)
-                    l_args.Add(s.Trim());
+                    lArgs.Add(s.Trim());
             }
 
-            var host = new Host(result, l_args.ToArray());
+            var host = new Host(result, lArgs.ToArray());
             SystemLogger.SetWriter(host);
-            var hostedScript = new HostedScriptEngine();
-            hostedScript.CustomConfig = CustomConfigPath(_currentDocPath);
+            var hostedScript = new HostedScriptEngine
+            {
+                CustomConfig = CustomConfigPath(_currentDocPath)
+            };
             SetEncodingFromConfig(hostedScript);
 
             var src = new EditedFileSource(txtCode.Text, _currentDocPath);
 
-            Process process = null;
+            Process process;
             try
             {
                 process = hostedScript.CreateProcess(host, src);
@@ -184,17 +196,14 @@ namespace TestApp
                 return;
             }
 
-            result.AppendText("Script started: " + DateTime.Now.ToString() + "\n");
+            result.AppendText("Script started: " + DateTime.Now + "\n");
             sw.Start();
             var returnCode = process.Start();
             sw.Stop();
             if (returnCode != 0)
-            {
-                result.AppendText("\nError detected. Exit code = " + returnCode.ToString());
-            }
-            result.AppendText("\nScript completed: " + DateTime.Now.ToString());
-            result.AppendText("\nDuration: " + sw.Elapsed.ToString());
-            
+                result.AppendText("\nError detected. Exit code = " + returnCode);
+            result.AppendText("\nScript completed: " + DateTime.Now);
+            result.AppendText("\nDuration: " + sw.Elapsed);
         }
 
         public static string CustomConfigPath(string scriptPath)
@@ -204,10 +213,7 @@ namespace TestApp
 
             var dir = Path.GetDirectoryName(scriptPath);
             var cfgPath = Path.Combine(dir, HostedScriptEngine.ConfigFileName);
-            if (File.Exists(cfgPath))
-                return cfgPath;
-            else
-                return null;
+            return File.Exists(cfgPath) ? cfgPath : null;
         }
 
         private static string GetFileDialogFilter()
@@ -224,6 +230,7 @@ namespace TestApp
         {
             if (!SaveModified())
                 return;
+
             _currentDocPath = "";
             txtCode.Text = "";
             IsModified = false;
@@ -231,21 +238,25 @@ namespace TestApp
 
         private void Open_Execute(object sender, ExecutedRoutedEventArgs e)
         {
-            var dlg = new Microsoft.Win32.OpenFileDialog();
-            dlg.Filter = GetFileDialogFilter();
-            dlg.Multiselect = false;
-            if (dlg.ShowDialog() == true)
+            var dlg = new OpenFileDialog
             {
-                var hostedScript = new HostedScriptEngine();
-                hostedScript.CustomConfig = CustomConfigPath(dlg.FileName);
-                SetEncodingFromConfig(hostedScript);
+                Filter = GetFileDialogFilter(),
+                Multiselect = false
+            };
+            if (dlg.ShowDialog() != true)
+                return;
 
-                using (var fs = FileOpener.OpenReader(dlg.FileName))
-                {
-                    txtCode.Text = fs.ReadToEnd();
-                    _currentDocPath = dlg.FileName;
-                    this.Title = _currentDocPath;
-                }
+            var hostedScript = new HostedScriptEngine
+            {
+                CustomConfig = CustomConfigPath(dlg.FileName)
+            };
+            SetEncodingFromConfig(hostedScript);
+
+            using (var fs = FileOpener.OpenReader(dlg.FileName))
+            {
+                txtCode.Text = fs.ReadToEnd();
+                _currentDocPath = dlg.FileName;
+                Title = _currentDocPath;
             }
         }
 
@@ -254,28 +265,22 @@ namespace TestApp
             SaveFile();
         }
 
-        private void SetEncodingFromConfig(HostedScriptEngine engine)
+        private static void SetEncodingFromConfig(HostedScriptEngine engine)
         {
             var cfg = engine.GetWorkingConfig();
 
-            string openerEncoding = cfg["encoding.script"];
-            if (!String.IsNullOrWhiteSpace(openerEncoding) && StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") != 0)
-            {
+            var openerEncoding = cfg["encoding.script"];
+            if (!string.IsNullOrWhiteSpace(openerEncoding) && StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") != 0)
                 engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
-            }
         }
 
         private bool SaveFile()
         {
             if (_currentDocPath == "")
-            {
-               return AskForFilenameAndSave();
-            }
-            else
-            {
-                DumpCodeToFile(_currentDocPath);
-                return true;
-            }
+                return AskForFilenameAndSave();
+
+            DumpCodeToFile(_currentDocPath);
+            return true;
         }
 
         private void SaveAs_Execute(object sender, ExecutedRoutedEventArgs e)
@@ -285,32 +290,30 @@ namespace TestApp
 
         private bool AskForFilenameAndSave()
         {
-            var dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.Filter = GetFileDialogFilter();
-            dlg.AddExtension = true;
-            dlg.DefaultExt = ".os";
-            if (!String.IsNullOrEmpty(_currentDocPath))
+            var dlg = new SaveFileDialog
             {
-                dlg.InitialDirectory = System.IO.Path.GetDirectoryName(_currentDocPath);
-                dlg.FileName = System.IO.Path.GetFileName(_currentDocPath);
+                Filter = GetFileDialogFilter(),
+                AddExtension = true,
+                DefaultExt = ".os"
+            };
+            if (!string.IsNullOrEmpty(_currentDocPath))
+            {
+                dlg.InitialDirectory = Path.GetDirectoryName(_currentDocPath);
+                dlg.FileName = Path.GetFileName(_currentDocPath);
             }
 
-            if (dlg.ShowDialog() == true)
-            {
-                var filename = dlg.FileName;
-                DumpCodeToFile(filename);
-                return true;
-            }
-            else
-            {
+            if (dlg.ShowDialog() != true)
                 return false;
-            }
+
+            var filename = dlg.FileName;
+            DumpCodeToFile(filename);
+            return true;
         }
 
         private void DumpCodeToFile(string filename)
         {
             var enc = new UTF8Encoding(true);
-            using (var fs = new System.IO.StreamWriter(filename, false, enc))
+            using (var fs = new StreamWriter(filename, false, enc))
             {
                 fs.Write(txtCode.Text);
                 _currentDocPath = filename;
@@ -331,28 +334,25 @@ namespace TestApp
             var answer = MessageBox.Show("Сохранить изменения?", "TestApp", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
             if (answer == MessageBoxResult.Cancel)
                 return false;
-            else if (answer == MessageBoxResult.Yes)
+
+            if (answer == MessageBoxResult.Yes)
                 return !SaveFile();
 
             return true;
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (SaveModified())
-            {
                 SaveLastCode();
-            }
             else
-            {
                 e.Cancel = true;
-            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             RestoreLastCode();
-            //SetCmdLineVisibility();
+            
             txtCode.editor.Focus();
         }
 
@@ -374,7 +374,7 @@ namespace TestApp
 
         private void SetCmdLineVisibility()
         {
-            var showCmdlineArgs = (bool)toggleArgs.IsChecked;
+            var showCmdlineArgs = toggleArgs.IsChecked != null && (bool) toggleArgs.IsChecked;
 
             if (showCmdlineArgs)
             {
@@ -389,18 +389,21 @@ namespace TestApp
         }
     }
 
-    class Host : IHostApplication, ISystemLogWriter
+    internal class Host : IHostApplication, ISystemLogWriter
     {
-        private TextBox _output;
-        private string[] _arguments;
+        private readonly string[] _arguments;
 
-        public Host(TextBox output, string [] arguments = null)
+        private readonly TextBox _output;
+
+        public Host(TextBox output, string[] arguments = null)
         {
             _output = output;
-            if (arguments == null)
-                _arguments = new string[0];
-            else 
-                _arguments = arguments;
+            _arguments = arguments ?? new string[0];
+        }
+
+        public void Write(string text)
+        {
+            Echo(text);
         }
 
         #region IHostApplication Members
@@ -409,7 +412,7 @@ namespace TestApp
         {
             _output.AppendText(str + '\n');
             _output.ScrollToEnd();
-            System.Windows.Forms.Application.DoEvents();
+            Application.DoEvents();
         }
 
         public void ShowExceptionInfo(Exception exc)
@@ -429,10 +432,5 @@ namespace TestApp
         }
 
         #endregion
-
-        public void Write(string text)
-        {
-            Echo(text);
-        }
     }
 }

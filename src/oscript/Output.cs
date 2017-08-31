@@ -15,6 +15,12 @@ namespace oscript
     internal static class Output
     {
         private static Encoding _encoding;
+
+        static Output()
+        {
+            Init();
+        }
+
         public static Action<string> Write { get; private set; }
 
         public static ConsoleColor TextColor
@@ -31,11 +37,6 @@ namespace oscript
                 _encoding = value;
                 Init();
             }
-        }
-
-        static Output()
-        {
-            Init();
         }
 
         private static void Init()

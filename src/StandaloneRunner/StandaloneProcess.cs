@@ -4,20 +4,26 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+
+using oscript;
+
+using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
-using ScriptEngine;
-using oscript;
 
 namespace StandaloneRunner
 {
-    class StandaloneProcess : ScriptEngine.HostedScript.IHostApplication
+    internal class StandaloneProcess : IHostApplication
     {
+        public string[] CommandLineArguments { get; set; }
+
         public int Run()
         {
             try
@@ -26,15 +32,13 @@ namespace StandaloneRunner
                 var engine = new HostedScriptEngine();
                 engine.Initialize();
 
-                using(Stream codeStream = LocateCode())
+                using (var codeStream = LocateCode())
                 using (var binReader = new BinaryReader(codeStream))
                 {
-                    int modulesCount;
-                    modulesCount = binReader.ReadInt32();
-
+                    var modulesCount = binReader.ReadInt32();
 
                     var formatter = new BinaryFormatter();
-                    var reader = new ScriptEngine.Compiler.ModulePersistor(formatter);
+                    var reader = new ModulePersistor(formatter);
 
                     var entry = reader.Read(codeStream);
                     --modulesCount;
@@ -46,14 +50,12 @@ namespace StandaloneRunner
                     }
 
                     module = entry.Module;
-
                 }
 
                 var src = new BinaryCodeSource(module);
                 var process = engine.CreateProcess(this, module, src);
 
                 return process.Start();
-                
             }
             catch (ScriptInterruptionException e)
             {
@@ -61,41 +63,35 @@ namespace StandaloneRunner
             }
             catch (Exception e)
             {
-                this.ShowExceptionInfo(e);
+                ShowExceptionInfo(e);
                 return 1;
             }
-
         }
-
-        public string[] CommandLineArguments { get; set; }
 
         private Stream LocateCode()
         {
-            var fileName = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            using(var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            var fileName = Assembly.GetExecutingAssembly().Location;
+            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
                 const int SIGN_SIZE = 8;
                 fs.Position = fs.Length - SIGN_SIZE;
-                byte[] signature = new byte[SIGN_SIZE];
+                var signature = new byte[SIGN_SIZE];
                 fs.Read(signature, 0, SIGN_SIZE);
 
                 if (signature[0] == 0x4f && signature[1] == 0x53 && signature[2] == 0x4d && signature[3] == 0x44)
                 {
-                    int codeOffset = BitConverter.ToInt32(signature, 4);
-                    long codeLen = fs.Length - codeOffset - SIGN_SIZE;
+                    var codeOffset = BitConverter.ToInt32(signature, 4);
+                    var codeLen = fs.Length - codeOffset - SIGN_SIZE;
 
                     fs.Seek(codeOffset, SeekOrigin.Begin);
-                    byte[] code = new byte[codeLen];
-                    fs.Read(code, 0, (int)codeLen);
+                    var code = new byte[codeLen];
+                    fs.Read(code, 0, (int) codeLen);
                     var ms = new MemoryStream(code);
 
                     return ms;
                 }
-                else
-                {
-                    throw new InvalidOperationException("No module found");
-                }
 
+                throw new InvalidOperationException("No module found");
             }
         }
 
@@ -120,15 +116,14 @@ namespace StandaloneRunner
         {
             if (CommandLineArguments != null)
                 return CommandLineArguments;
-            else
-                return new string[0];
+
+            return new string[0];
         }
 
         #endregion
-
     }
 
-    class BinaryCodeSource : ScriptEngine.Environment.ICodeSource
+    internal class BinaryCodeSource : ICodeSource
     {
         private ScriptModuleHandle _mh;
 
@@ -139,15 +134,9 @@ namespace StandaloneRunner
 
         #region ICodeSource Members
 
-        public string SourceDescription
-        {
-            get { return System.Reflection.Assembly.GetExecutingAssembly().Location; }
-        }
+        public string SourceDescription => Assembly.GetExecutingAssembly().Location;
 
-        public string Code
-        {
-            get { return "<Source is not available>"; }
-        }
+        public string Code => "<Source is not available>";
 
         #endregion
     }
