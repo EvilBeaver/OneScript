@@ -6,20 +6,23 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+
 using ScriptEngine;
 using ScriptEngine.HostedScript.Library;
 
 namespace oscript
 {
-    static class ConsoleHostImpl
+    internal static class ConsoleHostImpl
     {
         public static void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
             if (status == MessageStatusEnum.Ordinary)
+            {
                 Output.WriteLine(text);
+            }
             else
             {
-                ConsoleColor oldColor = Output.TextColor;
+                var oldColor = Output.TextColor;
                 ConsoleColor newColor;
 
                 switch (status)
@@ -53,28 +56,24 @@ namespace oscript
 
         public static void ShowExceptionInfo(Exception exc)
         {
-            if (exc is ScriptException)
+            if (exc is ScriptException rte)
             {
-                var rte = (ScriptException)exc;
                 Echo(rte.MessageWithoutCodeFragment);
             }
             else
+            {
                 Echo(exc.Message);
+            }
         }
 
         public static bool InputString(out string result, int maxLen)
         {
             if (maxLen == 0)
-            {
                 result = Console.ReadLine();
-            }
             else
-            {
-                result = Console.ReadLine().Substring(0, maxLen);
-            }
+                result = Console.ReadLine()?.Substring(0, maxLen);
 
-            return result.Length > 0;
-
+            return result?.Length > 0;
         }
     }
 }

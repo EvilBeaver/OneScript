@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,26 +12,30 @@ using System.Text;
 
 namespace oscript
 {
-    static class Output
+    internal static class Output
     {
-        public static Action<string> Write { get; private set; }
         private static Encoding _encoding;
+        public static Action<string> Write { get; private set; }
+
+        public static ConsoleColor TextColor
+        {
+            get => Console.ForegroundColor;
+            set => Console.ForegroundColor = value;
+        }
+
+        public static Encoding ConsoleOutputEncoding
+        {
+            get => _encoding;
+            set
+            {
+                _encoding = value;
+                Init();
+            }
+        }
 
         static Output()
         {
             Init();
-        }
-
-        public static ConsoleColor TextColor
-        {
-            get
-            {
-                return Console.ForegroundColor;
-            }
-            set
-            {
-                Console.ForegroundColor = value;
-            }
         }
 
         private static void Init()
@@ -64,19 +69,6 @@ namespace oscript
                 var enc = ConsoleOutputEncoding;
                 var bytes = enc.GetBytes(text);
                 stdout.Write(bytes, 0, bytes.Length);
-            }
-        }
-
-        public static Encoding ConsoleOutputEncoding
-        {
-            get
-            {
-                return _encoding;
-            }
-            set
-            {
-                _encoding = value;
-                Init();
             }
         }
     }

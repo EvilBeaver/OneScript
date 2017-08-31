@@ -11,7 +11,7 @@ using System.Text;
 
 namespace oscript
 {
-    public class Program
+    public static class Program
     {
         public static int Main(string[] args)
         {
@@ -39,10 +39,7 @@ namespace oscript
 
         public static Encoding ConsoleOutputEncoding
         {
-            get
-            {
-                return _encoding;
-            }
+            get => _encoding;
             set
             {
                 _encoding = value;

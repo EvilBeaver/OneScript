@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,15 +12,17 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using ScriptEngine.HostedScript;
+
 using ScriptEngine;
+using ScriptEngine.Compiler;
+using ScriptEngine.HostedScript;
 
 namespace oscript
 {
-    class MakeAppBehavior : AppBehavior 
+    internal class MakeAppBehavior : AppBehavior
     {
-        string _codePath;
-        string _exePath;
+        private readonly string _codePath;
+        private readonly string _exePath;
 
         public MakeAppBehavior(string codePath, string exePath)
         {
@@ -33,12 +36,14 @@ namespace oscript
             using (var exeStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("oscript.StandaloneRunner.exe"))
             using (var output = new FileStream(_exePath, FileMode.Create))
             {
-                exeStream.CopyTo(output);
+                exeStream?.CopyTo(output);
 
-                int offset = (int)output.Length;
+                var offset = (int) output.Length;
 
-                var engine = new HostedScriptEngine();
-                engine.CustomConfig = ScriptFileHelper.CustomConfigPath(_codePath);
+                var engine = new HostedScriptEngine
+                {
+                    CustomConfig = ScriptFileHelper.CustomConfigPath(_codePath)
+                };
                 engine.Initialize();
                 ScriptFileHelper.OnBeforeScriptRead(engine);
                 var source = engine.Loader.FromFile(_codePath);
@@ -50,31 +55,34 @@ namespace oscript
 
                 using (var bw = new BinaryWriter(output))
                 {
-                    bw.Write(embeddedContext.Count() + 1);
+                    var userAddedScripts = embeddedContext as IList<UserAddedScript> ?? embeddedContext.ToList();
+                    bw.Write(userAddedScripts.Count + 1);
 
-                    var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                    var persistor = new ScriptEngine.Compiler.ModulePersistor(formatter);
-                    persistor.Save(new UserAddedScript()
-                        {
-                            Type = UserAddedScriptType.Module,
-                            Symbol = "$entry",
-                            Module = entry
-                        }, output);
-
-                    foreach (var item in embeddedContext)
+                    var formatter = new BinaryFormatter();
+                    var persistor = new ModulePersistor(formatter);
+                    persistor.Save(new UserAddedScript
                     {
+                        Type = UserAddedScriptType.Module,
+                        Symbol = "$entry",
+                        Module = entry
+                    }, output);
+
+                    foreach (var item in userAddedScripts)
                         persistor.Save(item, output);
-                    }
 
-                    byte[] signature = new byte[4]
+                    var signature = new byte[]
                     {
-                        0x4f,0x53,0x4d,0x44
+                        0x4f,
+                        0x53,
+                        0x4d,
+                        0x44
                     };
                     output.Write(signature, 0, signature.Length);
 
                     bw.Write(offset);
                 }
             }
+
             Output.WriteLine("Make completed");
             return 0;
         }

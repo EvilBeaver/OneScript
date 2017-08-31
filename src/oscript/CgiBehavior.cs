@@ -4,23 +4,30 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using ScriptEngine;
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+
+using oscript.Web;
+
 using ScriptEngine.HostedScript;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Text;
+
+using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
 namespace oscript
 {
-    class CgiBehavior : AppBehavior,  IHostApplication, IRuntimeContextInstance, IAttachableContext
+    internal class CgiBehavior : AppBehavior, IHostApplication, IRuntimeContextInstance, IAttachableContext
     {
-        private bool _isContentEchoed;
+        private static readonly ContextMethodsMapper<CgiBehavior> _methods = new ContextMethodsMapper<CgiBehavior>();
         private readonly HashSet<string> _headersWritten = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private bool _isContentEchoed;
 
         public CgiBehavior()
         {
@@ -29,12 +36,7 @@ namespace oscript
 
         public override int Execute()
         {
-            string scriptFile;
-            scriptFile = Environment.GetEnvironmentVariable("SCRIPT_FILENAME");
-            if (scriptFile == null)
-            {
-                scriptFile = Environment.GetEnvironmentVariable("PATH_TRANSLATED");
-            }
+            var scriptFile = Environment.GetEnvironmentVariable("SCRIPT_FILENAME") ?? Environment.GetEnvironmentVariable("PATH_TRANSLATED");
 
             if (scriptFile == null)
             {
@@ -43,31 +45,32 @@ namespace oscript
                 return 1;
             }
 
-            if (!System.IO.File.Exists(scriptFile))
+            if (!File.Exists(scriptFile))
             {
                 Header("Content-type", "text/plain");
-                Echo(String.Format("Script file not found: {0}", scriptFile));
+                Echo($"Script file not found: {scriptFile}");
                 return 1;
             }
 
             return RunCGIMode(scriptFile);
-
         }
 
         private int RunCGIMode(string scriptFile)
         {
-            var engine = new HostedScriptEngine();
-            engine.CustomConfig = ScriptFileHelper.CustomConfigPath(scriptFile);
-            engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            var engine = new HostedScriptEngine
+            {
+                CustomConfig = ScriptFileHelper.CustomConfigPath(scriptFile)
+            };
+            engine.AttachAssembly(Assembly.GetExecutingAssembly());
 
-            var request = new Web.WebRequestContext();
+            var request = new WebRequestContext();
             engine.InjectGlobalProperty("ВебЗапрос", request, true);
             engine.InjectGlobalProperty("WebRequest", request, true);
             engine.InjectObject(this, false);
 
             ScriptFileHelper.OnBeforeScriptRead(engine);
             var source = engine.Loader.FromFile(scriptFile);
-            
+
             Process process;
 
             try
@@ -80,12 +83,33 @@ namespace oscript
                 return 1;
             }
 
-            int exitCode = process.Start();
-            
+            var exitCode = process.Start();
+
             if (!_isContentEchoed)
                 Echo("");
 
             return exitCode;
+        }
+
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+        {
+            variables = new IVariable[0];
+            methods = (MethodInfo[]) GetMethods();
+            instance = this;
+        }
+
+        public IEnumerable<VariableInfo> GetProperties()
+        {
+            return new VariableInfo[0];
+        }
+
+        public IEnumerable<MethodInfo> GetMethods()
+        {
+            var array = new MethodInfo[_methods.Count];
+            for (var i = 0; i < _methods.Count; i++)
+                array[i] = _methods.GetMethodInfo(i);
+
+            return array;
         }
 
         #region CGIHost
@@ -104,14 +128,10 @@ namespace oscript
         public void SendFile(string filePath, string downloadFileName = null)
         {
             if (_isContentEchoed)
-            {
                 throw new InvalidOperationException("Content already sent!");
-            }
 
             if (!IsHeaderWritten("Content-type"))
-            {
                 Header("Content-type", "application/octet-stream");
-            }
             if (string.IsNullOrEmpty(downloadFileName))
             {
                 var finfo = new FileInfo(filePath);
@@ -119,7 +139,7 @@ namespace oscript
             }
             using (var fs = new FileStream(filePath, FileMode.Open))
             {
-                Header("Content-disposition", string.Format("inline; filename=\"{0}\"", downloadFileName));
+                Header("Content-disposition", $"inline; filename=\"{downloadFileName}\"");
                 Header("Content-length", fs.Length.ToString());
                 oscript.Output.WriteLine();
 
@@ -139,9 +159,9 @@ namespace oscript
 
         public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
-            if(!_isContentEchoed)
+            if (!_isContentEchoed)
             {
-                if(!IsHeaderWritten("Content-type"))
+                if (!IsHeaderWritten("Content-type"))
                     Header("Content-type", "text/html");
                 if (!IsHeaderWritten("Content-encoding"))
                     Header("Content-encoding", Encoding.BodyName);
@@ -152,7 +172,7 @@ namespace oscript
 
             if (str != "")
             {
-                Output (str);
+                Output(str);
                 oscript.Output.WriteLine();
             }
         }
@@ -184,46 +204,11 @@ namespace oscript
 
         #endregion
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
-        {
-            variables = new IVariable[0];
-            methods = (MethodInfo[])GetMethods();
-            instance = this;
-        }
-
-        public IEnumerable<VariableInfo> GetProperties()
-        {
-            return new VariableInfo[0];
-        }
-
-        public IEnumerable<MethodInfo> GetMethods()
-        {
-            var array = new MethodInfo[_methods.Count];
-            for (int i = 0; i < _methods.Count; i++)
-            {
-                array[i] = _methods.GetMethodInfo(i);
-            }
-
-            return array;
-        }
-
         #region IRuntimeContextInstance Members
 
-        public bool IsIndexed
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsIndexed => false;
 
-        public bool DynamicMethodSignatures
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool DynamicMethodSignatures => false;
 
         public IValue GetIndexedValue(IValue index)
         {
@@ -281,7 +266,5 @@ namespace oscript
         }
 
         #endregion
-
-        private static ContextMethodsMapper<CgiBehavior> _methods = new ContextMethodsMapper<CgiBehavior>();
     }
 }
