@@ -158,7 +158,7 @@ namespace ScriptEngine
             set
             {
                 _debugController = value;
-                ProduceExtraCode = CodeGenerationFlags.DebugCode | CodeGenerationFlags.CodeStatistics;
+                ProduceExtraCode = CodeGenerationFlags.DebugCode;
                 _machine.SetDebugMode(_debugController);
             }
         }

@@ -339,7 +339,7 @@ namespace ScriptEngine.Compiler
         private void BuildSingleMethod()
         {
             var entryPoint = _module.Code.Count;
-            AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+            AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
             if (_lastExtractedLexem.Token == Token.Procedure)
             {
@@ -539,7 +539,7 @@ namespace ScriptEngine.Compiler
             if (_lastExtractedLexem.Token == Token.EndProcedure
                 || _lastExtractedLexem.Token == Token.EndFunction)
             {
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics|CodeGenerationFlags.DebugCode);
             }
 
             AddCommand(OperationCode.Return, 0);
@@ -784,7 +784,7 @@ namespace ScriptEngine.Compiler
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             }
 
             AddCommand(OperationCode.Jmp, loopBegin);
@@ -849,7 +849,7 @@ namespace ScriptEngine.Compiler
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             }
 
             // jmp to start
@@ -884,7 +884,7 @@ namespace ScriptEngine.Compiler
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             }
 
             AddCommand(OperationCode.Jmp, conditionIndex);
@@ -973,7 +973,7 @@ namespace ScriptEngine.Compiler
             if (StringComparer.OrdinalIgnoreCase.Compare(_lastExtractedLexem.Content, "Exception") == 0)
                 SystemLogger.Write("WARNING! BREAKING CHANGE: Keyword 'Exception' is not supported anymore. Consider using 'Except'");
 
-            var beginHandler = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+            var beginHandler = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
             CorrectCommandArgument(beginTryIndex, beginHandler);
 
@@ -982,7 +982,7 @@ namespace ScriptEngine.Compiler
             BuildCodeBatch();
             PopStructureToken();
 
-            var endIndex = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, isExtraCode: true);
+            var endIndex = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             AddCommand(OperationCode.EndTry, 0);
             CorrectCommandArgument(jmpIndex, endIndex);
             
@@ -1561,7 +1561,7 @@ namespace ScriptEngine.Compiler
         private void BuildFunctionCall(string identifier, int callLineNumber)
         {
             bool[] args = PushMethodArgumentsBeforeCall();
-            AddCommand(OperationCode.LineNum, callLineNumber, isExtraCode: true);
+            AddCommand(OperationCode.LineNum, callLineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             BuildMethodCall(identifier, args, true);
         }
 
@@ -1845,10 +1845,11 @@ namespace ScriptEngine.Compiler
             return tok;
         }
 
-        private int AddCommand(OperationCode code, int arg, bool isExtraCode = false)
+        private int AddCommand(OperationCode code, int arg, CodeGenerationFlags emitConditions = CodeGenerationFlags.NoExtraCode)
         {
             var addr = _module.Code.Count;
-            if (!isExtraCode || ProduceExtraCode.HasFlag(CodeGenerationFlags.CodeStatistics))
+            bool emit = emitConditions == CodeGenerationFlags.NoExtraCode || ProduceExtraCode.HasFlag(emitConditions);
+            if (emit)
             {
                 _module.Code.Add(new Command() { Code = code, Argument = arg });
             }
