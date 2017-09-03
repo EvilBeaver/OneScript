@@ -34,12 +34,21 @@ namespace oscript
 		public override int Execute()
 		{
 			Output.WriteLine("Make started...");
+
+			CreateExe();
+
+			Output.WriteLine("Make completed");
+			return 0;
+		}
+
+		private void CreateExe()
+		{
 			using (var exeStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("oscript.StandaloneRunner.exe"))
-			using (var output = new FileStream(_exePath, FileMode.Create))
+			using (var output = new MemoryStream())
 			{
 				exeStream?.CopyTo(output);
 
-				var offset = (int) output.Length;
+				var offset = (int)output.Length;
 
 				var engine = new HostedScriptEngine
 				{
@@ -58,9 +67,8 @@ namespace oscript
 				{
 					var userAddedScripts = embeddedContext as IList<UserAddedScript> ?? embeddedContext.ToList();
 					bw.Write(userAddedScripts.Count + 1);
-
-					var formatter = new BinaryFormatter();
-					var persistor = new ModulePersistor(formatter);
+					
+					var persistor = new ModulePersistor();
 					persistor.Save(new UserAddedScript
 					{
 						Type = UserAddedScriptType.Module,
@@ -81,11 +89,19 @@ namespace oscript
 					output.Write(signature, 0, signature.Length);
 
 					bw.Write(offset);
+					OutputToFile(output);
 				}
 			}
+		}
 
-			Output.WriteLine("Make completed");
-			return 0;
+
+		private void OutputToFile(Stream memoryStream)
+		{
+			using (var fileOutput = new FileStream(_exePath, FileMode.Create))
+			{
+				memoryStream.Position = 0;
+				memoryStream.CopyTo(fileOutput);
+			}
 		}
 	}
 }

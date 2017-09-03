@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 
 using oscript;
 
@@ -37,8 +36,7 @@ namespace StandaloneRunner
 				{
 					var modulesCount = binReader.ReadInt32();
 
-					var formatter = new BinaryFormatter();
-					var reader = new ModulePersistor(formatter);
+					var reader = new ModulePersistor();
 
 					var entry = reader.Read(codeStream);
 					--modulesCount;
