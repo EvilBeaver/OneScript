@@ -119,9 +119,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Ionic.Zip.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
