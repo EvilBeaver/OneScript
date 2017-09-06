@@ -18,11 +18,13 @@ namespace oscript
 
 		public static Encoding ConsoleOutputEncoding
 		{
-			get => _encoding;
-			set
+			get
+            {
+	            return _encoding;
+	        }
+	        set
 			{
 				_encoding = value;
-				Output.ConsoleOutputEncoding = value;
 			}
 		}
 

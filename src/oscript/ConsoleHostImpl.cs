@@ -56,10 +56,14 @@ namespace oscript
 
 		public static void ShowExceptionInfo(Exception exc)
 		{
-			if (exc is ScriptException rte)
-				Echo(rte.MessageWithoutCodeFragment);
-			else
-				Echo(exc.Message);
+		    var exception = exc as ScriptException;
+		    if (exception != null)
+		    {
+		        var rte = exception;
+		        Echo(rte.MessageWithoutCodeFragment);
+		    }
+		    else
+		        Echo(exc.Message);
 		}
 
 		public static bool InputString(out string result, int maxLen)

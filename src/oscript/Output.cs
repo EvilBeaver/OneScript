@@ -23,16 +23,16 @@ namespace oscript
 
 		public static Action<string> Write { get; private set; }
 
-		public static ConsoleColor TextColor
-		{
-			get => Console.ForegroundColor;
-			set => Console.ForegroundColor = value;
-		}
+	    public static ConsoleColor TextColor
+	    {
+	        get { return Console.ForegroundColor; }
+	        set { Console.ForegroundColor = value; }
+	    }
 
 		public static Encoding ConsoleOutputEncoding
 		{
-			get => _encoding;
-			set
+		    get { return _encoding; }
+		    set
 			{
 				_encoding = value;
 				Init();

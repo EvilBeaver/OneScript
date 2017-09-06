@@ -47,8 +47,8 @@ namespace TestApp
 
 		public bool IsModified
 		{
-			get => _isModified;
-			set
+		    get { return _isModified; }
+		    set
 			{
 				_isModified = value;
 				if (_isModified)
