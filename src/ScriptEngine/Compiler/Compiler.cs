@@ -15,7 +15,7 @@ namespace ScriptEngine.Compiler
     [Flags]
     public enum CodeGenerationFlags
     {
-        NoExtraCode,
+        Always,
         CodeStatistics,
         DebugCode
     }
@@ -610,7 +610,6 @@ namespace ScriptEngine.Compiler
 
         private void BuildComplexStructureStatement()
         {
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
             switch (_lastExtractedLexem.Token)
             {
                 case Token.If:
@@ -645,6 +644,8 @@ namespace ScriptEngine.Compiler
 
         private void BuildIfStatement()
         {
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+
             var exitIndices = new List<int>();
             NextToken();
             BuildExpression(Token.Then);
@@ -691,7 +692,7 @@ namespace ScriptEngine.Compiler
                     Code = OperationCode.JmpFalse,
                     Argument = _module.Code.Count
                 };
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
                 NextToken();
                 PushStructureToken(Token.EndIf);
@@ -733,6 +734,8 @@ namespace ScriptEngine.Compiler
 
         private void BuildForStatement()
         {
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+
             NextToken();
             if (_lastExtractedLexem.Token == Token.Each)
             {
@@ -867,6 +870,8 @@ namespace ScriptEngine.Compiler
 
         private void BuildWhileStatement()
         {
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+
             NextToken();
             var conditionIndex = _module.Code.Count;
             var loopRecord = NestedLoopInfo.New();
@@ -907,6 +912,7 @@ namespace ScriptEngine.Compiler
             {
                 throw CompilerException.BreakOutsideOfLoop();
             }
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
 
             var loopInfo = _nestedLoops.Peek();
             if(_isInTryBlock)
@@ -923,6 +929,8 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.ContinueOutsideOfLoop();
             }
 
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+
             var loopInfo = _nestedLoops.Peek();
             if(_isInTryBlock)
                 AddCommand(OperationCode.EndTry, 0);
@@ -932,6 +940,8 @@ namespace ScriptEngine.Compiler
 
         private void BuildReturnStatement()
         {
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+
             if (_isFunctionProcessed)
             {
                 NextToken();
@@ -960,6 +970,8 @@ namespace ScriptEngine.Compiler
 
         private void BuildTryExceptStatement()
         {
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine, CodeGenerationFlags.CodeStatistics);
+
             var beginTryIndex = AddCommand(OperationCode.BeginTry, -1);
             bool savedTryFlag = SetTryBlockFlag(true);
             PushStructureToken(Token.Exception);
@@ -991,6 +1003,8 @@ namespace ScriptEngine.Compiler
 
         private void BuildRaiseExceptionStatement()
         {
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+
             NextToken();
             if (_lastExtractedLexem.Token == Token.Semicolon)
             {
@@ -1845,15 +1859,20 @@ namespace ScriptEngine.Compiler
             return tok;
         }
 
-        private int AddCommand(OperationCode code, int arg, CodeGenerationFlags emitConditions = CodeGenerationFlags.NoExtraCode)
+        private int AddCommand(OperationCode code, int arg, CodeGenerationFlags emitConditions = CodeGenerationFlags.Always)
         {
             var addr = _module.Code.Count;
-            bool emit = emitConditions == CodeGenerationFlags.NoExtraCode || ProduceExtraCode.HasFlag(emitConditions);
+            bool emit = emitConditions == CodeGenerationFlags.Always || ExtraCodeConditionsMet(emitConditions);
             if (emit)
             {
                 _module.Code.Add(new Command() { Code = code, Argument = arg });
             }
             return addr;
+        }
+
+        private bool ExtraCodeConditionsMet(CodeGenerationFlags emitConditions)
+        {
+            return (((int)ProduceExtraCode) & (int)emitConditions) != 0;
         }
 
         private int PushSimpleVariable(SymbolBinding binding)
