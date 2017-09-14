@@ -25,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ContextMethod("Base64Значение", "Base64Value")]
-        public BinaryDataContext Base64String(string data)
+        public BinaryDataContext Base64Value(string data)
         {
             byte[] bytes = Convert.FromBase64String(data);
             return new BinaryDataContext(bytes);

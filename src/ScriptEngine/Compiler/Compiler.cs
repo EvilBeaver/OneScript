@@ -12,7 +12,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    partial class Compiler
+    class Compiler
     {
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
@@ -635,6 +635,10 @@ namespace ScriptEngine.Compiler
 
             while (_lastExtractedLexem.Token == Token.ElseIf)
             {
+                if (_lastExtractedLexem.Content.Equals("ElseIf", StringComparison.OrdinalIgnoreCase))
+                {
+                    SystemLogger.Write("WARNING! 'ElseIf' is deprecated! Use 'ElsIf' instead");
+                }
                 _module.Code[jumpFalseIndex] = new Command()
                 {
                     Code = OperationCode.JmpFalse,
@@ -1392,7 +1396,10 @@ namespace ScriptEngine.Compiler
             return LanguageDef.IsIdentifier(ref lex) 
                 || lex.Type == LexemType.BooleanLiteral
                 || lex.Type == LexemType.NullLiteral
-                || lex.Type == LexemType.UndefinedLiteral;
+                || lex.Type == LexemType.UndefinedLiteral
+                || lex.Token == Token.And
+                || lex.Token == Token.Or
+                || lex.Token == Token.Not;
         }
 
         private void ResolveProperty(string identifier)

@@ -46,7 +46,8 @@ namespace ScriptEngine.Compiler
             AddToken(Token.If, "если", "if");
             AddToken(Token.Then, "тогда", "then");
             AddToken(Token.Else, "иначе", "else");
-            AddToken(Token.ElseIf, "иначеесли", "elseif");
+            AddToken(Token.ElseIf, "иначеесли", "elsif");
+            AddToken(Token.ElseIf, "elseif"); // TODO: Deprecated 'ElseIf'
             AddToken(Token.EndIf, "конецесли", "endif");
             AddToken(Token.VarDef, "перем", "var");
             AddToken(Token.ByValParam, "знач", "val");
