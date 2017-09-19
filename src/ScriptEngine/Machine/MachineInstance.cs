@@ -228,8 +228,7 @@ namespace ScriptEngine.Machine
             return result;
 
         }
-
-
+        
         #endregion
 
         private ScriptInformationContext CurrentScript
@@ -531,6 +530,7 @@ namespace ScriptEngine.Machine
                 MakeBool,
                 PushTmp,
                 PopTmp,
+                Execute,
 
                 //built-ins
                 Eval,
@@ -1468,6 +1468,41 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void Execute(int arg)
+        {
+            var code = _operationStack.Pop().AsString();
+            var module = CompileExecutionBatchModule(code);
+            
+            var frame = new ExecutionFrame();
+            frame.MethodName = module.ModuleInfo.ModuleName;
+            frame.Locals = new IVariable[0];
+            frame.InstructionPointer = 0;
+            frame.Module = module;
+
+            var mlocals = new Scope();
+            mlocals.Instance = new UserScriptContextInstance(module);
+            mlocals.Detachable = true;
+            mlocals.Methods = TopScope.Methods;
+            mlocals.Variables = _currentFrame.Locals;
+            _scopes.Add(mlocals);
+            frame.ModuleScope = mlocals;
+
+            try
+            {
+                PushFrame(frame);
+                MainCommandLoop();
+            }
+            finally
+            {
+                _scopes.RemoveAt(_scopes.Count - 1);
+                PopFrame();
+            }
+
+            NextInstruction();
+
+        }
+
+
         private void Eval(int arg)
         {
             IValue value = Evaluate(_operationStack.Pop().AsString());
@@ -2328,6 +2363,23 @@ namespace ScriptEngine.Machine
             modImg.ModuleInfo = new ModuleInformation();
             modImg.ModuleInfo.Origin = "<expression>";
             modImg.ModuleInfo.ModuleName = "<expression>";
+            var code = new LoadedModule(modImg);
+            return code;
+        }
+
+        private LoadedModule CompileExecutionBatchModule(string execBatch)
+        {
+            var ctx = ExtractCompilerContext();
+
+            ICodeSource stringSource = new StringBasedSource(execBatch);
+            var parser = new Parser();
+            parser.Code = stringSource.Code;
+            var compiler = new Compiler.Compiler();
+            ctx.PushScope(new SymbolScope()); // скоуп выражения
+            var modImg = compiler.CompileExecBatch(parser, ctx);
+            modImg.ModuleInfo = new ModuleInformation();
+            modImg.ModuleInfo.Origin = "<exec.module>";
+            modImg.ModuleInfo.ModuleName = "<exec.module>";
             var code = new LoadedModule(modImg);
             return code;
         }

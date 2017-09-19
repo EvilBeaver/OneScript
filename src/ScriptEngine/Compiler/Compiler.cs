@@ -90,6 +90,19 @@ namespace ScriptEngine.Compiler
             return _module;
         }
 
+        public ModuleImage CompileExecBatch(Parser parser, ICompilerContext context)
+        {
+            _module = new ModuleImage();
+            _ctx = context;
+            _parser = parser;
+            _parser.Start();
+            NextToken();
+            PushStructureToken(Token.EndOfText);
+            BuildCodeBatch();
+
+            return _module;
+        }
+
         private void BuildModule()
         {
             NextToken();
@@ -636,6 +649,9 @@ namespace ScriptEngine.Compiler
                 case Token.RaiseException:
                     BuildRaiseExceptionStatement();
                     break;
+                case Token.Execute:
+                    BuildExecuteStatement();
+                    break;
                 default:
                     var expected = PopStructureToken();
                     throw CompilerException.TokenExpected(expected);
@@ -1022,6 +1038,16 @@ namespace ScriptEngine.Compiler
                 BuildExpression(Token.Semicolon);
                 AddCommand(OperationCode.RaiseException, 0);
             }
+
+        }
+
+        private void BuildExecuteStatement()
+        {
+            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            NextToken();
+
+            BuildExpression(Token.Semicolon);
+            AddCommand(OperationCode.Execute, 0);
 
         }
 

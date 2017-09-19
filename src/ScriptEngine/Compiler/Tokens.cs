@@ -67,6 +67,7 @@ namespace ScriptEngine.Compiler
             AddToken(Token.Break, "прервать", "break");
             AddToken(Token.Try, "попытка", "try");
             AddToken(Token.Exception, "исключение", "except");
+            AddToken(Token.Execute, "выполнить", "execute");
             // обратная совместимость с beta 1.0
             AddToken(Token.Exception, "exception");
             AddToken(Token.RaiseException, "вызватьисключение", "raise");
@@ -343,6 +344,7 @@ namespace ScriptEngine.Compiler
         EndTry,
         EndOfText,
         Export,
+        Execute,
 
         // operators
         Plus,
