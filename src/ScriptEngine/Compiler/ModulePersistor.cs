@@ -4,109 +4,119 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using ScriptEngine.Environment;
-using ScriptEngine.Machine;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+
+using ScriptEngine.Environment;
 
 namespace ScriptEngine.Compiler
 {
-    public class ModulePersistor
-    {
-        readonly IFormatter _formatter;
+	public class ModulePersistor
+	{
+		private struct ModuleHeader
+		{
+			public int NameLen;
 
-        private struct ModuleHeader
-        {
-            public int NameLen;
-            public long BodyLen;
-            public bool IsClass;
-        }
+			public long BodyLen;
 
-        public static void WriteStruct<T>(Stream s, T value)
-        {
-            int rawsize = Marshal.SizeOf(typeof(T));
-            byte[] rawdata = new byte[rawsize];
-            GCHandle handle = GCHandle.Alloc(rawdata, GCHandleType.Pinned);
-            Marshal.StructureToPtr(value, handle.AddrOfPinnedObject(), false);
-            handle.Free();
-            s.Write(rawdata, 0, rawsize);
-        }
+			public bool IsClass;
+		}
 
-        public static T ReadStruct<T>(Stream s)
-        {
-            byte[] buffer = new byte[Marshal.SizeOf(typeof(T))];
-            s.Read(buffer, 0, Marshal.SizeOf(typeof(T)));
+		private readonly IFormatter _formatter;
 
-            GCHandle handle;
-            handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-            T temp = (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
-            handle.Free();
-            return temp;
+		public ModulePersistor(IFormatter format)
+		{
+			_formatter = format;
+		}
 
-        }
+		public ModulePersistor()
+		{
+			_formatter = new BinaryFormatter();
+		}
 
-        public ModulePersistor (IFormatter format)
-	    {
-            _formatter = format;
-	    }
+		public static void WriteStruct<T>(Stream s, T value)
+		{
+			var rawsize = Marshal.SizeOf(typeof(T));
+			var rawdata = new byte[rawsize];
+			var handle = GCHandle.Alloc(rawdata, GCHandleType.Pinned);
+			Marshal.StructureToPtr(value, handle.AddrOfPinnedObject(), false);
+			handle.Free();
+			s.Write(rawdata, 0, rawsize);
+		}
 
-        public void Save(UserAddedScript script, Stream output)
-        {
-            var nameBytes = Encoding.UTF8.GetBytes(script.Symbol);
-            var bodyStream = new MemoryStream(8*1024);
-            _formatter.Serialize(bodyStream, FromHandle(script.Module));
-            
-            var header = new ModuleHeader()
-            {
-                NameLen = nameBytes.Length,
-                BodyLen = bodyStream.Length,
-                IsClass = (script.Type == UserAddedScriptType.Class)
-            };
+		public static T ReadStruct<T>(Stream s)
+		{
+			var buffer = new byte[Marshal.SizeOf(typeof(T))];
+			s.Read(buffer, 0, Marshal.SizeOf(typeof(T)));
 
-            WriteStruct(output, header);
+			var handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+			var temp = (T) Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
+			handle.Free();
+			return temp;
+		}
 
-            output.Write(nameBytes, 0, nameBytes.Length);
-            bodyStream.Position = 0;
-            bodyStream.WriteTo(output);
-            bodyStream.Dispose();
-        }
+		public void Save(UserAddedScript script, Stream output)
+		{
+			var nameBytes = Encoding.UTF8.GetBytes(script.Symbol);
+			var bodyStream = new MemoryStream(8 * 1024);
+			_formatter.Serialize(bodyStream, FromHandle(script.Module));
 
-        private ModuleImage FromHandle(ScriptModuleHandle module)
-        {
-            return module.Module;
-        }
+			var header = new ModuleHeader
+			{
+				NameLen = nameBytes.Length,
+				BodyLen = bodyStream.Length,
+				IsClass = script.Type == UserAddedScriptType.Class
+			};
 
-        public UserAddedScript Read(Stream input)
-        {
-            var header = ReadStruct<ModuleHeader>(input);
+			WriteStruct(output, header);
 
-            var userScript = new UserAddedScript();
+			output.Write(nameBytes, 0, nameBytes.Length);
+			bodyStream.Position = 0;
+			bodyStream.WriteTo(output);
+			bodyStream.Dispose();
+		}
 
-            var nameBytes = new byte[header.NameLen];
-            input.Read(nameBytes, 0, nameBytes.Length);
+		private ModuleImage FromHandle(ScriptModuleHandle module)
+		{
+			return module.Module;
+		}
 
-            userScript.Symbol = Encoding.UTF8.GetString(nameBytes);
+		public UserAddedScript Read(Stream input)
+		{
+			var header = ReadStruct<ModuleHeader>(input);
 
-            var moduleImage = (ModuleImage)_formatter.Deserialize(input);
+			var userScript = new UserAddedScript();
 
-            string path = System.Reflection.Assembly.GetEntryAssembly().Location;
-            moduleImage.ModuleInfo = new ModuleInformation()
-            {
-                CodeIndexer = new CompiledCodeIndexer(),
-                ModuleName = System.IO.Path.GetFileName(path),
-                Origin = path
-            };
+			var nameBytes = new byte[header.NameLen];
+			input.Read(nameBytes, 0, nameBytes.Length);
 
-            userScript.Module = new ScriptModuleHandle() { Module = moduleImage };
-            userScript.Type = header.IsClass ? UserAddedScriptType.Class : UserAddedScriptType.Module;
+			userScript.Symbol = Encoding.UTF8.GetString(nameBytes);
 
-            return userScript;
-        }
+			var moduleImage = (ModuleImage) _formatter.Deserialize(input);
 
-    }
+			var path = Assembly.GetEntryAssembly().Location;
+			moduleImage.ModuleInfo = new ModuleInformation
+			{
+				CodeIndexer = new CompiledCodeIndexer(),
+				ModuleName = Path.GetFileName(path),
+				Origin = path
+			};
+
+			userScript.Module = new ScriptModuleHandle
+			{
+				Module = moduleImage
+			};
+			userScript.Type = header.IsClass ? UserAddedScriptType.Class : UserAddedScriptType.Module;
+
+			return userScript;
+		}
+	}
 }

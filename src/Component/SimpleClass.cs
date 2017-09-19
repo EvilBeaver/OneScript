@@ -4,19 +4,17 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
-using ScriptEngine.Machine.Contexts;
+
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace Component
 {
 	[ContextClass("ПростоКласс")]
 	public sealed class SimpleClass : AutoContext<SimpleClass>, ISimple
 	{
-		public SimpleClass()
-		{
-		}
-
 		[ContextProperty("СвойствоПеречисление")]
 		public SimpleEnum EnumProperty { get; set; }
 
@@ -25,7 +23,6 @@ namespace Component
 
 		[ContextProperty("СвойствоСПроизвольнымЗначением")]
 		public IValue AnyValueProperty { get; set; }
-
 
 		[ScriptConstructor]
 		public static IRuntimeContextInstance Constructor()

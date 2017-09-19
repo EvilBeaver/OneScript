@@ -4,28 +4,31 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
-using ScriptEngine.Machine.Contexts;
-using System.Collections.Generic;
-using ScriptEngine.Machine;
 using System.Collections;
+using System.Collections.Generic;
+
+using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace Component
 {
 	[ContextClass("ПростоКоллекция")]
 	public sealed class SimpleCollection : AutoContext<SimpleCollection>, ICollectionContext, IEnumerable<SimpleClass>
 	{
-
-		readonly List<SimpleClass> _data = new List<SimpleClass>();
-
-		public SimpleCollection()
-		{
-		}
+		private readonly List<SimpleClass> _data = new List<SimpleClass>();
 
 		[ContextMethod("Добавить")]
 		public void Add(SimpleClass item)
 		{
 			_data.Add(item);
+		}
+
+		[ScriptConstructor]
+		public static IRuntimeContextInstance Constructor()
+		{
+			return new SimpleCollection();
 		}
 
 		[ContextMethod("Количество")]
@@ -34,25 +37,19 @@ namespace Component
 			return _data.Count;
 		}
 
-		public IEnumerator<SimpleClass> GetEnumerator()
-		{
-			return ((IEnumerable<SimpleClass>)_data).GetEnumerator();
-		}
-
 		public CollectionEnumerator GetManagedIterator()
 		{
 			return new CollectionEnumerator(GetEnumerator());
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
+		public IEnumerator<SimpleClass> GetEnumerator()
 		{
-			return ((IEnumerable<SimpleClass>)_data).GetEnumerator();
+			return ((IEnumerable<SimpleClass>) _data).GetEnumerator();
 		}
 
-		[ScriptConstructor]
-		public static IRuntimeContextInstance Constructor()
+		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return new SimpleCollection();
+			return ((IEnumerable<SimpleClass>) _data).GetEnumerator();
 		}
 	}
 }

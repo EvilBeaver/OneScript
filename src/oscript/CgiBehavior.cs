@@ -4,282 +4,269 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using ScriptEngine;
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+
+using oscript.Web;
+
 using ScriptEngine.HostedScript;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Text;
+
+using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
 namespace oscript
 {
-    class CgiBehavior : AppBehavior,  IHostApplication, IAttachableContext
-    {
-        private bool _isContentEchoed;
-        private readonly HashSet<string> _headersWritten = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+	internal class CgiBehavior : AppBehavior, IHostApplication, IRuntimeContextInstance, IAttachableContext
+	{
+		private static readonly ContextMethodsMapper<CgiBehavior> _methods = new ContextMethodsMapper<CgiBehavior>();
 
-        public CgiBehavior()
-        {
-            Encoding = new UTF8Encoding();
-        }
+		private readonly HashSet<string> _headersWritten = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public override int Execute()
-        {
-            string scriptFile;
-            scriptFile = Environment.GetEnvironmentVariable("SCRIPT_FILENAME");
-            if (scriptFile == null)
-            {
-                scriptFile = Environment.GetEnvironmentVariable("PATH_TRANSLATED");
-            }
+		private bool _isContentEchoed;
 
-            if (scriptFile == null)
-            {
-                Header("Content-type", "text/plain");
-                Echo("No CGI Variables found");
-                return 1;
-            }
+		public CgiBehavior()
+		{
+			Encoding = new UTF8Encoding();
+		}
 
-            if (!System.IO.File.Exists(scriptFile))
-            {
-                Header("Content-type", "text/plain");
-                Echo(String.Format("Script file not found: {0}", scriptFile));
-                return 1;
-            }
+		public override int Execute()
+		{
+			var scriptFile = Environment.GetEnvironmentVariable("SCRIPT_FILENAME") ?? Environment.GetEnvironmentVariable("PATH_TRANSLATED");
 
-            return RunCGIMode(scriptFile);
+			if (scriptFile == null)
+			{
+				Header("Content-type", "text/plain");
+				Echo("No CGI Variables found");
+				return 1;
+			}
 
-        }
+			if (!File.Exists(scriptFile))
+			{
+				Header("Content-type", "text/plain");
+				Echo($"Script file not found: {scriptFile}");
+				return 1;
+			}
 
-        private int RunCGIMode(string scriptFile)
-        {
-            var engine = new HostedScriptEngine();
-            engine.CustomConfig = ScriptFileHelper.CustomConfigPath(scriptFile);
-            engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+			return RunCGIMode(scriptFile);
+		}
 
-            var request = new Web.WebRequestContext();
-            engine.InjectGlobalProperty("ВебЗапрос", request, true);
-            engine.InjectGlobalProperty("WebRequest", request, true);
-            engine.InjectObject(this, false);
+		private int RunCGIMode(string scriptFile)
+		{
+			var engine = new HostedScriptEngine
+			{
+				CustomConfig = ScriptFileHelper.CustomConfigPath(scriptFile)
+			};
+			engine.AttachAssembly(Assembly.GetExecutingAssembly());
 
-            ScriptFileHelper.OnBeforeScriptRead(engine);
-            var source = engine.Loader.FromFile(scriptFile);
-            
-            Process process;
+			var request = new WebRequestContext();
+			engine.InjectGlobalProperty("ВебЗапрос", request, true);
+			engine.InjectGlobalProperty("WebRequest", request, true);
+			engine.InjectObject(this, false);
 
-            try
-            {
-                process = engine.CreateProcess(this, source);
-            }
-            catch (Exception e)
-            {
-                ShowExceptionInfo(e);
-                return 1;
-            }
+			ScriptFileHelper.OnBeforeScriptRead(engine);
+			var source = engine.Loader.FromFile(scriptFile);
 
-            int exitCode = process.Start();
-            
-            if (!_isContentEchoed)
-                Echo("");
+			Process process;
 
-            return exitCode;
-        }
+			try
+			{
+				process = engine.CreateProcess(this, source);
+			}
+			catch (Exception e)
+			{
+				ShowExceptionInfo(e);
+				return 1;
+			}
 
-        #region CGIHost
+			var exitCode = process.Start();
 
-        [ContextMethod("ВывестиЗаголовок", "Header")]
-        public void Header(string header, string value)
-        {
-            if (_isContentEchoed)
-                throw new InvalidOperationException("Headers can not be written after the main content");
+			if (!_isContentEchoed)
+				Echo("");
 
-            Output(header + ": " + value + "\r\n");
-            _headersWritten.Add(header);
-        }
+			return exitCode;
+		}
 
-        [ContextMethod("ОтправитьФайл", "SendFile")]
-        public void SendFile(string filePath, string downloadFileName = null)
-        {
-            if (_isContentEchoed)
-            {
-                throw new InvalidOperationException("Content already sent!");
-            }
+		public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+		{
+			variables = new IVariable[0];
+			methods = (MethodInfo[]) GetMethods();
+			instance = this;
+		}
 
-            if (!IsHeaderWritten("Content-type"))
-            {
-                Header("Content-type", "application/octet-stream");
-            }
-            if (string.IsNullOrEmpty(downloadFileName))
-            {
-                var finfo = new FileInfo(filePath);
-                downloadFileName = finfo.Name;
-            }
-            using (var fs = new FileStream(filePath, FileMode.Open))
-            {
-                Header("Content-disposition", string.Format("inline; filename=\"{0}\"", downloadFileName));
-                Header("Content-length", fs.Length.ToString());
-                oscript.Output.WriteLine();
+		public IEnumerable<VariableInfo> GetProperties()
+		{
+			return new VariableInfo[0];
+		}
 
-                using (var stdout = Console.OpenStandardOutput())
-                {
-                    fs.CopyTo(stdout);
-                }
-            }
-        }
+		public IEnumerable<MethodInfo> GetMethods()
+		{
+			var array = new MethodInfo[_methods.Count];
+			for (var i = 0; i < _methods.Count; i++)
+				array[i] = _methods.GetMethodInfo(i);
 
-        public Encoding Encoding { get; set; }
+			return array;
+		}
 
-        private bool IsHeaderWritten(string header)
-        {
-            return _headersWritten.Contains(header);
-        }
+		#region CGIHost
 
-        public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
-        {
-            if(!_isContentEchoed)
-            {
-                if(!IsHeaderWritten("Content-type"))
-                    Header("Content-type", "text/html");
-                if (!IsHeaderWritten("Content-encoding"))
-                    Header("Content-encoding", Encoding.BodyName);
-                oscript.Output.WriteLine();
+		[ContextMethod("ВывестиЗаголовок", "Header")]
+		public void Header(string header, string value)
+		{
+			if (_isContentEchoed)
+				throw new InvalidOperationException("Headers can not be written after the main content");
 
-                _isContentEchoed = true;
-            }
+			Output(header + ": " + value + "\r\n");
+			_headersWritten.Add(header);
+		}
 
-            if (str != "")
-            {
-                Output (str);
-                oscript.Output.WriteLine();
-            }
-        }
+		[ContextMethod("ОтправитьФайл", "SendFile")]
+		public void SendFile(string filePath, string downloadFileName = null)
+		{
+			if (_isContentEchoed)
+				throw new InvalidOperationException("Content already sent!");
 
-        private void Output(string str)
-        {
-            using (var stream = Console.OpenStandardOutput())
-            {
-                var bytes = Encoding.GetBytes(str);
-                stream.Write(bytes, 0, bytes.Length);
-            }
-        }
+			if (!IsHeaderWritten("Content-type"))
+				Header("Content-type", "application/octet-stream");
+			if (string.IsNullOrEmpty(downloadFileName))
+			{
+				var finfo = new FileInfo(filePath);
+				downloadFileName = finfo.Name;
+			}
+			using (var fs = new FileStream(filePath, FileMode.Open))
+			{
+				Header("Content-disposition", $"inline; filename=\"{downloadFileName}\"");
+				Header("Content-length", fs.Length.ToString());
+				oscript.Output.WriteLine();
 
-        public void ShowExceptionInfo(Exception exc)
-        {
-            Echo(exc.ToString());
-        }
+				using (var stdout = Console.OpenStandardOutput())
+				{
+					fs.CopyTo(stdout);
+				}
+			}
+		}
 
-        public bool InputString(out string result, int maxLen)
-        {
-            result = null;
-            return false;
-        }
+		public Encoding Encoding { get; set; }
 
-        public string[] GetCommandLineArguments()
-        {
-            return new string[0];
-        }
+		private bool IsHeaderWritten(string header)
+		{
+			return _headersWritten.Contains(header);
+		}
 
-        #endregion
+		public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
+		{
+			if (!_isContentEchoed)
+			{
+				if (!IsHeaderWritten("Content-type"))
+					Header("Content-type", "text/html");
+				if (!IsHeaderWritten("Content-encoding"))
+					Header("Content-encoding", Encoding.BodyName);
+				oscript.Output.WriteLine();
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
-        {
-            variables = new IVariable[0];
-            methods = this.GetMethods().ToArray();
-        }
+				_isContentEchoed = true;
+			}
 
-        public int GetMethodsCount()
-        {
-            return _methods.Count;
-        }
+			if (str != "")
+			{
+				Output(str);
+				oscript.Output.WriteLine();
+			}
+		}
 
-        #region IRuntimeContextInstance Members
+		private void Output(string str)
+		{
+			using (var stream = Console.OpenStandardOutput())
+			{
+				var bytes = Encoding.GetBytes(str);
+				stream.Write(bytes, 0, bytes.Length);
+			}
+		}
 
-        public bool IsIndexed
-        {
-            get
-            {
-                return false;
-            }
-        }
+		public void ShowExceptionInfo(Exception exc)
+		{
+			Echo(exc.ToString());
+		}
 
-        public bool DynamicMethodSignatures
-        {
-            get
-            {
-                return false;
-            }
-        }
+		public bool InputString(out string result, int maxLen)
+		{
+			result = null;
+			return false;
+		}
 
-        public IValue GetIndexedValue(IValue index)
-        {
-            throw new NotImplementedException();
-        }
+		public string[] GetCommandLineArguments()
+		{
+			return new string[0];
+		}
 
-        public void SetIndexedValue(IValue index, IValue val)
-        {
-            throw new NotImplementedException();
-        }
+		#endregion
 
-        public int FindProperty(string name)
-        {
-            throw RuntimeException.PropNotFoundException(name);
-        }
+		#region IRuntimeContextInstance Members
 
-        public bool IsPropReadable(int propNum)
-        {
-            return false;
-        }
+		public bool IsIndexed => false;
 
-        public bool IsPropWritable(int propNum)
-        {
-            return false;
-        }
+		public bool DynamicMethodSignatures => false;
 
-        public IValue GetPropValue(int propNum)
-        {
-            throw new ArgumentException();
-        }
+		public IValue GetIndexedValue(IValue index)
+		{
+			throw new NotImplementedException();
+		}
 
-        public void SetPropValue(int propNum, IValue newVal)
-        {
-            throw new InvalidOperationException("global props are not writable");
-        }
+		public void SetIndexedValue(IValue index, IValue val)
+		{
+			throw new NotImplementedException();
+		}
 
-        public int GetPropCount()
-        {
-            return 0;
-        }
+		public int FindProperty(string name)
+		{
+			throw RuntimeException.PropNotFoundException(name);
+		}
 
-        public string GetPropName(int index)
-        {
-            throw new ArgumentOutOfRangeException();
-        }
+		public bool IsPropReadable(int propNum)
+		{
+			return false;
+		}
 
-        public int FindMethod(string name)
-        {
-            return _methods.FindMethod(name);
-        }
+		public bool IsPropWritable(int propNum)
+		{
+			return false;
+		}
 
-        public MethodInfo GetMethodInfo(int methodNumber)
-        {
-            return _methods.GetMethodInfo(methodNumber);
-        }
+		public IValue GetPropValue(int propNum)
+		{
+			throw new ArgumentException();
+		}
 
-        public void CallAsProcedure(int methodNumber, IValue[] arguments)
-        {
-            _methods.GetMethod(methodNumber)(this, arguments);
-        }
+		public void SetPropValue(int propNum, IValue newVal)
+		{
+			throw new InvalidOperationException("global props are not writable");
+		}
 
-        public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
-        {
-            retValue = _methods.GetMethod(methodNumber)(this, arguments);
-        }
+		public int FindMethod(string name)
+		{
+			return _methods.FindMethod(name);
+		}
 
-        #endregion
+		public MethodInfo GetMethodInfo(int methodNumber)
+		{
+			return _methods.GetMethodInfo(methodNumber);
+		}
 
-        private static ContextMethodsMapper<CgiBehavior> _methods = new ContextMethodsMapper<CgiBehavior>();
-    }
+		public void CallAsProcedure(int methodNumber, IValue[] arguments)
+		{
+			_methods.GetMethod(methodNumber)(this, arguments);
+		}
+
+		public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+		{
+			retValue = _methods.GetMethod(methodNumber)(this, arguments);
+		}
+
+		#endregion
+	}
 }
