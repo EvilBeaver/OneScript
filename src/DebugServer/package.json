@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript",
-  "icon": "images/mono-debug-icon.svg",
+  "icon": "images/mono-debug-icon.png",
   "categories": [
     "Debuggers"
   ],
