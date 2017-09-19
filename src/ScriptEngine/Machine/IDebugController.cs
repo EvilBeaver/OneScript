@@ -13,6 +13,6 @@ namespace ScriptEngine.Machine
 
         void OnMachineReady(MachineInstance instance);
 
-        void NotifyProcessExit();
+        void NotifyProcessExit(int exitCode);
     }
 }

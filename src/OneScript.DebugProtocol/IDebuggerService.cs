@@ -71,5 +71,8 @@ namespace OneScript.DebugProtocol
     {
         [OperationContract(IsOneWay = true)]
         void ThreadStopped(int threadId, ThreadStopReason reason);
+
+        [OperationContract(IsOneWay = true)]
+        void ProcessExited(int exitCode);
     }
 }

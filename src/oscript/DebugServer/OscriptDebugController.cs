@@ -54,8 +54,12 @@ namespace oscript.DebugServer
 
         }
 
-        public void NotifyProcessExit()
+        public void NotifyProcessExit(int exitCode)
         {
+            if (!CallbackChannelIsReady())
+                return; // нет подписчика
+
+            _eventChannel.ProcessExited(exitCode);
             _serviceHost?.Close();
         }
 
@@ -67,15 +71,27 @@ namespace oscript.DebugServer
 
         private void MachineStopHanlder(object sender, MachineStoppedEventArgs e)
         {
-            if (e.Reason != MachineStopReason.Breakpoint)
-                throw new NotImplementedException("Not implemented yet");
-            
             if (!CallbackChannelIsReady())
                 return; // нет подписчика
             
             _debugCommandEvent.Reset();
-            _eventChannel.ThreadStopped(1, ThreadStopReason.Breakpoint);
+            _eventChannel.ThreadStopped(1, ConvertStopReason(e.Reason));
             _debugCommandEvent.Wait();
+        }
+
+        private ThreadStopReason ConvertStopReason(MachineStopReason reason)
+        {
+            switch(reason)
+            {
+                case MachineStopReason.Breakpoint:
+                    return ThreadStopReason.Breakpoint;
+                case MachineStopReason.Step:
+                    return ThreadStopReason.Step;
+                case MachineStopReason.Exception:
+                    return ThreadStopReason.Exception;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private bool CallbackChannelIsReady()
@@ -205,7 +221,8 @@ namespace oscript.DebugServer
 
         public void StepOut()
         {
-            throw new NotImplementedException();
+            _machine.StepOut();
+            _debugCommandEvent.Set();
         }
 
         private static bool HasProperties(IValue variable)

@@ -13,6 +13,8 @@ namespace OneScript.DebugProtocol
 {
     public enum ThreadStopReason
     {
-        Breakpoint
+        Breakpoint,
+        Step,
+        Exception
     }
 }

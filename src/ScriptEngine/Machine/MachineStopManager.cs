@@ -31,7 +31,8 @@ namespace ScriptEngine.Machine
         private readonly MachineInstance _machine;
         private ExecutionFrame[] _stopFrames;
 
-        
+        public MachineStopReason LastStopReason { get; internal set; }
+
         public int SetBreakpoint(string module, int line)
         {
             return _breakpoints.SetBreakpoint(module, line);
@@ -54,14 +55,20 @@ namespace ScriptEngine.Machine
                     mustStop = true;
                     break;
                 case DebugState.SteppingOut:
-                    throw new NotImplementedException();
                 case DebugState.SteppingOver:
-                    mustStop = StepOverEndsOnFrame(currentFrame);
+                    mustStop = FrameIsInStopList(currentFrame);
                     break;
             }
 
-            if(mustStop)
+            if (mustStop)
+            {
+                if (_currentState == DebugState.Running)
+                    LastStopReason = MachineStopReason.Breakpoint;
+                else
+                    LastStopReason = MachineStopReason.Step;
+
                 _currentState = DebugState.Running;
+            }
 
             return mustStop;
             
@@ -72,7 +79,7 @@ namespace ScriptEngine.Machine
             return _breakpoints.Find(module, currentFrame.LineNumber);
         }
 
-        private bool StepOverEndsOnFrame(ExecutionFrame currentFrame)
+        private bool FrameIsInStopList(ExecutionFrame currentFrame)
         {
             return _stopFrames != null && _stopFrames.Contains(currentFrame);
         }
@@ -92,6 +99,12 @@ namespace ScriptEngine.Machine
         public void StepIn()
         {
             _currentState = DebugState.SteppingIn;
+        }
+
+        internal void StepOut(ExecutionFrame currentFrame)
+        {
+            _currentState = DebugState.SteppingOut;
+            _stopFrames = _machine.GetExecutionFrames().Select(x => x.FrameObject).Skip(1).ToArray();
         }
     }
 }

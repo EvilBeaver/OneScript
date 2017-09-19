@@ -166,6 +166,14 @@ namespace ScriptEngine.Machine
            _stopManager.StepIn();
         }
 
+        public void StepOut()
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.StepOut(_currentFrame);
+        }
+
         public void PrepareDebugContinuation()
         {
             if (_stopManager == null)
@@ -1153,7 +1161,10 @@ namespace ScriptEngine.Machine
             if (_currentFrame.IsReentrantCall)
                 _currentFrame.InstructionPointer = -1;
             else
+            {
                 PopFrame();
+                EmitStopEventIfNecessary();
+            }
         }
         
         private void JmpCounter(int arg)
@@ -1406,13 +1417,18 @@ namespace ScriptEngine.Machine
                 CodeStat_LineReached();
             }
 
-            if(MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.ModuleInfo.Origin, _currentFrame))
+            EmitStopEventIfNecessary();
+
+            NextInstruction();
+        }
+
+        private void EmitStopEventIfNecessary()
+        {
+            if (MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.ModuleInfo.Origin, _currentFrame))
             {
                 CreateFullCallstack();
-                MachineStopped?.Invoke(this, new MachineStoppedEventArgs(MachineStopReason.Breakpoint));
+                MachineStopped?.Invoke(this, new MachineStoppedEventArgs(_stopManager.LastStopReason));
             }
-            
-            NextInstruction();
         }
 
         private void CreateFullCallstack()

@@ -199,5 +199,10 @@ namespace DebugServer
         {
             _debugger.Instance.StepIn();
         }
+
+        internal void StepOut()
+        {
+            _debugger.Instance.StepOut();
+        }
     }
 }

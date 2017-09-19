@@ -22,7 +22,9 @@ namespace ScriptEngine.Machine
 
     public enum MachineStopReason
     {
-        Breakpoint
+        Breakpoint,
+        Step,
+        Exception
     }
 
 }

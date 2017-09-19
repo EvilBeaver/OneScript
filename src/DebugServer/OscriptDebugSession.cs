@@ -225,7 +225,13 @@ namespace DebugServer
             SessionLog.WriteLine("thread stopped");
             _framesHandles.Reset();
             _variableHandles.Reset();
-            SendEvent(new StoppedEvent(1, "breakpoint"));
+            SendEvent(new StoppedEvent(1, reason.ToString()));
+        }
+        
+        public void ProcessExited(int exitCode)
+        {
+            SessionLog.WriteLine("Exited event recieved");
+            SendEvent(new ExitedEvent(exitCode));
         }
 
         public override void ConfigurationDone(Response response, dynamic args)
@@ -268,7 +274,14 @@ namespace DebugServer
 
         public override void StepOut(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            SendResponse(response);
+            lock (_process)
+            {
+                if (!_process.HasExited)
+                {
+                    _process.StepOut();
+                }
+            }
         }
 
         public override void Pause(Response response, dynamic arguments)
@@ -410,5 +423,6 @@ namespace DebugServer
             SessionLog.WriteLine(message);
             SendResponse(response, arguments);
         }
+
     }
 }

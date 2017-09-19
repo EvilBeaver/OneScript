@@ -31,27 +31,31 @@ namespace ScriptEngine.HostedScript
 
         public int Start()
         {
+            int exitCode = 0;
+
             try
             {
                 _engine.UpdateContexts();
                 _engine.NewObject(_module);
-                return 0;
+                exitCode = 0;
             }
             catch (ScriptInterruptionException e)
             {
-                return e.ExitCode;
+                exitCode = e.ExitCode;
             }
             catch (Exception e)
             {
                 _host.ShowExceptionInfo(e);
-                return 1;
+                exitCode = 1;
             }
             finally
             {
-                _engine.DebugController?.NotifyProcessExit();
+                _engine.DebugController?.NotifyProcessExit(exitCode);
                 _engine.Dispose();
                 _engine = null;
             }
+
+            return exitCode;
         }
 
     }

@@ -1575,7 +1575,7 @@ namespace ScriptEngine.Compiler
         private void BuildFunctionCall(string identifier, int callLineNumber)
         {
             bool[] args = PushMethodArgumentsBeforeCall();
-            AddCommand(OperationCode.LineNum, callLineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
+            AddCommand(OperationCode.LineNum, callLineNumber, CodeGenerationFlags.CodeStatistics);
             BuildMethodCall(identifier, args, true);
         }
 
