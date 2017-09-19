@@ -90,10 +90,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
   </ItemGroup>
@@ -106,7 +105,10 @@
     <Compile Include="CgiBehavior.cs" />
     <Compile Include="CheckSyntaxBehavior.cs" />
     <Compile Include="CodeStatWriter.cs" />
+    <Compile Include="CmdLineHelper.cs" />
     <Compile Include="ConsoleHostImpl.cs" />
+    <Compile Include="DebugBehavior.cs" />
+    <Compile Include="DebugServer\OscriptDebugController.cs" />
     <Compile Include="DoNothingHost.cs" />
     <Compile Include="ExecuteScriptBehavior.cs" />
     <Compile Include="MakeAppBehavior.cs" />
@@ -131,6 +133,10 @@
     <Compile Include="Web\Multipart\SubsequenceFinder.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj">
+      <Project>{727a498f-bf50-42f8-8523-40c0b5b1b233}</Project>
+      <Name>OneScript.DebugProtocol</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
       <Project>{F09A46BD-5737-45E7-BA60-A47C9F7821A9}</Project>
       <Name>ScriptEngine.HostedScript</Name>

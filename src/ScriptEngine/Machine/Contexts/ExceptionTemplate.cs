@@ -20,7 +20,7 @@ namespace ScriptEngine.Machine.Contexts
     /// </summary>
     /// <example>ВызватьИсключение Новый ИнформацияОбОшибке("Текст ошибки", ДополнительныеДанные);</example>
     [ContextClass("ИнформацияОбОшибкеШаблон", "ExceptionInfoTemplate")]
-    public class ExceptionTemplate : LibraryContextBase
+    public class ExceptionTemplate : ContextIValueImpl
     {
         public string Message { get; private set; }
         public IValue Parameter { get; private set; }

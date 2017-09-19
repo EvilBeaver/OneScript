@@ -7,6 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -16,7 +18,24 @@ namespace ScriptEngine.Machine.Contexts
         
         public static void DiscoverClasses(System.Reflection.Assembly assembly)
         {
-            var collection = GetMarkedTypes(assembly.GetTypes().AsParallel(), typeof(ContextClassAttribute));
+            IEnumerable<Type> types;
+            try
+            {
+                types = assembly.GetTypes().AsParallel();
+            }
+            catch (ReflectionTypeLoadException exc)
+            {
+                var sb = new StringBuilder();
+                int i = 0;
+                foreach (var loaderException in exc.LoaderExceptions)
+                {
+                    sb.AppendFormat("Inner exception [{0}]", i++);
+                    sb.AppendLine(loaderException.ToString());
+                }
+                throw new Exception("Error loading assemblies:\n" + sb.ToString());
+            }
+
+            var collection = GetMarkedTypes(types, typeof(ContextClassAttribute));
 
             foreach (var type in collection)
             {

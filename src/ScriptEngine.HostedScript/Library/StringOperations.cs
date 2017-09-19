@@ -220,14 +220,9 @@ namespace ScriptEngine.HostedScript.Library
                 return base.FindMethod(name);
         }
 
-        public override IEnumerable<MethodInfo> GetMethods()
+        public override int GetMethodsCount()
         {
-            var fullList = new List<MethodInfo>(base.GetMethods());
-            var strTemplateMethodInfo = CreateStrTemplateMethodInfo();
-
-            fullList.Add(strTemplateMethodInfo);
-            return fullList;
-
+            return base.GetMethodsCount() + 1;
         }
 
         private static MethodInfo CreateStrTemplateMethodInfo()

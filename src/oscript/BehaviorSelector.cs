@@ -4,123 +4,172 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace oscript
 {
-	internal static class BehaviorSelector
-	{
-		public static AppBehavior Select(string[] cmdLineArgs)
-		{
-			while (true)
-			{
-				if (cmdLineArgs.Length == 0)
-					return new ShowUsageBehavior();
+    static class BehaviorSelector
+    {
+        public static AppBehavior Select(string[] cmdLineArgs)
+        {
+            var helper = new CmdLineHelper(cmdLineArgs);
+            string arg = helper.Next();
 
-				if (!cmdLineArgs[0].StartsWith("-"))
-				{
-					var path = cmdLineArgs[0];
-					return new ExecuteScriptBehavior(path, cmdLineArgs.Skip(1).ToArray());
-				}
+            if(arg == null)
+                return new ShowUsageBehavior();
 
-				switch (cmdLineArgs[0].ToLower())
-				{
-					case "-measure":
-						if (cmdLineArgs.Length > 1)
-						{
-							var path = cmdLineArgs[1];
-							return new MeasureBehavior(path, cmdLineArgs.Skip(2).ToArray());
-						}
+            if (!arg.StartsWith("-"))
+            {
+                var path = arg;
+                return new ExecuteScriptBehavior(path, helper.Tail());
+            }
 
-						break;
-					case "-compile":
-						if (cmdLineArgs.Length > 1)
-						{
-							var path = cmdLineArgs[1];
-							return new ShowCompiledBehavior(path);
-						}
+            var selected = SelectParametrized(helper);
+            if(selected == null)
+                selected = new ShowUsageBehavior();
 
-						break;
-					case "-check":
-						if (cmdLineArgs.Length > 1)
-						{
-							var cgiMode = false;
-							var paramIndex = 1;
-							if (cmdLineArgs[paramIndex].ToLower() == "-cgi")
-							{
-								++paramIndex;
-								cgiMode = true;
-							}
+            return selected;
+            
+        }
 
-							var path = cmdLineArgs[paramIndex];
-							++paramIndex;
-							string env = null;
-							if (cmdLineArgs.Length > paramIndex && cmdLineArgs[paramIndex].StartsWith("-env="))
-								env = cmdLineArgs[paramIndex].Substring(5);
+        private static AppBehavior SelectParametrized(CmdLineHelper helper)
+        {
+            var param = helper.Current().ToLowerInvariant();
+            if (param == "-measure")
+            {
+                var path = helper.Next();
+                if (path != null)
+                {
+                    return new MeasureBehavior(path, helper.Tail());
+                }
+            }
+            else if (param == "-compile")
+            {
+                var path = helper.Next();
+                if (path != null)
+                {
+                    return new ShowCompiledBehavior(path);
+                }
+            }
+            else if (param == "-check")
+            {
+                return ProcessCheckKey(helper);
+            }
+            else if (param == "-make")
+            {
+                var codepath = helper.Next();
+                var output = helper.Next();
 
-							return new CheckSyntaxBehavior(path, env, cgiMode);
-						}
+                if (output != null && codepath != null)
+                {
+                    return new MakeAppBehavior(codepath, output);
+                }
+            }
+            else if (param == "-cgi")
+            {
+                return new CgiBehavior();
+            }
+            else if (param == "-version")
+            {
+                return new ShowVersionBehavior();
+            }
+            else if (param.StartsWith("-encoding="))
+            {
+                return ProcessEncodingKey(helper);
+            }
+            else if (param.StartsWith("-codestat="))
+            {
+                var prefixLen = ("-codestat=").Length;
+                if (param.Length > prefixLen)
+                {
+                    var outputStatFile = param.Substring(prefixLen);
+                    ScriptFileHelper.EnableCodeStatistics(outputStatFile);
+                    return Select(helper.Tail());
+                }
+            }
+            else if (param == "-debug")
+            {
+                var arg = helper.Next();
+                int port = 2801;
+                if (arg != null && arg.StartsWith("-port="))
+                {
+                    var prefixLen = ("-port=").Length;
+                    if (arg.Length > prefixLen)
+                    {
+                        var value = arg.Substring(prefixLen);
+                        if (!Int32.TryParse(value, out port))
+                        {
+                            Output.WriteLine("Incorrect port: " + value);
+                            return null;
+                        }
+                    }
+                }
+                else if(arg != null)
+                {
+                    var path = arg;
+                    return new DebugBehavior(port, path, helper.Tail());
+                }
+            }
 
-						break;
-					case "-make":
-						if (cmdLineArgs.Length == 3)
-						{
-							var codepath = cmdLineArgs[1];
-							var output = cmdLineArgs[2];
-							return new MakeAppBehavior(codepath, output);
-						}
+            return null;
+        }
 
-						break;
-					case "-cgi":
-						return new CgiBehavior();
-					case "-version":
-						return new ShowVersionBehavior();
-					default:
-						if (cmdLineArgs[0].StartsWith("-encoding="))
-						{
-							var prefixLen = "-encoding=".Length;
-							if (cmdLineArgs[0].Length > prefixLen)
-							{
-								var encValue = cmdLineArgs[0].Substring(prefixLen);
-								Encoding encoding;
-								try
-								{
-									encoding = Encoding.GetEncoding(encValue);
-								}
-								catch
-								{
-									Output.WriteLine("Wrong console encoding");
-									encoding = null;
-								}
+        private static AppBehavior ProcessCheckKey(CmdLineHelper helper)
+        {
+            if (helper.Next() != null)
+            {
+                bool cgi_mode = false;
+                var arg = helper.Current();
+                if (arg.ToLowerInvariant() == "-cgi")
+                {
+                    cgi_mode = true;
+                    arg = helper.Next();
+                }
 
-								if (encoding != null)
-									Program.ConsoleOutputEncoding = encoding;
+                var path = arg;
+                var env = helper.Next();
+                if (env != null && env.StartsWith("-env="))
+                {
+                    env = env.Substring(5);
+                }
 
-								cmdLineArgs = cmdLineArgs.Skip(1).ToArray();
-								continue;
-							}
-						}
-						else if (cmdLineArgs[0].StartsWith("-codestat="))
-						{
-							var prefixLen = "-codestat=".Length;
-							if (cmdLineArgs[0].Length > prefixLen)
-							{
-								var outputStatFile = cmdLineArgs[0].Substring(prefixLen);
-								ScriptFileHelper.EnableCodeStatistics(outputStatFile);
-								cmdLineArgs = cmdLineArgs.Skip(1).ToArray();
-								continue;
-							}
-						}
+                return new CheckSyntaxBehavior(path, env, cgi_mode);
+            }
 
-						break;
-				}
+            return null;
+        }
 
-				return new ShowUsageBehavior();
-			}
-		}
-	}
+        private static AppBehavior ProcessEncodingKey(CmdLineHelper helper)
+        {
+            var param = helper.Current();
+            var prefixLen = ("-encoding=").Length;
+            if (param.Length > prefixLen)
+            {
+                var encValue = param.Substring(prefixLen);
+                Encoding encoding;
+                try
+                {
+                    encoding = Encoding.GetEncoding(encValue);
+                }
+                catch
+                {
+                    Output.WriteLine("Wrong console encoding");
+                    encoding = null;
+                }
+
+                if (encoding != null)
+                    Program.ConsoleOutputEncoding = encoding;
+
+                return Select(helper.Tail());
+            }
+
+            return null;
+        }
+    }
+
 }

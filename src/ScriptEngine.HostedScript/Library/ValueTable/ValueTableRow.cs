@@ -14,20 +14,19 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.HostedScript.Library.ValueTable
 {
     [ContextClass("СтрокаТаблицыЗначений", "ValueTableRow")]
-    public class ValueTableRow : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<IValue>
+    public class ValueTableRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
-        private readonly WeakReference _owner;
+        private readonly ValueTable _owner;
 
-        public ValueTableRow(ValueTable Owner)
+        public ValueTableRow(ValueTable owner)
         {
-            _owner = new WeakReference(Owner);
+            _owner = owner;
         }
 
         public int Count()
         {
-			var owner = _owner.Target as ValueTable;
-            return owner.Columns.Count();
+            return Owner().Columns.Count();
         }
 
         /// <summary>
@@ -37,7 +36,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Владелец", "Owner")]
         public ValueTable Owner()
         {
-            return _owner.Target as ValueTable;
+            return _owner;
         }
 
 		private IValue TryValue(ValueTableColumn Column)
@@ -72,7 +71,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
             return TryValue(C);
         }
-
+        
         /// <summary>
         /// Установить значение
         /// </summary>
@@ -96,6 +95,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             _data[Column] = Column.ValueType.AdjustValue(Value);
         }
 
+        public void OnOwnerColumnRemoval(ValueTableColumn column)
+        {
+            _data.Remove(column);
+        }
+
         public IEnumerator<IValue> GetEnumerator()
         {
             foreach (ValueTableColumn item in Owner().Columns)
@@ -114,6 +118,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return new CollectionEnumerator(GetEnumerator());
         }
 
+        public override int GetPropCount()
+        {
+            return Count();
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return Owner().Columns.GetPropName(propNum);
+        }
+
         public override int FindProperty(string name)
         {
             ValueTableColumn C = Owner().Columns.FindColumnByName(name);
@@ -122,6 +136,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 throw RuntimeException.PropNotFoundException(name);
 
             return C.ID;
+        }
+
+        public override bool IsPropReadable(int propNum)
+        {
+            return true;
+        }
+
+        public override bool IsPropWritable(int propNum)
+        {
+            return true;
         }
 
         public override IValue GetPropValue(int propNum)
@@ -192,14 +216,5 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return _methods.FindMethod(name);
         }
 
-        protected override IEnumerable<KeyValuePair<string, int>> GetProperties()
-        {
-            return Owner().Columns
-                .Select(x=>
-                    {
-                        var column = x as ValueTableColumn;
-                        return new KeyValuePair<string, int>(column.Name, column.ID);
-                    });
-        }
     }
 }

@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             var props = strProperties.Split(',');
             if (props.Length < values.Length)
-                throw new RuntimeException("Неверное значение аргумента");
+                throw RuntimeException.InvalidArgumentValue();
 
             for (int i = 0; i < props.Length; i++)
             {
@@ -105,6 +105,16 @@ namespace ScriptEngine.HostedScript.Library
             _values[propNum] = newVal;
         }
 
+        public override int GetPropCount()
+        {
+            return _values.Count;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return GetPropertyName(propNum);
+        }
+
         public override MethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);
@@ -143,12 +153,9 @@ namespace ScriptEngine.HostedScript.Library
 
         #region IReflectableContext Members
 
-        public override IEnumerable<MethodInfo> GetMethods()
+        public override int GetMethodsCount()
         {
-            for (int i = 0; i < _methods.Count; i++)
-            {
-                yield return _methods.GetMethodInfo(i);
-            }
+            return _methods.Count;
         }
 
         #endregion

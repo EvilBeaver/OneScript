@@ -1,0 +1,107 @@
+{
+  "name": "oscript-debug",
+  "displayName": "OneScript Debug",
+  "version": "0.1.0",
+  "publisher": "EvilBeaver",
+  "description": "Visual Studio Code debugger extension for OneScript",
+  "icon": "images/mono-debug-icon.png",
+  "categories": [
+    "Debuggers"
+  ],
+  "author": {
+    "name": "EvilBeaver <ovsiankin.aa@gmail.com>"
+  },
+  "license": "MPL-2.0",
+  "private": true,
+  "engines": {
+    "vscode": "^1.0.0"
+  },
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EvilBeaver/OneScript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EvilBeaver/OneScript/issues"
+  },
+  "contributes": {
+    "breakpoints": [
+      {
+        "language": "bsl"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "oscript",
+        "label": "1Script Debugger",
+        "program": "./bin/Debug/DebugServer.exe",
+        "osx": {
+          "runtime": "mono"
+        },
+        "linux": {
+          "runtime": "mono"
+        },
+        "initialConfigurations": [
+          {
+            "name": "Отладка 1Script",
+            "type": "oscript",
+            "request": "launch",
+            "program": "${file}",
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "runtimeExecutable": null,
+            "debugPort": 2801 
+          }
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [ "program" ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Файл сценария для запуска отладки"
+              },
+              "args": {
+                "type": "array",
+                "description": "Аргументы, передаваемые в сценарий",
+                "items": { "type": "string" },
+                "default": []
+              },
+              "cwd": {
+                "type": "string",
+                "description": "Текущий каталог запуска отладки",
+                "default": "."
+              },
+              "runtimeExecutable": {
+                "type": [ "string", "null" ],
+                "description": "Путь к исполняемому файлу oscript.exe",
+                "default": "oscript"
+              },
+              "runtimeArgs": {
+                "type": "array",
+                "description": "Аргументы движка 1Script (encoding, codestat, etc...)",
+                "items": { "type": "string" },
+                "default": []
+              },
+              "debugPort": {
+                "type": "number",
+                "description": "Порт для запуска отладчика. Одновременные сеансы отладки должны быть разделены по портам",
+                "default": 2801
+              }
+            }
+          },
+          "attach": {
+            "properties": {
+            "debugPort": {
+                "type": "number",
+                "description": "Присоединиться к работающему процессу (не поддерживается)",
+                "default": 2801
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

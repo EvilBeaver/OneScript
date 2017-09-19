@@ -79,7 +79,7 @@ namespace ScriptEngine.HostedScript.Library
             for (int i = 0; i < argsToPass.Count; i++)
             {
                 if (!methInfo.Params[i].IsByValue)
-                    argsToPass[i] = Variable.Create(argsToPass[i]);
+                    argsToPass[i] = Variable.Create(argsToPass[i], $"reflectorArg{i}");
             }
             while (argsToPass.Count < methInfo.ArgCount)
             {

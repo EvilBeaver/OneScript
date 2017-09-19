@@ -9,14 +9,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using ScriptEngine.Environment;
+
 namespace ScriptEngine.Machine
 {
-    public interface IAttachableContext : IReflectableContext
+    public interface IAttachableContext : IRuntimeContextInstance
     {
         void OnAttach(MachineInstance machine,
-            out IVariable[] variables, 
-            out MethodInfo[] methods, 
-            out IRuntimeContextInstance instance);
+                      out IVariable[] variables,
+                      out MethodInfo[] methods);
+    }
 
+    internal interface IRunnable : IAttachableContext
+    {
+        LoadedModuleHandle Module { get; }
     }
 }

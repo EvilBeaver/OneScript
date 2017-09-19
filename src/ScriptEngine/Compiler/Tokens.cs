@@ -67,6 +67,7 @@ namespace ScriptEngine.Compiler
             AddToken(Token.Break, "прервать", "break");
             AddToken(Token.Try, "попытка", "try");
             AddToken(Token.Exception, "исключение", "except");
+            AddToken(Token.Execute, "выполнить", "execute");
             // обратная совместимость с beta 1.0
             AddToken(Token.Exception, "exception");
             AddToken(Token.RaiseException, "вызватьисключение", "raise");
@@ -111,11 +112,12 @@ namespace ScriptEngine.Compiler
             AddToken(Token.Date, "дата", "date");
             AddToken(Token.Type, "тип", "type");
             AddToken(Token.ValType, "типзнч", "typeof");
- 
+
             #endregion
 
             #region Встроенные функции
 
+            AddToken(Token.Eval, "вычислить", "eval");
             AddToken(Token.StrLen, "стрдлина", "strlen");
             AddToken(Token.TrimL, "сокрл", "triml");
             AddToken(Token.TrimR, "сокрп", "trimr");
@@ -342,6 +344,7 @@ namespace ScriptEngine.Compiler
         EndTry,
         EndOfText,
         Export,
+        Execute,
 
         // operators
         Plus,
@@ -378,6 +381,7 @@ namespace ScriptEngine.Compiler
 
         // built-in functions
         // must be declared last
+        Eval,
         Bool,
         Number,
         Str,

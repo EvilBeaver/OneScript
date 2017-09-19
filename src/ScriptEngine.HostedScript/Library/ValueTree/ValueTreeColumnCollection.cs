@@ -220,6 +220,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return column.ID;
         }
 
+        public override string GetPropName(int propNum)
+        {
+            return FindColumnByIndex(propNum).Name;
+        }
+
         public override IValue GetPropValue(int propNum)
         {
             return FindColumnById(propNum);

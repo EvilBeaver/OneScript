@@ -26,9 +26,10 @@ namespace ScriptEngine
             Constants = new List<ConstDefinition>();
             ExportedProperties = new List<ExportedSymbol>();
             ExportedMethods = new List<ExportedSymbol>();
+            Variables = new VariablesFrame();
         }
-        
-        public int VariableFrameSize { get; set; }
+
+        public VariablesFrame Variables { get; }
         public int EntryMethodIndex { get; set; }
         public IList<Command> Code { get; set; }
         public IList<SymbolBinding> VariableRefs { get; set; }
@@ -59,7 +60,7 @@ namespace ScriptEngine
     struct MethodDescriptor
     {
         public MethodInfo Signature;
-        public int VariableFrameSize;
+        public VariablesFrame Variables;
         public int EntryPoint;
     }
 

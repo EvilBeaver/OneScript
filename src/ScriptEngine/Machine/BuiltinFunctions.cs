@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine
         private static readonly ParameterDefinition MANDATORY_BYVAL = new ParameterDefinition { IsByValue = true };
         private static readonly ParameterDefinition OPTIONAL_BYVAL = new ParameterDefinition { IsByValue = true, HasDefaultValue = true };
         
-        private const int BUILTIN_OPCODES_INDEX = (int)OperationCode.Bool;
+        private const int BUILTIN_OPCODES_INDEX = (int)OperationCode.Eval;
 
         static BuiltinFunctions()
         {
@@ -45,6 +45,7 @@ namespace ScriptEngine.Machine
         private static void InitParametersInfo()
         {
             // conversion
+            AddFunc(OperationCode.Eval,     MANDATORY_BYVAL);
             AddFunc(OperationCode.Bool,     MANDATORY_BYVAL);
             AddFunc(OperationCode.Str,      MANDATORY_BYVAL);
             AddFunc(OperationCode.Number,   MANDATORY_BYVAL);

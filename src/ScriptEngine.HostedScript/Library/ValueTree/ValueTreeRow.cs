@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Строка дерева значений.
     /// </summary>
     [ContextClass("СтрокаДереваЗначений", "ValueTreeRow")]
-    public class ValueTreeRow : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<IValue>
+    public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTreeRow _parent;
@@ -152,6 +152,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         private static readonly ContextPropertyMapper<ValueTreeRow> _properties = new ContextPropertyMapper<ValueTreeRow>();
 
+        public override int GetPropCount()
+        {
+            return Count();
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return Owner().Columns.GetPropName(propNum);
+        }
+
         public override int FindProperty(string name)
         {
             var column = Owner().Columns.FindColumnByName(name);
@@ -162,6 +172,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             }
 
             return column.ID;
+        }
+
+        public override bool IsPropReadable(int propNum)
+        {
+            return true;
+        }
+
+        public override bool IsPropWritable(int propNum)
+        {
+            return true;
         }
 
         public override IValue GetPropValue(int propNum)
@@ -244,15 +264,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         {
             return _methods.FindMethod(name);
         }
-
-        protected override IEnumerable<KeyValuePair<string, int>> GetProperties()
-        {
-            return Owner().Columns
-                .Select(x =>
-                {
-                    var column = x as ValueTreeColumn;
-                    return new KeyValuePair<string, int>(column.Name, column.ID);
-                });
-        }
+        
     }
 }
