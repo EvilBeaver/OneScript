@@ -62,8 +62,10 @@ namespace ScriptEngine.Machine
         MakeBool,
         PushTmp,
         PopTmp,
+        Execute,
 
         // built-in functions
+        Eval,
         Bool,
         Number,
         Str,

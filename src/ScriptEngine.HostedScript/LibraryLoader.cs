@@ -30,14 +30,7 @@ namespace ScriptEngine.HostedScript
             public string identifier;
             public bool asClass;
         }
-
-        private enum MethodNumbers
-        {
-            AddClass,
-            AddProperty,
-            LastNotAMethod
-        }
-
+        
         private LibraryLoader(LoadedModuleHandle moduleHandle, RuntimeEnvironment _env, ScriptingEngine _engine): base(moduleHandle)
         {
             this._env = _env;
@@ -146,6 +139,14 @@ namespace ScriptEngine.HostedScript
             return base.FindOwnProperty(name);
         }
 
+        protected override string GetOwnPropName(int index)
+        {
+            if (index == 0)
+                return "ЭтотОбъект";
+
+            throw new ArgumentException();
+        }
+
         protected override bool IsOwnPropReadable(int index)
         {
             return true;
@@ -210,8 +211,8 @@ namespace ScriptEngine.HostedScript
         private bool CustomizedProcessing(string libraryPath)
         {
             var libPathValue = ValueFactory.Create(libraryPath);
-            var defaultLoading = Variable.Create(ValueFactory.Create(true));
-            var cancelLoading = Variable.Create(ValueFactory.Create(false));
+            var defaultLoading = Variable.Create(ValueFactory.Create(true), "$internalDefaultLoading");
+            var cancelLoading = Variable.Create(ValueFactory.Create(false), "$internalCancelLoading");
 
             int eventIdx = GetScriptMethod("ПриЗагрузкеБиблиотеки", "OnLibraryLoad");
             if(eventIdx == -1)

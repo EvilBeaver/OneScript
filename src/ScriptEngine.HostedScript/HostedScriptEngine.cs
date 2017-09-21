@@ -12,6 +12,8 @@ using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
 using System.Linq;
 
+using OneScript.DebugProtocol;
+
 namespace ScriptEngine.HostedScript
 {
     public class HostedScriptEngine
@@ -143,6 +145,12 @@ namespace ScriptEngine.HostedScript
             }
         }
 
+        public IDebugController DebugController
+        {
+            get { return _engine.DebugController; }
+            set { _engine.DebugController = value; }
+        }
+
         private void InitializeDirectiveResolver()
         {
             var ignoreDirectiveResolver = new DirectiveIgnorer();
@@ -197,6 +205,8 @@ namespace ScriptEngine.HostedScript
         {
             SetGlobalEnvironment(host, src);
             Initialize();
+            _engine.DebugController?.OnMachineReady(_engine.Machine);
+            _engine.DebugController?.WaitForDebugEvent(DebugEventType.BeginExecution);
             var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
             return InitProcess(host, ref module);
         }
@@ -234,7 +244,7 @@ namespace ScriptEngine.HostedScript
             return _codeStat.GetStatData();
         }
 
-        public void Finalize()
+        public void Dispose()
         {
             _codeStat?.EndCodeStat();
         }

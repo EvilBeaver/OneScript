@@ -85,29 +85,25 @@ namespace ScriptEngine.Machine.Contexts
             return _ownProperties[index];
         }
 
-        #region IReflectableContext Members
-
-        public override IEnumerable<VariableInfo> GetProperties()
+        protected override string GetOwnPropName(int index)
         {
-            foreach (var item in _module.ExportedProperies)
-            {
-                var vi = new VariableInfo();
-                vi.Identifier = item.SymbolicName;
-                vi.Index = item.Index;
-                vi.Type = SymbolType.ContextProperty;
-                
-                yield return vi;
-            }
+            var prop = _module.ExportedProperies[index];
+            return prop.SymbolicName;
+        }
+        
+        public override int GetMethodsCount()
+        {
+            return _module.ExportedMethods.Length;
         }
 
-        public override IEnumerable<MethodInfo> GetMethods()
+        public override int GetPropCount()
         {
-            foreach (var item in _module.ExportedMethods)
-            {
-                yield return GetMethodInfo(item.Index);
-            }
+            return _module.ExportedProperies.Length;
         }
 
-        #endregion
+        public override string GetPropName(int propNum)
+        {
+            return _module.ExportedProperies[propNum].SymbolicName;
+        }
     }
 }

@@ -14,24 +14,22 @@ namespace ScriptEngine.Machine.Contexts
     public class DynamicPropertiesHolder
     {
         private readonly Dictionary<string, int> _propNumbers = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
-
+        
         public int RegisterProperty(string name)
         {
             if (_propNumbers.ContainsKey(name))
             {
                 return _propNumbers[name];
             }
-            else
-            {
-                if (!IsValidIdentifier(name))
-                {
-                    throw new RuntimeException("Неверное значение аргумента");
-                }
 
-                var idx = _propNumbers.Count;
-                _propNumbers.Add(name, idx);
-                return idx;
+            if (!IsValidIdentifier(name))
+            {
+                throw RuntimeException.InvalidArgumentValue();
             }
+
+            var idx = _propNumbers.Count;
+            _propNumbers.Add(name, idx);
+            return idx;
         }
 
         public void RemoveProperty(string name)
@@ -41,6 +39,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public void ReorderPropertyNumbers()
         {
+            _propNumbers.Clear();
             var sorted = _propNumbers.OrderBy(x => x.Value).Select(x => x.Key).ToArray();
             _propNumbers.Clear();
             for (int i = 0; i < sorted.Length; i++)
@@ -64,6 +63,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw RuntimeException.PropNotFoundException(name);
             }
+        }
+
+        public string GetPropertyName(int idx)
+        {
+            return _propNumbers.First(x => x.Value == idx).Key;
         }
 
         public IEnumerable<KeyValuePair<string, int>> GetProperties()

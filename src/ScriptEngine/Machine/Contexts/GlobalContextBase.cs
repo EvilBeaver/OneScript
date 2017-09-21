@@ -87,6 +87,16 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        public int GetPropCount()
+        {
+            return Properties.Count;
+        }
+
+        public string GetPropName(int propNum)
+        {
+            var prop = Properties.GetProperty(propNum);
+            return prop.Name;
+        }
 
         public virtual int FindMethod(string name)
         {
@@ -112,35 +122,15 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext members
 
-        public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+        public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
         {
             variables = new IVariable[0];
-            methods = GetMethods().ToArray();
-            instance = this;
+            methods = this.GetMethods().ToArray();
         }
-
-        public virtual IEnumerable<VariableInfo> GetProperties()
+        
+        public virtual int GetMethodsCount()
         {
-            int i = 0;
-
-            return _properties.GetProperties()
-                .Select(x => new VariableInfo()
-                {
-                    Identifier = x,
-                    Index = i++,
-                    Type = SymbolType.ContextProperty
-                });
-        }
-
-        public virtual IEnumerable<MethodInfo> GetMethods()
-        {
-            var array = new MethodInfo[_methods.Count];
-            for (int i = 0; i < _methods.Count; i++)
-            {
-                array[i] = _methods.GetMethodInfo(i);
-            }
-
-            return array;
+            return _methods.Count;
         }
 
         #endregion

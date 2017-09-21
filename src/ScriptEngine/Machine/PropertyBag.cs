@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Machine.Contexts;
@@ -77,30 +78,18 @@ namespace ScriptEngine.Machine
 
         #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
         {
             variables = new IVariable[this.Count];
-            for (int i = 0; i < variables.Length; i++)
+            var props = GetProperties().OrderBy(x => x.Value).Select(x=>x.Key).ToArray();
+            Debug.Assert(props.Length == variables.Length);
+
+            for (var i = 0; i < variables.Length; i++)
             {
-                variables[i] = Variable.CreateContextPropertyReference(this, i);
+                variables[i] = Variable.CreateContextPropertyReference(this, i, props[i]);
             }
 
             methods = new MethodInfo[0];
-            instance = this;
-        }
-
-        #endregion
-
-        #region IReflectableContext Members
-
-        IEnumerable<VariableInfo> IReflectableContext.GetProperties()
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerable<MethodInfo> IReflectableContext.GetMethods()
-        {
-            throw new NotImplementedException();
         }
 
         #endregion

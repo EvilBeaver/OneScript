@@ -12,7 +12,7 @@ using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IAttachableContext
+    public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable
     {
         private readonly LoadedModule _module;
         private MachineInstance _machine;
@@ -27,14 +27,6 @@ namespace ScriptEngine.Machine.Contexts
 
         public IValue[] ConstructorParams { get { return constructorParams; } set { constructorParams = value; } }
 
-        //~ScriptDrivenObject()
-        //{
-        //    var methId = GetScriptMethod("деструктор", "destructor");
-        //    if (methId > -1)
-        //    {
-        //        CallAsProcedure(methId, new IValue[0]);
-        //    }
-
 
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
@@ -43,6 +35,11 @@ namespace ScriptEngine.Machine.Contexts
         public ScriptDrivenObject(LoadedModuleHandle module, bool deffered) : this(module.Module, deffered)
         {
         }
+
+        public LoadedModuleHandle Module => new LoadedModuleHandle()
+        {
+            Module = _module
+        };
 
         internal ScriptDrivenObject(LoadedModule module, bool deffered)
             : base(TypeManager.GetTypeByName("Object"))
@@ -67,14 +64,14 @@ namespace ScriptEngine.Machine.Contexts
             VARIABLE_COUNT = GetOwnVariableCount();
             METHOD_COUNT = GetOwnMethodCount();
 
-            int stateSize = VARIABLE_COUNT + _module.VariableFrameSize;
+            int stateSize = VARIABLE_COUNT + _module.Variables.Count;
             _state = new IVariable[stateSize];
             for (int i = 0; i < stateSize; i++)
             {
                 if (i < VARIABLE_COUNT)
-                    _state[i] = Variable.CreateContextPropertyReference(this, i);
+                    _state[i] = Variable.CreateContextPropertyReference(this, i, GetOwnPropName(i));
                 else
-                    _state[i] = Variable.Create(ValueFactory.Create());
+                    _state[i] = Variable.Create(ValueFactory.Create(), _module.Variables[i-VARIABLE_COUNT]);
             }
 
             ReadExportedSymbols(_module.ExportedMethods, _methodSearchCache);
@@ -112,13 +109,8 @@ namespace ScriptEngine.Machine.Contexts
         public void Initialize(MachineInstance runner)
         {
             _machine = runner;
-            _machine.StateConsistentOperation(() =>
-            {
-                _machine.SetModule(_module);
-                _machine.AttachContext(this, true);
-                _machine.ExecuteModuleBody();
-            });
-
+            _machine.ExecuteModuleBody(this);
+            
             var methId = GetScriptMethod("ПриСозданииОбъекта", "OnObjectCreate");
             int constructorParamsCount = ConstructorParams.Count();
             
@@ -182,14 +174,7 @@ namespace ScriptEngine.Machine.Contexts
 
         protected IValue CallScriptMethod(int methodIndex, IValue[] parameters)
         {
-            IValue returnValue = null;
-
-            _machine.StateConsistentOperation(() =>
-            {
-                _machine.SetModule(_module);
-                _machine.AttachContext(this, true);
-                returnValue = _machine.ExecuteMethod(methodIndex, parameters);
-            });
+            var returnValue = _machine.ExecuteMethod(this, methodIndex, parameters);
 
             return returnValue;
         }
@@ -221,6 +206,11 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
+        protected virtual string GetOwnPropName(int index)
+        {
+            throw new NotImplementedException();
+        }
+
         protected virtual void SetOwnPropValue(int index, IValue val)
         {
             throw new NotImplementedException();
@@ -245,13 +235,12 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
         {
             UpdateState();
 
             variables = _state;
             methods = AttachMethods();
-            instance = this;
 
             _machine = machine;
 
@@ -281,12 +270,6 @@ namespace ScriptEngine.Machine.Contexts
 
             return _attachableMethods;
         }
-
-        #endregion
-
-        #region IReflectableContext Members
-
-
 
         #endregion
 
@@ -392,12 +375,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                _machine.StateConsistentOperation(() =>
-                {
-                    _machine.AttachContext(this, true);
-                    _machine.SetModule(_module);
-                    _machine.ExecuteMethod(methodNumber - METHOD_COUNT, arguments);
-                });
+                _machine.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
             }
             else
             {
@@ -409,15 +387,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                IValue returnClosure = null;
-                _machine.StateConsistentOperation(() =>
-                {
-                    _machine.AttachContext(this, true);
-                    _machine.SetModule(_module);
-                    returnClosure = _machine.ExecuteMethod(methodNumber, arguments);
-                });
-
-                retValue = returnClosure;
+                retValue = _machine.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
             }
             else
             {

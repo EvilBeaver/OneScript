@@ -93,11 +93,10 @@ namespace oscript
 			return exitCode;
 		}
 
-		public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods, out IRuntimeContextInstance instance)
+		public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
 		{
 			variables = new IVariable[0];
 			methods = (MethodInfo[]) GetMethods();
-			instance = this;
 		}
 
 		public IEnumerable<VariableInfo> GetProperties()
@@ -267,6 +266,21 @@ namespace oscript
 			retValue = _methods.GetMethod(methodNumber)(this, arguments);
 		}
 
-		#endregion
-	}
+        public int GetPropCount()
+        {
+            return 0;
+        }
+
+        public string GetPropName(int propNum)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetMethodsCount()
+        {
+            return _methods.Count;
+        }
+
+        #endregion
+    }
 }

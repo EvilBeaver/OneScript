@@ -22,7 +22,7 @@ namespace ScriptEngine.HostedScript.Library
     /// Глобальный контекст. Представляет глобально доступные свойства и методы.
     /// </summary>
     [GlobalContext(Category="Процедуры и функции взаимодействия с системой", ManualRegistration=true)]
-    public class SystemGlobalContext : IRuntimeContextInstance, IAttachableContext
+    public class SystemGlobalContext : IAttachableContext
     {
         private IVariable[] _state;
         private FixedArrayImpl  _args;
@@ -61,9 +61,10 @@ namespace ScriptEngine.HostedScript.Library
         {
             _state = new IVariable[_properties.Count];
 
+            var propNames = _propHolder.GetProperties().OrderBy(x=>x.Value).Select(x=>x.Key).ToArray();
             for (int i = 0; i < _properties.Count; i++)
             {
-                _state[i] = Variable.CreateContextPropertyReference(this, i);
+                _state[i] = Variable.CreateContextPropertyReference(this, i, propNames[i]);
             }
         }
 
@@ -447,19 +448,18 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
         public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
         {
-            var accReflector = acceptor as IReflectableContext;
-            if (accReflector == null)
-                throw RuntimeException.InvalidArgumentValue();
-            
-            var srcReflector = source as IReflectableContext;
-            if (srcReflector == null)
-                throw RuntimeException.InvalidArgumentValue();
-
             IEnumerable<string> sourceProperties;
             IEnumerable<string> ignoredPropCollection;
-            if(filledProperties == null)
+            
+            if (filledProperties == null)
             {
-                sourceProperties = srcReflector.GetProperties().Select(x => x.Identifier);
+                string[] names = new string[source.GetPropCount()];
+                for (int i = 0; i < names.Length; i++)
+                {
+                    names[i] = source.GetPropName(i);
+                }
+
+                sourceProperties = names;
             }
             else
             {
@@ -550,28 +550,12 @@ namespace ScriptEngine.HostedScript.Library
 
         public void OnAttach(MachineInstance machine, 
             out IVariable[] variables, 
-            out MethodInfo[] methods, 
-            out IRuntimeContextInstance instance)
+            out MethodInfo[] methods)
         {
             variables = _state;
             methods = GetMethods().ToArray();
-            instance = this;
         }
-
-        public IEnumerable<VariableInfo> GetProperties()
-        {
-            VariableInfo[] array = new VariableInfo[_properties.Count];
-            foreach (var propKeyValue in _propHolder.GetProperties())
-            {
-                var descr = new VariableInfo();
-                descr.Identifier = propKeyValue.Key;
-                descr.Type = SymbolType.ContextProperty;
-                array[propKeyValue.Value] = descr;
-            }
-            
-            return array;
-        }
-
+        
         public IEnumerable<MethodInfo> GetMethods()
         {
             var array = new MethodInfo[_methods.Count];
@@ -638,6 +622,16 @@ namespace ScriptEngine.HostedScript.Library
             throw new InvalidOperationException("global props are not writable");
         }
 
+        public int GetPropCount()
+        {
+            return _properties.Count;
+        }
+
+        public string GetPropName(int index)
+        {
+            return _propHolder.GetProperties().First(x => x.Value == index).Key;
+        }
+
         public int FindMethod(string name)
         {
             return _methods.FindMethod(name);
@@ -646,6 +640,11 @@ namespace ScriptEngine.HostedScript.Library
         public MethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);
+        }
+
+        public int GetMethodsCount()
+        {
+            return _methods.Count;
         }
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments)

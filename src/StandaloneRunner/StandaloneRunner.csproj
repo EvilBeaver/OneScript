@@ -119,6 +119,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Ionic.Zip.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Newtonsoft.Json.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
