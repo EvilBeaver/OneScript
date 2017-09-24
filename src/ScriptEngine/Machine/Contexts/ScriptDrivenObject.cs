@@ -22,12 +22,7 @@ namespace ScriptEngine.Machine.Contexts
         private MethodInfo[] _attachableMethods;
         private readonly Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-        private IValue[] constructorParams = new IValue[0];
-
-        public IValue[] ConstructorParams { get { return constructorParams; } set { constructorParams = value; } }
-
-
+        
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
         }
@@ -106,52 +101,15 @@ namespace ScriptEngine.Machine.Contexts
             return indexInContext - METHOD_COUNT;
         }
 
+        protected virtual void OnInstanceCreation()
+        {
+            _machine.ExecuteModuleBody(this);
+        }
+
         public void Initialize(MachineInstance runner)
         {
             _machine = runner;
-            _machine.ExecuteModuleBody(this);
-            
-            var methId = GetScriptMethod("ПриСозданииОбъекта", "OnObjectCreate");
-            int constructorParamsCount = ConstructorParams.Count();
-            
-            if (methId > -1)
-            {
-                bool hasParamsError = false;
-                var procInfo = GetMethodInfo(methId);
-
-                int procParamsCount = procInfo.Params.Count();
-
-                if (procParamsCount < constructorParamsCount)
-                {
-                    hasParamsError = true;
-                }
-
-                int reqParams = 0;
-                foreach(var itm in procInfo.Params)
-                {
-                    if (!itm.HasDefaultValue) reqParams++;
-                }
-                if (reqParams > constructorParamsCount)
-                {
-                    hasParamsError = true;
-                }
-                if (hasParamsError)
-                {
-                    throw new RuntimeException("Параметры конструктора: "
-                        + "необходимых параметров: " + Math.Min(procParamsCount, reqParams).ToString()
-                        + ", передано параметров " + constructorParamsCount.ToString()
-                        );
-                }
-
-                CallAsProcedure(methId, ConstructorParams);
-            }
-            else
-            {
-                if (constructorParamsCount > 0)
-                {
-                    throw new RuntimeException("Конструктор не определен, но переданы параметры конструктора.");
-                }
-            }
+            OnInstanceCreation();
         }
 
         protected int GetScriptMethod(string methodName, string alias = null)
