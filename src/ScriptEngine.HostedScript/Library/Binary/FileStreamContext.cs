@@ -19,7 +19,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
     /// Следует учитывать, что помимо буферизации существует кэширование чтения и записи файлов в операционной системе, на которое невозможно повлиять программно.
     /// </summary>
     [ContextClass("ФайловыйПоток", "FileStream")]
-    public class FileStreamContext : AutoContext<FileStreamContext>
+    public class FileStreamContext : AutoContext<FileStreamContext>, IStreamWrapper
     {
 
         private readonly FileStream _underlyingStream;

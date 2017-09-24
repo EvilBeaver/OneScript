@@ -135,6 +135,7 @@
     <Compile Include="Machine\Contexts\GlobalContextBase.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
     <Compile Include="Machine\Contexts\ManagedCOMWrapperContext.cs" />
+    <Compile Include="Machine\Contexts\ReflectedClassType.cs" />
     <Compile Include="Machine\Contexts\ScriptInformationContext.cs" />
     <Compile Include="Machine\Contexts\SelfAwareEnumValue.cs" />
     <Compile Include="Machine\Contexts\ReflectableSDO.cs" />
