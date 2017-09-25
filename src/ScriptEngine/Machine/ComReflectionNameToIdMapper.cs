@@ -49,34 +49,6 @@ namespace ScriptEngine.Machine
             return id;
         }
 
-        private System.Reflection.MethodInfo[] GetMethods(string name)
-        {
-            return _reflectedType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
-                .Where((x) => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)).ToArray();
-        }
-
-        private static System.Reflection.MethodInfo ChooseBestMatchingMethod(System.Reflection.MethodInfo[] methods, IValue[] callParams)
-        {
-            // TODO: анализ типов, анализ параметров по-умолчанию
-            foreach (var mi in methods)
-            {
-                if (mi.GetParameters().Length == callParams.Length)
-                {
-                    return mi;
-                }
-            }
-            return methods[0];
-        }
-
-        private static object InvokeMethod(object instance, System.Reflection.MethodInfo[] methods, IValue[] callParams)
-        {
-            var mi = ChooseBestMatchingMethod(methods, callParams);
-            object[] castedParams = Contexts.COMWrapperContext.MarshalArgumentsStrict(mi, callParams);
-            return mi.Invoke(instance, castedParams);
-        }
-
-        public delegate object InvokationDelegate(IValue[] callParams);
-
         public int FindMethod(object instance, string name)
         {
             int id;
