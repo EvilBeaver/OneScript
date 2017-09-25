@@ -83,7 +83,7 @@ namespace ScriptEngine.Machine.Contexts
             return type.FullName == "System.__ComObject"; // string, cause it's hidden type
         }
 
-        protected static object[] MarshalArguments(IValue[] arguments)
+        public static object[] MarshalArguments(IValue[] arguments)
         {
             var args = arguments.Select(x => MarshalIValue(x)).ToArray();
             return args;

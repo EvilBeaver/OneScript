@@ -83,12 +83,16 @@ namespace ScriptEngine.Machine
             var hasMethod = _methodNames.TryGetIdOfName(name, out id);
             if (!hasMethod)
             {
-                var allMethodsInfo = GetMethods(name);
-                if (allMethodsInfo.Length == 0)
-                    throw RuntimeException.MethodNotFoundException(name);
-
-                var methodInfo = allMethodsInfo[0];
-                Func< IValue[], object > invoker = (IValue[] callParams) => { return InvokeMethod(instance, allMethodsInfo, callParams); };
+                Func< IValue[], object > invoker = (IValue[] callParams) =>
+                {
+                    return instance.GetType().InvokeMember(name,
+                        BindingFlags.InvokeMethod | BindingFlags.IgnoreCase
+                            | BindingFlags.Public | BindingFlags.OptionalParamBinding
+                            | BindingFlags.Instance,
+                        new ValueBinder(),
+                        instance,
+                        callParams.Cast<object>().ToArray());
+                };
 
                 id = _methodNames.RegisterName(name);
                 System.Diagnostics.Debug.Assert(_methodsCache.Count == id);
