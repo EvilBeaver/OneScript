@@ -80,10 +80,10 @@ namespace ScriptEngine.Machine.Contexts
             return LoadAndCreate(compiler, code, externalContext);
         }
 
-        public IRuntimeContextInstance LoadFromString(CompilerService compiler, string text)
+        public IRuntimeContextInstance LoadFromString(CompilerService compiler, string text, ExternalContextData externalContext = null)
         {
             var code = _engine.Loader.FromString(text);
-            return LoadAndCreate(compiler, code, null);
+            return LoadAndCreate(compiler, code, externalContext);
         }
 
 
