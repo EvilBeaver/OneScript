@@ -134,25 +134,25 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int FindMethod(string name)
         {
-            return _nameMapper.FindMethod(name);
+            return _nameMapper.FindMethod(_instance, name);
         }
 
         public override MethodInfo GetMethodInfo(int methodNumber)
         {
             var methodInfo = _nameMapper.GetMethod(methodNumber);
-            return GetReflectableMethod(methodInfo);
+            return GetReflectableMethod(methodInfo.Method);
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             var method = _nameMapper.GetMethod(methodNumber);
-            method.Invoke(_instance, MarshalArgumentsStrict(method, arguments));
+            method.Invoke(arguments);
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
             var method = _nameMapper.GetMethod(methodNumber);
-            var result = method.Invoke(_instance, MarshalArgumentsStrict(method, arguments));
+            var result = method.Invoke(arguments);
             retValue = CreateIValue(result);
         }
 

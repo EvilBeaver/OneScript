@@ -257,11 +257,6 @@ xcopy "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner\" /Y /E 
 cp -f "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner"
 cp -f "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner"</PostBuildEvent>
   </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
-xcopy "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
-xcopy "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
