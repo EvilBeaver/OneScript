@@ -33,11 +33,16 @@ namespace ScriptEngine.Machine
             _nameIndex[name] = idx;
         }
 
-        public T this[int index] { get => _values[index]; set => _values[index] = value; }
+        public T this[int index]
+        {
+            get { return _values[index]; }
+            set { _values[index] = value; }
+        }
+
         public T this[string name]
         {
-            get => this[IndexOf(name)];
-            set => this[IndexOf(name)] = value;
+            get { return this[IndexOf(name)]; }
+            set { this[IndexOf(name)] = value; }
         }
 
         public void AddName(int index, string name)
