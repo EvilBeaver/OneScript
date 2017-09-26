@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -153,6 +153,7 @@
     <Compile Include="Machine\GlobalInstancesManager.cs" />
     <Compile Include="Machine\IDebugController.cs" />
     <Compile Include="Machine\IndexedNamesCollection.cs" />
+    <Compile Include="Machine\IndexedNameValueCollection.cs" />
     <Compile Include="Machine\MachineStopManager.cs" />
     <Compile Include="Machine\MachineStoppedEventArgs.cs" />
     <Compile Include="Machine\NullValueImpl.cs" />
