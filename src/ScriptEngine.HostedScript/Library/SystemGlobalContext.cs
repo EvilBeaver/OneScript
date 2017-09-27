@@ -109,11 +109,40 @@ namespace ScriptEngine.HostedScript.Library
         /// Загруженный сценарий возвращается, как самостоятельный объект. 
         /// Экспортные свойства и методы скрипта доступны для вызова.
         /// </summary>
+        /// <param name="code">Текст сценария</param>
+        /// <param name="externalContext">Структура. Глобальные свойства, которые будут инжектированы в область видимости загружаемого скрипта. (Необязательный)</param>
+        /// <example>    Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит всем
+        ///    ЗагрузитьСценарийИзСтроки("Сообщить(ЧислоПи);", Контекст);</example>
+        [ContextMethod("ЗагрузитьСценарийИзСтроки", "LoadScriptFromString")]
+        public IRuntimeContextInstance LoadScriptFromString(string code, StructureImpl externalContext = null)
+        {
+            var compiler = EngineInstance.GetCompilerService();
+            if(externalContext == null)
+                return EngineInstance.AttachedScriptsFactory.LoadFromString(compiler, code);
+            else
+            {
+                var extData = new ExternalContextData();
+
+                foreach (var item in externalContext)
+                {
+                    extData.Add(item.Key.AsString(), item.Value);
+                }
+
+                return EngineInstance.AttachedScriptsFactory.LoadFromString(compiler, code, extData);
+
+            }
+        }
+        
+        /// <summary>
+        /// Создает экземпляр объекта на основании стороннего файла сценария.
+        /// Загруженный сценарий возвращается, как самостоятельный объект. 
+        /// Экспортные свойства и методы скрипта доступны для вызова.
+        /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
         /// <param name="externalContext">Структура. Глобальные свойства, которые будут инжектированы в область видимости загружаемого скрипта. (Необязательный)</param>
         /// <example>    Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит	
-	    ///    // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
-	    ///    Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
+        ///    // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
+        ///    Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
         public IRuntimeContextInstance LoadScript(string path, StructureImpl externalContext = null)
         {

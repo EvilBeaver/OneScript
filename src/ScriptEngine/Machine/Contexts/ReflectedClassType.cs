@@ -20,6 +20,7 @@ namespace ScriptEngine.Machine.Contexts
         private FieldInfo[] _fields;
         
         private ReflectedClassType(LoadedModule module, string typeName)
+            :base(typeof(object))
         {
             _typeName = typeName;
 
@@ -41,6 +42,7 @@ namespace ScriptEngine.Machine.Contexts
         private void ReflectVariables(LoadedModule module)
         {
             _properties = new PropertyInfo[module.ExportedProperies.Length];
+            _fields = new FieldInfo[0];
             for (int i = 0; i < module.ExportedProperies.Length; i++)
             {
                 var reflected = CreatePropInfo(module.ExportedProperies[i]);
@@ -73,6 +75,14 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         public override string Name => _typeName;
+        public override string FullName => Namespace + "." + Name;
+        public override Assembly Assembly => Assembly.GetExecutingAssembly();
+        public override bool ContainsGenericParameters => false;
+        public override string AssemblyQualifiedName => Assembly.CreateQualifiedName(Assembly.FullName, Name);
+        public override Type UnderlyingSystemType => typeof(ScriptDrivenObject);
+        public override Type BaseType => null;
+        public override IEnumerable<CustomAttributeData> CustomAttributes => null;
+        public override string Namespace => GetType().Namespace + ".dyn";
 
         public override FieldInfo[] GetFields(BindingFlags bindingAttr)
         {
@@ -102,6 +112,35 @@ namespace ScriptEngine.Machine.Contexts
         protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
         {
             return _properties.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Compare(x.Name, name) == 0);
+        }
+
+        public override MemberInfo[] GetMembers(BindingFlags bindingAttr)
+        {
+            var mems = new MemberInfo[_properties.Length + _fields.Length + _methods.Length];
+
+            Array.Copy(_fields, mems, _fields.Length);
+            Array.Copy(_properties, 0, mems, _fields.Length, _properties.Length);
+            Array.Copy(_methods, 0, mems, _properties.Length + _fields.Length, _methods.Length);
+
+            return mems;
+        }
+
+        public override MemberInfo[] GetMember(string name, MemberTypes type, BindingFlags bindingAttr)
+        {
+            switch (type)
+            {
+                case MemberTypes.Method:
+                    return new MemberInfo[] { GetMethod(name) };
+                case MemberTypes.Property:
+                    return new MemberInfo[] { GetProperty(name) };
+                default:
+                    return new MemberInfo[0];
+            }
+        }
+
+        public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
+        {
+            return new ConstructorInfo[0];
         }
 
         /////////////////////////////////////////////////////////////////////////////////////

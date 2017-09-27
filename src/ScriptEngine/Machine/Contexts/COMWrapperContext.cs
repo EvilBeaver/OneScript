@@ -23,10 +23,26 @@ namespace ScriptEngine.Machine.Contexts
         {
 
         }
-        
+
         public static COMWrapperContext Create(string progId, IValue[] arguments)
         {
-            var type = Type.GetTypeFromProgID(progId, true);
+            var type = Type.GetType(progId, throwOnError: false, ignoreCase: true);
+            if (type == null)
+            {
+                type = Type.GetTypeFromProgID(progId, throwOnError: true);
+            }
+
+            if (type.IsGenericType)
+            {
+                // В первом приближении мы заполняем параметры шаблона классом Object
+                // TODO: Продумать параметры шаблонного класса
+                var genericTypes = new List<Type>();
+                foreach (var ga in type.GetGenericArguments())
+                {
+                    genericTypes.Add(typeof(object));
+                }
+                type = type.MakeGenericType(genericTypes.ToArray());
+            }
 
             object instance = Activator.CreateInstance(type, MarshalArguments(arguments));
 
@@ -44,7 +60,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return new UnmanagedRCWComContext(instance);
             }
-            else if (IsObjectType(type))
+            else if (IsObjectType(type) || IsAStruct(type))
             {
                 return new ManagedCOMWrapperContext(instance);
             }
@@ -57,12 +73,17 @@ namespace ScriptEngine.Machine.Contexts
             return !type.IsPrimitive && !type.IsValueType;
         }
 
+        private static bool IsAStruct(Type type)
+        {
+            return !type.IsPrimitive && type.IsValueType;
+        }
+
         private static bool TypeIsRuntimeCallableWrapper(Type type)
         {
             return type.FullName == "System.__ComObject"; // string, cause it's hidden type
         }
 
-        protected static object[] MarshalArguments(IValue[] arguments)
+        public static object[] MarshalArguments(IValue[] arguments)
         {
             var args = arguments.Select(x => MarshalIValue(x)).ToArray();
             return args;
@@ -105,7 +126,7 @@ namespace ScriptEngine.Machine.Contexts
             return marshalledArgs;
         }
 
-        protected static object[] MarshalArgumentsStrict(System.Reflection.MethodInfo method, IValue[] arguments)
+        public static object[] MarshalArgumentsStrict(System.Reflection.MethodInfo method, IValue[] arguments)
         {
             var parameters = method.GetParameters();
 
@@ -179,7 +200,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return new SafeArrayWrapper(objParam);
             }
-            else if (IsObjectType(type))
+            else if (IsObjectType(type) || IsAStruct(type))
             {
                 COMWrapperContext ctx;
                 try
