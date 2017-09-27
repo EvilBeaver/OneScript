@@ -14,18 +14,10 @@ namespace oscript
 {
 	public static class Program
 	{
-		private static Encoding _encoding;
-
 		public static Encoding ConsoleOutputEncoding
 		{
-			get
-            {
-	            return _encoding;
-	        }
-	        set
-			{
-				_encoding = value;
-			}
+			get { return Output.ConsoleOutputEncoding; }
+			set { Output.ConsoleOutputEncoding = value; }
 		}
 
 		public static int Main(string[] args)
