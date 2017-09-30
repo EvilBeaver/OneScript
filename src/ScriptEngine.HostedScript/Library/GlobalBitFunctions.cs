@@ -17,8 +17,8 @@ namespace ScriptEngine.HostedScript.Library
 	/// <summary>
 	/// Глобальный контекст. Побитовые операции с целыми числами.
 	/// </summary>
-	[GlobalContext(Category="Побитовые операции с целыми числами", ManualRegistration=true)]
-	public class GlobalBitFunctions : IAttachableContext
+	[GlobalContext(Category="Побитовые операции с целыми числами")]
+	public sealed class GlobalBitFunctions : GlobalContextBase<GlobalBitFunctions>
 	{
 
 		/// <summary>
@@ -152,123 +152,9 @@ namespace ScriptEngine.HostedScript.Library
 			return value >> offset;
 		}
 
-		#region IAttachableContext Members
-
-		public void OnAttach(MachineInstance machine, 
-			out IVariable[] variables, 
-			out MethodInfo[] methods)
+		public static IAttachableContext CreateInstance()
 		{
-			variables = new IVariable[0];
-			methods = GetMethods().ToArray();
-		}
-
-		public IEnumerable<MethodInfo> GetMethods()
-		{
-			var array = new MethodInfo[_methods.Count];
-			for (int i = 0; i < _methods.Count; i++)
-			{
-				array[i] = _methods.GetMethodInfo(i);
-			}
-			return array;
-		}
-
-		#endregion
-
-		#region IRuntimeContextInstance Members
-
-		public bool IsIndexed
-		{
-			get 
-			{ 
-				return false; 
-			}
-		}
-
-		public bool DynamicMethodSignatures
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		public IValue GetIndexedValue(IValue index)
-		{
-			throw new NotSupportedException();
-		}
-
-		public void SetIndexedValue(IValue index, IValue val)
-		{
-			throw new NotSupportedException();
-		}
-
-		public int FindProperty(string name)
-		{
-			return -1;
-		}
-
-		public bool IsPropReadable(int propNum)
-		{
-			throw new NotSupportedException();
-		}
-
-		public bool IsPropWritable(int propNum)
-		{
-			throw new NotSupportedException();
-		}
-
-		public IValue GetPropValue(int propNum)
-		{
-			throw new NotSupportedException();
-		}
-
-		public void SetPropValue(int propNum, IValue newVal)
-		{
-			throw new NotSupportedException();
-		}
-
-		public int GetPropCount()
-		{
-			return 0;
-		}
-
-		public string GetPropName(int index)
-		{
-			throw new NotSupportedException();
-		}
-
-		public int FindMethod(string name)
-		{
-			return _methods.FindMethod(name);
-		}
-
-		public MethodInfo GetMethodInfo(int methodNumber)
-		{
-			return _methods.GetMethodInfo(methodNumber);
-		}
-
-		public int GetMethodsCount()
-		{
-			return _methods.Count;
-		}
-
-		public void CallAsProcedure(int methodNumber, IValue[] arguments)
-		{
-			_methods.GetMethod(methodNumber)(this, arguments);
-		}
-
-		public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
-		{
-			retValue = _methods.GetMethod(methodNumber)(this, arguments);
-		}
-
-		#endregion
-
-		private static readonly ContextMethodsMapper<GlobalBitFunctions> _methods;
-
-		static GlobalBitFunctions()
-		{
-			_methods = new ContextMethodsMapper<GlobalBitFunctions>();
+			return new GlobalBitFunctions();
 		}
 	}
 }

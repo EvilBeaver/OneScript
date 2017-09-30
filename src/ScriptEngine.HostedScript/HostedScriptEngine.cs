@@ -39,9 +39,6 @@ namespace ScriptEngine.HostedScript
 
             _env.InjectObject(_globalCtx, false);
             _engine.Environment = _env;
-            
-            _env.InjectObject(new GlobalBitFunctions(), asDynamicScope: false);
-
         }
 
         public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
