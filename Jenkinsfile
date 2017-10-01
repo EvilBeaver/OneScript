@@ -47,7 +47,10 @@ pipeline {
             steps {
                 ws("$workspace".replaceAll("%", "_"))
                 {
-                    unstash 'buildResults'
+                    dir('install/build'){
+						deleteDir()
+					}
+					unstash 'buildResults'
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:xUnitTest"
 
                     junit 'tests/tests.xml'
@@ -60,7 +63,12 @@ pipeline {
             agent { label 'master' }
 
             steps {
-                unstash 'buildResults'
+                
+				dir('install/build'){
+					deleteDir()
+				}
+				
+				unstash 'buildResults'
 
                 sh '''\
                 if [ ! -d lintests ]; then
@@ -92,7 +100,10 @@ pipeline {
             steps {
                 ws("$workspace".replaceAll("%", "_"))
                 {
-                    unstash 'buildResults'
+                    dir('install/build'){
+						deleteDir()
+					}
+					unstash 'buildResults'
                     //unstash 'sitedoc'
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:CreateZip;CreateInstall;CreateNuget"
                     archiveArtifacts artifacts: '**/dist/*.exe, **/dist/*.msi, **/dist/*.zip, **/dist/*.nupkg', fingerprint: true
@@ -106,7 +117,10 @@ pipeline {
 
             steps {
 
-                checkout scm
+                dir('install/build'){
+					deleteDir()
+				}
+				checkout scm
                 unstash 'buildResults'
 
                 sh '''
