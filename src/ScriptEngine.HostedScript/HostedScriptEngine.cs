@@ -39,7 +39,6 @@ namespace ScriptEngine.HostedScript
 
             _env.InjectObject(_globalCtx, false);
             _engine.Environment = _env;
-
         }
 
         public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
