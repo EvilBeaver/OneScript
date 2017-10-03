@@ -56,9 +56,9 @@ namespace DebugServer
                 return;
             }
 
-            if (!File.Exists(startupScript) && !Directory.Exists(startupScript))
+            if (!File.Exists(startupScript))
             {
-                SendErrorResponse(response, 1002, "Script '{path}' does not exist.", new { path = startupScript });
+                SendErrorResponse(response, 1002, "Script '{path}' does not exist.", new { path = Path.Combine(Directory.GetCurrentDirectory(), startupScript) });
                 return;
             }
 
