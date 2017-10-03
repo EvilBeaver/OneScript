@@ -1603,6 +1603,7 @@ namespace ScriptEngine.Compiler
             bool[] args = PushMethodArgumentsBeforeCall();
             AddCommand(OperationCode.LineNum, callLineNumber, CodeGenerationFlags.CodeStatistics);
             BuildMethodCall(identifier, args, true);
+            AddCommand(OperationCode.LineNum, callLineNumber, CodeGenerationFlags.DebugCode);
         }
 
         private bool[] PushMethodArgumentsBeforeCall()
