@@ -35,13 +35,14 @@ namespace DebugServer
         
         public override void Initialize(Response response, dynamic args)
         {
+            SessionLog.WriteLine("Initialize:" + args);
             SendResponse(response, new Capabilities()
             {
                 supportsConditionalBreakpoints = false,
                 supportsFunctionBreakpoints = false,
                 supportsConfigurationDoneRequest = true,
                 exceptionBreakpointFilters = new dynamic[0],
-                supportsEvaluateForHovers = false
+                supportsEvaluateForHovers = true
             });
 
             SendEvent(new InitializedEvent());
@@ -396,6 +397,14 @@ namespace DebugServer
             }
 
             var expression = (string) arguments.expression;
+            var context = (string) arguments.context;
+            if (context != "watch")
+            {
+                var result = new EvaluateResponseBody("Подсказка по значению пока не поддерживается");
+                SendResponse(response, result);
+                return;
+            }
+
             OneScript.DebugProtocol.Variable evalResult;
             try
             {
