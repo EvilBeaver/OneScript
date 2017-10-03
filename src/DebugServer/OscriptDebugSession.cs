@@ -400,8 +400,7 @@ namespace DebugServer
             var context = (string) arguments.context;
             if (context != "watch")
             {
-                var result = new EvaluateResponseBody("Подсказка по значению пока не поддерживается");
-                SendResponse(response, result);
+                SendResponse(response);
                 return;
             }
 
