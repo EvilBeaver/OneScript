@@ -181,7 +181,7 @@ namespace DebugServer
 
         public override void SetBreakpoints(Response response, dynamic arguments)
         {
-            SessionLog.WriteLine("Set breakpoints command accepted");
+            SessionLog.WriteLine($"Set breakpoints command accepted {arguments}");
 
             if ((bool)arguments.sourceModified)
             {
@@ -196,7 +196,12 @@ namespace DebugServer
 
             var path = (string) arguments.source.path;
             path = ConvertClientPathToDebugger(path);
-
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                // vscode иногда передает путь, где диск - маленькая буква
+                path = NormalizeDriveLetter(path);
+            }
+            
             var breaks = new List<OneScript.DebugProtocol.Breakpoint>();
 
             foreach (var srcBreakpoint in arguments.breakpoints)
@@ -206,19 +211,26 @@ namespace DebugServer
                 bpt.Source = path;
                 breaks.Add(bpt);
             }
-
-            SessionLog.WriteLine("process exited: " + _process.HasExited);
+            
             var confirmedBreaks = _process.SetBreakpoints(breaks);
             var confirmedBreaksVSCode = new List<VSCodeDebug.Breakpoint>(confirmedBreaks.Length);
             for (int i = 0; i < confirmedBreaks.Length; i++)
             {
                 confirmedBreaksVSCode.Add(new VSCodeDebug.Breakpoint(true, confirmedBreaks[i].Line));
             }
-
+            
             SendResponse(response, new SetBreakpointsResponseBody(confirmedBreaksVSCode));
             
         }
 
+        private string NormalizeDriveLetter(string path)
+        {
+            if (Path.IsPathRooted(path))
+                return path[0].ToString().ToUpperInvariant() + path.Substring(1);
+            else
+                return path;
+
+        }
 
         public void ThreadStopped(int threadId, ThreadStopReason reason)
         {
@@ -236,6 +248,13 @@ namespace DebugServer
 
         public override void ConfigurationDone(Response response, dynamic args)
         {
+            if (_process == null)
+            {
+                SessionLog.WriteLine("Config Done. Process is not started");
+                SendResponse(response);
+                return;
+            }
+            SessionLog.WriteLine("Config Done. Process is started");
             _process.BeginExecution();
             _startupPerformed = true;
             SendResponse(response);
