@@ -57,13 +57,13 @@ namespace OneScript.DebugProtocol
         [OperationContract]
         Variable Evaluate(int contextFrame, string expression);
 
-        [OperationContract]
+        [OperationContract(IsOneWay = true)]
         void Next();
 
-        [OperationContract]
+        [OperationContract(IsOneWay = true)]
         void StepIn();
 
-        [OperationContract]
+        [OperationContract(IsOneWay = true)]
         void StepOut();
     }
 
