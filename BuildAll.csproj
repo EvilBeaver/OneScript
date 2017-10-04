@@ -123,6 +123,7 @@
     
     <Copy SourceFiles="@(DbgFiles)"  DestinationFolder="$(DebugDest)\bin"/>
     <Move SourceFiles="$(OutputPathForBuild)\package.json" DestinationFolder="$(DebugDest)"/>
+    <Move SourceFiles="$(OutputPathForBuild)\images\mono-debug-icon.png" DestinationFolder="$(DebugDest)\images"/>
       
 		<ItemGroup>
 			

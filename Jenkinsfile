@@ -41,6 +41,25 @@ pipeline {
 
         }
 
+        stage('VSCode debugger Build') {
+            agent {
+                docker {
+                    image 'node'
+                    label 'linux'
+                }
+            }
+
+            steps {
+                unstash 'buildResults'
+                sh 'npm install vsce'
+                script {
+                    def vsceBin = pwd() + "/node_modules/.bin/vsce"
+                    sh "cd install/build/vscode && ${vsceBin} package"
+                    archiveArtifacts artifacts: 'install/build/vscode/*.vsix', fingerprint: true
+                }
+            }
+        }
+
         stage('Windows testing') {
             agent { label 'windows' }
 
