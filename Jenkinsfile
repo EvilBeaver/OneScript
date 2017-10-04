@@ -48,8 +48,11 @@ pipeline {
 
             steps {
                 unstash 'buildResults'
+                script {
+                   def output = sh(returnStdout: true, script: 'ls -alR').trim()
+                   echo "${output}"
+                }
                 sh 'npm install vsce'
-                sh 'ls -alR'
             }
         }
 
