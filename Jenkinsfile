@@ -54,10 +54,10 @@ pipeline {
                 sh 'npm install vsce'
                 script {
                     def vsceBin = pwd() + "./node_modules/.bin/vsce"
-                    dir('install/build/vscode') {
-                        sh "${vsceBin} package"
-                        archiveArtifacts artifacts: '*.vsix', fingerprint: true
-                    }
+                    pushd 'install/build/vscode'
+                    sh "${vsceBin} package"
+                    archiveArtifacts artifacts: '*.vsix', fingerprint: true
+                    popd
                 }
             }
         }
