@@ -41,6 +41,18 @@ pipeline {
 
         }
 
+        stage('VSCode debugger Build') {
+            agent {
+                docker 'node'
+            }
+
+            steps {
+                unstash 'buildResults'
+                sh 'npm install -g vsce'
+                sh 'ls -alR'
+            }
+        }
+
         stage('Windows testing') {
             agent { label 'windows' }
 
