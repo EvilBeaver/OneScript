@@ -53,7 +53,7 @@ pipeline {
                 unstash 'buildResults'
                 sh 'npm install vsce'
                 script {
-                    def vsceBin = pwd() + "./node_modules/.bin/vsce"
+                    def vsceBin = pwd() + "/node_modules/.bin/vsce"
                     sh 'cd install/build/vscode'
                     sh "${vsceBin} package"
                     archiveArtifacts artifacts: '*.vsix', fingerprint: true
