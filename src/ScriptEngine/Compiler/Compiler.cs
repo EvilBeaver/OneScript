@@ -1589,15 +1589,7 @@ namespace ScriptEngine.Compiler
                 AddCommand(OperationCode.LoadLoc, binding.CodeIndex);
             }
         }
-
-        private void BuildIndexedAccess(string identifier)
-        {
-            BuildPushVariable(identifier);
-            NextToken();
-            BuildExpression(Token.CloseBracket);
-            AddCommand(OperationCode.PushIndexed, 0);
-        }
-
+        
         private void BuildFunctionCall(string identifier, int callLineNumber)
         {
             bool[] args = PushMethodArgumentsBeforeCall();
