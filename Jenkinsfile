@@ -43,16 +43,22 @@ pipeline {
 
         stage('VSCode debugger Build') {
             agent {
-                docker 'node'
+                docker {
+                    image 'node'
+                    label 'linux'
+                }
             }
 
             steps {
                 unstash 'buildResults'
-                script {
-                   def output = sh(returnStdout: true, script: 'ls -alR').trim()
-                   echo "${output}"
-                }
                 sh 'npm install vsce'
+                script {
+                    def vsceBin = pwd() + "./node_modules/.bin/vsce"
+                    dir('install/build/vscode') {
+                        sh "${vsceBin} package"
+                        archiveArtifacts artifacts: '*.vsix', fingerprint: true
+                    }
+                }
             }
         }
 
