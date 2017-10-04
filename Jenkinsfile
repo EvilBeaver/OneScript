@@ -48,7 +48,7 @@ pipeline {
 
             steps {
                 unstash 'buildResults'
-                sh 'npm install -g vsce'
+                sh 'npm install vsce'
                 sh 'ls -alR'
             }
         }
