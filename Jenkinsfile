@@ -56,6 +56,7 @@ pipeline {
                     def vsceBin = pwd() + "/node_modules/.bin/vsce"
                     sh "cd install/build/vscode && ${vsceBin} package"
                     archiveArtifacts artifacts: 'install/build/vscode/*.vsix', fingerprint: true
+                    stash includes: 'install/build/vscode/*.vsix', name: 'vsix' 
                 }
             }
         }
@@ -170,11 +171,14 @@ pipeline {
             steps {
                 unstash 'winDist'
                 unstash 'linDist'
+                unstash 'vsix'
                 
                 sh '''
                 TARGET="/var/www/oscript.io/download/versions/night-build/"
-                sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.nuget dist/* $TARGET
+                sudo rsync -rv --delete --exclude mddoc*.zip dist/* $TARGET
                 sudo rsync -rv --delete --exclude *.src.rpm output/* $TARGET
+                sudo rsync -rv --delete install/build/vscode/*.vsix $TARGET
+                
                 '''.stripIndent()
             }
         }
