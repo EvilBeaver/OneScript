@@ -232,6 +232,11 @@ namespace ScriptEngine.HostedScript.Library.Http
                 request.Timeout = Timeout * 1000;
             }
 
+            if (uriBuilder.Scheme == HTTPS_SCHEME)
+            {
+                request.ServerCertificateValidationCallback = delegate { return true; };
+            }
+
             return request;
             
         }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{4585BA5D-9EC4-4C89-8250-2033D2AC2999}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -21,6 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandaloneRunner", "Standal
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D14BF321-348C-46B8-B96A-43A22BA7AC10}"
 	ProjectSection(SolutionItems) = preProject
+		..\BuildAll.csproj = ..\BuildAll.csproj
 		GlobalAssemblyInfo.cs = GlobalAssemblyInfo.cs
 	EndProjectSection
 EndProject
@@ -119,6 +120,7 @@ Global
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|x86.ActiveCfg = Release|Any CPU
+		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|x86.Build.0 = Release|Any CPU
 		{727A498F-BF50-42F8-8523-40C0B5B1B233}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{727A498F-BF50-42F8-8523-40C0B5B1B233}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{727A498F-BF50-42F8-8523-40C0B5B1B233}.Debug|x86.ActiveCfg = Debug|Any CPU

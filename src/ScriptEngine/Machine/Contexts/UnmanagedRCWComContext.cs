@@ -261,7 +261,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
+                    DispatchUtility.Invoke(_instance, GetDispIdByIndex(methodNumber), MarshalArguments(arguments));
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -270,7 +270,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.MethodNotFoundException("dispid[" + methodNumber.ToString() + "]");
+                throw RuntimeException.MethodNotFoundException("dispid[" + GetDispIdByIndex(methodNumber) + "]");
             }
         }
 
@@ -280,7 +280,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
+                    var result = DispatchUtility.Invoke(_instance, GetDispIdByIndex(methodNumber), MarshalArguments(arguments));
                     retValue = CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
@@ -290,7 +290,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.MethodNotFoundException("dispid[" + methodNumber.ToString() + "]");
+                throw RuntimeException.MethodNotFoundException("dispid[" + GetDispIdByIndex(methodNumber) + "]");
             }
         }
 

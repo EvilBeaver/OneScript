@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -135,6 +135,7 @@
     <Compile Include="Machine\Contexts\GlobalContextBase.cs" />
     <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
     <Compile Include="Machine\Contexts\ManagedCOMWrapperContext.cs" />
+    <Compile Include="Machine\Contexts\ReflectedClassType.cs" />
     <Compile Include="Machine\Contexts\ScriptInformationContext.cs" />
     <Compile Include="Machine\Contexts\SelfAwareEnumValue.cs" />
     <Compile Include="Machine\Contexts\ReflectableSDO.cs" />
@@ -152,12 +153,14 @@
     <Compile Include="Machine\GlobalInstancesManager.cs" />
     <Compile Include="Machine\IDebugController.cs" />
     <Compile Include="Machine\IndexedNamesCollection.cs" />
+    <Compile Include="Machine\IndexedNameValueCollection.cs" />
     <Compile Include="Machine\MachineStopManager.cs" />
     <Compile Include="Machine\MachineStoppedEventArgs.cs" />
     <Compile Include="Machine\NullValueImpl.cs" />
     <Compile Include="Machine\ParametrizedRuntimeException.cs" />
     <Compile Include="Machine\PropertyBag.cs" />
     <Compile Include="Machine\TypeTypeValue.cs" />
+    <Compile Include="Machine\ValueBinder.cs" />
     <Compile Include="Machine\ValueFormatter.cs" />
     <Compile Include="RuntimeEnvironment.cs" />
     <Compile Include="Environment\ScriptSourceFactory.cs" />

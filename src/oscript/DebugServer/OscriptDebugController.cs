@@ -12,6 +12,8 @@ using System.Text;
 using System.Threading;
 
 using OneScript.DebugProtocol;
+
+using ScriptEngine;
 using ScriptEngine.Machine;
 
 using Variable = OneScript.DebugProtocol.Variable;
@@ -201,9 +203,15 @@ namespace oscript.DebugServer
                     IsStructured = HasProperties(value)
                 };
             }
-            catch (RuntimeException e)
+            catch (ScriptException e)
             {
-                throw new FaultException(e.ErrorDescription);
+                return new Variable()
+                {
+                    Name = "$evalFault",
+                    Presentation = e.ErrorDescription,
+                    TypeName = "Ошибка",
+                    IsStructured = false
+                };
             }
         }
 

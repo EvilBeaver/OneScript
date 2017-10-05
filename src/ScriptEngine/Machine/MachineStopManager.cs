@@ -26,12 +26,22 @@ namespace ScriptEngine.Machine
 
     internal class MachineStopManager
     {
+        private struct StopPoint
+        {
+            public ExecutionFrame frame;
+            public int line;
+        }
+
         private DebugState _currentState = DebugState.Running;
         private readonly Breakpoints _breakpoints = new Breakpoints();
         private readonly MachineInstance _machine;
         private ExecutionFrame[] _stopFrames;
 
+        private StopPoint _lastStopPoint;
+        
         public MachineStopReason LastStopReason { get; internal set; }
+
+        public DebugState CurrentState => _currentState;
 
         public int SetBreakpoint(string module, int line)
         {
@@ -62,12 +72,25 @@ namespace ScriptEngine.Machine
 
             if (mustStop)
             {
-                if (_currentState == DebugState.Running)
-                    LastStopReason = MachineStopReason.Breakpoint;
-                else
-                    LastStopReason = MachineStopReason.Step;
+                // здесь мы уже останавливались
+                if (_lastStopPoint.frame != currentFrame || _lastStopPoint.line != currentFrame.LineNumber)
+                {
+                    if (_currentState == DebugState.Running)
+                        LastStopReason = MachineStopReason.Breakpoint;
+                    else
+                        LastStopReason = MachineStopReason.Step;
 
-                _currentState = DebugState.Running;
+                    _lastStopPoint = new StopPoint()
+                    {
+                        frame = currentFrame,
+                        line = currentFrame.LineNumber
+                    };
+                    _currentState = DebugState.Running;
+                }
+                else
+                {
+                    mustStop = false;
+                }
             }
 
             return mustStop;

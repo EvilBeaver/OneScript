@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 namespace ScriptEngine.Machine.Contexts
 {
    
-	class ReflectedMethodInfo : System.Reflection.MethodInfo
+	public class ReflectedMethodInfo : System.Reflection.MethodInfo
     {
 	    readonly string _name;
         int _dispId;

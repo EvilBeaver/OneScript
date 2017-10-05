@@ -75,6 +75,8 @@ namespace ScriptEngine.Machine.Contexts
             return _propNumbers.AsEnumerable();
         }
 
+        public int Count => _propNumbers.Count;
+        
         private bool IsValidIdentifier(string name)
         {
             return Utils.IsValidIdentifier(name);

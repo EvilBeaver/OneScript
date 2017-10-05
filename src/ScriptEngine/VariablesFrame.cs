@@ -12,6 +12,7 @@ using System.Text;
 
 namespace ScriptEngine
 {
+    [Serializable]
     internal class VariablesFrame : IList<string>
     {
         private readonly List<string> _data;

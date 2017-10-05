@@ -94,17 +94,17 @@ namespace ScriptEngine.Machine
 
         public TypeDescriptor GetTypeByName(string name)
         {
-            int ktIndex;
-            try
+            if (_knownTypesIndexes.ContainsKey(name))
             {
-                ktIndex = _knownTypesIndexes[name];
+                return _knownTypes[_knownTypesIndexes[name]].Descriptor;
             }
-            catch (KeyNotFoundException)
+            var clrType = Type.GetType(name, throwOnError: false, ignoreCase: true);
+            if (clrType != null)
             {
-                throw new RuntimeException(String.Format("Тип не зарегистрирован ({0})", name));
+                var td = RegisterType(name, typeof(COMWrapperContext));
+                return td;
             }
-
-            return _knownTypes[ktIndex].Descriptor;
+            throw new RuntimeException(String.Format("Тип не зарегистрирован ({0})", name));
         }
 
         public TypeDescriptor GetTypeById(int id)

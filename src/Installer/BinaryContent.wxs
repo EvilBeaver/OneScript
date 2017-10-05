@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Fragment>
+    <Fragment>
     <DirectoryRef Id="BinFolder">
       <Component Id="Engine" Guid="4A83F6D9-5F9A-4628-9861-BF3AD53D0E50">
         <File Source="$(var.OutputPathForBuild)bin\ScriptEngine.dll"></File>
@@ -14,6 +14,7 @@
 
       <Component Id="ConsoleApp" Guid="D42B2795-B9DF-490F-B469-AB06E25085D7">
         <File Source="$(var.OutputPathForBuild)bin\oscript.exe"></File>
+        <File Source="$(var.OutputPathForBuild)bin\OneScript.DebugProtocol.dll"></File>
       </Component>
 
       <Component Id="TestApp" Guid="9C435D24-3B33-42DA-AE7F-D5604B11DC05">
@@ -41,5 +42,5 @@
       </Component>
 
     </DirectoryRef>
-	</Fragment>
+    </Fragment>
 </Wix>

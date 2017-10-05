@@ -55,13 +55,21 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsString();
             }
-            else if (type == typeof(int) || type == typeof(uint) || type == typeof(short) || type == typeof(ushort) || type == typeof(byte) || type == typeof(sbyte))
+            else if (type == typeof(int) || type == typeof(short) || type == typeof(sbyte))
             {
                 valueObj = (int)value.AsNumber();
             }
-            else if (type == typeof(long) || type == typeof(ulong))
+            else if (type == typeof(uint) || type == typeof(ushort) || type == typeof(byte))
+            {
+                valueObj = (uint)value.AsNumber();
+            }
+            else if (type == typeof(long))
             {
                 valueObj = (long)value.AsNumber();
+            }
+            else if (type == typeof(ulong))
+            {
+                valueObj = (ulong)value.AsNumber();
             }
             else if (type == typeof(double) || type == typeof(decimal))
             {

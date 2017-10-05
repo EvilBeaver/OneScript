@@ -1163,10 +1163,19 @@ namespace ScriptEngine.Machine
             else
             {
                 PopFrame();
-                EmitStopEventIfNecessary();
+                if(DebugStepInProgress())
+                    EmitStopEventIfNecessary();
             }
         }
-        
+
+        private bool DebugStepInProgress()
+        {
+            if (_stopManager == null)
+                return false;
+
+            return _stopManager.CurrentState == DebugState.SteppingOut || _stopManager.CurrentState == DebugState.SteppingOver;
+        }
+
         private void JmpCounter(int arg)
         {
             var counter = _operationStack.Pop();

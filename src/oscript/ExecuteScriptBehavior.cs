@@ -44,7 +44,7 @@ namespace oscript
 
             var hostedScript = new HostedScriptEngine();
             hostedScript.DebugController = DebugController;
-            //hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
+            hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
 
