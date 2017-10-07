@@ -42,9 +42,9 @@ class DataReader : AutoContext<DataReader>
     /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие.
     /// </summary>
     ///
-    /// <param name="BinaryData">
+    /// <param name="binaryData">
     /// Экземпляр объекта ДвоичныеДанные, из которого будет выполнено чтение. </param>
-    /// <param name="TextEncoding">
+    /// <param name="textEncoding">
     /// Определяет кодировку текста, используемую для чтения данных. По-умолчанию используется кодировка UTF-8.
     /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста, так и в виде строки с указанием названия кодировки.
     /// 
@@ -58,8 +58,8 @@ class DataReader : AutoContext<DataReader>
     /// <param name="convertibleSplitterOfLines">
     /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
     /// Значение по умолчанию: ВК + ПС. </param>
-    [ScriptConstructor]
-    public static IRuntimeContextInstance Constructor(IValue BinaryData, IValue TextEncoding = null, IValue ByteOrder = null, string LineSplitter = null, string ConvertibleSplitterOfLines = null)
+    [ScriptConstructor(Name = "На основании двоичных данных")]
+    public static IRuntimeContextInstance Constructor(IValue binaryData, IValue textEncoding = null, IValue byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
     {
         throw new NotImplementedException();
     }
@@ -70,25 +70,26 @@ class DataReader : AutoContext<DataReader>
     /// При этом будет файл, указанный в параметре ИмяФайла, будет автоматически открыт на чтение. 
     /// Если файл с таким именем не существует, будет сгенерировано исключение.
     /// 
-    /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие. При этом файл, указанный в параметре <ИмяФайла>, будет автоматически закрыт.
+    /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие. При этом файл, указанный в параметре &lt;ИмяФайла&gt;, будет автоматически закрыт.
     /// </summary>
     ///
-    /// <param name="FileName">
+    /// <param name="fileName">
     /// Имя файла, из которого будет выполнено чтение данных. </param>
-    /// <param name="TextEncoding">
+    /// <param name="textEncoding">
     /// Определяет кодировку текста, используемую для чтения файла. По-умолчанию используется кодировка UTF-8.
     /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста, так и в виде строки с указанием названия кодировки.
     /// Значение по умолчанию: UTF8. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
-    /// <param name="ByteOrder">
+    /// <param name="byteOrder">
     /// Порядок байтов, используемый для декодирования целых чисел при чтении из потока.
     /// Значение по умолчанию: LittleEndian. </param>
-    /// <param name="LineSplitter">
+    /// <param name="lineSplitter">
     /// Строка, используемая в качестве разделителя строки в файле.
     /// Значение по умолчанию: Неопределено. </param>
-    /// <param name="ConvertibleSplitterOfLines">
+    /// <param name="convertibleSplitterOfLines">
     /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
     /// Значение по умолчанию: ВК + ПС. </param>
-    public static IRuntimeContextInstance Constructor(string FileName, IValue TextEncoding = null, IValue ByteOrder = null, string LineSplitter = null, string ConvertibleSplitterOfLines = null)
+    [ScriptConstructor(Name = "На основании имени файла")]
+    public static IRuntimeContextInstance Constructor(string fileName, IValue textEncoding = null, IValue byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
     {
         throw new NotImplementedException();
     }
@@ -99,23 +100,23 @@ class DataReader : AutoContext<DataReader>
     /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие.
     /// </summary>
     ///
-    /// <param name="Stream">
+    /// <param name="stream">
     /// Поток, из которого будет производиться чтение данных. Типы: Поток (Stream), ПотокВПамяти (MemoryStream), ФайловыйПоток (FileStream) </param>
-    /// <param name="TextEncoding">
+    /// <param name="textEncoding">
     /// Определяет кодировку текста, используемую для чтения данных. По-умолчанию используется кодировка UTF-8.
     /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста, так и в виде строки с указанием названия кодировки.
     /// Значение по умолчанию: UTF8. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
-    /// <param name="ByteOrder">
+    /// <param name="byteOrder">
     /// Порядок байтов, используемый для декодирования целых чисел при чтении из потока.
     /// Значение по умолчанию: LittleEndian. </param>
-    /// <param name="LineSplitter">
+    /// <param name="lineSplitter">
     /// Определяет строку, разделяющую строки в потоке.
     /// Значение по умолчанию: Неопределено. </param>
-    /// <param name="ConvertibleSplitterOfLines">
+    /// <param name="convertibleSplitterOfLines">
     /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
     /// Значение по умолчанию: ВК + ПС. </param>
-    [ScriptConstructor]
-    public static IRuntimeContextInstance Constructor1(IValue Stream, IValue TextEncoding = null, IValue ByteOrder = null, string LineSplitter = null, string ConvertibleSplitterOfLines = null)
+    [ScriptConstructor(Name = "На основании потока")]
+    public static IRuntimeContextInstance Constructor1(IValue stream, IValue textEncoding = null, IValue byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
     {
         throw new NotImplementedException();
     }
@@ -192,18 +193,18 @@ class DataReader : AutoContext<DataReader>
     /// Пропускает при чтении указанное количество байтов в потоке.
     /// </summary>
     ///
-    /// <param name="Number">
+    /// <param name="number">
     /// Количество байтов, которые требуется пропустить. </param>
     ///
     /// <returns name="Number">
     /// </returns>
     ///
     [ContextMethod("Пропустить", "Skip")]
-    public int Skip(int Number)
+    public int Skip(int number)
     {
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// 
     /// Пропускает при чтении двоичные данные до указанного разделителя.
@@ -214,17 +215,17 @@ class DataReader : AutoContext<DataReader>
     /// Пропуск до двоичного маркера
     /// </remarks>
     ///
-    /// <param name="Marker">
+    /// <param name="marker">
     /// Маркер, до которого требуется пропустить данные. </param>
     ///
     /// <returns name="Number"/>
     ///
     [ContextMethod("ПропуститьДо", "SkipTo")]
-    public int SkipTo(IValue Marker)
+    public int SkipTo(IValue marker)
     {
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// 
     /// Пропускает при чтении двоичные данные до указанного разделителя.
@@ -235,16 +236,16 @@ class DataReader : AutoContext<DataReader>
     /// Пропуск до строкового маркера
     /// </remarks>
     ///
-    /// <param name="Marker">
+    /// <param name="marker">
     /// Маркер, до которого требуется пропустить данные. </param>
-    /// <param name="Encoding">
+    /// <param name="encoding">
     /// Кодировка текста.
     /// Значение по умолчанию: Неопределено. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
     ///
     /// <returns name="Number"/>
     ///
     [ContextMethod("ПропуститьДо", "SkipTo")]
-    public int SkipTo(string Marker, IValue Encoding = null)
+    public int SkipTo(string marker, IValue encoding = null)
     {
         throw new NotImplementedException();
     }
@@ -260,16 +261,16 @@ class DataReader : AutoContext<DataReader>
     /// Пропуск до смешанного набора маркеров
     /// </remarks>
     ///
-    /// <param name="Markers">
+    /// <param name="markers">
     /// Массив маркеров, до которых надо пропустить данные. Элементы массива могут иметь тип БуферДвоичныхДанных или Строка.
     /// Данные пропускаются до первого встреченного маркера наибольшей возможной длины. </param>
-    /// <param name="Encoding">
+    /// <param name="encoding">
     /// Кодировка текста.
     /// 
     /// Значение по умолчанию: Неопределено. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
     ///
     [ContextMethod("ПропуститьДо", "SkipTo")]
-    public int SkipTo(IValue Markers, IValue Encoding = null)
+    public int SkipTo(IValue markers, IValue encoding = null)
     {
         throw new NotImplementedException();
     }
@@ -317,14 +318,14 @@ class DataReader : AutoContext<DataReader>
     /// Чтение в новый буфер
     /// </remarks>
     ///
-    /// <param name="Number">
+    /// <param name="number">
     /// Количество байтов, которые требуется прочитать. Если не задано, то выполняется чтение всех байтов до конца потока.
     /// Значение по умолчанию: Неопределено. </param>
     ///
     /// <returns name="BinaryDataBuffer"/>
     ///
     [ContextMethod("ПрочитатьВБуферДвоичныхДанных", "ReadIntoBinaryDataBuffer")]
-    public IValue ReadIntoBinaryDataBuffer(int Number = 0)
+    public IValue ReadIntoBinaryDataBuffer(int number = 0)
     {
         throw new NotImplementedException();
     }
@@ -340,17 +341,17 @@ class DataReader : AutoContext<DataReader>
     /// Чтение в существующий буфер
     /// </remarks>
     ///
-    /// <param name="Buffer">
+    /// <param name="buffer">
     /// Буфер двоичных данных, в который требуется поместить прочитанные байты. </param>
-    /// <param name="PositionInBuffer">
+    /// <param name="positionInBuffer">
     /// Позиция в буфере, начиная с которой требуется записать прочитанные данные. </param>
-    /// <param name="Number">
+    /// <param name="number">
     /// Количество байтов, которые требуется прочитать. </param>
     ///
     /// <returns name="BinaryDataBuffer"/>
     ///
     [ContextMethod("ПрочитатьВБуферДвоичныхДанных", "ReadIntoBinaryDataBuffer")]
-    public IValue ReadIntoBinaryDataBuffer(IValue Buffer, int PositionInBuffer, int Number)
+    public IValue ReadIntoBinaryDataBuffer(IValue buffer, int positionInBuffer, int number)
     {
         throw new NotImplementedException();
     }
@@ -366,14 +367,14 @@ class DataReader : AutoContext<DataReader>
     /// Чтение до двоичного маркера
     /// </remarks>
     ///
-    /// <param name="Marker">
+    /// <param name="marker">
     /// Маркер, до которого выполняется чтение данных. </param>
     ///
     /// <returns name="ReadDataResult">
     /// Содержит описание результата чтения данных из потока.</returns>
     ///
     [ContextMethod("ПрочитатьДо", "ReadTo")]
-    public IValue ReadTo(IValue Marker)
+    public IValue ReadTo(IValue marker)
     {
         throw new NotImplementedException();
     }
@@ -389,9 +390,9 @@ class DataReader : AutoContext<DataReader>
     /// Чтение до строкового маркера
     /// </remarks>
     ///
-    /// <param name="Marker">
+    /// <param name="marker">
     /// Маркер, до которого выполняется чтение. </param>
-    /// <param name="Encoding">
+    /// <param name="encoding">
     /// Кодировка текста для определения строковых маркеров в двоичном потоке. 
     /// Если параметр не установлен, используется кодировка, указанная для текущего экземпляра ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
@@ -400,11 +401,11 @@ class DataReader : AutoContext<DataReader>
     /// Содержит описание результата чтения данных из потока.</returns>
     ///
     [ContextMethod("ПрочитатьДо", "ReadTo")]
-    public IValue ReadTo(string Marker, IValue Encoding = null)
+    public IValue ReadTo(string marker, IValue encoding = null)
     {
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// 
     /// Выполняет чтение двоичных данных до указанного маркера.
@@ -415,9 +416,9 @@ class DataReader : AutoContext<DataReader>
     /// Чтение до смешанного набора маркеров
     /// </remarks>
     ///
-    /// <param name="Markers">
+    /// <param name="markers">
     /// Массив, содержащий маркеры. Элементы массива могут иметь тип БуферДвоичныхДанных или Строка. </param>
-    /// <param name="Encoding">
+    /// <param name="encoding">
     /// Кодировка текста для определения строковых маркеров в двоичном потоке. 
     /// Если параметр не установлен, используется кодировка, указанная для текущего экземпляра ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
@@ -426,7 +427,7 @@ class DataReader : AutoContext<DataReader>
     /// Содержит описание результата чтения данных из потока.</returns>
     ///
     [ContextMethod("ПрочитатьДо", "ReadTo")]
-    public IValue ReadTo(IValue Markers, IValue Encoding = null)
+    public IValue ReadTo(IValue markers, IValue encoding = null)
     {
         throw new NotImplementedException();
     }
@@ -437,10 +438,10 @@ class DataReader : AutoContext<DataReader>
     /// Выполняет чтение заданного количества символов из потока в виде строки. Если количество символов не задано, выполняется чтение всего остатка потока.
     /// </summary>
     ///
-    /// <param name="Count">
+    /// <param name="count">
     /// Количество символов, которые требуется прочитать. Если не установлено, то будут прочитаны все символы до конца потока.
     /// Значение по умолчанию: Неопределено. </param>
-    /// <param name="Encoding">
+    /// <param name="encoding">
     /// Определяет кодировку текста. Если не установлена, используется кодировка, заданная для данного объекта ЧтениеДанных.
     /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста, так и в виде строки с указанием названия кодировки.
     /// Значение по умолчанию: Неопределено. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
@@ -448,28 +449,28 @@ class DataReader : AutoContext<DataReader>
     /// <returns name="String"/>
     ///
     [ContextMethod("ПрочитатьСимволы", "ReadChars")]
-    public string ReadChars(int Count = 0, IValue Encoding = null)
+    public string ReadChars(int count = 0, IValue encoding = null)
     {
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// 
     /// Выполняет чтение строки текста до разделителя строки. Если разделитель не найден, чтение выполняется до конца потока.
     /// Если разделитель строки не задан явно, используется разделитель строки, указанный для данного экземпляра объекта ЧтениеДанных.
     /// </summary>
     ///
-    /// <param name="Encoding">
+    /// <param name="encoding">
     /// Кодировка текста. Если не установлена, используется кодировка, заданная для текущего экземпляра ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
-    /// <param name="LineSplitter">
+    /// <param name="lineSplitter">
     /// Указывает строку, являющуюся разделителем строк в читаемых данных. Если параметр не указан, используется разделитель строк, указанный для текущего экземпляра объекта ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. </param>
     ///
     /// <returns name="String"/>
     ///
     [ContextMethod("ПрочитатьСтроку", "ReadLine")]
-    public string ReadLine(IValue Encoding = null, string LineSplitter = null)
+    public string ReadLine(IValue encoding = null, string lineSplitter = null)
     {
         throw new NotImplementedException();
     }
@@ -479,7 +480,7 @@ class DataReader : AutoContext<DataReader>
     /// Считывает 16-битное целое число из потока.
     /// </summary>
     ///
-    /// <param name="ByteOrder">
+    /// <param name="byteOrder">
     /// Порядок байтов, используемый при чтении числа.
     /// Если не задан, используется порядок, определенный для текущего экземпляра ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. </param>
@@ -487,7 +488,7 @@ class DataReader : AutoContext<DataReader>
     /// <returns name="Number"/>
     ///
     [ContextMethod("ПрочитатьЦелое16", "ReadInt16")]
-    public int ReadInt16(IValue ByteOrder = null)
+    public int ReadInt16(IValue byteOrder = null)
     {
         throw new NotImplementedException();
     }
@@ -498,7 +499,7 @@ class DataReader : AutoContext<DataReader>
     /// Прочитать 32-битное целое число из потока.
     /// </summary>
     ///
-    /// <param name="ByteOrder">
+    /// <param name="byteOrder">
     /// Порядок байтов, используемый при чтении числа.
     /// Если не задан, используется порядок, определенный для текущего экземпляра ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. </param>
@@ -507,7 +508,7 @@ class DataReader : AutoContext<DataReader>
     /// Числовым типом может быть представлено любое десятичное число. Над данными числового типа определены основные арифметические операции: сложение, вычитание, умножение и деление. Максимально допустимая разрядность числа 38 знаков.</returns>
     ///
     [ContextMethod("ПрочитатьЦелое32", "ReadInt32")]
-    public int ReadInt32(IValue ByteOrder = null)
+    public int ReadInt32(IValue byteOrder = null)
     {
         throw new NotImplementedException();
     }
@@ -518,7 +519,7 @@ class DataReader : AutoContext<DataReader>
     /// Считывает 64-битное целое число из потока.
     /// </summary>
     ///
-    /// <param name="ByteOrder">
+    /// <param name="byteOrder">
     /// Устанавливает порядок байтов, используя который число будет прочитано. Если порядок байтов не задан, то используется порядок байтов, определенный для текущего экземпляра ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. </param>
     ///
@@ -526,7 +527,7 @@ class DataReader : AutoContext<DataReader>
     /// Числовым типом может быть представлено любое десятичное число. Над данными числового типа определены основные арифметические операции: сложение, вычитание, умножение и деление. Максимально допустимая разрядность числа 38 знаков.</returns>
     ///
     [ContextMethod("ПрочитатьЦелое64", "ReadInt64")]
-    public int ReadInt64(IValue ByteOrder = null)
+    public int ReadInt64(IValue byteOrder = null)
     {
         throw new NotImplementedException();
     }
@@ -542,13 +543,13 @@ class DataReader : AutoContext<DataReader>
     /// По двоичному разделителю
     /// </remarks>
     ///
-    /// <param name="Separator">
+    /// <param name="separator">
     /// Двоичный разделитель данных. </param>
     ///
     /// <returns name="Array"/>
     ///
     [ContextMethod("Разделить", "Split")]
-    public IValue Split(IValue Separator)
+    public IValue Split(IValue separator)
     {
         throw new NotImplementedException();
     }
@@ -564,20 +565,20 @@ class DataReader : AutoContext<DataReader>
     /// По строковому разделителю
     /// </remarks>
     ///
-    /// <param name="Separator">
+    /// <param name="separator">
     /// Разделитель данных в виде строки. </param>
-    /// <param name="Encoding">
+    /// <param name="encoding">
     /// Кодировка текста. Если не задана, то используется кодировка, заданная для текущего экземпляра объекта ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
     ///
     /// <returns name="Array"/>
     ///
     [ContextMethod("Разделить", "Split")]
-    public IValue Split(string Separator, IValue Encoding = null)
+    public IValue Split(string separator, IValue encoding = null)
     {
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// 
     /// Разделяет остаток данных по заданным разделителям.
@@ -588,16 +589,16 @@ class DataReader : AutoContext<DataReader>
     /// По набору смешанных разделителей
     /// </remarks>
     ///
-    /// <param name="Separators">
+    /// <param name="separators">
     /// Массив разделителей может содержать элементы типа БуферДвоичныхДанных или Строка. </param>
-    /// <param name="Encoding">
+    /// <param name="encoding">
     /// Кодировка текста. Если не установлена, используется кодировка, заданная для текущего экземпляра ЧтениеДанных.
     /// Значение по умолчанию: Неопределено. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
     ///
     /// <returns name="Array"/>
     ///
     [ContextMethod("Разделить", "Split")]
-    public IValue Split(IValue Separators, IValue Encoding = null)
+    public IValue Split(IValue separators, IValue encoding = null)
     {
         throw new NotImplementedException();
     }
@@ -607,13 +608,13 @@ class DataReader : AutoContext<DataReader>
     /// Разделяет остаток данных на части заданного размера. Размер части указывается в байтах.
     /// </summary>
     ///
-    /// <param name="PartSizw">
+    /// <param name="partSizw">
     /// Размер части данных в байтах. </param>
     ///
     /// <returns name="Array"/>
     ///
     [ContextMethod("РазделитьНаЧастиПо", "SplitInPartsOf")]
-    public IValue SplitInPartsOf(int PartSizw)
+    public IValue SplitInPartsOf(int partSizw)
     {
         throw new NotImplementedException();
     }

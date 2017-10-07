@@ -113,7 +113,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             return _body.GetAsString();
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static HttpRequestContext Constructor()
         {
             return new HttpRequestContext();

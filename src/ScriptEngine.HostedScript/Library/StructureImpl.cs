@@ -218,7 +218,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="strProperties">Строка с именами свойств, указанными через запятую.</param>
         /// <param name="args">Значения свойств. Каждое значение передается, как отдельный параметр.</param>
-        [ScriptConstructor(Name="На основании свойств и значений")]
+        [ScriptConstructor(Name = "По ключам и значениям")]
         public static IRuntimeContextInstance Constructor(IValue strProperties, IValue[] args)
         {
             var rawArgument = strProperties.GetRawValue();

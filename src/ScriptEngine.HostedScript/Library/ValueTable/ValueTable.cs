@@ -58,7 +58,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Количество", "Count")]
         public int Count()
         {
-            return _rows.Count();
+            return _rows.Count;
         }
 
         /// <summary>
@@ -89,24 +89,24 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Удаляет строку
         /// </summary>
-        /// <param name="Row">
+        /// <param name="row">
         /// СтрокаТаблицыЗначений - Удаляемая строка
         /// Число - Индекс удаляемой строки
         /// </param>
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue Row)
+        public void Delete(IValue row)
         {
-            Row = Row.GetRawValue();
+            row = row.GetRawValue();
             int index;
-            if (Row is ValueTableRow)
+            if (row is ValueTableRow)
             {
-                index = _rows.IndexOf(Row as ValueTableRow);
+                index = _rows.IndexOf(row as ValueTableRow);
                 if (index == -1)
                     throw RuntimeException.InvalidArgumentValue();
             }
             else
             {
-                index = Decimal.ToInt32(Row.AsNumber());
+                index = Decimal.ToInt32(row.AsNumber());
             }
             _rows.RemoveAt(index);
         }
@@ -114,42 +114,42 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Загружает значения в колонку
         /// </summary>
-        /// <param name="Values">Массив - Значения для загрузки в колонку</param>
-        /// <param name="ColumnIndex">
+        /// <param name="values">Массив - Значения для загрузки в колонку</param>
+        /// <param name="columnIndex">
         /// Строка - Имя колонки для загрузки
         /// Число - Индекс колонки для загрузки
         /// КолонкаТаблицыЗначений - Колонка для загрузки
         /// </param>
         [ContextMethod("ЗагрузитьКолонку", "LoadColumn")]
-        public void LoadColumn(IValue Values, IValue ColumnIndex)
+        public void LoadColumn(IValue values, IValue columnIndex)
         {
             // ValueTableColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
             var row_iterator = _rows.GetEnumerator();
-            var array_iterator = (Values as ArrayImpl).GetEnumerator();
+            var array_iterator = (values as ArrayImpl).GetEnumerator();
 
             while (row_iterator.MoveNext() && array_iterator.MoveNext())
             {
-                row_iterator.Current.Set(ColumnIndex, array_iterator.Current);
+                row_iterator.Current.Set(columnIndex, array_iterator.Current);
             }
         }
 
         /// <summary>
         /// Выгружает значения колонки в новый массив
         /// </summary>
-        /// <param name="Column">
+        /// <param name="column">
         /// Строка - Имя колонки для выгрузки
         /// Число - Индекс колонки для выгрузки
         /// КолонкаТаблицыЗначений - Колонка для выгрузки
         /// </param>
         /// <returns>Массив</returns>
         [ContextMethod("ВыгрузитьКолонку", "UnloadColumn")]
-        public ArrayImpl UnloadColumn(IValue Column)
+        public ArrayImpl UnloadColumn(IValue column)
         {
             ArrayImpl result = new ArrayImpl();
 
             foreach (ValueTableRow row in _rows)
             {
-                result.Add(row.Get(Column));
+                result.Add(row.Get(column));
             }
 
             return result;
@@ -189,17 +189,17 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Заполнить колонку/колонки указанным значением
         /// </summary>
-        /// <param name="Value">Произвольный - Устанавливаемое значение</param>
-        /// <param name="ColumnNames">Строка - Список имен колонок для установки значения (разделены запятыми)</param>
+        /// <param name="value">Произвольный - Устанавливаемое значение</param>
+        /// <param name="columnNames">Строка - Список имен колонок для установки значения (разделены запятыми)</param>
         [ContextMethod("ЗаполнитьЗначения", "FillValues")]
-        public void FillValues(IValue Value, string ColumnNames = null)
+        public void FillValues(IValue value, string columnNames = null)
         {
-            List<ValueTableColumn> processing_list = GetProcessingColumnList(ColumnNames);
+            List<ValueTableColumn> processing_list = GetProcessingColumnList(columnNames);
             foreach (ValueTableRow row in _rows)
             {
                 foreach (ValueTableColumn col in processing_list)
                 {
-                    row.Set(col, Value);
+                    row.Set(col, value);
                 }
             }
         }
@@ -207,15 +207,15 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Получить индекс указанной строки
         /// </summary>
-        /// <param name="Row">СтрокаТаблицыЗначений - Строка таблицы значений, для которой необходимо определить индекс</param>
+        /// <param name="row">СтрокаТаблицыЗначений - Строка таблицы значений, для которой необходимо определить индекс</param>
         /// <returns>Число - Индекс в коллекции, если не найдено возвращает -1</returns>
         [ContextMethod("Индекс", "IndexOf")]
-        public int IndexOf(IValue Row)
+        public int IndexOf(IValue row)
         {
-            Row = Row.GetRawValue();
+            row = row.GetRawValue();
 
-            if (Row is ValueTableRow)
-                return _rows.IndexOf(Row as ValueTableRow);
+            if (row is ValueTableRow)
+                return _rows.IndexOf(row as ValueTableRow);
 
             return -1;
         }
@@ -223,16 +223,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Сумма значений всех строк указанной колонки
         /// </summary>
-        /// <param name="ColumnIndex">
+        /// <param name="columnIndex">
         /// Строка - Имя колонки для суммирования
         /// Число - Индекс колонки для суммирования
         /// КолонкаТаблицыЗначений - Колонка для суммирования
         /// </param>
         /// <returns>Число</returns>
         [ContextMethod("Итог", "Total")]
-        public IValue Total(IValue ColumnIndex)
+        public IValue Total(IValue columnIndex)
         {
-            ValueTableColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
+            ValueTableColumn Column = Columns.GetColumnByIIndex(columnIndex);
             bool has_data = false;
             decimal Result = 0;
 
@@ -255,20 +255,20 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Осуществляет поиск значения в указанных колонках
         /// </summary>
-        /// <param name="Value">Произвольный - Искомое значение</param>
-        /// <param name="ColumnNames">Строка - Список имен колонок для поиска значения (разделены запятыми). 
+        /// <param name="value">Произвольный - Искомое значение</param>
+        /// <param name="columnNames">Строка - Список имен колонок для поиска значения (разделены запятыми). 
         /// Если параметр не указан - ищет по всем колонкам. По умолчанию: пустая строка</param>
         /// <returns>СтрокаТаблицыЗначений - если строка найдена, иначе Неопределено</returns>
         [ContextMethod("Найти", "Find")]
-        public IValue Find(IValue Value, string ColumnNames = null)
+        public IValue Find(IValue value, string columnNames = null)
         {
-            List<ValueTableColumn> processing_list = GetProcessingColumnList(ColumnNames);
+            List<ValueTableColumn> processing_list = GetProcessingColumnList(columnNames);
             foreach (ValueTableRow row in _rows)
             {
                 foreach (ValueTableColumn col in processing_list)
                 {
                     IValue current = row.Get(col);
-                    if (Value.Equals(current))
+                    if (value.Equals(current))
                         return row;
                 }
             }
@@ -293,12 +293,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Поиск строк по условию
         /// </summary>
-        /// <param name="Filter">Структура - Условия поиска. Ключ - имя колонки, значение - искомое значение</param>
+        /// <param name="filter">Структура - Условия поиска. Ключ - имя колонки, значение - искомое значение</param>
         /// <returns>Массив - Массив ссылок на строки, удовлетворяющих условию поиска</returns>
         [ContextMethod("НайтиСтроки", "FindRows")]
-        public ArrayImpl FindRows(IValue Filter)
+        public ArrayImpl FindRows(IValue filter)
         {
-            var filterStruct = Filter.GetRawValue() as StructureImpl;
+            var filterStruct = filter.GetRawValue() as StructureImpl;
 
             if (filterStruct == null)
                 throw RuntimeException.InvalidArgumentType();
@@ -340,16 +340,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// Сворачиваются (группируются) строки по указанным колонкам измерениям, суммируются колонки ресурсов. 
         /// Колонки не указанные ни в измерениях ни в ресурсах удаляются.
         /// </summary>
-        /// <param name="GroupColumnNames">Строка - Имена колонок для сворачивания (изменения), разделены запятыми</param>
-        /// <param name="AggregateColumnNames">Строка - Имена колонок для суммирования (ресурсы), разделены запятыми</param>
+        /// <param name="groupColumnNames">Строка - Имена колонок для сворачивания (изменения), разделены запятыми</param>
+        /// <param name="aggregateColumnNames">Строка - Имена колонок для суммирования (ресурсы), разделены запятыми</param>
         [ContextMethod("Свернуть", "GroupBy")]
-        public void GroupBy(string GroupColumnNames, string AggregateColumnNames = null)
+        public void GroupBy(string groupColumnNames, string aggregateColumnNames = null)
         {
 
             // TODO: Сворачиваем за N^2. Переделать на N*log(N)
 
-            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(GroupColumnNames, true);
-            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(AggregateColumnNames, true);
+            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(groupColumnNames, true);
+            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(aggregateColumnNames, true);
 
             List<ValueTableRow> new_rows = new List<ValueTableRow>();
 
@@ -423,30 +423,30 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Сдвигает строку на указанное количество позиций.
         /// </summary>
-        /// <param name="Row">
+        /// <param name="row">
         /// СтрокаТаблицыЗначений - Строка которую сдвигаем
         /// Число - Индекс сдвигаемой строки
         /// </param>
-        /// <param name="Offset">Количество строк, на которое сдвигается строка. Если значение положительное - сдвиг вниз, иначе вверх</param>
+        /// <param name="offset">Количество строк, на которое сдвигается строка. Если значение положительное - сдвиг вниз, иначе вверх</param>
         [ContextMethod("Сдвинуть", "Move")]
-        public void Move(IValue Row, int Offset)
+        public void Move(IValue row, int offset)
         {
-            Row = Row.GetRawValue();
+            row = row.GetRawValue();
 
             int index_source;
-            if (Row is ValueTableRow)
-                index_source = _rows.IndexOf(Row as ValueTableRow);
-            else if (Row.DataType == Machine.DataType.Number)
-                index_source = decimal.ToInt32(Row.AsNumber());
+            if (row is ValueTableRow)
+                index_source = _rows.IndexOf(row as ValueTableRow);
+            else if (row.DataType == Machine.DataType.Number)
+                index_source = decimal.ToInt32(row.AsNumber());
             else
                 throw RuntimeException.InvalidArgumentType();
 
-            if (index_source < 0 || index_source >= _rows.Count())
+            if (index_source < 0 || index_source >= _rows.Count)
                 throw RuntimeException.InvalidArgumentValue();
 
-            int index_dest = (index_source + Offset) % _rows.Count();
+            int index_dest = (index_source + offset) % _rows.Count;
             while (index_dest < 0)
-                index_dest += _rows.Count();
+                index_dest += _rows.Count;
 
             ValueTableRow tmp = _rows[index_source];
 
@@ -466,14 +466,14 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Создает новую таблицу значений с указанными колонками. Данные не копируются.
         /// </summary>
-        /// <param name="ColumnNames">Строка - Имена колонок для копирования, разделены запятыми</param>
+        /// <param name="columnNames">Строка - Имена колонок для копирования, разделены запятыми</param>
         /// <returns>ТаблицаЗначений</returns>
         [ContextMethod("СкопироватьКолонки", "CopyColumns")]
-        public ValueTable CopyColumns(string ColumnNames = null)
+        public ValueTable CopyColumns(string columnNames = null)
         {
             ValueTable Result = new ValueTable();
 
-            List<ValueTableColumn> columns = GetProcessingColumnList(ColumnNames);
+            List<ValueTableColumn> columns = GetProcessingColumnList(columnNames);
 
             foreach (ValueTableColumn Column in columns)
             {
@@ -488,29 +488,29 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// Если не указаны строки - будут скопированы все строки. Если не указаны колонки - будут скопированы все колонки.
         /// Если не указаны оба параметра - будет создана полная копия таблицы значений.
         /// </summary>
-        /// <param name="Rows">
+        /// <param name="rows">
         /// Массив - Массив строк для отбора
         /// Структура - Параметры отбора. Ключ - Колонка, Значение - Значение отбора
         /// </param>
-        /// <param name="ColumnNames">Строка - Имена колонок для копирования, разделены запятыми</param>
+        /// <param name="columnNames">Строка - Имена колонок для копирования, разделены запятыми</param>
         /// <returns>ТаблицаЗначений</returns>
         [ContextMethod("Скопировать", "Copy")]
-        public ValueTable Copy(IValue Rows = null, string ColumnNames = null)
+        public ValueTable Copy(IValue rows = null, string columnNames = null)
         {
-            ValueTable Result = CopyColumns(ColumnNames);
-            List<ValueTableColumn> columns = GetProcessingColumnList(ColumnNames);
+            ValueTable Result = CopyColumns(columnNames);
+            List<ValueTableColumn> columns = GetProcessingColumnList(columnNames);
             
             IEnumerable<ValueTableRow> requestedRows;
-            if (Rows == null)
+            if (rows == null)
             {
                 requestedRows = _rows;
             }
             else
             {
-                if (Rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(StructureImpl))))
-                    requestedRows = FindRows(Rows).Select(x => x as ValueTableRow);
-                else if (Rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(ArrayImpl))))
-                    requestedRows = GetRowsEnumByArray(Rows);
+                if (rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(StructureImpl))))
+                    requestedRows = FindRows(rows).Select(x => x as ValueTableRow);
+                else if (rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(ArrayImpl))))
+                    requestedRows = GetRowsEnumByArray(rows);
                 else
                     throw RuntimeException.InvalidArgumentType();
             }
@@ -568,7 +568,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             foreach (string column in a_columns)
             {
                 string[] description = column.Trim().Split(' ');
-                if (description.Count() == 0)
+                if (description.Any())
                     throw RuntimeException.PropNotFoundException(""); // TODO: WrongColumnNameException
 
                 ValueTableSortRule Desc = new ValueTableSortRule();
@@ -596,7 +596,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             public RowComparator(List<ValueTableSortRule> Rules)
             {
-                if (Rules.Count() == 0)
+                if (Rules.Count == 0)
                     throw RuntimeException.InvalidArgumentValue();
 
                 this.Rules = Rules;
@@ -617,7 +617,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 int i = 0, r;
                 while ((r = OneCompare(x, y, Rules[i])) == 0)
                 {
-                    if (++i >= Rules.Count())
+                    if (++i >= Rules.Count)
                         return 0;
                 }
 

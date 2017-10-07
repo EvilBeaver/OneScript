@@ -213,7 +213,7 @@ namespace ScriptEngine.HostedScript.Library
             return File.GetAttributes(FullName);
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "По имени файла")]
         public static IRuntimeContextInstance Constructor(IValue name)
         {
             return new FileContext(name.AsString());

@@ -171,17 +171,17 @@ public class FileStreamsManager : AutoContext<FileStreamsManager>
     /// Создает временный файл и открывает его в монопольном режиме с возможностью чтения и записи. Дополнительно можно установить лимит в байтах, при превышении которого будет создан файл на диске. Пока размер файла не превышает данного лимита - вся работа ведётся в памяти.
     /// </summary>
     ///
-    /// <param name="MemoryLimit">
+    /// <param name="memoryLimit">
     /// Максимальный объем памяти (в байтах), при превышении которого будет создан файл на диске.
     /// Значение по умолчанию: 65535. </param>
-    /// <param name="BufferSize">
+    /// <param name="bufferSize">
     /// Размер буфера для операций с файлом (в байтах).
     /// Значение по умолчанию: 8192. </param>
     ///
     /// <returns name="FileStream"/>
     /// 
     [ContextMethod("СоздатьВременныйФайл", "CreateTempFile")]
-    public IValue CreateTempFile(int MemoryLimit = 0, int BufferSize = 0)
+    public IValue CreateTempFile(int memoryLimit = 0, int bufferSize = 0)
     {
         throw new NotImplementedException();
     }

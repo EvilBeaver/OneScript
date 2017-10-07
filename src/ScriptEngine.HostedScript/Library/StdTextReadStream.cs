@@ -29,12 +29,12 @@ namespace ScriptEngine.HostedScript.Library
 
         /// <summary>
         /// Признак показывает, что в потоке есть данные.
+        /// </summary>
         /// <example>
         /// Пока Поток.ЕстьДанные Цикл
         ///     Сообщить(Поток.ПрочитатьСтроку());
         /// КонецЦикла;
         /// </example>
-        /// </summary>
         [ContextProperty("ЕстьДанные", "HasData")]
         public bool HasData
         {

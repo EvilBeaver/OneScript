@@ -75,7 +75,7 @@ namespace ScriptEngine.HostedScript.Library
 			return ValueFactory.Create(stringValue);
 		}
 
-		[ScriptConstructor]
+		[ScriptConstructor(Name = "На основании описания строки")]
 		public static IRuntimeContextInstance Constructor(IValue length = null,
 		                                                  IValue allowedLength = null)
 		{
