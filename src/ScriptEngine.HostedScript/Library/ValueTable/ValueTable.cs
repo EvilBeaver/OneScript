@@ -58,7 +58,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Количество", "Count")]
         public int Count()
         {
-            return _rows.Count;
+            return _rows.Count();
         }
 
         /// <summary>
