@@ -31,6 +31,9 @@ namespace ScriptEngine.HostedScript.Library
             return _config;
         }
 
+        /// <summary>
+        /// Метод обновляет текущие настройки значениями из файла oscript.cfg
+        /// </summary>
         [ContextMethod("ОбновитьНастройкиСистемы", "RefreshSystemConfig")]
         public void Refresh()
         {
@@ -38,6 +41,11 @@ namespace ScriptEngine.HostedScript.Library
                 _config = Provider.ReadConfig();
         }
 
+        /// <summary>
+        /// Метод возвращает значение из файла oscript.cfg по имени настойки
+        /// </summary>
+        /// <param name="optionKey">Имя настройки из файла oscript.cfg</param>
+        /// <returns>Строка. Значение системной настройки.</returns>
         [ContextMethod("ПолучитьЗначениеСистемнойНастройки", "GetSystemOptionValue")]
         public IValue GetSystemOptionValue(string optionKey)
         {

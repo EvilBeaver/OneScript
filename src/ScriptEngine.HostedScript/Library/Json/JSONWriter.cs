@@ -228,15 +228,15 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// Если при использовании метода свойство ПроверятьСтруктуру установлено в значение Истина, то проверка структуры продолжается на следующем элементе.
         /// </summary>
         ///
-        /// <param name="String">
+        /// <param name="stringValue">
         /// Строка, записываемая в документ JSON. </param>
         [ContextMethod("ЗаписатьБезОбработки", "WriteRaw")]
-        public void WriteRaw(string String)
+        public void WriteRaw(string stringValue)
         {
             if (!IsOpen())
                 NotOpenException();
 
-            _writer.WriteRaw(String);
+            _writer.WriteRaw(stringValue);
         }
 
 
@@ -245,28 +245,28 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// Записывает значение свойства JSON.
         /// </summary>
         ///
-        /// <param name="Value">
+        /// <param name="value">
         /// Записываемое значение. Типы: Строка (String), Число (Number), Булево (Boolean), Неопределено (Undefined) </param>
-        /// <param name="UseFormatWithExponent">
+        /// <param name="useFormatWithExponent">
         /// Использование экспоненциальной формы записи для числовых значений. Параметр имеет смысл только если записывается значение числового типа.
         /// Значение по умолчанию: Ложь. </param>
         [ContextMethod("ЗаписатьЗначение", "WriteValue")]
-        public void WriteValue(IValue Value, bool UseFormatWithExponent = false)
+        public void WriteValue(IValue value, bool useFormatWithExponent = false)
         {
             if (!IsOpen())
                 NotOpenException();
 
-            switch (Value.DataType)
+            switch (value.DataType)
             {
                 case DataType.String:
-                     WriteStringValue(Value.AsString());
+                     WriteStringValue(value.AsString());
                     break;
                 case DataType.Number:
-                    decimal d = Value.AsNumber();
+                    decimal d = value.AsNumber();
                     if (d == Math.Round(d))
                     {
                         Int64 i  = Convert.ToInt64(d);
-                        if (UseFormatWithExponent)
+                        if (useFormatWithExponent)
                             _writer.WriteRawValue(string.Format(Thread.CurrentThread.CurrentCulture, "{0:E}", i));
                         else
                             _writer.WriteValue(i);
@@ -274,7 +274,7 @@ namespace ScriptEngine.HostedScript.Library.Json
 
                     else
                     {
-                        if (UseFormatWithExponent)
+                        if (useFormatWithExponent)
                             _writer.WriteRawValue(string.Format(string.Format(Thread.CurrentThread.CurrentCulture, "{0:E}", d)));
                         else
                             _writer.WriteValue(d);
@@ -282,10 +282,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                    
                     break;
                 case DataType.Date:
-                    _writer.WriteValue(Value.AsDate());
+                    _writer.WriteValue(value.AsDate());
                     break;
                 case DataType.Boolean:
-                    _writer.WriteValue(Value.AsBoolean());
+                    _writer.WriteValue(value.AsBoolean());
                     break;
                 case DataType.Undefined:
                     _writer.WriteNull();
@@ -301,12 +301,12 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// Записывает имя свойства JSON.
         /// </summary>
         ///
-        /// <param name="PropertyName">
+        /// <param name="propertyName">
         /// Имя свойства. </param>
         [ContextMethod("ЗаписатьИмяСвойства", "WritePropertyName")]
-        public void WritePropertyName(string PropertyName)
+        public void WritePropertyName(string propertyName)
         {
-            _writer.WritePropertyName(PropertyName);
+            _writer.WritePropertyName(propertyName);
         }
 
 

@@ -178,7 +178,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="dimensions">Числовые размерности массива. Например, "Массив(2,3)", создает двумерный массив 2х3.</param>
         /// <returns></returns>
-        [ScriptConstructor(Name="С заданным количеством измерений")]
+        [ScriptConstructor(Name= "По количеству элементов")]
         public static IRuntimeContextInstance Constructor(IValue[] dimensions)
         {
             ArrayImpl cloneable = null;

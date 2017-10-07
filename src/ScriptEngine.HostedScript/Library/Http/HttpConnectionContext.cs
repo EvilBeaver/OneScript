@@ -395,7 +395,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         /// Указание произвольных клиентских и серверных сертификатов в текущей версии не поддерживается.</param>
         /// <param name="useOSAuthentication">Использовать аутентификацию ОС.</param>
         /// <returns></returns>
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "По указанному серверу")]
         public static HttpConnectionContext Constructor(IValue host, 
             IValue port = null, 
             IValue user = null, 

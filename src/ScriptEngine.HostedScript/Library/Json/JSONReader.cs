@@ -222,10 +222,10 @@ namespace ScriptEngine.HostedScript.Library.Json
         ///
         /// <param name="JSONFileName">
         /// Имя файла, содержащего текст JSON. </param>
-        /// <param name="Encoding">
+        /// <param name="encoding">
         /// Позволяет задать кодировку входного файла.</param>
         [ContextMethod("ОткрытьФайл", "OpenFile")]
-        public void OpenFile(string JSONFileName, IValue Encoding = null)
+        public void OpenFile(string JSONFileName, IValue encoding = null)
         {
    
             if (IsOpen())
@@ -235,8 +235,8 @@ namespace ScriptEngine.HostedScript.Library.Json
 
             try
             {
-                if (Encoding != null)
-                    _fileReader = Environment.FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(Encoding));
+                if (encoding != null)
+                    _fileReader = Environment.FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(encoding));
                 else
                     _fileReader = Environment.FileOpener.OpenReader(JSONFileName);
             }

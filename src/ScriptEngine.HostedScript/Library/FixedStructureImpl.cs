@@ -139,7 +139,7 @@ namespace ScriptEngine.HostedScript.Library
         /// Создает фиксированную структуру по исходной структуре
         /// </summary>
         /// <param name="structure">Исходная структура</param>
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "Из структуры")]
         public static IRuntimeContextInstance Constructor(IValue structure)
         {
             var structObject = structure.GetRawValue() as StructureImpl;
@@ -158,7 +158,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="strProperties">Строка с именами свойств, указанными через запятую.</param>
         /// <param name="args">Значения свойств. Каждое значение передается, как отдельный параметр.</param>
-        [ScriptConstructor(Name="На основании свойств и значений")]
+        [ScriptConstructor(Name = "По ключам и значениям")]
         public static IRuntimeContextInstance Constructor(IValue strProperties, IValue[] args)
         {
             return new FixedStructureImpl(strProperties.AsString(), args);
