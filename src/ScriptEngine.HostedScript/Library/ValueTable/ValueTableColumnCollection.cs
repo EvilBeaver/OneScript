@@ -20,8 +20,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
         private int _internal_counter = 0; // Нарастающий счётчик определителей колонок
 
-        public ValueTableColumnCollection()
+        private readonly ValueTable _owner;
+
+        public ValueTableColumnCollection(ValueTable owner)
         {
+            _owner = owner;
         }
 
         /// <summary>
@@ -109,7 +112,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         public void Delete(IValue Column)
         {
             Column = Column.GetRawValue();
-            _columns.Remove(GetColumnByIIndex(Column));
+            var vtColumn = GetColumnByIIndex(Column);
+            _owner.ForEach(x=>x.OnOwnerColumnRemoval(vtColumn));
+            _columns.Remove(vtColumn);
         }
 
         public ValueTableColumn FindColumnByName(string Name)
@@ -153,6 +158,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Column.ID;
         }
 
+        public override string GetPropName(int propNum)
+        {
+            return FindColumnByIndex(propNum).Name;
+        }
+
         public override IValue GetPropValue(int propNum)
         {
             return FindColumnById(propNum);
@@ -186,6 +196,34 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             if (index is ValueTableColumn)
             {
                 return index as ValueTableColumn;
+            }
+
+            throw RuntimeException.InvalidArgumentType();
+        }
+
+        public int GetColumnNumericIndex(IValue index)
+        {
+            if (index.DataType == DataType.String)
+            {
+                ValueTableColumn Column = FindColumnByName(index.AsString());
+                if (Column == null)
+                    throw RuntimeException.PropNotFoundException(index.AsString());
+                return Column.ID;
+            }
+
+            if (index.DataType == DataType.Number)
+            {
+                int iIndex = Decimal.ToInt32(index.AsNumber());
+                if (iIndex < 0 || iIndex >= Count())
+                    throw RuntimeException.InvalidArgumentValue();
+
+                return iIndex;
+            }
+
+            var column = index.GetRawValue() as ValueTableColumn;
+            if (column != null)
+            {
+                return column.ID;
             }
 
             throw RuntimeException.InvalidArgumentType();

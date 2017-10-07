@@ -80,10 +80,10 @@ namespace ScriptEngine.Machine.Contexts
             return LoadAndCreate(compiler, code, externalContext);
         }
 
-        public IRuntimeContextInstance LoadFromString(CompilerService compiler, string text)
+        public IRuntimeContextInstance LoadFromString(CompilerService compiler, string text, ExternalContextData externalContext = null)
         {
             var code = _engine.Loader.FromString(text);
-            return LoadAndCreate(compiler, code, null);
+            return LoadAndCreate(compiler, code, externalContext);
         }
 
 
@@ -183,7 +183,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             var module = _instance._loadedModules[typeName];
 
-            var newObj = new UserScriptContextInstance(module, typeName);
+            var newObj = new UserScriptContextInstance(module, typeName, arguments);
             newObj.AddProperty("ЭтотОбъект", newObj);
             newObj.InitOwnData();
             newObj.Initialize(_instance._engine.Machine);

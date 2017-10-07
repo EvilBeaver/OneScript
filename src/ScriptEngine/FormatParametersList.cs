@@ -86,7 +86,7 @@ namespace ScriptEngine
             int start = index;
             while (index < format.Length)
             {
-                if (Char.IsLetter(format, index))
+                if (Char.IsLetterOrDigit(format, index) || format[index] == '.' || format[index] == '_')
                     index++;
                 else if (format[index] == '=')
                 {

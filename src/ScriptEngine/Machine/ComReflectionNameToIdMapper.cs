@@ -15,14 +15,10 @@ namespace ScriptEngine.Machine
     class ComReflectionNameToIdMapper
     {
         private readonly Type _reflectedType;
-
-        readonly IndexedNamesCollection _propertyNames;
-
-        readonly IndexedNamesCollection _methodNames;
-
-        readonly List<PropertyInfo> _propertyCache;
-
-        readonly List<System.Reflection.MethodInfo> _methodsCache;
+        private readonly IndexedNamesCollection _propertyNames;
+        private readonly IndexedNamesCollection _methodNames;
+        private readonly List<PropertyInfo> _propertyCache;
+        private readonly List<Func<IValue[], object>> _methodsCache;
 
         public ComReflectionNameToIdMapper(Type type)
         {
@@ -30,7 +26,7 @@ namespace ScriptEngine.Machine
             _propertyNames = new IndexedNamesCollection();
             _methodNames = new IndexedNamesCollection();
             _propertyCache = new List<PropertyInfo>();
-            _methodsCache = new List<System.Reflection.MethodInfo>();
+            _methodsCache = new List<Func<IValue[], object>>();
         }
 
         public int FindProperty(string name)
@@ -53,20 +49,27 @@ namespace ScriptEngine.Machine
             return id;
         }
 
-        public int FindMethod(string name)
+        public int FindMethod(object instance, string name)
         {
             int id;
             var hasMethod = _methodNames.TryGetIdOfName(name, out id);
             if (!hasMethod)
             {
-                var methodInfo = _reflectedType.GetMethod(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                if(methodInfo == null)
-                    throw RuntimeException.MethodNotFoundException(name);
+                Func< IValue[], object > invoker = (IValue[] callParams) =>
+                {
+                    return instance.GetType().InvokeMember(name,
+                        BindingFlags.InvokeMethod | BindingFlags.IgnoreCase
+                            | BindingFlags.Public | BindingFlags.OptionalParamBinding
+                            | BindingFlags.Instance,
+                        new ValueBinder(),
+                        instance,
+                        callParams.Cast<object>().ToArray());
+                };
 
                 id = _methodNames.RegisterName(name);
                 System.Diagnostics.Debug.Assert(_methodsCache.Count == id);
 
-                _methodsCache.Add(methodInfo);
+                _methodsCache.Add(invoker);
             }
 
             return id;
@@ -77,7 +80,7 @@ namespace ScriptEngine.Machine
             return _propertyCache[id];
         }
 
-        public System.Reflection.MethodInfo GetMethod(int id)
+        public Func<IValue[], object> GetMethod(int id)
         {
             return _methodsCache[id];
         }

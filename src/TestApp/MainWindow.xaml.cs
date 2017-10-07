@@ -13,6 +13,7 @@ using System.Windows.Input;
 using ScriptEngine.HostedScript;
 using System.Collections.Generic;
 using ScriptEngine;
+using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 
@@ -133,7 +134,13 @@ namespace TestApp
             {
                 try
                 {
-                    var moduleWriter = new ScriptEngine.Compiler.ModuleWriter(hostedScript.GetCompilerService());
+                    var cs = hostedScript.GetCompilerService();
+                    if(GenerateExtraCode.IsChecked)
+                        cs.ProduceExtraCode |= CodeGenerationFlags.CodeStatistics;
+                    if(GenerateDebugCode.IsChecked)
+                        cs.ProduceExtraCode |= CodeGenerationFlags.DebugCode;
+
+                    var moduleWriter = new ScriptEngine.Compiler.ModuleWriter(cs);
                     moduleWriter.Write(writer, src);
                     result.Text = writer.GetStringBuilder().ToString();
                 }

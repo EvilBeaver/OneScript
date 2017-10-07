@@ -43,7 +43,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
             ValueTreeColumn column = new ValueTreeColumn(this, ++_internalCounter, name, title, type, width);
             _columns.Add(column);
-
+            
             return column;
         }
 
@@ -218,6 +218,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             if (column == null)
                 throw RuntimeException.PropNotFoundException(name);
             return column.ID;
+        }
+
+        public override int GetPropCount()
+        {
+            return _columns.Count;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return FindColumnByIndex(propNum).Name;
         }
 
         public override IValue GetPropValue(int propNum)

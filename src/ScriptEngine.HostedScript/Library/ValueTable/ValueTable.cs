@@ -20,13 +20,16 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     [ContextClass("ТаблицаЗначений", "ValueTable")]
     public class ValueTable : AutoContext<ValueTable>, ICollectionContext, IEnumerable<ValueTableRow>
     {
-        private readonly ValueTableColumnCollection _columns = new ValueTableColumnCollection();
-        private readonly List<ValueTableRow> _rows = new List<ValueTableRow>();
-        private readonly CollectionIndexes _indexes = new CollectionIndexes();
+        private readonly ValueTableColumnCollection _columns;
+        private readonly List<ValueTableRow> _rows;
+        private readonly CollectionIndexes _indexes;
 
         public ValueTable()
         {
-        }
+            _columns = new ValueTableColumnCollection(this);
+            _rows = new List<ValueTableRow>();
+            _indexes = new CollectionIndexes();
+    }
 
         /// <summary>
         /// Коллекция колонок

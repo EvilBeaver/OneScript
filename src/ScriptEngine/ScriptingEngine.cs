@@ -7,10 +7,10 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 
-using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Compiler;
 
 namespace ScriptEngine
 {
@@ -19,6 +19,7 @@ namespace ScriptEngine
         private readonly MachineInstance _machine = new MachineInstance();
         private readonly ScriptSourceFactory _scriptFactory;
         private AttachedScriptsFactory _attachedScriptsFactory;
+        private IDebugController _debugController;
 
         public ScriptingEngine()
         {
@@ -29,7 +30,7 @@ namespace ScriptEngine
             _scriptFactory = new ScriptSourceFactory();
         }
 
-        public bool ProduceExtraCode { get; set; }
+        public CodeGenerationFlags ProduceExtraCode { get; set; }
 
         public void AttachAssembly(System.Reflection.Assembly asm)
         {
@@ -62,6 +63,7 @@ namespace ScriptEngine
             {
                 _machine.AttachContext(item, false);
             }
+            _machine.ContextsAttached();
         }
 
         private void SetDefaultEnvironmentIfNeeded()
@@ -147,9 +149,23 @@ namespace ScriptEngine
             }
         }
 
+        public IDebugController DebugController
+        {
+            get
+            {
+                return _debugController;
+            }
+            set
+            {
+                _debugController = value;
+                ProduceExtraCode = CodeGenerationFlags.DebugCode;
+                _machine.SetDebugMode(_debugController);
+            }
+        }
+
         public void SetCodeStatisticsCollector(ICodeStatCollector collector)
         {
-            ProduceExtraCode = true;
+            ProduceExtraCode = CodeGenerationFlags.CodeStatistics;
             _machine.SetCodeStatisticsCollector(collector);
         }
 

@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+using System;
 using System.IO;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -13,7 +19,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
     /// Следует учитывать, что помимо буферизации существует кэширование чтения и записи файлов в операционной системе, на которое невозможно повлиять программно.
     /// </summary>
     [ContextClass("ФайловыйПоток", "FileStream")]
-    public class FileStreamContext : AutoContext<FileStreamContext>
+    public class FileStreamContext : AutoContext<FileStreamContext>, IStreamWrapper
     {
 
         private readonly FileStream _underlyingStream;

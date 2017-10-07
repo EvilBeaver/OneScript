@@ -20,10 +20,10 @@ namespace ScriptEngine.HostedScript.Library
 			AllowedLength = allowedLength;
 		}
 
-		[ContextProperty("Длина")]
+		[ContextProperty("Длина", "Length")]
 		public int Length { get; }
 
-		[ContextProperty("ДопустимаяДлина")]
+		[ContextProperty("ДопустимаяДлина", "AllowedLength")]
 		public AllowedLengthEnum AllowedLength { get; }
 
 		public override bool Equals(object obj)

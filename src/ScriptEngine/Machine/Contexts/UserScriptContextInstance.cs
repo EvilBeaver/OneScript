@@ -18,16 +18,71 @@ namespace ScriptEngine.Machine.Contexts
         Dictionary<string, int> _ownPropertyIndexes;
         List<IValue> _ownProperties;
         
+        public IValue[] ConstructorParams { get; private set; }
+        
         internal UserScriptContextInstance(LoadedModule module) : base(module)
         {
             _module = module;
         }
 
-        internal UserScriptContextInstance(LoadedModule module, string asObjectOfType)
+        internal UserScriptContextInstance(LoadedModule module, string asObjectOfType, IValue[] args = null)
             : base(module, true)
         {
             DefineType(TypeManager.GetTypeByName(asObjectOfType));
             _module = module;
+
+            ConstructorParams = args;
+            if (args == null)
+            {
+                ConstructorParams = new IValue[0];
+            }
+
+        }
+
+        protected override void OnInstanceCreation()
+        {
+            base.OnInstanceCreation();
+            var methId = GetScriptMethod("ПриСозданииОбъекта", "OnObjectCreate");
+            int constructorParamsCount = ConstructorParams.Count();
+
+            if (methId > -1)
+            {
+                bool hasParamsError = false;
+                var procInfo = GetMethodInfo(methId);
+
+                int procParamsCount = procInfo.Params.Count();
+
+                if (procParamsCount < constructorParamsCount)
+                {
+                    hasParamsError = true;
+                }
+
+                int reqParams = 0;
+                foreach (var itm in procInfo.Params)
+                {
+                    if (!itm.HasDefaultValue) reqParams++;
+                }
+                if (reqParams > constructorParamsCount)
+                {
+                    hasParamsError = true;
+                }
+                if (hasParamsError)
+                {
+                    throw new RuntimeException("Параметры конструктора: "
+                        + "необходимых параметров: " + Math.Min(procParamsCount, reqParams).ToString()
+                        + ", передано параметров " + constructorParamsCount.ToString()
+                        );
+                }
+
+                CallAsProcedure(methId, ConstructorParams);
+            }
+            else
+            {
+                if (constructorParamsCount > 0)
+                {
+                    throw new RuntimeException("Конструктор не определен, но переданы параметры конструктора.");
+                }
+            }
         }
 
         public void AddProperty(string name, IValue value)
@@ -77,29 +132,25 @@ namespace ScriptEngine.Machine.Contexts
             return _ownProperties[index];
         }
 
-        #region IReflectableContext Members
-
-        public override IEnumerable<VariableInfo> GetProperties()
+        protected override string GetOwnPropName(int index)
         {
-            foreach (var item in _module.ExportedProperies)
-            {
-                var vi = new VariableInfo();
-                vi.Identifier = item.SymbolicName;
-                vi.Index = item.Index;
-                vi.Type = SymbolType.ContextProperty;
-                
-                yield return vi;
-            }
+            var prop = _module.ExportedProperies[index];
+            return prop.SymbolicName;
+        }
+        
+        public override int GetMethodsCount()
+        {
+            return _module.ExportedMethods.Length;
         }
 
-        public override IEnumerable<MethodInfo> GetMethods()
+        public override int GetPropCount()
         {
-            foreach (var item in _module.ExportedMethods)
-            {
-                yield return GetMethodInfo(item.Index);
-            }
+            return _module.ExportedProperies.Length;
         }
 
-        #endregion
+        public override string GetPropName(int propNum)
+        {
+            return _module.ExportedProperies[propNum].SymbolicName;
+        }
     }
 }

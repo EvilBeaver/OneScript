@@ -14,11 +14,14 @@ namespace ScriptEngine.Machine
     public interface IVariable : IValue
     {
         IValue Value { get; set; }
+        string Name { get; }
     }
 
     public class Variable : IVariable
     {
-        IValue _val;
+        private IValue _val;
+        
+        public string Name { get; private set; }
 
         private Variable()
         {
@@ -27,27 +30,28 @@ namespace ScriptEngine.Machine
 
         #region Factory
 
-        public static IVariable Create(IValue val)
+        public static IVariable Create(IValue val, string symbol)
         {
             return new Variable()
             {
-                _val = val
+                _val = val,
+                Name = symbol
             };
         }
 
-        public static IVariable CreateReference(IVariable variable)
+        public static IVariable CreateReference(IVariable variable, string refName)
         {
-            return VariableReference.CreateSimpleReference(variable);
+            return VariableReference.CreateSimpleReference(variable, refName);
         }
 
-        public static IVariable CreateContextPropertyReference(IRuntimeContextInstance context, int propertyNumber)
+        public static IVariable CreateContextPropertyReference(IRuntimeContextInstance context, int propertyNumber, string refName)
         {
-            return VariableReference.CreateContextPropertyReference(context, propertyNumber);
+            return VariableReference.CreateContextPropertyReference(context, propertyNumber, refName);
         }
 
-        public static IVariable CreateIndexedPropertyReference(IRuntimeContextInstance context, IValue index)
+        public static IVariable CreateIndexedPropertyReference(IRuntimeContextInstance context, IValue index, string refName)
         {
-            return VariableReference.CreateIndexedPropertyReference(context, index);
+            return VariableReference.CreateIndexedPropertyReference(context, index, refName);
         }
 
         #endregion
@@ -139,6 +143,8 @@ namespace ScriptEngine.Machine
             private IRuntimeContextInstance _context;
             private int _contextPropertyNumber;
             private IValue _index;
+
+            public string Name { get; private set; }
 
             private VariableReference()
             {
@@ -258,29 +264,32 @@ namespace ScriptEngine.Machine
 
             #endregion
 
-            public static IVariable CreateSimpleReference(IVariable var)
+            public static IVariable CreateSimpleReference(IVariable var, string name)
             {
                 var newVar = new VariableReference();
                 newVar._refType = ReferenceType.Simple;
                 newVar._referencedValue = var;
+                newVar.Name = name;
                 return newVar;
             }
 
-            public static IVariable CreateContextPropertyReference(IRuntimeContextInstance context, int propertyNumber)
+            public static IVariable CreateContextPropertyReference(IRuntimeContextInstance context, int propertyNumber, string name)
             {
                 var newVar = new VariableReference();
                 newVar._refType = ReferenceType.ContextProperty;
                 newVar._context = context;
                 newVar._contextPropertyNumber = propertyNumber;
+                newVar.Name = name;
                 return newVar;
             }
 
-            public static IVariable CreateIndexedPropertyReference(IRuntimeContextInstance context, IValue index)
+            public static IVariable CreateIndexedPropertyReference(IRuntimeContextInstance context, IValue index, string name)
             {
                 var newVar = new VariableReference();
                 newVar._refType = ReferenceType.IndexedProperty;
                 newVar._context = context;
                 newVar._index = index;
+                newVar.Name = name;
                 return newVar;
             }
 

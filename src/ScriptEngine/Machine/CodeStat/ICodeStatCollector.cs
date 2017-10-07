@@ -11,7 +11,7 @@ namespace ScriptEngine.Machine
     {
         bool IsPrepared(string ScriptFileName);
         void MarkEntryReached(CodeStatEntry entry, int count = 1);
-        void MarkPrepared(string ScriptFileName);
+        void MarkPrepared(string scriptFileName);
 
         void StopWatch(CodeStatEntry entry);
         void ResumeWatch(CodeStatEntry entry);

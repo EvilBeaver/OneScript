@@ -7,7 +7,11 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Threading;
+
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -18,10 +22,10 @@ namespace ScriptEngine.HostedScript.Library
     /// Глобальный контекст. Представляет глобально доступные свойства и методы.
     /// </summary>
     [GlobalContext(Category="Процедуры и функции взаимодействия с системой", ManualRegistration=true)]
-    public class SystemGlobalContext : IRuntimeContextInstance, IAttachableContext
+    public class SystemGlobalContext : IAttachableContext
     {
         private IVariable[] _state;
-        private CommandLineArguments _args;
+        private FixedArrayImpl  _args;
 		private SymbolsContext _symbols;
         private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
@@ -57,9 +61,10 @@ namespace ScriptEngine.HostedScript.Library
         {
             _state = new IVariable[_properties.Count];
 
+            var propNames = _propHolder.GetProperties().OrderBy(x=>x.Value).Select(x=>x.Key).ToArray();
             for (int i = 0; i < _properties.Count; i++)
             {
-                _state[i] = Variable.CreateContextPropertyReference(this, i);
+                _state[i] = Variable.CreateContextPropertyReference(this, i, propNames[i]);
             }
         }
 
@@ -89,10 +94,9 @@ namespace ScriptEngine.HostedScript.Library
         /// Подключенный сценарий выступает, как самостоятельный класс, создаваемый оператором Новый
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
-        /// <param name="typeName">Имя типа, которое будет иметь новый класс. Экземпляры класса создаются оператором Новый.
+        /// <param name="typeName">Имя типа, которое будет иметь новый класс. Экземпляры класса создаются оператором Новый. </param>
         /// <example>ПодключитьСценарий("C:\file.os", "МойОбъект");
         /// А = Новый МойОбъект();</example>
-        /// </param>
         [ContextMethod("ПодключитьСценарий", "AttachScript")]
         public void AttachScript(string path, string typeName)
         {
@@ -105,11 +109,40 @@ namespace ScriptEngine.HostedScript.Library
         /// Загруженный сценарий возвращается, как самостоятельный объект. 
         /// Экспортные свойства и методы скрипта доступны для вызова.
         /// </summary>
+        /// <param name="code">Текст сценария</param>
+        /// <param name="externalContext">Структура. Глобальные свойства, которые будут инжектированы в область видимости загружаемого скрипта. (Необязательный)</param>
+        /// <example>    Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит всем
+        ///    ЗагрузитьСценарийИзСтроки("Сообщить(ЧислоПи);", Контекст);</example>
+        [ContextMethod("ЗагрузитьСценарийИзСтроки", "LoadScriptFromString")]
+        public IRuntimeContextInstance LoadScriptFromString(string code, StructureImpl externalContext = null)
+        {
+            var compiler = EngineInstance.GetCompilerService();
+            if(externalContext == null)
+                return EngineInstance.AttachedScriptsFactory.LoadFromString(compiler, code);
+            else
+            {
+                var extData = new ExternalContextData();
+
+                foreach (var item in externalContext)
+                {
+                    extData.Add(item.Key.AsString(), item.Value);
+                }
+
+                return EngineInstance.AttachedScriptsFactory.LoadFromString(compiler, code, extData);
+
+            }
+        }
+        
+        /// <summary>
+        /// Создает экземпляр объекта на основании стороннего файла сценария.
+        /// Загруженный сценарий возвращается, как самостоятельный объект. 
+        /// Экспортные свойства и методы скрипта доступны для вызова.
+        /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
         /// <param name="externalContext">Структура. Глобальные свойства, которые будут инжектированы в область видимости загружаемого скрипта. (Необязательный)</param>
         /// <example>    Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит	
-	    ///    // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
-	    ///    Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
+        ///    // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
+        ///    Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
         public IRuntimeContextInstance LoadScript(string path, StructureImpl externalContext = null)
         {
@@ -134,11 +167,11 @@ namespace ScriptEngine.HostedScript.Library
         /// Подключает внешнюю сборку среды .NET (*.dll) и регистрирует классы 1Script, объявленные в этой сборке.
         /// Публичные классы, отмеченные в dll атрибутом ContextClass, будут импортированы аналогично встроенным классам 1Script.
         /// Загружаемая сборка должна ссылаться на сборку ScriptEngine.dll
+	/// </summary>
         /// <example>
         /// ПодключитьВнешнююКомпоненту("C:\MyAssembly.dll");
         /// КлассИзКомпоненты = Новый КлассИзКомпоненты(); // тип объявлен внутри компоненты
         /// </example>
-        /// </summary>
         /// <param name="dllPath">Путь к внешней компоненте</param>
         [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
         public void AttachAddIn(string dllPath)
@@ -252,14 +285,15 @@ namespace ScriptEngine.HostedScript.Library
             {
                 if (_args == null)
                 {
-                    if (ApplicationHost == null)
+                    var argsArray = new ArrayImpl();
+                    if (ApplicationHost != null)
                     {
-                        _args = Library.CommandLineArguments.Empty;
+                        foreach (var arg in ApplicationHost.GetCommandLineArguments())
+                        {
+                            argsArray.Add(ValueFactory.Create(arg));
+                        }
                     }
-                    else
-                    {
-                        _args = new CommandLineArguments(ApplicationHost.GetCommandLineArguments());
-                    }
+                    _args = new FixedArrayImpl(argsArray);
                 }
 
                 return _args;
@@ -319,9 +353,9 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="redirectInput">Перехватывать стандартный поток stdin</param>
         /// <param name="encoding">Кодировка стандартных потоков вывода и ошибок</param>
         [ContextMethod("СоздатьПроцесс", "CreateProcess")]
-        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null)
+        public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null, MapImpl env = null)
         {
-            return ProcessContext.Create(cmdLine, currentDir, redirectOutput, redirectInput, encoding);
+            return ProcessContext.Create(cmdLine, currentDir, redirectOutput, redirectInput, encoding, env);
         }
 
         /// <summary>
@@ -443,19 +477,18 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
         public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
         {
-            var accReflector = acceptor as IReflectableContext;
-            if (accReflector == null)
-                throw RuntimeException.InvalidArgumentValue();
-            
-            var srcReflector = source as IReflectableContext;
-            if (srcReflector == null)
-                throw RuntimeException.InvalidArgumentValue();
-
             IEnumerable<string> sourceProperties;
             IEnumerable<string> ignoredPropCollection;
-            if(filledProperties == null)
+            
+            if (filledProperties == null)
             {
-                sourceProperties = srcReflector.GetProperties().Select(x => x.Identifier);
+                string[] names = new string[source.GetPropCount()];
+                for (int i = 0; i < names.Length; i++)
+                {
+                    names[i] = source.GetPropName(i);
+                }
+
+                sourceProperties = names;
             }
             else
             {
@@ -500,32 +533,58 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
+
+        /// <summary>
+        /// Получает объект класса COM по его имени или пути. Подробнее см. синтакс-помощник от 1С.
+        /// </summary>
+        /// <param name="pathName">Путь к библиотеке</param>
+        /// <param name="className">Имя класса</param>
+        /// <returns>COMОбъект</returns>
+        [ContextMethod("ПолучитьCOMОбъект", "GetCOMObject")]
+        public IValue GetCOMObject(string pathName = null, string className = null)
+        {
+            var comObject = GetCOMObjectInternal(pathName, className);
+
+            return COMWrapperContext.Create(comObject);
+        }
+
+        /// <summary>
+        /// Ported from Microsoft.VisualBasic, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+        /// By JetBrains dotPeek decompiler
+        /// </summary>
+        private object GetCOMObjectInternal(string pathName = null, string className = null)
+        {
+            if (String.IsNullOrEmpty(className))
+            {
+                return Marshal.BindToMoniker(pathName);
+            }
+            else if (pathName == null)
+            {
+                return Marshal.GetActiveObject(className);
+            }
+            else if (pathName.Length == 0)
+            {
+                return Activator.CreateInstance(System.Type.GetTypeFromProgID(className));
+            }
+            else
+            {
+                var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
+                persistFile.Load(pathName, 0);
+                
+                return (object)persistFile;
+            }
+        }
+
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
             out IVariable[] variables, 
-            out MethodInfo[] methods, 
-            out IRuntimeContextInstance instance)
+            out MethodInfo[] methods)
         {
             variables = _state;
             methods = GetMethods().ToArray();
-            instance = this;
         }
-
-        public IEnumerable<VariableInfo> GetProperties()
-        {
-            VariableInfo[] array = new VariableInfo[_properties.Count];
-            foreach (var propKeyValue in _propHolder.GetProperties())
-            {
-                var descr = new VariableInfo();
-                descr.Identifier = propKeyValue.Key;
-                descr.Type = SymbolType.ContextProperty;
-                array[propKeyValue.Value] = descr;
-            }
-            
-            return array;
-        }
-
+        
         public IEnumerable<MethodInfo> GetMethods()
         {
             var array = new MethodInfo[_methods.Count];
@@ -592,6 +651,16 @@ namespace ScriptEngine.HostedScript.Library
             throw new InvalidOperationException("global props are not writable");
         }
 
+        public int GetPropCount()
+        {
+            return _properties.Count;
+        }
+
+        public string GetPropName(int index)
+        {
+            return _propHolder.GetProperties().First(x => x.Value == index).Key;
+        }
+
         public int FindMethod(string name)
         {
             return _methods.FindMethod(name);
@@ -600,6 +669,11 @@ namespace ScriptEngine.HostedScript.Library
         public MethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);
+        }
+
+        public int GetMethodsCount()
+        {
+            return _methods.Count;
         }
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments)
@@ -620,7 +694,6 @@ namespace ScriptEngine.HostedScript.Library
         {
             _methods = new ContextMethodsMapper<SystemGlobalContext>();
         }
-
-
+        
     }
 }

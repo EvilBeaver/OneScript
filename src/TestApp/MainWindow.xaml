@@ -46,7 +46,7 @@
             <ToolBar Name="tbMain">
             <ToolBar.Resources>
                 <Geometry x:Key="DownArrow">M1,4 L5,4 L3,8 Z</Geometry>
-                <Style x:Key="arrowStyle" TargetType="Path">
+                <Style x:Key="arrowStyle" x:Shared="True" TargetType="Path">
                     <Setter Property="Fill" Value="#FF989898"/>
                     <Setter Property="Stroke" Value="#FF989898"/>
                     <Setter Property="Data" Value="{StaticResource DownArrow}"/>
@@ -69,7 +69,19 @@
                 </MenuItem>
             </Menu>
             <Button Click="Button_Click" Content="Компилировать"/>
-                <Button Content="Выполнить" Margin="5,0,0,0" Click="Button_Click_1"/>
+            <Menu Background="{Binding Background, ElementName=tbMain}">
+              <MenuItem Padding="0,1.5,0,1">
+               <MenuItem.Header>
+                 <StackPanel Orientation="Horizontal">
+                   <!--TextBlock Padding="0">Опции</TextBlock-->
+                   <Path Style="{StaticResource arrowStyle}"/>
+                 </StackPanel>
+               </MenuItem.Header>
+               <MenuItem IsCheckable="True" Name="GenerateExtraCode" Header="Статистический код"></MenuItem>
+               <MenuItem IsCheckable="True" Name="GenerateDebugCode" Header="Отладочный код"></MenuItem>
+              </MenuItem>
+            </Menu>
+            <Button Content="Выполнить" Margin="5,0,0,0" Click="Button_Click_1"/>
             </ToolBar>
             
         </DockPanel>

@@ -6,75 +6,74 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+
 using ScriptEngine;
 using ScriptEngine.HostedScript.Library;
 
 namespace oscript
 {
-    static class ConsoleHostImpl
-    {
-        public static void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
-        {
-            if (status == MessageStatusEnum.Ordinary)
-                Output.WriteLine(text);
-            else
-            {
-                ConsoleColor oldColor = Output.TextColor;
-                ConsoleColor newColor;
+	internal static class ConsoleHostImpl
+	{
+		public static void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
+		{
+			if (status == MessageStatusEnum.Ordinary)
+			{
+				Output.WriteLine(text);
+			}
+			else
+			{
+				var oldColor = Output.TextColor;
+				ConsoleColor newColor;
 
-                switch (status)
-                {
-                    case MessageStatusEnum.Information:
-                        newColor = ConsoleColor.Green;
-                        break;
-                    case MessageStatusEnum.Attention:
-                        newColor = ConsoleColor.Yellow;
-                        break;
-                    case MessageStatusEnum.Important:
-                    case MessageStatusEnum.VeryImportant:
-                        newColor = ConsoleColor.Red;
-                        break;
-                    default:
-                        newColor = oldColor;
-                        break;
-                }
+				switch (status)
+				{
+					case MessageStatusEnum.Information:
+						newColor = ConsoleColor.Green;
+						break;
+					case MessageStatusEnum.Attention:
+						newColor = ConsoleColor.Yellow;
+						break;
+					case MessageStatusEnum.Important:
+					case MessageStatusEnum.VeryImportant:
+						newColor = ConsoleColor.Red;
+						break;
+					default:
+						newColor = oldColor;
+						break;
+				}
 
-                try
-                {
-                    Output.TextColor = newColor;
-                    Output.WriteLine(text);
-                }
-                finally
-                {
-                    Output.TextColor = oldColor;
-                }
-            }
-        }
+				try
+				{
+					Output.TextColor = newColor;
+					Output.WriteLine(text);
+				}
+				finally
+				{
+					Output.TextColor = oldColor;
+				}
+			}
+		}
 
-        public static void ShowExceptionInfo(Exception exc)
-        {
-            if (exc is ScriptException)
-            {
-                var rte = (ScriptException)exc;
-                Echo(rte.MessageWithoutCodeFragment);
-            }
-            else
-                Echo(exc.Message);
-        }
+		public static void ShowExceptionInfo(Exception exc)
+		{
+		    var exception = exc as ScriptException;
+		    if (exception != null)
+		    {
+		        var rte = exception;
+		        Echo(rte.MessageWithoutCodeFragment);
+		    }
+		    else
+		        Echo(exc.Message);
+		}
 
-        public static bool InputString(out string result, int maxLen)
-        {
-            if (maxLen == 0)
-            {
-                result = Console.ReadLine();
-            }
-            else
-            {
-                result = Console.ReadLine().Substring(0, maxLen);
-            }
+		public static bool InputString(out string result, int maxLen)
+		{
+			if (maxLen == 0)
+				result = Console.ReadLine();
+			else
+				result = Console.ReadLine()?.Substring(0, maxLen);
 
-            return result.Length > 0;
-
-        }
-    }
+			return result?.Length > 0;
+		}
+	}
 }

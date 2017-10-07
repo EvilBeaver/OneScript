@@ -1,48 +1,44 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+
 using ScriptEngine.Environment;
 
 namespace TestApp
 {
-    class EditedFileSource : ICodeSource
-    {
-        string _path = "";
-        string _code = "";
+	internal class EditedFileSource : ICodeSource
+	{
+		private readonly string _code;
 
-        public EditedFileSource(string code, string path)
-        {
-            if (path != "")
-                _path = System.IO.Path.GetFullPath(path);
-            _code = code;
-        }
+		private readonly string _path = "";
 
-        private string GetCodeString()
-        {
-            return _code;
-        }
+		public EditedFileSource(string code, string path)
+		{
+			if (path != "")
+				_path = Path.GetFullPath(path);
+			_code = code;
+		}
 
-        #region ICodeSource Members
+		private string GetCodeString()
+		{
+			return _code;
+		}
 
-        string ICodeSource.Code
-        {
-            get
-            {
-                return GetCodeString();
-            }
-        }
+		#region ICodeSource Members
 
-        string ICodeSource.SourceDescription
-        {
-            get
-            { 
-                if (_path != "")
-                    return _path;
-                return "<string>";
-            }
-        }
+		string ICodeSource.Code => GetCodeString();
 
-        #endregion
-    }
+		string ICodeSource.SourceDescription => _path != "" ? _path : "<string>";
+
+		#endregion
+	}
 }

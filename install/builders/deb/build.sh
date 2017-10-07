@@ -1,11 +1,17 @@
 #!/bin/sh
 
-SRCPATH=/media
+DATAROOT=/media
+SRCPATH=${DATAROOT}/src
 BINPATH=${SRCPATH}/bin/
-DEBBUILDROOT=${SRCPATH}/bin/
-BUILDERROOT=${SRCPATH}/deb/
+DEBBUILDROOT=${DATAROOT}/deb/
+BUILDERROOT=/opt/deb/
 
-VERSION=$(cat ${BINPATH}VERSION)
+if [ -d "$DEBBUILDROOT" ]; then
+    rm -rf $DEBBUILDROOT
+    mkdir $DEBBUILDROOT
+fi
+
+VERSION=$(cat ${DATAROOT}/VERSION)
 PAKNAME=onescript-engine
 DSTPATH=${DEBBUILDROOT}${PAKNAME}
 
@@ -15,6 +21,7 @@ mkdir -p $DSTPATH/usr/bin
 mkdir -p $DSTPATH/usr/share/oscript/lib
 mkdir -p $DSTPATH/usr/share/oscript/bin
 mkdir -p $DSTPATH/etc
+mkdir -p $DSTPATH/etc/bash_completion.d
 
 cp ${BUILDERROOT}settings/dirs $DSTPATH/DEBIAN/
 cat ${BUILDERROOT}settings/control | sed -r "s/VERSION/$VERSION/g" > $DSTPATH/DEBIAN/control
@@ -23,6 +30,7 @@ cp ${BINPATH}*.dll $DSTPATH/usr/share/oscript/bin
 cp ${BUILDERROOT}oscript $DSTPATH/usr/bin
 cp ${BUILDERROOT}oscript-cgi $DSTPATH/usr/bin
 cp ${BUILDERROOT}oscript-opm $DSTPATH/usr/bin
+cp ${BUILDERROOT}oscript-opm-completion $DSTPATH/etc/bash_completion.d
 cp -r ${SRCPATH}/lib/* $DSTPATH/usr/share/oscript/lib
 cp ${BINPATH}/oscript.cfg $DSTPATH/etc
 

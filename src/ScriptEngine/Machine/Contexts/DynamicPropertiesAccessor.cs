@@ -11,7 +11,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class DynamicPropertiesAccessor : PropertyNameIndexAccessor, IReflectableContext
+    public abstract class DynamicPropertiesAccessor : PropertyNameIndexAccessor
     {
         private readonly DynamicPropertiesHolder _propHolder;
         
@@ -40,6 +40,11 @@ namespace ScriptEngine.Machine.Contexts
             _propHolder.ClearProperties();
         }
 
+        protected string GetPropertyName(int idx)
+        {
+            return _propHolder.GetPropertyName(idx);
+        }
+
         protected virtual IEnumerable<KeyValuePair<string, int>> GetProperties()
         {
             return _propHolder.GetProperties();
@@ -50,6 +55,16 @@ namespace ScriptEngine.Machine.Contexts
         public override bool IsIndexed
         {
             get { return true; }
+        }
+
+        public override int GetPropCount()
+        {
+            return _propHolder.Count;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return GetPropertyName(propNum);
         }
 
         public override int FindProperty(string name)
@@ -76,29 +91,5 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-
-        IEnumerable<VariableInfo> IReflectableContext.GetProperties()
-        {
-            var props = this.GetProperties();
-
-            var result = new List<VariableInfo>();
-
-            foreach (var prop in props)
-            {
-                result.Add(new VariableInfo()
-                {
-                    Identifier = prop.Key,
-                    Index = prop.Value,
-                    Type = SymbolType.ContextProperty
-                });
-            }
-
-            return result;
-        }
-
-        IEnumerable<MethodInfo> IReflectableContext.GetMethods()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -17,5 +17,10 @@ namespace ScriptEngine.Environment
         public string ModuleName { get; set; }
         public ISourceCodeIndexer CodeIndexer { get; set; }
         public string Origin { get; set; }
+
+        public override string ToString()
+        {
+            return ModuleName;
+        }
     }
 }
