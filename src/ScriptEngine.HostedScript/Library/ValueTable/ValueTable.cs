@@ -441,12 +441,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             else
                 throw RuntimeException.InvalidArgumentType();
 
-            if (index_source < 0 || index_source >= _rows.Count)
+            if (index_source < 0 || index_source >= _rows.Count())
                 throw RuntimeException.InvalidArgumentValue();
 
-            int index_dest = (index_source + offset) % _rows.Count;
+            int index_dest = (index_source + offset) % _rows.Count();
             while (index_dest < 0)
-                index_dest += _rows.Count;
+                index_dest += _rows.Count();
 
             ValueTableRow tmp = _rows[index_source];
 
@@ -568,7 +568,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             foreach (string column in a_columns)
             {
                 string[] description = column.Trim().Split(' ');
-                if (description.Any())
+                if (description.Count() == 0)
                     throw RuntimeException.PropNotFoundException(""); // TODO: WrongColumnNameException
 
                 ValueTableSortRule Desc = new ValueTableSortRule();
@@ -596,7 +596,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             public RowComparator(List<ValueTableSortRule> Rules)
             {
-                if (Rules.Count == 0)
+                if (Rules.Count() == 0)
                     throw RuntimeException.InvalidArgumentValue();
 
                 this.Rules = Rules;
@@ -617,7 +617,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 int i = 0, r;
                 while ((r = OneCompare(x, y, Rules[i])) == 0)
                 {
-                    if (++i >= Rules.Count)
+                    if (++i >= Rules.Count())
                         return 0;
                 }
 
