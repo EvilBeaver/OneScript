@@ -100,7 +100,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ScriptConstructor(Name="По имени файла без кодировки")]
+        [ScriptConstructor(Name = "По имени файла без кодировки")]
         public static IRuntimeContextInstance Constructor (IValue path)
         {
             var reader = new TextReadImpl ();
