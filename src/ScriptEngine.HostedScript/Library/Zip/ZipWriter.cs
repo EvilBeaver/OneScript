@@ -271,7 +271,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 throw new RuntimeException("Архив не открыт");
         }
 
-        [ScriptConstructor(Name="Формирование неинициализированного объекта")]
+        [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static ZipWriter Construct()
         {
             return new ZipWriter();

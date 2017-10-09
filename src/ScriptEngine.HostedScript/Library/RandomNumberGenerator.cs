@@ -71,7 +71,7 @@ namespace ScriptEngine.HostedScript.Library
             return new RandomNumberGenerator();
         }
 
-        [ScriptConstructor(Name="Формирование неинициализированного объекта")]
+        [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static IRuntimeContextInstance Constructor()
         {
             return new RandomNumberGenerator();

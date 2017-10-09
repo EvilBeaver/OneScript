@@ -93,13 +93,13 @@ namespace oscript.Web.Multipart
         public FixedMapImpl Files
         { get { return _files; } }
 
-        [ScriptConstructor(Name="Из двоичных данных")]
+        [ScriptConstructor(Name = "Из двоичных данных")]
         public static PostRequestData Constructor(BinaryDataContext data, IValue boundary)
         {
             return new PostRequestData(data.Buffer, boundary.ToString());
         }
 
-        [ScriptConstructor(Name="Из строки запроса")]
+        [ScriptConstructor(Name = "Из строки запроса")]
         public static PostRequestData Constructor(IValue RequestString)
         {
             return new PostRequestData(RequestString.ToString());
