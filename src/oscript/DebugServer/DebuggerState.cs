@@ -15,16 +15,36 @@ namespace oscript.DebugServer
 {
     internal abstract class DebuggerState
     {
-        public virtual void ExecuteCommand(DebuggerCommands command, string[] arguments)
+        private readonly List<DebuggerCommandDescription> _commands;
+        public DebuggerState()
         {
-            throw new InvalidDebuggerCommandException();
+            _commands = new List<DebuggerCommandDescription>();
         }
 
+        public virtual void ExecuteCommand(DebuggerCommands command, string[] arguments)
+        {
+            RunCommand(command, arguments);
+        }
+        
         public virtual void Enter()
         {
             
         }
 
         public string Prompt { get; protected set; }
+
+        public IEnumerable<DebuggerCommandDescription> Commands => _commands;
+
+        protected void AddCommand(DebuggerCommandDescription cmd)
+        {
+            _commands.Add(cmd);
+        }
+
+        protected void RunCommand(DebuggerCommands cmd, string[] args)
+        {
+            var cmdDescr = Commands.First(x => x.Command == cmd);
+            cmdDescr.Action(args);
+        }
+
     }
 }

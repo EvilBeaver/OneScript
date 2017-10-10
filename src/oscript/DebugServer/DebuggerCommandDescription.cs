@@ -13,19 +13,11 @@ using System.Threading.Tasks;
 
 namespace oscript.DebugServer
 {
-    internal enum DebuggerCommands
+    internal class DebuggerCommandDescription
     {
-        IllegalCommand,
-        Execute,
-        SetBreakpoint,
-        Next,
-        StepIn,
-        StepOut,
-        GetStackFrames,
-        GetVariables,
-        Evaluate,
-        OutgoingEvent,
-        Help,
-        Exit
+        public string Token { get; set; }
+        public DebuggerCommands Command { get; set; }
+        public string HelpString { get; set; }
+        public Action<string[]> Action { get; set; }
     }
 }

@@ -17,43 +17,66 @@ namespace oscript.DebugServer
     {
         private OscriptDebugController _controller;
 
+        private bool _initialPromptPrinted;
+
         public BeforeExecutionState(OscriptDebugController controller)
         {
             this._controller = controller;
             Prompt = "init";
+
+            FillCommands();
         }
 
-        public override void ExecuteCommand(DebuggerCommands command, string[] arguments)
+        private void FillCommands()
         {
-            switch (command)
+            AddCommand(new DebuggerCommandDescription()
             {
-                case DebuggerCommands.Execute:
-                    _controller.Execute();
-                    break;
-                case DebuggerCommands.Help:
-                    PrintHelp();
-                    break;
-                case DebuggerCommands.SetBreakpoint:
-                    // dummy
-                    Output.WriteLine("bp dummy set");
-                    break;
-                default:
-                    base.ExecuteCommand(command, arguments);
-                    break;
-            }
+                Token = "bp",
+                Command = DebuggerCommands.SetBreakpoint,
+                HelpString = "Создание точки останова. Аргументы:" +
+                             "\n <путь к файлу>" +
+                             "\n <номер строки в файле>" +
+                             "\n\nВозвращаемое значение:" +
+                             "\n Число - идентификатор установленной точки. -1 если не удалось установить точку",
+                Action = SetBpAction
+
+            });
+
+            AddCommand(new DebuggerCommandDescription()
+            {
+                Token = "help",
+                Command = DebuggerCommands.Help,
+                HelpString = "Показывает эту справку",
+                Action = PrintHelp
+            });
+        }
+
+        private void SetBpAction(string[] args)
+        {
+            Output.WriteLine("SetBP - dummy execution");
         }
 
         public override void Enter()
         {
-            Output.WriteLine("Режим ожидания запуска. Для просмотра списка доступных команд введите help");
-            _controller.InputCommand();
+            if (!_initialPromptPrinted)
+            { 
+                Output.WriteLine("Режим ожидания запуска. Ни одна строка кода еще не выполнена.\n" +
+                                 "Для просмотра списка доступных команд введите help\n" +
+                                 "Для запуска программы введите run\n");
+
+                _initialPromptPrinted = true;
+            }
+
+        _controller.InputCommand();
         }
 
-        private void PrintHelp()
+        private void PrintHelp(string[] args)
         {
-            Output.WriteLine("Доступные команды:" +
-                             "\nbp: <путь к файлу> <номер строки> - установка точки останова" +
-                             "\nbprm <номер точки останова> - удаление точки останова");
+            Output.WriteLine("Доступные команды:");
+            foreach (var cmdDescr in Commands)
+            {
+                Output.WriteLine(cmdDescr.Token);
+            }
         }
     }
 

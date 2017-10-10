@@ -277,29 +277,17 @@ namespace oscript.DebugServer
                 var line = Console.ReadLine();
                 var parser = new CmdLineHelper(SplitArguments(line));
                 var commandName = parser.Next();
-                DebuggerCommands command = DebuggerCommands.Exit;
-                
-                switch (commandName)
-                {
-                    case "run":
-                        command = DebuggerCommands.Execute;
-                        selected = true;
-                        break;
-                    case "exit":
-                        command = DebuggerCommands.Exit;
-                        selected = true;
-                        break;
-                    case "bp":
-                        command = DebuggerCommands.SetBreakpoint;
-                        selected = true;
-                        break;
-                    default:
-                        Output.WriteLine($"Неизвестная команда {commandName}");
-                        break;
-                }
+                DebuggerCommands command;
 
-                if(selected)
+                if (_debugFSM.SelectCommand(commandName, out command))
+                {
+                    selected = true;
                     _debugFSM.DispatchCommand(command, parser.Tail());
+                }
+                else
+                {
+                    Output.WriteLine($"Неизвестная команда {commandName}");
+                }    
             }
             
         }

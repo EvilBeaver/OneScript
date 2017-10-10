@@ -109,6 +109,7 @@
     <Compile Include="ConsoleHostImpl.cs" />
     <Compile Include="DebugBehavior.cs" />
     <Compile Include="DebugServer\CommandsParser.cs" />
+    <Compile Include="DebugServer\DebuggerCommandDescription.cs" />
     <Compile Include="DebugServer\DebuggerCommands.cs" />
     <Compile Include="DebugServer\DebuggerFSM.cs" />
     <Compile Include="DebugServer\DebuggerState.cs" />

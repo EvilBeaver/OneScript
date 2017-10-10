@@ -56,6 +56,19 @@ namespace oscript.DebugServer
             CurrentState = availableTransition.nextState;
             CurrentState.Enter();
         }
+
+        public bool SelectCommand(string token, out DebuggerCommands command)
+        {
+            var cmd = CurrentState.Commands.FirstOrDefault(x => x.Token == token);
+            if (cmd != null)
+            {
+                command = cmd.Command;
+                return true;
+            }
+
+            command = default(DebuggerCommands);
+            return false;
+        }
     }
 
     internal class InvalidDebuggerCommandException : ApplicationException
