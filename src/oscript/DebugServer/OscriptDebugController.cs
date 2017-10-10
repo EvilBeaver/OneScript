@@ -31,9 +31,22 @@ namespace oscript.DebugServer
 
         private ServiceHost _serviceHost;
 
+        private readonly DebuggerFSM _debugFSM;
+
         public OscriptDebugController(int listenerPort)
         {
             _port = listenerPort;
+
+            _debugFSM = new DebuggerFSM();
+
+            var initialState = new BeforeExecutionState(this);
+            var runningState = new RunningState(this);
+            var stoppedState = new StoppedState(this);
+
+            _debugFSM.AddState(initialState, DebuggerCommands.Execute, runningState);
+            _debugFSM.AddState(initialState, DebuggerCommands.Help, initialState);
+            _debugFSM.AddState(initialState, DebuggerCommands.SetBreakpoint, initialState);
+            _debugFSM.AddState(runningState, DebuggerCommands.OutgoingEvent, stoppedState);
         }
 
         public void WaitForDebugEvent(DebugEventType theEvent)
@@ -42,13 +55,16 @@ namespace oscript.DebugServer
             {
                 case DebugEventType.BeginExecution:
 
-                    var host = new ServiceHost(this);
-                    var binding = Binder.GetBinding();
-                    host.AddServiceEndpoint(typeof(IDebuggerService), binding, Binder.GetDebuggerUri(_port));
-                    _serviceHost = host;
-                    host.Open();
-                    
+                    //var host = new ServiceHost(this);
+                    //var binding = Binder.GetBinding();
+                    //host.AddServiceEndpoint(typeof(IDebuggerService), binding, Binder.GetDebuggerUri(_port));
+                    //_serviceHost = host;
+                    //host.Open();
+
+
+                    _debugFSM.Start();
                     _debugCommandEvent.Wait(); // процесс 1скрипт не стартует, пока не получено разрешение от дебагера
+
                     break;
                 default:
                     throw new InvalidOperationException($"event {theEvent} cant't be waited");
@@ -245,5 +261,52 @@ namespace oscript.DebugServer
         }
 
         #endregion
+
+        public void InputCommand()
+        {
+            var thread = new Thread(InteractiveInput);
+            thread.Start();
+        }
+
+        private void InteractiveInput()
+        {
+            bool selected = false;
+            while (!selected)
+            {
+                Output.Write($"{_debugFSM.CurrentState.Prompt}>");
+                var line = Console.ReadLine();
+                var parser = new CmdLineHelper(SplitArguments(line));
+                var commandName = parser.Next();
+                DebuggerCommands command = DebuggerCommands.Exit;
+                
+                switch (commandName)
+                {
+                    case "run":
+                        command = DebuggerCommands.Execute;
+                        selected = true;
+                        break;
+                    case "exit":
+                        command = DebuggerCommands.Exit;
+                        selected = true;
+                        break;
+                    case "bp":
+                        command = DebuggerCommands.SetBreakpoint;
+                        selected = true;
+                        break;
+                    default:
+                        Output.WriteLine($"Неизвестная команда {commandName}");
+                        break;
+                }
+
+                if(selected)
+                    _debugFSM.DispatchCommand(command, parser.Tail());
+            }
+            
+        }
+
+        private string[] SplitArguments(string line)
+        {
+            return CommandsParser.SplitCommandLine(line);
+        }
     }
 }
