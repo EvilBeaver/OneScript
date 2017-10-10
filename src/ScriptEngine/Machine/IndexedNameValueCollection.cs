@@ -21,7 +21,7 @@ namespace ScriptEngine.Machine
     public class IndexedNameValueCollection<T> : IEnumerable<T>
     {
         private readonly Dictionary<string, int> _nameIndex = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
-        private readonly List<T> _values;
+        private readonly List<T> _values = new List<T>();
 
         public void Add(T item, string name)
         {
