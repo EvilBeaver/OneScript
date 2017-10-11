@@ -41,6 +41,8 @@ namespace ScriptEngine.HostedScript
             _engine.Environment = _env;
         }
 
+        public ScriptingEngine EngineInstance => _engine;
+
         public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
         {
             var libLoader = new LibraryResolver(_engine, _env);
