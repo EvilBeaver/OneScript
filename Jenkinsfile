@@ -165,7 +165,7 @@ pipeline {
         }
 
         stage ('Publishing night-build') {
-            when { branch 'develop' }
+            when { branch 'develop|release/*' }
             agent { label 'master' }
 
             steps {
