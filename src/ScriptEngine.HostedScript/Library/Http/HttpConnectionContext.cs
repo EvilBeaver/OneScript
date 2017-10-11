@@ -284,18 +284,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
                 using(var requestStream = webRequest.GetRequestStream())
                 {
-                    const int CHUNK_SIZE = 4096;
-                    byte[] buf = new byte[CHUNK_SIZE];
-                    
-                    while(true)
-                    {
-                        int bytesRead = stream.Read(buf, 0, CHUNK_SIZE);
-                        if (bytesRead == 0)
-                            break;
-
-                        requestStream.Write(buf, 0, bytesRead);
-
-                    }
+                    stream.CopyTo(requestStream);
                 }
             }
         }
