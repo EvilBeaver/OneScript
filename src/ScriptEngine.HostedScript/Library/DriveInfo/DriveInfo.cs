@@ -43,7 +43,7 @@ namespace ScriptEngine.HostedScript.Library.DriveInfo
         [ContextProperty("ИмяФС")]
         public string DriveFormat
         {
-            get { return SystemDriveInfo.DriveFormat ?? ""; } // на mono может быть null
+            get { return SystemDriveInfo.DriveFormat ?? "unknown"; } // на mono может быть null
         }
 
         /// <summary>
