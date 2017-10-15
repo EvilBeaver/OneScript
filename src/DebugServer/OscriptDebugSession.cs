@@ -347,6 +347,7 @@ namespace DebugServer
         public override void Variables(Response response, dynamic arguments)
         {
             int varsHandle = getInt(arguments, "variablesReference");
+            SessionLog.WriteLine($"variables request {varsHandle}");
             var variables = _variableHandles.Get(varsHandle, null);
             if (variables == null)
             {

@@ -177,7 +177,17 @@ namespace oscript.DebugServer
                     var propsCount = obj.GetPropCount();
                     for (int i = 0; i < propsCount; i++)
                     {
-                        locals.Add(ScriptEngine.Machine.Variable.Create(obj.GetPropValue(i), obj.GetPropName(i)));
+                        string propName = obj.GetPropName(i);
+
+                        try
+                        {
+                            locals.Add(ScriptEngine.Machine.Variable.Create(obj.GetPropValue(i), propName));
+                        }
+                        catch(Exception e)
+                        {
+                            locals.Add(ScriptEngine.Machine.Variable.Create(ValueFactory.Create(e.Message), propName));
+                        }
+                        
                     }
                 }
             }
