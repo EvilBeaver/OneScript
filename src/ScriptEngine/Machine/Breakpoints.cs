@@ -42,6 +42,19 @@ namespace ScriptEngine.Machine
             return bp.BreakpointId;
         }
 
+        public IEnumerable<Breakpoint> SetAllForModule(string module, int[] lines)
+        {
+            var cleaned = _breakpoints.Where(x => x.Module != module)
+                .ToList();
+
+            var range = lines.Select(x => new Breakpoint(_idsGenerator++) { LineNumber = x, Module = module });
+            cleaned.AddRange(range);
+            _breakpoints.Clear();
+            _breakpoints.AddRange(cleaned);
+
+            return range;
+        }
+
         public void RemoveBreakpoint(int bpId)
         {
             int index = _breakpoints.FindIndex(x => x.BreakpointId == bpId);
@@ -59,6 +72,12 @@ namespace ScriptEngine.Machine
         {
             var found = _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line);
             return found != null;
+        }
+
+        public int FindIndex(string module, int line)
+        {
+            var found = _breakpoints.FindIndex(x => x.Module.Equals(module) && x.LineNumber == line);
+            return found;
         }
     }
 }

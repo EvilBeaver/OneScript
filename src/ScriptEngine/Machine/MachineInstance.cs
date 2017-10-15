@@ -149,6 +149,24 @@ namespace ScriptEngine.Machine
             
             return true;
         }
+        
+        public bool RemoveBreakpoint(string source, int line, out int id)
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            id = _stopManager.RemoveBreakpoint(source, line);
+
+            return id >= 0;
+        }
+
+        public void SetBreakpointsForModule(string source, int[] lines)
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.Breakpoints.SetAllForModule(source, lines);
+        }
 
         public void StepOver()
         {

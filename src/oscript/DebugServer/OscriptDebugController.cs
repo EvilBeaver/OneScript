@@ -124,16 +124,23 @@ namespace oscript.DebugServer
         public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
             var confirmedBreakpoints = new List<Breakpoint>();
+            
+            var grouped = breaksToSet.GroupBy(g => g.Source);
 
-            _machine.ClearBreakpoints();
-            foreach (var bpt in breaksToSet)
+            foreach (var item in grouped)
             {
-                int id;
-                if (_machine.SetBreakpoint(bpt.Source, bpt.Line, out id))
+                var lines = item.Select(x => x.Line).ToArray();
+                _machine.SetBreakpointsForModule(item.Key, lines);
+
+                foreach (var line in lines)
                 {
-                    bpt.Id = id;
-                    confirmedBreakpoints.Add(bpt);
+                    confirmedBreakpoints.Add(new Breakpoint()
+                    {
+                        Line = line,
+                        Source = item.Key
+                    });
                 }
+                
             }
 
             return confirmedBreakpoints.ToArray();
