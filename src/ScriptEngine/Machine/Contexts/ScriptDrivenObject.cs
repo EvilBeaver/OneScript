@@ -354,6 +354,16 @@ namespace ScriptEngine.Machine.Contexts
             
         }
 
+        public override int GetPropCount()
+        {
+            return _state.Length;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            return _state[propNum].Name;
+        }
+
         #endregion
 
         public string[] GetExportedProperties()
