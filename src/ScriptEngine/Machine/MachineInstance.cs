@@ -196,8 +196,8 @@ namespace ScriptEngine.Machine
         {
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
-            // ??
-            //_stopManager.ClearSteppingStops();
+
+            _stopManager.Continue();
         }
 
         public IValue Evaluate(string expression, bool separate = false)

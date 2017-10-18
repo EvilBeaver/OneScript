@@ -66,7 +66,7 @@ namespace ScriptEngine.Machine
         {
             _machine = runner;
         }
-
+        
         public bool ShouldStopAtThisLine(string module, ExecutionFrame currentFrame)
         {
             bool mustStop = false;
@@ -143,6 +143,10 @@ namespace ScriptEngine.Machine
             _currentState = DebugState.SteppingOut;
             _stopFrames = _machine.GetExecutionFrames().Select(x => x.FrameObject).Skip(1).ToArray();
         }
-        
+
+        internal void Continue()
+        {
+            _lastStopPoint = default(StopPoint);
+        }
     }
 }
