@@ -460,6 +460,10 @@ namespace ScriptEngine.HostedScript.Library
                 var emptyDate = new DateTime(1, 1, 1, 0, 0, 0);
                 return value.AsDate() != emptyDate;
             }
+            else if (value.GetRawValue() is COMWrapperContext)
+            {
+                return true;
+            }
             else if (value.GetRawValue() is ICollectionContext)
             {
                 var col = value.GetRawValue() as ICollectionContext;
