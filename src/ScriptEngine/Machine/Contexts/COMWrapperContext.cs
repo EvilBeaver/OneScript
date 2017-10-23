@@ -24,9 +24,22 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
+        private static Type FindTypeByName(string typeName)
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
+            {
+                var tt = assembly.GetType(typeName, throwOnError:false, ignoreCase:true);
+                if (tt != null)
+                {
+                    return tt;
+                }
+            }
+            return Type.GetType(typeName, throwOnError:false, ignoreCase:true);
+        }
+
         public static COMWrapperContext Create(string progId, IValue[] arguments)
         {
-            var type = Type.GetType(progId, throwOnError: false, ignoreCase: true);
+            var type = FindTypeByName(progId);
             if (type == null)
             {
                 type = Type.GetTypeFromProgID(progId, throwOnError: true);

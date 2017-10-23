@@ -72,6 +72,7 @@ namespace DebugServer
             SessionLog.WriteLine($"cwd = {WorkingDirectory}");
 
             _process.Start();
+            System.Threading.Thread.Sleep(1000);
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
         }
