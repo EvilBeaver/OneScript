@@ -131,6 +131,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (_loadedModules.ContainsKey(typeName))
             {
+                var alreadyLoadedSrc = _loadedModules[typeName].ModuleInfo.Origin;
+                var currentSrc = moduleHandle.Module.ModuleInfo.Origin;
+
+                if(alreadyLoadedSrc != currentSrc)
+                    throw new RuntimeException("Type «" + typeName + "» already registered");
+
                 return;
             }
 

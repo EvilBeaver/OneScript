@@ -354,6 +354,23 @@ namespace ScriptEngine.Machine.Contexts
             
         }
 
+        public override int GetPropCount()
+        {
+            return VARIABLE_COUNT + _module.ExportedProperies.Length;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            if(PropDefinedInScript(propNum))
+            {
+                return _module.ExportedProperies[propNum - VARIABLE_COUNT].SymbolicName;
+            }
+            else
+            {
+                return GetOwnPropName(propNum);
+            }
+        }
+
         #endregion
 
         public string[] GetExportedProperties()

@@ -38,6 +38,8 @@ namespace ScriptEngine.Machine
         private ExecutionFrame[] _stopFrames;
 
         private StopPoint _lastStopPoint;
+
+        public Breakpoints Breakpoints => _breakpoints;
         
         public MachineStopReason LastStopReason { get; internal set; }
 
@@ -48,11 +50,23 @@ namespace ScriptEngine.Machine
             return _breakpoints.SetBreakpoint(module, line);
         }
 
+        internal int RemoveBreakpoint(string source, int line)
+        {
+            var id = _breakpoints.FindIndex(source, line);
+            if(id > 0)
+            {
+                _breakpoints.RemoveBreakpoint(id);
+            }
+
+            return id;
+
+        }
+
         public MachineStopManager(MachineInstance runner)
         {
             _machine = runner;
         }
-
+        
         public bool ShouldStopAtThisLine(string module, ExecutionFrame currentFrame)
         {
             bool mustStop = false;
@@ -128,6 +142,11 @@ namespace ScriptEngine.Machine
         {
             _currentState = DebugState.SteppingOut;
             _stopFrames = _machine.GetExecutionFrames().Select(x => x.FrameObject).Skip(1).ToArray();
+        }
+
+        internal void Continue()
+        {
+            _lastStopPoint = default(StopPoint);
         }
     }
 }

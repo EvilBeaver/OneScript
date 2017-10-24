@@ -109,7 +109,7 @@ namespace ScriptEngine.Environment
 
         string ICodeSource.SourceDescription
         {
-            get { return _path; }
+            get { return _path[0].ToString().ToUpperInvariant() + _path.Substring(1); }
         }
 
         #endregion

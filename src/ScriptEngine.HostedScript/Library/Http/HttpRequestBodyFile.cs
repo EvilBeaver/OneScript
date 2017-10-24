@@ -10,7 +10,7 @@ using System.IO;
 
 namespace ScriptEngine.HostedScript.Library.Http
 {
-    class HttpRequestBodyFile : IHttpRequestBody
+    class HttpRequestBodyFile : IHttpRequestBody, IDisposable
     {
         private readonly FileStream _bodyOpenedFile;
 

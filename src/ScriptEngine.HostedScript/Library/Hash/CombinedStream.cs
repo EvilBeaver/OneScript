@@ -164,5 +164,18 @@ namespace ScriptEngine.HostedScript.Library.Hash
             s.Seek(_position - border, SeekOrigin.Begin);
             return s;
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (disposing)
+            {
+                foreach (var stream in _streams)
+                    stream.Dispose();
+
+                _streams.Clear();
+            }
+        }
     }
 }

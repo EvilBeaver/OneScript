@@ -134,23 +134,16 @@ namespace ScriptEngine.Machine.Contexts
 
         protected override string GetOwnPropName(int index)
         {
-            var prop = _module.ExportedProperies[index];
-            return prop.SymbolicName;
+            if (_ownProperties == null)
+                throw new ArgumentException("Unknown property index");
+
+            return _ownPropertyIndexes.Where(x => x.Value == index).First().Key;
         }
         
         public override int GetMethodsCount()
         {
             return _module.ExportedMethods.Length;
         }
-
-        public override int GetPropCount()
-        {
-            return _module.ExportedProperies.Length;
-        }
-
-        public override string GetPropName(int propNum)
-        {
-            return _module.ExportedProperies[propNum].SymbolicName;
-        }
+        
     }
 }
