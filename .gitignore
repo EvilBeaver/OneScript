@@ -55,7 +55,7 @@ src/ScriptEngine.Snegopat/Snegopat_h.h
 # Песональный вспомагательный скрипт
 build.user.bat
 src/packages/
-
+src/DebugServer/node_modules/
 # Visual Studio OpenCover and Test result
 src/OpenCover
 TestResult.xml

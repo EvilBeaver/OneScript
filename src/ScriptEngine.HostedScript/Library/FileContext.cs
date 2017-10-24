@@ -160,6 +160,12 @@ namespace ScriptEngine.HostedScript.Library
             return File.GetLastWriteTime(FullName);
         }
 
+        [ContextMethod("ПолучитьВремяСоздания", "GetCreationTime")]
+        public DateTime GetCreationTime()
+        {
+            return File.GetCreationTime(FullName);
+        }
+
         [ContextMethod("УстановитьНевидимость", "SetHidden")]
         public void SetHidden(bool value)
         {
@@ -207,7 +213,7 @@ namespace ScriptEngine.HostedScript.Library
             return File.GetAttributes(FullName);
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "По имени файла")]
         public static IRuntimeContextInstance Constructor(IValue name)
         {
             return new FileContext(name.AsString());

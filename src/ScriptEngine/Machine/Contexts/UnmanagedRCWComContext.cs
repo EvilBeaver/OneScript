@@ -19,10 +19,9 @@ namespace ScriptEngine.Machine.Contexts
 
         private const uint E_DISP_MEMBERNOTFOUND = 0x80020003;
         private bool? _isIndexed;
-        private readonly Dictionary<string, int> _dispIdCache = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
-        private readonly Dictionary<int, MemberInfo> _membersCache = new Dictionary<int, MemberInfo>();
-        private readonly Dictionary<int, MethodInfo> _methodBinding = new Dictionary<int, MethodInfo>();
-
+        private readonly Dictionary<string, int> _dispIdIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly List<int> _dispIds = new List<int>();
+        
         public UnmanagedRCWComContext(object instance)
         {
             _instance = instance;
@@ -41,10 +40,9 @@ namespace ScriptEngine.Machine.Contexts
         protected override void Dispose(bool manualDispose)
         {
             base.Dispose(manualDispose);
-            
-            _membersCache.Clear();
-            _methodBinding.Clear();
-            _dispIdCache.Clear();
+
+            _dispIdIndexes.Clear();
+            _dispIds.Clear();
 
             if (_instance != null)
             {
@@ -131,20 +129,16 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int FindProperty(string name)
         {
-            int dispId;
-            if (!_dispIdCache.TryGetValue(name, out dispId))
-            {
-                if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
-                {
-                    _dispIdCache.Add(name, dispId);
-                }
-                else
-                {
-                    throw RuntimeException.PropNotFoundException(name);
-                }
-            }
+            var idx = FindMemberIndex(name);
+            if (idx < 0)
+                throw RuntimeException.PropNotFoundException(name);
 
-            return dispId;
+            return idx;
+        }
+
+        private int GetDispIdByIndex(int index)
+        {
+            return _dispIds[index];
         }
 
         public override bool IsPropReadable(int propNum)
@@ -163,7 +157,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(_instance, propNum, null);
+                    var result = DispatchUtility.Invoke(_instance, GetDispIdByIndex(propNum), null);
                     return CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
@@ -173,11 +167,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.PropNotFoundException("dispid[" + propNum.ToString() + "]");
+                throw RuntimeException.PropNotFoundException("dispid[" + GetDispIdByIndex(propNum) + "]");
             }
             catch (System.MemberAccessException)
             {
-                throw RuntimeException.PropIsNotReadableException("dispid[" + propNum.ToString() + "]");
+                throw RuntimeException.PropIsNotReadableException("dispid[" + GetDispIdByIndex(propNum) + "]");
             }
         }
 
@@ -204,7 +198,7 @@ namespace ScriptEngine.Machine.Contexts
                     {
                         argToPass = MarshalIValue(newVal);
                     }
-                    DispatchUtility.InvokeSetProperty(_instance, propNum, argToPass);
+                    DispatchUtility.InvokeSetProperty(_instance, GetDispIdByIndex(propNum), argToPass);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -213,30 +207,42 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.PropNotFoundException("dispid[" + propNum.ToString() + "]");
+                throw RuntimeException.PropNotFoundException("dispid[" + GetDispIdByIndex(propNum) + "]");
             }
             catch (System.MemberAccessException)
             {
-                throw RuntimeException.PropIsNotWritableException("dispid[" + propNum.ToString() + "]");
+                throw RuntimeException.PropIsNotWritableException("dispid[" + GetDispIdByIndex(propNum) + "]");
             }
+        }
+
+        public int FindMemberIndex(string name)
+        {
+            int knownDiIndex;
+            if (!_dispIdIndexes.TryGetValue(name, out knownDiIndex))
+            {
+                int dispId;
+                if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
+                {
+                    knownDiIndex = _dispIds.Count;
+                    _dispIds.Add(dispId);
+                    _dispIdIndexes.Add(name, knownDiIndex);
+                }
+                else
+                {
+                    knownDiIndex = -1;
+                }
+            }
+
+            return knownDiIndex;
         }
 
         public override int FindMethod(string name)
         {
-            int dispId;
-            if (!_dispIdCache.TryGetValue(name, out dispId))
-            {
-                if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
-                {
-                    _dispIdCache.Add(name, dispId);
-                }
-                else
-                {
-                    throw RuntimeException.MethodNotFoundException(name);
-                }
-            }
-
-            return dispId;
+            var idx = FindMemberIndex(name);
+            if (idx < 0)
+                throw RuntimeException.MethodNotFoundException(name);
+            
+            return idx;
         }
 
         public override MethodInfo GetMethodInfo(int methodNumber)
@@ -255,7 +261,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
+                    DispatchUtility.Invoke(_instance, GetDispIdByIndex(methodNumber), MarshalArguments(arguments));
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -264,7 +270,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.MethodNotFoundException("dispid[" + methodNumber.ToString() + "]");
+                throw RuntimeException.MethodNotFoundException("dispid[" + GetDispIdByIndex(methodNumber) + "]");
             }
         }
 
@@ -274,7 +280,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(_instance, methodNumber, MarshalArguments(arguments));
+                    var result = DispatchUtility.Invoke(_instance, GetDispIdByIndex(methodNumber), MarshalArguments(arguments));
                     retValue = CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
@@ -284,7 +290,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.MethodNotFoundException("dispid[" + methodNumber.ToString() + "]");
+                throw RuntimeException.MethodNotFoundException("dispid[" + GetDispIdByIndex(methodNumber) + "]");
             }
         }
 

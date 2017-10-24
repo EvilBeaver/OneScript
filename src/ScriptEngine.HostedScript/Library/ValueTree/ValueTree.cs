@@ -43,11 +43,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         /// <summary>
         /// Создаёт копию дерева значений.
         /// </summary>
-        /// <param name="Rows">Массив. Строки для копирования. Если не указан, копируются все строки. Необязательный параметр.</param>
-        /// <param name="ColumnNames">Строка. Список колонок через запятую, которые должны быть скопированы. Необязательный параметр.</param>
+        /// <param name="rows">Массив. Строки для копирования. Если не указан, копируются все строки. Необязательный параметр.</param>
+        /// <param name="columnNames">Строка. Список колонок через запятую, которые должны быть скопированы. Необязательный параметр.</param>
         /// <returns>ДеревоЗначений. Копия исходного дерева значений.</returns>
         [ContextMethod("Скопировать", "Copy")]
-        public ValueTree Copy(IValue Rows = null, string ColumnNames = null)
+        public ValueTree Copy(IValue rows = null, string columnNames = null)
         {
 
             // TODO: отрабатывать параметр Rows

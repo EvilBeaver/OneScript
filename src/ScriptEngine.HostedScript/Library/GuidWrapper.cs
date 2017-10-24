@@ -34,7 +34,7 @@ namespace ScriptEngine.HostedScript.Library
             return new GuidWrapper();
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "Из строки")]
         public static GuidWrapper Create(IValue uuidString)
         {
             return new GuidWrapper(uuidString.AsString());

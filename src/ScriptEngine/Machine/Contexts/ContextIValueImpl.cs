@@ -147,11 +147,6 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual IEnumerable<VariableInfo> GetProperties()
-        {
-            throw new NotImplementedException();
-        }
-
         public virtual int FindProperty(string name)
         {
             throw RuntimeException.PropNotFoundException(name);
@@ -174,7 +169,17 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual IEnumerable<MethodInfo> GetMethods()
+        public virtual int GetPropCount()
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual string GetPropName(int propNum)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual int GetMethodsCount()
         {
             throw new NotImplementedException();
         }

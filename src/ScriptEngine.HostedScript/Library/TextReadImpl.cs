@@ -100,7 +100,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        [ScriptConstructor(Name="По имени файла")]
+        [ScriptConstructor(Name = "По имени файла без кодировки")]
         public static IRuntimeContextInstance Constructor (IValue path)
         {
             var reader = new TextReadImpl ();
@@ -109,7 +109,7 @@ namespace ScriptEngine.HostedScript.Library
             return reader;
         }
 
-        [ScriptConstructor(Name = "По имени файла и кодировке")]
+        [ScriptConstructor(Name = "По имени файла")]
         public static IRuntimeContextInstance Constructor (IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue eolDelimiter = null)
         {
             var reader = new TextReadImpl();
@@ -119,7 +119,7 @@ namespace ScriptEngine.HostedScript.Library
             return reader;
         }
 
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static IRuntimeContextInstance Constructor()
         {
             var reader = new TextReadImpl();

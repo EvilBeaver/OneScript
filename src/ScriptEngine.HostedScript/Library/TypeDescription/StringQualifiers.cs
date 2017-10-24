@@ -20,10 +20,10 @@ namespace ScriptEngine.HostedScript.Library
 			AllowedLength = allowedLength;
 		}
 
-		[ContextProperty("Длина")]
+		[ContextProperty("Длина", "Length")]
 		public int Length { get; }
 
-		[ContextProperty("ДопустимаяДлина")]
+		[ContextProperty("ДопустимаяДлина", "AllowedLength")]
 		public AllowedLengthEnum AllowedLength { get; }
 
 		public override bool Equals(object obj)
@@ -75,7 +75,7 @@ namespace ScriptEngine.HostedScript.Library
 			return ValueFactory.Create(stringValue);
 		}
 
-		[ScriptConstructor]
+		[ScriptConstructor(Name = "На основании описания строки")]
 		public static IRuntimeContextInstance Constructor(IValue length = null,
 		                                                  IValue allowedLength = null)
 		{

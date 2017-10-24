@@ -6,9 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Machine.Contexts;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using ScriptEngine.Compiler;
+using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine
 {
@@ -20,9 +24,14 @@ namespace ScriptEngine.Machine
         private ExecutionFrame _currentFrame;
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
-        private Stack<MachineState> _states;
+        
         private LoadedModule _module;
-        private ICodeStatCollector _codeStatCollector = null;
+        private ICodeStatCollector _codeStatCollector;
+        private MachineStopManager _stopManager;
+
+        // для отладчика.
+        // актуален в момент останова машины
+        private IList<ExecutionFrameInfo> _fullCallstackCache;
 
         internal MachineInstance() 
         {
@@ -30,86 +39,217 @@ namespace ScriptEngine.Machine
             Reset();
         }
 
+        public event EventHandler<MachineStoppedEventArgs> MachineStopped;
+
         private struct ExceptionJumpInfo
         {
             public int handlerAddress;
             public ExecutionFrame handlerFrame;
         }
-
-        private struct MachineState
-        {
-            public Scope topScope;
-            public ExecutionFrame currentFrame;
-            public LoadedModule module;
-            public bool hasScope;
-            public IValue[] operationStack;
-            public ExecutionFrame[] callStack;
-            public ExceptionJumpInfo[] exceptionsStack;
-        }
-
+        
         public void AttachContext(IAttachableContext context, bool detachable)
         {
             IVariable[] vars;
             MethodInfo[] methods;
-            IRuntimeContextInstance instance;
-            context.OnAttach(this, out vars, out methods, out instance);
+            context.OnAttach(this, out vars, out methods);
             var scope = new Scope()
             {
                 Variables = vars,
                 Methods = methods,
-                Instance = instance,
+                Instance = context,
                 Detachable = detachable
             };
 
             _scopes.Add(scope);
-
         }
 
-        internal void StateConsistentOperation(Action action)
+        private Scope CreateModuleScope(IAttachableContext context)
         {
-            PushState();
-            try
+            IVariable[] vars;
+            MethodInfo[] methods;
+            context.OnAttach(this, out vars, out methods);
+            var scope = new Scope()
             {
-                action();
-            }
-            finally
-            {
-                PopState();
-            }
+                Variables = vars,
+                Methods = methods,
+                Instance = context
+            };
+            return scope;
         }
 
-        internal void ExecuteModuleBody()
+        public void ContextsAttached()
         {
-            if (_module.EntryMethodIndex >= 0)
+            // module scope
+            _scopes.Add(default(Scope));
+        }
+
+        internal void ExecuteModuleBody(IRunnable sdo)
+        {
+            var module = sdo.Module.Module;
+            if (module.EntryMethodIndex >= 0)
             {
-                PrepareMethodExecution(_module.EntryMethodIndex);
+                var entryRef = module.MethodRefs[module.EntryMethodIndex];
+                PrepareReentrantMethodExecution(sdo, entryRef.CodeIndex);
                 ExecuteCode();
+                if (_callStack.Count > 1)
+                    PopFrame();
             }
         }
 
-        internal IValue ExecuteMethod(int methodIndex, IValue[] arguments)
+        internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
-            PrepareMethodExecutionDirect(methodIndex);
+            PrepareReentrantMethodExecution(sdo, methodIndex);
+            var method = _module.Methods[methodIndex];
             for (int i = 0; i < arguments.Length; i++)
             {
                 if (arguments[i] is IVariable)
-                    _currentFrame.Locals[i] = (IVariable)arguments[i];
+                    _currentFrame.Locals[i] = Variable.CreateReference((IVariable)arguments[i], method.Variables[i]);
                 else if(arguments[i] == null)
-                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i));
+                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
                 else
-                    _currentFrame.Locals[i] = Variable.Create(arguments[i]);
+                    _currentFrame.Locals[i] = Variable.Create(arguments[i], method.Variables[i]);
             }
             ExecuteCode();
 
+            IValue methodResult = null;
             if (_module.Methods[methodIndex].Signature.IsFunction)
             {
-                return _operationStack.Pop();
+                methodResult = _operationStack.Pop();
             }
-            else
-                return null;
+
+            // Этот Pop связан с методом Return. 
+            // Если идет возврат из вложенного вызова, то Pop делается здесь, а не в Return,
+            // т.к. мы должны выйти из MainCommandLoop и вернуться в предыдущий цикл машины
+            //
+            // P.S. it's fuckin spaghetti (
+            if (_callStack.Count > 1)
+                PopFrame();
+
+            return methodResult;
+        }
+        
+        #region Debug protocol methods
+
+        public void SetDebugMode(IDebugController debugContr)
+        {
+            _stopManager = new MachineStopManager(this);
         }
 
-        internal ScriptInformationContext CurrentScript
+        public void ClearBreakpoints()
+        {
+            _stopManager.ClearBreakpoints();
+        }
+
+        public bool SetBreakpoint(string source, int line, out int id)
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            id = _stopManager.SetBreakpoint(source, line);
+            
+            return true;
+        }
+        
+        public bool RemoveBreakpoint(string source, int line, out int id)
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            id = _stopManager.RemoveBreakpoint(source, line);
+
+            return id >= 0;
+        }
+
+        public void SetBreakpointsForModule(string source, int[] lines)
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.Breakpoints.SetAllForModule(source, lines);
+        }
+
+        public void StepOver()
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.StepOver(_currentFrame);
+        }
+
+        public void StepIn()
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+           _stopManager.StepIn();
+        }
+
+        public void StepOut()
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.StepOut(_currentFrame);
+        }
+
+        public void PrepareDebugContinuation()
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.Continue();
+        }
+
+        public IValue Evaluate(string expression, bool separate = false)
+        {
+            var code = CompileExpressionModule(expression);
+
+            MachineInstance runner;
+            if (separate)
+            {
+                runner = new MachineInstance();
+                runner._scopes = new List<Scope>(_scopes);
+            }
+            else
+                runner = this;
+
+            var frame = new ExecutionFrame();
+            frame.MethodName = code.ModuleInfo.ModuleName;
+            frame.Locals = new IVariable[0];
+            frame.InstructionPointer = 0;
+            frame.Module = code;
+            
+            var mlocals = new Scope();
+            mlocals.Instance = new UserScriptContextInstance(code);
+            mlocals.Detachable = true;
+            mlocals.Methods = TopScope.Methods;
+            mlocals.Variables = _currentFrame.Locals;
+            runner._scopes.Add(mlocals);
+            frame.ModuleScope = mlocals;
+
+            try
+            {
+                runner.PushFrame(frame);
+                runner.MainCommandLoop();
+            }
+            finally
+            {
+                if (!separate)
+                {
+                    _scopes.RemoveAt(_scopes.Count - 1);
+                    PopFrame();
+                }
+            }
+
+            var result = runner._operationStack.Pop();
+
+            return result;
+
+        }
+        
+        #endregion
+
+        private ScriptInformationContext CurrentScript
         {
             get
             {
@@ -130,7 +270,7 @@ namespace ScriptEngine.Machine
             return _module.Constants[param.DefaultValueIndex];
         }
 
-        internal void SetModule(LoadedModule module)
+        private void SetModule(LoadedModule module)
         {
             _module = module;
         }
@@ -140,119 +280,28 @@ namespace ScriptEngine.Machine
             Reset();
             GC.Collect();
         }
-
-        private void PushState()
+        
+        private void PushFrame(ExecutionFrame frame)
         {
-            var stateToSave = new MachineState();
-            stateToSave.hasScope = DetachTopScope(out stateToSave.topScope);
-            stateToSave.currentFrame = _currentFrame;
-            stateToSave.module = _module;
-            StackToArray(ref stateToSave.callStack, _callStack);
-            StackToArray(ref stateToSave.exceptionsStack, _exceptionsStack);
-            StackToArray(ref stateToSave.operationStack, _operationStack);
-
-            _states.Push(stateToSave);
-
-            _callStack.Clear();
-            _exceptionsStack.Clear();
-            _operationStack.Clear();
-        }
-
-        private void StackToArray<T>(ref T[] destination, Stack<T> source)
-        {
-            if (source != null)
-            {
-                destination = new T[source.Count];
-                source.CopyTo(destination, 0);
-            }
-        }
-
-        private void RestoreStack<T>(ref Stack<T> destination, T[] source)
-        {
-            if (source != null)
-            {
-                destination = new Stack<T>();
-                for (int i = source.Length-1; i >=0 ; i--)
-                {
-                    destination.Push(source[i]);
-                }
-            }
-            else
-            {
-                destination = null;
-            }
-        }
-
-        private void PopState()
-        {
-            var savedState = _states.Pop();
-            if (savedState.hasScope)
-            {
-                if (_scopes[_scopes.Count - 1].Detachable)
-                {
-                    _scopes[_scopes.Count - 1] = savedState.topScope;
-                }
-                else
-                {
-                    _scopes.Add(savedState.topScope);
-                }
-            }
-            else if (_scopes[_scopes.Count - 1].Detachable)
-            {
-                Scope s;
-                DetachTopScope(out s);
-            }
-
-            _module = savedState.module;
-
-            RestoreStack(ref _callStack, savedState.callStack);
-            RestoreStack(ref _operationStack, savedState.operationStack);
-            RestoreStack(ref _exceptionsStack, savedState.exceptionsStack);
-
-            SetFrame(savedState.currentFrame);
-        }
-
-        private void PushFrame()
-        {
-            if(_currentFrame != null)
-                _callStack.Push(_currentFrame);
-
-            CodeStat_StopFrameStatistics();
+            //CodeStat_StopFrameStatistics();
+            _callStack.Push(frame);
+            SetFrame(frame);
         }
 
         private void PopFrame()
         {
-            _currentFrame = _callStack.Pop();
-            CodeStat_ResumeFrameStatistics();
+            _callStack.Pop();
+            SetFrame(_callStack.Peek());
+            //CodeStat_ResumeFrameStatistics();
         }
 
         private void SetFrame(ExecutionFrame frame)
         {
+            SetModule(frame.Module);
+            _scopes[_scopes.Count - 1] = frame.ModuleScope;
             _currentFrame = frame;
         }
-
-        private bool DetachTopScope(out Scope topScope)
-        {
-            if (_scopes.Count > 0)
-            {
-                topScope = _scopes[_scopes.Count - 1];
-                if (topScope.Detachable)
-                {
-                    _scopes.RemoveAt(_scopes.Count - 1);
-                    return true;
-                }
-                else
-                {
-                    topScope = default(Scope);
-                    return false;
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("Nothing is attached");
-            }
-        }
-
+        
         private Scope TopScope
         {
             get
@@ -274,30 +323,27 @@ namespace ScriptEngine.Machine
             _operationStack = new Stack<IValue>();
             _callStack = new Stack<ExecutionFrame>();
             _exceptionsStack = new Stack<ExceptionJumpInfo>();
-            _states = new Stack<MachineState>();
             _module = null;
             _currentFrame = null;
         }
-
-        private void PrepareMethodExecution(int methodIndex)
+        
+        private void PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
         {
-            var entryRef = _module.MethodRefs[methodIndex];
-            PrepareMethodExecutionDirect(entryRef.CodeIndex);
-        }
-
-        private void PrepareMethodExecutionDirect(int methodIndex)
-        {
-            var methDescr = _module.Methods[methodIndex];
+            var module = sdo.Module.Module;
+            var methDescr = module.Methods[methodIndex];
             var frame = new ExecutionFrame();
             frame.MethodName = methDescr.Signature.Name;
-            frame.Locals = new IVariable[methDescr.VariableFrameSize];
-            for (int i = 0; i < methDescr.VariableFrameSize; i++)
+            frame.Locals = new IVariable[methDescr.Variables.Count];
+            frame.Module = module;
+            frame.ModuleScope = CreateModuleScope(sdo);
+            frame.IsReentrantCall = true;
+            for (int i = 0; i < frame.Locals.Length; i++)
             {
-                frame.Locals[i] = Variable.Create(ValueFactory.Create());
+                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
             }
 
             frame.InstructionPointer = methDescr.EntryPoint;
-            SetFrame(frame);
+            PushFrame(frame);
         }
 
         private void PrepareCodeStatisticsData()
@@ -360,10 +406,16 @@ namespace ScriptEngine.Machine
                     // Раскрутка стека вызовов
                     while (_currentFrame != handler.handlerFrame)
                     {
+                        if (_currentFrame.IsReentrantCall)
+                        {
+                            _exceptionsStack.Push(handler);
+                            PopFrame();
+                            throw;
+                        }
+
                         PopFrame();
                     }
 
-                    SetFrame(handler.handlerFrame);
                     _currentFrame.InstructionPointer = handler.handlerAddress;
                     _currentFrame.LastException = exc;
                     
@@ -496,8 +548,10 @@ namespace ScriptEngine.Machine
                 MakeBool,
                 PushTmp,
                 PopTmp,
+                Execute,
 
                 //built-ins
+                Eval,
                 Bool,
                 Number,
                 Str,
@@ -592,7 +646,7 @@ namespace ScriptEngine.Machine
         {
             var vm = _module.VariableRefs[arg];
             var scope = _scopes[vm.ContextIndex];
-            var reference = Variable.CreateContextPropertyReference(scope.Instance, vm.CodeIndex);
+            var reference = Variable.CreateContextPropertyReference(scope.Instance, vm.CodeIndex, "$stackvar");
             _operationStack.Push(reference);
             NextInstruction();
         }
@@ -814,11 +868,16 @@ namespace ScriptEngine.Machine
 
                 if (sdo.MethodDefinedInScript(methodRef.CodeIndex))
                 {
+                    // заранее переведем указатель на адрес возврата. В опкоде Return инкремента нет.
+                    NextInstruction();
+
                     var methDescr = _module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
                     var frame = new ExecutionFrame();
+                    frame.Module = _module;
+                    frame.ModuleScope = TopScope;
                     frame.MethodName = methInfo.Name;
-                    frame.Locals = new IVariable[methDescr.VariableFrameSize];
-                    for (int i = 0; i < methDescr.VariableFrameSize; i++)
+                    frame.Locals = new IVariable[methDescr.Variables.Count];
+                    for (int i = 0; i < frame.Locals.Length; i++)
                     {
                         if (i < argValues.Length)
                         {
@@ -828,16 +887,16 @@ namespace ScriptEngine.Machine
                                 if (paramDef.IsByValue)
                                 {
                                     var value = ((IVariable)argValues[i]).Value;
-                                    frame.Locals[i] = Variable.Create(value);
+                                    frame.Locals[i] = Variable.Create(value, methDescr.Variables[i]);
                                 }
                                 else
                                 {
-                                    frame.Locals[i] = (IVariable)argValues[i];
+                                    frame.Locals[i] = Variable.CreateReference((IVariable)argValues[i], methDescr.Variables[i]);
                                 }
                             }
                             else
                             {
-                                frame.Locals[i] = Variable.Create(argValues[i]);
+                                frame.Locals[i] = Variable.Create(argValues[i], methDescr.Variables[i]);
                             }
 
                         }
@@ -845,21 +904,24 @@ namespace ScriptEngine.Machine
                         {
                             if (methInfo.Params[i].DefaultValueIndex == ParameterDefinition.UNDEFINED_VALUE_INDEX)
                             {
-                                frame.Locals[i] = Variable.Create(ValueFactory.Create());
+                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
                             }
                             else
                             {
-                                frame.Locals[i] = Variable.Create(_module.Constants[methInfo.Params[i].DefaultValueIndex]);
+                                frame.Locals[i] = Variable.Create(_module.Constants[methInfo.Params[i].DefaultValueIndex], methDescr.Variables[i]);
                             }
                         }
                         else
-                            frame.Locals[i] = Variable.Create(ValueFactory.Create());
+                            frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
 
                     }
 
                     frame.InstructionPointer = methDescr.EntryPoint;
-                    PushFrame();
-                    SetFrame(frame);
+                    PushFrame(frame);
+                    if (_stopManager != null)
+                    {
+                        //_stopManager.OnFrameEntered(frame);
+                    }
 
                     needsDiscarding = methInfo.IsFunction && !asFunc;
                 }
@@ -873,7 +935,7 @@ namespace ScriptEngine.Machine
             else
             {
                 // при вызове библиотечного метода (из другого scope)
-                // статус вызова текущего frame не должен изменяться.
+                // статус вызова текущего frames не должен изменяться.
                 //
                 needsDiscarding = _currentFrame.DiscardReturnValue;
                 CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
@@ -942,7 +1004,7 @@ namespace ScriptEngine.Machine
             var propName = _module.Constants[arg].AsString();
             var propNum = context.FindProperty(propName);
 
-            var propReference = Variable.CreateContextPropertyReference(context, propNum);
+            var propReference = Variable.CreateContextPropertyReference(context, propNum, "stackvar");
             _operationStack.Push(propReference);
             NextInstruction();
 
@@ -1099,7 +1161,7 @@ namespace ScriptEngine.Machine
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
             }
 
-            _operationStack.Push(Variable.CreateIndexedPropertyReference(context, index));
+            _operationStack.Push(Variable.CreateIndexedPropertyReference(context, index, "$stackvar"));
             NextInstruction();
 
         }
@@ -1113,15 +1175,23 @@ namespace ScriptEngine.Machine
             {
                 _exceptionsStack.Pop();
             }
-            
-            if (_callStack.Count != 0)
+
+            if (_currentFrame.IsReentrantCall)
+                _currentFrame.InstructionPointer = -1;
+            else
             {
                 PopFrame();
-                NextInstruction();
+                if(DebugStepInProgress())
+                    EmitStopEventIfNecessary();
             }
-            else
-                _currentFrame.InstructionPointer = -1;
-            
+        }
+
+        private bool DebugStepInProgress()
+        {
+            if (_stopManager == null)
+                return false;
+
+            return _stopManager.CurrentState == DebugState.SteppingOut || _stopManager.CurrentState == DebugState.SteppingOver;
         }
 
         private void JmpCounter(int arg)
@@ -1373,7 +1443,25 @@ namespace ScriptEngine.Machine
                 _currentFrame.LineNumber = arg;
                 CodeStat_LineReached();
             }
+
+            EmitStopEventIfNecessary();
+
             NextInstruction();
+        }
+
+        private void EmitStopEventIfNecessary()
+        {
+            if (MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.ModuleInfo.Origin, _currentFrame))
+            {
+                CreateFullCallstack();
+                MachineStopped?.Invoke(this, new MachineStoppedEventArgs(_stopManager.LastStopReason));
+            }
+        }
+
+        private void CreateFullCallstack()
+        {
+            var result = _callStack.Select(x => FrameInfo(x.Module, x)).ToList();
+            _fullCallstackCache = result;
         }
 
         private void MakeRawValue(int arg)
@@ -1404,6 +1492,48 @@ namespace ScriptEngine.Machine
             if (arg == 0)
                 _operationStack.Push(tmpVal);
 
+            NextInstruction();
+        }
+
+        private void Execute(int arg)
+        {
+            var code = _operationStack.Pop().AsString();
+            var module = CompileExecutionBatchModule(code);
+            
+            var frame = new ExecutionFrame();
+            frame.MethodName = module.ModuleInfo.ModuleName;
+            frame.Locals = new IVariable[0];
+            frame.InstructionPointer = 0;
+            frame.Module = module;
+
+            var mlocals = new Scope();
+            mlocals.Instance = new UserScriptContextInstance(module);
+            mlocals.Detachable = true;
+            mlocals.Methods = TopScope.Methods;
+            mlocals.Variables = _currentFrame.Locals;
+            _scopes.Add(mlocals);
+            frame.ModuleScope = mlocals;
+
+            try
+            {
+                PushFrame(frame);
+                MainCommandLoop();
+            }
+            finally
+            {
+                _scopes.RemoveAt(_scopes.Count - 1);
+                PopFrame();
+            }
+
+            NextInstruction();
+
+        }
+
+
+        private void Eval(int arg)
+        {
+            IValue value = Evaluate(_operationStack.Pop().AsString());
+            _operationStack.Push(value);
             NextInstruction();
         }
 
@@ -2247,6 +2377,68 @@ namespace ScriptEngine.Machine
 
         #endregion
 
+        private LoadedModule CompileExpressionModule(string expression)
+        {
+            var ctx = ExtractCompilerContext();
+
+            ICodeSource stringSource = new StringBasedSource(expression);
+            var parser = new Parser();
+            parser.Code = stringSource.Code;
+            var compiler = new Compiler.Compiler();
+            ctx.PushScope(new SymbolScope()); // скоуп выражения
+            var modImg = compiler.CompileExpression(parser, ctx);
+            modImg.ModuleInfo = new ModuleInformation();
+            modImg.ModuleInfo.Origin = "<expression>";
+            modImg.ModuleInfo.ModuleName = "<expression>";
+            var code = new LoadedModule(modImg);
+            return code;
+        }
+
+        private LoadedModule CompileExecutionBatchModule(string execBatch)
+        {
+            var ctx = ExtractCompilerContext();
+
+            ICodeSource stringSource = new StringBasedSource(execBatch);
+            var parser = new Parser();
+            parser.Code = stringSource.Code;
+            var compiler = new Compiler.Compiler();
+            ctx.PushScope(new SymbolScope()); // скоуп выражения
+            var modImg = compiler.CompileExecBatch(parser, ctx);
+            modImg.ModuleInfo = new ModuleInformation();
+            modImg.ModuleInfo.Origin = "<exec.module>";
+            modImg.ModuleInfo.ModuleName = "<exec.module>";
+            var code = new LoadedModule(modImg);
+            return code;
+        }
+
+        private CompilerContext ExtractCompilerContext()
+        {
+            var ctx = new CompilerContext();
+            foreach (var scope in _scopes)
+            {
+                var symbolScope = new SymbolScope();
+                foreach (var methodInfo in scope.Methods)
+                {
+                    symbolScope.DefineMethod(methodInfo);
+                }
+                foreach (var variable in scope.Variables)
+                {
+                    symbolScope.DefineVariable(variable.Name);
+                }
+
+                ctx.PushScope(symbolScope);
+            }
+
+            var locals = new SymbolScope();
+            foreach (var variable in _currentFrame.Locals)
+            {
+                locals.DefineVariable(variable.Name);
+            }
+
+            ctx.PushScope(locals);
+            return ctx;
+        }
+
         private void NextInstruction()
         {
             _currentFrame.InstructionPointer++;
@@ -2257,5 +2449,32 @@ namespace ScriptEngine.Machine
             return value.GetRawValue();
         }
 
+        public IList<ExecutionFrameInfo> GetExecutionFrames()
+        {
+            return _fullCallstackCache;
+        }
+
+        public IList<IVariable> GetFrameLocals(int frameId)
+        {
+            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
+            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
+                return new IVariable[0];
+
+            var frame = _fullCallstackCache[frameId];
+            return frame.FrameObject.Locals;
+        }
+
+        private ExecutionFrameInfo FrameInfo(LoadedModule module, ExecutionFrame frame)
+        {
+            return new ExecutionFrameInfo()
+            {
+                LineNumber = frame.LineNumber,
+                MethodName = frame.MethodName,
+                Source = module.ModuleInfo.Origin,
+                FrameObject = frame
+            };
+        }
+
+        
     }
 }

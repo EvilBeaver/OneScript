@@ -23,7 +23,7 @@ namespace ScriptEngine.Machine
             this.VariableRefs = image.VariableRefs.ToArray();
             this.Methods = image.Methods.ToArray();
             this.Constants = new IValue[image.Constants.Count];
-            this.VariableFrameSize = image.VariableFrameSize;
+            this.Variables = new VariablesFrame(image.Variables);
             this.ExportedProperies = image.ExportedProperties.ToArray();
             this.ExportedMethods = image.ExportedMethods.ToArray();
             this.ModuleInfo = image.ModuleInfo;
@@ -34,7 +34,7 @@ namespace ScriptEngine.Machine
             }
         }
 
-        public int VariableFrameSize { get; private set; }
+        public VariablesFrame Variables { get; private set; }
         public int EntryMethodIndex { get; private set; }
         public Command[] Code { get; private set;}
         public SymbolBinding[] VariableRefs { get; private set; }

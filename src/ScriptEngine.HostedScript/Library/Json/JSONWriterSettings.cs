@@ -56,47 +56,47 @@ public JSONWriterSettings(IValue NewLines = null, string PaddingSymbols = null, 
     /// Создает объект параметров записи JSON.
     /// </summary>
     ///
-    /// <param name="NewLines">
+    /// <param name="newLines">
     /// Определяет способ переноса строк, который будет использован при записи данных JSON.
     /// Значение по умолчанию: Авто. </param>
-    /// <param name="PaddingSymbols">
+    /// <param name="paddingSymbols">
     /// Определяет символы отступа, используемые при записи данных JSON.
     /// Применяется только, если значение ПереносСтрокJSON отлично от Нет.
     /// Значение по умолчанию: " ". </param>
-    /// <param name="UseDoubleQuotes">
+    /// <param name="useDoubleQuotes">
     /// Определяет, будут ли при записи имена свойств JSON записываться в двойных кавычках.
     /// Значение по умолчанию: Истина. </param>
-    /// <param name="EscapeCharacters">
+    /// <param name="escapeCharacters">
     /// Определяет используемый способ экранирования (замены) символов при записи данных JSON.
     /// Значение по умолчанию: Нет. </param>
-    /// <param name="EscapeAngleBrackets">
+    /// <param name="escapeAngleBrackets">
     /// Определяет, будут ли при записи экранироваться символы '&lt;' и '&gt;'.
     /// Значение по умолчанию: Ложь. </param>
-    /// <param name="EscapeLineTerminators">
+    /// <param name="escapeLineTerminators">
     /// Определяет, будут ли экранироваться разделители строк - U+2028 (line-separator) и U+2029 (page-separator).
     /// Значение по умолчанию: Истина. </param>
-    /// <param name="EscapeAmpersand">
+    /// <param name="escapeAmpersand">
     /// Определяет, будет ли при записи экранироваться символ амперсанда '&amp;'.
     /// Значение по умолчанию: Ложь. </param>
-    /// <param name="EscapeSingleQuotes">
+    /// <param name="escapeSingleQuotes">
     /// Определяет, будут ли экранироваться одинарные кавычки.
     /// Устанавливается в значение Истина, если ИспользоватьДвойныеКавычки установлено в Ложь.
     /// Значение по умолчанию: Ложь. </param>
-    /// <param name="EscapeSlash">
+    /// <param name="escapeSlash">
     /// Определяет, будет ли экранироваться слеш (косая черта) при записи значения.
     /// Значение по умолчанию: Ложь. </param>
-    [ScriptConstructor]
-    public static IRuntimeContextInstance Constructor(IValue NewLines = null, IValue PaddingSymbols = null, IValue UseDoubleQuotes = null, IValue EscapeCharacters = null, IValue EscapeAngleBrackets = null, IValue EscapeLineTerminators = null, IValue EscapeAmpersand = null, IValue EscapeSingleQuotes = null, IValue EscapeSlash = null)
+    [ScriptConstructor(Name = "По описанию параметров записи")]
+    public static IRuntimeContextInstance Constructor(IValue newLines = null, IValue paddingSymbols = null, IValue useDoubleQuotes = null, IValue escapeCharacters = null, IValue escapeAngleBrackets = null, IValue escapeLineTerminators = null, IValue escapeAmpersand = null, IValue escapeSingleQuotes = null, IValue escapeSlash = null)
 {
-	return new JSONWriterSettings(NewLines,
-        (PaddingSymbols == null ? null : PaddingSymbols.AsString()),
-        (UseDoubleQuotes == null?true:UseDoubleQuotes.AsBoolean()),
-        EscapeCharacters,
-        (EscapeAngleBrackets == null ? true : EscapeAngleBrackets.AsBoolean()),
-        (EscapeLineTerminators == null ? true : EscapeLineTerminators.AsBoolean()),
-        (EscapeAmpersand == null ? true : EscapeAmpersand.AsBoolean()),
-        (EscapeSingleQuotes == null ? true : EscapeSingleQuotes.AsBoolean()),
-        (EscapeSlash == null ? true : EscapeSlash.AsBoolean()));
+	return new JSONWriterSettings(newLines,
+        (paddingSymbols == null ? null : paddingSymbols.AsString()),
+        (useDoubleQuotes == null? true: useDoubleQuotes.AsBoolean()),
+        escapeCharacters,
+        (escapeAngleBrackets == null ? true : escapeAngleBrackets.AsBoolean()),
+        (escapeLineTerminators == null ? true : escapeLineTerminators.AsBoolean()),
+        (escapeAmpersand == null ? true : escapeAmpersand.AsBoolean()),
+        (escapeSingleQuotes == null ? true : escapeSingleQuotes.AsBoolean()),
+        (escapeSlash == null ? true : escapeSlash.AsBoolean()));
     }
 
 /// <summary>

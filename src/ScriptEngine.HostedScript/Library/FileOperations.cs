@@ -267,7 +267,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
-        /// Получить текущий каталог
+        /// Установить каталог текущим
         /// </summary>
         /// <param name="path">Имя нового текущего каталога</param>
         [ContextMethod("УстановитьТекущийКаталог", "SetCurrentDirectory")]

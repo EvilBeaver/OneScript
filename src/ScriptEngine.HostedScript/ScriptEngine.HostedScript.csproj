@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ScriptEngine.HostedScript</RootNamespace>
     <AssemblyName>ScriptEngine.HostedScript</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +32,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\ScriptEngine.HostedScript.XML</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +44,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -53,6 +57,7 @@
     <DocumentationFile>bin\x86\Release\ScriptEngine.HostedScript.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNoSnegopat|AnyCPU'">
     <OutputPath>bin\ReleaseNoSnegopat\</OutputPath>
@@ -62,6 +67,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNoSnegopat|x86'">
     <OutputPath>bin\x86\ReleaseNoSnegopat\</OutputPath>
@@ -73,6 +79,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ionic.Zip">
@@ -122,6 +129,7 @@
     <Compile Include="Library\FixedArrayImpl.cs" />
     <Compile Include="Library\FixedMapImpl.cs" />
     <Compile Include="Library\FixedStructureImpl.cs" />
+    <Compile Include="Library\GlobalBitFunctions.cs" />
     <Compile Include="Library\Hash\CombinedStream.cs" />
     <Compile Include="Library\Hash\Crc32.cs" />
     <Compile Include="Library\Hash\HashFunctionEnum.cs" />
@@ -216,6 +224,10 @@
     <Compile Include="Library\SymbolsContext.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj">
+      <Project>{727a498f-bf50-42f8-8523-40c0b5b1b233}</Project>
+      <Name>OneScript.DebugProtocol</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
       <Project>{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}</Project>
       <Name>ScriptEngine</Name>
@@ -240,9 +252,11 @@
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
-xcopy "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
+xcopy "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
+xcopy "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
     <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner"
-cp -f "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner"</PostBuildEvent>
+cp -f "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner"
+cp -f "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

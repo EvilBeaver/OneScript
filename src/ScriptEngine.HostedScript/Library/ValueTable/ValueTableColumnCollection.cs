@@ -20,24 +20,28 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
         private int _internal_counter = 0; // Нарастающий счётчик определителей колонок
 
-        public ValueTableColumnCollection()
+        private readonly ValueTable _owner;
+
+        public ValueTableColumnCollection(ValueTable owner)
         {
+            _owner = owner;
         }
 
         /// <summary>
         /// Добавляет колонку в таблицу значений
         /// </summary>
-        /// <param name="Name">Строка - Имя колонки</param>
-        /// <param name="Type">ОписаниеТипов - Тип данных колонки</param>
-        /// <param name="Title">Строка - Заголовок колонки</param>
+        /// <param name="name">Строка - Имя колонки</param>
+        /// <param name="type">ОписаниеТипов - Тип данных колонки</param>
+        /// <param name="title">Строка - Заголовок колонки</param>
+        /// <param name="width">Число - Ширина колонки</param>
         /// <returns>КолонкаТаблицыЗначений</returns>
         [ContextMethod("Добавить", "Add")]
-        public ValueTableColumn Add(string Name, TypeDescription Type = null, string Title = null, int Width = 0)
+        public ValueTableColumn Add(string name, TypeDescription type = null, string title = null, int width = 0)
         {
-            if (FindColumnByName(Name) != null)
-                throw new RuntimeException("Неверное имя колонки " + Name);
+            if (FindColumnByName(name) != null)
+                throw new RuntimeException("Неверное имя колонки " + name);
 
-            var column = new ValueTableColumn(this, ++_internal_counter, Name, Title, Type, Width);
+            var column = new ValueTableColumn(this, ++_internal_counter, name, title, type, width);
             _columns.Add(column);
 
             return column;
@@ -47,16 +51,18 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// Вставить колонку в указанную позицию
         /// </summary>
         /// <param name="index">Число - Индекс расположения колонки</param>
-        /// <param name="Name">Строка - Имя колонки</param>
-        /// <param name="Type">ОписаниеТипов - Тип данных колонки</param>
+        /// <param name="name">Строка - Имя колонки</param>
+        /// <param name="type">ОписаниеТипов - Тип данных колонки</param>
+        /// <param name="title">Строка - Заголовок колонки</param>
+        /// <param name="width">Число - Ширина колонки</param>
         /// <returns>КолонкаТаблицыЗначений</returns>
         [ContextMethod("Вставить", "Insert")]
-        public ValueTableColumn Insert(int index, string Name, TypeDescription Type = null, string Title = null, int Width = 0)
+        public ValueTableColumn Insert(int index, string name, TypeDescription type = null, string title = null, int width = 0)
         {
-            if (FindColumnByName(Name) != null)
-                throw new RuntimeException("Неверное имя колонки " + Name);
+            if (FindColumnByName(name) != null)
+                throw new RuntimeException("Неверное имя колонки " + name);
 
-            ValueTableColumn column = new ValueTableColumn(this, ++_internal_counter, Name, Title, Type, Width);
+            ValueTableColumn column = new ValueTableColumn(this, ++_internal_counter, name, title, type, width);
             _columns.Insert(index, column);
 
             return column;
@@ -86,12 +92,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Поиск колонки по имени
         /// </summary>
-        /// <param name="Name">Строка - Имя колонки</param>
+        /// <param name="name">Строка - Имя колонки</param>
         /// <returns>КолонкаТаблицыЗначений - Найденная колонка таблицы значений, иначе Неопределено.</returns>
         [ContextMethod("Найти", "Find")]
-        public IValue Find(string Name)
+        public IValue Find(string name)
         {
-            ValueTableColumn Column = FindColumnByName(Name);
+            ValueTableColumn Column = FindColumnByName(name);
             if (Column == null)
                 return ValueFactory.Create();
             return Column;
@@ -100,22 +106,24 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         /// <summary>
         /// Удалить колонку значений
         /// </summary>
-        /// <param name="Column">
+        /// <param name="column">
         /// Строка - Имя колонки для удаления
         /// Число - Индекс колонки для удаления
         /// КолонкаТаблицыЗначений - Колонка для удаления
         /// </param>
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue Column)
+        public void Delete(IValue column)
         {
-            Column = Column.GetRawValue();
-            _columns.Remove(GetColumnByIIndex(Column));
+            column = column.GetRawValue();
+            var vtColumn = GetColumnByIIndex(column);
+            _owner.ForEach(x=>x.OnOwnerColumnRemoval(vtColumn));
+            _columns.Remove(vtColumn);
         }
 
-        public ValueTableColumn FindColumnByName(string Name)
+        public ValueTableColumn FindColumnByName(string name)
         {
             var Comparer = StringComparer.OrdinalIgnoreCase;
-            return _columns.Find(column => Comparer.Equals(Name, column.Name));
+            return _columns.Find(column => Comparer.Equals(name, column.Name));
         }
         public ValueTableColumn FindColumnById(int id)
         {
@@ -153,6 +161,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return Column.ID;
         }
 
+        public override string GetPropName(int propNum)
+        {
+            return FindColumnByIndex(propNum).Name;
+        }
+
         public override IValue GetPropValue(int propNum)
         {
             return FindColumnById(propNum);
@@ -186,6 +199,34 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             if (index is ValueTableColumn)
             {
                 return index as ValueTableColumn;
+            }
+
+            throw RuntimeException.InvalidArgumentType();
+        }
+
+        public int GetColumnNumericIndex(IValue index)
+        {
+            if (index.DataType == DataType.String)
+            {
+                ValueTableColumn Column = FindColumnByName(index.AsString());
+                if (Column == null)
+                    throw RuntimeException.PropNotFoundException(index.AsString());
+                return Column.ID;
+            }
+
+            if (index.DataType == DataType.Number)
+            {
+                int iIndex = Decimal.ToInt32(index.AsNumber());
+                if (iIndex < 0 || iIndex >= Count())
+                    throw RuntimeException.InvalidArgumentValue();
+
+                return iIndex;
+            }
+
+            var column = index.GetRawValue() as ValueTableColumn;
+            if (column != null)
+            {
+                return column.ID;
             }
 
             throw RuntimeException.InvalidArgumentType();

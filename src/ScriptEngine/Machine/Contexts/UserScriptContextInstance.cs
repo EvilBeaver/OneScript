@@ -18,6 +18,7 @@ namespace ScriptEngine.Machine.Contexts
         Dictionary<string, int> _ownPropertyIndexes;
         List<IValue> _ownProperties;
         
+        public IValue[] ConstructorParams { get; private set; }
         
         internal UserScriptContextInstance(LoadedModule module) : base(module)
         {
@@ -36,6 +37,52 @@ namespace ScriptEngine.Machine.Contexts
                 ConstructorParams = new IValue[0];
             }
 
+        }
+
+        protected override void OnInstanceCreation()
+        {
+            base.OnInstanceCreation();
+            var methId = GetScriptMethod("ПриСозданииОбъекта", "OnObjectCreate");
+            int constructorParamsCount = ConstructorParams.Count();
+
+            if (methId > -1)
+            {
+                bool hasParamsError = false;
+                var procInfo = GetMethodInfo(methId);
+
+                int procParamsCount = procInfo.Params.Count();
+
+                if (procParamsCount < constructorParamsCount)
+                {
+                    hasParamsError = true;
+                }
+
+                int reqParams = 0;
+                foreach (var itm in procInfo.Params)
+                {
+                    if (!itm.HasDefaultValue) reqParams++;
+                }
+                if (reqParams > constructorParamsCount)
+                {
+                    hasParamsError = true;
+                }
+                if (hasParamsError)
+                {
+                    throw new RuntimeException("Параметры конструктора: "
+                        + "необходимых параметров: " + Math.Min(procParamsCount, reqParams).ToString()
+                        + ", передано параметров " + constructorParamsCount.ToString()
+                        );
+                }
+
+                CallAsProcedure(methId, ConstructorParams);
+            }
+            else
+            {
+                if (constructorParamsCount > 0)
+                {
+                    throw new RuntimeException("Конструктор не определен, но переданы параметры конструктора.");
+                }
+            }
         }
 
         public void AddProperty(string name, IValue value)
@@ -85,29 +132,18 @@ namespace ScriptEngine.Machine.Contexts
             return _ownProperties[index];
         }
 
-        #region IReflectableContext Members
-
-        public override IEnumerable<VariableInfo> GetProperties()
+        protected override string GetOwnPropName(int index)
         {
-            foreach (var item in _module.ExportedProperies)
-            {
-                var vi = new VariableInfo();
-                vi.Identifier = item.SymbolicName;
-                vi.Index = item.Index;
-                vi.Type = SymbolType.ContextProperty;
-                
-                yield return vi;
-            }
-        }
+            if (_ownProperties == null)
+                throw new ArgumentException("Unknown property index");
 
-        public override IEnumerable<MethodInfo> GetMethods()
+            return _ownPropertyIndexes.Where(x => x.Value == index).First().Key;
+        }
+        
+        public override int GetMethodsCount()
         {
-            foreach (var item in _module.ExportedMethods)
-            {
-                yield return GetMethodInfo(item.Index);
-            }
+            return _module.ExportedMethods.Length;
         }
-
-        #endregion
+        
     }
 }

@@ -121,22 +121,16 @@ namespace ScriptEngine.HostedScript.Library.Zip
             return flattenFlag;
         }
 
-        [ScriptConstructor(Name="Создание неинициализированного объекта")]
+        [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static ZipReader Construct()
         {
             return new ZipReader();
         }
 
-        [ScriptConstructor(Name="По имени файла")]
-        public static ZipReader ConstructByName(IValue filename)
+        [ScriptConstructor(Name = "На основании имени файла")]
+        public static ZipReader ConstructByNameAndPassword(IValue filename, IValue password = null)
         {
-            return new ZipReader(filename.AsString());
-        }
-
-        [ScriptConstructor(Name="По имени файла и паролю")]
-        public static ZipReader ConstructByNameAndPassword(IValue filename, IValue password)
-        {
-            return new ZipReader(filename.AsString(), password.AsString());
+            return new ZipReader(filename.AsString(), password?.AsString());
         }
 
         public void Dispose()

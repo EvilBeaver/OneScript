@@ -142,6 +142,8 @@ namespace ScriptEngine.Machine
         private static readonly SimpleConstantValue _staticUndef = new SimpleConstantValue();
         private static readonly SimpleConstantValue _staticBoolTrue = BooleanInternal(true);
         private static readonly SimpleConstantValue _staticBoolFalse = BooleanInternal(false);
+        private static readonly SimpleConstantValue _staticIntZero = new SimpleConstantValue() {_decimalPart = 0, _type = DataType.Number};
+        private static readonly SimpleConstantValue _staticIntOne = new SimpleConstantValue() {_decimalPart = 1, _type = DataType.Number};
 
         public static SimpleConstantValue Undefined()
         {
@@ -164,6 +166,12 @@ namespace ScriptEngine.Machine
 
         public static SimpleConstantValue Number(decimal value)
         {
+            if (value == 0)
+                return _staticIntZero;
+
+            if (value == 1)
+                return _staticIntOne;
+
             var val = new SimpleConstantValue();
             val._type = DataType.Number;
             val._decimalPart = value;
@@ -218,7 +226,9 @@ namespace ScriptEngine.Machine
 
         public StringConstantValue(string val)
         {
-            Trace.Assert(val != null);
+            if (val == null)
+                throw new ArgumentNullException();
+
             _value = val;
         }
 

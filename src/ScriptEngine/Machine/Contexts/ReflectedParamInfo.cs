@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    class ReflectedParamInfo : ParameterInfo
+    public class ReflectedParamInfo : ParameterInfo
     {
         public ReflectedParamInfo(string name, bool isByVal)
         {
@@ -24,12 +24,12 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        public void SetOwner(MemberInfo owner)
+        internal void SetOwner(MemberInfo owner)
         {
             MemberImpl = owner;
         }
 
-        public void SetPosition(int index)
+        internal void SetPosition(int index)
         {
             PositionImpl = index;
         }

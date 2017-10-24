@@ -20,10 +20,9 @@ namespace ScriptEngine.Machine.Contexts
         readonly ScriptDrivenObject _instance;
 
         readonly LoadedModule _module;
-        Dictionary<string, int> _reflectedMethods;
-        Dictionary<string, int> _reflectedProperties;
-        ReflectedMethodInfo[] _methodsCache;
-        ReflectedPropertyInfo[] _propsCache;
+
+        IndexedNameValueCollection<ReflectedMethodInfo> _reflectedMethods;
+        IndexedNameValueCollection<ReflectedPropertyInfo> _reflectedProperties;
 
         public ReflectableSDO(ScriptDrivenObject instance, LoadedModuleHandle module)
             : this(instance, module.Module)
@@ -84,32 +83,28 @@ namespace ScriptEngine.Machine.Contexts
         private void GatherProperties()
         {
             var props = _module.ExportedProperies;
-            
-            _reflectedProperties = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
-            _propsCache = new ReflectedPropertyInfo[props.Length];
+
+            _reflectedProperties = new IndexedNameValueCollection<ReflectedPropertyInfo>();
             
             for (int i = 0; i < props.Length; i++)
             {
-                var reflected = CreatePropInfo(props[i]);
-                _propsCache[i] = (ReflectedPropertyInfo)reflected;
-                _reflectedProperties.Add(props[i].SymbolicName, i);
-                _reflectedProperties.Add("[DispId=" + props[i].Index + "]", i);
+                var reflected = (ReflectedPropertyInfo)CreatePropInfo(props[i]);
+                _reflectedProperties.Add(reflected, props[i].SymbolicName);
+                _reflectedProperties.AddName(i, "[DispId=" + props[i].Index + "]");
             }
             
         }
 
         private void GatherMethods()
         {
-            _methodsCache = new ReflectedMethodInfo[_module.ExportedMethods.Length];
-            _reflectedMethods = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+            _reflectedMethods = new IndexedNameValueCollection<ReflectedMethodInfo>();
 
             for (int i = 0; i < _module.ExportedMethods.Length; i++)
             {
                 var item = _module.ExportedMethods[i];
                 var reflected = CreateMethodInfo(item);
-                _methodsCache[i] = reflected;
-                _reflectedMethods.Add(item.SymbolicName, i);
-                _reflectedMethods.Add("[DispId=" + item.Index + "]", i);
+                _reflectedMethods.Add(reflected, item.SymbolicName);
+                _reflectedMethods.AddName(i, "[DispId=" + item.Index + "]");
             }
         }
 
@@ -137,13 +132,13 @@ namespace ScriptEngine.Machine.Contexts
 
         public System.Reflection.MethodInfo GetMethod(string name, BindingFlags bindingAttr)
         {
-            int index;
-            if (!_reflectedMethods.TryGetValue(name, out index))
+            ReflectedMethodInfo result;
+            if (!_reflectedMethods.TryGetValue(name, out result))
             {
                 return null;
             }
 
-            return _methodsCache[index];
+            return result;
         }
 
         public System.Reflection.MethodInfo GetMethod(string name, BindingFlags bindingAttr, Binder binder, Type[] types, ParameterModifier[] modifiers)
@@ -153,12 +148,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public System.Reflection.MethodInfo[] GetMethods(BindingFlags bindingAttr)
         {
-            return _methodsCache.ToArray();
+            return _reflectedMethods.ToArray();
         }
 
         public PropertyInfo[] GetProperties(BindingFlags bindingAttr)
         {
-            return _propsCache.ToArray();
+            return _reflectedProperties.ToArray();
         }
 
         public PropertyInfo GetProperty(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
@@ -168,13 +163,13 @@ namespace ScriptEngine.Machine.Contexts
 
         public PropertyInfo GetProperty(string name, BindingFlags bindingAttr)
         {
-            int index;
-            if (!_reflectedProperties.TryGetValue(name, out index))
+            ReflectedPropertyInfo res;
+            if (!_reflectedProperties.TryGetValue(name, out res))
             {
                 return null;
             }
 
-            return _propsCache[index];
+            return res;
         }
 
         public object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, System.Globalization.CultureInfo culture, string[] namedParameters)
@@ -330,9 +325,19 @@ namespace ScriptEngine.Machine.Contexts
             _instance.SetPropValue(propNum, newVal);
         }
 
-        public IEnumerable<MethodInfo> GetMethods()
+        public int GetPropCount()
         {
-            return _instance.GetMethods();
+            return _instance.GetPropCount();
+        }
+
+        public string GetPropName(int propNum)
+        {
+            return _instance.GetPropName(propNum);
+        }
+
+        public int GetMethodsCount()
+        {
+            return _instance.GetMethodsCount();
         }
 
         public int FindMethod(string name)

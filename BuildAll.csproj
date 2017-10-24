@@ -7,6 +7,7 @@
 	<BinFolder>$(OutputPathForBuild)\bin\</BinFolder>
 	<LibFolder>$(OutputPathForBuild)\lib\</LibFolder>
 	<DocFolder>$(OutputPathForBuild)\doc\</DocFolder>
+  <DebugDest>$(OutputPathForBuild)\vscode\</DebugDest>
 	<MDDocFolder>$(MSBuildProjectDirectory)\mddoc</MDDocFolder>
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
 	<Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
@@ -111,12 +112,26 @@
 		
 		<Delete Files="@(RemoveUnnessesaryFiles)" />
 
+    <MakeDir Directories="@(DebugDist)"/>
+    
+    <ItemGroup>
+      <DbgFiles Include="$(OutputPathForBuild)\DebugServer.exe"/>
+      <DbgFiles Include="$(OutputPathForBuild)\DebugServer.exe.config"/>
+      <DbgFiles Include="$(OutputPathForBuild)\OneScript.DebugProtocol.dll"/>
+      <DbgFiles Include="$(OutputPathForBuild)\Newtonsoft.Json.dll"/>
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(DbgFiles)"  DestinationFolder="$(DebugDest)\bin"/>
+    <Move SourceFiles="$(OutputPathForBuild)\package.json" DestinationFolder="$(DebugDest)"/>
+    <Move SourceFiles="$(OutputPathForBuild)\images\mono-debug-icon.png" DestinationFolder="$(DebugDest)\images"/>
+      
 		<ItemGroup>
 			
 			<BinaryFiles Include="$(OutputPathForBuild)\oscript.exe"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\TestApp.exe"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\ScriptEngine.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\ScriptEngine.HostedScript.dll"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\OneScript.DebugProtocol.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\Ionic.Zip.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\Newtonsoft.Json.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\ICSharpCode.AvalonEdit.dll"/>
@@ -134,8 +149,11 @@
 		<!-- Удаление артефактов NUnit -->
 		<ItemGroup>
 			<NUnitArtifacts Include="$(OutputPathForBuild)\*.dll"/>
+      <NUnitArtifacts Include="$(OutputPathForBuild)\ru\*.dll"/>
 		</ItemGroup>
-		<Delete Files="@(NUnitArtifacts)"/>
+		<Delete Files="@(DbgFiles)"/>
+    <Delete Files="@(NUnitArtifacts)"/>
+    <RemoveDir Directories="$(OutputPathForBuild)\ru"/>
 
 		<!-- Копирование скрипта запуска для opm -->
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 

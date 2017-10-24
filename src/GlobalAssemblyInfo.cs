@@ -14,29 +14,30 @@ at http://mozilla.org/MPL/2.0/.
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Reflection.AssemblyCompany("BeaverSoft")]
-[assembly: System.Reflection.AssemblyCopyright("Copyright (c) 2017 EvilBeaver")]
-[assembly: System.Reflection.AssemblyConfiguration("Commit 2a614c0")]
-[assembly: System.Reflection.AssemblyVersion("1.0.17.0")]
-[assembly: System.Reflection.AssemblyFileVersion("1.0.17.0")]
-[assembly: System.Reflection.AssemblyInformationalVersion("1.0.17.0")]
+using System.Reflection;
 
+[assembly: AssemblyCompany("BeaverSoft")]
+[assembly: AssemblyCopyright("Copyright (c) 2017 EvilBeaver")]
+[assembly: AssemblyConfiguration("Commit 2a614c0")]
+[assembly: AssemblyVersion("1.0.18.0")]
+[assembly: AssemblyFileVersion("1.0.18.0")]
+[assembly: AssemblyInformationalVersion("1.0.18.0")]
 
+internal sealed class ThisAssembly
+{
+	internal const string AssemblyCompany = "BeaverSoft";
 
-internal sealed partial class ThisAssembly {
-    
-    internal const string AssemblyCompany = "BeaverSoft";
+	internal const string AssemblyCopyright = "Copyright (c) 2017 EvilBeaver";
 
-    internal const string AssemblyCopyright = "Copyright (c) 2017 EvilBeaver";
-    
-    internal const string AssemblyConfiguration = "Commit 2a614c0";
-    
-    internal const string AssemblyVersion = "1.0.17.0";
-    
-    internal const string AssemblyFileVersion = "1.0.17.0";
-    
-    internal const string AssemblyInformationalVersion = "1.0.17.0";
-    
-    private ThisAssembly() {
-    }
+	internal const string AssemblyConfiguration = "Commit 2a614c0";
+
+	internal const string AssemblyVersion = "1.0.18.0";
+
+	internal const string AssemblyFileVersion = "1.0.18.0";
+
+	internal const string AssemblyInformationalVersion = "1.0.18.0";
+
+	private ThisAssembly()
+	{
+	}
 }

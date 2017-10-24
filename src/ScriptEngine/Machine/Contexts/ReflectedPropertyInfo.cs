@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    class ReflectedPropertyInfo : PropertyInfo
+    public class ReflectedPropertyInfo : PropertyInfo
     {
         bool _canRead;
         bool _canWrite;

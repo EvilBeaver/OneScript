@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using OneScript.DebugProtocol;
+
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
@@ -27,17 +30,20 @@ namespace oscript
             _path = path;
         }
         
+        public IDebugController DebugController { get; set; }
+
         public override int Execute()
         {
             if (!System.IO.File.Exists(_path))
             {
-                Echo(String.Format("Script file is not found '{0}'", _path));
+                Echo($"Script file is not found '{_path}'");
                 return 2;
             }
 
             SystemLogger.SetWriter(this);
 
             var hostedScript = new HostedScriptEngine();
+            hostedScript.DebugController = DebugController;
             hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             var source = hostedScript.Loader.FromFile(_path);
@@ -54,7 +60,7 @@ namespace oscript
             }
 
             var result = process.Start();
-            hostedScript.Finalize();
+            hostedScript.Dispose();
 
             ScriptFileHelper.OnAfterScriptExecute(hostedScript);
 

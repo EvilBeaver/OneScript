@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library
 			DateFractions = dateFractions;
 		}
 
-		[ContextProperty("ЧастиДаты")]
+		[ContextProperty("ЧастиДаты", "DateFractions")]
 		public DateFractionsEnum DateFractions { get; }
 
 		public override bool Equals(object obj)
@@ -64,7 +64,7 @@ namespace ScriptEngine.HostedScript.Library
 
 		}
 
-		[ScriptConstructor]
+		[ScriptConstructor(Name = "На основании описания даты")]
 		public static IRuntimeContextInstance Constructor(IValue dateFractions = null)
 		{
 			var paramDateFractions = ContextValuesMarshaller.ConvertParam<DateFractionsEnum>(dateFractions);

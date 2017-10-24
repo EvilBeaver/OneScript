@@ -19,19 +19,51 @@ namespace ScriptEngine.Machine
         IValue GetIndexedValue(IValue index);
         void SetIndexedValue(IValue index, IValue val);
 
-        IEnumerable<VariableInfo> GetProperties();
         int FindProperty(string name);
         bool IsPropReadable(int propNum);
         bool IsPropWritable(int propNum);
         IValue GetPropValue(int propNum);
         void SetPropValue(int propNum, IValue newVal);
 
-        IEnumerable<MethodInfo> GetMethods();
+        int GetPropCount();
+        string GetPropName(int propNum);
+        
         int FindMethod(string name);
+        int GetMethodsCount();
         MethodInfo GetMethodInfo(int methodNumber);
         void CallAsProcedure(int methodNumber, IValue[] arguments);
         void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue);
 
+    }
+
+    public static class RCIHelperExtensions
+    {
+        public static IEnumerable<MethodInfo> GetMethods(this IRuntimeContextInstance context)
+        {
+            MethodInfo[] methods = new MethodInfo[context.GetMethodsCount()];
+            for (int i = 0; i < methods.Length; i++)
+            {
+                methods[i] = context.GetMethodInfo(i);
+            }
+
+            return methods;
+        }
+
+        public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextInstance context)
+        {
+            VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
+            for (int i = 0; i < infos.Length; i++)
+            {
+                infos[i] = new VariableInfo()
+                {
+                    Identifier = context.GetPropName(i),
+                    Type = SymbolType.ContextProperty,
+                    Index = i
+                };
+            }
+
+            return infos;
+        }
     }
 
 }
