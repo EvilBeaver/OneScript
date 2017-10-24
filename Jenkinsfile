@@ -204,7 +204,7 @@ pipeline {
                 sudo rsync -rv --delete --exclude *.src.rpm output/* \$TARGET
                 sudo rsync -rv --delete install/build/vscode/*.vsix \$TARGET
 
-                TARGET="/var/www/oscript.io/download/versions/$rel/"
+                TARGET="/var/www/oscript.io/download/versions/1_0_$ReleaseNumber/"
                 sudo rsync -rv --delete --exclude mddoc*.zip dist/* \$TARGET
                 sudo rsync -rv --delete --exclude *.src.rpm output/* \$TARGET
                 sudo rsync -rv --delete install/build/vscode/*.vsix \$TARGET
