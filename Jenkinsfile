@@ -174,6 +174,7 @@ pipeline {
             agent { label 'master' }
 
             steps {
+                deleteDir()
                 unstash 'winDist'
                 unstash 'linDist'
                 unstash 'vsix'
@@ -187,13 +188,15 @@ pipeline {
                 '''.stripIndent()
             }
         }
-		
-		stage ('Publishing master') {
+                
+                stage ('Publishing master') {
             when { branch 'master' }
-			
+                
             agent { label 'master' }
 
             steps {
+                deleteDir()
+                
                 unstash 'winDist'
                 unstash 'linDist'
                 unstash 'vsix'
