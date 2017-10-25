@@ -123,6 +123,11 @@ pipeline {
                     dir('install/build'){
 						deleteDir()
 					}
+					
+					dir('dist'){
+						deleteDir()
+					}
+					
 					unstash 'buildResults'
                     //unstash 'sitedoc'
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:CreateZip;CreateInstall;CreateNuget"
