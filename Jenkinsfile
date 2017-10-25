@@ -174,7 +174,7 @@ pipeline {
             agent { label 'master' }
 
             steps {
-                fileOperations([folderDeleteOperation('dist'), folderDeleteOperation('output'), folderDeleteOperation('vscode')])
+                
                 unstash 'winDist'
                 unstash 'linDist'
                 unstash 'vsix'
@@ -195,7 +195,6 @@ pipeline {
             agent { label 'master' }
 
             steps {
-                fileOperations([folderDeleteOperation('dist'), folderDeleteOperation('output'), folderDeleteOperation('vscode')])
                 
                 unstash 'winDist'
                 unstash 'linDist'
