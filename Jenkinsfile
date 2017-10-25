@@ -180,16 +180,21 @@ pipeline {
 
             steps {
                 
-                dir('targetContent') {
-                    unstash 'winDist'
-                    unstash 'linDist'
-                    unstash 'vsix'
-                }
+                unstash 'winDist'
+                unstash 'linDist'
+                unstash 'vsix'
                 
                 sh '''
+                mkdir targetContent
+                mv dist/* targetContent
+                mv output/* targetContent
+                mv install/build/vscode/* targetContent
+
                 TARGET="/var/www/oscript.io/download/versions/night-build/"
+
                 cd targetContent
                 sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
+                rm -rf targetContent
                 '''.stripIndent()
             }
         }
