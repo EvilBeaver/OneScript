@@ -190,8 +190,8 @@ pipeline {
                 fi
                 
                 mv dist/* targetContent
-                mv output/* targetContent
-                mv install/build/vscode/* targetContent
+                mv output/*.rpm targetContent
+                mv install/build/vscode/*.vsix targetContent
 
                 TARGET="/var/www/oscript.io/download/versions/night-build/"
 
