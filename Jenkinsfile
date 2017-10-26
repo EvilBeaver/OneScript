@@ -185,13 +185,13 @@ pipeline {
                 unstash 'vsix'
                 
                 sh '''
-                if [ ! -d "targetContent" ]; then
-                    mkdir targetContent
+                if [ -d "targetContent" ]; then
+                    rm -rf targetContent
                 fi
-                
-                mv dist/* targetContent
-                mv output/*.rpm targetContent
-                mv install/build/vscode/*.vsix targetContent
+                mkdir targetContent
+                mv dist/* targetContent/
+                mv output/*.rpm targetContent/
+                mv install/build/vscode/*.vsix targetContent/
 
                 TARGET="/var/www/oscript.io/download/versions/night-build/"
 
