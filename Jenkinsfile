@@ -185,7 +185,10 @@ pipeline {
                 unstash 'vsix'
                 
                 sh '''
-                mkdir targetContent
+                if [ ! -d "targetContent" ]; then
+                    mkdir targetContent
+                fi
+                
                 mv dist/* targetContent
                 mv output/* targetContent
                 mv install/build/vscode/* targetContent
