@@ -39,10 +39,15 @@ namespace ScriptEngine.Machine.Contexts
 
         public static COMWrapperContext Create(string progId, IValue[] arguments)
         {
-            var type = FindTypeByName(progId);
+            var type = Type.GetTypeFromProgID(progId, throwOnError: false);
             if (type == null)
             {
-                type = Type.GetTypeFromProgID(progId, throwOnError: true);
+                type = FindTypeByName(progId);
+            }
+
+            if (type == null)
+            {
+                throw new TypeLoadException(String.Format("Тип {0} не найден!", progId));
             }
 
             if (type.IsGenericType)
