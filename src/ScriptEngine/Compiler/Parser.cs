@@ -166,7 +166,8 @@ namespace ScriptEngine.Compiler
         NullLiteral,
         EndOperator,
         EndOfText,
-        Directive
+        Directive,
+        DocumentationComment
     }
 
     abstract class ParserState
@@ -478,17 +479,31 @@ namespace ScriptEngine.Compiler
                 {
                     if (iterator.CurrentSymbol == '/')
                     {
-                        // это комментарий
-                        while (iterator.MoveNext())
+                        iterator.MoveNext();
+                        if (iterator.CurrentSymbol == '/')
                         {
-                            if (iterator.CurrentSymbol == '\n')
+                            iterator.GetContents(); // уберём ведущие слэши
+                            // это документация
+                            while (iterator.MoveNext() && iterator.CurrentSymbol != '\n') {}
+
+                            return new Lexem()
+                            {
+                                Type = LexemType.DocumentationComment,
+                                Content = iterator.GetContents().content.TrimEnd('\r', '\n')
+                            };
+                        }
+                        
+                        // это комментарий
+                        while (iterator.CurrentSymbol != '\n')
+                        {
+                            if (!iterator.MoveNext())
                             {
                                 iterator.GetContents();
-                                return Lexem.Empty();
+                                return Lexem.EndOfText();
                             }
                         }
                         iterator.GetContents();
-                        return Lexem.EndOfText();
+                        return Lexem.Empty();
                     }
                     else
                     {

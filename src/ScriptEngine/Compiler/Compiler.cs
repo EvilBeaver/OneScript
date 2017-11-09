@@ -37,6 +37,8 @@ namespace ScriptEngine.Compiler
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
 
+        private readonly IList<string> _documentationCollector = new List<string>();
+
         private struct ForwardedMethodDecl
         {
             public string identifier;
@@ -258,7 +260,8 @@ namespace ScriptEngine.Compiler
                             _module.ExportedProperties.Add(new ExportedSymbol()
                             {
                                 SymbolicName = symbolicName,
-                                Index = definition.CodeIndex
+                                Index = definition.CodeIndex,
+                                Documentation = GetDocumentation()
                             });
                             NextToken();
                         }
@@ -271,6 +274,7 @@ namespace ScriptEngine.Compiler
                         {
                             throw CompilerException.SemicolonExpected();
                         }
+                        _documentationCollector.Clear();
                         NextToken();
                         break;
                     }
@@ -389,6 +393,7 @@ namespace ScriptEngine.Compiler
             MethodInfo method = new MethodInfo();
             method.Name = _lastExtractedLexem.Content;
             method.IsFunction = _isFunctionProcessed;
+            method.Documentation = GetDocumentation();
 
             NextToken();
             if (_lastExtractedLexem.Token != Token.OpenPar)
@@ -515,12 +520,14 @@ namespace ScriptEngine.Compiler
                 _module.ExportedMethods.Add(new ExportedSymbol()
                 {
                     SymbolicName = method.Name,
-                    Index = binding.CodeIndex
+                    Index = binding.CodeIndex,
+                    Documentation = method.Documentation
                 });
             }
 
             #endregion
 
+            _documentationCollector.Clear();
             NextToken(); 
             
         }
@@ -1859,12 +1866,60 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
-                _lastExtractedLexem = _parser.NextLexem();
+                while (true)
+                {
+                    _lastExtractedLexem = _parser.NextLexem();
+                    if (_lastExtractedLexem.Type != LexemType.DocumentationComment)
+                        break;
+                    _documentationCollector.Add(_lastExtractedLexem.Content);
+                }
             }
             else
             {
                 throw CompilerException.UnexpectedEndOfText();
             }
+        }
+
+        private static int StringPadding(string line)
+        {
+            var i = 0;
+            while (i < line.Length && line[i] == ' ')
+            {
+                i++;
+            }
+            return i;
+        }
+
+        private static int GetCommonPadding(IEnumerable<string> stringLines)
+        {
+            int padding = -1;
+            foreach (var line in stringLines)
+            {
+                var currentPadding = StringPadding(line);
+                if (padding == -1 || padding > currentPadding)
+                {
+                    padding = currentPadding;
+                }
+            }
+            return padding;
+        }
+
+        private string GetDocumentation()
+        {
+            if (_documentationCollector.Count == 0)
+            {
+                return null;
+            }
+            var padding = GetCommonPadding(_documentationCollector);
+            var sb = new StringBuilder();
+
+            foreach (var line in _documentationCollector)
+            {
+                sb.Append(line.Substring(padding));
+                sb.Append('\n');
+            }
+
+            return sb.ToString();
         }
 
         private void PushStructureToken(params Token[] tok)

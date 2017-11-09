@@ -127,6 +127,7 @@ namespace ScriptEngine.HostedScript.Library
             var NameColumn = Result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var CountColumn = Result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
             var IsFunctionColumn = Result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
+            var DocumentationColumn = Result.Columns.Add("Документация", TypeDescription.StringType(), "Документация");
 
             foreach(var methInfo in target.GetMethods())
             {
@@ -134,6 +135,7 @@ namespace ScriptEngine.HostedScript.Library
                 new_row.Set(NameColumn, ValueFactory.Create(methInfo.Name));
                 new_row.Set(CountColumn, ValueFactory.Create(methInfo.ArgCount));
                 new_row.Set(IsFunctionColumn, ValueFactory.Create(methInfo.IsFunction));
+                new_row.Set(DocumentationColumn, ValueFactory.Create(methInfo.Documentation ?? ""));
             }
 
             return Result;
@@ -150,6 +152,7 @@ namespace ScriptEngine.HostedScript.Library
             ValueTable.ValueTable Result = new ValueTable.ValueTable();
 
             var NameColumn = Result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
+            var DocumentationColumn = Result.Columns.Add("Документация", TypeDescription.StringType(), "Документация");
 
             var SystemVarNames = new string[] { "этотобъект", "thisobject" };
 
@@ -159,6 +162,7 @@ namespace ScriptEngine.HostedScript.Library
 
                 ValueTableRow new_row = Result.Add();
                 new_row.Set(NameColumn, ValueFactory.Create(propInfo.Identifier));
+                new_row.Set(DocumentationColumn, ValueFactory.Create(propInfo.Documentation ?? ""));
             }
 
             return Result;

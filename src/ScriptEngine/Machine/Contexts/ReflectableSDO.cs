@@ -196,6 +196,7 @@ namespace ScriptEngine.Machine.Contexts
             var reflectedMethod = new ReflectedMethodInfo(methInfo.Name);
             reflectedMethod.SetDispId(engineMethod.Index);
             reflectedMethod.IsFunction = methInfo.IsFunction;
+            reflectedMethod.Documentation = methInfo.Documentation;
             for (int i = 0; i < methInfo.Params.Length; i++)
             {
                 var currentParam = methInfo.Params[i];
