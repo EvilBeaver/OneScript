@@ -69,5 +69,6 @@ namespace ScriptEngine
     {
         public string SymbolicName;
         public int Index;
+        public string Documentation;
     }
 }

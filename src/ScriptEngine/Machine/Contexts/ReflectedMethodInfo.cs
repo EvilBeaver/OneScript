@@ -47,6 +47,8 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         public bool IsFunction { get; set; }
+        
+        public string Documentation { get; set; }
 
         public override System.Reflection.MethodInfo GetBaseDefinition()
         {

@@ -179,6 +179,7 @@ namespace ScriptEngine.Machine
     {
         public string Name;
         public string Alias;
+        public string Documentation;
         public bool IsFunction;
         public ParameterDefinition[] Params;
 
@@ -248,6 +249,7 @@ namespace ScriptEngine.Machine
     {
         public int Index;
         public string Identifier;
+        public string Documentation;
         public SymbolType Type;
     }
 
