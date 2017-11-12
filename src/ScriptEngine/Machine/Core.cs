@@ -181,6 +181,7 @@ namespace ScriptEngine.Machine
         public string Alias;
         public bool IsFunction;
         public ParameterDefinition[] Params;
+        public AnnotationDefinition[] Annotations;
 
         public int ArgCount
         {
@@ -190,6 +191,8 @@ namespace ScriptEngine.Machine
             }
         }
 
+        public int AnnotationsCount => Annotations?.Length ?? 0;
+
     }
 
     [Serializable]
@@ -198,7 +201,28 @@ namespace ScriptEngine.Machine
         public bool IsByValue;
         public bool HasDefaultValue;
         public int DefaultValueIndex;
+        public AnnotationDefinition[] Annotations;
 
+        public int AnnotationsCount => Annotations?.Length ?? 0;
+
+        public const int UNDEFINED_VALUE_INDEX = -1;
+    }
+
+    [Serializable]
+    public struct AnnotationDefinition
+    {
+        public string Name;
+        public AnnotationParameter[] Parameters;
+
+        public int ParamCount => Parameters?.Length ?? 0;
+    }
+
+    [Serializable]
+    public struct AnnotationParameter
+    {
+        public string Name;
+        public int ValueIndex;
+        
         public const int UNDEFINED_VALUE_INDEX = -1;
     }
 

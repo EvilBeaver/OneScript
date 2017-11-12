@@ -118,15 +118,27 @@ namespace ScriptEngine.HostedScript.Library
         /// Получает таблицу методов для переданного объекта..
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
-        /// <returns>Таблица значений с 3 колонками - Имя, КоличествоПараметров, ЭтоФункция. </returns>
+        /// <returns>Таблица значений колонками:
+        /// <list type="bullet">
+        ///     <item><term>Имя</term><description> - Строка</description></item>
+        ///     <item><term>КоличествоПараметров</term><description> - Число</description></item>
+        ///     <item><term>ЭтоФункция</term><description> - Булево</description></item>
+        ///     <item><term>Аннотации</term><description> - Неопределено, ТаблицаЗначений:
+        ///         <list type="bullet">
+        ///             <item><term>Имя</term></item>
+        ///             <item><term>Параметры</term></item>
+        ///         </list>
+        ///     </description></item>
+        /// </list></returns>
         [ContextMethod("ПолучитьТаблицуМетодов", "GetMethodsTable")]
         public ValueTable.ValueTable GetMethodsTable(IRuntimeContextInstance target)
         {
             ValueTable.ValueTable Result = new ValueTable.ValueTable();
-            
+
             var NameColumn = Result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var CountColumn = Result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
             var IsFunctionColumn = Result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
+            var AnnotationsColumn = Result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
 
             foreach(var methInfo in target.GetMethods())
             {
@@ -134,6 +146,45 @@ namespace ScriptEngine.HostedScript.Library
                 new_row.Set(NameColumn, ValueFactory.Create(methInfo.Name));
                 new_row.Set(CountColumn, ValueFactory.Create(methInfo.ArgCount));
                 new_row.Set(IsFunctionColumn, ValueFactory.Create(methInfo.IsFunction));
+
+                if (methInfo.AnnotationsCount != 0)
+                {
+                    var annotationsTable = new ValueTable.ValueTable();
+                    var annotationNameColumn = annotationsTable.Columns.Add("Имя");
+                    var annotationParamsColumn = annotationsTable.Columns.Add("Параметры");
+
+                    new_row.Set(AnnotationsColumn, annotationsTable);
+
+                    foreach (var annotation in methInfo.Annotations)
+                    {
+                        var annotationRow = annotationsTable.Add();
+                        if (annotation.Name != null)
+                        {
+                            annotationRow.Set(annotationNameColumn, ValueFactory.Create(annotation.Name));
+                        }
+                        if (annotation.ParamCount != 0)
+                        {
+                            var parametersTable = new ValueTable.ValueTable();
+                            var parameterNameColumn = parametersTable.Columns.Add("Имя");
+                            var parameterValueColumn = parametersTable.Columns.Add("Значение");
+                            
+                            new_row.Set(annotationParamsColumn, parametersTable);
+                            
+                            foreach (var annotationParameter in annotation.Parameters)
+                            {
+                                var parameterRow = parametersTable.Add();
+                                if (annotationParameter.Name != null)
+                                {
+                                    parameterRow.Set(parameterNameColumn, ValueFactory.Create(annotationParameter.Name));
+                                }
+                                if (annotationParameter.ValueIndex != AnnotationParameter.UNDEFINED_VALUE_INDEX)
+                                {
+                                    // TODO: выцепить константу
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             return Result;

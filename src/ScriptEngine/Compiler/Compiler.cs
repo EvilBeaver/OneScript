@@ -36,6 +36,7 @@ namespace ScriptEngine.Compiler
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
+        private readonly List<AnnotationDefinition> _annotations = new List<AnnotationDefinition>();
 
         private struct ForwardedMethodDecl
         {
@@ -101,6 +102,79 @@ namespace ScriptEngine.Compiler
             BuildCodeBatch();
 
             return _module;
+        }
+
+        private AnnotationParameter BuildAnnotationParameter()
+        {
+            // id | id = value | value
+            var result = new AnnotationParameter();
+            if (_lastExtractedLexem.Type == LexemType.Identifier)
+            {
+                result.Name = _lastExtractedLexem.Content;
+                NextToken();
+                if (_lastExtractedLexem.Token != Token.Equal)
+                {
+                    result.ValueIndex = AnnotationParameter.UNDEFINED_VALUE_INDEX;
+                    return result;
+                }
+                NextToken();
+            }
+            
+            var cDef = CreateConstDefinition(ref _lastExtractedLexem);
+            result.ValueIndex = GetConstNumber(ref cDef);
+            
+            NextToken();
+            
+            return result;
+        }
+
+        private void BuildAnnotationParameters(AnnotationDefinition annotation)
+        {
+            var parameters = new List<AnnotationParameter>();
+            while (_lastExtractedLexem.Token != Token.EndOfText)
+            {
+                parameters.Add(BuildAnnotationParameter());
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    NextToken();
+                    continue;
+                }
+                if (_lastExtractedLexem.Token == Token.ClosePar)
+                {
+                    NextToken();
+                    return;
+                }
+                throw CompilerException.UnexpectedOperation();
+            }
+        }
+
+        private void BuildAnnotations()
+        {
+            while (_lastExtractedLexem.Type == LexemType.Annotation)
+            {
+                var annotation = new AnnotationDefinition() {Name = _lastExtractedLexem.Content};
+
+                NextToken();
+                if (_lastExtractedLexem.Token == Token.OpenPar)
+                {
+                    NextToken();
+                    BuildAnnotationParameters(annotation);
+                }
+                
+                _annotations.Add(annotation);
+            }
+        }
+
+        private AnnotationDefinition[] ExtractAnnotations()
+        {
+            var result = _annotations.ToArray();
+            _annotations.Clear();
+            return result;
+        }
+
+        private void ClearAnnotations()
+        {
+            _annotations.Clear();
         }
 
         private void BuildModule()
@@ -208,6 +282,10 @@ namespace ScriptEngine.Compiler
                 {
                     HandleDirective(isCodeEntered);
                     UpdateCompositeContext(); // костыль для #330
+                }
+                else if (_lastExtractedLexem.Type == LexemType.Annotation)
+                {
+                    BuildAnnotations();
                 }
                 else
                 {
@@ -389,6 +467,7 @@ namespace ScriptEngine.Compiler
             MethodInfo method = new MethodInfo();
             method.Name = _lastExtractedLexem.Content;
             method.IsFunction = _isFunctionProcessed;
+            method.Annotations = ExtractAnnotations();
 
             NextToken();
             if (_lastExtractedLexem.Token != Token.OpenPar)
@@ -407,6 +486,12 @@ namespace ScriptEngine.Compiler
             {
                 var param = new ParameterDefinition();
                 string name;
+
+                if (_lastExtractedLexem.Type == LexemType.Annotation)
+                {
+                    BuildAnnotations();
+                    param.Annotations = ExtractAnnotations();
+                }
 
                 if (_lastExtractedLexem.Token == Token.ByValParam)
                 {
