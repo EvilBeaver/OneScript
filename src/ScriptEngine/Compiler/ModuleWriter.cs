@@ -91,6 +91,26 @@ namespace ScriptEngine.Compiler
                 item.Signature.Name,
                 item.EntryPoint,
                 item.Variables.Count));
+            if (item.Signature.AnnotationsCount != 0)
+            {
+                output.WriteLine(".annotations [");
+                foreach (var annotation in item.Signature.Annotations)
+                {
+                    output.Write(string.Format(" {0}", annotation.Name));
+                    if (annotation.ParamCount != 0)
+                    {
+                        var delimiter = ": ";
+                        foreach (var parameter in annotation.Parameters)
+                        {
+                            output.Write(string.Format("{3}{0}{2}{1}", parameter.Name, parameter.ValueIndex,
+                                parameter.Name != null ? "=" : "", delimiter));
+                            delimiter = ", ";
+                        }
+                    }
+                    output.WriteLine("");
+                }
+                output.WriteLine("]");
+            }
             output.Write(string.Format(".args {0}\n", item.Signature.ArgCount));
             if (item.Signature.Params != null)
             {
