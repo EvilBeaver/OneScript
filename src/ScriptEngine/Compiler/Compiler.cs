@@ -128,7 +128,7 @@ namespace ScriptEngine.Compiler
             return result;
         }
 
-        private void BuildAnnotationParameters(AnnotationDefinition annotation)
+        private IList<AnnotationParameter> BuildAnnotationParameters()
         {
             var parameters = new List<AnnotationParameter>();
             while (_lastExtractedLexem.Token != Token.EndOfText)
@@ -142,10 +142,11 @@ namespace ScriptEngine.Compiler
                 if (_lastExtractedLexem.Token == Token.ClosePar)
                 {
                     NextToken();
-                    return;
+                    break;
                 }
                 throw CompilerException.UnexpectedOperation();
             }
+            return parameters;
         }
 
         private void BuildAnnotations()
@@ -158,7 +159,7 @@ namespace ScriptEngine.Compiler
                 if (_lastExtractedLexem.Token == Token.OpenPar)
                 {
                     NextToken();
-                    BuildAnnotationParameters(annotation);
+                    annotation.Parameters = BuildAnnotationParameters().ToArray();
                 }
                 
                 _annotations.Add(annotation);

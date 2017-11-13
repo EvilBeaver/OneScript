@@ -168,7 +168,7 @@ namespace ScriptEngine.HostedScript.Library
                             var parameterNameColumn = parametersTable.Columns.Add("Имя");
                             var parameterValueColumn = parametersTable.Columns.Add("Значение");
                             
-                            new_row.Set(annotationParamsColumn, parametersTable);
+                            annotationRow.Set(annotationParamsColumn, parametersTable);
                             
                             foreach (var annotationParameter in annotation.Parameters)
                             {
@@ -177,10 +177,7 @@ namespace ScriptEngine.HostedScript.Library
                                 {
                                     parameterRow.Set(parameterNameColumn, ValueFactory.Create(annotationParameter.Name));
                                 }
-                                if (annotationParameter.ValueIndex != AnnotationParameter.UNDEFINED_VALUE_INDEX)
-                                {
-                                    // TODO: выцепить константу
-                                }
+                                parameterRow.Set(parameterValueColumn, annotationParameter.RuntimeValue);
                             }
                         }
                     }

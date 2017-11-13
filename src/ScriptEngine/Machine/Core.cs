@@ -222,6 +222,9 @@ namespace ScriptEngine.Machine
     {
         public string Name;
         public int ValueIndex;
+
+        [NonSerialized]
+        public IValue RuntimeValue;
         
         public const int UNDEFINED_VALUE_INDEX = -1;
     }

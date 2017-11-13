@@ -32,6 +32,29 @@ namespace ScriptEngine.Machine
                 var def = image.Constants[i];
                 this.Constants[i] = ValueFactory.Parse(def.Presentation, def.Type);
             }
+            
+            // Resolve annotation constants
+            for (int i = 0; i < Methods.Length; i++)
+            {
+                var ms = Methods[i].Signature; 
+                if (ms.AnnotationsCount != 0)
+                {
+                    for (int j = 0; j < ms.Annotations.Length; j++)
+                    {
+                        var ma = ms.Annotations[j];
+                        if (ma.ParamCount != 0)
+                        {
+                            for (int k = 0; k < ma.Parameters.Length; k++)
+                            {
+                                if (ma.Parameters[k].ValueIndex != AnnotationParameter.UNDEFINED_VALUE_INDEX)
+                                {
+                                    ma.Parameters[k].RuntimeValue = this.Constants[ma.Parameters[k].ValueIndex];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public VariablesFrame Variables { get; private set; }
