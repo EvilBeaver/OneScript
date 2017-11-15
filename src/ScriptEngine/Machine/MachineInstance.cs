@@ -45,6 +45,7 @@ namespace ScriptEngine.Machine
         {
             public int handlerAddress;
             public ExecutionFrame handlerFrame;
+            public int stackSize;
         }
         
         public void AttachContext(IAttachableContext context, bool detachable)
@@ -418,6 +419,12 @@ namespace ScriptEngine.Machine
 
                     _currentFrame.InstructionPointer = handler.handlerAddress;
                     _currentFrame.LastException = exc;
+
+                    // При возникновении исключения посредине выражения
+                    // некому почистить стек операндов.
+                    // Сделаем это
+                    while (_operationStack.Count > handler.stackSize)
+                        _operationStack.Pop();
                     
 
                 }
@@ -1397,6 +1404,7 @@ namespace ScriptEngine.Machine
             var info = new ExceptionJumpInfo();
             info.handlerAddress = exceptBlockAddress;
             info.handlerFrame = _currentFrame;
+            info.stackSize = _operationStack.Count;
 
             _exceptionsStack.Push(info);
             NextInstruction();
