@@ -36,22 +36,25 @@ namespace ScriptEngine.Machine
             // Resolve annotation constants
             for (int i = 0; i < Methods.Length; i++)
             {
-                var ms = Methods[i].Signature; 
-                if (ms.AnnotationsCount != 0)
+                EvaluateAnnotationParametersValues(Methods[i].Signature.Annotations);
+                for (int j = 0; j < Methods[i].Signature.ArgCount; j++)
                 {
-                    for (int j = 0; j < ms.Annotations.Length; j++)
+                    EvaluateAnnotationParametersValues(Methods[i].Signature.Params[j].Annotations);
+                }
+            }
+        }
+
+        private void EvaluateAnnotationParametersValues(AnnotationDefinition[] annotations)
+        {
+            for (int i = 0; i < annotations?.Length; i++)
+            {
+                var parameters = annotations[i].Parameters;
+                for (int j = 0; j < parameters?.Length; j++)
+                {
+                    var pa = parameters[j];
+                    if (pa.ValueIndex != AnnotationParameter.UNDEFINED_VALUE_INDEX)
                     {
-                        var ma = ms.Annotations[j];
-                        if (ma.ParamCount != 0)
-                        {
-                            for (int k = 0; k < ma.Parameters.Length; k++)
-                            {
-                                if (ma.Parameters[k].ValueIndex != AnnotationParameter.UNDEFINED_VALUE_INDEX)
-                                {
-                                    ma.Parameters[k].RuntimeValue = this.Constants[ma.Parameters[k].ValueIndex];
-                                }
-                            }
-                        }
+                        annotations[i].Parameters[j].RuntimeValue = Constants[pa.ValueIndex];
                     }
                 }
             }

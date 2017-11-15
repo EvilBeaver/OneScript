@@ -113,6 +113,41 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        private ValueTable.ValueTable CreateAnnotationTable(AnnotationDefinition[] annotations)
+        {
+            var annotationsTable = new ValueTable.ValueTable();
+            var annotationNameColumn = annotationsTable.Columns.Add("Имя");
+            var annotationParamsColumn = annotationsTable.Columns.Add("Параметры");
+
+            foreach (var annotation in annotations)
+            {
+                var annotationRow = annotationsTable.Add();
+                if (annotation.Name != null)
+                {
+                    annotationRow.Set(annotationNameColumn, ValueFactory.Create(annotation.Name));
+                }
+                if (annotation.ParamCount != 0)
+                {
+                    var parametersTable = new ValueTable.ValueTable();
+                    var parameterNameColumn = parametersTable.Columns.Add("Имя");
+                    var parameterValueColumn = parametersTable.Columns.Add("Значение");
+                            
+                    annotationRow.Set(annotationParamsColumn, parametersTable);
+                            
+                    foreach (var annotationParameter in annotation.Parameters)
+                    {
+                        var parameterRow = parametersTable.Add();
+                        if (annotationParameter.Name != null)
+                        {
+                            parameterRow.Set(parameterNameColumn, ValueFactory.Create(annotationParameter.Name));
+                        }
+                        parameterRow.Set(parameterValueColumn, annotationParameter.RuntimeValue);
+                    }
+                }
+            }
+
+            return annotationsTable;
+        }
 
         /// <summary>
         /// Получает таблицу методов для переданного объекта..
@@ -139,6 +174,7 @@ namespace ScriptEngine.HostedScript.Library
             var CountColumn = Result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
             var IsFunctionColumn = Result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
             var AnnotationsColumn = Result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
+            var ParamsColumn = Result.Columns.Add("Параметры", new TypeDescription(), "Параметры");
 
             foreach(var methInfo in target.GetMethods())
             {
@@ -149,36 +185,30 @@ namespace ScriptEngine.HostedScript.Library
 
                 if (methInfo.AnnotationsCount != 0)
                 {
-                    var annotationsTable = new ValueTable.ValueTable();
-                    var annotationNameColumn = annotationsTable.Columns.Add("Имя");
-                    var annotationParamsColumn = annotationsTable.Columns.Add("Параметры");
+                    new_row.Set(AnnotationsColumn, CreateAnnotationTable(methInfo.Annotations));
+                }
+                
+                var paramTable = new ValueTable.ValueTable();
+                var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
+                var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
+                var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.BooleanType(), "Есть значение по-умолчанию");
+                var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
+                
+                new_row.Set(ParamsColumn, paramTable);
 
-                    new_row.Set(AnnotationsColumn, annotationsTable);
-
-                    foreach (var annotation in methInfo.Annotations)
+                if (methInfo.ArgCount != 0)
+                {
+                    var index = 0;
+                    foreach (var param in methInfo.Params)
                     {
-                        var annotationRow = annotationsTable.Add();
-                        if (annotation.Name != null)
+                        var name = string.Format("param{0}", ++index);
+                        var paramRow = paramTable.Add();
+                        paramRow.Set(paramNameColumn, ValueFactory.Create(name));
+                        paramRow.Set(paramByValue, ValueFactory.Create(param.IsByValue));
+                        paramRow.Set(paramHasDefaultValue, ValueFactory.Create(param.HasDefaultValue));
+                        if (param.AnnotationsCount != 0)
                         {
-                            annotationRow.Set(annotationNameColumn, ValueFactory.Create(annotation.Name));
-                        }
-                        if (annotation.ParamCount != 0)
-                        {
-                            var parametersTable = new ValueTable.ValueTable();
-                            var parameterNameColumn = parametersTable.Columns.Add("Имя");
-                            var parameterValueColumn = parametersTable.Columns.Add("Значение");
-                            
-                            annotationRow.Set(annotationParamsColumn, parametersTable);
-                            
-                            foreach (var annotationParameter in annotation.Parameters)
-                            {
-                                var parameterRow = parametersTable.Add();
-                                if (annotationParameter.Name != null)
-                                {
-                                    parameterRow.Set(parameterNameColumn, ValueFactory.Create(annotationParameter.Name));
-                                }
-                                parameterRow.Set(parameterValueColumn, annotationParameter.RuntimeValue);
-                            }
+                            paramRow.Set(paramAnnotationsColumn, CreateAnnotationTable(param.Annotations));
                         }
                     }
                 }
