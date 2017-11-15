@@ -25,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library.Http
     {
         private readonly MapImpl _headers = new MapImpl();
         // TODO: Нельзя выделить массив размером больше чем 2GB
-        // поэтому функционал сохранения в файл не должен использовать промежуточный буфер _body
+        // поэтому функционал сохранения в файл не должен использовать промежуточный буфер body
         private HttpResponseBody _body;
         
         private string _defaultCharset;
