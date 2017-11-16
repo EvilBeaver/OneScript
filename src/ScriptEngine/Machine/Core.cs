@@ -162,7 +162,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct ConstDefinition
+    struct ConstDefinition : IEquatable<ConstDefinition>
     {
         public DataType Type;
         public string Presentation;
@@ -170,6 +170,11 @@ namespace ScriptEngine.Machine
         public override string ToString()
         {
             return Enum.GetName(typeof(DataType), Type) + ":" + Presentation;
+        }
+
+        public bool Equals(ConstDefinition other)
+        {
+            return Type == other.Type && string.Equals(Presentation, other.Presentation, StringComparison.Ordinal);
         }
         
     }
