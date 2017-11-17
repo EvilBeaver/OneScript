@@ -17,7 +17,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
   <PropertyGroup>
