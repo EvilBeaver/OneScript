@@ -21,7 +21,8 @@
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
+    <TargetFramework Condition=" '$(TargetFramework)' == '' ">net452</TargetFramework>
+    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' And '$(TargetFramework)' == 'net452'">xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
 xcopy "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
 xcopy "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
     <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner"
