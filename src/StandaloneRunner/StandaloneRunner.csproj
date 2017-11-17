@@ -16,8 +16,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj"/>
-    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj"/>
+    <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
+    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ScriptEngine.dll" />
@@ -28,5 +28,8 @@
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)StandaloneRunner.exe" "$(SolutionDir)oscript\" /Y /E /D</PostBuildEvent>
     <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)StandaloneRunner.exe" "$(SolutionDir)oscript/"</PostBuildEvent>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject />
   </PropertyGroup>
 </Project>
