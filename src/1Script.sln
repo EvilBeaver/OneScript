@@ -12,7 +12,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScriptEngine", "ScriptEngin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScriptEngine.HostedScript", "ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj", "{F09A46BD-5737-45E7-BA60-A47C9F7821A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oscript", "oscript\oscript.csproj", "{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "oscript", "oscript\oscript.csproj", "{2590E2BB-CC1F-4775-80ED-451F45C9A4F1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{795AA2F5-3074-4BC5-A30F-1B6354044D9B} = {795AA2F5-3074-4BC5-A30F-1B6354044D9B}
 	EndProjectSection
@@ -39,7 +39,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Component", "Component\Comp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugServer", "DebugServer\DebugServer.csproj", "{C979F151-AA29-47E4-B020-3039BA0986D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.DebugProtocol", "OneScript.DebugProtocol\OneScript.DebugProtocol.csproj", "{727A498F-BF50-42F8-8523-40C0B5B1B233}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.DebugProtocol", "OneScript.DebugProtocol\OneScript.DebugProtocol.csproj", "{727A498F-BF50-42F8-8523-40C0B5B1B233}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oscriptTests", "oscriptTest\oscriptTests.csproj", "{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}"
 EndProject
@@ -108,6 +108,7 @@ Global
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|x86.Build.0 = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Release|x86.ActiveCfg = Release|Any CPU
