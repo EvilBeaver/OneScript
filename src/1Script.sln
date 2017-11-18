@@ -54,6 +54,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASPNETHandler", "ASPNETHand
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoCallAsFunc", "DemoCallAsFunc\DemoCallAsFunc.csproj", "{D00653CC-86AA-4180-8EB7-ACC5152A411E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoHowToFillMapFromNet", "DemoHowToFillMapFromNet\DemoHowToFillMapFromNet.csproj", "{5C6A46D4-AA8E-455D-80EE-A783888E7340}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -160,6 +162,14 @@ Global
 		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Release|x86.ActiveCfg = Release|Any CPU
 		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Release|x86.Build.0 = Release|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Debug|x86.Build.0 = Debug|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|x86.ActiveCfg = Release|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
