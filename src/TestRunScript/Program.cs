@@ -15,27 +15,18 @@ namespace TestRunScript
     {
         static void Main(string[] args)
         {
+            // Процедура или функция должны быть помечена как экспортная
             string sourceCode =
                 "Функция МояФункция (МойПараметр) Экспорт" + 
                 "    Возврат МойПараметр;" +
                 "КонецФункции";
 
             HostedScriptEngine hostedScript = new HostedScriptEngine();
+            // Обязательно инициализируем объект
             hostedScript.Initialize();
+
             var scriptEngine = hostedScript.EngineInstance;
-            //scriptEngine.Initialize();
             var compiler = scriptEngine.GetCompilerService();
-            //var src = hostedScript.Loader.FromString(sourceCode);
-            //var module = scriptEngine.GetCompilerService().CreateModule(src);
-            //var loadedModule = scriptEngine.LoadModuleImage(module);
-            /*
-            hostedScript.LoadUserScript(new ScriptEngine.UserAddedScript()
-            {
-                Type = ScriptEngine.UserAddedScriptType.Class,
-                Module = module,
-                Symbol = "Сценарий"
-            });
-            */
 
             var runner = hostedScript.EngineInstance.AttachedScriptsFactory.LoadFromString(compiler, sourceCode);
 

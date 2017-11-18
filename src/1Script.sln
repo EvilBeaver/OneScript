@@ -52,7 +52,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{77791D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASPNETHandler", "ASPNETHandler\ASPNETHandler.csproj", "{B7CD7F52-E387-490E-8F77-E1FB060401B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRunScript", "TestRunScript\TestRunScript.csproj", "{D00653CC-86AA-4180-8EB7-ACC5152A411E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoCallAsFunc", "TestRunScript\DemoCallAsFunc.csproj", "{D00653CC-86AA-4180-8EB7-ACC5152A411E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
