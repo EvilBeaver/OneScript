@@ -56,6 +56,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoCallAsFunc", "DemoCallA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoHowToFillMapFromNet", "DemoHowToFillMapFromNet\DemoHowToFillMapFromNet.csproj", "{5C6A46D4-AA8E-455D-80EE-A783888E7340}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoHelloWorld", "DemoHelloWorld\DemoHelloWorld.csproj", "{4974CCD1-5486-479E-8162-B4D1CA68D501}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -170,6 +172,14 @@ Global
 		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|x86.ActiveCfg = Release|Any CPU
 		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|x86.Build.0 = Release|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Debug|x86.Build.0 = Debug|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Release|x86.ActiveCfg = Release|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
