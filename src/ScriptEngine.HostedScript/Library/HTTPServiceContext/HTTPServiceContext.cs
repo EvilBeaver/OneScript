@@ -15,96 +15,7 @@ using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library.HTTPService
 {
-    #region Заимствованные шаблоны, чтобы не лазить по исходникам
-    /*
-    public interface IValue : IComparable<IValue>, IEquatable<IValue>
-    {
-        DataType DataType { get; }
-        TypeDescriptor SystemType { get; }
-
-        decimal AsNumber();
-        DateTime AsDate();
-        bool AsBoolean();
-        string AsString();
-        IRuntimeContextInstance AsObject();
-        IValue GetRawValue();
-
-    }
-    */
-    #endregion
-
-    // Служебный класс, нужен для заполнения объекта фиксированное соответствие строками
-    // По другому как заполнить не разобрался
-    class StringValue : IValue
-    {
-        string str = "";
-
-        public StringValue(string str)
-        {
-            this.str = str;
-        }
-        public StringValue()
-        {
-            str = "";
-        }
-        public DataType DataType
-        {
-            get { return Machine.DataType.String; }
-        }
-
-        public TypeDescriptor SystemType
-        {
-            get { return TypeManager.GetTypeByFrameworkType(typeof(StringValue)); }
-        }
-
-        public decimal AsNumber()
-        {
-            return System.Convert.ToDecimal(str);
-        }
-
-        public DateTime AsDate()
-        {
-            throw RuntimeException.ConvertToDateException();
-        }
-
-        public bool AsBoolean()
-        {
-            throw RuntimeException.ConvertToBooleanException();
-        }
-
-        public string AsString()
-        {
-            return str;
-        }
-
-        public IRuntimeContextInstance AsObject()
-        {
-            throw RuntimeException.ValueIsNotObjectException();
-        }
-
-        public IValue GetRawValue()
-        {
-            return this;
-        }
-
-        public int CompareTo(IValue other)
-        {
-            if (other.DataType == DataType.String)
-            {
-                return System.String.Compare(str, other.AsString());
-            }
-
-            throw RuntimeException.ComparisonNotSupportedException();
-        }
-
-        public bool Equals(IValue other)
-        {
-            return other.GetRawValue() == this;
-        }
-
-    }
-
-    /* HTTPСервисЗапрос
+     /* HTTPСервисЗапрос
      * Свойства:
 
        +HTTPМетод (HTTPMethod)
@@ -186,17 +97,29 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             }
         }
         #endregion
-        #region Методы1С
 
-        [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
-        public string GetBodyAsString()
+        #region РасширениеСвойств1С
+        [ContextProperty("ТипКонтента", "ContentType")]
+        public string ContentType
         {
-            System.IO.Stream str = context.Request.InputStream;
-            int bytes_count = Convert.ToInt32(str.Length);
-            byte[] buffer = new byte[bytes_count];
-            str.Read(buffer, 0, bytes_count);
-            return context.Request.ContentEncoding.GetString(buffer);
+            get
+            {
+                return context.Request.ContentType;
+            }
         }
+
+        [ContextProperty("Кодировка", "ContentEncoding")]
+        public IValue ContentEncoding
+        {
+            get
+            {
+                return TextEncodingEnum.CreateInstance().GetValue(context.Request.ContentEncoding);
+            }
+        }
+
+        #endregion
+
+        #region Методы1С
 
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
         public BinaryDataContext GetBodyAsBinaryData()
@@ -205,7 +128,32 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             int bytes_count = Convert.ToInt32(str.Length);
             byte[] buffer = new byte[bytes_count];
             str.Read(buffer, 0, bytes_count);
+
             return new BinaryDataContext(buffer);
+        }
+
+        [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
+        public string GetBodyAsString(IValue encoding = null)
+        {
+            // Формируем кодировку как в 1С. Если не указана, смотрим Content-Type. Если там не указана - используем UTF8
+            System.Text.Encoding enc = System.Text.Encoding.UTF8;
+
+            if (encoding != null)
+                enc = TextEncodingEnum.GetEncoding(encoding);
+
+            System.IO.Stream str = context.Request.InputStream;
+            int bytes_count = Convert.ToInt32(str.Length);
+            byte[] buffer = new byte[bytes_count];
+            str.Read(buffer, 0, bytes_count);
+
+            return enc.GetString(buffer);
+        }
+
+        //ПолучитьТелоКакПоток(GetBodyAsStream)
+        [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
+        public GenericStream GetBodyAsStream()
+        {
+            return new GenericStream(context.Request.InputStream);
         }
 
         #endregion
@@ -218,9 +166,9 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             MapImpl headers = new MapImpl();
 
             for (int i = 0; i < context.Request.Headers.Count; i++)
-            {
-                headers.Insert(new StringValue(context.Request.Headers.GetKey(i)), new StringValue(context.Request.Headers.Get(i)));
-            }
+                 headers.Insert( ValueFactory.Create(context.Request.Headers.GetKey(i))
+                               , ValueFactory.Create(context.Request.Headers.Get(i))
+                               );
 
             this.headers = new FixedMapImpl(headers);
 
@@ -231,16 +179,18 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             MapImpl queryoptions = new MapImpl();
 
             for (int i = 0; i < context.Request.Params.Count; i++)
-            {
-                queryoptions.Insert(new StringValue(context.Request.Params.GetKey(i)), new StringValue(context.Request.Params.Get(i)));
-            }
+                queryoptions.Insert( ValueFactory.Create(context.Request.Params.GetKey(i))
+                                   , ValueFactory.Create(context.Request.Params.Get(i))
+                                   );
 
             query_options = new FixedMapImpl(queryoptions);
         }
     }
 
     /*
-        HTTPСервисОтвет (HTTPServiceResponse)
+        8.3.10.2650
+
+        HTTPСервисОтвет (HTTPServiceResponseImpl)
         
         Свойства:
 
@@ -250,37 +200,62 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
 
         Методы:
 
-        ПолучитьИмяФайлаТела (GetBodyFileName)
-        ПолучитьТелоКакДвоичныеДанные (GetBodyAsBinaryData) - Двоичные данные
-        +-ПолучитьТелоКакСтроку (GetBodyAsString) - Строка
-        УстановитьИмяФайлаТела (SetBodyFileName)
-        УстановитьТелоИзДвоичныхДанных (SetBodyFromBinaryData) - Дв данные
-        +-УстановитьТелоИзСтроки (SetBodyFromString) - Строка
+        +ПолучитьИмяФайлаТела (GetBodyFileName)
+        +ПолучитьТелоКакДвоичныеДанные (GetBodyAsBinaryData)
+        +ПолучитьТелоКакСтроку (GetBodyAsString)
+        +ПолучитьТелоКакПоток (GetBodyAsStream)
+        +УстановитьИмяФайлаТела (SetBodyFileName)
+        +УстановитьТелоИзДвоичныхДанных (SetBodyFromBinaryData)
+        +УстановитьТелоИзСтроки (SetBodyFromString)
+
+        Конструкторы:
+
+        +По коду состояния, причине и заголовкам
+
+        ОТЛИЧИЯ:
+        При возврате потоков в несколько переменных, в 1С не обновляется текущее положение потока,
+        в настоящей реализации обновляется
     */
 
     [ContextClass("HTTPСервисОтвет", "HTTPServiceResponse")]
-    public class HTTPServiceResponse : AutoContext<HTTPServiceResponse>
+    public class HTTPServiceResponseImpl : AutoContext<HTTPServiceResponseImpl>
     {
-        //System.Web.HttpContext context;
+        ScriptEngine.HostedScript.Library.MapImpl _headers = new HostedScript.Library.MapImpl();
+        string _reason = "";
+        int _statusCode = 200;
 
-        ScriptEngine.HostedScript.Library.MapImpl headers;
-        string reason = "";
-        int status_code = 200;
-        byte[] body = null;
-        System.Text.Encoding body_encoding = System.Text.Encoding.UTF8;
-
+        System.IO.Stream _stream = null;
 
         public byte[] Body
         {
             get
             {
-                return body;
+                return GetBytesFromStream();
             }
         }
 
-        public HTTPServiceResponse()
+        public System.IO.Stream Stream
         {
-            headers = new HostedScript.Library.MapImpl();
+            get
+            {
+                return _stream;
+            }
+        }
+
+        public HTTPServiceResponseImpl()
+        {
+        }
+
+        byte [] GetBytesFromStream()
+        {
+            byte[] buffer = new byte[_stream.Length];
+            long currentOffset = _stream.Position;
+
+            _stream.Seek(0, System.IO.SeekOrigin.Begin);
+            _stream.Read(buffer, 0, (int)_stream.Length);
+            _stream.Seek(currentOffset, System.IO.SeekOrigin.Begin);
+
+            return buffer;
         }
 
         #region Свойства 1C
@@ -290,11 +265,11 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return headers;
+                return _headers;
             }
             set
             {
-                headers = value;
+                _headers = value;
             }
         }
 
@@ -303,11 +278,11 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return reason;
+                return _reason;
             }
             set
             {
-                reason = value;
+                _reason = value;
             }
         }
 
@@ -316,11 +291,11 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return status_code;
+                return _statusCode;
             }
             set
             {
-                status_code = value;
+                _statusCode = value;
             }
         }
 
@@ -328,25 +303,115 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
 
         #region Функции 1С
 
-        [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
-        public void SetBodyFromString(string str, IValue encoding = null, IValue useBOM = null)
+        [ContextMethod("ПолучитьИмяФайлаТела", "GetBodyFileName")]
+        public IValue GetBodyFileName()
         {
-            if (encoding == null)
-            {
-                body_encoding = ScriptEngine.HostedScript.Library.TextEncodingEnum.GetEncoding(new StringValue("UTF-8"), true);
-            }
+            if ((_stream as System.IO.FileStream) == null)
+                return null;
+            else
+                return ValueFactory.Create(((System.IO.FileStream)_stream).Name);
+        }
+
+        [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
+        public BinaryDataContext ПолучитьТелоКакДвоичныеДанные()
+        {
+            if ((_stream as System.IO.MemoryStream) == null)
+                return null;
             else
             {
-                body_encoding = ScriptEngine.HostedScript.Library.TextEncodingEnum.GetEncoding(encoding, true);
+                return new BinaryDataContext(GetBytesFromStream());
             }
+        }
 
-            body = body_encoding.GetBytes(str);
+        [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
+        public GenericStream GetBodyAsStream()
+        {
+            if (_stream == null)
+                _stream = new System.IO.MemoryStream();
+                
+            return new GenericStream(_stream);
+        }
+
+        [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
+        public IValue GetBodyAsString()
+        {
+            if ((_stream as System.IO.MemoryStream) == null )
+                return ValueFactory.Create();
+            else
+            {
+                byte[] buffer = GetBytesFromStream();
+                // Выяснено экспериментальным путем, используется UTF8 (8.3.10.2650)
+                return ValueFactory.Create(System.Text.Encoding.UTF8.GetString(buffer));
+            }
+        }
+
+        [ContextMethod("УстановитьИмяФайлаТела", "SetBodyFileName")]
+        public void SetBodyFileName(IValue fileName)
+        {
+            _stream = new System.IO.FileStream(fileName.AsString(), System.IO.FileMode.Open, System.IO.FileAccess.Read);
         }
 
         [ContextMethod("УстановитьТелоИзДвоичныхДанных", "SetBodyFromBinaryData")]
         public void SetBodyFromBinaryData(BinaryDataContext binaryData)
         {
-            body = binaryData.Buffer;
+            _stream = new System.IO.MemoryStream();
+            _stream.Write(binaryData.Buffer, 0, binaryData.Buffer.Length);
+            _stream.Seek(0, System.IO.SeekOrigin.Begin);
+        }
+
+        [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
+        public void SetBodyFromString(string str, IValue encoding = null, IValue useBOM = null)
+        {
+            // Получаем кодировку
+            // useBOM должен иметь тип ИспользованиеByteOrderMark он нереализован. Его не используем
+            // Из синтаксис-помощника в режиме совместимости Использовать
+            // Из синтаксис помощника если кодировка не задана используем UTF8
+
+            System.Text.Encoding enc = System.Text.Encoding.UTF8;
+            if (encoding != null)
+                enc = TextEncodingEnum.GetEncoding(encoding);
+            else
+            {
+                string headerString = _headers.Retrieve(ValueFactory.Create("Content-Type")).AsString();
+                  
+                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("charset=([^\\\"']+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                string charsetString = regex.Match(headerString).Value;
+
+                if (charsetString != "")
+                {
+                    // Что-то нашли
+                    try
+                    {
+                        //"charset=Кодировка" -> "Кодировка"
+                        enc = TextEncodingEnum.GetEncodingByName(charsetString.Substring(8));
+                    }
+                    catch
+                    {
+                        // что то не так, осталась UTF8 
+                    }
+                }
+            }
+
+            _stream = new System.IO.MemoryStream();
+            byte[] buffer = enc.GetBytes(str);
+            _stream.Write(buffer, 0, buffer.Length);
+            _stream.Seek(0, System.IO.SeekOrigin.Begin);
+        }
+
+        [ScriptConstructor(Name = "По коду состояния, причине и заголовкам")]
+        public static IRuntimeContextInstance Constructor(IValue statusCode, IValue reason = null, MapImpl headers = null)
+        {
+            var response = new HTTPServiceResponseImpl();
+
+            response._statusCode = System.Convert.ToInt16(statusCode.AsNumber());
+
+            if (reason != null)
+                response._reason = reason.AsString();
+
+            if (headers != null)
+                response._headers = headers;
+
+            return response;
         }
 
         #endregion
@@ -358,13 +423,13 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         System.Web.HttpContext context;
 
         HTTPServiceRequest request;
-        HTTPServiceResponse response;
+        HTTPServiceResponseImpl response;
 
         public HTTPServiceContext(System.Web.HttpContext ctx)
         {
             context = ctx;
             request = new HTTPServiceRequest(context);
-            response = new HTTPServiceResponse();
+            response = new HTTPServiceResponseImpl();
         }
 
         public HTTPServiceContext()
@@ -378,7 +443,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             context = ctx;
             request = new HTTPServiceRequest(context);
-            response = new HTTPServiceResponse();
+            response = new HTTPServiceResponseImpl();
         }
 
         #region Свойства для 1C
@@ -393,7 +458,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         }
 
         [ContextProperty("Ответ", "Response")]
-        public HTTPServiceResponse Response
+        public HTTPServiceResponseImpl Response
         {
             get
             {

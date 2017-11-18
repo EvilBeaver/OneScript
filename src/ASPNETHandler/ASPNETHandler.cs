@@ -28,9 +28,8 @@ namespace OneScript.ASPNETHandler
         public ASPNETHandler()
         {
             hostedScript = new HostedScriptEngine();
+            hostedScript.Initialize();
             onescript_context = new ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceContext();
-            // Нашел только такой способ. В 1С будет видна глобальная переменная со свойствами Запрос и Ответ
-            hostedScript.InjectGlobalProperty("HTTPСервисКонтекст", onescript_context, true);
         }
 
         public void ProcessRequest(HttpContext context)
@@ -58,19 +57,22 @@ namespace OneScript.ASPNETHandler
                 cache.Set(context.Request.PhysicalPath, source_code_str, policy);
             }
             #endregion
+            // Эта строка ЗОЛОТАЯ. Ее написание заняло 90% моего времени
+            var runner = hostedScript.EngineInstance.AttachedScriptsFactory.LoadFromString(
+                hostedScript.EngineInstance.GetCompilerService(), source_code_str);
 
-            var src = hostedScript.Loader.FromString(source_code_str);
             int exitCode = 0;
 
             try
             {
-
-                Process process = hostedScript.CreateProcess(null, (ICodeSource)src);
-                // Нижеследующая функция выполняется медленнее всего и портит результат :)
-                exitCode = process.Start();
+                int methodIndex = runner.FindMethod("ОбработкаВызоваHTTPСервиса");
+                IValue result;
+                IValue[] args = new IValue[1];
+                args[0] = onescript_context;
+                runner.CallAsFunction(methodIndex, args, out result);
 
                 // Обрабатываем результаты
-                ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponse response = onescript_context.Response;
+                ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl response = (ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl)result;
                 context.Response.StatusCode = response.StatusCode;
 
                 if (response.Headers != null)
