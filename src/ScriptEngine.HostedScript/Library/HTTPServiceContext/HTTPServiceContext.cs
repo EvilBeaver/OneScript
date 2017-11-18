@@ -33,13 +33,13 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
 
      */
     [ContextClass("HTTPСервисЗапрос", "HTTPServiceRequest")]
-    public class HTTPServiceRequest : AutoContext<HTTPServiceRequest>
+    public class HTTPServiceRequestImpl : AutoContext<HTTPServiceRequestImpl>
     {
-        System.Web.HttpContext context;
+        System.Web.HttpContext _context;
 
-        FixedMapImpl headers;
-        FixedMapImpl url_params;
-        FixedMapImpl query_options;
+        FixedMapImpl _headers;
+        FixedMapImpl _urlParams;
+        FixedMapImpl _queryOptions;
 
         #region Свойства 1C
 
@@ -48,7 +48,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return context.Request.HttpMethod.ToUpper();
+                return _context.Request.HttpMethod.ToUpper();
             }
         }
 
@@ -57,7 +57,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return context.Request.Url.Host;
+                return _context.Request.Url.Host;
             }
         }
 
@@ -66,7 +66,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return headers;
+                return _headers;
             }
         }
 
@@ -75,7 +75,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return context.Request.FilePath;
+                return _context.Request.FilePath;
             }
         }
 
@@ -84,7 +84,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return url_params;
+                return _urlParams;
             }
         }
 
@@ -93,30 +93,9 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return query_options;
+                return _queryOptions;
             }
         }
-        #endregion
-
-        #region РасширениеСвойств1С
-        [ContextProperty("ТипКонтента", "ContentType")]
-        public string ContentType
-        {
-            get
-            {
-                return context.Request.ContentType;
-            }
-        }
-
-        [ContextProperty("Кодировка", "ContentEncoding")]
-        public IValue ContentEncoding
-        {
-            get
-            {
-                return TextEncodingEnum.CreateInstance().GetValue(context.Request.ContentEncoding);
-            }
-        }
-
         #endregion
 
         #region Методы1С
@@ -124,7 +103,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
         public BinaryDataContext GetBodyAsBinaryData()
         {
-            System.IO.Stream str = context.Request.InputStream;
+            System.IO.Stream str = _context.Request.InputStream;
             int bytes_count = Convert.ToInt32(str.Length);
             byte[] buffer = new byte[bytes_count];
             str.Read(buffer, 0, bytes_count);
@@ -141,7 +120,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             if (encoding != null)
                 enc = TextEncodingEnum.GetEncoding(encoding);
 
-            System.IO.Stream str = context.Request.InputStream;
+            System.IO.Stream str = _context.Request.InputStream;
             int bytes_count = Convert.ToInt32(str.Length);
             byte[] buffer = new byte[bytes_count];
             str.Read(buffer, 0, bytes_count);
@@ -153,37 +132,37 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
         public GenericStream GetBodyAsStream()
         {
-            return new GenericStream(context.Request.InputStream);
+            return new GenericStream(_context.Request.InputStream);
         }
 
         #endregion
 
-        public HTTPServiceRequest(System.Web.HttpContext ctx)
+        public HTTPServiceRequestImpl(System.Web.HttpContext ctx)
         {
-            context = ctx;
+            _context = ctx;
             // Инициализируем объект для 1С
             // Заголовки
             MapImpl headers = new MapImpl();
 
-            for (int i = 0; i < context.Request.Headers.Count; i++)
-                 headers.Insert( ValueFactory.Create(context.Request.Headers.GetKey(i))
-                               , ValueFactory.Create(context.Request.Headers.Get(i))
+            for (int i = 0; i < _context.Request.Headers.Count; i++)
+                 headers.Insert( ValueFactory.Create(_context.Request.Headers.GetKey(i))
+                               , ValueFactory.Create(_context.Request.Headers.Get(i))
                                );
 
-            this.headers = new FixedMapImpl(headers);
+            this._headers = new FixedMapImpl(headers);
 
             // ПараметрыURL будут пустыми
-            url_params = new FixedMapImpl(new MapImpl());
+            _urlParams = new FixedMapImpl(new MapImpl());
 
             // Параметры запроса
-            MapImpl queryoptions = new MapImpl();
+            MapImpl queryOptions = new MapImpl();
 
-            for (int i = 0; i < context.Request.Params.Count; i++)
-                queryoptions.Insert( ValueFactory.Create(context.Request.Params.GetKey(i))
-                                   , ValueFactory.Create(context.Request.Params.Get(i))
+            for (int i = 0; i < _context.Request.Params.Count; i++)
+                queryOptions.Insert( ValueFactory.Create(_context.Request.Params.GetKey(i))
+                                   , ValueFactory.Create(_context.Request.Params.Get(i))
                                    );
 
-            query_options = new FixedMapImpl(queryoptions);
+            _queryOptions = new FixedMapImpl(queryOptions);
         }
     }
 
@@ -422,13 +401,13 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
     {
         System.Web.HttpContext context;
 
-        HTTPServiceRequest request;
+        HTTPServiceRequestImpl request;
         HTTPServiceResponseImpl response;
 
         public HTTPServiceContext(System.Web.HttpContext ctx)
         {
             context = ctx;
-            request = new HTTPServiceRequest(context);
+            request = new HTTPServiceRequestImpl(context);
             response = new HTTPServiceResponseImpl();
         }
 
@@ -442,14 +421,14 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         public void SetHTTPContext(System.Web.HttpContext ctx)
         {
             context = ctx;
-            request = new HTTPServiceRequest(context);
+            request = new HTTPServiceRequestImpl(context);
             response = new HTTPServiceResponseImpl();
         }
 
         #region Свойства для 1C
 
         [ContextProperty("Запрос", "Request")]
-        public HTTPServiceRequest Request
+        public HTTPServiceRequestImpl Request
         {
             get
             {

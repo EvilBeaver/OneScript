@@ -16,35 +16,38 @@ namespace OneScript.ASPNETHandler
 {
     public class ASPNETHandler : IHttpHandler
     {
-        HostedScriptEngine hostedScript;
-        ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceContext onescript_context;
+        HostedScriptEngine _hostedScript;
+        static bool _cachingEnabled; 
 
         public bool IsReusable
         {
             // Разрешаем повторное использование и храним среду выполнения и контекст 
             get { return true; }
         }
-
+        static ASPNETHandler()
+        {
+            _cachingEnabled = (System.Web.Configuration.WebConfigurationManager.AppSettings["CachingEnabled"] == "true");
+        }
         public ASPNETHandler()
         {
-            hostedScript = new HostedScriptEngine();
-            hostedScript.Initialize();
-            onescript_context = new ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceContext();
+            _hostedScript = new HostedScriptEngine();
+            _hostedScript.Initialize();
         }
 
         public void ProcessRequest(HttpContext context)
         {
-            // Устанавливаем указатель контекста в свойстве HTTPСервисКонтекст на текущий контекст вызова
-            onescript_context.SetHTTPContext(context);
 
             #region Загружаем скрипт (файл .os)
             // Кэшируем исходный файл, если файл изменился (изменили скрипт .os) загружаем заново
             // Как это сделать с откомпилированным кодом, чтобы не компилировать?
             // В Linux под Mono не работает подписка на изменение файла.
+            string sourceCode = null;
             ObjectCache cache = MemoryCache.Default;
-            string source_code_str = cache[context.Request.PhysicalPath] as string;
 
-            if (source_code_str == null)
+            if (_cachingEnabled)
+                sourceCode = cache[context.Request.PhysicalPath] as string;
+
+            if (sourceCode == null)
             {
                 CacheItemPolicy policy = new CacheItemPolicy();
 
@@ -53,13 +56,13 @@ namespace OneScript.ASPNETHandler
                 policy.ChangeMonitors.Add(new HostFileChangeMonitor(filePaths));
 
                 // Загружаем файл и помещаем его в кэш
-                source_code_str = File.ReadAllText(context.Request.PhysicalPath);
-                cache.Set(context.Request.PhysicalPath, source_code_str, policy);
+                sourceCode = File.ReadAllText(context.Request.PhysicalPath);
+                cache.Set(context.Request.PhysicalPath, sourceCode, policy);
             }
             #endregion
             // Эта строка ЗОЛОТАЯ. Ее написание заняло 90% моего времени
-            var runner = hostedScript.EngineInstance.AttachedScriptsFactory.LoadFromString(
-                hostedScript.EngineInstance.GetCompilerService(), source_code_str);
+            var runner = _hostedScript.EngineInstance.AttachedScriptsFactory.LoadFromString(
+                _hostedScript.EngineInstance.GetCompilerService(), sourceCode);
 
             int exitCode = 0;
 
@@ -68,7 +71,8 @@ namespace OneScript.ASPNETHandler
                 int methodIndex = runner.FindMethod("ОбработкаВызоваHTTPСервиса");
                 IValue result;
                 IValue[] args = new IValue[1];
-                args[0] = onescript_context;
+                args[0] = new ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceRequestImpl(context);
+
                 runner.CallAsFunction(methodIndex, args, out result);
 
                 // Обрабатываем результаты
