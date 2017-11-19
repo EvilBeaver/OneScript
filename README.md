@@ -60,11 +60,143 @@
 
 ## Размещение сервиса на WEB-сервере
 
+Нижеследующая инструкция предназначена для развертывания с целью тестирования. Развертывание в продуктивных средах необходимо производить в соответствии с документацией к продуктам.
+
 ### Windows
 
+-При необходимости установите .NET Framework версии не ниже 4.5.2.
+-Установите роль WEB-сервера.
+-Создайте web приложение в IIS менеджере.
+-Установите для приложения классический пул .NET.
+-В свойствах пула выберите соответствующую версию .NET.
+-Создайте в папке приложения папку Bin и скопируйте в нее результаты компиляции проекта **ASPNETHandler**.
+-Скопируйте в папку приложения файлы .os
+-Создайте в папке приложения файл web.config примерно следующего содержания:
+
+```
+<configuration>   
+   <system.web>
+      <httpHandlers>
+         <add verb="*" path="*.os" type="OneScript.ASPNETHandler.ASPNETHandler, ASPNETHandler" />
+      </httpHandlers>
+      <customErrors mode="Off"/>
+   </system.web>
+    <system.webServer>
+        <handlers>
+            <add name="OneScript" path="*.os" verb="*" modules="IsapiModule" scriptProcessor="C:\Windows\Microsoft.NET\Framework64\v4.0.30319\aspnet_isapi.dll" resourceType="File" preCondition="classicMode,runtimeVersionv4.0,bitness64" />
+        </handlers>
+    </system.webServer>
+<appSettings>
+	<add key="CachingEnabled" value="true"/>
+</appSettings>
+</configuration>
+```
+Нижеследующая строка добавляет наш обработчик запросов для файлов .os в текущее приложение. Обработчик имеет тип **OneScript.ASPNETHandler.ASPNETHandler** и находится в сборке **ASPNETHandler**.
+
+```
+<add verb="*" path="*.os" type="OneScript.ASPNETHandler.ASPNETHandler, ASPNETHandler" />
+```
+
+Далее добавляем ISAPI модуль, для обработки запросов к файлам .os. В качестве модуля используется модуль **aspnet_isapi.dll**, который идет в поставке .NET. Он может быть добавлен из консоли IIS.
+
+```
+<add name="OneScript" path="*.os" verb="*" modules="IsapiModule" scriptProcessor="C:\Windows\Microsoft.NET\Framework64\v4.0.30319\aspnet_isapi.dll" resourceType="File" preCondition="classicMode,runtimeVersionv4.0,bitness64" />
+```
+
+Разрешаем кэширование. Файлы .os будут кэшироваться в памяти до тех пор, пока они не будут изменены.
+
+```
+<add key="CachingEnabled" value="true"/>
+
+```
 
 ### Linux
 
+Ниже описан пример установки на Ubuntu 16.04 LTS. Данный пример может использоваться только для тестовой установки. Установку в продуктивных средах необходимо производить в соответствии с документацией к продуктам.
+Установку Apache необходимо производить, если Вы планируете использовать связку Apache + mono-mod-server. Сервер XSP может работать без Apache, однако для доступа из интернет, необходимо использовать связку ngix+XSP или Apache+XSP. 
+  
+**Устанавливаем mono**
+
+```
+sudo apt-get install mono-complete
+```
+
+**Устанавливаем Apache**
+
+```
+sudo apt-get install apache2
+```
+
+**Устанавливаем mod-mono-server**
+
+```
+sudo apt-get install mod-mono-server
+```
+
+В нашем случае будет установлен mod-mono-server4
+
+**Для mod-mono-server настраиваем обработку расширений .os**
+
+Добавляем строку **Add-Type application/x-asp-net .os** в файл /etc/mono-server4/mono-server4-hosts.conf
+ 
+**Устанавливаем XSP**
+
+```
+sudo apt-get install mono-xsp4
+```
+**Размещаем приложение**
+
+-Создаем папку Bin в папке /var/www/html
+-Копируем в папку Bin результаты компиляции проекта **ASPNetHandler**
+-Копируем в папку /var/www/html файлы скриптов (.os)
+
+**Конфигурируем приложение**
+
+Создаем в папке /var/www/html файл web.config, примерно следующего содержания:
+
+```
+<configuration>   
+   <system.web>
+      <httpHandlers>
+         <add verb="*" path="*.os" type="OneScript.ASPNETHandler.ASPNETHandler" />
+      </httpHandlers>
+      <customErrors mode="Off"/>
+   </system.web>
+    <system.webServer>
+        <handlers>
+			<add name="OneScript" verb="*" path="*.os" type="OneScript.ASPNETHandler.ASPNETHandler" />
+        </handlers>
+    </system.webServer>
+<appSettings>
+	<add key="CachingEnabled" value="false"/>
+</appSettings>
+</configuration>
+
+``` 
+
+Добавляем наш обработчик в секции <httphandlers> и <handlers> и отключаем кэширование, т.к. политика кэширования по изменению файла не работает в Linux.
+Если оставить режим кэширования включенным, изменения файла скрипта применятся после перезапуска mod-mono server или XSP.
+
+**Применяем изменения**
+
+Перезагружаем сервис Apache
+
+```
+sudo service apache2 restart
+```
+
+##Тестируем приложение
+
+Для Apache + mod-mono-server обращаемся к web-сервису, к примеру при помощи браузера. Имеем ввиду тот факт, что Apache регистрозависим и файлы Hello.os и hello.os будут разными файлами.
+Поскольку XSP не является службой, его необходимо запустить из корневой папки веб-приложений. Корневой папкой в нашем случае будет являться /var/www/html.
+
+```
+cd /var/www/html
+XSP
+```
+
+Сервер запустится и сообщит параметры прослушивания. По умолчанию веб-слушатель настроен на порт 9000.
+Обращаемся к web-сервису из браузера или с помощью curl 
 
 ## Сайт исходного проекта
 
