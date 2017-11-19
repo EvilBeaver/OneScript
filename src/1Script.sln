@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{4585BA5D-9EC4-4C89-8250-2033D2AC2999}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -35,9 +35,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTests", "NUnitTests\NU
 		{795AA2F5-3074-4BC5-A30F-1B6354044D9B} = {795AA2F5-3074-4BC5-A30F-1B6354044D9B}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Component", "Component\Component.csproj", "{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Component", "Component\Component.csproj", "{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugServer", "DebugServer\DebugServer.csproj", "{C979F151-AA29-47E4-B020-3039BA0986D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugServer", "DebugServer\DebugServer.csproj", "{C979F151-AA29-47E4-B020-3039BA0986D9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.DebugProtocol", "OneScript.DebugProtocol\OneScript.DebugProtocol.csproj", "{727A498F-BF50-42F8-8523-40C0B5B1B233}"
 EndProject
@@ -108,11 +108,9 @@ Global
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|x86.Build.0 = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Release|x86.ActiveCfg = Release|Any CPU
-		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Release|x86.Build.0 = Release|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Debug|x86.ActiveCfg = Debug|Any CPU
