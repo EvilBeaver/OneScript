@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{4585BA5D-9EC4-4C89-8250-2033D2AC2999}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -23,6 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\BuildAll.csproj = ..\BuildAll.csproj
 		GlobalAssemblyInfo.cs = GlobalAssemblyInfo.cs
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{BBE794A6-B159-422F-B655-B7F03F25F223}"
@@ -44,6 +45,19 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oscriptTests", "oscriptTest\oscriptTests.csproj", "{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{91059C5B-526C-4B81-B106-99DEFF542D1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{77791D47-EA9C-43E3-B470-A595B93162B5}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASPNETHandler", "ASPNETHandler\ASPNETHandler.csproj", "{B7CD7F52-E387-490E-8F77-E1FB060401B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoCallAsFunc", "DemoCallAsFunc\DemoCallAsFunc.csproj", "{D00653CC-86AA-4180-8EB7-ACC5152A411E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoHowToFillMapFromNet", "DemoHowToFillMapFromNet\DemoHowToFillMapFromNet.csproj", "{5C6A46D4-AA8E-455D-80EE-A783888E7340}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoHelloWorld", "DemoHelloWorld\DemoHelloWorld.csproj", "{4974CCD1-5486-479E-8162-B4D1CA68D501}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -135,6 +149,38 @@ Global
 		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.Release|x86.ActiveCfg = Release|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Debug|x86.Build.0 = Debug|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Release|x86.ActiveCfg = Release|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Release|x86.Build.0 = Release|Any CPU
+		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Debug|x86.Build.0 = Debug|Any CPU
+		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Release|x86.ActiveCfg = Release|Any CPU
+		{D00653CC-86AA-4180-8EB7-ACC5152A411E}.Release|x86.Build.0 = Release|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Debug|x86.Build.0 = Debug|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|x86.ActiveCfg = Release|Any CPU
+		{5C6A46D4-AA8E-455D-80EE-A783888E7340}.Release|x86.Build.0 = Release|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Debug|x86.Build.0 = Debug|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Release|x86.ActiveCfg = Release|Any CPU
+		{4974CCD1-5486-479E-8162-B4D1CA68D501}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

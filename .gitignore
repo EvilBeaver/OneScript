@@ -60,3 +60,6 @@ src/DebugServer/node_modules/
 src/OpenCover
 TestResult.xml
 tests/component/Component.dll
+/src/.nuget
+/src/UpgradeLog2.htm
+/src/UpgradeLog.htm
