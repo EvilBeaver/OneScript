@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{4585BA5D-9EC4-4C89-8250-2033D2AC2999}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -44,6 +44,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oscriptTests", "oscriptTest\oscriptTests.csproj", "{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{91059C5B-526C-4B81-B106-99DEFF542D1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASPNETHandler", "ASPNETHandler\ASPNETHandler.csproj", "{B7CD7F52-E387-490E-8F77-E1FB060401B5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -135,6 +137,14 @@ Global
 		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.Release|x86.ActiveCfg = Release|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Debug|x86.Build.0 = Debug|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Release|x86.ActiveCfg = Release|Any CPU
+		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
