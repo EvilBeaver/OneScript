@@ -416,7 +416,6 @@ namespace TestApp
         {
             _output.AppendText(str + '\n');
             _output.ScrollToEnd();
-            System.Windows.Forms.Application.DoEvents();
         }
 
         public void ShowExceptionInfo(Exception exc)
