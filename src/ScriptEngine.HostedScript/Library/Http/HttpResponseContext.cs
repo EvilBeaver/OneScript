@@ -172,8 +172,9 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         /// <summary>
         /// Закрыть HTTP ответ и освободить ресурсы
+        /// В стандарт не входит, а нужно ли оно?
         /// </summary
-        // В стандарт не входит, а нужно ли оно?
+
         [ContextMethod("Закрыть", "Close")]
         public void Close()
         {
@@ -184,7 +185,6 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             if (_bodyStream != null)
             {
-                _bodyStream.Close();
                 _bodyStream.Dispose();
                 _bodyStream = null;
             }
