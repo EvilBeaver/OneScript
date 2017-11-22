@@ -41,7 +41,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             if (ssl != null && !(ssl.DataType == Machine.DataType.Undefined || ssl.DataType == Machine.DataType.NotAValidValue))
                 throw new RuntimeException("Защищенное соединение по произвольным сертификатам не поддерживается. Если необходим доступ по https, просто укажите протокол https в адресе хоста.");
-            
+
             var uriBuilder = new UriBuilder(host);
             if (port != 0)
                 uriBuilder.Port = port;
@@ -60,19 +60,19 @@ namespace ScriptEngine.HostedScript.Library.Http
             Timeout = timeout;
             _proxy = proxy;
             UseOSAuthentication = useOSAuth;
-            
+
         }
 
-        [ContextProperty("ИспользоватьАутентификациюОС", "UseOSAuthentication", CanWrite=false)]
+        [ContextProperty("ИспользоватьАутентификациюОС", "UseOSAuthentication", CanWrite = false)]
         public bool UseOSAuthentication
         {
             get;
             set;
         }
 
-        [ContextProperty("Пользователь","User")]
-        public string User 
-        { 
+        [ContextProperty("Пользователь", "User")]
+        public string User
+        {
             get; private set;
         }
 
@@ -80,7 +80,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         public string Password
         {
             get; private set;
-            
+
         }
 
         [ContextProperty("Сервер", "Host")]
@@ -197,9 +197,9 @@ namespace ScriptEngine.HostedScript.Library.Http
         private HttpWebRequest CreateRequest(string resource)
         {
             var uriBuilder = new UriBuilder(_hostUri);
-            if(Port != 0)
+            if (Port != 0)
                 uriBuilder.Port = Port;
-            
+
             var resourceUri = new Uri(uriBuilder.Uri, resource);
 
             var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
@@ -215,12 +215,12 @@ namespace ScriptEngine.HostedScript.Library.Http
                 authInfo = Convert.ToBase64String(basicAuthEncoding.GetBytes(authInfo));
                 request.Headers["Authorization"] = "Basic " + authInfo;
             }
-            else if(UseOSAuthentication)
+            else if (UseOSAuthentication)
             {
                 request.Credentials = CredentialCache.DefaultNetworkCredentials;
             }
 
-            if(_proxy != null)
+            if (_proxy != null)
                 request.Proxy = _proxy.GetProxy(uriBuilder.Scheme);
 
             if (Timeout == 0)
@@ -238,7 +238,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
 
             return request;
-            
+
         }
 
         private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null)
@@ -264,29 +264,19 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
 
             var responseContext = new HttpResponseContext(response, output);
-            
+            response.Close();
             return responseContext;
 
         }
 
         private static void SetRequestBody(HttpRequestContext request, HttpWebRequest webRequest)
         {
-            var stream = request.Body;
-            if (stream == null)
-            {
-                return; // тело не установлено
-            }
+            // Эмулируем поведение 1С. При попытке отправить GET запрос с телом ошибки не возникает!!!! 
+            if (webRequest.Method == "GET")
+                return;
 
-            using(stream)
-            {
-                if (stream.CanSeek)
-                    webRequest.ContentLength = stream.Length;
-
-                using(var requestStream = webRequest.GetRequestStream())
-                {
-                    stream.CopyTo(requestStream);
-                }
-            }
+            if (request.BodyStream != null)
+                request.BodyStream.CopyTo(webRequest.GetRequestStream());
         }
 
         private static void SetRequestHeaders(HttpRequestContext request, HttpWebRequest webRequest)
@@ -298,7 +288,7 @@ namespace ScriptEngine.HostedScript.Library.Http
                 var key = item.Key.AsString();
                 var value = item.Value.AsString();
 
-                switch(key.ToUpperInvariant())
+                switch (key.ToUpperInvariant())
                 {
                     case "CONTENT-TYPE":
                         webRequest.ContentType = value;
@@ -326,14 +316,14 @@ namespace ScriptEngine.HostedScript.Library.Http
                         webRequest.Connection = value;
                         break;
                     case "DATE":
-                        try 
-	                    {	        
-		                    webRequest.Date = DateTime.Parse(value);
-	                    }
-	                    catch (FormatException)
-	                    {
-		                    throw new RuntimeException("Заголовок Date задан неправильно");
-	                    }
+                        try
+                        {
+                            webRequest.Date = DateTime.Parse(value);
+                        }
+                        catch (FormatException)
+                        {
+                            throw new RuntimeException("Заголовок Date задан неправильно");
+                        }
                         break;
                     case "HOST":
                         webRequest.Host = value;
@@ -361,10 +351,10 @@ namespace ScriptEngine.HostedScript.Library.Http
                     default:
                         webRequest.Headers.Set(key, value);
                         break;
-                           
+
                 }
-                
-                
+
+
 
             }
         }
@@ -385,9 +375,9 @@ namespace ScriptEngine.HostedScript.Library.Http
         /// <param name="useOSAuthentication">Использовать аутентификацию ОС.</param>
         /// <returns></returns>
         [ScriptConstructor(Name = "По указанному серверу")]
-        public static HttpConnectionContext Constructor(IValue host, 
-            IValue port = null, 
-            IValue user = null, 
+        public static HttpConnectionContext Constructor(IValue host,
+            IValue port = null,
+            IValue user = null,
             IValue password = null,
             IValue proxy = null,
             IValue timeout = null,
