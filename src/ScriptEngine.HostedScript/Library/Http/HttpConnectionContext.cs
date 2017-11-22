@@ -262,31 +262,21 @@ namespace ScriptEngine.HostedScript.Library.Http
                 else
                     throw;
             }
-
+    
             var responseContext = new HttpResponseContext(response, output);
-            
+            response.Close();
             return responseContext;
 
         }
 
         private static void SetRequestBody(HttpRequestContext request, HttpWebRequest webRequest)
         {
-            var stream = request.Body;
-            if (stream == null)
-            {
-                return; // тело не установлено
-            }
+            // Эмулируем поведение 1С. При попытке отправить GET запрос с елом ошибки не возникает!!!! 
+            if (webRequest.Method == "GET")
+                return;
 
-            using(stream)
-            {
-                if (stream.CanSeek)
-                    webRequest.ContentLength = stream.Length;
-
-                using(var requestStream = webRequest.GetRequestStream())
-                {
-                    stream.CopyTo(requestStream);
-                }
-            }
+            if (request.BodyStream != null)
+                request.BodyStream.CopyTo(webRequest.GetRequestStream());
         }
 
         private static void SetRequestHeaders(HttpRequestContext request, HttpWebRequest webRequest)

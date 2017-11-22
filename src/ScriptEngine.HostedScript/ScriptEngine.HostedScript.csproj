@@ -135,15 +135,9 @@
     <Compile Include="Library\Hash\Crc32.cs" />
     <Compile Include="Library\Hash\HashFunctionEnum.cs" />
     <Compile Include="Library\Hash\HashImpl.cs" />
-    <Compile Include="Library\HTTPService\HTTPService.cs" />
+    <Compile Include="Library\HTTPService\HTTPServiceContext.cs" />
     <Compile Include="Library\Http\HttpConnectionContext.cs" />
-    <Compile Include="Library\Http\HttpRequestBody.cs" />
-    <Compile Include="Library\Http\HttpRequestBodyBinary.cs" />
-    <Compile Include="Library\Http\HttpRequestBodyString.cs" />
-    <Compile Include="Library\Http\HttpRequestBodyUnknown.cs" />
     <Compile Include="Library\Http\HttpRequestContext.cs" />
-    <Compile Include="Library\Http\HttpRequestBodyFile.cs" />
-    <Compile Include="Library\Http\HttpResponseBody.cs" />
     <Compile Include="Library\Http\HttpResponseContext.cs" />
     <Compile Include="Library\Http\InternetProxyContext.cs" />
     <Compile Include="Library\ConsoleColorEnum.cs" />
