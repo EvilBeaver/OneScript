@@ -9,6 +9,9 @@
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+	<PackageReference Condition="'$TargetFramework' == 'net452'" Include="NETStandard.Library.NETFramework" Version="2.0.0-preview2-25405-01"/>
+  </ItemGroup>
   <ItemGroup />
   <PropertyGroup />
   <PropertyGroup>
