@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ScriptEngine.Machine;
@@ -21,11 +22,6 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Рефлектор","Reflector")]
     public class ReflectorContext : AutoContext<ReflectorContext>
     {
-        public ReflectorContext()
-        {
-
-        }
-
         /// <summary>
         /// Вызывает метод по его имени.
         /// </summary>
@@ -100,7 +96,18 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="methodName">Имя метода для вызова</param>
         /// <returns>Истину, если метод существует, и Ложь в обратном случае. </returns>
         [ContextMethod("МетодСуществует", "MethodExists")]
-        public bool MethodExists(IRuntimeContextInstance target, string methodName)
+        public bool MethodExists(IValue target, string methodName)
+        {
+            if(target.DataType == DataType.Object)
+                return MethodExistsObject(target.AsObject(), methodName);
+
+            if (target.DataType == DataType.Type)
+                return MethodExistsForType(target.GetRawValue() as TypeTypeValue, methodName);
+
+            throw RuntimeException.InvalidArgumentType("target");
+        }
+
+        private static bool MethodExistsObject(IRuntimeContextInstance target, string methodName)
         {
             try
             {
@@ -113,6 +120,39 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        private static bool MethodExistsForType(TypeTypeValue type, string methodName)
+        {
+            var clrType = GetReflectableClrType(type);
+            var magicCaller = CreateMethodsMapper(clrType);
+            return magicCaller.FindMethod(methodName) >= 0;
+        }
+
+        private static dynamic CreateMethodsMapper(Type clrType)
+        {
+            var mapperType = typeof(ContextMethodsMapper<>).MakeGenericType(clrType);
+            var instance = Activator.CreateInstance(mapperType);
+            dynamic magicCaller = instance; // зачем строить ExpressionTree, когда есть dynamic
+            return magicCaller;
+        }
+
+        private static Type GetReflectableClrType(TypeTypeValue type)
+        {
+            Type clrType;
+            try
+            {
+                clrType = TypeManager.GetImplementingClass(type.Value.ID);
+            }
+            catch (InvalidOperationException)
+            {
+                throw RuntimeException.InvalidArgumentValue("Тип не может быть отражен.");
+            }
+
+            var attrs = clrType.GetCustomAttributes(typeof(ContextClassAttribute), false).ToArray();
+            if (attrs.Length == 0)
+                throw RuntimeException.InvalidArgumentValue("Тип не может быть отражен.");
+
+            return clrType;
+        }
 
         /// <summary>
         /// Получает таблицу методов для переданного объекта..
@@ -122,7 +162,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьТаблицуМетодов", "GetMethodsTable")]
         public ValueTable.ValueTable GetMethodsTable(IRuntimeContextInstance target)
         {
-            ValueTable.ValueTable Result = new ValueTable.ValueTable();
+            var Result = new ValueTable.ValueTable();
             
             var NameColumn = Result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var CountColumn = Result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
