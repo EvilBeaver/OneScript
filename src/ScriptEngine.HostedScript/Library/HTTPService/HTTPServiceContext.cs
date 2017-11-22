@@ -137,7 +137,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
                     // Что-то нашли 
                     try
                     {
-                        //"charset=Кодировка" -> "Кодировка" 
+                        //charsetString.Substring(8) делает "charset=Кодировка" -> "Кодировка" 
                         enc = TextEncodingEnum.GetEncodingByName(charsetString.Substring(8));
                     }
                     catch
