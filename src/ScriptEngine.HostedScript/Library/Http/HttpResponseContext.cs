@@ -20,16 +20,33 @@ namespace ScriptEngine.HostedScript.Library.Http
     /// <summary>
     /// Ответ от HTTP-сервера
     /// </summary>
+    /// 
+
+    //Свойства:
+    //
+    //Заголовки(Headers)
+    //КодСостояния(StatusCode)
+    //
+    //Методы:
+    //
+    //ПолучитьИмяФайлаТела(GetBodyFileName)
+    //ПолучитьТелоКакДвоичныеДанные(GetBodyAsBinaryData)
+    //ПолучитьТелоКакПоток(GetBodyAsStream)
+    //ПолучитьТелоКакСтроку(GetBodyAsString)
+
+
     [ContextClass("HTTPОтвет", "HTTPResponse")]
     public class HttpResponseContext : AutoContext<HttpResponseContext>, IDisposable
     {
         private readonly MapImpl _headers = new MapImpl();
         // TODO: Нельзя выделить массив размером больше чем 2GB
         // поэтому функционал сохранения в файл не должен использовать промежуточный буфер _body
-        private HttpResponseBody _body;
-        
+        // Этот объект создается только из соединения
+        // Возможные варианты Загрузка в файл (_bodyStream == null && _filename != null), В память (_bodyStream != null && _fileName == null) 
+        System.IO.MemoryStream _bodyStream = null;
+        string _fileName = null;
+
         private string _defaultCharset;
-        private string _filename;
 
         public HttpResponseContext(HttpWebResponse response)
         {
@@ -43,7 +60,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         private void RetrieveResponseData(HttpWebResponse response, string dumpToFile)
         {
-            using(response)
+            using (response)
             {
                 StatusCode = (int)response.StatusCode;
                 _defaultCharset = response.CharacterSet;
@@ -63,14 +80,20 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         private void ProcessResponseBody(HttpWebResponse response, string dumpToFile)
         {
-            if (response.ContentLength == 0)
+            if (dumpToFile != null)
             {
-                _body = null;
-                return;
+                System.IO.FileStream fs = new System.IO.FileStream(dumpToFile, FileMode.Create, FileAccess.ReadWrite);
+                response.GetResponseStream().CopyTo(fs);
+                fs.Flush();
+                fs.Close();
+                _fileName = dumpToFile;
             }
-            _filename = dumpToFile;
-            _body = new HttpResponseBody(response, dumpToFile);
-
+            else
+            {
+                _bodyStream = new System.IO.MemoryStream();
+                response.GetResponseStream().CopyTo(_bodyStream);
+                _bodyStream = new System.IO.MemoryStream(_bodyStream.GetBuffer(), 0, (int)_bodyStream.Length, false, true);
+            }
         }
 
         /// <summary>
@@ -99,25 +122,26 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
         public IValue GetBodyAsString(IValue encoding = null)
         {
-            if (_body == null)
+            if (_bodyStream == null)
                 return ValueFactory.Create();
 
-            Encoding enc;
-            if (encoding == null)
-            {
-                if (String.IsNullOrEmpty(_defaultCharset))
-                    _defaultCharset = "utf-8";
-
-                enc = Encoding.GetEncoding(_defaultCharset);
-            }
-            else
+            System.Text.Encoding enc = System.Text.Encoding.UTF8;
+            // Оказывается в 1С параметр кодировки пустая строка не вызывает исключения
+            if (encoding != null && encoding.AsString() != "")
                 enc = TextEncodingEnum.GetEncoding(encoding);
-
-            using(var reader = new StreamReader(_body.OpenReadStream(), enc))
+            else
             {
-                return ValueFactory.Create(reader.ReadToEnd());
+                try
+                {
+                    enc = TextEncodingEnum.GetEncodingByName(_defaultCharset);
+                }
+                catch { /* Что-то не так, оставляем UTF8 */ }
             }
-            
+
+
+
+            _bodyStream.Seek(0, SeekOrigin.Begin);
+            return ValueFactory.Create(enc.GetString(_bodyStream.GetBuffer()));
         }
 
         /// <summary>
@@ -127,15 +151,11 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
         public IValue GetBodyAsBinaryData()
         {
-            if (_body == null)
+            if (_bodyStream == null)
                 return ValueFactory.Create();
 
-            using (var stream = _body.OpenReadStream())
-            {
-                var data = new byte[stream.Length];
-                stream.Read(data, 0, data.Length);
-                return new BinaryDataContext(data);
-            }
+            _bodyStream.Seek(0, SeekOrigin.Begin);
+            return new BinaryDataContext(((System.IO.MemoryStream)_bodyStream).GetBuffer());
         }
 
         /// <summary>
@@ -145,15 +165,26 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("ПолучитьИмяФайлаТела", "GetBodyFileName")]
         public IValue GetBodyFileName()
         {
-            if (_filename == null)
+            if (_fileName == null)
                 return ValueFactory.Create();
+            else
+                return ValueFactory.Create(_fileName);
+        }
 
-            return ValueFactory.Create(_filename);
+        [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
+        public IValue GetBodyAsStream()
+        {
+            if (_fileName == null)
+                return new GenericStream(_bodyStream);
+            else
+                return new GenericStream(new System.IO.FileStream(_fileName, FileMode.Open, FileAccess.Read));
         }
 
         /// <summary>
         /// Закрыть HTTP ответ и освободить ресурсы
-        /// </summary>
+        /// В стандарт не входит, а нужно ли оно?
+        /// </summary
+
         [ContextMethod("Закрыть", "Close")]
         public void Close()
         {
@@ -162,8 +193,11 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         public void Dispose()
         {
-            if (_body != null)
-                _body.Dispose();
+            if (_bodyStream != null)
+            {
+                _bodyStream.Dispose();
+                _bodyStream = null;
+            }
         }
     }
 }

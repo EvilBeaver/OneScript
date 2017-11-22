@@ -19,38 +19,47 @@ namespace ScriptEngine.HostedScript.Library.Http
     /// <summary>
     /// Данные и заголоки HTTP запроса.
     /// </summary>
+    //Свойства:
+    //
+    //АдресРесурса(ResourceAddress)
+    //Заголовки(Headers)
+    //
+    //Методы:
+
+    //+ПолучитьИмяФайлаТела(GetBodyFileName)
+    //+ПолучитьТелоКакДвоичныеДанные(GetBodyAsBinary)
+    //+ПолучитьТелоКакПоток(GetBodyAsStream)
+    //+ПолучитьТелоКакСтроку(GetBodyAsString)
+    //+УстановитьИмяФайлаТела(SetBodyFileName)
+    //+УстановитьТелоИзДвоичныхДанных(SetBodyFromBinary)
+    //+УстановитьТелоИзСтроки(SetBodyFromString)
+    //
+    //Конструкторы:
+
+    //По адресу ресурса и заголовкам
+    //Формирование неинициализированного объекта
+
+
     [ContextClass("HTTPЗапрос", "HTTPRequest")]
     public class HttpRequestContext : AutoContext<HttpRequestContext>
     {
-
-        IHttpRequestBody _body;
-        static readonly IHttpRequestBody _emptyBody = new HttpRequestBodyUnknown();
+        System.IO.Stream _bodyStream;
 
         public HttpRequestContext()
         {
             ResourceAddress = "";
             Headers = new MapImpl();
-            _body = _emptyBody;
+            _bodyStream = null;
         }
 
-        public void Close()
-        {
-            SetBody(_emptyBody);
-        }
-
-        private void SetBody(IHttpRequestBody newBody)
-        {
-            _body.Dispose();
-            _body = newBody;
-        }
-
-        public Stream Body
+        public Stream BodyStream
         {
             get
             {
-                return _body.GetDataStream();
+                return _bodyStream;
             }
         }
+
 
         /// <summary>
         /// Относительный путь к ресурсу на сервере (не включает имя сервера)
@@ -71,13 +80,16 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("УстановитьИмяФайлаТела", "SetBodyFileName")]
         public void SetBodyFileName(string filename)
         {
-            SetBody(new HttpRequestBodyFile(filename));
+            _bodyStream = new System.IO.FileStream(filename, System.IO.FileMode.Open, System.IO.FileAccess.Read);
         }
 
         [ContextMethod("ПолучитьИмяФайлаТела", "GetBodyFileName")]
         public IValue GetBodyFileName()
         {
-            return _body.GetAsFilename();
+            if ((_bodyStream == null) || (_bodyStream as System.IO.FileStream) == null)
+                return ValueFactory.Create();
+            else
+                return ValueFactory.Create(((System.IO.FileStream)_bodyStream).Name);
         }
 
         /// <summary>
@@ -87,13 +99,18 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("УстановитьТелоИзДвоичныхДанных", "SetBodyFromBinary")]
         public void SetBodyFromBinary(BinaryDataContext data)
         {
-            SetBody(new HttpRequestBodyBinary(data));
+            _bodyStream = new System.IO.MemoryStream();
+            _bodyStream.Write(data.Buffer, 0, data.Buffer.Length);
+            _bodyStream.Seek(0, System.IO.SeekOrigin.Begin);
         }
 
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinary")]
         public IValue GetBodyFromBinary()
         {
-            return _body.GetAsBinary();
+            if ((_bodyStream == null) || (_bodyStream as System.IO.MemoryStream) == null)
+                return null;
+            else
+                return new BinaryDataContext(((System.IO.MemoryStream)_bodyStream).GetBuffer());
         }
 
         /// <summary>
@@ -101,16 +118,38 @@ namespace ScriptEngine.HostedScript.Library.Http
         /// </summary>
         /// <param name="data">Строка с данными</param>
         /// <param name="encoding">КодировкаТекста или Строка. Кодировка в которой отправляются данные.</param>
+        /// <param name="useBOM">Использовать метку порядка байтов (BOM) для кодировок. Тип не реазизован. Параметр добавлен для совместимости и не используется.</param>
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
-        public void SetBodyFromString(string data, IValue encoding = null)
+        public void SetBodyFromString(string data, IValue encoding = null, IValue useBOM = null)
         {
-            SetBody(new HttpRequestBodyString(data, encoding));
+            System.Text.Encoding enc = System.Text.Encoding.UTF8;
+
+            if (encoding != null)
+                enc = TextEncodingEnum.GetEncoding(encoding);
+
+            _bodyStream = new System.IO.MemoryStream();
+            byte[] buffer = enc.GetBytes(data);
+            _bodyStream.Write(buffer, 0, buffer.Length);
+            _bodyStream.Seek(0, System.IO.SeekOrigin.Begin);
         }
 
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
         public IValue GetBodyAsString()
         {
-            return _body.GetAsString();
+            if ((_bodyStream == null) || (_bodyStream as System.IO.MemoryStream) == null)
+                return ValueFactory.Create();
+
+            // Проверено экспериментально, возвращается строка в UTF8
+            return ValueFactory.Create(System.Text.Encoding.UTF8.GetString(((System.IO.MemoryStream)_bodyStream).GetBuffer()));
+        }
+
+        [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
+        public GenericStream GetBodyAsStream()
+        {
+            if (_bodyStream == null)
+                _bodyStream = new System.IO.MemoryStream();
+
+            return new GenericStream(_bodyStream);
         }
 
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
