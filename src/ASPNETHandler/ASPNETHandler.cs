@@ -100,7 +100,8 @@ namespace OneScript.ASPNETHandler
                     context.Response.Status = response.Reason;
                 }
 
-                context.Response.OutputStream.CopyTo(response.BodyStream);
+                if (response.BodyStream != null)
+                    context.Response.OutputStream.CopyTo(response.BodyStream);
     
             }
             catch (ScriptInterruptionException e)
