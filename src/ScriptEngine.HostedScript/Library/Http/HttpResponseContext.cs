@@ -92,7 +92,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             {
                 _bodyStream = new System.IO.MemoryStream();
                 response.GetResponseStream().CopyTo(_bodyStream);
-                _bodyStream = new System.IO.MemoryStream(_bodyStream.GetBuffer(), false);
+                _bodyStream = new System.IO.MemoryStream(_bodyStream.GetBuffer(), 0, (int)_bodyStream.Length, false, true);
             }
         }
 
