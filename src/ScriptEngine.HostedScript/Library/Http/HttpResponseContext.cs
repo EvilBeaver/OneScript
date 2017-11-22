@@ -125,10 +125,20 @@ namespace ScriptEngine.HostedScript.Library.Http
             if (_bodyStream == null)
                 return ValueFactory.Create();
 
-            System.Text.Encoding enc = TextEncodingEnum.GetEncodingByName(_defaultCharset);
-
-            if (encoding != null)
+            System.Text.Encoding enc = System.Text.Encoding.UTF8;
+            // Оказывается в 1С параметр кодировки пустая строка не вызывает исключения
+            if (encoding != null && encoding.AsString() != "")
                 enc = TextEncodingEnum.GetEncoding(encoding);
+            else
+            {
+                try
+                {
+                    enc = TextEncodingEnum.GetEncodingByName(_defaultCharset);
+                }
+                catch { /* Что-то не так, оставляем UTF8 */ }
+            }
+
+            
 
             _bodyStream.Seek(0, SeekOrigin.Begin);
             return ValueFactory.Create(enc.GetString(  _bodyStream.GetBuffer() ));
