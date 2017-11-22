@@ -271,7 +271,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         private static void SetRequestBody(HttpRequestContext request, HttpWebRequest webRequest)
         {
-            // Эмулируем поведение 1С. При попытке отправить GET запрос с елом ошибки не возникает!!!! 
+            // Эмулируем поведение 1С. При попытке отправить GET запрос с телом ошибки не возникает!!!! 
             if (webRequest.Method == "GET")
                 return;
 
