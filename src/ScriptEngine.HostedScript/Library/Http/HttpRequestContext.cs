@@ -118,6 +118,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         /// </summary>
         /// <param name="data">Строка с данными</param>
         /// <param name="encoding">КодировкаТекста или Строка. Кодировка в которой отправляются данные.</param>
+        /// <param name="useBOM">Использовать метку порядка байтов (BOM) для кодировок. Тип не реазизован. Параметр добавлен для совместимости и не используется.</param>
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
         public void SetBodyFromString(string data, IValue encoding = null, IValue useBOM = null)
         {
