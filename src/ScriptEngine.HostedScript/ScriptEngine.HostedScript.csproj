@@ -135,7 +135,7 @@
     <Compile Include="Library\Hash\Crc32.cs" />
     <Compile Include="Library\Hash\HashFunctionEnum.cs" />
     <Compile Include="Library\Hash\HashImpl.cs" />
-    <Compile Include="Library\HTTPService\HTTPService.cs" />
+    <Compile Include="Library\HTTPService\HTTPServiceContext.cs" />
     <Compile Include="Library\Http\HttpConnectionContext.cs" />
     <Compile Include="Library\Http\HttpRequestBody.cs" />
     <Compile Include="Library\Http\HttpRequestBodyBinary.cs" />

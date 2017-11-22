@@ -24,7 +24,7 @@ namespace OneScript.ASPNETHandler
     public class ASPNETHandler : IHttpHandler
     {
         HostedScriptEngine _hostedScript;
-        static bool _cachingEnabled; 
+        static bool _cachingEnabled;
 
         public bool IsReusable
         {
@@ -67,7 +67,7 @@ namespace OneScript.ASPNETHandler
                 cache.Set(context.Request.PhysicalPath, sourceCode, policy);
             }
             #endregion
-            // Эта строка ЗОЛОТАЯ. Ее написание заняло 90% моего времени
+
             var runner = _hostedScript.EngineInstance.AttachedScriptsFactory.LoadFromString(
                 _hostedScript.EngineInstance.GetCompilerService(), sourceCode);
 
@@ -100,10 +100,8 @@ namespace OneScript.ASPNETHandler
                     context.Response.Status = response.Reason;
                 }
 
-                if (response.Body != null)
-                {
-                    context.Response.OutputStream.Write(response.Body, 0, response.Body.Length);
-                }
+                if (response.BodyStream != null)
+                    context.Response.OutputStream.CopyTo(response.BodyStream);
 
             }
             catch (ScriptInterruptionException e)

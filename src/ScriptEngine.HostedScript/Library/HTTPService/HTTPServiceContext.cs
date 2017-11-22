@@ -22,23 +22,23 @@ using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library.HTTPService
 {
-     /* HTTPСервисЗапрос
-     * Свойства:
+    /* HTTPСервисЗапрос
+    * Свойства:
 
-       +HTTPМетод (HTTPMethod)
-       +БазовыйURL (BaseURL)
-       +Заголовки (Headers)
-       +ОтносительныйURL (RelativeURL)
-       +ПараметрыURL (URLParameters)
-       +ПараметрыЗапроса (QueryOptions)
+      +HTTPМетод (HTTPMethod)
+      +БазовыйURL (BaseURL)
+      +Заголовки (Headers)
+      +ОтносительныйURL (RelativeURL)
+      +ПараметрыURL (URLParameters)
+      +ПараметрыЗапроса (QueryOptions)
 
-       Методы:
+      Методы:
 
-       +ПолучитьТелоКакДвоичныеДанные (GetBodyAsBinaryData)
-       ПолучитьТелоКакПоток (GetBodyAsStream)
-       +ПолучитьТелоКакСтроку (GetBodyAsString)
+      +ПолучитьТелоКакДвоичныеДанные (GetBodyAsBinaryData)
+      ПолучитьТелоКакПоток (GetBodyAsStream)
+      +ПолучитьТелоКакСтроку (GetBodyAsString)
 
-     */
+    */
     [ContextClass("HTTPСервисЗапрос", "HTTPServiceRequest")]
     public class HTTPServiceRequestImpl : AutoContext<HTTPServiceRequestImpl>
     {
@@ -113,6 +113,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             System.IO.Stream str = _context.Request.InputStream;
             int bytes_count = Convert.ToInt32(str.Length);
             byte[] buffer = new byte[bytes_count];
+            str.Seek(0, System.IO.SeekOrigin.Begin);
             str.Read(buffer, 0, bytes_count);
 
             return new BinaryDataContext(buffer);
@@ -126,10 +127,31 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
 
             if (encoding != null)
                 enc = TextEncodingEnum.GetEncoding(encoding);
+            else
+            {
+                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("charset=([^\\\"']+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                string charsetString = regex.Match(_context.Request.ContentType).Value;
+
+                if (charsetString != "")
+                {
+                    // Что-то нашли 
+                    try
+                    {
+                        //charsetString.Substring(8) делает "charset=Кодировка" -> "Кодировка" 
+                        enc = TextEncodingEnum.GetEncodingByName(charsetString.Substring(8));
+                    }
+                    catch
+                    {
+                        // что то не так, осталась UTF8  
+                    }
+                }
+            }
 
             System.IO.Stream str = _context.Request.InputStream;
             int bytes_count = Convert.ToInt32(str.Length);
             byte[] buffer = new byte[bytes_count];
+
+            str.Seek(0, System.IO.SeekOrigin.Begin);
             str.Read(buffer, 0, bytes_count);
 
             return enc.GetString(buffer);
@@ -152,9 +174,9 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             MapImpl headers = new MapImpl();
 
             for (int i = 0; i < _context.Request.Headers.Count; i++)
-                 headers.Insert( ValueFactory.Create(_context.Request.Headers.GetKey(i))
-                               , ValueFactory.Create(_context.Request.Headers.Get(i))
-                               );
+                headers.Insert(ValueFactory.Create(_context.Request.Headers.GetKey(i))
+                              , ValueFactory.Create(_context.Request.Headers.Get(i))
+                              );
 
             this._headers = new FixedMapImpl(headers);
 
@@ -165,7 +187,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             MapImpl queryOptions = new MapImpl();
 
             for (int i = 0; i < _context.Request.Params.Count; i++)
-                queryOptions.Insert( ValueFactory.Create(_context.Request.Params.GetKey(i))
+                queryOptions.Insert(ValueFactory.Create(_context.Request.Params.GetKey(i))
                                    , ValueFactory.Create(_context.Request.Params.Get(i))
                                    );
 
@@ -210,38 +232,18 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         string _reason = "";
         int _statusCode = 200;
 
-        System.IO.Stream _stream = null;
+        System.IO.Stream _bodyStream = new System.IO.MemoryStream();
 
-        public byte[] Body
+        public System.IO.Stream BodyStream
         {
             get
             {
-                return GetBytesFromStream();
-            }
-        }
-
-        public System.IO.Stream Stream
-        {
-            get
-            {
-                return _stream;
+                return _bodyStream;
             }
         }
 
         public HTTPServiceResponseImpl()
         {
-        }
-
-        byte [] GetBytesFromStream()
-        {
-            byte[] buffer = new byte[_stream.Length];
-            long currentOffset = _stream.Position;
-
-            _stream.Seek(0, System.IO.SeekOrigin.Begin);
-            _stream.Read(buffer, 0, (int)_stream.Length);
-            _stream.Seek(currentOffset, System.IO.SeekOrigin.Begin);
-
-            return buffer;
         }
 
         #region Свойства 1C
@@ -292,57 +294,51 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         [ContextMethod("ПолучитьИмяФайлаТела", "GetBodyFileName")]
         public IValue GetBodyFileName()
         {
-            if ((_stream as System.IO.FileStream) == null)
-                return null;
+            if ((_bodyStream as System.IO.FileStream) == null)
+                return ValueFactory.Create();
             else
-                return ValueFactory.Create(((System.IO.FileStream)_stream).Name);
+                return ValueFactory.Create(((System.IO.FileStream)_bodyStream).Name);
         }
 
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
         public BinaryDataContext ПолучитьТелоКакДвоичныеДанные()
         {
-            if ((_stream as System.IO.MemoryStream) == null)
+            if ((_bodyStream as System.IO.MemoryStream) == null)
                 return null;
             else
-            {
-                return new BinaryDataContext(GetBytesFromStream());
-            }
+                return new BinaryDataContext(((System.IO.MemoryStream)_bodyStream).GetBuffer());
         }
 
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
         public GenericStream GetBodyAsStream()
         {
-            if (_stream == null)
-                _stream = new System.IO.MemoryStream();
-                
-            return new GenericStream(_stream);
+            return new GenericStream(_bodyStream);
         }
 
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
         public IValue GetBodyAsString()
         {
-            if ((_stream as System.IO.MemoryStream) == null )
+            if ((_bodyStream as System.IO.MemoryStream) == null)
                 return ValueFactory.Create();
             else
             {
-                byte[] buffer = GetBytesFromStream();
                 // Выяснено экспериментальным путем, используется UTF8 (8.3.10.2650)
-                return ValueFactory.Create(System.Text.Encoding.UTF8.GetString(buffer));
+                return ValueFactory.Create(System.Text.Encoding.UTF8.GetString(((System.IO.MemoryStream)_bodyStream).GetBuffer()));
             }
         }
 
         [ContextMethod("УстановитьИмяФайлаТела", "SetBodyFileName")]
         public void SetBodyFileName(IValue fileName)
         {
-            _stream = new System.IO.FileStream(fileName.AsString(), System.IO.FileMode.Open, System.IO.FileAccess.Read);
+            _bodyStream = new System.IO.FileStream(fileName.AsString(), System.IO.FileMode.Open, System.IO.FileAccess.Read);
         }
 
         [ContextMethod("УстановитьТелоИзДвоичныхДанных", "SetBodyFromBinaryData")]
         public void SetBodyFromBinaryData(BinaryDataContext binaryData)
         {
-            _stream = new System.IO.MemoryStream();
-            _stream.Write(binaryData.Buffer, 0, binaryData.Buffer.Length);
-            _stream.Seek(0, System.IO.SeekOrigin.Begin);
+            _bodyStream = new System.IO.MemoryStream();
+            _bodyStream.Write(binaryData.Buffer, 0, binaryData.Buffer.Length);
+            _bodyStream.Seek(0, System.IO.SeekOrigin.Begin);
         }
 
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
@@ -356,32 +352,11 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             System.Text.Encoding enc = System.Text.Encoding.UTF8;
             if (encoding != null)
                 enc = TextEncodingEnum.GetEncoding(encoding);
-            else
-            {
-                string headerString = _headers.Retrieve(ValueFactory.Create("Content-Type")).AsString();
-                  
-                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("charset=([^\\\"']+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                string charsetString = regex.Match(headerString).Value;
 
-                if (charsetString != "")
-                {
-                    // Что-то нашли
-                    try
-                    {
-                        //"charset=Кодировка" -> "Кодировка"
-                        enc = TextEncodingEnum.GetEncodingByName(charsetString.Substring(8));
-                    }
-                    catch
-                    {
-                        // что то не так, осталась UTF8 
-                    }
-                }
-            }
-
-            _stream = new System.IO.MemoryStream();
+            _bodyStream = new System.IO.MemoryStream();
             byte[] buffer = enc.GetBytes(str);
-            _stream.Write(buffer, 0, buffer.Length);
-            _stream.Seek(0, System.IO.SeekOrigin.Begin);
+            _bodyStream.Write(buffer, 0, buffer.Length);
+            _bodyStream.Seek(0, System.IO.SeekOrigin.Begin);
         }
 
         [ScriptConstructor(Name = "По коду состояния, причине и заголовкам")]
@@ -400,64 +375,6 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             return response;
         }
 
-        #endregion
-    }
-
-    [ContextClass("HTTPСервисКонтекст", "HTTPServiceContext")]
-    public class HTTPServiceContext : AutoContext<HTTPServiceContext>
-    {
-        System.Web.HttpContext context;
-
-        HTTPServiceRequestImpl request;
-        HTTPServiceResponseImpl response;
-
-        public HTTPServiceContext(System.Web.HttpContext ctx)
-        {
-            context = ctx;
-            request = new HTTPServiceRequestImpl(context);
-            response = new HTTPServiceResponseImpl();
-        }
-
-        public HTTPServiceContext()
-        {
-            context = null;
-            request = null;
-            response = null;
-        }
-
-        public void SetHTTPContext(System.Web.HttpContext ctx)
-        {
-            context = ctx;
-            request = new HTTPServiceRequestImpl(context);
-            response = new HTTPServiceResponseImpl();
-        }
-
-        #region Свойства для 1C
-
-        [ContextProperty("Запрос", "Request")]
-        public HTTPServiceRequestImpl Request
-        {
-            get
-            {
-                return request;
-            }
-        }
-
-        [ContextProperty("Ответ", "Response")]
-        public HTTPServiceResponseImpl Response
-        {
-            get
-            {
-                return response;
-            }
-            set
-            {
-                response = value;
-            }
-        }
-        #endregion
-
-        #region Функции 1С
         #endregion
     }
 }
