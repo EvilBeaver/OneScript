@@ -2,20 +2,36 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
-  </ItemGroup>
   <ItemGroup />
   <PropertyGroup />
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
     <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner/"</PostBuildEvent>
     <AssemblyName>ScriptEngine</AssemblyName>
-    <RootNamespace>ScriptEngine</RootNamespace>
+    <AssemblyDescription>1C (BSL) language runtime</AssemblyDescription>
+	<RootNamespace>ScriptEngine</RootNamespace>
+	
+	<Version>1.0.$(ReleaseNumber).$(BuildNumber)</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <Description>1C (BSL) language runtime</Description>
+    <Copyright>Copyright (c) 2017 EvilBeaver</Copyright>
+	
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <PackageId>OneScript</PackageId>
+    <PackageVersion>1.0.$(ReleaseNumber)</PackageVersion>
+	<PackageAuthors>OneScript OpenSource Community</PackageAuthors>
+    <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
+	<PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
+    <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageDescription>Core Runtime Engine for 1Script</PackageDescription>
+    <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
+    <PackageTags>BSL 1C 1Script OneScript</PackageTags>
+	
+  </PropertyGroup>
+  
 </Project>
