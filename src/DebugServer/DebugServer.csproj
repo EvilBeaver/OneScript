@@ -5,6 +5,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	<OutputType>Exe</OutputType>
 	<StartupObject>DebugServer.Program</StartupObject>
+	<Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

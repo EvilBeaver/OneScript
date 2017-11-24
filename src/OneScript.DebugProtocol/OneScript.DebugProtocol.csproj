@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.ServiceModel" />

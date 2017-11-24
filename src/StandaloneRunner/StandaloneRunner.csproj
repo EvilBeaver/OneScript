@@ -4,6 +4,7 @@
     <TargetFramework>net452</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Platforms>AnyCPU;x86</Platforms>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">

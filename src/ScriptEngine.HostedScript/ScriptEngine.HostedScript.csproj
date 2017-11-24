@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.9.3" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-	<PackageReference Condition="'$TargetFramework' == 'net452'" Include="NETStandard.Library.NETFramework" Version="2.0.0-preview2-25405-01"/>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
