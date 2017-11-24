@@ -101,7 +101,10 @@ namespace OneScript.ASPNETHandler
                 }
 
                 if (response.BodyStream != null)
-                    context.Response.OutputStream.CopyTo(response.BodyStream);
+                {
+                    response.BodyStream.Seek(0, SeekOrigin.Begin);
+                    response.BodyStream.CopyTo(context.Response.OutputStream);
+                }
 
             }
             catch (ScriptInterruptionException e)
