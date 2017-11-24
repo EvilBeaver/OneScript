@@ -43,6 +43,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ASPNETHandler.cs" />
+    <Compile Include="HTTPServiceContext.cs" />
+    <Compile Include="HTTPServiceRequest.cs" />
+    <Compile Include="HTTPServiceResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

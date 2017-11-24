@@ -39,6 +39,7 @@ namespace OneScript.ASPNETHandler
         {
             _hostedScript = new HostedScriptEngine();
             _hostedScript.Initialize();
+            _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
         }
 
         public void ProcessRequest(HttpContext context)
