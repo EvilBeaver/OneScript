@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HTTPServices", "ASPNETHandl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoEnumerable", "DemoEnumerable\DemoEnumerable.csproj", "{1D2F7D4A-FA55-400D-828A-3B2A4DF69B57}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebApp", "TestWebApp\TestWebApp.csproj", "{6DE97986-8304-45AE-BD47-63A5563F9C3A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,14 @@ Global
 		{1D2F7D4A-FA55-400D-828A-3B2A4DF69B57}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1D2F7D4A-FA55-400D-828A-3B2A4DF69B57}.Release|x86.ActiveCfg = Release|Any CPU
 		{1D2F7D4A-FA55-400D-828A-3B2A4DF69B57}.Release|x86.Build.0 = Release|Any CPU
+		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Debug|x86.Build.0 = Debug|Any CPU
+		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Release|x86.ActiveCfg = Release|Any CPU
+		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
