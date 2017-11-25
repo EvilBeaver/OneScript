@@ -25,6 +25,7 @@ namespace OneScript.ASPNETHandler
     {
         HostedScriptEngine _hostedScript;
         static bool _cachingEnabled;
+        //static
 
         public bool IsReusable
         {

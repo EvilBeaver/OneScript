@@ -49,6 +49,15 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         FixedMapImpl _queryOptions;
 
         #region Свойства 1C
+        [ContextProperty("Контекст", "Context")]
+        public HTTPServiceContextImpl Context
+        {
+            get
+            {
+                return new HTTPServiceContextImpl(_context);
+            }
+        }
+
 
         [ContextProperty("HTTPМетод", "HTTPMethod")]
         public string HTTPMethod

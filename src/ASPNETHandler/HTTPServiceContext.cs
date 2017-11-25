@@ -19,7 +19,32 @@ using ScriptEngine.HostedScript.Library.Binary;
 namespace ScriptEngine.HostedScript.Library.HTTPService
 {
     [ContextClass("HTTPСервисКонтекст", "HTTPServiceContext")]
-    class HTTPServiceContextImpl
+    public class HTTPServiceContextImpl : AutoContext<HTTPServiceContextImpl>
     {
+        System.Web.HttpContext _context;
+
+        public HTTPServiceContextImpl(System.Web.HttpContext context)
+        {
+            _context = context;
+        }
+
+        [ContextProperty("ФизическийПуть", "PhysicalPath")]
+        public IValue PhysicalPath
+        {
+            get
+            {
+                return ValueFactory.Create(_context.Request.PhysicalPath);
+            }
+        }
+
+        [ContextProperty("АдресКлиента", "UserHostAddress")]
+        public IValue UserHostAddress
+        {
+            get
+            {
+                return ValueFactory.Create(_context.Request.UserHostAddress);
+            }
+        }
+
     }
 }
