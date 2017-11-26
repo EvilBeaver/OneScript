@@ -42,11 +42,12 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
     [ContextClass("HTTPСервисЗапрос", "HTTPServiceRequest")]
     public class HTTPServiceRequestImpl : AutoContext<HTTPServiceRequestImpl>
     {
-        System.Web.HttpContext _context;
+        System.Web.HttpContext _httpContext;
 
         FixedMapImpl _headers;
         FixedMapImpl _urlParams;
         FixedMapImpl _queryOptions;
+        HTTPServiceContextImpl _context; 
 
         #region Свойства 1C
         [ContextProperty("Контекст", "Context")]
@@ -54,7 +55,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return new HTTPServiceContextImpl(_context);
+                return _context;
             }
         }
 
@@ -64,7 +65,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return _context.Request.HttpMethod.ToUpper();
+                return _httpContext.Request.HttpMethod.ToUpper();
             }
         }
 
@@ -73,7 +74,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return _context.Request.Url.Host;
+                return _httpContext.Request.Url.Host;
             }
         }
 
@@ -91,7 +92,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             get
             {
-                return _context.Request.FilePath;
+                return _httpContext.Request.FilePath;
             }
         }
 
@@ -119,7 +120,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
         public BinaryDataContext GetBodyAsBinaryData()
         {
-            System.IO.Stream str = _context.Request.InputStream;
+            System.IO.Stream str = _httpContext.Request.InputStream;
             int bytes_count = Convert.ToInt32(str.Length);
             byte[] buffer = new byte[bytes_count];
             str.Seek(0, System.IO.SeekOrigin.Begin);
@@ -139,7 +140,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             else
             {
                 System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("charset=([^\\\"']+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                string charsetString = regex.Match(_context.Request.ContentType).Value;
+                string charsetString = regex.Match(_httpContext.Request.ContentType).Value;
 
                 if (charsetString != "")
                 {
@@ -156,7 +157,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
                 }
             }
 
-            System.IO.Stream str = _context.Request.InputStream;
+            System.IO.Stream str = _httpContext.Request.InputStream;
             int bytes_count = Convert.ToInt32(str.Length);
             byte[] buffer = new byte[bytes_count];
 
@@ -170,21 +171,21 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
         public GenericStream GetBodyAsStream()
         {
-            return new GenericStream(_context.Request.InputStream);
+            return new GenericStream(_httpContext.Request.InputStream);
         }
 
         #endregion
 
         public HTTPServiceRequestImpl(System.Web.HttpContext ctx)
         {
-            _context = ctx;
+            _httpContext = ctx;
             // Инициализируем объект для 1С
             // Заголовки
             MapImpl headers = new MapImpl();
 
-            for (int i = 0; i < _context.Request.Headers.Count; i++)
-                headers.Insert(ValueFactory.Create(_context.Request.Headers.GetKey(i))
-                              , ValueFactory.Create(_context.Request.Headers.Get(i))
+            for (int i = 0; i < _httpContext.Request.Headers.Count; i++)
+                headers.Insert(ValueFactory.Create(_httpContext.Request.Headers.GetKey(i))
+                              , ValueFactory.Create(_httpContext.Request.Headers.Get(i))
                               );
 
             this._headers = new FixedMapImpl(headers);
@@ -195,12 +196,14 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             // Параметры запроса
             MapImpl queryOptions = new MapImpl();
 
-            for (int i = 0; i < _context.Request.Params.Count; i++)
-                queryOptions.Insert(ValueFactory.Create(_context.Request.Params.GetKey(i))
-                                   , ValueFactory.Create(_context.Request.Params.Get(i))
+            for (int i = 0; i < _httpContext.Request.Params.Count; i++)
+                queryOptions.Insert(ValueFactory.Create(_httpContext.Request.Params.GetKey(i))
+                                   , ValueFactory.Create(_httpContext.Request.Params.Get(i))
                                    );
 
             _queryOptions = new FixedMapImpl(queryOptions);
+
+            _context = new HTTPServiceContextImpl(_httpContext);
         }
     }
 }

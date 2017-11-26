@@ -93,7 +93,7 @@ namespace OneScript.ASPNETHandler
 
                     foreach (ScriptEngine.HostedScript.Library.KeyAndValueImpl ch in response.Headers)
                     {
-                        context.Response.Headers.Add(ch.Key.AsString(), ch.Value.AsString());
+                        context.Response.AddHeader(ch.Key.AsString(), ch.Value.AsString());
                     }
                 }
 
