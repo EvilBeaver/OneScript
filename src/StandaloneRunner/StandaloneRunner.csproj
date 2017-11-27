@@ -24,8 +24,8 @@
   <ItemGroup>
     <EmbeddedResource Include="ScriptEngine.dll" />
     <EmbeddedResource Include="ScriptEngine.HostedScript.dll" />
-	<EmbeddedResource Include="Ionic.Zip.dll" />
-	<EmbeddedResource Include="Newtonsoft.Json.dll" />
+    <EmbeddedResource Include="Ionic.Zip.dll" />
+    <EmbeddedResource Include="Newtonsoft.Json.dll" />
   </ItemGroup>
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)StandaloneRunner.exe" "$(SolutionDir)oscript\" /Y /E /D</PostBuildEvent>
