@@ -22,10 +22,12 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
     public class HTTPServiceContextImpl : AutoContext<HTTPServiceContextImpl>
     {
         System.Web.HttpContext _context;
+        SessionStateImpl _sessionState;
 
         public HTTPServiceContextImpl(System.Web.HttpContext context)
         {
             _context = context;
+            _sessionState = new SessionStateImpl(_context);
         }
 
         [ContextProperty("ФизическийПуть", "PhysicalPath")]
@@ -43,6 +45,15 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             get
             {
                 return ValueFactory.Create(_context.Request.UserHostAddress);
+            }
+        }
+
+        [ContextProperty("Сессия", "Session")]
+        public SessionStateImpl Session
+        {
+            get
+            {
+                return _sessionState;
             }
         }
 

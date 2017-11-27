@@ -21,7 +21,7 @@ using ScriptEngine.HostedScript;
 
 namespace OneScript.ASPNETHandler
 {
-    public class ASPNETHandler : IHttpHandler
+    public class ASPNETHandler : IHttpHandler, System.Web.SessionState.IRequiresSessionState
     {
         HostedScriptEngine _hostedScript;
         // Разрешает или запрещает кэширование исходников *.os В Linux должно быть false иначе после изменений исходника старая версия будет в кэше
