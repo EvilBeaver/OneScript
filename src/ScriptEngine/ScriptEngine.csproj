@@ -37,4 +37,8 @@
 
   </PropertyGroup>
   
+  <Target Name="AfterBuild" Condition="'$(TargetFramework)' == 'net452'">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)StandaloneRunner\"/>
+  </Target>
+  
 </Project>
