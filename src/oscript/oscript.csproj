@@ -26,4 +26,9 @@
   <ItemGroup>
     <EmbeddedResource Include="StandaloneRunner.exe" />
   </ItemGroup>
+
+  <Target Name="CleanExternals" AfterTargets="Clean">
+    <Delete Files="@(EmbeddedResource)" />
+  </Target>
+
 </Project>

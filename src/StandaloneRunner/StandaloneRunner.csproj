@@ -31,6 +31,10 @@
     <EmbeddedResource Include="Newtonsoft.Json.dll" />
   </ItemGroup>
 
+  <Target Name="CleanExternals" AfterTargets="Clean">
+    <Delete Files="@(EmbeddedResource)" />
+  </Target>
+  
   <Target Name="CopyToOscript" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
     <Message Text="Copying StandaloneRunner output" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)oscript\" />
