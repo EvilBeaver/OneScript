@@ -5,6 +5,9 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Platforms>AnyCPU;x86</Platforms>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject>StandaloneRunner.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -27,11 +30,10 @@
     <EmbeddedResource Include="Ionic.Zip.dll" />
     <EmbeddedResource Include="Newtonsoft.Json.dll" />
   </ItemGroup>
-  <PropertyGroup>
-    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)StandaloneRunner.exe" "$(SolutionDir)oscript\" /Y /E /D</PostBuildEvent>
-    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)StandaloneRunner.exe" "$(SolutionDir)oscript/"</PostBuildEvent>
-    <ApplicationIcon />
-    <OutputType>Exe</OutputType>
-    <StartupObject />
-  </PropertyGroup>
+
+  <Target Name="CopyToOscript" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+    <Message Text="Copying StandaloneRunner output" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)oscript\" />
+  </Target>
+  
 </Project>
