@@ -2,31 +2,50 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.9.3" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">19</ReleaseNumber>
+    <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
+    <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyName>ScriptEngine.HostedScript</AssemblyName>
+    <AssemblyDescription>1C (BSL) language runtime</AssemblyDescription>
+    <RootNamespace>ScriptEngine.HostedScript</RootNamespace>
+
+    <Version>1.0.$(ReleaseNumber).$(BuildNumber)</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <Description>1C (BSL) language runtime</Description>
+    <Copyright>Copyright (c) 2017 EvilBeaver</Copyright>
+
+  </PropertyGroup>
+  
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
-	<None Include="oscript.cfg">
+	  <None Include="oscript.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  
   <ItemGroup>
-    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+    <Folder Include="Properties\" />
   </ItemGroup>
-  <PropertyGroup>
-    <TargetFramework Condition=" '$(TargetFramework)' == '' ">net452</TargetFramework>
-    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' And '$(TargetFramework)' == 'net452'">xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
-xcopy "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
-xcopy "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
-    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner"
-cp -f "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner"
-cp -f "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner"</PostBuildEvent>
-  </PropertyGroup>
+  
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+    <Message Text="Copying StandaloneRunner resources" />
+    <ItemGroup>
+      <CopyToStandalone Include="$(TargetPath)" />
+      <CopyToStandalone Include="$(TargetDir)Ionic.Zip.dll" />
+      <CopyToStandalone Include="$(TargetDir)Newtonsoft.Json.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CopyToStandalone)" DestinationFolder="$(SolutionDir)StandaloneRunner\" />
+  </Target>
+  
 </Project>
