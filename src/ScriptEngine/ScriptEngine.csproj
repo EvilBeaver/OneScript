@@ -4,16 +4,19 @@
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
-  <ItemGroup />
-  <PropertyGroup />
+  
   <PropertyGroup>
-    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
-    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner/"</PostBuildEvent>
+    <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">19</ReleaseNumber>
+    <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
+    <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <AssemblyName>ScriptEngine</AssemblyName>
     <AssemblyDescription>1C (BSL) language runtime</AssemblyDescription>
-	<RootNamespace>ScriptEngine</RootNamespace>
+    <RootNamespace>ScriptEngine</RootNamespace>
 	
-	<Version>1.0.$(ReleaseNumber).$(BuildNumber)</Version>
+    <Version>1.0.$(ReleaseNumber).$(BuildNumber)</Version>
     <FileVersion>$(Version)</FileVersion>
     <Description>1C (BSL) language runtime</Description>
     <Copyright>Copyright (c) 2017 EvilBeaver</Copyright>
@@ -23,15 +26,15 @@
   <PropertyGroup>
     <PackageId>OneScript</PackageId>
     <PackageVersion>1.0.$(ReleaseNumber)</PackageVersion>
-	<PackageAuthors>OneScript OpenSource Community</PackageAuthors>
+    <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
     <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
-	<PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
+    <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
     <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageDescription>Core Runtime Engine for 1Script</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
-	
+
   </PropertyGroup>
   
 </Project>
