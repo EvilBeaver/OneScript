@@ -9,6 +9,9 @@
     <Platforms>x86</Platforms>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <DocumentationFile>bin\x86\Debug\net452\oscript.xml</DocumentationFile>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <Reference Include="System.ServiceModel" />

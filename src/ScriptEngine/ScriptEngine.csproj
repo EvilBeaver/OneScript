@@ -38,6 +38,10 @@
 
   </PropertyGroup>
   
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net452|AnyCPU'">
+    <DocumentationFile>bin\Release\net452\ScriptEngine.xml</DocumentationFile>
+  </PropertyGroup>
+  
   <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
     <Message Text="Copying StandaloneRunner resources" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)StandaloneRunner\" />
