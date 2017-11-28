@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
 	
 	<PropertyGroup>
 		<ReleaseNumber Condition="'$(ReleaseNumber)' == ''">19</ReleaseNumber>
@@ -13,13 +13,13 @@
 	<Target Name="Clean">
 	
 		<ItemGroup>
-			<TestsResults Include="$(MSBuildProjectDirectory)/tests/*.os.xml"/>
+			<TestsResults Include="$(MSBuildProjectDirectory)/tests/*.os.xml" />
 		</ItemGroup>
 	
-		<Delete Files="@(TestsResults)"/>
-		<DeleteTree Directories="$(ArtifactsRoot)/**/*" Condition="Exists($(ArtifactsRoot))"/>
+		<Delete Files="@(TestsResults)" />
+		<DeleteTree Directories="$(ArtifactsRoot)/**/*" Condition="Exists($(ArtifactsRoot))" />
 		
-		<MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration)"/>
+		<MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration)" />
 		
 	</Target>
 	
@@ -31,13 +31,13 @@
 			</ProjectsToBuild>
 		</ItemGroup>
 		
-		<MSBuild Projects="@(ProjectsToBuild)" Targets="Build"/>
+		<MSBuild Projects="@(ProjectsToBuild)" Targets="Build" />
 			
 	</Target>
 	
 	<Target Name="PrepareArtifactsRoot">
-		<MakeDir Directories="$(ArtifactsRoot)"/>
-		<MakeDir Directories="$(ArtifactsRoot)/tmp"/>
+		<MakeDir Directories="$(ArtifactsRoot)" />
+		<MakeDir Directories="$(ArtifactsRoot)/tmp" />
 	</Target>
 	
 	<Target Name="CopyBinFiles" DependsOnTargets="Compile;PrepareArtifactsRoot">
@@ -45,18 +45,18 @@
 			<TempFolder>$(ArtifactsRoot)/tmp</TempFolder>
 			<BinFolder>$(TempFolder)/bin</BinFolder>
 		</PropertyGroup>
-		<MakeDir Directories="$(BinFolder)"/>
+		<MakeDir Directories="$(BinFolder)" />
 		
 		<ItemGroup>
-			<BuiltProjects Include="oscript"/>
-			<BuiltProjects Include="TestApp"/>
-			<ExcludedArtifacts Include="*.pdb"/>
-			<ExcludedArtifacts Include="*.xml"/>
-			<SourceFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**"/>
+			<BuiltProjects Include="oscript" />
+			<BuiltProjects Include="TestApp" />
+			<ExcludedArtifacts Include="*.pdb" />
+			<ExcludedArtifacts Include="*.xml" />
+			<SourceFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**"
+                   Exclude="*.pdb"/>
 		</ItemGroup>
 		
-		<Copy SourceFiles="@(SourceFiles)"
-			DestinationFolder="$(BinFolder)"/>
+		<Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(BinFolder)" />
 		
 	</Target>
 	
