@@ -34,10 +34,6 @@
     </None>
   </ItemGroup>
   
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  
   <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
     <Message Text="Copying StandaloneRunner resources" />
     <ItemGroup>
