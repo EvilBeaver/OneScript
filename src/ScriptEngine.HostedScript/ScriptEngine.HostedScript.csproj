@@ -33,6 +33,21 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <PropertyGroup>
+    <PackageId>OneScript.StandardLibrary</PackageId>
+    <PackageVersion>1.0.$(ReleaseNumber)</PackageVersion>
+    <Title>OneScript Main Client Libraries</Title>
+    <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
+    <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
+    <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
+    <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageDescription>Standard class libraries for 1Script - collections, network, filesystem etc...</PackageDescription>
+    <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
+    <PackageTags>BSL 1C 1Script OneScript</PackageTags>
+
+  </PropertyGroup>
   
   <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
     <Message Text="Copying StandaloneRunner resources" />
