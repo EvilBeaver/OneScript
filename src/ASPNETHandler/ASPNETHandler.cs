@@ -21,10 +21,15 @@ using ScriptEngine.HostedScript;
 
 namespace OneScript.ASPNETHandler
 {
-    public class ASPNETHandler : IHttpHandler
+    public class ASPNETHandler : IHttpHandler, System.Web.SessionState.IRequiresSessionState
     {
         HostedScriptEngine _hostedScript;
+        // Разрешает или запрещает кэширование исходников *.os В Linux должно быть false иначе после изменений исходника старая версия будет в кэше
+        // web.config -> <appSettings> -> <add key="CachingEnabled" value="true"/>
         static bool _cachingEnabled;
+        // Список дополнительных сборок, которые надо приаттачить к движку. Могут быть разные расширения
+        // web.config -> <appSettings> -> <add key="ASPNetHandler" value="attachAssembly"/> Сделано так для простоты. Меньше настроек - дольше жизнь :)
+        static System.Collections.Generic.List<System.Reflection.Assembly> _assembliesForAttaching;
 
         public bool IsReusable
         {
@@ -33,12 +38,39 @@ namespace OneScript.ASPNETHandler
         }
         static ASPNETHandler()
         {
-            _cachingEnabled = (System.Web.Configuration.WebConfigurationManager.AppSettings["CachingEnabled"] == "true");
+            _assembliesForAttaching = new List<System.Reflection.Assembly>();
+
+            System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
+                
+            _cachingEnabled = (appSettings["cachingEnabled"] == "true");
+
+            foreach (string assemblyName in appSettings.AllKeys)
+            {
+                if (appSettings[assemblyName] == "attachAssembly")
+                {
+                    try
+                    {
+                        _assembliesForAttaching.Add(System.Reflection.Assembly.Load(assemblyName));
+                    }
+                    catch {/*не загрузилась, ничего не делаем*/ }
+                }
+            }
         }
+
         public ASPNETHandler()
         {
             _hostedScript = new HostedScriptEngine();
             _hostedScript.Initialize();
+            _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            // Аттачим доп сборки. По идее должны лежать в Bin
+            foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
+            {
+                try
+                {
+                    _hostedScript.AttachAssembly(assembly);
+                }
+                catch { /*что-то не так, ничего не делаем*/}
+            }
         }
 
         public void ProcessRequest(HttpContext context)
@@ -91,7 +123,7 @@ namespace OneScript.ASPNETHandler
 
                     foreach (ScriptEngine.HostedScript.Library.KeyAndValueImpl ch in response.Headers)
                     {
-                        context.Response.Headers.Add(ch.Key.AsString(), ch.Value.AsString());
+                        context.Response.AddHeader(ch.Key.AsString(), ch.Value.AsString());
                     }
                 }
 
@@ -101,7 +133,10 @@ namespace OneScript.ASPNETHandler
                 }
 
                 if (response.BodyStream != null)
-                    context.Response.OutputStream.CopyTo(response.BodyStream);
+                {
+                    response.BodyStream.Seek(0, SeekOrigin.Begin);
+                    response.BodyStream.CopyTo(context.Response.OutputStream);
+                }
 
             }
             catch (ScriptInterruptionException e)
