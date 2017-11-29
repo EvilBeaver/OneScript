@@ -127,6 +127,11 @@ namespace ScriptEngine
                         SymbolicName = varDef.Identifier,
                         Index = varDef.Index
                     });
+                    compiledImage.Properties.Add(new PropertyDescriptor()
+                    {
+                        Signature = new VariableInfo(varDef.Identifier, varDef.Index),
+                        Index = varDef.Index
+                    });
                 }
             }
 

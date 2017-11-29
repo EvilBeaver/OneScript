@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace ScriptEngine.Machine
@@ -276,6 +277,25 @@ namespace ScriptEngine.Machine
         public int Index;
         public string Identifier;
         public SymbolType Type;
+        
+        public string Alias;
+        public bool CanGet;
+        public bool CanSet;
+        
+        public AnnotationDefinition[] Annotations;
+
+        public VariableInfo(string name, int index = -1)
+        {
+            Index = index;
+            Identifier = name;
+            Alias = null;
+            CanGet = true;
+            CanSet = true;
+            Annotations = null;
+            Type = SymbolType.Variable;
+        }
+        
+        public int AnnotationsCount => Annotations?.Length ?? 0;
     }
 
     struct VariableBinding

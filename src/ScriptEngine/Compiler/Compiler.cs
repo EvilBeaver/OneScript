@@ -173,11 +173,6 @@ namespace ScriptEngine.Compiler
             return result;
         }
 
-        private void ClearAnnotations()
-        {
-            _annotations.Clear();
-        }
-
         private void BuildModule()
         {
             NextToken();
@@ -313,6 +308,7 @@ namespace ScriptEngine.Compiler
                     if (IsUserSymbol(ref _lastExtractedLexem))
                     {
                         var symbolicName = _lastExtractedLexem.Content;
+                        var annotations = ExtractAnnotations();
                         var definition = _ctx.DefineVariable(symbolicName);
                         if (_inMethodScope)
                         {
@@ -337,6 +333,18 @@ namespace ScriptEngine.Compiler
                             _module.ExportedProperties.Add(new ExportedSymbol()
                             {
                                 SymbolicName = symbolicName,
+                                Index = definition.CodeIndex
+                            });
+                            _module.Properties.Add(new PropertyDescriptor()
+                            {
+                                Signature = new VariableInfo()
+                                {
+                                    Identifier = symbolicName,
+                                    Annotations = annotations,
+                                    CanGet = true,
+                                    CanSet = true,
+                                    Index = definition.CodeIndex
+                                },
                                 Index = definition.CodeIndex
                             });
                             NextToken();

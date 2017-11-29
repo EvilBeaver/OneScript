@@ -36,6 +36,11 @@ namespace ScriptEngine.Machine
 
     }
 
+    public interface IRuntimeContextWithProperties : IRuntimeContextInstance
+    {
+        VariableInfo GetPropertyInfo(int propNum);
+    }
+
     public static class RCIHelperExtensions
     {
         public static IEnumerable<MethodInfo> GetMethods(this IRuntimeContextInstance context)
@@ -51,6 +56,10 @@ namespace ScriptEngine.Machine
 
         public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextInstance context)
         {
+            if (context is IRuntimeContextWithProperties)
+            {
+                return ((IRuntimeContextWithProperties) context).GetProperties();
+            }
             VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
             for (int i = 0; i < infos.Length; i++)
             {
@@ -64,6 +73,18 @@ namespace ScriptEngine.Machine
 
             return infos;
         }
+
+        public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextWithProperties context)
+        {
+            VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
+            for (int i = 0; i < infos.Length; i++)
+            {
+                infos[i] = context.GetPropertyInfo(i);
+            }
+
+            return infos;
+        }
+
     }
 
 }

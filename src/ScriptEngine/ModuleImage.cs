@@ -27,6 +27,7 @@ namespace ScriptEngine
             ExportedProperties = new List<ExportedSymbol>();
             ExportedMethods = new List<ExportedSymbol>();
             Variables = new VariablesFrame();
+            Properties = new List<PropertyDescriptor>();
         }
 
         public VariablesFrame Variables { get; }
@@ -35,6 +36,7 @@ namespace ScriptEngine
         public IList<SymbolBinding> VariableRefs { get; set; }
         public IList<SymbolBinding> MethodRefs { get; set; }
         public IList<MethodDescriptor> Methods { get; set; }
+        public IList<PropertyDescriptor> Properties { get; set; }
         public IList<ConstDefinition> Constants { get; set; }
         public IList<ExportedSymbol> ExportedProperties { get; set; }
         public IList<ExportedSymbol> ExportedMethods { get; set; }
@@ -62,6 +64,13 @@ namespace ScriptEngine
         public MethodInfo Signature;
         public VariablesFrame Variables;
         public int EntryPoint;
+    }
+
+    [Serializable]
+    struct PropertyDescriptor
+    {
+        public VariableInfo Signature;
+        public int Index;
     }
 
     [Serializable]

@@ -7,12 +7,11 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable
+    public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable, IRuntimeContextWithProperties
     {
         private readonly LoadedModule _module;
         private MachineInstance _machine;
@@ -352,6 +351,18 @@ namespace ScriptEngine.Machine.Contexts
                 retValue = CallOwnFunction(methodNumber, arguments);
             }
             
+        }
+
+        public VariableInfo GetPropertyInfo(int propNum)
+        {
+            if (PropDefinedInScript(propNum))
+            {
+                return _module.Properties[propNum - VARIABLE_COUNT].Signature;
+            }
+            else
+            {
+                return new VariableInfo(GetPropName(propNum), propNum);
+            }
         }
 
         public override int GetPropCount()
