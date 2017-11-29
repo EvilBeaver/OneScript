@@ -40,23 +40,31 @@
 		<MakeDir Directories="$(ArtifactsRoot)/tmp" />
 	</Target>
 	
-	<Target Name="CopyBinFiles" DependsOnTargets="Compile;PrepareArtifactsRoot">
+	<Target Name="PrepareDistributionContent" DependsOnTargets="Compile;PrepareArtifactsRoot">
 		<PropertyGroup>
 			<TempFolder>$(ArtifactsRoot)/tmp</TempFolder>
 			<BinFolder>$(TempFolder)/bin</BinFolder>
+			<LibFolder>$(TempFolder)/lib</LibFolder>
+			<ExamplesFolder>$(TempFolder)/examples</ExamplesFolder>
 		</PropertyGroup>
 		<MakeDir Directories="$(BinFolder)" />
 		
 		<ItemGroup>
 			<BuiltProjects Include="oscript" />
 			<BuiltProjects Include="TestApp" />
-			<ExcludedArtifacts Include="*.pdb" />
-			<ExcludedArtifacts Include="*.xml" />
-			<SourceFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**"
-                   Exclude="*.pdb"/>
+			<ExcludedArtifacts Include="$(BinFolder)/*.pdb" />
+			<ExcludedArtifacts Include="$(BinFolder)/*.xml" />
+			
+			<BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**"/>
+			<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*" Exclude="$(MSBuildProjectDirectory)\oscript-library\**\*.git"/>
+			<ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
+			
 		</ItemGroup>
 		
-		<Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(BinFolder)" />
+		<Copy SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)" />
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
+		<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
+		<Delete Files="@(ExcludedArtifacts)"/>
 		
 	</Target>
 	
