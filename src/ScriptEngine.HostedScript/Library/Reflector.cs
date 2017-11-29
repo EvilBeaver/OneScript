@@ -228,6 +228,7 @@ namespace ScriptEngine.HostedScript.Library
             ValueTable.ValueTable Result = new ValueTable.ValueTable();
 
             var NameColumn = Result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
+            var AnnotationsColumn = Result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
 
             var SystemVarNames = new string[] { "этотобъект", "thisobject" };
 
@@ -237,6 +238,11 @@ namespace ScriptEngine.HostedScript.Library
 
                 ValueTableRow new_row = Result.Add();
                 new_row.Set(NameColumn, ValueFactory.Create(propInfo.Identifier));
+
+                if (propInfo.AnnotationsCount != 0)
+                {
+                    new_row.Set(AnnotationsColumn, CreateAnnotationTable(propInfo.Annotations));
+                }
             }
 
             return Result;
