@@ -138,6 +138,8 @@ namespace OneScript.ASPNETHandler
                     response.BodyStream.CopyTo(context.Response.OutputStream);
                 }
 
+                context.Response.Charset = response.ContentCharset;
+
             }
             catch (ScriptInterruptionException e)
             {

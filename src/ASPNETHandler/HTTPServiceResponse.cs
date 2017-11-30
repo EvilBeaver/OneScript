@@ -58,6 +58,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         ScriptEngine.HostedScript.Library.MapImpl _headers = new HostedScript.Library.MapImpl();
         string _reason = "";
         int _statusCode = 200;
+        string _contentCharset = Encoding.UTF8.WebName;
 
         System.IO.Stream _bodyStream = new System.IO.MemoryStream();
 
@@ -66,6 +67,14 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             get
             {
                 return _bodyStream;
+            }
+        }
+
+        public string ContentCharset
+        {
+            get
+            {
+                return _contentCharset;
             }
         }
 
@@ -179,6 +188,8 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             System.Text.Encoding enc = System.Text.Encoding.UTF8;
             if (encoding != null)
                 enc = TextEncodingEnum.GetEncoding(encoding);
+
+            _contentCharset = enc.WebName;
 
             _bodyStream = new System.IO.MemoryStream();
             byte[] buffer = enc.GetBytes(str);
