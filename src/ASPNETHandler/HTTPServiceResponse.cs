@@ -166,12 +166,14 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         [ContextMethod("УстановитьИмяФайлаТела", "SetBodyFileName")]
         public void SetBodyFileName(IValue fileName)
         {
+            _contentCharset = Encoding.UTF8.WebName;
             _bodyStream = new System.IO.FileStream(fileName.AsString(), System.IO.FileMode.Open, System.IO.FileAccess.Read);
         }
 
         [ContextMethod("УстановитьТелоИзДвоичныхДанных", "SetBodyFromBinaryData")]
         public void SetBodyFromBinaryData(BinaryDataContext binaryData)
         {
+            _contentCharset = Encoding.UTF8.WebName;
             _bodyStream = new System.IO.MemoryStream();
             _bodyStream.Write(binaryData.Buffer, 0, binaryData.Buffer.Length);
             _bodyStream.Seek(0, System.IO.SeekOrigin.Begin);
@@ -181,7 +183,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         public void SetBodyFromString(string str, IValue encoding = null, IValue useBOM = null)
         {
             // Получаем кодировку
-            // useBOM должен иметь тип ИспользованиеByteOrderMark он нереализован. Его не используем
+            // useBOM должен иметь тип ИспользованиеByteOrderMark он не реализован. Его не используем
             // Из синтаксис-помощника в режиме совместимости Использовать
             // Из синтаксис помощника если кодировка не задана используем UTF8
 
