@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.HostedScript
 {
@@ -57,7 +56,7 @@ namespace ScriptEngine.HostedScript
         {
             var code = engine.Loader.FromFile(processingScript);
             var compiler = engine.GetCompilerService();
-            compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
+            compiler.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);
             
             for (int i = 0; i < _methods.Count; i++)
             {
@@ -132,6 +131,10 @@ namespace ScriptEngine.HostedScript
         protected override int FindOwnProperty(string name)
         {
             if(StringComparer.OrdinalIgnoreCase.Compare(name, "ЭтотОбъект") == 0)
+            {
+                return 0;
+            }
+            if(StringComparer.OrdinalIgnoreCase.Compare(name, "ThisObject") == 0)
             {
                 return 0;
             }

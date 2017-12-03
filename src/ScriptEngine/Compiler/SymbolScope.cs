@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
@@ -73,34 +72,45 @@ namespace ScriptEngine.Compiler
             return _methodsNumbers.ContainsKey(name);
         }
 
-        public int DefineVariable(string name)
+        public int DefineVariable(string name, string alias = null)
         {
-            return DefineVariable(name, SymbolType.Variable);
+            return DefineVariable(name, alias, SymbolType.Variable);
         }
 
         public int DefineVariable(string name, SymbolType symbolType)
         {
-            if (!IsVarDefined(name))
-            {
+            return DefineVariable(name, null, symbolType);
+        }
 
-                var newIdx = _variables.Count;
-                _variableNumbers[name] = newIdx;
-
-                _variables.Add(new VariableInfo()
-                {
-                    Index = newIdx,
-                    Identifier = name,
-                    Type = symbolType
-                });
-
-                return newIdx;
-            }
-            else
+        public int DefineVariable(string name, string alias, SymbolType symbolType)
+        {
+            if (IsVarDefined(name))
             {
                 throw new InvalidOperationException($"Symbol already defined in the scope ({name})");
             }
-        }
+            if (!string.IsNullOrEmpty(alias) && IsVarDefined(alias))
+            {
+                throw new InvalidOperationException($"Symbol already defined in the scope ({alias})");
+            }
 
+            var newIdx = _variables.Count;
+            _variableNumbers[name] = newIdx;
+            if (!string.IsNullOrEmpty(alias))
+            {
+                _variableNumbers[alias] = newIdx;
+            }
+
+            _variables.Add(new VariableInfo()
+            {
+                Index = newIdx,
+                Identifier = name,
+                Alias = alias,
+                Type = symbolType
+            });
+
+            return newIdx;
+        }
+        
         public int DefineMethod(MethodInfo method)
         {
             if (!IsMethodDefined(method.Name))
