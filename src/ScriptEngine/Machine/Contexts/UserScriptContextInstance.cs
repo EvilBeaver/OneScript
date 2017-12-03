@@ -7,8 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -84,8 +82,8 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
         }
-
-        public void AddProperty(string name, IValue value)
+        
+        public void AddProperty(string name, string alias, IValue value)
         {
             if(_ownProperties == null)
             {
@@ -95,8 +93,17 @@ namespace ScriptEngine.Machine.Contexts
 
             var newIndex = _ownProperties.Count;
             _ownPropertyIndexes.Add(name, newIndex);
+            if (!string.IsNullOrEmpty(alias))
+            {
+                _ownPropertyIndexes.Add(alias, newIndex);
+            }
             _ownProperties.Add(value);
 
+        }
+
+        public void AddProperty(string name, IValue value)
+        {
+            AddProperty(name, null, value);
         }
 
         protected override int GetOwnMethodCount()

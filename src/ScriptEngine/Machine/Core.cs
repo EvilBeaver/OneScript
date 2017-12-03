@@ -253,6 +253,7 @@ namespace ScriptEngine.Machine
     {
         public int Index;
         public string Identifier;
+        public string Alias;
         public SymbolType Type;
     }
 
