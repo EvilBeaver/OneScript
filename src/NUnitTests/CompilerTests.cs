@@ -111,7 +111,7 @@ namespace NUnitTests
 			{
 				throwed = true;
 			}
-			Assert.IsTrue(throwed, "КонецФункции закрыл Если!!!");
+			Assert.IsTrue(throwed, "КонецЦикла закрыл Если!!!");
 		}
 
 		[Test]
@@ -131,7 +131,7 @@ namespace NUnitTests
 			{
 				throwed = true;
 			}
-			Assert.IsTrue(throwed, "КонецФункции закрыл Если!!!");
+			Assert.IsTrue(throwed, "КонецЕсли закрыл Пока!!!");
 		}
 	}
 }
