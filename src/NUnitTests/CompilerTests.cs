@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.IO;
 using NUnit.Framework;
+using ScriptEngine.Compiler;
 
 namespace NUnitTests
 {
@@ -70,6 +71,67 @@ namespace NUnitTests
 				КонецЕсли");
 
 			var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+		}
+		
+
+		[Test]
+		public void TestEndFunctionDoesNotEndIf()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Если Истина Тогда
+					Ф = 1
+				КонецФункции");
+
+			bool throwed = false;
+			try
+			{
+				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				throwed = true;
+			}
+			Assert.IsTrue(throwed, "КонецФункции закрыл Если!!!");
+		}
+
+		[Test]
+		public void TestEndDoDoesNotEndIf()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Если Истина Тогда
+					Ф = 1
+				КонецЦикла");
+
+			bool throwed = false;
+			try
+			{
+				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				throwed = true;
+			}
+			Assert.IsTrue(throwed, "КонецФункции закрыл Если!!!");
+		}
+
+		[Test]
+		public void TestEndIfDoesNotEndDo()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Пока Истина Цикл
+					Ф = 1
+				КонецЕсли");
+
+			bool throwed = false;
+			try
+			{
+				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				throwed = true;
+			}
+			Assert.IsTrue(throwed, "КонецФункции закрыл Если!!!");
 		}
 	}
 }
