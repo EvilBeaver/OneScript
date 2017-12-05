@@ -126,4 +126,14 @@
 		<Exec Command="$(InstallerStandardPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot;" />
 	</Target>
 	
+	<Target Name="CreateNuget">
+		<ItemGroup>
+			<NugetAbleProject Include="ScriptEngine"/>
+			<NugetAbleProject Include="ScriptEngine.HostedScript"/>
+		</ItemGroup>
+		
+		<MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot)"/>
+	
+	</Target>
+	
 </Project>

@@ -60,7 +60,7 @@
       <CopyToStandalone Include="$(TargetDir)Ionic.Zip.dll" />
       <CopyToStandalone Include="$(TargetDir)Newtonsoft.Json.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(CopyToStandalone)" DestinationFolder="$(SolutionDir)StandaloneRunner\" />
+    <Copy SourceFiles="@(CopyToStandalone)" DestinationFolder="$(MSBuildProjectDir)\..\StandaloneRunner\" />
   </Target>
   
 </Project>
