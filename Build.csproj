@@ -41,7 +41,7 @@
 			<BinFolder>$(TempFolder)/bin</BinFolder>
 			<LibFolder>$(TempFolder)/lib</LibFolder>
 			<ExamplesFolder>$(TempFolder)/examples</ExamplesFolder>
-			<DocsFolder>$(TempFolder)/examples</DocsFolder>
+			<DocFolder>$(TempFolder)/doc</DocFolder>
 			<MDDocFolder>$(ArtifactsRoot)/mddoc</MDDocFolder>
 		</PropertyGroup>
 		<MakeDir Directories="$(ArtifactsRoot)" />
@@ -94,7 +94,7 @@
 	<!-- Собирает в целевой папке содержимое папки doc -->
 	<Target Name="GatherDocuments" DependsOnTargets="Compile;PrepareArtifactsRoot;GenerateDocs">
 		<MakeDir Directories="$(DocFolder)"/>
-		<Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)\&quot;"/>
+		<Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)&quot;"/>
 	</Target>
 	
 	<!-- Генерирует необходимую документацию -->
@@ -111,6 +111,8 @@
 		<ItemGroup>
 			<ExcludedArtifacts Include="$(BinFolder)/*.pdb" />
 			<ExcludedArtifacts Include="$(BinFolder)/*.xml" />
+			<!-- остается от документера. Надо починить его чтобы писал куда-то в другое место -->
+			<ExcludedArtifacts Include="$(MSBuildProjectDirectory)/map.json"/>
 		</ItemGroup>
 		<Delete Files="@(ExcludedArtifacts)"/>
 	</Target>
