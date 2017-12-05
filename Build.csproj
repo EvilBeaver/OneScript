@@ -10,14 +10,14 @@
 
 	</PropertyGroup>
 	
-	<Target Name="Clean">
+	<Target Name="CleanAll">
 	
 		<ItemGroup>
 			<TestsResults Include="$(MSBuildProjectDirectory)/tests/*.os.xml" />
 		</ItemGroup>
 	
 		<Delete Files="@(TestsResults)" />
-		<DeleteTree Directories="$(ArtifactsRoot)/**/*" Condition="Exists($(ArtifactsRoot))" />
+		<DeleteTree Directories="$(ArtifactsRoot)" Condition="Exists($(ArtifactsRoot))" />
 		
 		<MSBuild Projects="$(Solution)" Targets="Clean" Properties="Configuration=$(Configuration)" />
 		
@@ -115,6 +115,15 @@
 			<ExcludedArtifacts Include="$(MSBuildProjectDirectory)/map.json"/>
 		</ItemGroup>
 		<Delete Files="@(ExcludedArtifacts)"/>
+	</Target>
+	
+	<Target Name="CreateInstaller" DependsOnTargets="PrepareDistributionContent">
+		<Error Text="No installer path is specified" Condition="'$(InnoSetupPath)' == ''"/>
+		<PropertyGroup>
+			<InstallerStandardPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandardPath>
+			<DistPath>$(ArtifactsRoot)</DistPath>
+		</PropertyGroup>
+		<Exec Command="$(InstallerStandardPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot;" />
 	</Target>
 	
 </Project>
