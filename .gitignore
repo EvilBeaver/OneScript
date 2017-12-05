@@ -41,8 +41,7 @@ _ReSharper*/
 JetBrains.ReSharper.CommandLineTools
 
 # CI and full build|deploy
-dist
-install/build
+built/
 *.os.xml
 /src/packages/DotNetZip.1.9.3/lib/net20
 
