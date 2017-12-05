@@ -7,17 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class ContextMethodAttribute : Attribute
     {
         private readonly string _name;
         private readonly string _alias;
 
-        public ContextMethodAttribute(string name, string alias = "")
+        public ContextMethodAttribute(string name, string alias = null, bool isDeprecated = false, bool throwOnUse = false)
         {
             if(!Utils.IsValidIdentifier(name))
                 throw new ArgumentException("Name must be a valid identifier");
@@ -27,6 +26,13 @@ namespace ScriptEngine.Machine.Contexts
 
             _name = name;
             _alias = alias;
+            IsDeprecated = isDeprecated;
+            ThrowOnUse = throwOnUse;
+        }
+
+        public ContextMethodAttribute(string name, bool isDeprecated)
+            : this(name, null, isDeprecated)
+        {
         }
 
         public string GetName()
@@ -38,6 +44,10 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _alias;
         }
+        
+        public bool IsDeprecated { get; }
+
+        public bool ThrowOnUse { get; }
 
         public bool IsFunction { get; set; }
     }
@@ -91,11 +101,12 @@ namespace ScriptEngine.Machine.Contexts
         private void MapType(Type type)
         {
             var methods = type.GetMethods()
-                .Where(x => x.GetCustomAttributes(typeof(ContextMethodAttribute), false).Any())
-                .Select(x => new { 
-                    Method = x, 
-                    Binding = (ContextMethodAttribute)x.GetCustomAttributes(typeof(ContextMethodAttribute), false)[0] 
-                });
+                .SelectMany(method => method.GetCustomAttributes(typeof(ContextMethodAttribute), false)
+                    .Select(attr => new {
+                        Method = method,
+                        Binding = (ContextMethodAttribute) attr
+                    })
+                );
             
             foreach (var item in methods)
             {
@@ -146,6 +157,8 @@ namespace ScriptEngine.Machine.Contexts
 
                     var scriptMethInfo = new ScriptEngine.Machine.MethodInfo();
                     scriptMethInfo.IsFunction = isFunc;
+                    scriptMethInfo.IsDeprecated = item.Binding.IsDeprecated;
+                    scriptMethInfo.ThrowOnUseDeprecated = item.Binding.ThrowOnUse;
                     scriptMethInfo.Name = item.Binding.GetName().ToLower();
                     scriptMethInfo.Alias = string.IsNullOrEmpty(item.Binding.GetAlias()) ?
                        scriptMethInfo.Name
