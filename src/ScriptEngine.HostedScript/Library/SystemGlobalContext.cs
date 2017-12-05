@@ -443,8 +443,8 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        [ContextMethod("ЗначениеЗаполнено","IsValueFilled")]
-        public bool IsValueFilled(IValue value)
+        [ContextMethod("ЗначениеЗаполнено","ValueIsFilled")]
+        public bool ValueIsFilled(IValue value)
         {
             if (value.DataType == DataType.Undefined)
                 return false;
@@ -471,6 +471,13 @@ namespace ScriptEngine.HostedScript.Library
             else
                 return true;
             
+        }
+
+        [ContextMethod("IsValueFilled", isDeprecated: true)]
+        [Obsolete]
+        public bool IsValueFilled(IValue value)
+        {
+            return ValueIsFilled(value);
         }
 
         /// <summary>
