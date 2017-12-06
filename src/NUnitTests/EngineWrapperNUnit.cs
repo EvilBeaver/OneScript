@@ -34,7 +34,13 @@ namespace NUnitTests
 
 			return Engine;
 		}
-
+		
+		public int RunTestString(string source)
+		{
+			var process = Engine.CreateProcess(this, Engine.Loader.FromString(source));
+			return process.Start();
+		}
+		
 		private int RunTestScript(ICodeSource source, string resourceName)
 		{
 			var module = Engine.GetCompilerService().CreateModule(source);

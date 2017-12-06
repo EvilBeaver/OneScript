@@ -185,6 +185,8 @@ namespace ScriptEngine.Machine
         public string Name;
         public string Alias;
         public bool IsFunction;
+        public bool IsDeprecated;
+        public bool ThrowOnUseDeprecated;
         public ParameterDefinition[] Params;
 
         public int ArgCount
