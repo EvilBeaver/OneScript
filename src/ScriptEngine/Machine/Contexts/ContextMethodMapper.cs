@@ -61,27 +61,57 @@ namespace ScriptEngine.Machine.Contexts
 
     public class ContextMethodsMapper<TInstance>
     {
-        private readonly List<InternalMethInfo> _methodPtrs = new List<InternalMethInfo>();
+        private List<InternalMethInfo> _methodPtrs = null;
         
         public ContextMethodsMapper()
         {
-            MapType(typeof(TInstance));
+        }
+
+        private void Init()
+        {
+            if (_methodPtrs == null)
+            {
+                lock (this)
+                {
+                    if (_methodPtrs == null)
+                    {
+                        _methodPtrs = new List<InternalMethInfo>();
+                        MapType(typeof(TInstance));
+                    }
+                }
+            }
         }
 
         public ContextCallableDelegate<TInstance> GetMethod(int number)
         {
+            Init();
             return _methodPtrs[number].method;
         }
 
         public ScriptEngine.Machine.MethodInfo GetMethodInfo(int number)
         {
+            Init();
             return _methodPtrs[number].methodInfo;
+        }
+
+        public IEnumerable<MethodInfo> GetMethods()
+        {
+            Init();
+            return _methodPtrs.Select(x => x.methodInfo);
         }
 
         public int FindMethod(string name)
         {
-            name = name.ToLower();
-            var idx = _methodPtrs.FindIndex(x => x.methodInfo.Name == name || x.methodInfo.Alias == name);
+            Init();
+
+            // поскольку этот метод вызывается довольно часто, то тут
+            // возможна некоторая просадка по производительности 
+            // за счет сравнения IgnoreCase вместо обычного "числового" сравнения
+            // Надо будет понаблюдать или вообще замерить
+            //
+            var idx = _methodPtrs.FindIndex(x => 
+                String.Compare(x.methodInfo.Name, name, StringComparison.OrdinalIgnoreCase) == 0 
+                || String.Compare(x.methodInfo.Alias, name, StringComparison.OrdinalIgnoreCase) == 0 );
             if (idx < 0)
             {
                 throw RuntimeException.MethodNotFoundException(name);
@@ -94,6 +124,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
+                Init();
                 return _methodPtrs.Count;
             }
         }
@@ -159,10 +190,10 @@ namespace ScriptEngine.Machine.Contexts
                     scriptMethInfo.IsFunction = isFunc;
                     scriptMethInfo.IsDeprecated = item.Binding.IsDeprecated;
                     scriptMethInfo.ThrowOnUseDeprecated = item.Binding.ThrowOnUse;
-                    scriptMethInfo.Name = item.Binding.GetName().ToLower();
+                    scriptMethInfo.Name = item.Binding.GetName();
                     scriptMethInfo.Alias = string.IsNullOrEmpty(item.Binding.GetAlias()) ?
                        scriptMethInfo.Name
-                        :item.Binding.GetAlias().ToLower();
+                        :item.Binding.GetAlias();
 
                     scriptMethInfo.Params = paramDefs;
 

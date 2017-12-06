@@ -99,7 +99,7 @@ namespace ScriptEngine.HostedScript.Library
         public bool MethodExists(IValue target, string methodName)
         {
             if(target.DataType == DataType.Object)
-                return MethodExistsObject(target.AsObject(), methodName);
+                return MethodExistsForObject(target.AsObject(), methodName);
 
             if (target.DataType == DataType.Type)
                 return MethodExistsForType(target.GetRawValue() as TypeTypeValue, methodName);
@@ -107,7 +107,7 @@ namespace ScriptEngine.HostedScript.Library
             throw RuntimeException.InvalidArgumentType("target");
         }
 
-        private static bool MethodExistsObject(IRuntimeContextInstance target, string methodName)
+        private static bool MethodExistsForObject(IRuntimeContextInstance target, string methodName)
         {
             try
             {
@@ -160,23 +160,44 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
         /// <returns>Таблица значений с 3 колонками - Имя, КоличествоПараметров, ЭтоФункция. </returns>
         [ContextMethod("ПолучитьТаблицуМетодов", "GetMethodsTable")]
-        public ValueTable.ValueTable GetMethodsTable(IRuntimeContextInstance target)
+        public ValueTable.ValueTable GetMethodsTable(IValue target)
         {
-            var Result = new ValueTable.ValueTable();
-            
-            var NameColumn = Result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
-            var CountColumn = Result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
-            var IsFunctionColumn = Result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
+            var result = new ValueTable.ValueTable();
+            if(target.DataType == DataType.Object)
+                FillMethodsTableForObject(target.AsObject(), result);
+            else if (target.DataType == DataType.Type)
+                FillMethodsTableForType(target.GetRawValue() as TypeTypeValue, result);
+            else
+                throw RuntimeException.InvalidArgumentType();
 
-            foreach(var methInfo in target.GetMethods())
+            return result;
+        }
+
+        private static void FillMethodsTableForObject(IRuntimeContextInstance target, ValueTable.ValueTable result)
+        {
+            FillMethodsTable(result, target.GetMethods());
+        }
+
+        private static void FillMethodsTableForType(TypeTypeValue type, ValueTable.ValueTable result)
+        {
+            var clrType = GetReflectableClrType(type);
+            var magicCaller = CreateMethodsMapper(clrType);
+            FillMethodsTable(result, magicCaller.GetMethods());
+        }
+        
+        private static void FillMethodsTable(ValueTable.ValueTable result, IEnumerable<MethodInfo> methods)
+        {
+            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
+            var countColumn = result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
+            var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
+
+            foreach (var methInfo in methods)
             {
-                ValueTableRow new_row = Result.Add();
-                new_row.Set(NameColumn, ValueFactory.Create(methInfo.Name));
-                new_row.Set(CountColumn, ValueFactory.Create(methInfo.ArgCount));
-                new_row.Set(IsFunctionColumn, ValueFactory.Create(methInfo.IsFunction));
+                ValueTableRow new_row = result.Add();
+                new_row.Set(nameColumn, ValueFactory.Create(methInfo.Name));
+                new_row.Set(countColumn, ValueFactory.Create(methInfo.ArgCount));
+                new_row.Set(isFunctionColumn, ValueFactory.Create(methInfo.IsFunction));
             }
-
-            return Result;
         }
 
         /// <summary>
