@@ -265,8 +265,10 @@ namespace ScriptEngine.Machine
         {
             var meth = _module.Methods[methodIndex].Signature;
             var param = meth.Params[paramIndex];
-            if (!param.HasDefaultValue)
-                throw new ApplicationException("Invalid script arguments");
+            if (!param.IsDefaultValueDefined())
+            {
+                return ValueFactory.Create();
+            }
 
             return _module.Constants[param.DefaultValueIndex];
         }
