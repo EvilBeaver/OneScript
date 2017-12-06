@@ -26,6 +26,11 @@ namespace ScriptEngine.Machine
         {
         }
 
+        public static RuntimeException DeprecatedMethodCall(string name)
+        {
+            return new RuntimeException($"Вызов безнадёжно устаревшего метода {name}");
+        }
+
         public static RuntimeException ConvertToNumberException()
         {
             return new RuntimeException("Преобразование к типу 'Число' не поддерживается");

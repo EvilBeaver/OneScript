@@ -604,19 +604,13 @@ namespace ScriptEngine.Compiler
 
                 if (_lastExtractedLexem.Token != Token.Semicolon)
                 {
-                    if (endTokens.Contains(_lastExtractedLexem.Token))
+                    if (endTokens.Contains(_lastExtractedLexem.Token) || LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
                     {
                         break;
                     }
-                    else
-                    {
-                        throw CompilerException.SemicolonExpected();
-                    }
+                    throw CompilerException.SemicolonExpected();
                 }
-                else
-                {
-                    NextToken();
-                }
+                NextToken();
             }
 
         }
@@ -961,7 +955,8 @@ namespace ScriptEngine.Compiler
             if (_isFunctionProcessed)
             {
                 NextToken();
-                if (_lastExtractedLexem.Token == Token.Semicolon)
+                if (_lastExtractedLexem.Token == Token.Semicolon
+                    || LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
                 {
                     throw CompilerException.FuncEmptyReturnValue();
                 }
@@ -971,7 +966,8 @@ namespace ScriptEngine.Compiler
             else if (_inMethodScope)
             {
                 NextToken();
-                if (_lastExtractedLexem.Token != Token.Semicolon)
+                if (_lastExtractedLexem.Token != Token.Semicolon
+                    && !LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
                 {
                     throw CompilerException.ProcReturnsAValue();
                 }

@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Web" />
@@ -43,7 +44,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ASPNETHandler.cs" />
+    <Compile Include="HTTPServiceContext.cs" />
+    <Compile Include="HTTPServiceRequest.cs" />
+    <Compile Include="HTTPServiceResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SessionState.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
