@@ -31,6 +31,28 @@ namespace NUnitTests
 			host.Engine.InitExternalLibraries(Path.Combine(solutionRoot, "oscript-library", "src"), null);
 		}
 
+		private void RunSpecificTest(string testName)
+		{
+			var testRunnerPath = Path.Combine(solutionRoot, "tests", "testrunner.os");
+
+			Assert.IsTrue(File.Exists(testRunnerPath),
+				"Запускатель тестов отсутствует по пути " + testRunnerPath);
+
+			var specificTestPath = Path.Combine(solutionRoot, "tests", testName);
+			var result = host.RunTestScriptFromPath(testRunnerPath, $"-run {specificTestPath}");
+
+			if (result == TEST_STATE_FAILED)
+			{
+				Assert.Fail("Есть непройденные тесты!");
+			}
+		}
+
+		[Test]
+		public void Test_Reflector()
+		{
+			RunSpecificTest(@"reflector.os");
+		}
+
 		[Test]
 		[Ignore("Внутри валится очень много тестов, надо чинить механизм.")]
 		public void RunEngineTests()
