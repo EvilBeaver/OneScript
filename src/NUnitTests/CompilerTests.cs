@@ -82,16 +82,16 @@ namespace NUnitTests
 					Ф = 1
 				КонецФункции");
 
-			bool throwed = false;
+			bool exceptionThrown = false;
 			try
 			{
 				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
 			}
 			catch (CompilerException)
 			{
-				throwed = true;
+				exceptionThrown = true;
 			}
-			Assert.IsTrue(throwed, "КонецФункции закрыл Если!!!");
+			Assert.IsTrue(exceptionThrown, "КонецФункции закрыл Если!!!");
 		}
 
 		[Test]
@@ -102,16 +102,16 @@ namespace NUnitTests
 					Ф = 1
 				КонецЦикла");
 
-			bool throwed = false;
+			bool exceptionThrown = false;
 			try
 			{
 				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
 			}
 			catch (CompilerException)
 			{
-				throwed = true;
+				exceptionThrown = true;
 			}
-			Assert.IsTrue(throwed, "КонецЦикла закрыл Если!!!");
+			Assert.IsTrue(exceptionThrown, "КонецЦикла закрыл Если!!!");
 		}
 
 		[Test]
@@ -122,16 +122,16 @@ namespace NUnitTests
 					Ф = 1
 				КонецЕсли");
 
-			bool throwed = false;
+			bool exceptionThrown = false;
 			try
 			{
 				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
 			}
 			catch (CompilerException)
 			{
-				throwed = true;
+				exceptionThrown = true;
 			}
-			Assert.IsTrue(throwed, "КонецЕсли закрыл Пока!!!");
+			Assert.IsTrue(exceptionThrown, "КонецЕсли закрыл Пока!!!");
 		}
 
 		[Test(Description = "Компилируется вызов метода с пропуском параметров")]
@@ -165,16 +165,16 @@ namespace NUnitTests
 				Р = Ф1();
 				");
 
-			bool throwed = false;
+			bool exceptionThrown = false;
 			try
 			{
 				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
 			}
 			catch (CompilerException)
 			{
-				throwed = true;
+				exceptionThrown = true;
 			}
-			Assert.IsTrue(throwed, "Не должно было скомпилироваться!");
+			Assert.IsTrue(exceptionThrown, "Не должно было скомпилироваться!");
 		}
 		
 		
