@@ -83,10 +83,6 @@ namespace ScriptEngine.HostedScript.Library
             }
             while (argsToPass.Count < methInfo.ArgCount)
             {
-                if (!methInfo.Params[argsToPass.Count].HasDefaultValue)
-                {
-                    throw RuntimeException.TooLittleArgumentsPassed();
-                }
                 argsToPass.Add(null);
             }
 

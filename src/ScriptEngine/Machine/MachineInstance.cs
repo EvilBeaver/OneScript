@@ -850,11 +850,13 @@ namespace ScriptEngine.Machine
                 {
                     if (i < methInfo.Params.Length)
                     {
-                        var constId = methInfo.Params[i].DefaultValueIndex;
-                        if (constId == ParameterDefinition.UNDEFINED_VALUE_INDEX)
+                        if (!methInfo.Params[i].IsDefaultValueDefined())
                             argValue = null;
                         else
+                        {
+                            var constId = methInfo.Params[i].DefaultValueIndex;
                             argValue = _module.Constants[constId];
+                        }
                     }
                     else
                     {
@@ -901,15 +903,19 @@ namespace ScriptEngine.Machine
                                     frame.Locals[i] = Variable.CreateReference((IVariable)argValues[i], methDescr.Variables[i]);
                                 }
                             }
+                            else if (argValues[i] == null)
+                            {
+                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
+                            }
                             else
                             {
                                 frame.Locals[i] = Variable.Create(argValues[i], methDescr.Variables[i]);
                             }
 
                         }
-                        else if (i < methInfo.Params.Length && methInfo.Params[i].HasDefaultValue)
+                        else if (i < methInfo.Params.Length)
                         {
-                            if (methInfo.Params[i].DefaultValueIndex == ParameterDefinition.UNDEFINED_VALUE_INDEX)
+                            if (!methInfo.Params[i].IsDefaultValueDefined())
                             {
                                 frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
                             }
@@ -1123,20 +1129,9 @@ namespace ScriptEngine.Machine
                 throw RuntimeException.TooManyArgumentsPassed();
             }
 
-            for (int i = 0; i < methInfo.Params.Length; i++)
+            if (methInfo.Params.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
-                var paramDef = methInfo.Params[i];
-                if (i < argsPassed.Length)
-                {
-                    if (argsPassed[i] == false && !paramDef.HasDefaultValue)
-                    {
-                        throw RuntimeException.ArgHasNoDefaultValue(i + 1);
-                    }
-                }
-                else if (!paramDef.HasDefaultValue)
-                {
-                    throw RuntimeException.TooLittleArgumentsPassed();
-                }
+                throw RuntimeException.TooLittleArgumentsPassed();
             }
         }
 
@@ -1293,12 +1288,7 @@ namespace ScriptEngine.Machine
 
                             if (argValues[i].DataType == DataType.NotAValidValue)
                             {
-                                if (parameters[i].IsOptional)
-                                    argsToPass.Add(null);
-                                else
-                                {
-                                    throw RuntimeException.ArgHasNoDefaultValue(i + 1);
-                                }
+                                argsToPass.Add(null);
                             }
                             else
                                 argsToPass.Add(argValues[i]);
