@@ -201,5 +201,23 @@ namespace ScriptEngine.Machine.Contexts
                 return _properties.Count;
             }
         }
+
+        public IEnumerable<VariableInfo> GetProperties()
+        {
+            VariableInfo[] infos = new VariableInfo[Count];
+            for (int i = 0; i < infos.Length; i++)
+            {
+                var prop = _properties[i];
+                infos[i] = new VariableInfo()
+                {
+                    Identifier = prop.Name,
+                    Alias = prop.Alias,
+                    Type = SymbolType.ContextProperty,
+                    Index = i
+                };
+            }
+
+            return infos;
+        }
     }
 }

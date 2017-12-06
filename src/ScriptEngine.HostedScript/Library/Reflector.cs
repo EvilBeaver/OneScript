@@ -135,6 +135,14 @@ namespace ScriptEngine.HostedScript.Library
             return magicCaller;
         }
 
+        private static dynamic CreatePropertiesMapper(Type clrType)
+        {
+            var mapperType = typeof(ContextPropertyMapper<>).MakeGenericType(clrType);
+            var instance = Activator.CreateInstance(mapperType);
+            dynamic magicCaller = instance; // зачем строить ExpressionTree, когда есть dynamic
+            return magicCaller;
+        }
+
         private static Type GetReflectableClrType(TypeTypeValue type)
         {
             Type clrType;
@@ -206,23 +214,37 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="target">Объект, из которого получаем таблицу свойств.</param>
         /// <returns>Таблица значений с 1 колонкой - Имя</returns>
         [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
-        public ValueTable.ValueTable GetPropertiesTable(IRuntimeContextInstance target)
+        public ValueTable.ValueTable GetPropertiesTable(IValue target)
         {
-            ValueTable.ValueTable Result = new ValueTable.ValueTable();
+            ValueTable.ValueTable result = new ValueTable.ValueTable();
 
-            var NameColumn = Result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
-
-            var SystemVarNames = new string[] { "этотобъект", "thisobject" };
-
-            foreach (var propInfo in target.GetProperties())
+            if(target.DataType == DataType.Object)
+                FillPropertiesTable(result, target.AsObject().GetProperties());
+            else if (target.DataType == DataType.Type)
             {
-                if (SystemVarNames.Contains(propInfo.Identifier.ToLower())) continue;
-
-                ValueTableRow new_row = Result.Add();
-                new_row.Set(NameColumn, ValueFactory.Create(propInfo.Identifier));
+                var type = target.GetRawValue() as TypeTypeValue;
+                var clrType = GetReflectableClrType(type);
+                var magicCaller = CreatePropertiesMapper(clrType);
+                FillPropertiesTable(result, magicCaller.GetProperties());
             }
+            else
+                throw RuntimeException.InvalidArgumentType();
 
-            return Result;
+            return result;
+        }
+
+        private void FillPropertiesTable(ValueTable.ValueTable result, IEnumerable<VariableInfo> properties)
+        {
+            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
+            var systemVarNames = new string[] { "этотобъект", "thisobject" };
+
+            foreach (var propInfo in properties)
+            {
+                if (systemVarNames.Contains(propInfo.Identifier.ToLower())) continue;
+
+                ValueTableRow newRow = result.Add();
+                newRow.Set(nameColumn, ValueFactory.Create(propInfo.Identifier));
+            }
         }
 
         [ScriptConstructor]

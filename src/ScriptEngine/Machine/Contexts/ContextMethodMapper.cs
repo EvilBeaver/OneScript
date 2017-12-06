@@ -61,12 +61,8 @@ namespace ScriptEngine.Machine.Contexts
 
     public class ContextMethodsMapper<TInstance>
     {
-        private List<InternalMethInfo> _methodPtrs = null;
+        private List<InternalMethInfo> _methodPtrs;
         
-        public ContextMethodsMapper()
-        {
-        }
-
         private void Init()
         {
             if (_methodPtrs == null)
