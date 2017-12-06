@@ -6,11 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Net.Sockets;
-using System.Runtime.Serialization;
-using System.Text;
-
 using OneScript.DebugProtocol;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,7 +53,7 @@ namespace DebugServer
             var psi = _process.StartInfo;
             psi.FileName = RuntimeExecutable;
             psi.UseShellExecute = false;
-            psi.Arguments = $"-debug {RuntimeArguments} {StartupScript} {ScriptArguments}";
+            psi.Arguments = $"-debug {RuntimeArguments} \"{StartupScript}\" {ScriptArguments}";
             psi.WorkingDirectory = WorkingDirectory;
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
