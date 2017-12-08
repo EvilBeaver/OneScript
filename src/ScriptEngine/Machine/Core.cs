@@ -207,6 +207,11 @@ namespace ScriptEngine.Machine
         public int DefaultValueIndex;
 
         public const int UNDEFINED_VALUE_INDEX = -1;
+
+        public bool IsDefaultValueDefined()
+        {
+            return HasDefaultValue && DefaultValueIndex != UNDEFINED_VALUE_INDEX;
+        }
     }
 
     public struct TypeDescriptor : IEquatable<TypeDescriptor>

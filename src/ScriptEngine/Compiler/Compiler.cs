@@ -1652,20 +1652,9 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TooManyArgumentsPassed();
             }
 
-            for (int i = 0; i < parameters.Length; i++)
+            if (parameters.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
-                var paramDef = parameters[i];
-                if (i < argsPassed.Length)
-                {
-                    if (argsPassed[i] == false && !paramDef.HasDefaultValue)
-                    {
-                        throw CompilerException.ArgHasNoDefaultValue(i + 1);
-                    }
-                }
-                else if (!paramDef.HasDefaultValue)
-                {
-                    throw CompilerException.TooLittleArgumentsPassed();
-                }
+                throw CompilerException.TooLittleArgumentsPassed();
             }
         }
 

@@ -81,11 +81,6 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Недостаточно фактических параметров");
         }
 
-        public static RuntimeException ArgHasNoDefaultValue(int argNum)
-        {
-            return new RuntimeException(string.Format("Аргумент {0} не имеет значения по умолчанию", argNum));
-        }
-
         public static RuntimeException InvalidArgumentType()
         {
             return new RuntimeException("Неверный тип аргумента");

@@ -82,16 +82,16 @@ namespace NUnitTests
 					Ф = 1
 				КонецФункции");
 
-			bool throwed = false;
+			bool exceptionThrown = false;
 			try
 			{
 				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
 			}
 			catch (CompilerException)
 			{
-				throwed = true;
+				exceptionThrown = true;
 			}
-			Assert.IsTrue(throwed, "КонецФункции закрыл Если!!!");
+			Assert.IsTrue(exceptionThrown, "КонецФункции закрыл Если!!!");
 		}
 
 		[Test]
@@ -102,16 +102,16 @@ namespace NUnitTests
 					Ф = 1
 				КонецЦикла");
 
-			bool throwed = false;
+			bool exceptionThrown = false;
 			try
 			{
 				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
 			}
 			catch (CompilerException)
 			{
-				throwed = true;
+				exceptionThrown = true;
 			}
-			Assert.IsTrue(throwed, "КонецЦикла закрыл Если!!!");
+			Assert.IsTrue(exceptionThrown, "КонецЦикла закрыл Если!!!");
 		}
 
 		[Test]
@@ -122,16 +122,61 @@ namespace NUnitTests
 					Ф = 1
 				КонецЕсли");
 
-			bool throwed = false;
+			bool exceptionThrown = false;
 			try
 			{
 				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
 			}
 			catch (CompilerException)
 			{
-				throwed = true;
+				exceptionThrown = true;
 			}
-			Assert.IsTrue(throwed, "КонецЕсли закрыл Пока!!!");
+			Assert.IsTrue(exceptionThrown, "КонецЕсли закрыл Пока!!!");
 		}
+
+		[Test(Description = "Компилируется вызов метода с пропуском параметров")]
+		public void TestCompileMethodCallWithoutAllParams()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Функция Ф3(П1, П2, П3)
+					Возврат """" + П1 + П2 + П3
+				КонецФункции
+				Функция Ф2(П1, П2, П3 = Неопределено)
+					Возврат """" + П1 + П2 + П3
+				КонецФункции
+				Функция Ф1(П1, П2 = Неопределено, П3 = Неопределено)
+					Возврат """" + П1 + П2 + П3
+				КонецФункции
+				Р = Ф3(,,);
+				Р = Ф2(,) + Ф2(,,);
+				Р = Ф1(,,) + Ф1(,);
+				");
+
+			var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+		}
+		
+		[Test(Description = "Не компилируется вызов метода вообще без параметров")]
+		public void TestCantCompileCallWithoutParams()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Функция Ф1(П1)
+					Возврат П1;
+				КонецФункции
+				Р = Ф1();
+				");
+
+			bool exceptionThrown = false;
+			try
+			{
+				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "Не должно было скомпилироваться!");
+		}
+		
+		
 	}
 }
