@@ -218,10 +218,6 @@ namespace ScriptEngine.HostedScript
 
         private bool LoadByName(string value)
         {
-            var rootPath = Path.Combine(LibraryRoot, value);
-            if (LoadByPath(rootPath))
-                return true;
-            
             foreach (var path in SearchDirectories)
             {
                 if(!Directory.Exists(path))
@@ -231,6 +227,10 @@ namespace ScriptEngine.HostedScript
                 if (LoadByPath(libraryPath))
                     return true;
             }
+
+            var rootPath = Path.Combine(LibraryRoot, value);
+            if (LoadByPath(rootPath))
+                return true;
 
             return false;
         }
