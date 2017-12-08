@@ -8,9 +8,13 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.HostedScript.Library.ValueTable;
+
+using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -123,16 +127,22 @@ namespace ScriptEngine.HostedScript.Library
         private static bool MethodExistsForType(TypeTypeValue type, string methodName)
         {
             var clrType = GetReflectableClrType(type);
-            var magicCaller = CreateMethodsMapper(clrType);
-            return magicCaller.FindMethod(methodName) >= 0;
+            var mapper = CreateMethodsMapper(clrType);
+
+            var actualType = mapper.GetType();
+            int result = (int)actualType.InvokeMember("FindMethod", 
+                BindingFlags.InvokeMethod,
+                null,
+                mapper,
+                new object[]{methodName});
+            return result >= 0;
         }
 
-        private static dynamic CreateMethodsMapper(Type clrType)
+        private static object CreateMethodsMapper(Type clrType)
         {
             var mapperType = typeof(ContextMethodsMapper<>).MakeGenericType(clrType);
             var instance = Activator.CreateInstance(mapperType);
-            dynamic magicCaller = instance; // зачем строить ExpressionTree, когда есть dynamic
-            return magicCaller;
+            return instance;
         }
 
         private static dynamic CreatePropertiesMapper(Type clrType)
@@ -189,8 +199,14 @@ namespace ScriptEngine.HostedScript.Library
         private static void FillMethodsTableForType(TypeTypeValue type, ValueTable.ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
-            var magicCaller = CreateMethodsMapper(clrType);
-            FillMethodsTable(result, magicCaller.GetMethods());
+            var mapper = CreateMethodsMapper(clrType);
+            var actualType = mapper.GetType();
+            var infos = (IEnumerable<MethodInfo>)actualType.InvokeMember("GetMethods",
+                                                      BindingFlags.InvokeMethod,
+                                                      null,
+                                                      mapper,
+                                                      new object[0]);
+            FillMethodsTable(result, infos);
         }
         
         private static void FillMethodsTable(ValueTable.ValueTable result, IEnumerable<MethodInfo> methods)
