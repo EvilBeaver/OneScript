@@ -9,7 +9,6 @@ using System.IO;
 using System.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Collections.Generic;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -26,23 +25,25 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ContextMethod("Открыть", "Open")]
-        public void Open(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null)
+        public void Open(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null,
+            bool monopoly = false)
         {
             TextReader imReader;
+            var shareMode = monopoly ? FileShare.None : FileShare.ReadWrite;
             if (encoding == null)
             {
-                imReader = Environment.FileOpener.OpenReader(path);
+                imReader = Environment.FileOpener.OpenReader(path, shareMode);
             }
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding);
-                imReader = Environment.FileOpener.OpenReader(path, enc);
+                imReader = Environment.FileOpener.OpenReader(path, shareMode, enc);
             }
             _lineDelimiter = lineDelimiter ?? "\n";
             if (eolDelimiter != null)
-                _reader = new CustomLineFeedStreamReader (imReader, eolDelimiter, AnalyzeDefaultLineFeed);
+                _reader = new CustomLineFeedStreamReader(imReader, eolDelimiter, AnalyzeDefaultLineFeed);
             else
-                _reader = new CustomLineFeedStreamReader (imReader, "\r\n", AnalyzeDefaultLineFeed);
+                _reader = new CustomLineFeedStreamReader(imReader, "\r\n", AnalyzeDefaultLineFeed);
 
         }
 
@@ -110,12 +111,18 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ScriptConstructor(Name = "По имени файла")]
-        public static IRuntimeContextInstance Constructor (IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue eolDelimiter = null)
+        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding = null,
+            IValue lineDelimiter = null, IValue eolDelimiter = null, IValue monopoly = null)
         {
             var reader = new TextReadImpl();
             if (lineDelimiter != null)
                 reader.AnalyzeDefaultLineFeed = false;
-            reader.Open(path.AsString(), encoding, lineDelimiter?.GetRawValue().AsString() ?? "\n", eolDelimiter ?.GetRawValue().AsString());
+            
+            reader.Open(path.AsString(), encoding,
+                lineDelimiter?.GetRawValue().AsString() ?? "\n",
+                eolDelimiter?.GetRawValue().AsString(),
+                monopoly?.AsBoolean() ?? true);
+            
             return reader;
         }
 
