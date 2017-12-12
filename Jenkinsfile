@@ -27,8 +27,12 @@ pipeline {
                 //
                 // Поэтому, применяем костыль с кастомным workspace
                 // см. https://issues.jenkins-ci.org/browse/JENKINS-34564
+                //
+                // А еще Jenkins под Windows постоянно добавляет в конец папки какую-то мусорную строку.
+                // Для этого отсекаем все, что находится после последнего дефиса
+                // см. https://issues.jenkins-ci.org/browse/JENKINS-40072
                 
-                ws("$workspace".replaceAll("%", "_"))
+                ws("$workspace".replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
                     checkout scm
 
