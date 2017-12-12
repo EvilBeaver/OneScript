@@ -59,8 +59,8 @@ pipeline {
                                 
                                 def repository = gitURL.tokenize("/")[2] + "/" + gitURL.tokenize("/")[3]
                                 repository = repository.tokenize(".")[0]
-                                withCredentials([string(credentialsId: 'GithubOAUTHToken_ForSonar', variable: 'githubOAuth_password')]) {
-                                    sonarcommandStart = sonarcommandStart + " /d:sonar.analysis.mode=issues /d:sonar.github.pullRequest=${PRNumber} /d:sonar.github.repository=${repository} /d:sonar.github.oauth=${githubOAuth_password}"
+                                withCredentials([string(credentialsId: 'GithubOAUTHToken_ForSonar', variable: 'githubOAuth')]) {
+                                    sonarcommandStart = sonarcommandStart + " /d:sonar.analysis.mode=issues /d:sonar.github.pullRequest=${PRNumber} /d:sonar.github.repository=${repository} /d:sonar.github.oauth=${githubOAuth}"
                                 }
                             } else {
                                 makeAnalyzis = false
