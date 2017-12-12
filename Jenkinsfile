@@ -32,7 +32,7 @@ pipeline {
                 // Для этого отсекаем все, что находится после последнего дефиса
                 // см. https://issues.jenkins-ci.org/browse/JENKINS-40072
                 
-                ws("$workspace".replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
+                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
                     checkout scm
 
