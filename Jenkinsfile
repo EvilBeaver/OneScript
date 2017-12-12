@@ -27,14 +27,55 @@ pipeline {
                 //
                 // Поэтому, применяем костыль с кастомным workspace
                 // см. https://issues.jenkins-ci.org/browse/JENKINS-34564
+                //
+                // А еще Jenkins под Windows постоянно добавляет в конец папки какую-то мусорную строку.
+                // Для этого отсекаем все, что находится после последнего дефиса
+                // см. https://issues.jenkins-ci.org/browse/JENKINS-40072
                 
-                ws("$workspace".replaceAll("%", "_"))
+                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
                     checkout scm
 
                     bat 'set'
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:Build"
-                    
+                    withSonarQubeEnv('silverbulleters') {
+                        script {
+                            def sqScannerMsBuildHome = tool 'sonar-scanner for msbuild';
+                            sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarQube.Scanner.MSBuild.exe";
+                            def sonarcommandStart = "@" + sqScannerMsBuildHome + " begin /k:1script /n:OneScript /v:\"1.0.${env.ReleaseNumber}\"";
+                            def makeAnalyzis = true
+                            if (env.BRANCH_NAME == "develop") {
+                                echo 'Analysing develop branch'
+                            } else if (env.BRANCH_NAME.startsWith("PR-")) {
+                                // Report PR issues           
+                                def PRNumber = env.BRANCH_NAME.tokenize("PR-")[0]
+                                def gitURLcommand = 'git config --local remote.origin.url'
+                                def gitURL = ""
+                                
+                                if (isUnix()) {
+                                    gitURL = sh(returnStdout: true, script: gitURLcommand).trim() 
+                                } else {
+                                    gitURL = bat(returnStdout: true, script: gitURLcommand).trim() 
+                                }
+                                
+                                def repository = gitURL.tokenize("/")[2] + "/" + gitURL.tokenize("/")[3]
+                                repository = repository.tokenize(".")[0]
+                                withCredentials([string(credentialsId: 'GithubOAUTHToken_ForSonar', variable: 'githubOAuth')]) {
+                                    sonarcommandStart = sonarcommandStart + " /d:sonar.analysis.mode=issues /d:sonar.github.pullRequest=${PRNumber} /d:sonar.github.repository=${repository} /d:sonar.github.oauth=${githubOAuth}"
+                                }
+                            } else {
+                                makeAnalyzis = false
+                            }
+
+                            if (makeAnalyzis) {
+                                bat "${sonarcommandStart}"
+                            }
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /t:Build"
+                            if (makeAnalyzis) {
+                                bat "${sqScannerMsBuildHome} end"
+                            }
+                        }
+                    }
+
                     stash includes: 'tests, install/build/**, mddoc/**', name: 'buildResults'
                 }
            }
@@ -65,7 +106,7 @@ pipeline {
             agent { label 'windows' }
 
             steps {
-                ws("$workspace".replaceAll("%", "_"))
+                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
                     dir('install/build'){
                         deleteDir()
@@ -118,7 +159,7 @@ pipeline {
             }
             
             steps {
-                ws("$workspace".replaceAll("%", "_"))
+                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
                     dir('install/build'){
                         deleteDir()
