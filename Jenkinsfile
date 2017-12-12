@@ -106,7 +106,7 @@ pipeline {
             agent { label 'windows' }
 
             steps {
-                ws("$workspace".replaceAll("%", "_"))
+                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
                     dir('install/build'){
                         deleteDir()
@@ -159,7 +159,7 @@ pipeline {
             }
             
             steps {
-                ws("$workspace".replaceAll("%", "_"))
+                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
                     dir('install/build'){
                         deleteDir()
