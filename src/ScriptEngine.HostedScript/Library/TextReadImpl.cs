@@ -26,10 +26,11 @@ namespace ScriptEngine.HostedScript.Library
 
         [ContextMethod("Открыть", "Open")]
         public void Open(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null,
-            bool monopoly = false)
+            bool? monopoly = null)
         {
+            Close();
             TextReader imReader;
-            var shareMode = monopoly ? FileShare.None : FileShare.ReadWrite;
+            var shareMode = (monopoly ?? true) ? FileShare.None : FileShare.ReadWrite;
             if (encoding == null)
             {
                 imReader = Environment.FileOpener.OpenReader(path, shareMode);
