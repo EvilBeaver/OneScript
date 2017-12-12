@@ -41,7 +41,7 @@ pipeline {
                         script {
                             def sqScannerMsBuildHome = tool 'sonar-scanner for msbuild';
                             sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarQube.Scanner.MSBuild.exe";
-                            def sonarcommandStart = sqScannerMsBuildHome + " begin /k:1script /n:OneScript";
+                            def sonarcommandStart = "@" + sqScannerMsBuildHome + " begin /k:1script /n:OneScript";
                             def makeAnalyzis = true
                             if (env.BRANCH_NAME == "feature/sonar") {
                                 echo 'Analysing develop branch'
@@ -59,8 +59,8 @@ pipeline {
                                 
                                 def repository = gitURL.tokenize("/")[2] + "/" + gitURL.tokenize("/")[3]
                                 repository = repository.tokenize(".")[0]
-                                withCredentials([[$class: 'StringBinding', credentialsId: 'github', variable: 'githubOAuth']]) {
-                                    sonarcommand = sonarcommand + " /d:sonar.analysis.mode=issues /d:sonar.github.pullRequest=${PRNumber} /d:sonar.github.repository=${repository} /d:sonar.github.oauth=${env.githubOAuth}"
+                                withCredentials([string(credentialsId: 'GithubOAUTHToken_ForSonar', variable: 'githubOAuth')]) {
+                                    sonarcommandStart = sonarcommandStart + " /d:sonar.analysis.mode=issues /d:sonar.github.pullRequest=${PRNumber} /d:sonar.github.repository=${repository} /d:sonar.github.oauth=${githubOAuth}"
                                 }
                             } else {
                                 makeAnalyzis = false
@@ -106,7 +106,7 @@ pipeline {
             agent { label 'windows' }
 
             steps {
-                ws("$workspace".replaceAll("%", "_"))
+                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
                     dir('install/build'){
                         deleteDir()
@@ -159,7 +159,7 @@ pipeline {
             }
             
             steps {
-                ws("$workspace".replaceAll("%", "_"))
+                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
                     dir('install/build'){
                         deleteDir()

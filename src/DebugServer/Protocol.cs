@@ -14,6 +14,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace VSCodeDebug
 {
@@ -24,6 +25,7 @@ namespace VSCodeDebug
 
 		public ProtocolMessage(string typ) {
 			type = typ;
+			int temp = 0;
 		}
 
 		public ProtocolMessage(string typ, int sq) {
