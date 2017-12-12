@@ -25,6 +25,7 @@ namespace VSCodeDebug
 
 		public ProtocolMessage(string typ) {
 			type = typ;
+			int temp = 0;
 		}
 
 		public ProtocolMessage(string typ, int sq) {
