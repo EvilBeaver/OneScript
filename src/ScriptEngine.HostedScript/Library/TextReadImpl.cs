@@ -12,6 +12,9 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library
 {
+    /// <summary>
+    /// Предназначен для последовательного чтения файлов, в том числе большого размера.
+    /// </summary>
     [ContextClass("ЧтениеТекста", "TextReader")]
     public class TextReadImpl : AutoContext<TextReadImpl>, IDisposable
     {
@@ -24,6 +27,14 @@ namespace ScriptEngine.HostedScript.Library
             AnalyzeDefaultLineFeed = true;
         }
 
+        /// <summary>
+        /// Открывает текстовый файл для чтения. Ранее открытый файл закрывается. 
+        /// </summary>
+        /// <param name="path">Путь к файлу</param>
+        /// <param name="encoding">Кодировка</param>
+        /// <param name="lineDelimiter">Раздедитель строк</param>
+        /// <param name="eolDelimiter">Разделитель строк в файле</param>
+        /// <param name="monopoly">Открывать монопольно</param>
         [ContextMethod("Открыть", "Open")]
         public void Open(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null,
             bool? monopoly = null)
@@ -55,6 +66,11 @@ namespace ScriptEngine.HostedScript.Library
             return _reader.Read ();
         }
 
+        /// <summary>
+        /// Считывает строку указанной длины или до конца файла.
+        /// </summary>
+        /// <param name="size">Размер строки. Если не задан, текст считывается до конца файла</param>
+        /// <returns>Строка - считанная строка, Неопределено - в файле больше нет данных</returns>
         [ContextMethod("Прочитать", "Read")]
         public IValue ReadAll(int size = 0)
         {
@@ -76,6 +92,12 @@ namespace ScriptEngine.HostedScript.Library
             return ValueFactory.Create(sb.ToString());
         }
 
+        /// <summary>
+        /// Считывает очередную строку текстового файла.
+        /// </summary>
+        /// <param name="overridenLineDelimiter">Подстрока, считающаяся концом строки. Переопределяет РазделительСтрок, 
+        /// переданный в конструктор или в метод Открыть</param>
+        /// <returns>Строка - в случае успешного чтения, Неопределено - больше нет данных</returns>
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
         public IValue ReadLine(string overridenLineDelimiter = null)
         {
@@ -88,6 +110,9 @@ namespace ScriptEngine.HostedScript.Library
             return ValueFactory.Create(l);
         }
 
+        /// <summary>
+        /// Закрывает открытый текстовый файл. Если файл был открыт монопольно, то после закрытия он становится доступен.
+        /// </summary>
         [ContextMethod("Закрыть", "Close")]
         public void Close()
         {
@@ -102,6 +127,11 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
+        /// <summary>
+        /// Открывает текстовый файл для чтения.
+        /// </summary>
+        /// <param name="path">Строка. Путь к файлу</param>
+        /// <returns>ЧтениеТекста</returns>
         [ScriptConstructor(Name = "По имени файла без кодировки")]
         public static IRuntimeContextInstance Constructor (IValue path)
         {
@@ -111,6 +141,15 @@ namespace ScriptEngine.HostedScript.Library
             return reader;
         }
 
+        /// <summary>
+        /// Открывает текстовый файл для чтения. Работает аналогично методу Открыть.
+        /// </summary>
+        /// <param name="path">Путь к файлу</param>
+        /// <param name="encoding">Кодировка файла</param>
+        /// <param name="lineDelimiter">Разделитель строк</param>
+        /// <param name="eolDelimiter">Разделитель строк в файле</param>
+        /// <param name="monopoly">Открывать файл монопольно</param>
+        /// <returns>ЧтениеТекста</returns>
         [ScriptConstructor(Name = "По имени файла")]
         public static IRuntimeContextInstance Constructor(IValue path, IValue encoding = null,
             IValue lineDelimiter = null, IValue eolDelimiter = null, IValue monopoly = null)
@@ -127,6 +166,10 @@ namespace ScriptEngine.HostedScript.Library
             return reader;
         }
 
+        /// <summary>
+        /// Создаёт неинициализированный объект. Для инициализации необходимо открыть файл методом Открыть.
+        /// </summary>
+        /// <returns>ЧтениеТекста</returns>
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static IRuntimeContextInstance Constructor()
         {
