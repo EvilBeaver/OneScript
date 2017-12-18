@@ -6,8 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
@@ -29,7 +27,7 @@ namespace ScriptEngine
 
         public CodeGenerationFlags ProduceExtraCode { get; set; }
 
-        public int DefineVariable(string name, SymbolType type)
+        public int DefineVariable(string name, string alias, SymbolType type)
         {
             RegisterScopeIfNeeded();
 
@@ -37,9 +35,9 @@ namespace ScriptEngine
             {
                 int varIdx;
                 if (type == SymbolType.Variable)
-                    varIdx = _currentContext.DefineVariable(name).CodeIndex;
+                    varIdx = _currentContext.DefineVariable(name, alias).CodeIndex;
                 else
-                    varIdx = _currentContext.DefineProperty(name).CodeIndex;
+                    varIdx = _currentContext.DefineProperty(name, alias).CodeIndex;
 
                 _predefinedVariables.Add(varIdx);
                 return varIdx;

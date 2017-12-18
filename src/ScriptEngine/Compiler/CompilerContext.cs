@@ -147,7 +147,7 @@ namespace ScriptEngine.Compiler
             throw new InvalidOperationException("Scopes are not defined");
         }
 
-        public SymbolBinding DefineVariable(string name)
+        public SymbolBinding DefineVariable(string name, string alias = null)
         {
             if (_scopeStack.Count > 0)
             {
@@ -155,7 +155,7 @@ namespace ScriptEngine.Compiler
                 var scope = GetScope(idx);
                 if (!scope.IsVarDefined(name))
                 {
-                    var num = scope.DefineVariable(name);
+                    var num = scope.DefineVariable(name, alias);
                     return new SymbolBinding()
                     {
                         ContextIndex = idx,
@@ -169,12 +169,12 @@ namespace ScriptEngine.Compiler
             throw new InvalidOperationException("Scopes are not defined");
         }
 
-        public SymbolBinding DefineProperty(string name)
+        public SymbolBinding DefineProperty(string name, string alias = null)
         {
             if (_scopeStack.Count > 0)
             {
                 var idx = TopIndex();
-                var num = _scopeStack[idx].DefineVariable(name, SymbolType.ContextProperty);
+                var num = _scopeStack[idx].DefineVariable(name, alias, SymbolType.ContextProperty);
                 return new SymbolBinding()
                 {
                     ContextIndex = idx,

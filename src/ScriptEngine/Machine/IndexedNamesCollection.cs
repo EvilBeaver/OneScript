@@ -11,7 +11,7 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    class IndexedNamesCollection
+    public class IndexedNamesCollection
     {
         private readonly List<string> _names = new List<string>();
         private readonly Dictionary<string, int> _nameIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);

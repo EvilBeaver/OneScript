@@ -12,8 +12,8 @@ namespace ScriptEngine.Compiler
     interface ICompilerContext
     {
         SymbolBinding DefineMethod(ScriptEngine.Machine.MethodInfo method);
-        SymbolBinding DefineProperty(string name);
-        SymbolBinding DefineVariable(string name);
+        SymbolBinding DefineProperty(string name, string alias = null);
+        SymbolBinding DefineVariable(string name, string alias = null);
         SymbolBinding GetMethod(string name);
         SymbolScope GetScope(int scopeIndex);
         VariableBinding GetVariable(string name);

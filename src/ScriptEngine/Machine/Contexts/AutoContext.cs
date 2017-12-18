@@ -79,8 +79,28 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.GetMethodInfo(methodNumber);
         }
 
+        private void CheckIfCallIsPossible(int methodNumber, IValue[] arguments)
+        {
+            var methodInfo = _methods.GetMethodInfo(methodNumber);
+            if (!methodInfo.IsDeprecated)
+            {
+                return;
+            }
+            if (methodInfo.ThrowOnUseDeprecated)
+            {
+                throw RuntimeException.DeprecatedMethodCall(methodInfo.Name);
+            }
+            if (_warnedDeprecatedMethods.Contains(methodNumber))
+            {
+                return;
+            }
+            SystemLogger.Write($"ВНИМАНИЕ! Вызов устаревшего метода {methodInfo.Name}");
+            _warnedDeprecatedMethods.Add(methodNumber);
+        }
+
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
+            CheckIfCallIsPossible(methodNumber, arguments);
             try
             {
                 _methods.GetMethod(methodNumber)((TInstance)this, arguments);
@@ -94,6 +114,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
+            CheckIfCallIsPossible(methodNumber, arguments);
             try
             {
                 retValue = _methods.GetMethod(methodNumber)((TInstance)this, arguments);
@@ -107,5 +128,6 @@ namespace ScriptEngine.Machine.Contexts
 
         private static readonly ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
         private static readonly ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();
+        private static readonly HashSet<int> _warnedDeprecatedMethods = new HashSet<int>();
     }
 }

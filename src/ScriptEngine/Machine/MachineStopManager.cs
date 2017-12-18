@@ -81,6 +81,12 @@ namespace ScriptEngine.Machine
                 case DebugState.SteppingOut:
                 case DebugState.SteppingOver:
                     mustStop = FrameIsInStopList(currentFrame);
+                    // по пути следования все равно может встретиться breakpoint
+                    if (!mustStop && HitBreakpointOnLine(module, currentFrame))
+                    {
+                        _currentState = DebugState.Running; //для правильной причины останова (см. ниже)
+                        mustStop = true;
+                    }
                     break;
             }
 

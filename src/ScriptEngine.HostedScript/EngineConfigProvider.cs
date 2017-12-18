@@ -88,11 +88,19 @@ namespace ScriptEngine.HostedScript
             string sysDir = null;
             conf.TryGetValue(SYSTEM_LIB_KEY, out sysDir);
 
+            var confDir = System.IO.Path.GetDirectoryName(configFile);
             if (sysDir != null && !System.IO.Path.IsPathRooted(sysDir))
             {
-                var confDir = System.IO.Path.GetDirectoryName(configFile);
                 sysDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(confDir, sysDir));
                 conf[SYSTEM_LIB_KEY] = sysDir;
+            }
+
+            string additionals;
+            if (conf.TryGetValue(ADDITIONAL_LIB_KEY, out additionals))
+            {
+                var fullPaths = additionals.Split(new[]{";"}, StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(x => Path.GetFullPath(Path.Combine(confDir, x)));
+                conf[ADDITIONAL_LIB_KEY] = String.Join(";",fullPaths);
             }
         }
 

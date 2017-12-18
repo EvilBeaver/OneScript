@@ -83,11 +83,6 @@ namespace ScriptEngine.Compiler
             return new CompilerException("Слишком много фактических параметров");
         }
 
-        internal static CompilerException ArgHasNoDefaultValue(int argNum)
-        {
-            return new CompilerException(string.Format("Аргумент {0} не имеет значения по умолчанию", argNum));
-        }
-
         internal static CompilerException InternalCompilerError(string reason)
         {
             return new CompilerException("Внутренняя ошибка компилятора:" + reason);

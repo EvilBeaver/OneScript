@@ -163,7 +163,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct ConstDefinition
+    struct ConstDefinition : IEquatable<ConstDefinition>
     {
         public DataType Type;
         public string Presentation;
@@ -171,6 +171,11 @@ namespace ScriptEngine.Machine
         public override string ToString()
         {
             return Enum.GetName(typeof(DataType), Type) + ":" + Presentation;
+        }
+
+        public bool Equals(ConstDefinition other)
+        {
+            return Type == other.Type && string.Equals(Presentation, other.Presentation, StringComparison.Ordinal);
         }
         
     }
@@ -181,6 +186,8 @@ namespace ScriptEngine.Machine
         public string Name;
         public string Alias;
         public bool IsFunction;
+        public bool IsDeprecated;
+        public bool ThrowOnUseDeprecated;
         public ParameterDefinition[] Params;
         public AnnotationDefinition[] Annotations;
 
@@ -207,6 +214,11 @@ namespace ScriptEngine.Machine
         public int AnnotationsCount => Annotations?.Length ?? 0;
 
         public const int UNDEFINED_VALUE_INDEX = -1;
+
+        public bool IsDefaultValueDefined()
+        {
+            return HasDefaultValue && DefaultValueIndex != UNDEFINED_VALUE_INDEX;
+        }
     }
 
     [Serializable]
@@ -276,9 +288,9 @@ namespace ScriptEngine.Machine
     {
         public int Index;
         public string Identifier;
+        public string Alias;
         public SymbolType Type;
         
-        public string Alias;
         public bool CanGet;
         public bool CanSet;
         
