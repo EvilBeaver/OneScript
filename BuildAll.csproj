@@ -143,7 +143,6 @@
 			<BinaryFiles Include="$(OutputPathForBuild)\oscript.cfg"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\ASPNETHandler.dll"/>
 
-			<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*" Exclude="$(MSBuildProjectDirectory)\oscript-library\**\*.git"/>
 			<ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
 
 		</ItemGroup>
@@ -175,6 +174,13 @@
 		<Exec Command="&quot;$(OutputPathForBuild)oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
 		<DeleteTree Directories="$(LibFolder)\tmp"/> 
+		
+		<ItemGroup>
+			<OSPX Include="$(StandardLibraryPacks)\*.ospx"/>
+		</ItemGroup>
+		
+		<!-- костылище -->
+		<Exec Command=" (set OSCRIPT_CONFIG=lib.system=$(LibFolder)) &amp;&amp; (&quot;$(OutputPathForBuild)oscript.exe&quot; &quot;$(LibFolder)\opm\src\opm.os&quot; install -f %(OSPX.Identity) -dest $(LibFolder))"/>
 		
 	</Target>
 	
