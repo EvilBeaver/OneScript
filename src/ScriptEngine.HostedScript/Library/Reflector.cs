@@ -208,18 +208,7 @@ namespace ScriptEngine.HostedScript.Library
         /// Получает таблицу методов для переданного объекта..
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
-        /// <returns>Таблица значений колонками:
-        /// <list type="bullet">
-        ///     <item><term>Имя</term><description> - Строка</description></item>
-        ///     <item><term>КоличествоПараметров</term><description> - Число</description></item>
-        ///     <item><term>ЭтоФункция</term><description> - Булево</description></item>
-        ///     <item><term>Аннотации</term><description> - Неопределено, ТаблицаЗначений:
-        ///         <list type="bullet">
-        ///             <item><term>Имя</term></item>
-        ///             <item><term>Параметры</term></item>
-        ///         </list>
-        ///     </description></item>
-        /// </list></returns>
+        /// <returns>Таблица значений колонками: Имя, Количество, ЭтоФункция, Аннотации</returns>
         [ContextMethod("ПолучитьТаблицуМетодов", "GetMethodsTable")]
         public ValueTable.ValueTable GetMethodsTable(IValue target)
         {
@@ -303,7 +292,7 @@ namespace ScriptEngine.HostedScript.Library
         /// Получает таблицу свойств для переданного объекта..
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу свойств.</param>
-        /// <returns>Таблица значений с 1 колонкой - Имя</returns>
+        /// <returns>Таблица значений с колонками - Имя, Аннотации</returns>
         [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
         public ValueTable.ValueTable GetPropertiesTable(IValue target)
         {
