@@ -148,7 +148,6 @@
 		</ItemGroup>
 		
 		<Move SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)"/> 
-		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
 		<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
 		
 		<!-- Удаление артефактов NUnit -->
