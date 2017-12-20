@@ -5,10 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 
 namespace ScriptEngine.Machine
 {
@@ -240,6 +236,19 @@ namespace ScriptEngine.Machine
         public IValue RuntimeValue;
         
         public const int UNDEFINED_VALUE_INDEX = -1;
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Name))
+            {
+                return string.Format("[{0}]", ValueIndex);
+            }
+            if (ValueIndex == UNDEFINED_VALUE_INDEX)
+            {
+                return Name;
+            }
+            return String.Format("{0}=[{1}]", Name, ValueIndex);
+        }
     }
 
     public struct TypeDescriptor : IEquatable<TypeDescriptor>
