@@ -32,6 +32,7 @@ Name: "custom"; Description: "Выборочная установка"; Flags: i
 
 [Components]
 Name: "main"; Description: "Основные файлы"; Types: normal custom; Flags: fixed
+Name: "isapi"; Description: "Обработчик HTTP-сервисов"; Types: normal custom;
 Name: "stdlib"; Description: "Стандартная библиотека скриптов"; Types: normal custom;
 Name: "testapp"; Description: "Тестовая консоль (TestApp)";
 Name: "docs"; Description: "Документация по свойствам и методам (синтакс-помощник)";
@@ -46,6 +47,9 @@ Source: "build\bin\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
 Source: "build\bin\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
 
 Source: "build\examples\*"; DestDir: "{app}\examples"; Components: main
+
+;isapi
+Source: "build\bin\ASPNETHandler.dll"; DestDir: "{app}\bin"; Components: isapi;
 
 ; testapp
 Source: "build\bin\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
