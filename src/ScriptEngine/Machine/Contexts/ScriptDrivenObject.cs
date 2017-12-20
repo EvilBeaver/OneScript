@@ -11,7 +11,7 @@ using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable, IRuntimeContextWithProperties
+    public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable
     {
         private readonly LoadedModule _module;
         private MachineInstance _machine;

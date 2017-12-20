@@ -5,9 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -177,6 +174,17 @@ namespace ScriptEngine.Machine.Contexts
         public virtual string GetPropName(int propNum)
         {
             throw new NotImplementedException();
+        }
+
+        public virtual VariableInfo GetPropertyInfo(int propNum)
+        {
+            return new VariableInfo()
+            {
+                Identifier = GetPropName(propNum),
+                CanGet = IsPropReadable(propNum),
+                CanSet = IsPropWritable(propNum),
+                Type = SymbolType.ContextProperty
+            };
         }
 
         public virtual int GetMethodsCount()

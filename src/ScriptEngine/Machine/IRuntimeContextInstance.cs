@@ -27,6 +27,7 @@ namespace ScriptEngine.Machine
 
         int GetPropCount();
         string GetPropName(int propNum);
+        VariableInfo GetPropertyInfo(int propNum);
         
         int FindMethod(string name);
         int GetMethodsCount();
@@ -34,11 +35,6 @@ namespace ScriptEngine.Machine
         void CallAsProcedure(int methodNumber, IValue[] arguments);
         void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue);
 
-    }
-
-    public interface IRuntimeContextWithProperties : IRuntimeContextInstance
-    {
-        VariableInfo GetPropertyInfo(int propNum);
     }
 
     public static class RCIHelperExtensions
@@ -56,33 +52,10 @@ namespace ScriptEngine.Machine
 
         public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextInstance context)
         {
-            if (context is IRuntimeContextWithProperties)
+            for (int i = 0; i < context.GetPropCount(); i++)
             {
-                return ((IRuntimeContextWithProperties) context).GetProperties();
+                yield return context.GetPropertyInfo(i);
             }
-            VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
-            for (int i = 0; i < infos.Length; i++)
-            {
-                infos[i] = new VariableInfo()
-                {
-                    Identifier = context.GetPropName(i),
-                    Type = SymbolType.ContextProperty,
-                    Index = i
-                };
-            }
-
-            return infos;
-        }
-
-        public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextWithProperties context)
-        {
-            VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
-            for (int i = 0; i < infos.Length; i++)
-            {
-                infos[i] = context.GetPropertyInfo(i);
-            }
-
-            return infos;
         }
 
     }
