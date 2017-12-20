@@ -177,12 +177,11 @@ namespace ScriptEngine.HostedScript.Library
             return instance;
         }
 
-        private static dynamic CreatePropertiesMapper(Type clrType)
+        private static object CreatePropertiesMapper(Type clrType)
         {
             var mapperType = typeof(ContextPropertyMapper<>).MakeGenericType(clrType);
             var instance = Activator.CreateInstance(mapperType);
-            dynamic magicCaller = instance; // зачем строить ExpressionTree, когда есть dynamic
-            return magicCaller;
+            return instance;
         }
 
         private static Type GetReflectableClrType(TypeTypeValue type)
@@ -239,6 +238,19 @@ namespace ScriptEngine.HostedScript.Library
                                                       mapper,
                                                       new object[0]);
             FillMethodsTable(result, infos);
+        }
+
+        private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable.ValueTable result)
+        {
+            var clrType = GetReflectableClrType(type);
+            var mapper = CreatePropertiesMapper(clrType);
+            var actualType = mapper.GetType();
+            var infos = (IEnumerable<VariableInfo>) actualType.InvokeMember("GetProperties",
+                BindingFlags.InvokeMethod,
+                null,
+                mapper,
+                new object[0]);
+            FillPropertiesTable(result, infos);
         }
         
         private static void FillMethodsTable(ValueTable.ValueTable result, IEnumerable<MethodInfo> methods)
@@ -303,9 +315,7 @@ namespace ScriptEngine.HostedScript.Library
             else if (target.DataType == DataType.Type)
             {
                 var type = target.GetRawValue() as TypeTypeValue;
-                var clrType = GetReflectableClrType(type);
-                var magicCaller = CreatePropertiesMapper(clrType);
-                FillPropertiesTable(result, magicCaller.GetProperties());
+                FillPropertiesTableForType(type, result);
             }
             else
                 throw RuntimeException.InvalidArgumentType();
@@ -313,7 +323,7 @@ namespace ScriptEngine.HostedScript.Library
             return result;
         }
 
-        private void FillPropertiesTable(ValueTable.ValueTable result, IEnumerable<VariableInfo> properties)
+        private static void FillPropertiesTable(ValueTable.ValueTable result, IEnumerable<VariableInfo> properties)
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
