@@ -7,7 +7,7 @@
 	<BinFolder>$(OutputPathForBuild)\bin\</BinFolder>
 	<LibFolder>$(OutputPathForBuild)\lib\</LibFolder>
 	<DocFolder>$(OutputPathForBuild)\doc\</DocFolder>
-  <DebugDest>$(OutputPathForBuild)\vscode\</DebugDest>
+	<DebugDest>$(OutputPathForBuild)\vscode\</DebugDest>
 	<MDDocFolder>$(MSBuildProjectDirectory)\mddoc</MDDocFolder>
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
 	<Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
@@ -164,6 +164,8 @@
 		<!-- Копирование скрипта запуска для opm -->
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
 		
+		<CallTarget Targets="InstallStdlib" Condition="'$(StandardLibraryPacks)' != ''"/>
+		
 	</Target>
 	
 	<Target Name="CreateLibrary" DependsOnTargets="Compile">
@@ -175,13 +177,15 @@
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
 		<DeleteTree Directories="$(LibFolder)\tmp"/> 
 		
+	</Target>
+	
+	<Target Name="InstallStdlib">
 		<ItemGroup>
 			<OSPX Include="$(StandardLibraryPacks)\*.ospx"/>
 		</ItemGroup>
 		
 		<!-- костылище -->
-		<Exec Command=" (set OSCRIPT_CONFIG=lib.system=$(LibFolder)) &amp;&amp; (&quot;$(OutputPathForBuild)oscript.exe&quot; &quot;$(LibFolder)\opm\src\opm.os&quot; install -f %(OSPX.Identity) -dest $(LibFolder))"/>
-		
+		<Exec Command=" (set OSCRIPT_CONFIG=lib.system=$(LibFolder)) &amp;&amp; (&quot;$(BinFolder)oscript.exe&quot; &quot;$(LibFolder)\opm\src\opm.os&quot; install -f %(OSPX.Identity) -dest $(LibFolder))"/>
 	</Target>
 	
 	<Target Name="CreateInstall" DependsOnTargets="PrepareDistOutputFolder">
