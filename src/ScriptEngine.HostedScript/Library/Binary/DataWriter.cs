@@ -435,11 +435,11 @@ class DataWriter : AutoContext<DataWriter>, IDisposable
     [ContextMethod("ЦелевойПоток", "TargetStream")]
     public IValue TargetStream()
     {
-        return new GenericStream(_streamObj.BaseStream);
+        return new GenericStream(_binaryWriter.BaseStream);
     }
 
     public void Dispose()
     {
-        _streamObj.Dispose();
+        _binaryWriter.Dispose();
     }
 }
