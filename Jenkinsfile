@@ -17,6 +17,7 @@ pipeline {
             environment {
                 NugetPath = "${tool 'nuget'}"
                 OneScriptDocumenter = "${tool 'documenter'}"
+                StandardLibraryPacks = "${tool 'os_stdlib'}"
             }
 
             steps {
