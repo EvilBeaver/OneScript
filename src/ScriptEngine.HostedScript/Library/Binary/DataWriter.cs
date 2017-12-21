@@ -6,6 +6,11 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.IO;
+using System.Text;
+
+using ScriptEngine.HostedScript.Library;
+using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -23,13 +28,45 @@ using ScriptEngine.Machine.Contexts;
 /// При необходимости использовать другие методы для работы с данными, требуется сначала закрыть экземпляр объекта ЗаписьДанных с помощью метода Закрыть, выполнить необходимые действия над данными, установить требуемую позицию для чтения из приемника и создать новый экземпляр ЗаписьДанных.
 /// </summary>
 [ContextClass("ЗаписьДанных", "DataWriter")]
-class DataWriter : AutoContext<DataWriter>
+class DataWriter : AutoContext<DataWriter>, IDisposable
 {
 
-    private IValue _TextEncoding;
-    private string _ConvertibleSplitterOfLines;
-    private IValue _ByteOrder;
-    private string _LineSplitter;
+    private Encoding _workingEncoding;
+    private IValue _userVisibleEncoding;
+    private BinaryWriter _binaryWriter;
+    private readonly bool _writeBOM;
+    
+    public DataWriter(string fileName, IValue textEncoding, ByteOrderEnum? byteOrder, string lineSplitter, bool append, string convertibleSplitterOfLines, bool writeBOM)
+    {
+        ByteOrder = byteOrder?? ByteOrderEnum.LittleEndian;
+        LineSplitter = lineSplitter?? "\r\n";
+        ConvertibleSplitterOfLines = convertibleSplitterOfLines;
+        _writeBOM = writeBOM;
+        TextEncoding = textEncoding;
+
+        var fileSubsystem = new FileStreamsManager();
+        var fileStreamContext = append ? fileSubsystem.OpenForAppend(fileName) : fileSubsystem.OpenForWrite(fileName);
+
+        _binaryWriter = new BinaryWriter(fileStreamContext.GetUnderlyingStream(), _workingEncoding);
+
+        Converter = new EndianBitConverter();
+        Converter.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
+
+    }
+
+    public DataWriter(IStreamWrapper streamObj, IValue textEncoding, ByteOrderEnum? byteOrder, string lineSplitter, string convertibleSplitterOfLines, bool writeBOM)
+    {
+        ByteOrder = byteOrder?? ByteOrderEnum.LittleEndian;
+        LineSplitter = lineSplitter ?? "\r\n";
+        ConvertibleSplitterOfLines = convertibleSplitterOfLines;
+        _writeBOM = writeBOM;
+        TextEncoding = textEncoding;
+
+        _binaryWriter = new BinaryWriter(streamObj.GetUnderlyingStream(), _workingEncoding);
+
+        Converter = new EndianBitConverter();
+        Converter.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
+    }
 
     /// <summary>
     /// 
@@ -63,9 +100,9 @@ class DataWriter : AutoContext<DataWriter>
     /// Значение по умолчанию: Ложь. </param>
     ///
     [ScriptConstructor(Name = "На основании имени файла")]
-    public static IRuntimeContextInstance Constructor(string fileName, IValue textEncoding = null, IValue byteOrder = null, string lineSplitter = null, bool append = false, string convertibleSplitterOfLines = null, bool writeBOM = false)
+    public static IRuntimeContextInstance Constructor(string fileName, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, bool append = false, string convertibleSplitterOfLines = null, bool writeBOM = false)
     {
-        return new DataWriter();
+        return new DataWriter(fileName, textEncoding, byteOrder, lineSplitter, append, convertibleSplitterOfLines, writeBOM);
     }
 
     /// <summary>
@@ -93,10 +130,18 @@ class DataWriter : AutoContext<DataWriter>
     /// Значение по умолчанию: Ложь. </param>
     ///
     [ScriptConstructor(Name = "На основании потока")]
-    public static IRuntimeContextInstance Constructor1(IValue stream, IValue textEncoding = null, IValue byteOrder = null, string lineSplitter = null, IValue convertibleSplitterOfLines = null, bool writeBOM = false)
+    public static IRuntimeContextInstance Constructor1(IValue stream, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null, bool writeBOM = false)
     {
-        return new DataWriter();
+        var streamObj = stream.AsObject() as IStreamWrapper;
+        if (streamObj == null)
+        {
+            throw RuntimeException.InvalidArgumentType(nameof(stream));
+        }
+
+        return new DataWriter(streamObj, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines, writeBOM);
     }
+
+    private EndianBitConverter Converter { get; }
 
     /// <summary>
     /// 
@@ -105,8 +150,16 @@ class DataWriter : AutoContext<DataWriter>
     /// </summary>
     /// <value>КодировкаТекста (TextEncoding), Строка (String)</value>
     [ContextProperty("КодировкаТекста", "TextEncoding")]
-    public IValue TextEncoding { get; set; }
-
+    public IValue TextEncoding
+    {
+        get { return _userVisibleEncoding; }
+        set
+        {
+            _workingEncoding = TextEncodingEnum.GetEncoding(value, _writeBOM);
+            _userVisibleEncoding = value;
+        }
+    }
+    
     /// <summary>
     /// 
     /// Конвертируемый разделитель строк. Этот параметр влияет на поведение метода ЗаписатьСимволы.
@@ -121,7 +174,7 @@ class DataWriter : AutoContext<DataWriter>
     /// </summary>
     /// <value>ПорядокБайтов (ByteOrder)</value>
     [ContextProperty("ПорядокБайтов", "ByteOrder")]
-    public IValue ByteOrder { get; private set; }
+    public ByteOrderEnum ByteOrder { get; private set; }
 
 
     /// <summary>
@@ -141,7 +194,7 @@ class DataWriter : AutoContext<DataWriter>
     [ContextMethod("Закрыть", "Close")]
     public void Close()
     {
-        throw new NotImplementedException();
+        _binaryWriter.Close();
     }
 
 
@@ -161,7 +214,11 @@ class DataWriter : AutoContext<DataWriter>
     [ContextMethod("Записать", "Write")]
     public void Write(IValue binaryDataOrReadResult)
     {
-        throw new NotImplementedException();
+        var binData = binaryDataOrReadResult.AsObject() as BinaryDataContext;
+        if (binData == null) //TODO: Поддержкать класс РезультатЧтенияДанных
+            throw RuntimeException.InvalidArgumentType();
+
+        _binaryWriter.Write(binData.Buffer, 0, binData.Size());
     }
     
     /// <summary>
@@ -173,31 +230,11 @@ class DataWriter : AutoContext<DataWriter>
     /// Целое число, которое будет записано в целевой поток. Значение числа должно находиться в диапазоне от 0 до 255. </param>
     ///
     [ContextMethod("ЗаписатьБайт", "WriteByte")]
-    public void WriteByte(int number)
+    public void WriteByte(byte number)
     {
-        throw new NotImplementedException();
+        _binaryWriter.Write(number);
     }
     
-    /// <summary>
-    /// 
-    /// Записать байты из буфера двоичных данных в целевой поток.
-    /// </summary>
-    ///
-    /// <remarks>
-    /// 
-    /// Запись буфера
-    /// </remarks>
-    ///
-    /// <param name="buffer">
-    /// Буфер двоичных данных, все байты которого будут записаны в целевой поток. </param>
-    ///
-    [ContextMethod("ЗаписатьБуферДвоичныхДанных", "WriteBinaryDataBuffer")]
-    public void WriteBinaryDataBuffer(IValue buffer)
-    {
-        throw new NotImplementedException();
-    }
-
-
     /// <summary>
     /// 
     /// Записать байты из буфера двоичных данных в целевой поток.
@@ -216,9 +253,12 @@ class DataWriter : AutoContext<DataWriter>
     /// Количество байтов, которые требуется записать в целевой поток. </param>
     ///
     [ContextMethod("ЗаписатьБуферДвоичныхДанных", "WriteBinaryDataBuffer")]
-    public void WriteBinaryDataBuffer(IValue buffer, int positionInBuffer, int number)
+    public void WriteBinaryDataBuffer(BinaryDataBuffer buffer, int positionInBuffer = 0, int number = 0)
     {
-        throw new NotImplementedException();
+        if(positionInBuffer == 0 && number == 0)
+            _binaryWriter.Write(buffer.Bytes, 0, buffer.Count());
+        else
+            _binaryWriter.Write(buffer.Bytes, positionInBuffer, number);
     }
 
 
@@ -236,7 +276,14 @@ class DataWriter : AutoContext<DataWriter>
     [ContextMethod("ЗаписатьСимволы", "WriteChars")]
     public void WriteChars(string line, IValue encoding = null)
     {
-        throw new NotImplementedException();
+        if(encoding == null)
+            _binaryWriter.Write(line);
+        else
+        {
+            var enc = TextEncodingEnum.GetEncoding(encoding, _writeBOM);
+            var bytes = enc.GetBytes(line);
+            _binaryWriter.Write(bytes,0,bytes.Length);
+        }
     }
 
 
@@ -259,9 +306,39 @@ class DataWriter : AutoContext<DataWriter>
     [ContextMethod("ЗаписатьСтроку", "WriteLine")]
     public void WriteLine(string line, IValue encoding = null, string lineSplitter = null)
     {
-        throw new NotImplementedException();
+        // TODO: Для экономии времени не поддерживаем пока конвертируемый разделитель строк
+        // Кому надо - попросит PR.
+
+        if (encoding == null)
+            _binaryWriter.Write(line);
+        else
+        {
+            var enc = TextEncodingEnum.GetEncoding(encoding, _writeBOM);
+            var bytes = enc.GetBytes(line);
+            _binaryWriter.Write(bytes, 0, bytes.Length);
+        }
+
+        if(lineSplitter == null)
+            _binaryWriter.Write(LineSplitter);
+        else
+            _binaryWriter.Write(lineSplitter);
     }
-    
+
+    private byte[] GetBytes<T>(Converter<T, byte[]> converterOverload, T value, ByteOrderEnum byteOrder = ByteOrderEnum.LittleEndian)
+    {
+        byte[] bytes;
+        if (byteOrder == ByteOrder)
+            bytes = converterOverload(value);
+        else
+        {
+            var cnv = new EndianBitConverter();
+            cnv.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
+            bytes = converterOverload(value);
+        }
+
+        return bytes;
+    }
+
     /// <summary>
     /// 
     /// Записывает 16-разрядное число в целевой поток.
@@ -275,12 +352,21 @@ class DataWriter : AutoContext<DataWriter>
     /// Значение по умолчанию: Неопределено. </param>
     ///
     [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
-    public void WriteInt16(int number, IValue byteOrder = null)
+    public void WriteInt16(short number, ByteOrderEnum byteOrder = ByteOrderEnum.LittleEndian)
     {
-        throw new NotImplementedException();
+        byte[] buffer;
+        if (byteOrder == ByteOrder)
+            buffer = Converter.GetBytes(number);
+        else
+        {
+            var cnv = new EndianBitConverter();
+            cnv.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
+            buffer = cnv.GetBytes(number);
+        }
+
+        _binaryWriter.Write(buffer, 0, buffer.Length);
     }
-
-
+    
     /// <summary>
     /// 
     /// Записать целое 32-битное число в целевой поток.
@@ -293,9 +379,19 @@ class DataWriter : AutoContext<DataWriter>
     /// Значение по умолчанию: Неопределено. </param>
     ///
     [ContextMethod("ЗаписатьЦелое32", "WriteInt32")]
-    public void WriteInt32(int number, IValue byteOrder = null)
+    public void WriteInt32(int number, ByteOrderEnum byteOrder = ByteOrderEnum.LittleEndian)
     {
-        throw new NotImplementedException();
+        byte[] buffer;
+        if (byteOrder == ByteOrder)
+            buffer = Converter.GetBytes(number);
+        else
+        {
+            var cnv = new EndianBitConverter();
+            cnv.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
+            buffer = cnv.GetBytes(number);
+        }
+
+        _binaryWriter.Write(buffer, 0, buffer.Length);
     }
 
 
@@ -339,7 +435,11 @@ class DataWriter : AutoContext<DataWriter>
     [ContextMethod("ЦелевойПоток", "TargetStream")]
     public IValue TargetStream()
     {
-        throw new NotImplementedException();
+        return new GenericStream(_streamObj.BaseStream);
     }
 
+    public void Dispose()
+    {
+        _streamObj.Dispose();
+    }
 }
