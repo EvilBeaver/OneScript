@@ -117,22 +117,27 @@ namespace ScriptEngine.HostedScript.Library.Zip
             AddEnumeratedFiles(filesToAdd, GetPathForParentFolder(file), storePathMode);
         }
 
-        private string GetPathForParentFolder(string filepath)
+        private string GetPathForParentFolder(string dirpath)
         {
             var pathForParentFolder = "";
-            if (Path.IsPathRooted(filepath))
+            if (Path.IsPathRooted(dirpath))
             {
                 var currDir = System.IO.Directory.GetCurrentDirectory();
-                var path = GetRelativePath(filepath, currDir);
-                if (path == filepath || path.Substring(0, 2) == "..")
-                    pathForParentFolder = System.IO.Path.Combine(Path.GetDirectoryName(filepath), "..");
+                var path = GetRelativePath(dirpath, currDir);
+                if (IsNotRelativePath(dirpath, path))
+                    pathForParentFolder = System.IO.Path.Combine(dirpath, "..");
                 else
                     pathForParentFolder = currDir;
             }
             else
-                pathForParentFolder = System.IO.Path.Combine(filepath, "..");
+                pathForParentFolder = System.IO.Path.Combine(dirpath, "..");
 
             return pathForParentFolder;
+        }
+
+        private bool IsNotRelativePath(string filepath, string relativePath)
+        {
+            return (relativePath == filepath || relativePath.Substring(0, 2) == "..");
         }
 
         private void AddSingleFile(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
@@ -148,7 +153,13 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 pathInArchive = null;
             else if (storePathMode == storeModeEnum.StoreRelativePath)
             {
-                pathInArchive = GetRelativePath(file, currDir);
+                var relativePath = GetRelativePath(file, currDir);
+                if (Path.IsPathRooted(file) && IsNotRelativePath(file, relativePath))
+                {
+                    pathInArchive = ".";
+                }
+                else
+                    pathInArchive = Path.GetDirectoryName(relativePath);
             }
             else
                 pathInArchive = "";
