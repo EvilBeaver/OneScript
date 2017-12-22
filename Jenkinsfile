@@ -35,7 +35,8 @@ pipeline {
                 
                 ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
-                    checkout scm
+                    step([$class: 'WsCleanup'])
+					checkout scm
 
                     bat 'set'
                     withSonarQubeEnv('silverbulleters') {
