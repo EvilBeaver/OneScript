@@ -146,8 +146,16 @@ namespace ScriptEngine.HostedScript.Library.Binary
             get { return _userVisibleEncoding; }
             set
             {
-                _workingEncoding = TextEncodingEnum.GetEncoding(value, _writeBOM);
-                _userVisibleEncoding = value;
+                if (value != null)
+                {
+                    _workingEncoding = TextEncodingEnum.GetEncoding(value, _writeBOM);
+                    _userVisibleEncoding = value;
+                }
+                else
+                {
+                    _workingEncoding = new UTF8Encoding(true);
+                    _userVisibleEncoding = ValueFactory.Create("utf-8");
+                }
             }
         }
     

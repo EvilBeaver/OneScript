@@ -375,7 +375,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         ///   System.ArgumentOutOfRangeException:
         ///     startIndex is less than zero or greater than the length of value minus 1.
         ///</summary>
-        public int ToInt16(byte[] value, int startIndex)
+        public short ToInt16(byte[] value, int startIndex)
         {
             if (IsLittleEndian)
             {
@@ -383,7 +383,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                int a = (value[startIndex] << 8 | value[startIndex + 1]);
+                var a = (short)(value[startIndex] << 8 | value[startIndex + 1]);
                 return a;
             }
         }
