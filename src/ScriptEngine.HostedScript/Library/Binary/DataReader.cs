@@ -493,7 +493,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// <returns name="Number"/>
         ///
         [ContextMethod("ПрочитатьЦелое16", "ReadInt16")]
-        public short ReadInt16(IValue byteOrder = null)
+        public int ReadInt16(IValue byteOrder = null)
         {
             var bytes = _reader.ReadBytes(sizeof(short));
             return FromBytes(bytes, BitConversionFacility.LittleEndian.ToInt16, BitConversionFacility.BigEndian.ToInt16, byteOrder);
