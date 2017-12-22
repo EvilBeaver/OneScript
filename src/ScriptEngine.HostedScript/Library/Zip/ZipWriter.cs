@@ -106,7 +106,6 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         private void AddDirectory(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
-            var path = Path.IsPathRooted(file) ? Path.GetDirectoryName(file) : Path.GetFullPath(file);
             string allFilesMask;
 
             if (System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
@@ -115,7 +114,25 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 allFilesMask = "*.*";
 
             var filesToAdd = System.IO.Directory.EnumerateFiles(file, allFilesMask, searchOption);
-            AddEnumeratedFiles(filesToAdd, path, storePathMode);
+            AddEnumeratedFiles(filesToAdd, GetPathForParentFolder(file), storePathMode);
+        }
+
+        private string GetPathForParentFolder(string filepath)
+        {
+            var pathForParentFolder = "";
+            if (Path.IsPathRooted(filepath))
+            {
+                var currDir = System.IO.Directory.GetCurrentDirectory();
+                var path = GetRelativePath(filepath, currDir);
+                if (path == filepath || path.Substring(0, 2) == "..")
+                    pathForParentFolder = System.IO.Path.Combine(Path.GetDirectoryName(filepath), "..");
+                else
+                    pathForParentFolder = currDir;
+            }
+            else
+                pathForParentFolder = System.IO.Path.Combine(filepath, "..");
+
+            return pathForParentFolder;
         }
 
         private void AddSingleFile(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
@@ -124,9 +141,15 @@ namespace ScriptEngine.HostedScript.Library.Zip
             if (storePathMode == null)
                 storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
 
+            var currDir = System.IO.Directory.GetCurrentDirectory();
+
             string pathInArchive;
             if (storePathMode == storeModeEnum.StoreFullPath)
                 pathInArchive = null;
+            else if (storePathMode == storeModeEnum.StoreRelativePath)
+            {
+                pathInArchive = GetRelativePath(file, currDir);
+            }
             else
                 pathInArchive = "";
 
@@ -186,7 +209,9 @@ namespace ScriptEngine.HostedScript.Library.Zip
             {
                 string pathInArchive;
                 if (storePathMode == storeModeEnum.StoreRelativePath)
-                    pathInArchive = GetRelativePath(item, relativePath);
+                {
+                    pathInArchive = System.IO.Path.GetDirectoryName(GetRelativePath(item, relativePath));
+                }
                 else if (storePathMode == storeModeEnum.StoreFullPath)
                     pathInArchive = null;
                 else
@@ -196,16 +221,25 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        private string GetRelativePath(string item, string basePath)
+        private string GetRelativePath(string filespec, string folder)
         {
-            var dir = System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(item));
-            int startIndex;
-            if (dir == basePath)
-                startIndex = System.IO.Path.GetDirectoryName(basePath).Length;
-            else
-                startIndex = basePath.Length;
+            Uri pathUri = null;
+            try
+            {
+                pathUri = new Uri(filespec);
+            }
+            catch (System.UriFormatException)
+            {
+                return filespec;
+            }
 
-            return dir.Substring(startIndex).TrimStart(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+            // Folders must end in a slash
+            if (!folder.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                folder += Path.DirectorySeparatorChar;
+            }
+            Uri folderUri = new Uri(folder);
+            return Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
         }
 
         private static bool GetRecursiveFlag(SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories)
