@@ -48,10 +48,7 @@ class DataWriter : AutoContext<DataWriter>, IDisposable
         var fileStreamContext = append ? fileSubsystem.OpenForAppend(fileName) : fileSubsystem.OpenForWrite(fileName);
 
         _binaryWriter = new BinaryWriter(fileStreamContext.GetUnderlyingStream(), _workingEncoding);
-
-        Converter = new EndianBitConverter();
-        Converter.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
-
+        
     }
 
     public DataWriter(IStreamWrapper streamObj, IValue textEncoding, ByteOrderEnum? byteOrder, string lineSplitter, string convertibleSplitterOfLines, bool writeBOM)
@@ -63,9 +60,7 @@ class DataWriter : AutoContext<DataWriter>, IDisposable
         TextEncoding = textEncoding;
 
         _binaryWriter = new BinaryWriter(streamObj.GetUnderlyingStream(), _workingEncoding);
-
-        Converter = new EndianBitConverter();
-        Converter.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
+        
     }
 
     /// <summary>
@@ -140,9 +135,7 @@ class DataWriter : AutoContext<DataWriter>, IDisposable
 
         return new DataWriter(streamObj, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines, writeBOM);
     }
-
-    private EndianBitConverter Converter { get; }
-
+    
     /// <summary>
     /// 
     /// Кодировка текста по-умолчанию для данного экземпляра ЗаписьДанных.
@@ -324,21 +317,31 @@ class DataWriter : AutoContext<DataWriter>, IDisposable
             _binaryWriter.Write(lineSplitter);
     }
 
-    private byte[] GetBytes<T>(Converter<T, byte[]> converterOverload, T value, ByteOrderEnum byteOrder = ByteOrderEnum.LittleEndian)
+    private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, IValue byteOrder = null)
     {
-        byte[] bytes;
-        if (byteOrder == ByteOrder)
-            bytes = converterOverload(value);
+        ByteOrderEnum workByteOrder;
+        if (byteOrder == null)
+            workByteOrder = ByteOrder;
         else
         {
-            var cnv = new EndianBitConverter();
-            cnv.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
-            bytes = converterOverload(value);
+            var enumVal = byteOrder.GetRawValue() as IObjectWrapper;
+            if (enumVal == null)
+                throw RuntimeException.InvalidArgumentType(nameof(byteOrder));
+
+            try
+            {
+                workByteOrder = (ByteOrderEnum) enumVal.UnderlyingObject;
+            }
+            catch (InvalidCastException)
+            {
+                throw RuntimeException.InvalidArgumentType(nameof(byteOrder));
+            }
         }
 
-        return bytes;
+        var converter = workByteOrder == ByteOrderEnum.BigEndian ? beConverter : leConverter;
+        return converter(value);
     }
-
+    
     /// <summary>
     /// 
     /// Записывает 16-разрядное число в целевой поток.
@@ -352,18 +355,9 @@ class DataWriter : AutoContext<DataWriter>, IDisposable
     /// Значение по умолчанию: Неопределено. </param>
     ///
     [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
-    public void WriteInt16(short number, ByteOrderEnum byteOrder = ByteOrderEnum.LittleEndian)
+    public void WriteInt16(short number, IValue byteOrder = null)
     {
-        byte[] buffer;
-        if (byteOrder == ByteOrder)
-            buffer = Converter.GetBytes(number);
-        else
-        {
-            var cnv = new EndianBitConverter();
-            cnv.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
-            buffer = cnv.GetBytes(number);
-        }
-
+        var buffer = GetBytes(number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
         _binaryWriter.Write(buffer, 0, buffer.Length);
     }
     
@@ -379,18 +373,9 @@ class DataWriter : AutoContext<DataWriter>, IDisposable
     /// Значение по умолчанию: Неопределено. </param>
     ///
     [ContextMethod("ЗаписатьЦелое32", "WriteInt32")]
-    public void WriteInt32(int number, ByteOrderEnum byteOrder = ByteOrderEnum.LittleEndian)
+    public void WriteInt32(int number, IValue byteOrder = null)
     {
-        byte[] buffer;
-        if (byteOrder == ByteOrder)
-            buffer = Converter.GetBytes(number);
-        else
-        {
-            var cnv = new EndianBitConverter();
-            cnv.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
-            buffer = cnv.GetBytes(number);
-        }
-
+        var buffer = GetBytes(number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
         _binaryWriter.Write(buffer, 0, buffer.Length);
     }
 
@@ -407,9 +392,10 @@ class DataWriter : AutoContext<DataWriter>, IDisposable
     /// Значение по умолчанию: Неопределено. </param>
     ///
     [ContextMethod("ЗаписатьЦелое64", "WriteInt64")]
-    public void WriteInt64(int number, IValue byteOrder = null)
+    public void WriteInt64(long number, IValue byteOrder = null)
     {
-        throw new NotImplementedException();
+        var buffer = GetBytes(number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
+        _binaryWriter.Write(buffer, 0, buffer.Length);
     }
 
     /// <summary>
@@ -420,7 +406,7 @@ class DataWriter : AutoContext<DataWriter>, IDisposable
     [ContextMethod("СброситьБуферы", "Flush")]
     public void Flush()
     {
-        throw new NotImplementedException();
+        _binaryWriter.Flush();
     }
 
 
