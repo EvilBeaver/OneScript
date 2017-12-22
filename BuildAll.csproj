@@ -182,7 +182,7 @@
 		<ItemGroup>
 			<LibraryFiles Include="$(StandardLibraryPacks)\**\*" />
 		</ItemGroup>
-		<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/>
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/>
 	</Target>
 	
 	<Target Name="CreateInstall" DependsOnTargets="PrepareDistOutputFolder">
