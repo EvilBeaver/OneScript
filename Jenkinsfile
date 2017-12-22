@@ -245,7 +245,7 @@ pipeline {
             }
         }
                 
-                stage ('Publishing master') {
+        stage ('Publishing master') {
             when { branch 'master' }
                 
             agent { label 'master' }
