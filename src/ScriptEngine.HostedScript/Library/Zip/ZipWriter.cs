@@ -266,6 +266,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             try
             {
                 pathUri = new Uri(filespec);
+                DebugEcho(String.Format("GetRelativePath pathUri is {0}", pathUri.ToString()));
                 //pathUri = new Uri("file://" + filespec);
             }
             catch (System.UriFormatException)
@@ -278,10 +279,17 @@ namespace ScriptEngine.HostedScript.Library.Zip
             if (!folder.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 folder += Path.DirectorySeparatorChar;
+                DebugEcho(String.Format("GetRelativePath add to folder {0}", Path.DirectorySeparatorChar.ToString()));
             }
             Uri folderUri = new Uri(folder);
             //Uri folderUri = new Uri("file://" + folder);
-            var res = Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
+            DebugEcho(String.Format("GetRelativePath folderUri is {0}", folderUri.ToString()));
+            var relativeUri = folderUri.MakeRelativeUri(pathUri);
+            DebugEcho(String.Format("GetRelativePath relativeUri is {0}", relativeUri.ToString()));
+            DebugEcho(String.Format("GetRelativePath relativeUri.ToString().Replace('/', Path.DirectorySeparatorChar) is {0}",
+                relativeUri.ToString().Replace('/', Path.DirectorySeparatorChar)));
+
+            var res = Uri.UnescapeDataString(relativeUri.ToString().Replace('/', Path.DirectorySeparatorChar));
             DebugEcho(String.Format("GetRelativePath res is {0}", res));
 
             /*
