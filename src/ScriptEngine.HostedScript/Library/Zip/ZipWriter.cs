@@ -119,25 +119,16 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         private string GetPathForParentFolder(string dir)
         {
-            DebugEcho(String.Format("GetPathForParentFolder dirpath is {0}", dir));
             var rootPath = GetRelativePath(dir, Directory.GetCurrentDirectory());
-            DebugEcho(String.Format("GetPathForParentFolder: rootPath is {0}", rootPath));
             if (rootPath == "")
-            {
                 rootPath = Path.Combine(Directory.GetCurrentDirectory(), dir, "..");
-                DebugEcho(String.Format("GetPathForParentFolder: final rootPath is {0}", rootPath));
-            }
             else
-            {
                 rootPath = Directory.GetCurrentDirectory();
-                DebugEcho(String.Format("GetPathForParentFolder: final rootPath is {0}", rootPath));
-            }
             return rootPath;
         }
 
         private bool IsNotRelativePath(string filepath, string relativePath)
         {
-            DebugEcho(String.Format("IsNotRelativePath: filepath is {0}, relativePath is {1}", filepath, relativePath));
             if (relativePath == "")
                 return true;
             return (relativePath == filepath || relativePath.Substring(0, 2) == "..");
@@ -156,24 +147,15 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 pathInArchive = null;
             else if (storePathMode == storeModeEnum.StoreRelativePath)
             {
-                DebugEcho(String.Format("AddSingleFile: file is {0}", file));
                 var relativePath = GetRelativePath(file, currDir);
-                DebugEcho(String.Format("AddSingleFile: relativePath is {0}", relativePath));
                 if (Path.IsPathRooted(file) && IsNotRelativePath(file, relativePath))
-                {
-                    DebugEcho("Path.IsPathRooted(file) && IsNotRelativePath(file, relativePath)");
                     pathInArchive = ".";
-                }
                 else
-                {
-                    DebugEcho("NOT Path.IsPathRooted(file) && IsNotRelativePath(file, relativePath)");
                     pathInArchive = Path.GetDirectoryName(relativePath);
-                }
             }
             else
                 pathInArchive = "";
 
-            DebugEcho(String.Format("AddSingleFile: pathInArchive is {0}", pathInArchive));
             _zip.AddFile(file, pathInArchive);
         }
 
@@ -229,18 +211,12 @@ namespace ScriptEngine.HostedScript.Library.Zip
             {
                 string pathInArchive;
                 if (storePathMode == storeModeEnum.StoreRelativePath)
-                {
-                    DebugEcho(String.Format("AddEnumeratedFiles: relativePath is {0}", relativePath));
-                    DebugEcho(String.Format("AddEnumeratedFiles: item is {0}", item));
-                    DebugEcho(String.Format("AddEnumeratedFiles: GetRelativePath(item, relativePath) is {0}", GetRelativePath(item, relativePath)));
                     pathInArchive = Path.GetDirectoryName(GetRelativePath(item, relativePath));
-                }
                 else if (storePathMode == storeModeEnum.StoreFullPath)
                     pathInArchive = null;
                 else
                     pathInArchive = "";
 
-                DebugEcho(String.Format("AddEnumeratedFiles: pathInArchive is {0}", pathInArchive));
                 _zip.AddFile(item, pathInArchive);
             }
         }
@@ -248,46 +224,30 @@ namespace ScriptEngine.HostedScript.Library.Zip
         // возвращает относительный путь или "", если путь не является относительным
         private string GetRelativePath(string filespec, string rootfolder)
         {
-            DebugEcho(String.Format("GetRelativePath: filespec is {0}, folder is {1}", filespec, rootfolder));
-
             var currDir = Directory.GetCurrentDirectory();
-            DebugEcho(String.Format("GetRelativePath currDir is {0}", currDir));
 
             DirectoryInfo directory = new DirectoryInfo(Path.Combine(currDir, rootfolder));
             var folderpath = directory.FullName;
-            DebugEcho(String.Format("GetRelativePath folderpath is {0}", folderpath));
 
             var filepath = Path.Combine(currDir, filespec);
-            DebugEcho(String.Format("GetRelativePath combine filepath is {0}", filepath));
 
             if (Directory.Exists(filespec))
             {
                 DirectoryInfo dir = new DirectoryInfo(filepath);
                 filepath = dir.FullName;
-                DebugEcho(String.Format("GetRelativePath filepath (for dir) is {0}", filepath));
             }
             else {
                 FileInfo file = new FileInfo(filepath);
                 filepath = file.FullName;
-                DebugEcho(String.Format("GetRelativePath filepath (for file) is {0}", filepath));
             }
 
             if (!filepath.StartsWith(folderpath))
-            {
-                DebugEcho("GetRelativePath filepath is absolute, not relative");
                 return "";
-            }
 
             var res = filepath.Substring(folderpath.Length + 1);
             if (res == "")
                 res = ".";
-            DebugEcho(String.Format("GetRelativePath res = filepath.Substring(folderpath.Length + 1) is {0}", res));
             return res;
-        }
-
-        private void DebugEcho(string str)
-        {
-            Console.WriteLine(String.Format("DEBUG ZIP: {0}", str));
         }
 
         private static bool GetRecursiveFlag(SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories)
