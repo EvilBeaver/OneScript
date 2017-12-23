@@ -119,17 +119,17 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         private string GetPathForParentFolder(string dirpath)
         {
-            DebugEcho(String.Format("GetPathForParentFolder dirpath is {0}.", dirpath));
+            DebugEcho(String.Format("GetPathForParentFolder dirpath is {0}", dirpath));
             var pathForParentFolder = "";
             if (Path.IsPathRooted(dirpath))
             {
                 DebugEcho("GetPathForParentFolder: is rooted");
 
                 var currDir = System.IO.Directory.GetCurrentDirectory();
-                DebugEcho(String.Format("GetPathForParentFolder currDir is {0}.", currDir));
+                DebugEcho(String.Format("GetPathForParentFolder currDir is {0}", currDir));
 
                 var path = GetRelativePath(dirpath, currDir);
-                DebugEcho(String.Format("GetPathForParentFolder GetRelativePath is {0}.", path));
+                DebugEcho(String.Format("GetPathForParentFolder GetRelativePath is {0}", path));
                 if (IsNotRelativePath(dirpath, path))
                 {
                     DebugEcho("GetPathForParentFolder IsNotRelativePath is true");
@@ -147,7 +147,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 pathForParentFolder = System.IO.Path.Combine(dirpath, "..");
             }
 
-            DebugEcho(String.Format("GetPathForParentFolder pathForParentFolder is {0}.", pathForParentFolder));
+            DebugEcho(String.Format("GetPathForParentFolder pathForParentFolder is {0}", pathForParentFolder));
             return pathForParentFolder;
         }
 
@@ -265,11 +265,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
             Uri pathUri = null;
             try
             {
-                pathUri = new Uri(filespec);
+                pathUri = new Uri("file://" + filespec);
             }
             catch (System.UriFormatException)
             {
-                DebugEcho(String.Format("GetRelativePath catch is {0}.", filespec));
+                DebugEcho(String.Format("GetRelativePath catch is {0}", filespec));
                 return filespec;
             }
 
@@ -278,15 +278,28 @@ namespace ScriptEngine.HostedScript.Library.Zip
             {
                 folder += Path.DirectorySeparatorChar;
             }
-            Uri folderUri = new Uri(folder);
+            Uri folderUri = new Uri("file://" + folder);
             var res = Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
-            DebugEcho(String.Format("GetRelativePath res is {0}.", res));
+            DebugEcho(String.Format("GetRelativePath res is {0}", res));
+
+            var removestr = "file:\\\\";
+            if (res.StartsWith(removestr))
+            {
+                DebugEcho(String.Format("GetRelativePath res without {1} is {0}", res, removestr));
+                res = res.Substring(removestr.Length);
+            }
+            removestr = "file://";
+            if (res.StartsWith(removestr))
+            {
+                DebugEcho(String.Format("GetRelativePath res without {1} is {0}", res, removestr));
+                res = res.Substring(removestr.Length);
+            }
             return res;
         }
 
         private void DebugEcho(string str)
         {
-            Console.WriteLine(String.Format("DEBUG ZIP: {0}.", str));
+            Console.WriteLine(String.Format("DEBUG ZIP: {0}", str));
         }
 
         private static bool GetRecursiveFlag(SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories)
