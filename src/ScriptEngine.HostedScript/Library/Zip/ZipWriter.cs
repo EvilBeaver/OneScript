@@ -87,24 +87,24 @@ namespace ScriptEngine.HostedScript.Library.Zip
             var pathIsMasked = file.IndexOfAny(new[] { '*', '?' }) >= 0;
 
             var recursiveFlag = GetRecursiveFlag(recurseSubdirectories);
-            var searchOption = recursiveFlag ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
+            var searchOption = recursiveFlag ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
             if(pathIsMasked)
             {
                 AddFilesByMask(file, searchOption, storePathMode);
             }
-            else if (System.IO.Directory.Exists(file))
+            else if (Directory.Exists(file))
             {
                 AddDirectory(file, searchOption, storePathMode);
             }
-            else if (System.IO.File.Exists(file))
+            else if (File.Exists(file))
             {
                 AddSingleFile(file, storePathMode);
             }
             
         }
 
-        private void AddDirectory(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddDirectory(string dir, SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
             string allFilesMask;
 
@@ -113,47 +113,33 @@ namespace ScriptEngine.HostedScript.Library.Zip
             else
                 allFilesMask = "*.*";
 
-            var filesToAdd = System.IO.Directory.EnumerateFiles(file, allFilesMask, searchOption);
-            AddEnumeratedFiles(filesToAdd, GetPathForParentFolder(file), storePathMode);
+            var filesToAdd = Directory.EnumerateFiles(dir, allFilesMask, searchOption);
+            AddEnumeratedFiles(filesToAdd, GetPathForParentFolder(dir), storePathMode);
         }
 
-        private string GetPathForParentFolder(string dirpath)
+        private string GetPathForParentFolder(string dir)
         {
-            DebugEcho(String.Format("GetPathForParentFolder dirpath is {0}", dirpath));
-            var pathForParentFolder = "";
-            if (Path.IsPathRooted(dirpath))
+            DebugEcho(String.Format("GetPathForParentFolder dirpath is {0}", dir));
+            var rootPath = GetRelativePath(dir, Directory.GetCurrentDirectory());
+            DebugEcho(String.Format("GetPathForParentFolder: rootPath is {0}", rootPath));
+            if (rootPath == "")
             {
-                DebugEcho("GetPathForParentFolder: is rooted");
-
-                var currDir = System.IO.Directory.GetCurrentDirectory();
-                DebugEcho(String.Format("GetPathForParentFolder currDir is {0}", currDir));
-
-                var path = GetRelativePath(dirpath, currDir);
-                DebugEcho(String.Format("GetPathForParentFolder GetRelativePath is {0}", path));
-                if (IsNotRelativePath(dirpath, path))
-                {
-                    DebugEcho("GetPathForParentFolder IsNotRelativePath is true");
-                    pathForParentFolder = System.IO.Path.Combine(dirpath, "..");
-                }
-                else
-                {
-                    DebugEcho("GetPathForParentFolder IsNotRelativePath is false");
-                    pathForParentFolder = currDir;
-                }
+                rootPath = Path.Combine(Directory.GetCurrentDirectory(), dir, "..");
+                DebugEcho(String.Format("GetPathForParentFolder: final rootPath is {0}", rootPath));
             }
             else
             {
-                DebugEcho("GetPathForParentFolder: is not rooted");
-                pathForParentFolder = System.IO.Path.Combine(dirpath, "..");
+                rootPath = Directory.GetCurrentDirectory();
+                DebugEcho(String.Format("GetPathForParentFolder: final rootPath is {0}", rootPath));
             }
-
-            DebugEcho(String.Format("GetPathForParentFolder pathForParentFolder is {0}", pathForParentFolder));
-            return pathForParentFolder;
+            return rootPath;
         }
 
         private bool IsNotRelativePath(string filepath, string relativePath)
         {
             DebugEcho(String.Format("IsNotRelativePath: filepath is {0}, relativePath is {1}", filepath, relativePath));
+            if (relativePath == "")
+                return true;
             return (relativePath == filepath || relativePath.Substring(0, 2) == "..");
         }
 
@@ -163,7 +149,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             if (storePathMode == null)
                 storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
 
-            var currDir = System.IO.Directory.GetCurrentDirectory();
+            var currDir = Directory.GetCurrentDirectory();
 
             string pathInArchive;
             if (storePathMode == storeModeEnum.StoreFullPath)
@@ -191,7 +177,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip.AddFile(file, pathInArchive);
         }
 
-        private void AddFilesByMask(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddFilesByMask(string file, SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
             // надо разделить на каталог и маску
             var pathEnd = file.LastIndexOfAny(new[] { '\\', '/' });
@@ -213,7 +199,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 }
 
                 // несуществующие пути или пути к файлам, вместо папок 1С откидывает
-                if (!System.IO.Directory.Exists(path))
+                if (!Directory.Exists(path))
                     return;
             }
             else if (pathEnd == 0)
@@ -227,8 +213,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 mask = file;
             }
 
-            filesToAdd = System.IO.Directory.EnumerateFiles(path, mask, searchOption);
-            var relativePath = System.IO.Path.GetFullPath(path);
+            filesToAdd = Directory.EnumerateFiles(path, mask, searchOption);
+            var relativePath = Path.GetFullPath(path);
             AddEnumeratedFiles(filesToAdd, relativePath, storePathMode);
 
         }
@@ -247,7 +233,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
                     DebugEcho(String.Format("AddEnumeratedFiles: relativePath is {0}", relativePath));
                     DebugEcho(String.Format("AddEnumeratedFiles: item is {0}", item));
                     DebugEcho(String.Format("AddEnumeratedFiles: GetRelativePath(item, relativePath) is {0}", GetRelativePath(item, relativePath)));
-                    pathInArchive = System.IO.Path.GetDirectoryName(GetRelativePath(item, relativePath));
+                    pathInArchive = Path.GetDirectoryName(GetRelativePath(item, relativePath));
                 }
                 else if (storePathMode == storeModeEnum.StoreFullPath)
                     pathInArchive = null;
@@ -259,64 +245,43 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        private string GetRelativePath(string filespec, string folder)
+        // возвращает относительный путь или "", если путь не является относительным
+        private string GetRelativePath(string filespec, string rootfolder)
         {
-            DebugEcho(String.Format("GetRelativePath: filespec is {0}, folder is {1}", filespec, folder));
-            Uri pathUri = null;
-            try
+            DebugEcho(String.Format("GetRelativePath: filespec is {0}, folder is {1}", filespec, rootfolder));
+
+            var currDir = Directory.GetCurrentDirectory();
+            DebugEcho(String.Format("GetRelativePath currDir is {0}", currDir));
+
+            DirectoryInfo directory = new DirectoryInfo(Path.Combine(currDir, rootfolder));
+            var folderpath = directory.FullName;
+            DebugEcho(String.Format("GetRelativePath folderpath is {0}", folderpath));
+
+            var filepath = Path.Combine(currDir, filespec);
+            DebugEcho(String.Format("GetRelativePath combine filepath is {0}", filepath));
+
+            if (Directory.Exists(filespec))
             {
-                pathUri = new Uri(filespec);
-                DebugEcho(String.Format("GetRelativePath pathUri is {0}", pathUri.ToString()));
-                //pathUri = new Uri("file://" + filespec);
+                DirectoryInfo dir = new DirectoryInfo(filepath);
+                filepath = dir.FullName;
+                DebugEcho(String.Format("GetRelativePath filepath (for dir) is {0}", filepath));
             }
-            catch (System.UriFormatException)
-            {
-                DebugEcho(String.Format("GetRelativePath catch is {0}", filespec));
-                return filespec;
+            else {
+                FileInfo file = new FileInfo(filepath);
+                filepath = file.FullName;
+                DebugEcho(String.Format("GetRelativePath filepath (for file) is {0}", filepath));
             }
 
-            // Folders must end in a slash
-            if (!folder.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (!filepath.StartsWith(folderpath))
             {
-                folder += Path.DirectorySeparatorChar;
-                DebugEcho(String.Format("GetRelativePath add to folder {0}", Path.DirectorySeparatorChar.ToString()));
+                DebugEcho("GetRelativePath filepath is absolute, not relative");
+                return "";
             }
-            Uri folderUri = new Uri(folder);
-            //Uri folderUri = new Uri("file://" + folder);
-            DebugEcho(String.Format("GetRelativePath folderUri is {0}", folderUri.ToString()));
-            var relativeUri = folderUri.MakeRelativeUri(pathUri);
-            DebugEcho(String.Format("GetRelativePath relativeUri is {0}", relativeUri.ToString()));
-            DebugEcho(String.Format("GetRelativePath relativeUri.ToString().Replace('/', Path.DirectorySeparatorChar) is {0}",
-                relativeUri.ToString().Replace('/', Path.DirectorySeparatorChar)));
 
-            var res = Uri.UnescapeDataString(relativeUri.ToString().Replace('/', Path.DirectorySeparatorChar));
-            DebugEcho(String.Format("GetRelativePath Uri.UnescapeDataString is {0}", res));
-
-            // в Linux может возвращаться двойное имя пути, что неверно!
-            // Например, file:///tmp/smpk1cx3.y1n.tmp/РодительскийКаталог/ВложенныйФайл.txt/tmp/smpk1cx3.y1n.tmp/РодительскийКаталог/ВложенныйФайл.txt
-            var filesuffix = "file://";
-            if (res.StartsWith(filesuffix))
-            {
-                DebugEcho(String.Format("GetRelativePath remove {1} from res is {0}", res, filesuffix));
-                res = res.Substring(filesuffix.Length);
-                DebugEcho(String.Format("GetRelativePath remove duplicate path from res is {0}", res));
-                res = res.Substring(filespec.Length);
-            }
-            /*
-            var removestr = "file:\\\\";
-            if (res.StartsWith(removestr))
-            {
-                DebugEcho(String.Format("GetRelativePath res without {1} is {0}", res, removestr));
-                res = res.Substring(removestr.Length);
-            }
-            removestr = "file://";
-            if (res.StartsWith(removestr))
-            {
-                DebugEcho(String.Format("GetRelativePath res without {1} is {0}", res, removestr));
-                res = res.Substring(removestr.Length);
-            }
-            */
-            DebugEcho(String.Format("GetRelativePath res is {0}", res));
+            var res = filepath.Substring(folderpath.Length + 1);
+            if (res == "")
+                res = ".";
+            DebugEcho(String.Format("GetRelativePath res = filepath.Substring(folderpath.Length + 1) is {0}", res));
             return res;
         }
 
