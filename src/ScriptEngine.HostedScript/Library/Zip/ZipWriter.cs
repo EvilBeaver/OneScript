@@ -265,7 +265,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
             Uri pathUri = null;
             try
             {
-                pathUri = new Uri("file://" + filespec);
+                pathUri = new Uri(filespec);
+                //pathUri = new Uri("file://" + filespec);
             }
             catch (System.UriFormatException)
             {
@@ -278,10 +279,12 @@ namespace ScriptEngine.HostedScript.Library.Zip
             {
                 folder += Path.DirectorySeparatorChar;
             }
-            Uri folderUri = new Uri("file://" + folder);
+            Uri folderUri = new Uri(folder);
+            //Uri folderUri = new Uri("file://" + folder);
             var res = Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
             DebugEcho(String.Format("GetRelativePath res is {0}", res));
 
+            /*
             var removestr = "file:\\\\";
             if (res.StartsWith(removestr))
             {
@@ -294,6 +297,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 DebugEcho(String.Format("GetRelativePath res without {1} is {0}", res, removestr));
                 res = res.Substring(removestr.Length);
             }
+            */
             return res;
         }
 
