@@ -290,8 +290,18 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 relativeUri.ToString().Replace('/', Path.DirectorySeparatorChar)));
 
             var res = Uri.UnescapeDataString(relativeUri.ToString().Replace('/', Path.DirectorySeparatorChar));
-            DebugEcho(String.Format("GetRelativePath res is {0}", res));
+            DebugEcho(String.Format("GetRelativePath Uri.UnescapeDataString is {0}", res));
 
+            // в Linux может возвращаться двойное имя пути, что неверно!
+            // Например, file:///tmp/smpk1cx3.y1n.tmp/РодительскийКаталог/ВложенныйФайл.txt/tmp/smpk1cx3.y1n.tmp/РодительскийКаталог/ВложенныйФайл.txt
+            var filesuffix = "file://";
+            if (res.StartsWith(filesuffix))
+            {
+                DebugEcho(String.Format("GetRelativePath remove {1} from res is {0}", res, filesuffix));
+                res = res.Substring(filesuffix.Length);
+                DebugEcho(String.Format("GetRelativePath remove duplicate path from res is {0}", res));
+                res = res.Substring(filespec.Length);
+            }
             /*
             var removestr = "file:\\\\";
             if (res.StartsWith(removestr))
@@ -306,6 +316,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 res = res.Substring(removestr.Length);
             }
             */
+            DebugEcho(String.Format("GetRelativePath res is {0}", res));
             return res;
         }
 
