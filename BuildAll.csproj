@@ -180,11 +180,9 @@
 	
 	<Target Name="InstallStdlib">
 		<ItemGroup>
-			<OSPX Include="$(StandardLibraryPacks)/*.ospx"/>
+			<LibraryFiles Include="$(StandardLibraryPacks)\**\*" />
 		</ItemGroup>
-		<Message Text="Files found: @(OSPX)"/>
-		<!-- костылище -->
-		<Exec Command=" (set OSCRIPT_CONFIG=lib.system=$(LibFolder)) &amp;&amp; (&quot;$(BinFolder)oscript.exe&quot; &quot;$(LibFolder)\opm\src\opm.os&quot; install -f %(OSPX.Identity) -dest $(LibFolder))"/>
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/>
 	</Target>
 	
 	<Target Name="CreateInstall" DependsOnTargets="PrepareDistOutputFolder">
