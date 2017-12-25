@@ -171,7 +171,7 @@
 	
 		<MakeDir Directories="@(LibFolder)"/>
 		
-		<Exec Command="&quot;$(OutputPathForBuild)oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.12.1.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
+		<Exec Command="&quot;$(OutputPathForBuild)oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.13.0.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
 		<Exec Command="&quot;$(OutputPathForBuild)oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
 		<DeleteTree Directories="$(LibFolder)\tmp"/> 
