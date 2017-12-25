@@ -182,7 +182,11 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ЧтениеЗавершено", "ReadCompleted")]
-        public bool ReadCompleted { get; private set; }
+        public bool ReadCompleted
+        {
+            // TODO: будет падать на непозиционируемых потоках
+            get { return _reader.BaseStream.Position >= _reader.BaseStream.Length; }
+        }
     
         /// <summary>
         /// 
