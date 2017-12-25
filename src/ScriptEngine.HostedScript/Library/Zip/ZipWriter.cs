@@ -127,13 +127,6 @@ namespace ScriptEngine.HostedScript.Library.Zip
             return rootPath;
         }
 
-        private bool IsNotRelativePath(string filepath, string relativePath)
-        {
-            if (relativePath == "")
-                return true;
-            return (relativePath == filepath || relativePath.Substring(0, 2) == "..");
-        }
-
         private void AddSingleFile(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
             var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
@@ -148,7 +141,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             else if (storePathMode == storeModeEnum.StoreRelativePath)
             {
                 var relativePath = GetRelativePath(file, currDir);
-                if (Path.IsPathRooted(file) && IsNotRelativePath(file, relativePath))
+                if (relativePath == "")
                     pathInArchive = ".";
                 else
                     pathInArchive = Path.GetDirectoryName(relativePath);
