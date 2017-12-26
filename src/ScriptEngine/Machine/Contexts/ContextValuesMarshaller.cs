@@ -33,7 +33,7 @@ namespace ScriptEngine.Machine.Contexts
         public static object ConvertParam(IValue value, Type type)
         {
             object valueObj;
-            if (value == null || value.DataType == DataType.NotAValidValue)
+            if (value == null || value.DataType == DataType.NotAValidValue || value == ValueFactory.Create())
             {
                 return null;
             }
@@ -99,6 +99,10 @@ namespace ScriptEngine.Machine.Contexts
         {
             var type = typeof(TRet);
             object objParam = (object)param;
+
+            if (objParam == null)
+                return ValueFactory.Create();
+
             if (type == typeof(IValue))
             {
                 if (param != null)
@@ -151,10 +155,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
-                if (objParam != null)
-                    return ValueFactory.Create((IRuntimeContextInstance)objParam);
-                else
-                    return ValueFactory.Create();
+                return ValueFactory.Create((IRuntimeContextInstance)objParam);
             }
             else
             {
