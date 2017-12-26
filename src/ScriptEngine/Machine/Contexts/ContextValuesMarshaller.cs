@@ -33,7 +33,7 @@ namespace ScriptEngine.Machine.Contexts
         public static object ConvertParam(IValue value, Type type)
         {
             object valueObj;
-            if (value == null || value.DataType == DataType.NotAValidValue || value == SimpleConstantValue.Undefined())
+            if (value == null || value.DataType == DataType.NotAValidValue)
             {
                 return null;
             }
@@ -50,6 +50,11 @@ namespace ScriptEngine.Machine.Contexts
             else if (type == typeof(IVariable))
             {
                 valueObj = value;
+            }
+            else if (value == SimpleConstantValue.Undefined()) 
+            {
+                // Если тип параметра не IValue и не IVariable && Неопределено -> null
+                valueObj = null;
             }
             else if (type == typeof(string))
             {
