@@ -105,10 +105,7 @@ namespace ScriptEngine.Machine.Contexts
 
             if (type == typeof(IValue))
             {
-                if (param != null)
-                    return (IValue)param;
-                else
-                    return ValueFactory.Create();
+                return (IValue)param;
             }
             else if (type == typeof(string))
             {
