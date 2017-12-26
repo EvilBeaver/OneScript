@@ -33,7 +33,7 @@ namespace ScriptEngine.Machine.Contexts
         public static object ConvertParam(IValue value, Type type)
         {
             object valueObj;
-            if (value == null || value.DataType == DataType.NotAValidValue || value == ValueFactory.Create())
+            if (value == null || value.DataType == DataType.NotAValidValue || value == SimpleConstantValue.Undefined())
             {
                 return null;
             }
