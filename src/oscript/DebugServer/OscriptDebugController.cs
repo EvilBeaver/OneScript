@@ -129,7 +129,11 @@ namespace oscript.DebugServer
 
             foreach (var item in grouped)
             {
-                var lines = item.Select(x => x.Line).ToArray();
+                var lines = item
+                    .Where(x=>x.Line != 0)
+                    .Select(x => x.Line)
+                    .ToArray();
+
                 _machine.SetBreakpointsForModule(item.Key, lines);
 
                 foreach (var line in lines)

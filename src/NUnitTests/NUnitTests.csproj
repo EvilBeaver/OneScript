@@ -57,7 +57,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CompilerTests.cs" />
+    <Compile Include="ContextTests.cs" />
     <Compile Include="EngineWrapperNUnit.cs" />
+    <Compile Include="TestContextClass.cs" />
     <Compile Include="TestRunnerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeReflectionTests.cs" />

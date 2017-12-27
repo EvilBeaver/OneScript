@@ -5,9 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
@@ -36,17 +33,17 @@ namespace ScriptEngine.Compiler
             return sb;
         }
 
-        public SymbolBinding DefineProperty(string name)
+        public SymbolBinding DefineProperty(string name, string alias = null)
         {
-            var sb = _moduleCtx.DefineProperty(name);
+            var sb = _moduleCtx.DefineProperty(name, alias);
             ShiftIndex(ref sb);
 
             return sb;
         }
 
-        public SymbolBinding DefineVariable(string name)
+        public SymbolBinding DefineVariable(string name, string alias = null)
         {
-            var sb = _moduleCtx.DefineVariable(name);
+            var sb = _moduleCtx.DefineVariable(name, alias);
             ShiftIndex(ref sb);
 
             return sb;

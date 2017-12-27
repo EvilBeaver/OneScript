@@ -19,9 +19,9 @@ using System.Reflection;
 [assembly: AssemblyCompany("BeaverSoft")]
 [assembly: AssemblyCopyright("Copyright (c) 2017 EvilBeaver")]
 [assembly: AssemblyConfiguration("Commit 2a614c0")]
-[assembly: AssemblyVersion("1.0.18.0")]
-[assembly: AssemblyFileVersion("1.0.18.0")]
-[assembly: AssemblyInformationalVersion("1.0.18.0")]
+[assembly: AssemblyVersion("1.0.19.0")]
+[assembly: AssemblyFileVersion("1.0.19.0")]
+[assembly: AssemblyInformationalVersion("1.0.19.0")]
 
 internal sealed class ThisAssembly
 {
@@ -31,11 +31,11 @@ internal sealed class ThisAssembly
 
 	internal const string AssemblyConfiguration = "Commit 2a614c0";
 
-	internal const string AssemblyVersion = "1.0.18.0";
+	internal const string AssemblyVersion = "1.0.19.0";
 
-	internal const string AssemblyFileVersion = "1.0.18.0";
+	internal const string AssemblyFileVersion = "1.0.19.0";
 
-	internal const string AssemblyInformationalVersion = "1.0.18.0";
+	internal const string AssemblyInformationalVersion = "1.0.19.0";
 
 	private ThisAssembly()
 	{
