@@ -19,18 +19,11 @@ using NUnit.Framework;
 
 namespace NUnitTests
 {
-    [ContextClass("HTTPСервисЗапрос", "HTTPServiceRequest")]
+    [ContextClass("ТестNullПреобразования", "TestNullConversion")]
     class TestNullConversion : AutoContext<TestNullConversion>
     {
         IValue _pIValue;
         string _pString;
-        int _pInt;
-        uint _pUint;
-        long _pLong;
-        ulong _pUlong;
-        double _pDouble;
-        DateTime _pDateTime;
-        bool _pBool;
         TestNullClass _pClass;
 
 
@@ -152,92 +145,43 @@ namespace NUnitTests
         [ContextProperty("ПInt", "PInt")]
         public int PInt
         {
-            get
-            {
-                return _pInt;
-            }
-            set
-            {
-                _pInt = value;
-            }
+            get;set;
         }
 
         [ContextProperty("ПUint", "PUint")]
         public uint PUint
         {
-            get
-            {
-                return _pUint;
-            }
-            set
-            {
-                _pUint = value;
-            }
+            get;set;
         }
 
         [ContextProperty("ПLong", "PLong")]
         public long PLong
         {
-            get
-            {
-                return _pLong;
-            }
-            set
-            {
-                _pLong = value;
-            }
-        }
+            get;set;
+         }
 
         [ContextProperty("ПUlong", "PUlong")]
         public ulong PUlong
         {
-            get
-            {
-                return _pUlong;
-            }
-            set
-            {
-                _pUlong = value;
-            }
+            get;set;
         }
 
         [ContextProperty("ПDouble", "PDouble")]
         public double PDouble
         {
-            get
-            {
-                return _pDouble;
-            }
-            set
-            {
-                _pDouble = value;
-            }
+            get;set;
         }
 
         [ContextProperty("ПDateTime", "PDateTime")]
         public DateTime PDateTime
         {
-            get
-            {
-                return _pDateTime;
-            }
-            set
-            {
-                _pDateTime = value;
-            }
+            get;set;
         }
 
         [ContextProperty("ПBool", "PBool")]
         public bool PBool
         {
-            get
-            {
-                return _pBool;
-            }
-            set
-            {
-                _pBool = value;
-            }
+            get;set;
         }
 
         [ContextProperty("ПString", "PString")]
