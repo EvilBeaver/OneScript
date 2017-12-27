@@ -357,12 +357,10 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (PropDefinedInScript(propNum))
             {
-                return _module.Properties[propNum - VARIABLE_COUNT].Signature;
+                var mappedIndex = _module.ExportedProperies[propNum - VARIABLE_COUNT].Index;
+                return _module.Variables[mappedIndex];
             }
-            else
-            {
-                return new VariableInfo(GetPropName(propNum), propNum);
-            }
+            return new VariableInfo(GetOwnPropName(propNum), propNum);
         }
 
         public override int GetPropCount()
@@ -372,14 +370,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string GetPropName(int propNum)
         {
-            if(PropDefinedInScript(propNum))
-            {
-                return _module.ExportedProperies[propNum - VARIABLE_COUNT].SymbolicName;
-            }
-            else
-            {
-                return GetOwnPropName(propNum);
-            }
+            return GetPropertyInfo(propNum).Identifier;
         }
 
         #endregion

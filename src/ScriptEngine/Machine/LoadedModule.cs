@@ -27,7 +27,6 @@ namespace ScriptEngine.Machine
             this.ExportedProperies = image.ExportedProperties.ToArray();
             this.ExportedMethods = image.ExportedMethods.ToArray();
             this.ModuleInfo = image.ModuleInfo;
-            this.Properties = image.Properties.ToArray();
             for (int i = 0; i < image.Constants.Count; i++)
             {
                 var def = image.Constants[i];
@@ -44,9 +43,9 @@ namespace ScriptEngine.Machine
                 }
             }
 
-            for (int i = 0; i < Properties.Length; i++)
+            for (int i = 0; i < Variables.Count; i++)
             {
-                EvaluateAnnotationParametersValues(Properties[i].Signature.Annotations);
+                EvaluateAnnotationParametersValues(Variables[i].Annotations);
             }
         }
 
@@ -76,7 +75,6 @@ namespace ScriptEngine.Machine
         public ExportedSymbol[] ExportedProperies { get; private set; }
         public ExportedSymbol[] ExportedMethods { get; private set; }
         public ModuleInformation ModuleInfo { get; private set; }
-        public PropertyDescriptor[] Properties { get; private set; }
     }
 
     

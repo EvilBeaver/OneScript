@@ -325,7 +325,14 @@ namespace ScriptEngine.Compiler
                             }
 
                             _module.VariableRefs.Add(definition);
-                            _module.Variables.Add(symbolicName);
+                            _module.Variables.Add(new VariableInfo()
+                            {
+                                Identifier = symbolicName,
+                                Annotations = annotations,
+                                CanGet = true,
+                                CanSet = true,
+                                Index = definition.CodeIndex
+                            });
                         }
                         NextToken();
                         if (_lastExtractedLexem.Token == Token.Export)
@@ -333,18 +340,6 @@ namespace ScriptEngine.Compiler
                             _module.ExportedProperties.Add(new ExportedSymbol()
                             {
                                 SymbolicName = symbolicName,
-                                Index = definition.CodeIndex
-                            });
-                            _module.Properties.Add(new PropertyDescriptor()
-                            {
-                                Signature = new VariableInfo()
-                                {
-                                    Identifier = symbolicName,
-                                    Annotations = annotations,
-                                    CanGet = true,
-                                    CanSet = true,
-                                    Index = definition.CodeIndex
-                                },
                                 Index = definition.CodeIndex
                             });
                             NextToken();
@@ -420,7 +415,7 @@ namespace ScriptEngine.Compiler
 
             for (int i = 0; i < localCtx.VariableCount; i++)
             {
-                descriptor.Variables.Add(localCtx.GetVariable(i).Identifier);
+                descriptor.Variables.Add(localCtx.GetVariable(i));
             }
             
         }
