@@ -42,7 +42,7 @@ namespace NUnitTests
         public IValue TestIValue(IValue arg)
         {
             if (arg.GetType() != typeof(IValue))
-                Assert.Fail("Тест IValue: Передаваемый параметр имеет тип, отличный от IValue.");
+                Assert.Fail("Test IValue Func(IValue) -> Func(IValue): argument type is different from IValue.");
 
             return arg;
         }
@@ -50,11 +50,8 @@ namespace NUnitTests
         [ContextMethod("ТестIValueНеопределено", "IValueNullTest")]
         public IValue TestIValueNull(IValue arg)
         {
-            if (arg.GetType() != typeof(IValue))
-                Assert.Fail("Тест IValue: Передаваемый параметр имеет тип, отличный от IValue.");
-
             if (arg != ValueFactory.Create())
-                Assert.Fail("Тест IValue (Неопределено): Передаваемый параметр имеет значение, отличное от ValueFactory.Create().");
+                Assert.Fail("Test IValue Func(IValue) -> Func(Unknown): argument value is different from null.");
 
             return arg;
         }
@@ -63,7 +60,7 @@ namespace NUnitTests
         public TestNullClass TestClass(TestNullClass arg)
         {
             if (arg.GetType() != typeof(TestNullClass))
-                Assert.Fail("Тест IValue: Передаваемый параметр имеет тип, отличный от TestNullClass.");
+                Assert.Fail("Test Class Func(Class) -> Func(Class): argument type is different from Class.");
 
             return arg;
         }
@@ -72,7 +69,7 @@ namespace NUnitTests
         public TestNullClass TestClassNull(TestNullClass arg)
         {
              if (arg != null)
-                Assert.Fail("Тест Класс (Неопределено): Передаваемый параметр имеет значение, отличное от null.");
+                Assert.Fail("Test Class Func(Class) -> Func(Unknown): argument value is different from null.");
 
             return arg;
         }
@@ -83,7 +80,7 @@ namespace NUnitTests
         public string TestString(string arg)
         {
             if (arg.GetType() != typeof(System.String))
-                Assert.Fail("Тест String: Передаваемый параметр имеет тип, отличный от System.String.");
+                Assert.Fail("Test string Func(string) -> Func(string): argument type is different from string.");
 
             return arg;
         }
@@ -92,7 +89,7 @@ namespace NUnitTests
         public string TestStringNull(string arg)
         {
             if (arg != null)
-                Assert.Fail("Тест String: Передаваемый параметр имеет тип, отличный от System.String.");
+                Assert.Fail("Test string Func(string) -> Func(Unknown): argument value is different from null.");
 
             return arg;
         }
@@ -191,6 +188,9 @@ namespace NUnitTests
             }
             set
             {
+                if (value.GetType() != typeof(System.String))
+                    Assert.Fail("Test string Property = string: value type is different from string.");
+
                 _pString = value;
             }
         }
@@ -205,7 +205,7 @@ namespace NUnitTests
             set
             {
                 if (value != null)
-                    Assert.Fail("Тест ПNullString: Передаваемый параметр имеет значение, отличное от null.");
+                    Assert.Fail("Test string Property = Unknown: value value is different from null.");
 
                 _pString = value;
             }
@@ -221,7 +221,7 @@ namespace NUnitTests
             set
             {
                 if (value.GetType() != typeof(IValue))
-                    Assert.Fail("Тест ПString: Передаваемый параметр имеет тип, отличный от IValue.");
+                    Assert.Fail("Test IValue Property = IValue: value type is different from IValue.");
 
                 _pIValue = value;
             }
@@ -236,10 +236,8 @@ namespace NUnitTests
             }
             set
             {
-                if (value.GetType() != typeof(IValue))
-                    Assert.Fail("Тест ПNullValue: Передаваемый параметр имеет тип, отличный от IValue.");
-                if (value != ValueFactory.Create())
-                    Assert.Fail("Тест ПNullIValue: Передаваемый параметр имеет значение, отличное от ValueFactory.Create().");
+                 if (value != ValueFactory.Create())
+                    Assert.Fail("Test IValue Property = Unknown: value value is different from Unknown.");
 
                 _pIValue = value;
             }
@@ -257,7 +255,7 @@ namespace NUnitTests
             set
             {
                 if (value.GetType() != typeof(TestNullClass))
-                    Assert.Fail("Тест ПClass: Передаваемый параметр имеет тип, отличный от TestNullClass.");
+                    Assert.Fail("Test TestNullClass Property = TestNullClass: value type is different from TestNullClass.");
 
                 _pClass = value;
             }
@@ -273,7 +271,7 @@ namespace NUnitTests
             set
             {
                 if (value != null)
-                    Assert.Fail("Тест ПNullClass: Передаваемый параметр имеет значение, отличное от null.");
+                    Assert.Fail("Test TestNullClass Property = Unknown: value value is different from null.");
                 _pIValue = value;
             }
         }
