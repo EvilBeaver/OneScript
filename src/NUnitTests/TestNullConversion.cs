@@ -71,10 +71,7 @@ namespace NUnitTests
         [ContextMethod("ТестClassНеопределено", "ClassNullTest")]
         public TestNullClass TestClassNull(TestNullClass arg)
         {
-            if (arg.GetType() != typeof(TestNullClass))
-                Assert.Fail("Тест IValue: Передаваемый параметр имеет тип, отличный от TestNullClass.");
-
-            if (arg != null)
+             if (arg != null)
                 Assert.Fail("Тест Класс (Неопределено): Передаваемый параметр имеет значение, отличное от null.");
 
             return arg;
@@ -141,6 +138,7 @@ namespace NUnitTests
         {
             return arg;
         }
+
 
         [ContextProperty("ПInt", "PInt")]
         public int PInt
