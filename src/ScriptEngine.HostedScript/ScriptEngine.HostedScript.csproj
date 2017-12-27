@@ -102,6 +102,7 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Library\Binary\BitConversionFacility.cs" />
     <Compile Include="Library\DriveInfo\DriveInfo.cs" />
     <Compile Include="Library\DriveInfo\DriveTypeEnum.cs" />
     <Compile Include="EngineConfigProvider.cs" />

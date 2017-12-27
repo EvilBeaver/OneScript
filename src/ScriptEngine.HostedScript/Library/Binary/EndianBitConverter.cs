@@ -383,7 +383,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
             else
             {
-                int a = (value[startIndex] << 8 | value[startIndex + 1]);
+                var a = (value[startIndex] << 8 | value[startIndex + 1]);
                 return a;
             }
         }

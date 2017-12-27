@@ -32,7 +32,8 @@ namespace ScriptEngine.HostedScript.Library.Binary
             if(bufferSize == 0)
                 _underlyingStream = new FileStream(filename, 
                     FileStreamsManager.ConvertFileOpenModeToCLR(openMode),
-                    FileStreamsManager.ConvertFileAccessToCLR(access));
+                    FileStreamsManager.ConvertFileAccessToCLR(access),
+                    FileShare.Read);
             else
                 _underlyingStream = new FileStream(filename, 
                     FileStreamsManager.ConvertFileOpenModeToCLR(openMode), 

@@ -17,6 +17,7 @@ pipeline {
             environment {
                 NugetPath = "${tool 'nuget'}"
                 OneScriptDocumenter = "${tool 'documenter'}"
+                StandardLibraryPacks = "${tool 'os_stdlib'}"
             }
 
             steps {
@@ -34,7 +35,8 @@ pipeline {
                 
                 ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
-                    checkout scm
+                    step([$class: 'WsCleanup'])
+					checkout scm
 
                     bat 'set'
                     withSonarQubeEnv('silverbulleters') {
@@ -243,7 +245,7 @@ pipeline {
             }
         }
                 
-                stage ('Publishing master') {
+        stage ('Publishing master') {
             when { branch 'master' }
                 
             agent { label 'master' }
