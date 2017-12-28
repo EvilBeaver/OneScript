@@ -51,6 +51,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value;
             }
+            else if (value == SimpleConstantValue.Undefined()) 
+            {
+                // Если тип параметра не IValue и не IVariable && Неопределено -> null
+                valueObj = null;
+            }
             else if (type == typeof(string))
             {
                 valueObj = value.AsString();
@@ -99,12 +104,13 @@ namespace ScriptEngine.Machine.Contexts
         {
             var type = typeof(TRet);
             object objParam = (object)param;
+
+            if (objParam == null)
+                return ValueFactory.Create();
+
             if (type == typeof(IValue))
             {
-                if (param != null)
-                    return (IValue)param;
-                else
-                    return ValueFactory.Create();
+                return (IValue)param;
             }
             else if (type == typeof(string))
             {
@@ -151,10 +157,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
-                if (objParam != null)
-                    return ValueFactory.Create((IRuntimeContextInstance)objParam);
-                else
-                    return ValueFactory.Create();
+                return ValueFactory.Create((IRuntimeContextInstance)objParam);
             }
             else
             {
