@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return default(T);
             }
-            
+
             try
             {
                 return (T)valueObj;
@@ -27,7 +27,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw RuntimeException.InvalidArgumentType();
             }
-           
+
         }
 
         public static object ConvertParam(IValue value, Type type)
@@ -50,6 +50,11 @@ namespace ScriptEngine.Machine.Contexts
             else if (type == typeof(IVariable))
             {
                 valueObj = value;
+            }
+            else if (value == SimpleConstantValue.Undefined())
+            {
+                // Если тип параметра не IValue и не IVariable && Неопределено -> null
+                valueObj = null;
             }
             else if (type == typeof(string))
             {
@@ -99,12 +104,13 @@ namespace ScriptEngine.Machine.Contexts
         {
             var type = typeof(TRet);
             object objParam = (object)param;
+
+            if (objParam == null)
+                return ValueFactory.Create();
+
             if (type == typeof(IValue))
             {
-                if (param != null)
-                    return (IValue)param;
-                else
-                    return ValueFactory.Create();
+                return (IValue)param;
             }
             else if (type == typeof(string))
             {
@@ -151,10 +157,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
-                if (objParam != null)
-                    return ValueFactory.Create((IRuntimeContextInstance)objParam);
-                else
-                    return ValueFactory.Create();
+                return ValueFactory.Create((IRuntimeContextInstance)objParam);
             }
             else
             {
@@ -163,44 +166,44 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-		public static object ConvertToCLRObject(IValue val)
-		{
-			object result;
-			if (val == null)
-				return val;
-			
-			switch (val.DataType)
-			{
-			case Machine.DataType.Boolean:
-				result = val.AsBoolean();
-				break;
-			case Machine.DataType.Date:
-				result = val.AsDate();
-				break;
-			case Machine.DataType.Number:
-				result = val.AsNumber();
-				break;
-			case Machine.DataType.String:
-				result = val.AsString();
-				break;
-			case Machine.DataType.Undefined:
-				result = null;
-				break;
-			default:
-                if (val.DataType == DataType.Object)
-                    result = val.AsObject();
+        public static object ConvertToCLRObject(IValue val)
+        {
+            object result;
+            if (val == null)
+                return val;
 
-				result = val.GetRawValue();
-				if (result is IObjectWrapper)
-					result = ((IObjectWrapper)result).UnderlyingObject;
-				else
-				    throw new ValueMarshallingException("Тип не поддерживает преобразование в CLR-объект");
+            switch (val.DataType)
+            {
+                case Machine.DataType.Boolean:
+                    result = val.AsBoolean();
+                    break;
+                case Machine.DataType.Date:
+                    result = val.AsDate();
+                    break;
+                case Machine.DataType.Number:
+                    result = val.AsNumber();
+                    break;
+                case Machine.DataType.String:
+                    result = val.AsString();
+                    break;
+                case Machine.DataType.Undefined:
+                    result = null;
+                    break;
+                default:
+                    if (val.DataType == DataType.Object)
+                        result = val.AsObject();
 
-                break;
-			}
-			
-			return result;
-		}
+                    result = val.GetRawValue();
+                    if (result is IObjectWrapper)
+                        result = ((IObjectWrapper)result).UnderlyingObject;
+                    else
+                        throw new ValueMarshallingException("Тип не поддерживает преобразование в CLR-объект");
+
+                    break;
+            }
+
+            return result;
+        }
 
         public static T CastToCLRObject<T>(IValue val)
         {
