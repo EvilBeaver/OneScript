@@ -1,228 +1,50 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ScriptEngine</RootNamespace>
+    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">19</ReleaseNumber>
+    <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
+    <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <AssemblyName>ScriptEngine</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
+    <AssemblyDescription>1C (BSL) language runtime</AssemblyDescription>
+    <RootNamespace>ScriptEngine</RootNamespace>
+	
+    <Version>1.0.$(ReleaseNumber).$(BuildNumber)</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <Description>1C (BSL) language runtime</Description>
+    <Copyright>Copyright (c) 2017 EvilBeaver</Copyright>
+	
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>True</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\ScriptEngine.XML</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>True</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>False</Optimize>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>True</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>1591</NoWarn>
-    <DocumentationFile>bin\x86\Release\ScriptEngine.XML</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNoSnegopat|AnyCPU'">
-    <OutputPath>bin\ReleaseNoSnegopat\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNoSnegopat|x86'">
-    <OutputPath>bin\x86\ReleaseNoSnegopat\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>bin\x86\Release\ScriptEngine.XML</DocumentationFile>
-    <Optimize>true</Optimize>
-    <NoWarn>1591</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="CodePositionInfo.cs" />
-    <Compile Include="CompilerService.cs" />
-    <Compile Include="Compiler\CompiledCodeIndexer.cs" />
-    <Compile Include="Compiler\Compiler.cs" />
-    <Compile Include="Compiler\ISourceCodeIndexer.cs" />
-    <Compile Include="Compiler\ModuleCompilerContext.cs" />
-    <Compile Include="Compiler\CompilerContext.cs" />
-    <Compile Include="Compiler\CompilerExceptions.cs" />
-    <Compile Include="Compiler\ICompilerContext.cs" />
-    <Compile Include="Compiler\ModulePersistor.cs" />
-    <Compile Include="Compiler\ParseIterator.cs" />
-    <Compile Include="Compiler\ParserException.cs" />
-    <Compile Include="Compiler\SourceCodeIndexer.cs" />
-    <Compile Include="Environment\CodeSources.cs" />
-    <Compile Include="Environment\FileOpener.cs" />
-    <Compile Include="Environment\ICodeSourceFactory.cs" />
-    <Compile Include="Environment\ModuleInformation.cs" />
-    <Compile Include="FormatParametersList.cs" />
-    <Compile Include="IDirectiveResolver.cs" />
-    <Compile Include="Machine\Breakpoints.cs" />
-    <Compile Include="Machine\CodeStat\CodeStatData.cs" />
-    <Compile Include="Machine\CodeStat\CodeStatDataCollection.cs" />
-    <Compile Include="Machine\ComReflectionNameToIdMapper.cs" />
-    <Compile Include="Machine\Contexts\CLREnumValueWrapper.cs" />
-    <Compile Include="Machine\Contexts\EnumContextHelper.cs" />
-    <Compile Include="Machine\Contexts\ContextClassAttribute.cs" />
-    <Compile Include="Machine\Contexts\AttachedScriptsFactory.cs" />
-    <Compile Include="Machine\Contexts\EnumerationContext.cs" />
-    <Compile Include="Machine\Contexts\EnumerationValue.cs" />
-    <Compile Include="Machine\Contexts\EnumValueAttribute.cs" />
-    <Compile Include="Machine\Contexts\ExceptionTemplate.cs" />
-    <Compile Include="Machine\Contexts\GlobalContextAttribute.cs" />
-    <Compile Include="Machine\Contexts\GlobalContextBase.cs" />
-    <Compile Include="Machine\Contexts\IObjectWrapper.cs" />
-    <Compile Include="Machine\Contexts\ManagedCOMWrapperContext.cs" />
-    <Compile Include="Machine\Contexts\ReflectedClassType.cs" />
-    <Compile Include="Machine\Contexts\ScriptInformationContext.cs" />
-    <Compile Include="Machine\Contexts\SelfAwareEnumValue.cs" />
-    <Compile Include="Machine\Contexts\ReflectableSDO.cs" />
-    <Compile Include="Machine\Contexts\ReflectedMethodInfo.cs" />
-    <Compile Include="Machine\Contexts\ReflectedParamInfo.cs" />
-    <Compile Include="Machine\Contexts\ReflectedPropertyInfo.cs" />
-    <Compile Include="Machine\Contexts\SafeArrayWrapper.cs" />
-    <Compile Include="Machine\Contexts\ScriptDrivenObject.cs" />
-    <Compile Include="Machine\Contexts\SystemEnumAttribute.cs" />
-    <Compile Include="Machine\Contexts\UnmanagedRCWComContext.cs" />
-    <Compile Include="Machine\DebugEventType.cs" />
-    <Compile Include="Machine\ExternalContextData.cs" />
-    <Compile Include="Machine\ExternalSystemException.cs" />
-    <Compile Include="Machine\GenericIValueComparer.cs" />
-    <Compile Include="Machine\GlobalInstancesManager.cs" />
-    <Compile Include="Machine\IDebugController.cs" />
-    <Compile Include="Machine\IndexedNamesCollection.cs" />
-    <Compile Include="Machine\IndexedNameValueCollection.cs" />
-    <Compile Include="Machine\MachineStopManager.cs" />
-    <Compile Include="Machine\MachineStoppedEventArgs.cs" />
-    <Compile Include="Machine\NullValueImpl.cs" />
-    <Compile Include="Machine\ParametrizedRuntimeException.cs" />
-    <Compile Include="Machine\PropertyBag.cs" />
-    <Compile Include="Machine\TypeTypeValue.cs" />
-    <Compile Include="Machine\ValueBinder.cs" />
-    <Compile Include="Machine\ValueFormatter.cs" />
-    <Compile Include="RuntimeEnvironment.cs" />
-    <Compile Include="Environment\ScriptSourceFactory.cs" />
-    <Compile Include="Machine\Contexts\AutoContext.cs" />
-    <Compile Include="Machine\Contexts\ContextValuesMarshaller.cs" />
-    <Compile Include="Machine\Contexts\DynamicPropertiesHolder.cs" />
-    <Compile Include="Machine\Contexts\ExceptionInfoContext.cs" />
-    <Compile Include="Machine\Contexts\PropertyNameIndexAccessor.cs" />
-    <Compile Include="ModuleImage.cs" />
-    <Compile Include="Compiler\ModuleWriter.cs" />
-    <Compile Include="Compiler\Parser.cs" />
-    <Compile Include="Compiler\SymbolScope.cs" />
-    <Compile Include="Compiler\Tokens.cs" />
-    <Compile Include="Environment\ICodeSource.cs" />
-    <Compile Include="Machine\Contexts\COMWrapperContext.cs" />
-    <Compile Include="Machine\Contexts\ContextPropertyMapper.cs" />
-    <Compile Include="Machine\Contexts\DispatchUtility.cs" />
-    <Compile Include="Machine\Contexts\ContextDiscoverer.cs" />
-    <Compile Include="Environment\ScriptModuleHandle.cs" />
-    <Compile Include="Machine\BuiltinFunctions.cs" />
-    <Compile Include="Machine\Core.cs" />
-    <Compile Include="Machine\ExecutionFrame.cs" />
-    <Compile Include="Machine\GenericValue.cs" />
-    <Compile Include="Machine\IAttachableContext.cs" />
-    <Compile Include="Machine\IRuntimeContextInstance.cs" />
-    <Compile Include="Machine\IValue.cs" />
-    <Compile Include="Machine\Contexts\CollectionEnumerator.cs" />
-    <Compile Include="Machine\Contexts\ContextMethodMapper.cs" />
-    <Compile Include="Machine\Contexts\ICollectionContext.cs" />
-    <Compile Include="Machine\Contexts\DynamicPropertiesAccessor.cs" />
-    <Compile Include="Machine\Contexts\ContextIValueImpl.cs" />
-    <Compile Include="Machine\LoadedModule.cs" />
-    <Compile Include="Machine\MachineInstance.cs" />
-    <Compile Include="Machine\RuntimeExceptions.cs" />
-    <Compile Include="Machine\Scope.cs" />
-    <Compile Include="Machine\TypeManager.cs" />
-    <Compile Include="Machine\Contexts\UserScriptContextInstance.cs" />
-    <Compile Include="Machine\ValueFactory.cs" />
-    <Compile Include="Machine\Variables.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScriptException.cs" />
-    <Compile Include="ScriptingEngine.cs" />
-    <Compile Include="SystemLogger.cs" />
-    <Compile Include="Utils.cs" />
-    <Compile Include="Machine\Contexts\EnumerationTypeAttribute.cs" />
-    <Compile Include="Machine\Contexts\EnumItemAttribute.cs" />
-    <Compile Include="Machine\CodeStat\CodeStatEntry.cs" />
-    <Compile Include="Machine\CodeStat\CodeStatProcessor.cs" />
-    <Compile Include="Machine\CodeStat\ICodeStatCollector.cs" />
-    <Compile Include="VariablesFrame.cs" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PackageId>OneScript</PackageId>
+    <PackageVersion>1.0.$(ReleaseNumber)</PackageVersion>
+    <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
+    <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
+    <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
+    <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Title>OneScript Core Runtime</Title>
+    <PackageDescription>Core Runtime Engine for 1Script</PackageDescription>
+    <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
+    <PackageTags>BSL 1C 1Script OneScript</PackageTags>
+
   </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
-    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)ScriptEngine.dll" "$(SolutionDir)StandaloneRunner/"</PostBuildEvent>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net452|AnyCPU'">
+    <DocumentationFile>bin\Release\net452\ScriptEngine.xml</DocumentationFile>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+    <Message Text="Copying StandaloneRunner resources" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDir)\..\StandaloneRunner\" />
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  
 </Project>
