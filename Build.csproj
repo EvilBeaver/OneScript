@@ -7,7 +7,7 @@
 		<Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
 		<Configuration>Release</Configuration>
 		<TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
-
+		<Platform>x86</Platform>
 	</PropertyGroup>
 	
 	<Target Name="CleanAll">
@@ -27,7 +27,7 @@
 		
 		<ItemGroup>
 			<ProjectsToBuild Include="$(Solution)">
-				<Properties>Configuration=Release;Platform=x86</Properties>
+				<Properties>Configuration=$(Configuration);Platform=$(Platform);TargetFramework=$(TargetFramework)</Properties>
 			</ProjectsToBuild>
 		</ItemGroup>
 		

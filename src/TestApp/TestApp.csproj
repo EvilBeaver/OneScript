@@ -4,11 +4,12 @@
     <TargetFramework>net452</TargetFramework>
     <LanguageTargets>$(MSBuildExtensionsPath)\$(VisualStudioVersion)\Bin\Microsoft.CSharp.targets</LanguageTargets>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <ApplicationIcon></ApplicationIcon>
+    <ApplicationIcon>script_badge.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
     <StartupObject>TestApp.App</StartupObject>
     <Platforms>x86</Platforms>
-    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <Configurations>Debug;Release</Configurations>
+    <Win32Resource />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -28,9 +29,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Compile Update="**\*.xaml.cs" SubType="Code" DependentUpon="%(Filename)" />
-	  <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
 	
 	  <!-- Resources -->
     <EmbeddedResource Update="Properties\Resources.resx" DesignTime="True" AutoGen="True" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />

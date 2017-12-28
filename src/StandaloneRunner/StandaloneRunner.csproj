@@ -10,9 +10,6 @@
     <StartupObject>StandaloneRunner.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="..\oscript\ConsoleHostImpl.cs">
       <Link>ConsoleHostImpl.cs</Link>
     </Compile>
@@ -29,6 +26,9 @@
     <EmbeddedResource Include="ScriptEngine.HostedScript.dll" />
     <EmbeddedResource Include="Ionic.Zip.dll" />
     <EmbeddedResource Include="Newtonsoft.Json.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
   <Target Name="CleanExternals" AfterTargets="Clean">
