@@ -2,7 +2,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Platforms>AnyCPU;x86</Platforms>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
     <ApplicationIcon />

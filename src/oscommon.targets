@@ -1,0 +1,20 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	
+	<!--Свойства сборки по умолчанию-->
+  <PropertyGroup>
+		<ReleaseNumber Condition="'$(ReleaseNumber)' == ''">19</ReleaseNumber>
+	  <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
+	  <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
+		<Configuration Condition="'$(Release)' == ''">Release</Configuration>
+		<Platform Condition="'$(Platform)' == ''">x86</Platform>
+  </PropertyGroup>
+	
+	<!--Общие свойства для проектов-->
+  <PropertyGroup>
+    <Version>1.0.$(ReleaseNumber).$(BuildNumber)</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <Product>1C (BSL) language runtime</Product>
+    <Copyright>Copyright (c) 2017 EvilBeaver</Copyright>
+  </PropertyGroup>
+
+</Project>

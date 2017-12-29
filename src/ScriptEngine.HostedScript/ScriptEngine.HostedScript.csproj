@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+
   <PropertyGroup>
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
@@ -9,23 +11,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
-
+  
   <PropertyGroup>
-    <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">19</ReleaseNumber>
-    <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
-    <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <AssemblyName>ScriptEngine.HostedScript</AssemblyName>
-    <AssemblyDescription>1C (BSL) language runtime</AssemblyDescription>
-    <RootNamespace>ScriptEngine.HostedScript</RootNamespace>
-
-    <Version>1.0.$(ReleaseNumber).$(BuildNumber)</Version>
-    <FileVersion>$(Version)</FileVersion>
-    <Description>1C (BSL) language runtime</Description>
-    <Copyright>Copyright (c) 2017 EvilBeaver</Copyright>
-
+    <AssemblyTitle>1C (BSL) language runtime</AssemblyTitle>
   </PropertyGroup>
   
   <ItemGroup>
@@ -49,7 +37,7 @@
 
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net452|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net452'">
     <DocumentationFile>bin\Release\net452\ScriptEngine.HostedScript.xml</DocumentationFile>
   </PropertyGroup>
   
@@ -60,7 +48,8 @@
       <CopyToStandalone Include="$(TargetDir)Ionic.Zip.dll" />
       <CopyToStandalone Include="$(TargetDir)Newtonsoft.Json.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(CopyToStandalone)" DestinationFolder="$(MSBuildProjectDir)\..\StandaloneRunner\" />
+
+    <Copy SourceFiles="@(CopyToStandalone)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
   </Target>
   
 </Project>

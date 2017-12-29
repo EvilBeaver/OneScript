@@ -1,11 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputType>Exe</OutputType>
-	<StartupObject>DebugServer.Program</StartupObject>
-	<Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <StartupObject>DebugServer.Program</StartupObject>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <AssemblyTitle>VSC debug adapter for 1Script</AssemblyTitle>
+    
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -13,9 +16,6 @@
 	<PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
     <None Include="package.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

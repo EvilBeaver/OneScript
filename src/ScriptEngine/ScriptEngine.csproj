@@ -1,26 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+  
   <PropertyGroup>
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
   
   <PropertyGroup>
-    <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">19</ReleaseNumber>
-    <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
-    <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
-  </PropertyGroup>
-  
-  <PropertyGroup>
-    <AssemblyName>ScriptEngine</AssemblyName>
-    <AssemblyDescription>1C (BSL) language runtime</AssemblyDescription>
-    <RootNamespace>ScriptEngine</RootNamespace>
-	
-    <Version>1.0.$(ReleaseNumber).$(BuildNumber)</Version>
-    <FileVersion>$(Version)</FileVersion>
-    <Description>1C (BSL) language runtime</Description>
-    <Copyright>Copyright (c) 2017 EvilBeaver</Copyright>
-	
+	  <AssemblyTitle>1C (BSL) language runtime</AssemblyTitle>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -35,7 +23,6 @@
     <PackageDescription>Core Runtime Engine for 1Script</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
-
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net452|AnyCPU'">
@@ -44,7 +31,7 @@
   
   <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
     <Message Text="Copying StandaloneRunner resources" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDir)\..\StandaloneRunner\" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
   </Target>
   
 </Project>

@@ -1,16 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+
   <PropertyGroup>
     <TargetFrameworks>net452</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyName>OneScript.DebugProtocol</AssemblyName>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <AssemblyTitle>1Script Debug Protocol DTO</AssemblyTitle>
   </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

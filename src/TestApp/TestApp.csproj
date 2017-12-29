@@ -1,16 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+  <!--Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" /-->
+  
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
     <LanguageTargets>$(MSBuildExtensionsPath)\$(VisualStudioVersion)\Bin\Microsoft.CSharp.targets</LanguageTargets>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <ApplicationIcon>script_badge.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
     <StartupObject>TestApp.App</StartupObject>
     <Platforms>x86</Platforms>
-    <Configurations>Debug;Release</Configurations>
-    <Win32Resource />
+    <Configurations>Debug;Release</Configurations>    
   </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyTitle>1Script ui host</AssemblyTitle>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xaml" />

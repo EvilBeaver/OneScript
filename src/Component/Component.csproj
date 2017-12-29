@@ -1,16 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+
   <PropertyGroup>
     <TargetFrameworks>net452</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyTitle>1Script component example</AssemblyTitle>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
-	<Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
