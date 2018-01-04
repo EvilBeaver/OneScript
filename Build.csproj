@@ -59,6 +59,7 @@
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
             <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**"/>
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/HTTPServices.dll"/>
         </ItemGroup>
         
         <Copy SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)" />
@@ -138,7 +139,7 @@
             <NugetAbleProject Include="ScriptEngine.HostedScript"/>
         </ItemGroup>
         
-        <MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot)"/>
+        <MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot);ReleaseNumber=$(ReleaseNumber)"/>
     
     </Target>
     
