@@ -142,5 +142,10 @@
         <MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot);ReleaseNumber=$(ReleaseNumber)"/>
     
     </Target>
+
+    <Target Name="CreateMSI" DependsOnTargets="PrepareDistributionContent">
+        <MSBuild Projects="$(MSBuildProjectDirectory)\src\Installer\Installer.wixproj"
+                    Properties="Configuration=$(Configuration);OutputPath=$(ArtifactsRoot);OutputPathForBuild=$(ArtifactsRoot);Version=$1.0.$(ReleaseNumber).$(BuildNumber)" />
+    </Target>
     
 </Project>
