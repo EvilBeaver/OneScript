@@ -69,11 +69,23 @@
     
     <!-- Собирает в целевой папке содержимое папки lib -->
     <Target Name="GatherLibrary" DependsOnTargets="Make;PrepareArtifactsRoot">
-        <ItemGroup>
-            <LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*" Exclude="$(MSBuildProjectDirectory)\oscript-library\**\*.git"/>
-        </ItemGroup>
+        
         <MakeDir Directories="$(LibFolder)" />
-        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
+        <Exec Command="&quot;$(BinFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.13.0.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
+        <Exec Command="&quot;$(BinFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
+        <Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
+        <DeleteTree Directories="$(LibFolder)\tmp"/>
+
+        <CallTarget Targets="InstallStdLib" Condition="'$(StandardLibraryPacks)' != ''"/>
+
+    </Target>
+
+    <!-- Копирует поставляемые файлы stdlib, если они есть на машине сборки -->
+    <Target Name="InstallStdLib">
+        <ItemGroup>
+            <LibraryFiles Include="$(StandardLibraryPacks)\**\*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/>
     </Target>
     
     <!-- Собирает в целевой папке содержимое папки examples -->
