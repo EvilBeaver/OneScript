@@ -21,12 +21,12 @@
         <Delete Files="@(TestsResults)" />
         <DeleteTree Directories="$(ArtifactsRoot)" Condition="Exists($(ArtifactsRoot))" />
         
-        <MSBuild Projects="$(Solution)" Targets="Clean" />
+        <MSBuild Projects="$(Solution)" Targets="Clean" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=$(Platform)"/>
         
     </Target>
     
     <Target Name="Make">
-        <MSBuild Projects="$(Solution)" Targets="restore;Build"/>
+        <MSBuild Projects="$(Solution)" Targets="restore;Build" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=$(Platform)"/>
     </Target>
     
     <Target Name="PrepareArtifactsRoot">
