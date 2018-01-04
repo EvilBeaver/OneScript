@@ -2,14 +2,13 @@
     <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
     
     <PropertyGroup>
-        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">19</ReleaseNumber>
+        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">20</ReleaseNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
 
         <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
         <Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
         <Configuration>Release</Configuration>
-        <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
         <Platform>x86</Platform>
     </PropertyGroup>
     
