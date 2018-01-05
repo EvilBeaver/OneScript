@@ -28,7 +28,15 @@
     <Target Name="Make">
         <MSBuild Projects="$(Solution)" Targets="restore;Build" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=$(Platform)"/>
     </Target>
-    
+
+    <Target Name="CreateDistributions" DependsOnTargets="CreateInstaller;CreateNuget;CreateZip">
+        <ItemGroup>
+            <TempContent Include="$(ArtifactsRoot)/tmp"/>
+            <TempContent Include="$(MDDocFolder)"/>
+        </ItemGroup>
+        <DeleteTree Directories="@(TempContent)"/>
+    </Target>
+
     <Target Name="PrepareArtifactsRoot">
         <PropertyGroup>
             <TempFolder>$(ArtifactsRoot)/tmp</TempFolder>
@@ -90,7 +98,7 @@
     </Target>
     
     <!-- Собирает в целевой папке содержимое папки examples -->
-    <Target Name="GatherExamples" DependsOnTargets="Make;PrepareArtifactsRoot">
+    <Target Name="GatherExamples" DependsOnTargets="PrepareArtifactsRoot">
         <ItemGroup>
             <ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
         </ItemGroup>
@@ -99,7 +107,7 @@
     </Target>
     
     <!-- Собирает в целевой папке содержимое папки doc -->
-    <Target Name="GatherDocuments" DependsOnTargets="Make;PrepareArtifactsRoot;GenerateDocs">
+    <Target Name="GatherDocuments" DependsOnTargets="PrepareArtifactsRoot;GenerateDocs">
         <MakeDir Directories="$(DocFolder)"/>
         <Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)&quot;"/>
     </Target>
@@ -147,7 +155,7 @@
 
     <!-- ZIP -->
     <Target Name="CreateZip" DependsOnTargets="PrepareDistributionContent">		
-        <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(ArtifactsRoot)/*&quot; &quot;$(ArtifactsRoot)/OneScript-1.0.$(ReleaseNumber).zip&quot;"/>
+        <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(TempFolder)/*&quot; &quot;$(ArtifactsRoot)/OneScript-1.0.$(ReleaseNumber).zip&quot;"/>
         <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(MDDocFolder)/*&quot; &quot;$(ArtifactsRoot)/mddoc-1.0.$(ReleaseNumber).zip&quot;"/>
     </Target>
 
