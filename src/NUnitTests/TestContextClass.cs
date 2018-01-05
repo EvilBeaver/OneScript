@@ -14,15 +14,15 @@ namespace NUnitTests
 	public class TestContextClass : AutoContext<TestContextClass>
 	{
 		
-		[ContextMethod("УстаревшийМетод", "ObsoleteMethod", isDeprecated: true, throwOnUse: true)]
+		[ContextMethod("УстаревшийМетод", "ObsoleteMethod", isDeprecated: true, throwOnUse: false)]
 		public void ObsoleteMethod()
 		{
 			// Do nothing
 		}
 
 		[ContextMethod("ХорошийМетод", "GoodMethod")]
-		[ContextMethod("ObsoleteAlias", isDeprecated: true)]
-		[ContextMethod("VeryObsoleteAlias", isDeprecated: true, throwOnUse: true)]
+		[ContextMethod("ObsoleteAlias", null, isDeprecated: true, throwOnUse: false)]
+		[ContextMethod("VeryObsoleteAlias", null, isDeprecated: true, throwOnUse: true)]
 		public void GoodMethod()
 		{
 			// Do nothing

@@ -35,11 +35,6 @@ namespace ScriptEngine.Machine.Contexts
         {
         }
 
-        public ContextMethodAttribute(string name, bool isDeprecated, bool throwOnUse = false)
-            : this(name, null, isDeprecated, throwOnUse: throwOnUse)
-        {
-        }
-
         public string GetName()
         {
             return _name;
