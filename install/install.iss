@@ -2,12 +2,14 @@
 #define AppName "OneScript engine"
 #define FSFriendlyName "OneScript"
 #define MainExe "TestApp.exe"
+#define ArtifactRoot "..\built\tmp"
 
 #define VerMajor
 #define VerMinor
 #define VerRelease
 #define Build
-#expr ParseVersion("build\bin\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
+; duplicates ArtifactsRoot because ISPP can't resolve directives
+#expr ParseVersion(ArtifactRoot + "\bin\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
 
 [Setup]
 AppName={#AppName}
@@ -38,28 +40,28 @@ Name: "testapp"; Description: "Тестовая консоль (TestApp)";
 Name: "docs"; Description: "Документация по свойствам и методам (синтакс-помощник)";
 
 [Files]              
-Source: "build\bin\oscript.exe"; DestDir: "{app}\bin"; Components: main
-Source: "build\bin\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
-Source: "build\bin\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
-Source: "build\bin\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
-Source: "build\bin\Ionic.Zip.dll"; DestDir: "{app}\bin"; Components: main
-Source: "build\bin\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
-Source: "build\bin\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
+Source: "{#ArtifactRoot}\bin\oscript.exe"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\bin\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\bin\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\bin\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\bin\Ionic.Zip.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\bin\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\bin\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
 
-Source: "build\examples\*"; DestDir: "{app}\examples"; Components: main
+Source: "{#ArtifactRoot}\examples\*"; DestDir: "{app}\examples"; Components: main
 
 ;isapi
-Source: "build\bin\ASPNETHandler.dll"; DestDir: "{app}\bin"; Components: isapi;
+Source: "{#ArtifactRoot}\bin\HTTPServices.dll"; DestDir: "{app}\bin"; Components: isapi;
 
 ; testapp
-Source: "build\bin\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
-Source: "build\bin\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
+Source: "{#ArtifactRoot}\bin\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
+Source: "{#ArtifactRoot}\bin\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
 ; библиотека
-Source: "build\lib\*"; DestDir: "{app}\lib"; Components: stdlib; Flags: recursesubdirs
-Source: "build\bin\*.bat"; DestDir: "{app}\bin"; Components: stdlib
+Source: "{#ArtifactRoot}\lib\*"; DestDir: "{app}\lib"; Components: stdlib; Flags: recursesubdirs
+Source: "{#ArtifactRoot}\bin\*.bat"; DestDir: "{app}\bin"; Components: stdlib
 
 ; документация
-Source: "build\doc\*"; DestDir: "{app}\doc"; Components: docs; Flags: recursesubdirs
+Source: "{#ArtifactRoot}\doc\*"; DestDir: "{app}\doc"; Components: docs; Flags: recursesubdirs
 
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
 Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: VCRedistNeedsInstall

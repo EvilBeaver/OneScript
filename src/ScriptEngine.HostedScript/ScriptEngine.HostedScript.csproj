@@ -1,270 +1,56 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F09A46BD-5737-45E7-BA60-A47C9F7821A9}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ScriptEngine.HostedScript</RootNamespace>
-    <AssemblyName>ScriptEngine.HostedScript</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\ScriptEngine.HostedScript.XML</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\x86\Release\ScriptEngine.HostedScript.XML</DocumentationFile>
-    <NoWarn>1591</NoWarn>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNoSnegopat|AnyCPU'">
-    <OutputPath>bin\ReleaseNoSnegopat\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNoSnegopat|x86'">
-    <OutputPath>bin\x86\ReleaseNoSnegopat\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>bin\x86\Release\ScriptEngine.HostedScript.XML</DocumentationFile>
-    <Optimize>true</Optimize>
-    <NoWarn>1591</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
+    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ionic.Zip">
-      <HintPath>..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="DotNetZip" Version="1.9.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
+  
+  <PropertyGroup>
+    <AssemblyTitle>1C (BSL) language runtime</AssemblyTitle>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="Library\Binary\BitConversionFacility.cs" />
-    <Compile Include="Library\DriveInfo\DriveInfo.cs" />
-    <Compile Include="Library\DriveInfo\DriveTypeEnum.cs" />
-    <Compile Include="EngineConfigProvider.cs" />
-    <Compile Include="HostedScriptEngine.cs" />
-    <Compile Include="IHostApplication.cs" />
-    <Compile Include="KeyValueConfig.cs" />
-    <Compile Include="LibraryLoader.cs" />
-    <Compile Include="LibraryResolver.cs" />
-    <Compile Include="Library\ArrayImpl.cs" />
-    <Compile Include="Library\Binary\BinaryDataContext.cs" />
-    <Compile Include="Library\Binary\BinaryDataBuffer.cs" />
-    <Compile Include="Library\Binary\GenericStreamImpl.cs" />
-    <Compile Include="Library\Binary\EndianBitConverter.cs" />
-    <Compile Include="Library\Binary\DataReader.cs" />
-    <Compile Include="Library\Binary\DataWriter.cs" />
-    <Compile Include="Library\Binary\StreamEnums.cs" />
-    <Compile Include="Library\Binary\FileStreamContext.cs" />
-    <Compile Include="Library\Binary\FileStreamsManager.cs" />
-    <Compile Include="Library\Binary\MemoryStreamContext.cs" />
-    <Compile Include="Library\Binary\ReadDataResult.cs" />
-    <Compile Include="Library\Binary\GenericStream.cs" />
-    <Compile Include="Library\ConsoleContext.cs" />
-    <Compile Include="Library\EnvironmentVariablesImpl.cs" />
-    <Compile Include="Library\FileContext.cs" />
-    <Compile Include="Library\FileOperations.cs" />
-    <Compile Include="Library\FixedArrayImpl.cs" />
-    <Compile Include="Library\FixedMapImpl.cs" />
-    <Compile Include="Library\FixedStructureImpl.cs" />
-    <Compile Include="Library\GlobalBitFunctions.cs" />
-    <Compile Include="Library\Hash\CombinedStream.cs" />
-    <Compile Include="Library\Hash\Crc32.cs" />
-    <Compile Include="Library\Hash\HashFunctionEnum.cs" />
-    <Compile Include="Library\Hash\HashImpl.cs" />
-    <Compile Include="Library\Http\HttpConnectionContext.cs" />
-    <Compile Include="Library\Http\HttpRequestBody.cs" />
-    <Compile Include="Library\Http\HttpRequestBodyBinary.cs" />
-    <Compile Include="Library\Http\HttpRequestBodyString.cs" />
-    <Compile Include="Library\Http\HttpRequestBodyUnknown.cs" />
-    <Compile Include="Library\Http\HttpRequestContext.cs" />
-    <Compile Include="Library\Http\HttpRequestBodyFile.cs" />
-    <Compile Include="Library\Http\HttpResponseBody.cs" />
-    <Compile Include="Library\Http\HttpResponseContext.cs" />
-    <Compile Include="Library\Http\InternetProxyContext.cs" />
-    <Compile Include="Library\ConsoleColorEnum.cs" />
-    <Compile Include="Library\Json\JSONCharactersEscapeMode.cs" />
-    <Compile Include="Library\Json\JSONLineBreak.cs" />
-    <Compile Include="Library\Json\JSONReader.cs" />
-    <Compile Include="Library\Json\JSONValueTypeEnum.cs" />
-    <Compile Include="Library\Json\JSONWriter.cs" />
-    <Compile Include="Library\Json\JSONWriterSettings.cs" />
-    <Compile Include="Library\MessageStatusEnum.cs" />
-    <Compile Include="Library\MiscGlobalFunctions.cs" />
-    <Compile Include="Library\Net\TCPClient.cs" />
-    <Compile Include="Library\Net\TCPServer.cs" />
-    <Compile Include="Library\ProcessContext.cs" />
-    <Compile Include="Library\ProcessOutputWrapper.cs" />
-    <Compile Include="Library\Regex\MatchCollectionImpl.cs" />
-    <Compile Include="Library\Regex\MatchImpl.cs" />
-    <Compile Include="Library\Regex\Regex.cs" />
-    <Compile Include="Library\SpecialFolderEnum.cs" />
-    <Compile Include="Library\SortDirectionEnum.cs" />
-    <Compile Include="Library\StdTextReadStream.cs" />
-    <Compile Include="Library\StdTextWriteStream.cs" />
-    <Compile Include="Library\SystemConfigAccessor.cs" />
-    <Compile Include="Library\SystemGlobalContext.cs" />
-    <Compile Include="Library\GuidWrapper.cs" />
-    <Compile Include="Library\KeyAndValueImpl.cs" />
-    <Compile Include="Library\MapImpl.cs" />
-    <Compile Include="Library\RandomNumberGenerator.cs" />
-    <Compile Include="Library\Reflector.cs" />
-    <Compile Include="Library\SystemEnvironmentContext.cs" />
-    <Compile Include="Library\TextDocumentContext.cs" />
-    <Compile Include="Library\TextEncodingEnum.cs" />
-    <Compile Include="Library\TextReadImpl.cs" />
-    <Compile Include="Library\TextWriteImpl.cs" />
-    <Compile Include="Library\ValueList\ValueListImpl.cs" />
-    <Compile Include="Library\ValueList\ValueListItem.cs" />
-    <Compile Include="Library\ValueTree\ValueTreeRow.cs" />
-    <Compile Include="Library\ValueTree\ValueTree.cs" />
-    <Compile Include="Library\ValueTree\ValueTreeColumn.cs" />
-    <Compile Include="Library\ValueTree\ValueTreeColumnCollection.cs" />
-    <Compile Include="Library\ValueTree\ValueTreeRowCollection.cs" />
-    <Compile Include="Library\Xml\XmlGlobalFunctions.cs" />
-    <Compile Include="Library\Xml\XmlNodeTypeEnum.cs" />
-    <Compile Include="Library\Xml\XmlReaderImpl.cs" />
-    <Compile Include="Library\ValueTable\CollectionIndexes.cs" />
-    <Compile Include="Library\ValueTable\ValueTableIndex.cs" />
-    <Compile Include="Library\ValueTable\ValueTable.cs" />
-    <Compile Include="Library\ValueTable\ValueTableColumn.cs" />
-    <Compile Include="Library\ValueTable\ValueTableColumnCollection.cs" />
-    <Compile Include="Library\ValueTable\ValueTableRow.cs" />
-    <Compile Include="Library\Xml\XmlWriterImpl.cs" />
-    <Compile Include="Library\Zip\ZipCompressionLevelEnum.cs" />
-    <Compile Include="Library\Zip\ZipCompressionMethodEnum.cs" />
-    <Compile Include="Library\Zip\ZipEncryptionMethodEnum.cs" />
-    <Compile Include="Library\Zip\ZipFileEntriesCollection.cs" />
-    <Compile Include="Library\Zip\ZipFileEntryContext.cs" />
-    <Compile Include="Library\Zip\ZipReader.cs" />
-    <Compile Include="Library\Zip\ZipRestoreFilePathsModeEnum.cs" />
-    <Compile Include="Library\Zip\ZipStorePathModeEnum.cs" />
-    <Compile Include="Library\Zip\ZIPSubDirProcessingModeEnum.cs" />
-    <Compile Include="Library\Zip\ZipWriter.cs" />
-    <Compile Include="Process.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Library\StructureImpl.cs" />
-    <Compile Include="Library\StringOperations.cs" />
-    <Compile Include="DirectiveMultiResolver.cs" />
-    <Compile Include="DirectiveIgnorer.cs" />
-    <Compile Include="Library\CustomLineFeedStreamReader.cs" />
-    <Compile Include="Library\TypeDescription\AllowedSignEnum.cs" />
-    <Compile Include="Library\TypeDescription\AllowedLengthEnum.cs" />
-    <Compile Include="Library\TypeDescription\DateFractionsEnum.cs" />
-    <Compile Include="Library\TypeDescription\NumberQualifiers.cs" />
-    <Compile Include="Library\TypeDescription\StringQualifiers.cs" />
-    <Compile Include="Library\TypeDescription\DateQualifiers.cs" />
-    <Compile Include="Library\TypeDescription\BinaryDataQualifiers.cs" />
-    <Compile Include="Library\TypeDescription\TypeDescription.cs" />
-    <Compile Include="Library\TypeDescription\IValueAdjuster.cs" />
-    <Compile Include="Library\TypeDescription\BooleanTypeAdjuster.cs" />
-    <Compile Include="Library\Xml\XmlNamespaceContext.cs" />
-    <Compile Include="Library\SymbolsContext.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj">
-      <Project>{727a498f-bf50-42f8-8523-40c0b5b1b233}</Project>
-      <Name>OneScript.DebugProtocol</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
-      <Project>{F062D1D9-D307-492A-A56B-FF3C55F8F6C0}</Project>
-      <Name>ScriptEngine</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="oscript.cfg">
+	  <None Include="oscript.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PackageId>OneScript.StandardLibrary</PackageId>
+    <PackageVersion>1.0.$(ReleaseNumber)</PackageVersion>
+    <Title>OneScript Main Client Libraries</Title>
+    <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
+    <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
+    <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
+    <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageDescription>Standard class libraries for 1Script - collections, network, filesystem etc...</PackageDescription>
+    <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
+    <PackageTags>BSL 1C 1Script OneScript</PackageTags>
+
   </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
-    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner/"</PostBuildEvent>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net452'">
+    <DocumentationFile>bin\Release\net452\ScriptEngine.HostedScript.xml</DocumentationFile>
+    <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
-xcopy "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D
-xcopy "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner\" /Y /E /D</PostBuildEvent>
-    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">cp -f "$(TargetDir)ScriptEngine.HostedScript.dll" "$(SolutionDir)StandaloneRunner"
-cp -f "$(TargetDir)Ionic.Zip.dll" "$(SolutionDir)StandaloneRunner"
-cp -f "$(TargetDir)Newtonsoft.Json.dll" "$(SolutionDir)StandaloneRunner"</PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+    <Message Text="Copying StandaloneRunner resources" />
+    <ItemGroup>
+      <CopyToStandalone Include="$(TargetPath)" />
+      <CopyToStandalone Include="$(TargetDir)Ionic.Zip.dll" />
+      <CopyToStandalone Include="$(TargetDir)Newtonsoft.Json.dll" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(CopyToStandalone)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  
 </Project>
