@@ -16,7 +16,7 @@ namespace ScriptEngine.Machine.Contexts
         private readonly string _name;
         private readonly string _alias;
 
-        public ContextMethodAttribute(string name, string alias, bool isDeprecated, bool throwOnUse)
+        public ContextMethodAttribute(string name, string alias = null)
         {
             if(!Utils.IsValidIdentifier(name))
                 throw new ArgumentException("Name must be a valid identifier");
@@ -26,13 +26,6 @@ namespace ScriptEngine.Machine.Contexts
 
             _name = name;
             _alias = alias;
-            IsDeprecated = isDeprecated;
-            ThrowOnUse = throwOnUse;
-        }
-
-        public ContextMethodAttribute(string name, string alias = null)
-            : this(name, alias, isDeprecated: false, throwOnUse: false)
-        {
         }
 
         public string GetName()
@@ -58,9 +51,9 @@ namespace ScriptEngine.Machine.Contexts
             return null;
         }
         
-        public bool IsDeprecated { get; }
+        public bool IsDeprecated { get; set; }
 
-        public bool ThrowOnUse { get; }
+        public bool ThrowOnUse { get; set; }
 
         public bool IsFunction { get; set; }
     }
