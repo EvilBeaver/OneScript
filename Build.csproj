@@ -150,7 +150,7 @@
     </Target>
 
     <!-- Инсталлятор -->
-    <Target Name="CreateInstaller">
+    <Target Name="CreateInstaller" DependsOnTargets="PrepareArtifactsRoot">
         <Error Text="No installer path is specified" Condition="'$(InnoSetupPath)' == ''"/>
         <PropertyGroup>
             <InstallerStandardPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandardPath>
@@ -160,7 +160,7 @@
     </Target>
 
     <!-- Nuget -->
-    <Target Name="CreateNuget">
+    <Target Name="CreateNuget" DependsOnTargets="PrepareArtifactsRoot">
         <ItemGroup>
             <NugetAbleProject Include="ScriptEngine"/>
             <NugetAbleProject Include="ScriptEngine.HostedScript"/>
@@ -171,7 +171,7 @@
     </Target>
 
     <!-- ZIP -->
-    <Target Name="CreateZip">		
+    <Target Name="CreateZip" DependsOnTargets="PrepareArtifactsRoot">		
         <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(TempFolder)/*&quot; &quot;$(ArtifactsRoot)/OneScript-1.0.$(ReleaseNumber).zip&quot;"/>
         <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(MDDocFolder)/*&quot; &quot;$(ArtifactsRoot)/mddoc-1.0.$(ReleaseNumber).zip&quot;"/>
     </Target>
@@ -183,7 +183,7 @@
     </Target>
 
 
-    <Target Name="xUnitTest">
+    <Target Name="xUnitTest" DependsOnTargets="PrepareArtifactsRoot">
 
         <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
             <Output TaskParameter="Include" ItemName="RemoveXMLTestResult" />
