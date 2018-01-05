@@ -39,7 +39,6 @@ pipeline {
 					checkout scm
 
                     bat 'set'
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" BuildAll.csproj /p:Configuration=Release /p:Platform=x86 /p:TargetFramework=net452 /t:Build"
                     withSonarQubeEnv('silverbulleters') {
                         script {
                             def sqScannerMsBuildHome = tool 'sonar-scanner for msbuild';
