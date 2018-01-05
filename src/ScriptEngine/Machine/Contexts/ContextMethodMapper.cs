@@ -16,7 +16,7 @@ namespace ScriptEngine.Machine.Contexts
         private readonly string _name;
         private readonly string _alias;
 
-        public ContextMethodAttribute(string name, string alias = null, bool isDeprecated = false, bool throwOnUse = false)
+        public ContextMethodAttribute(string name, string alias, bool isDeprecated, bool throwOnUse)
         {
             if(!Utils.IsValidIdentifier(name))
                 throw new ArgumentException("Name must be a valid identifier");
@@ -30,8 +30,13 @@ namespace ScriptEngine.Machine.Contexts
             ThrowOnUse = throwOnUse;
         }
 
-        public ContextMethodAttribute(string name, bool isDeprecated)
-            : this(name, null, isDeprecated)
+        public ContextMethodAttribute(string name, string alias = null)
+            : this(name, alias, isDeprecated: false, throwOnUse: false)
+        {
+        }
+
+        public ContextMethodAttribute(string name, bool isDeprecated, bool throwOnUse = false)
+            : this(name, null, isDeprecated, throwOnUse: throwOnUse)
         {
         }
 
@@ -43,6 +48,19 @@ namespace ScriptEngine.Machine.Contexts
         public string GetAlias()
         {
             return _alias;
+        }
+        
+        public string GetAlias(string nativeMethodName)
+        {
+            if (!string.IsNullOrEmpty(_alias))
+            {
+                return _alias;
+            }
+            if (!IsDeprecated)
+            {
+                return nativeMethodName;
+            }
+            return null;
         }
         
         public bool IsDeprecated { get; }
@@ -187,9 +205,7 @@ namespace ScriptEngine.Machine.Contexts
                     scriptMethInfo.IsDeprecated = item.Binding.IsDeprecated;
                     scriptMethInfo.ThrowOnUseDeprecated = item.Binding.ThrowOnUse;
                     scriptMethInfo.Name = item.Binding.GetName();
-                    scriptMethInfo.Alias = string.IsNullOrEmpty(item.Binding.GetAlias()) ?
-                       scriptMethInfo.Name
-                        :item.Binding.GetAlias();
+                    scriptMethInfo.Alias = item.Binding.GetAlias(item.Method.Name);
 
                     scriptMethInfo.Params = paramDefs;
 

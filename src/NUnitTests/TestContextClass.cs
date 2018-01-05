@@ -14,7 +14,7 @@ namespace NUnitTests
 	public class TestContextClass : AutoContext<TestContextClass>
 	{
 		
-		[ContextMethod("УстаревшийМетод", "ObsoleteMethod", isDeprecated: true)]
+		[ContextMethod("УстаревшийМетод", "ObsoleteMethod", isDeprecated: true, throwOnUse: true)]
 		public void ObsoleteMethod()
 		{
 			// Do nothing

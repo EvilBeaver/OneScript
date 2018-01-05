@@ -482,7 +482,7 @@ namespace ScriptEngine.HostedScript.Library
             
         }
 
-        [ContextMethod("IsValueFilled", null, isDeprecated: true)]
+        [ContextMethod("IsValueFilled", isDeprecated: true, throwOnUse: false)]
         [Obsolete]
         public bool IsValueFilled(IValue value)
         {
