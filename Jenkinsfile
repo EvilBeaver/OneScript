@@ -99,7 +99,7 @@ pipeline {
                 script {
                     def vsceBin = pwd() + "/node_modules/.bin/vsce"
                     sh "cd built/vscode && ${vsceBin} package"
-                    archiveArtifacts artifacts: 'install/build/vscode/*.vsix', fingerprint: true
+                    archiveArtifacts artifacts: 'built/vscode/*.vsix', fingerprint: true
                     stash includes: 'built/vscode/*.vsix', name: 'vsix' 
                 }
             }
