@@ -39,6 +39,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net452'">
     <DocumentationFile>bin\Release\net452\ScriptEngine.HostedScript.xml</DocumentationFile>
+    <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
   
   <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
