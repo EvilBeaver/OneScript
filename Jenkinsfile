@@ -71,7 +71,8 @@ pipeline {
                             if (makeAnalyzis) {
                                 bat "${sonarcommandStart}"
                             }
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent"
+                            bat "chcp $outputEnc > nul\r\n dotnet restore src/1Script.sln"
+							bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent"
                             if (makeAnalyzis) {
                                 bat "${sqScannerMsBuildHome} end"
                             }
