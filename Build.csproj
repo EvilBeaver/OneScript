@@ -44,6 +44,7 @@
             <LibFolder>$(TempFolder)/lib</LibFolder>
             <ExamplesFolder>$(TempFolder)/examples</ExamplesFolder>
             <DocFolder>$(TempFolder)/doc</DocFolder>
+            <DebugDest>$(ArtifactsRoot)\vscode\</DebugDest>
             <MDDocFolder>$(ArtifactsRoot)/mddoc</MDDocFolder>
         </PropertyGroup>
         <MakeDir Directories="$(ArtifactsRoot)" />
@@ -72,8 +73,24 @@
         
         <Copy SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)" />
         <!-- Копирование скрипта запуска для opm -->
-        <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
-        
+        <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/>
+
+        <PropertyGroup>
+            <DebugSrc>$(MSBuildProjectDirectory)/src/DebugServer/bin/$(Configuration)/net452</DebugSrc>
+        </PropertyGroup>
+        <ItemGroup>
+            <DbgBinFiles Include="$(DebugSrc)/*.dll"/>
+            <DbgBinFiles Include="$(DebugSrc)/*.exe"/>
+            <DbgBinFiles Include="$(DebugSrc)/*.config"/>
+            <DbgPackageFiles Include="$(DebugSrc)/README.md"/>
+            <DbgPackageFiles Include="$(DebugSrc)/package.json"/>
+            <DbgImageFiles Include="$(DebugSrc)/images/**"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(DbgBinFiles)" DestinationFolder="$(DebugDest)/bin"/>
+        <Copy SourceFiles="@(DbgPackageFiles)" DestinationFolder="$(DebugDest)"/>
+        <Copy SourceFiles="@(DbgImageFiles)" DestinationFolder="$(DebugDest)/images"/>
+
     </Target>
     
     <!-- Собирает в целевой папке содержимое папки lib -->
@@ -133,7 +150,7 @@
     </Target>
 
     <!-- Инсталлятор -->
-    <Target Name="CreateInstaller" DependsOnTargets="PrepareDistributionContent">
+    <Target Name="CreateInstaller">
         <Error Text="No installer path is specified" Condition="'$(InnoSetupPath)' == ''"/>
         <PropertyGroup>
             <InstallerStandardPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandardPath>
@@ -154,19 +171,19 @@
     </Target>
 
     <!-- ZIP -->
-    <Target Name="CreateZip" DependsOnTargets="PrepareDistributionContent">		
+    <Target Name="CreateZip">		
         <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(TempFolder)/*&quot; &quot;$(ArtifactsRoot)/OneScript-1.0.$(ReleaseNumber).zip&quot;"/>
         <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(MDDocFolder)/*&quot; &quot;$(ArtifactsRoot)/mddoc-1.0.$(ReleaseNumber).zip&quot;"/>
     </Target>
 
     <!-- MSI -->
-    <Target Name="CreateMSI" DependsOnTargets="PrepareDistributionContent">
+    <Target Name="CreateMSI">
         <MSBuild Projects="$(MSBuildProjectDirectory)\src\Installer\Installer.wixproj"
                     Properties="Configuration=$(Configuration);OutputPath=$(ArtifactsRoot);OutputPathForBuild=$(ArtifactsRoot);Version=$1.0.$(ReleaseNumber).$(BuildNumber)" />
     </Target>
 
 
-    <Target Name="xUnitTest" DependsOnTargets="GatherBinaries">
+    <Target Name="xUnitTest">
 
         <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
             <Output TaskParameter="Include" ItemName="RemoveXMLTestResult" />
