@@ -101,7 +101,7 @@ namespace OneScript.ASPNETHandler
             #endregion
 
             var runner = _hostedScript.EngineInstance.AttachedScriptsFactory.LoadFromString(
-                _hostedScript.EngineInstance.GetCompilerService(), sourceCode);
+                _hostedScript.GetCompilerService(), sourceCode);
 
             int exitCode = 0;
 
