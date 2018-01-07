@@ -130,6 +130,7 @@
     <Compile Include="Library\FixedArrayImpl.cs" />
     <Compile Include="Library\FixedMapImpl.cs" />
     <Compile Include="Library\FixedStructureImpl.cs" />
+    <Compile Include="Library\GlobalBinaryData.cs" />
     <Compile Include="Library\GlobalBitFunctions.cs" />
     <Compile Include="Library\Hash\CombinedStream.cs" />
     <Compile Include="Library\Hash\Crc32.cs" />
