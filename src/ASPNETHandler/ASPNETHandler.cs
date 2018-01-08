@@ -71,6 +71,15 @@ namespace OneScript.ASPNETHandler
                 }
                 catch { /*что-то не так, ничего не делаем*/}
             }
+
+            //Загружаем библиотечные скрипты aka общие модули
+            System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
+            string libPath = appSettings["commonModulesPath"];
+
+            if (libPath != null)
+            {
+                int a = 1;
+            }
         }
 
         public void ProcessRequest(HttpContext context)
