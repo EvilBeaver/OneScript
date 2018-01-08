@@ -100,8 +100,7 @@ namespace OneScript.ASPNETHandler
             }
             #endregion
 
-            var runner = _hostedScript.EngineInstance.AttachedScriptsFactory.LoadFromString(
-                _hostedScript.GetCompilerService(), sourceCode);
+            var runner = CreateServiceInstance(sourceCode);
 
             int exitCode = 0;
 
@@ -159,6 +158,16 @@ namespace OneScript.ASPNETHandler
                 context.Response.End();
             }
 
+        }
+
+        private IRuntimeContextInstance CreateServiceInstance(string sourceCode)
+        {
+            var code = _hostedScript.EngineInstance.Loader.FromString(sourceCode);
+            var compiler = _hostedScript.GetCompilerService();
+            var byteCode = compiler.CreateModule(code);
+            var module = _hostedScript.EngineInstance.LoadModuleImage(byteCode);
+            var runner = _hostedScript.EngineInstance.NewObject(module);
+            return runner;
         }
     }
 }
