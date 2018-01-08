@@ -41,7 +41,7 @@ namespace OneScript.ASPNETHandler
             _assembliesForAttaching = new List<System.Reflection.Assembly>();
 
             System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
-                
+
             _cachingEnabled = (appSettings["cachingEnabled"] == "true");
 
             foreach (string assemblyName in appSettings.AllKeys)
@@ -62,6 +62,7 @@ namespace OneScript.ASPNETHandler
             _hostedScript = new HostedScriptEngine();
             _hostedScript.Initialize();
             _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+
             // Аттачим доп сборки. По идее должны лежать в Bin
             foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
             {
@@ -73,13 +74,41 @@ namespace OneScript.ASPNETHandler
             }
 
             //Загружаем библиотечные скрипты aka общие модули
-            System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
-            string libPath = appSettings["commonModulesPath"];
-
-            if (libPath != null)
+            try
             {
-                int a = 1;
+                System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
+                string libPath = appSettings["commonModulesPath"];
+
+                if (libPath != null)
+                {
+                    libPath = HttpContext.Current.Server.MapPath(libPath);
+                    
+                    string[] files = System.IO.Directory.GetFiles(libPath, "*.os");
+                    
+
+                    foreach (string filePathName in files)
+                    {
+                        _hostedScript.InjectGlobalProperty(System.IO.Path.GetFileNameWithoutExtension(filePathName), ValueFactory.Create(), true);
+                    }
+
+                    foreach (string filePathName in files)
+                    {
+                        try
+                        {
+                            ICodeSource src = _hostedScript.Loader.FromFile(filePathName);
+                            
+                            var compilerService = _hostedScript.GetCompilerService();
+                            var module = compilerService.CreateModule(src);
+                            var loaded = _hostedScript.EngineInstance.LoadModuleImage(module);
+                            var instance = (IValue)_hostedScript.EngineInstance.NewObject(loaded);
+                            _hostedScript.EngineInstance.Environment.SetGlobalProperty(System.IO.Path.GetFileNameWithoutExtension(filePathName), instance);
+ 
+                        }
+                        catch (Exception e){ var m = e;/*что-то не так, ничего не делаем*/}
+                    }
+                }
             }
+            catch { /*что-то не так, ничего не делаем*/}
         }
 
         public void ProcessRequest(HttpContext context)
