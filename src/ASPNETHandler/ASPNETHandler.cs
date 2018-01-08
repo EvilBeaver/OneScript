@@ -31,6 +31,8 @@ namespace OneScript.ASPNETHandler
         // web.config -> <appSettings> -> <add key="ASPNetHandler" value="attachAssembly"/> Сделано так для простоты. Меньше настроек - дольше жизнь :)
         static System.Collections.Generic.List<System.Reflection.Assembly> _assembliesForAttaching;
 
+        private static string _configFilePath;
+
         public bool IsReusable
         {
             // Разрешаем повторное использование и храним среду выполнения и контекст 
@@ -43,6 +45,7 @@ namespace OneScript.ASPNETHandler
             System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
                 
             _cachingEnabled = (appSettings["cachingEnabled"] == "true");
+            _configFilePath = appSettings["configFilePath"];
 
             foreach (string assemblyName in appSettings.AllKeys)
             {
@@ -60,6 +63,9 @@ namespace OneScript.ASPNETHandler
         public ASPNETHandler()
         {
             _hostedScript = new HostedScriptEngine();
+            if (_configFilePath == null)
+                _configFilePath = Path.Combine(Directory.GetCurrentDirectory(), "oscript.cfg");
+            _hostedScript.CustomConfig = _configFilePath;
             _hostedScript.Initialize();
             _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
             // Аттачим доп сборки. По идее должны лежать в Bin
