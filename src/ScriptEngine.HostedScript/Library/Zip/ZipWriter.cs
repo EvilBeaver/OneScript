@@ -87,26 +87,25 @@ namespace ScriptEngine.HostedScript.Library.Zip
             var pathIsMasked = file.IndexOfAny(new[] { '*', '?' }) >= 0;
 
             var recursiveFlag = GetRecursiveFlag(recurseSubdirectories);
-            var searchOption = recursiveFlag ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
+            var searchOption = recursiveFlag ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
             if(pathIsMasked)
             {
                 AddFilesByMask(file, searchOption, storePathMode);
             }
-            else if (System.IO.Directory.Exists(file))
+            else if (Directory.Exists(file))
             {
                 AddDirectory(file, searchOption, storePathMode);
             }
-            else if (System.IO.File.Exists(file))
+            else if (File.Exists(file))
             {
                 AddSingleFile(file, storePathMode);
             }
             
         }
 
-        private void AddDirectory(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddDirectory(string dir, SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
-            var path = Path.IsPathRooted(file) ? Path.GetDirectoryName(file) : Path.GetFullPath(file);
             string allFilesMask;
 
             if (System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
@@ -114,8 +113,18 @@ namespace ScriptEngine.HostedScript.Library.Zip
             else
                 allFilesMask = "*.*";
 
-            var filesToAdd = System.IO.Directory.EnumerateFiles(file, allFilesMask, searchOption);
-            AddEnumeratedFiles(filesToAdd, path, storePathMode);
+            var filesToAdd = Directory.EnumerateFiles(dir, allFilesMask, searchOption);
+            AddEnumeratedFiles(filesToAdd, GetPathForParentFolder(dir), storePathMode);
+        }
+
+        private string GetPathForParentFolder(string dir)
+        {
+            var rootPath = GetRelativePath(dir, Directory.GetCurrentDirectory());
+            if (rootPath == "")
+                rootPath = Path.Combine(Directory.GetCurrentDirectory(), dir, "..");
+            else
+                rootPath = Directory.GetCurrentDirectory();
+            return rootPath;
         }
 
         private void AddSingleFile(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
@@ -124,17 +133,26 @@ namespace ScriptEngine.HostedScript.Library.Zip
             if (storePathMode == null)
                 storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
 
+            var currDir = Directory.GetCurrentDirectory();
+
             string pathInArchive;
             if (storePathMode == storeModeEnum.StoreFullPath)
                 pathInArchive = null;
+            else if (storePathMode == storeModeEnum.StoreRelativePath)
+            {
+                var relativePath = GetRelativePath(file, currDir);
+                if (relativePath == "")
+                    pathInArchive = ".";
+                else
+                    pathInArchive = Path.GetDirectoryName(relativePath);
+            }
             else
                 pathInArchive = "";
 
-            
             _zip.AddFile(file, pathInArchive);
         }
 
-        private void AddFilesByMask(string file, System.IO.SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddFilesByMask(string file, SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
             // надо разделить на каталог и маску
             var pathEnd = file.LastIndexOfAny(new[] { '\\', '/' });
@@ -156,7 +174,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 }
 
                 // несуществующие пути или пути к файлам, вместо папок 1С откидывает
-                if (!System.IO.Directory.Exists(path))
+                if (!Directory.Exists(path))
                     return;
             }
             else if (pathEnd == 0)
@@ -170,8 +188,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 mask = file;
             }
 
-            filesToAdd = System.IO.Directory.EnumerateFiles(path, mask, searchOption);
-            var relativePath = System.IO.Path.GetFullPath(path);
+            filesToAdd = Directory.EnumerateFiles(path, mask, searchOption);
+            var relativePath = Path.GetFullPath(path);
             AddEnumeratedFiles(filesToAdd, relativePath, storePathMode);
 
         }
@@ -186,7 +204,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             {
                 string pathInArchive;
                 if (storePathMode == storeModeEnum.StoreRelativePath)
-                    pathInArchive = GetRelativePath(item, relativePath);
+                    pathInArchive = Path.GetDirectoryName(GetRelativePath(item, relativePath));
                 else if (storePathMode == storeModeEnum.StoreFullPath)
                     pathInArchive = null;
                 else
@@ -196,16 +214,33 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
         }
 
-        private string GetRelativePath(string item, string basePath)
+        // возвращает относительный путь или "", если путь не является относительным
+        private string GetRelativePath(string filespec, string rootfolder)
         {
-            var dir = System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(item));
-            int startIndex;
-            if (dir == basePath)
-                startIndex = System.IO.Path.GetDirectoryName(basePath).Length;
-            else
-                startIndex = basePath.Length;
+            var currDir = Directory.GetCurrentDirectory();
 
-            return dir.Substring(startIndex).TrimStart(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+            DirectoryInfo directory = new DirectoryInfo(Path.Combine(currDir, rootfolder));
+            var folderpath = directory.FullName;
+
+            var filepath = Path.Combine(currDir, filespec);
+
+            if (Directory.Exists(filespec))
+            {
+                DirectoryInfo dir = new DirectoryInfo(filepath);
+                filepath = dir.FullName;
+            }
+            else {
+                FileInfo file = new FileInfo(filepath);
+                filepath = file.FullName;
+            }
+
+            if (!filepath.StartsWith(folderpath))
+                return "";
+
+            var res = filepath.Substring(folderpath.Length + 1);
+            if (res == "")
+                res = ".";
+            return res;
         }
 
         private static bool GetRecursiveFlag(SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories)

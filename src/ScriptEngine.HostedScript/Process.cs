@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
-using OneScript.DebugProtocol;
 
 namespace ScriptEngine.HostedScript
 {

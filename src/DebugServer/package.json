@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript",
   "icon": "images/mono-debug-icon.png",
