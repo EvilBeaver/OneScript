@@ -19,123 +19,118 @@ using ScriptEngine.Machine;
 
 namespace StandaloneRunner
 {
-	internal class StandaloneProcess : IHostApplication
-	{
-		public string[] CommandLineArguments { get; set; }
+    internal class StandaloneProcess : IHostApplication
+    {
+        public string[] CommandLineArguments { get; set; }
 
-		public int Run()
-		{
-			try
-			{
-				ScriptModuleHandle module;
-				var engine = new HostedScriptEngine();
-				engine.Initialize();
+        public int Run()
+        {
+            var engine = new HostedScriptEngine();
+            var src = new BinaryCodeSource();
+            engine.SetGlobalEnvironment(this, src);
 
-				using (var codeStream = LocateCode())
-				using (var binReader = new BinaryReader(codeStream))
-				{
-					var modulesCount = binReader.ReadInt32();
+            try
+            {
+                ScriptModuleHandle module;
+                engine.Initialize();
 
-					var reader = new ModulePersistor();
+                using (var codeStream = LocateCode())
+                using (var binReader = new BinaryReader(codeStream))
+                {
+                    var modulesCount = binReader.ReadInt32();
 
-					var entry = reader.Read(codeStream);
-					--modulesCount;
+                    var reader = new ModulePersistor();
 
-					while (modulesCount-- > 0)
-					{
-						var userScript = reader.Read(codeStream);
-						engine.LoadUserScript(userScript);
-					}
+                    var entry = reader.Read(codeStream);
+                    --modulesCount;
 
-					module = entry.Module;
-				}
+                    while (modulesCount-- > 0)
+                    {
+                        var userScript = reader.Read(codeStream);
+                        engine.LoadUserScript(userScript);
+                    }
 
-				var src = new BinaryCodeSource(module);
-				var process = engine.CreateProcess(this, module, src);
+                    module = entry.Module;
+                }
 
-				return process.Start();
-			}
-			catch (ScriptInterruptionException e)
-			{
-				return e.ExitCode;
-			}
-			catch (Exception e)
-			{
-				ShowExceptionInfo(e);
-				return 1;
-			}
-		}
+                var process = engine.CreateProcess(this, module, src);
 
-		private Stream LocateCode()
-		{
-			var fileName = Assembly.GetExecutingAssembly().Location;
-			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
-			{
-				const int SIGN_SIZE = 8;
-				fs.Position = fs.Length - SIGN_SIZE;
-				var signature = new byte[SIGN_SIZE];
-				fs.Read(signature, 0, SIGN_SIZE);
+                return process.Start();
+            }
+            catch (ScriptInterruptionException e)
+            {
+                return e.ExitCode;
+            }
+            catch (Exception e)
+            {
+                ShowExceptionInfo(e);
+                return 1;
+            }
+        }
 
-				if (signature[0] == 0x4f && signature[1] == 0x53 && signature[2] == 0x4d && signature[3] == 0x44)
-				{
-					var codeOffset = BitConverter.ToInt32(signature, 4);
-					var codeLen = fs.Length - codeOffset - SIGN_SIZE;
+        private Stream LocateCode()
+        {
+            var fileName = Assembly.GetExecutingAssembly().Location;
+            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            {
+                const int SIGN_SIZE = 8;
+                fs.Position = fs.Length - SIGN_SIZE;
+                var signature = new byte[SIGN_SIZE];
+                fs.Read(signature, 0, SIGN_SIZE);
 
-					fs.Seek(codeOffset, SeekOrigin.Begin);
-					var code = new byte[codeLen];
-					fs.Read(code, 0, (int) codeLen);
-					var ms = new MemoryStream(code);
+                if (signature[0] == 0x4f && signature[1] == 0x53 && signature[2] == 0x4d && signature[3] == 0x44)
+                {
+                    var codeOffset = BitConverter.ToInt32(signature, 4);
+                    var codeLen = fs.Length - codeOffset - SIGN_SIZE;
 
-					return ms;
-				}
+                    fs.Seek(codeOffset, SeekOrigin.Begin);
+                    var code = new byte[codeLen];
+                    fs.Read(code, 0, (int)codeLen);
+                    var ms = new MemoryStream(code);
 
-				throw new InvalidOperationException("No module found");
-			}
-		}
+                    return ms;
+                }
 
-		#region IHostApplication Members
+                throw new InvalidOperationException("No module found");
+            }
+        }
 
-		public void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
-		{
-			ConsoleHostImpl.Echo(text, status);
-		}
+        #region IHostApplication Members
 
-		public void ShowExceptionInfo(Exception exc)
-		{
-			ConsoleHostImpl.ShowExceptionInfo(exc);
-		}
+        public void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
+        {
+            ConsoleHostImpl.Echo(text, status);
+        }
 
-		public bool InputString(out string result, int maxLen)
-		{
-			return ConsoleHostImpl.InputString(out result, maxLen);
-		}
+        public void ShowExceptionInfo(Exception exc)
+        {
+            ConsoleHostImpl.ShowExceptionInfo(exc);
+        }
 
-		public string[] GetCommandLineArguments()
-		{
-			if (CommandLineArguments != null)
-				return CommandLineArguments;
+        public bool InputString(out string result, int maxLen)
+        {
+            return ConsoleHostImpl.InputString(out result, maxLen);
+        }
 
-			return new string[0];
-		}
+        public string[] GetCommandLineArguments()
+        {
+            if (CommandLineArguments != null)
+                return CommandLineArguments;
 
-		#endregion
-	}
+            return new string[0];
+        }
 
-	internal class BinaryCodeSource : ICodeSource
-	{
-		private ScriptModuleHandle _mh;
+        #endregion
+    }
 
-		public BinaryCodeSource(ScriptModuleHandle mh)
-		{
-			_mh = mh;
-		}
+    internal class BinaryCodeSource : ICodeSource
+    {
+        #region ICodeSource Members
 
-		#region ICodeSource Members
+        public string SourceDescription => Assembly.GetExecutingAssembly().Location;
 
-		public string SourceDescription => Assembly.GetExecutingAssembly().Location;
+        public string Code => "<Source is not available>";
 
-		public string Code => "<Source is not available>";
-
-		#endregion
-	}
+        #endregion
+    }
 }

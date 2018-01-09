@@ -7,8 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -84,8 +82,8 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
         }
-
-        public void AddProperty(string name, IValue value)
+        
+        public void AddProperty(string name, string alias, IValue value)
         {
             if(_ownProperties == null)
             {
@@ -95,8 +93,17 @@ namespace ScriptEngine.Machine.Contexts
 
             var newIndex = _ownProperties.Count;
             _ownPropertyIndexes.Add(name, newIndex);
+            if (!string.IsNullOrEmpty(alias))
+            {
+                _ownPropertyIndexes.Add(alias, newIndex);
+            }
             _ownProperties.Add(value);
 
+        }
+
+        public void AddProperty(string name, IValue value)
+        {
+            AddProperty(name, null, value);
         }
 
         protected override int GetOwnMethodCount()
@@ -134,23 +141,16 @@ namespace ScriptEngine.Machine.Contexts
 
         protected override string GetOwnPropName(int index)
         {
-            var prop = _module.ExportedProperies[index];
-            return prop.SymbolicName;
+            if (_ownProperties == null)
+                throw new ArgumentException("Unknown property index");
+
+            return _ownPropertyIndexes.Where(x => x.Value == index).First().Key;
         }
         
         public override int GetMethodsCount()
         {
             return _module.ExportedMethods.Length;
         }
-
-        public override int GetPropCount()
-        {
-            return _module.ExportedProperies.Length;
-        }
-
-        public override string GetPropName(int propNum)
-        {
-            return _module.ExportedProperies[propNum].SymbolicName;
-        }
+        
     }
 }

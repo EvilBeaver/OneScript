@@ -226,7 +226,9 @@ namespace ScriptEngine.Machine
 
         public StringConstantValue(string val)
         {
-            Trace.Assert(val != null);
+            if (val == null)
+                throw new ArgumentNullException();
+
             _value = val;
         }
 

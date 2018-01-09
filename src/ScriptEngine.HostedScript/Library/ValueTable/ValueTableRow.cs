@@ -67,35 +67,35 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return TryValue(C);
         }
 
-        public IValue Get(ValueTableColumn C)
+        public IValue Get(ValueTableColumn c)
         {
-            return TryValue(C);
+            return TryValue(c);
         }
         
         /// <summary>
         /// Установить значение
         /// </summary>
         /// <param name="index">Число - Индекс колонки</param>
-        /// <param name="Value">Произвольный - значение для установки</param>
+        /// <param name="value">Произвольный - значение для установки</param>
         [ContextMethod("Установить", "Set")]
-        public void Set(int index, IValue Value)
+        public void Set(int index, IValue value)
         {
             var C = Owner().Columns.FindColumnByIndex(index);
-            _data[C] = C.ValueType.AdjustValue(Value);
+            _data[C] = C.ValueType.AdjustValue(value);
         }
 
-        public void Set(IValue index, IValue Value)
+        public void Set(IValue index, IValue value)
         {
             var C = Owner().Columns.GetColumnByIIndex(index);
-            _data[C] = C.ValueType.AdjustValue(Value);
+            _data[C] = C.ValueType.AdjustValue(value);
         }
 
-        public void Set(ValueTableColumn Column, IValue Value)
+        public void Set(ValueTableColumn column, IValue value)
         {
-            _data[Column] = Column.ValueType.AdjustValue(Value);
+            _data[column] = column.ValueType.AdjustValue(value);
         }
 
-        public void OnOwnerColumnRemoval(ValueTableColumn column)
+        public void OnOwnerColumnRemoval(IValue column)
         {
             _data.Remove(column);
         }

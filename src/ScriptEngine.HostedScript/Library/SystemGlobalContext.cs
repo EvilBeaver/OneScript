@@ -29,7 +29,6 @@ namespace ScriptEngine.HostedScript.Library
 		private SymbolsContext _symbols;
         private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
-        private readonly SystemEnvironmentContext _systemEnvironmentContext;
 
         public SystemGlobalContext()
         {
@@ -82,7 +81,7 @@ namespace ScriptEngine.HostedScript.Library
         /// Выдает сообщение в консоль.
         /// </summary>
         /// <param name="message">Выдаваемое сообщение.</param>
-        /// <param name="status">Статус сообщения.</param>
+        /// <param name="status">Статус сообщения. В зависимости от статуса изменяется цвет вывода сообщения.</param>
         [ContextMethod("Сообщить", "Message")]
 		public void Echo(string message, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
@@ -111,8 +110,9 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="code">Текст сценария</param>
         /// <param name="externalContext">Структура. Глобальные свойства, которые будут инжектированы в область видимости загружаемого скрипта. (Необязательный)</param>
-        /// <example>    Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит всем
-        ///    ЗагрузитьСценарийИзСтроки("Сообщить(ЧислоПи);", Контекст);</example>
+        /// <example>
+        /// Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит всем
+        /// ЗагрузитьСценарийИзСтроки("Сообщить(ЧислоПи);", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарийИзСтроки", "LoadScriptFromString")]
         public IRuntimeContextInstance LoadScriptFromString(string code, StructureImpl externalContext = null)
         {
@@ -140,9 +140,10 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
         /// <param name="externalContext">Структура. Глобальные свойства, которые будут инжектированы в область видимости загружаемого скрипта. (Необязательный)</param>
-        /// <example>    Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит	
-        ///    // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"	
-        ///    Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
+        /// <example>
+        /// Контекст = Новый Структура("ЧислоПи", 3.1415); // 4 знака хватит
+        /// // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"
+        /// Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
         public IRuntimeContextInstance LoadScript(string path, StructureImpl externalContext = null)
         {
@@ -352,6 +353,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="redirectOutput">Перехватывать стандартные потоки stdout и stderr</param>
         /// <param name="redirectInput">Перехватывать стандартный поток stdin</param>
         /// <param name="encoding">Кодировка стандартных потоков вывода и ошибок</param>
+        /// <param name="env">Соответствие, где установлены значения переменных среды</param>
         [ContextMethod("СоздатьПроцесс", "CreateProcess")]
         public ProcessContext CreateProcess(string cmdLine, string currentDir = null, bool redirectOutput = false, bool redirectInput = false, IValue encoding = null, MapImpl env = null)
         {
@@ -439,11 +441,16 @@ namespace ScriptEngine.HostedScript.Library
         /// <summary>
         /// Проверяет заполненность значения по принципу, заложенному в 1С:Предприятии
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="inValue"></param>
         /// <returns></returns>
-        [ContextMethod("ЗначениеЗаполнено","IsValueFilled")]
-        public bool IsValueFilled(IValue value)
+        [ContextMethod("ЗначениеЗаполнено","ValueIsFilled")]
+        public bool ValueIsFilled(IValue inValue)
         {
+            var value = inValue?.GetRawValue();
+            if (value == null)
+            {
+                return false;
+            }
             if (value.DataType == DataType.Undefined)
                 return false;
             else if (value.DataType == DataType.Boolean)
@@ -457,14 +464,29 @@ namespace ScriptEngine.HostedScript.Library
                 var emptyDate = new DateTime(1, 1, 1, 0, 0, 0);
                 return value.AsDate() != emptyDate;
             }
-            else if (value.GetRawValue() is ICollectionContext)
+            else if (value is COMWrapperContext)
             {
-                var col = value.GetRawValue() as ICollectionContext;
+                return true;
+            }
+            else if (value is ICollectionContext)
+            {
+                var col = value as ICollectionContext;
                 return col.Count() != 0;
+            }
+            else if (ValueFactory.CreateNullValue().Equals(value))
+            {
+                return false;
             }
             else
                 return true;
             
+        }
+
+        [ContextMethod("IsValueFilled", IsDeprecated = true, ThrowOnUse = false)]
+        [Obsolete]
+        public bool IsValueFilled(IValue value)
+        {
+            return ValueIsFilled(value);
         }
 
         /// <summary>
@@ -560,7 +582,11 @@ namespace ScriptEngine.HostedScript.Library
             }
             else if (pathName == null)
             {
+#if NETSTANDARD2_0
+                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#else
                 return Marshal.GetActiveObject(className);
+#endif
             }
             else if (pathName.Length == 0)
             {
@@ -568,37 +594,34 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
+#if NETSTANDARD2_0
+                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#else
                 var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
                 persistFile.Load(pathName, 0);
                 
                 return (object)persistFile;
+#endif
             }
         }
 
-        #region IAttachableContext Members
+#region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
             out IVariable[] variables, 
             out MethodInfo[] methods)
         {
             variables = _state;
-            methods = GetMethods().ToArray();
-        }
-        
-        public IEnumerable<MethodInfo> GetMethods()
-        {
-            var array = new MethodInfo[_methods.Count];
+            methods = new MethodInfo[_methods.Count];
             for (int i = 0; i < _methods.Count; i++)
             {
-                array[i] = _methods.GetMethodInfo(i);
+                methods[i] = _methods.GetMethodInfo(i);
             }
-
-            return array;
         }
 
-        #endregion
+#endregion
 
-        #region IRuntimeContextInstance Members
+#region IRuntimeContextInstance Members
 
         public bool IsIndexed
         {
@@ -686,7 +709,7 @@ namespace ScriptEngine.HostedScript.Library
             retValue = _methods.GetMethod(methodNumber)(this, arguments);
         }
 
-        #endregion
+#endregion
 
         private static readonly ContextMethodsMapper<SystemGlobalContext> _methods;
 

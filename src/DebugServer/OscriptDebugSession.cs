@@ -212,6 +212,14 @@ namespace DebugServer
                 bpt.Source = path;
                 breaks.Add(bpt);
             }
+
+            if(breaks.Count == 0) // в целях сохранения интерфейса WCF придется сделать костыль на перех. период
+            {
+                var bpt = new OneScript.DebugProtocol.Breakpoint();
+                bpt.Line = 0;
+                bpt.Source = path;
+                breaks.Add(bpt);
+            }
             
             var confirmedBreaks = _process.SetBreakpoints(breaks);
             var confirmedBreaksVSCode = new List<VSCodeDebug.Breakpoint>(confirmedBreaks.Length);
@@ -347,6 +355,7 @@ namespace DebugServer
         public override void Variables(Response response, dynamic arguments)
         {
             int varsHandle = getInt(arguments, "variablesReference");
+            SessionLog.WriteLine($"variables request {varsHandle}");
             var variables = _variableHandles.Get(varsHandle, null);
             if (variables == null)
             {

@@ -45,6 +45,7 @@ namespace ScriptEngine.Machine
         {
             public int handlerAddress;
             public ExecutionFrame handlerFrame;
+            public int stackSize;
         }
         
         public void AttachContext(IAttachableContext context, bool detachable)
@@ -149,6 +150,24 @@ namespace ScriptEngine.Machine
             
             return true;
         }
+        
+        public bool RemoveBreakpoint(string source, int line, out int id)
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            id = _stopManager.RemoveBreakpoint(source, line);
+
+            return id >= 0;
+        }
+
+        public void SetBreakpointsForModule(string source, int[] lines)
+        {
+            if (_stopManager == null)
+                throw new InvalidOperationException("Machine is not in debug mode");
+
+            _stopManager.Breakpoints.SetAllForModule(source, lines);
+        }
 
         public void StepOver()
         {
@@ -178,8 +197,8 @@ namespace ScriptEngine.Machine
         {
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
-            // ??
-            //_stopManager.ClearSteppingStops();
+
+            _stopManager.Continue();
         }
 
         public IValue Evaluate(string expression, bool separate = false)
@@ -246,8 +265,10 @@ namespace ScriptEngine.Machine
         {
             var meth = _module.Methods[methodIndex].Signature;
             var param = meth.Params[paramIndex];
-            if (!param.HasDefaultValue)
-                throw new ApplicationException("Invalid script arguments");
+            if (!param.IsDefaultValueDefined())
+            {
+                return ValueFactory.Create();
+            }
 
             return _module.Constants[param.DefaultValueIndex];
         }
@@ -400,6 +421,12 @@ namespace ScriptEngine.Machine
 
                     _currentFrame.InstructionPointer = handler.handlerAddress;
                     _currentFrame.LastException = exc;
+
+                    // При возникновении исключения посредине выражения
+                    // некому почистить стек операндов.
+                    // Сделаем это
+                    while (_operationStack.Count > handler.stackSize)
+                        _operationStack.Pop();
                     
 
                 }
@@ -825,11 +852,13 @@ namespace ScriptEngine.Machine
                 {
                     if (i < methInfo.Params.Length)
                     {
-                        var constId = methInfo.Params[i].DefaultValueIndex;
-                        if (constId == ParameterDefinition.UNDEFINED_VALUE_INDEX)
+                        if (!methInfo.Params[i].IsDefaultValueDefined())
                             argValue = null;
                         else
+                        {
+                            var constId = methInfo.Params[i].DefaultValueIndex;
                             argValue = _module.Constants[constId];
+                        }
                     }
                     else
                     {
@@ -876,15 +905,19 @@ namespace ScriptEngine.Machine
                                     frame.Locals[i] = Variable.CreateReference((IVariable)argValues[i], methDescr.Variables[i]);
                                 }
                             }
+                            else if (argValues[i] == null)
+                            {
+                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
+                            }
                             else
                             {
                                 frame.Locals[i] = Variable.Create(argValues[i], methDescr.Variables[i]);
                             }
 
                         }
-                        else if (i < methInfo.Params.Length && methInfo.Params[i].HasDefaultValue)
+                        else if (i < methInfo.Params.Length)
                         {
-                            if (methInfo.Params[i].DefaultValueIndex == ParameterDefinition.UNDEFINED_VALUE_INDEX)
+                            if (!methInfo.Params[i].IsDefaultValueDefined())
                             {
                                 frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
                             }
@@ -1098,20 +1131,9 @@ namespace ScriptEngine.Machine
                 throw RuntimeException.TooManyArgumentsPassed();
             }
 
-            for (int i = 0; i < methInfo.Params.Length; i++)
+            if (methInfo.Params.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
-                var paramDef = methInfo.Params[i];
-                if (i < argsPassed.Length)
-                {
-                    if (argsPassed[i] == false && !paramDef.HasDefaultValue)
-                    {
-                        throw RuntimeException.ArgHasNoDefaultValue(i + 1);
-                    }
-                }
-                else if (!paramDef.HasDefaultValue)
-                {
-                    throw RuntimeException.TooLittleArgumentsPassed();
-                }
+                throw RuntimeException.TooLittleArgumentsPassed();
             }
         }
 
@@ -1268,12 +1290,7 @@ namespace ScriptEngine.Machine
 
                             if (argValues[i].DataType == DataType.NotAValidValue)
                             {
-                                if (parameters[i].IsOptional)
-                                    argsToPass.Add(null);
-                                else
-                                {
-                                    throw RuntimeException.ArgHasNoDefaultValue(i + 1);
-                                }
+                                argsToPass.Add(null);
                             }
                             else
                                 argsToPass.Add(argValues[i]);
@@ -1379,6 +1396,7 @@ namespace ScriptEngine.Machine
             var info = new ExceptionJumpInfo();
             info.handlerAddress = exceptBlockAddress;
             info.handlerFrame = _currentFrame;
+            info.stackSize = _operationStack.Count;
 
             _exceptionsStack.Push(info);
             NextInstruction();

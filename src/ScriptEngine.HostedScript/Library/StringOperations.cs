@@ -30,7 +30,7 @@ namespace ScriptEngine.HostedScript.Library
         /// Возвращает только строку на первом языке из списка, если второй параметр не указан. (Игнорирует "язык по-умолчанию")
         /// </summary>
         /// <param name="src">Строка на нескольких языках</param>
-        /// <param name="lang">Код языка (если не указана, возвращается первый возможный вариант)</param>
+        /// <param name="lang">Код языка (если не указан, возвращается первый возможный вариант)</param>
         [ContextMethod("НСтр", "NStr")]
         public string NStr(string src, string lang = null)
         {

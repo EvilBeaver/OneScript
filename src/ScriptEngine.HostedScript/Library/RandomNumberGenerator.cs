@@ -61,7 +61,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="seed">Начальное число. Последовательность случайных чисел для одного и того же начального числа будет одинакова</param>
         /// <returns></returns>
-        [ScriptConstructor]
+        [ScriptConstructor(Name = "Конструктор по умолчанию")]
         public static IRuntimeContextInstance Constructor(IValue seed)
         {
             seed = seed.GetRawValue();
@@ -71,7 +71,7 @@ namespace ScriptEngine.HostedScript.Library
             return new RandomNumberGenerator();
         }
 
-        [ScriptConstructor(Name="Формирование неинициализированного объекта")]
+        [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static IRuntimeContextInstance Constructor()
         {
             return new RandomNumberGenerator();

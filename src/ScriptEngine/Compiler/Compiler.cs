@@ -604,19 +604,13 @@ namespace ScriptEngine.Compiler
 
                 if (_lastExtractedLexem.Token != Token.Semicolon)
                 {
-                    if (endTokens.Contains(_lastExtractedLexem.Token))
+                    if (endTokens.Contains(_lastExtractedLexem.Token) || LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
                     {
                         break;
                     }
-                    else
-                    {
-                        throw CompilerException.SemicolonExpected();
-                    }
+                    throw CompilerException.SemicolonExpected();
                 }
-                else
-                {
-                    NextToken();
-                }
+                NextToken();
             }
 
         }
@@ -961,7 +955,8 @@ namespace ScriptEngine.Compiler
             if (_isFunctionProcessed)
             {
                 NextToken();
-                if (_lastExtractedLexem.Token == Token.Semicolon)
+                if (_lastExtractedLexem.Token == Token.Semicolon
+                    || LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
                 {
                     throw CompilerException.FuncEmptyReturnValue();
                 }
@@ -971,7 +966,8 @@ namespace ScriptEngine.Compiler
             else if (_inMethodScope)
             {
                 NextToken();
-                if (_lastExtractedLexem.Token != Token.Semicolon)
+                if (_lastExtractedLexem.Token != Token.Semicolon
+                    && !LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
                 {
                     throw CompilerException.ProcReturnsAValue();
                 }
@@ -1656,20 +1652,9 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TooManyArgumentsPassed();
             }
 
-            for (int i = 0; i < parameters.Length; i++)
+            if (parameters.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
-                var paramDef = parameters[i];
-                if (i < argsPassed.Length)
-                {
-                    if (argsPassed[i] == false && !paramDef.HasDefaultValue)
-                    {
-                        throw CompilerException.ArgHasNoDefaultValue(i + 1);
-                    }
-                }
-                else if (!paramDef.HasDefaultValue)
-                {
-                    throw CompilerException.TooLittleArgumentsPassed();
-                }
+                throw CompilerException.TooLittleArgumentsPassed();
             }
         }
 

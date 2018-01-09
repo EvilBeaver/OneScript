@@ -26,6 +26,11 @@ namespace ScriptEngine.Machine
         {
         }
 
+        public static RuntimeException DeprecatedMethodCall(string name)
+        {
+            return new RuntimeException($"Вызов безнадёжно устаревшего метода {name}");
+        }
+
         public static RuntimeException ConvertToNumberException()
         {
             return new RuntimeException("Преобразование к типу 'Число' не поддерживается");
@@ -74,11 +79,6 @@ namespace ScriptEngine.Machine
         public static RuntimeException TooLittleArgumentsPassed()
         {
             return new RuntimeException("Недостаточно фактических параметров");
-        }
-
-        public static RuntimeException ArgHasNoDefaultValue(int argNum)
-        {
-            return new RuntimeException(string.Format("Аргумент {0} не имеет значения по умолчанию", argNum));
         }
 
         public static RuntimeException InvalidArgumentType()

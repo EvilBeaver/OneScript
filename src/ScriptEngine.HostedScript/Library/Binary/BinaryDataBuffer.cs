@@ -35,12 +35,8 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     {
         _buffer = buffer;
         ByteOrder = byteOrder;
-        Converter = new EndianBitConverter();
-        Converter.IsLittleEndian = byteOrder == ByteOrderEnum.LittleEndian;
     }
-
-    private EndianBitConverter Converter { get; }
-
+    
     // для операций с содержимым буфера внутри 1Script
     //
     public byte[] Bytes
@@ -132,26 +128,29 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
             Array.Copy(bytes._buffer, _buffer, number);
     }
 
-    private byte[] GetBytes<T>(Converter<T, byte[]> converterOverload, T value, IValue byteOrder = null)
+    private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, IValue byteOrder = null)
     {
-        byte[] bytes;
+        ByteOrderEnum workByteOrder;
         if (byteOrder == null)
-            bytes = converterOverload(value);
+            workByteOrder = ByteOrder;
         else
         {
+            var enumVal = byteOrder.GetRawValue() as IObjectWrapper;
+            if (enumVal == null)
+                throw RuntimeException.InvalidArgumentType(nameof(byteOrder));
+
             try
             {
-                var order = (ByteOrderEnum)(object)byteOrder.GetRawValue();
-                Converter.IsLittleEndian = order == ByteOrderEnum.LittleEndian;
-                bytes = converterOverload(value);
+                workByteOrder = (ByteOrderEnum)enumVal.UnderlyingObject;
             }
             catch (InvalidCastException)
             {
-                throw RuntimeException.InvalidArgumentType();
+                throw RuntimeException.InvalidArgumentType(nameof(byteOrder));
             }
         }
 
-        return bytes;
+        var converter = workByteOrder == ByteOrderEnum.BigEndian ? beConverter : leConverter;
+        return converter(value);
     }
 
     private void CopyBytes(int position, byte[] bytes)
@@ -185,7 +184,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
         if (value < short.MinValue || value > short.MaxValue)
             throw RuntimeException.InvalidArgumentValue();
 
-        var bytes = GetBytes(Converter.GetBytes, value, byteOrder);
+        var bytes = GetBytes(value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
         CopyBytes(position, bytes);
     }
 
@@ -207,7 +206,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     {
         ThrowIfReadonly();
 
-        var bytes = GetBytes(Converter.GetBytes, value, byteOrder);
+        var bytes = GetBytes(value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
         CopyBytes(position, bytes);
     }
 
@@ -234,7 +233,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     {
         ThrowIfReadonly();
 
-        var bytes = GetBytes(Converter.GetBytes, value, byteOrder);
+        var bytes = GetBytes(value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
         CopyBytes(position, bytes);
     }
 
@@ -317,17 +316,30 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
         Array.Copy(_buffer, position, data, 0, number);
         return new BinaryDataBuffer(data, ByteOrder);
     }
-
-
-    private T FromBytes<T>(Func<byte[],int,T> converterOverload, int position, IValue byteOrder = null) where T : struct
+    
+    private T FromBytes<T>(int position, Func<byte[], int, T> leConverter, Func<byte[], int, T> beConverter, IValue byteOrder = null)
     {
-        ByteOrderEnum order = ByteOrder;
-        if (byteOrder != null)
-            order = ((CLREnumValueWrapper<ByteOrderEnum>)byteOrder.GetRawValue()).UnderlyingValue;
+        ByteOrderEnum workByteOrder;
+        if (byteOrder == null)
+            workByteOrder = ByteOrder;
+        else
+        {
+            var enumVal = byteOrder.GetRawValue() as IObjectWrapper;
+            if (enumVal == null)
+                throw RuntimeException.InvalidArgumentType(nameof(byteOrder));
 
-        Converter.IsLittleEndian = order == ByteOrderEnum.LittleEndian;
+            try
+            {
+                workByteOrder = (ByteOrderEnum)enumVal.UnderlyingObject;
+            }
+            catch (InvalidCastException)
+            {
+                throw RuntimeException.InvalidArgumentType(nameof(byteOrder));
+            }
+        }
 
-        return converterOverload(_buffer, position);
+        var converter = workByteOrder == ByteOrderEnum.BigEndian ? beConverter : leConverter;
+        return converter(_buffer, position);
     }
 
     /// <summary>
@@ -347,7 +359,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("ПрочитатьЦелое16", "ReadInt16")]
     public int ReadInt16(int position, IValue byteOrder = null)
     {
-        return FromBytes(Converter.ToInt16, position, byteOrder);
+        return FromBytes(position, BitConversionFacility.LittleEndian.ToInt16, BitConversionFacility.BigEndian.ToInt16, byteOrder);
     }
 
 
@@ -370,7 +382,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("ПрочитатьЦелое32", "ReadInt32")]
     public uint ReadInt32(int position, IValue byteOrder = null)
     {
-        return FromBytes(Converter.ToUInt32, position, byteOrder);
+        return FromBytes(position, BitConversionFacility.LittleEndian.ToUInt32, BitConversionFacility.BigEndian.ToUInt32, byteOrder);
     }
 
 
@@ -393,7 +405,7 @@ public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContex
     [ContextMethod("ПрочитатьЦелое64", "ReadInt64")]
     public ulong ReadInt64(int position, IValue byteOrder = null)
     {
-        return FromBytes(Converter.ToUInt64, position, byteOrder);
+        return FromBytes(position, BitConversionFacility.LittleEndian.ToUInt64, BitConversionFacility.BigEndian.ToUInt64, byteOrder);
     }
 
 

@@ -171,13 +171,13 @@ namespace ScriptEngine.HostedScript.Library.Http
             return StringComparer.OrdinalIgnoreCase.Compare(protocol, PROTO_HTTP) == 0 || StringComparer.OrdinalIgnoreCase.Compare(protocol, PROTO_HTTPS) == 0;
         }
 
-        [ScriptConstructor(Name="Ручная настройка прокси")]
+        [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static InternetProxyContext Constructor()
         {
             return Constructor(ValueFactory.Create(false));
         }
 
-        [ScriptConstructor(Name="Конструктор для системных настроек прокси")]
+        [ScriptConstructor(Name = "Конструктор для системных настроек прокси")]
         public static InternetProxyContext Constructor(IValue useDefault)
         {
             return new InternetProxyContext(useDefault.AsBoolean());

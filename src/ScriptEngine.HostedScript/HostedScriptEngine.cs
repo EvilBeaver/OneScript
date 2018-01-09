@@ -10,9 +10,7 @@ using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
-using System.Linq;
 
-using OneScript.DebugProtocol;
 
 namespace ScriptEngine.HostedScript
 {
@@ -40,6 +38,8 @@ namespace ScriptEngine.HostedScript
             _env.InjectObject(_globalCtx, false);
             _engine.Environment = _env;
         }
+
+        public ScriptingEngine EngineInstance => _engine;
 
         public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
         {
@@ -172,7 +172,7 @@ namespace ScriptEngine.HostedScript
             InitializeDirectiveResolver();
 
             var compilerSvc = _engine.GetCompilerService();
-            compilerSvc.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
+            compilerSvc.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);
             return compilerSvc;
         }
 

@@ -110,7 +110,7 @@ namespace ScriptEngine
             return _externalScripts;
         }
 
-        private void RegisterSymbolScope(IAttachableContext provider, bool asDynamicScope)
+        private void RegisterSymbolScope(IRuntimeContextInstance provider, bool asDynamicScope)
         {
             var scope = new SymbolScope();
             scope.IsDynamicScope = asDynamicScope;

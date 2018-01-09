@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+    <PropertyGroup>
+        <AssemblyName>ASPNETHandler</AssemblyName>
+        <AssemblyTitle>HTTP services for 1Script</AssemblyTitle>
+        <TargetFrameworks>net452</TargetFrameworks>
+        <RootNamespace>ASPNETHandler</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+    
+        <Reference Include="System.Runtime.Caching" />
+        <Reference Include="System.Web" />
+        <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+        <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
+
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Properties\" />
+    </ItemGroup>
+  
+</Project>

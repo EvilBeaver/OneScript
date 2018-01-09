@@ -7,17 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class ContextMethodAttribute : Attribute
     {
         private readonly string _name;
         private readonly string _alias;
 
-        public ContextMethodAttribute(string name, string alias = "")
+        public ContextMethodAttribute(string name, string alias = null)
         {
             if(!Utils.IsValidIdentifier(name))
                 throw new ArgumentException("Name must be a valid identifier");
@@ -38,6 +37,23 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _alias;
         }
+        
+        public string GetAlias(string nativeMethodName)
+        {
+            if (!string.IsNullOrEmpty(_alias))
+            {
+                return _alias;
+            }
+            if (!IsDeprecated)
+            {
+                return nativeMethodName;
+            }
+            return null;
+        }
+        
+        public bool IsDeprecated { get; set; }
+
+        public bool ThrowOnUse { get; set; }
 
         public bool IsFunction { get; set; }
     }
@@ -51,27 +67,53 @@ namespace ScriptEngine.Machine.Contexts
 
     public class ContextMethodsMapper<TInstance>
     {
-        private readonly List<InternalMethInfo> _methodPtrs = new List<InternalMethInfo>();
+        private List<InternalMethInfo> _methodPtrs;
         
-        public ContextMethodsMapper()
+        private void Init()
         {
-            MapType(typeof(TInstance));
+            if (_methodPtrs == null)
+            {
+                lock (this)
+                {
+                    if (_methodPtrs == null)
+                    {
+                        _methodPtrs = new List<InternalMethInfo>();
+                        MapType(typeof(TInstance));
+                    }
+                }
+            }
         }
 
         public ContextCallableDelegate<TInstance> GetMethod(int number)
         {
+            Init();
             return _methodPtrs[number].method;
         }
 
         public ScriptEngine.Machine.MethodInfo GetMethodInfo(int number)
         {
+            Init();
             return _methodPtrs[number].methodInfo;
+        }
+
+        public IEnumerable<MethodInfo> GetMethods()
+        {
+            Init();
+            return _methodPtrs.Select(x => x.methodInfo);
         }
 
         public int FindMethod(string name)
         {
-            name = name.ToLower();
-            var idx = _methodPtrs.FindIndex(x => x.methodInfo.Name == name || x.methodInfo.Alias == name);
+            Init();
+
+            // поскольку этот метод вызывается довольно часто, то тут
+            // возможна некоторая просадка по производительности 
+            // за счет сравнения IgnoreCase вместо обычного "числового" сравнения
+            // Надо будет понаблюдать или вообще замерить
+            //
+            var idx = _methodPtrs.FindIndex(x => 
+                String.Compare(x.methodInfo.Name, name, StringComparison.OrdinalIgnoreCase) == 0 
+                || String.Compare(x.methodInfo.Alias, name, StringComparison.OrdinalIgnoreCase) == 0 );
             if (idx < 0)
             {
                 throw RuntimeException.MethodNotFoundException(name);
@@ -84,6 +126,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
+                Init();
                 return _methodPtrs.Count;
             }
         }
@@ -91,11 +134,12 @@ namespace ScriptEngine.Machine.Contexts
         private void MapType(Type type)
         {
             var methods = type.GetMethods()
-                .Where(x => x.GetCustomAttributes(typeof(ContextMethodAttribute), false).Any())
-                .Select(x => new { 
-                    Method = x, 
-                    Binding = (ContextMethodAttribute)x.GetCustomAttributes(typeof(ContextMethodAttribute), false)[0] 
-                });
+                .SelectMany(method => method.GetCustomAttributes(typeof(ContextMethodAttribute), false)
+                    .Select(attr => new {
+                        Method = method,
+                        Binding = (ContextMethodAttribute) attr
+                    })
+                );
             
             foreach (var item in methods)
             {
@@ -146,10 +190,10 @@ namespace ScriptEngine.Machine.Contexts
 
                     var scriptMethInfo = new ScriptEngine.Machine.MethodInfo();
                     scriptMethInfo.IsFunction = isFunc;
-                    scriptMethInfo.Name = item.Binding.GetName().ToLower();
-                    scriptMethInfo.Alias = string.IsNullOrEmpty(item.Binding.GetAlias()) ?
-                       scriptMethInfo.Name
-                        :item.Binding.GetAlias().ToLower();
+                    scriptMethInfo.IsDeprecated = item.Binding.IsDeprecated;
+                    scriptMethInfo.ThrowOnUseDeprecated = item.Binding.ThrowOnUse;
+                    scriptMethInfo.Name = item.Binding.GetName();
+                    scriptMethInfo.Alias = item.Binding.GetAlias(item.Method.Name);
 
                     scriptMethInfo.Params = paramDefs;
 

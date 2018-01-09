@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using ScriptEngine.Environment;
 using System.Security.Cryptography;
@@ -131,6 +130,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (_loadedModules.ContainsKey(typeName))
             {
+                var alreadyLoadedSrc = _loadedModules[typeName].ModuleInfo.Origin;
+                var currentSrc = moduleHandle.Module.ModuleInfo.Origin;
+
+                if(alreadyLoadedSrc != currentSrc)
+                    throw new RuntimeException("Type «" + typeName + "» already registered");
+
                 return;
             }
 
@@ -150,12 +155,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public ScriptModuleHandle CreateModuleFromSource(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
-            compiler.DefineVariable("ЭтотОбъект", SymbolType.ContextProperty);
+            compiler.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);
             if (externalContext != null)
             {
                 foreach (var item in externalContext)
                 {
-                    compiler.DefineVariable(item.Key, SymbolType.ContextProperty);
+                    compiler.DefineVariable(item.Key, null, SymbolType.ContextProperty);
                 }
             }
 
@@ -184,7 +189,7 @@ namespace ScriptEngine.Machine.Contexts
             var module = _instance._loadedModules[typeName];
 
             var newObj = new UserScriptContextInstance(module, typeName, arguments);
-            newObj.AddProperty("ЭтотОбъект", newObj);
+            newObj.AddProperty("ЭтотОбъект", "ThisObject", newObj);
             newObj.InitOwnData();
             newObj.Initialize(_instance._engine.Machine);
 
