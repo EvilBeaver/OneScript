@@ -29,7 +29,9 @@ namespace OneScript.ASPNETHandler
         static bool _cachingEnabled;
         // Список дополнительных сборок, которые надо приаттачить к движку. Могут быть разные расширения
         // web.config -> <appSettings> -> <add key="ASPNetHandler" value="attachAssembly"/> Сделано так для простоты. Меньше настроек - дольше жизнь :)
-        static System.Collections.Generic.List<System.Reflection.Assembly> _assembliesForAttaching;
+        static List<System.Reflection.Assembly> _assembliesForAttaching;
+
+        private static string _configFilePath;
 
         public bool IsReusable
         {
@@ -43,6 +45,7 @@ namespace OneScript.ASPNETHandler
             System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
 
             _cachingEnabled = (appSettings["cachingEnabled"] == "true");
+            _configFilePath = appSettings["configFilePath"];
 
             foreach (string assemblyName in appSettings.AllKeys)
             {
@@ -84,7 +87,7 @@ namespace OneScript.ASPNETHandler
             {
                 _hostedScript = new HostedScriptEngine();
                 // Размещаем oscript.cfg вместе с web.config. Так наверное привычнее
-                _hostedScript.CustomConfig = HttpContext.Current.Server.MapPath("~/oscript.cfg");
+                _hostedScript.CustomConfig = _configFilePath ?? HttpContext.Current.Server.MapPath("~/oscript.cfg");
                 _hostedScript.Initialize();
                 _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
 
