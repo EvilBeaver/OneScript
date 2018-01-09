@@ -245,14 +245,9 @@ namespace OneScript.ASPNETHandler
             {
                 exitCode = e.ExitCode;
                 context.Response.StatusCode = 500;
-                context.Response.Status = "Script running error";
+                context.Response.Status = "Script interrupted";
                 context.Response.SubStatusCode = exitCode;
                 context.Response.StatusDescription = e.Message;
-            }
-            catch (Exception e)
-            {
-                context.Response.StatusCode = 500;
-                context.Response.Status = e.Message;
             }
             finally
             {
