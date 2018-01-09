@@ -141,12 +141,11 @@ namespace ScriptEngine.HostedScript.Library
             return instance;
         }
 
-        private static dynamic CreatePropertiesMapper(Type clrType)
+        private static object CreatePropertiesMapper(Type clrType)
         {
             var mapperType = typeof(ContextPropertyMapper<>).MakeGenericType(clrType);
             var instance = Activator.CreateInstance(mapperType);
-            dynamic magicCaller = instance; // зачем строить ExpressionTree, когда есть dynamic
-            return magicCaller;
+            return instance;
         }
 
         private static Type GetReflectableClrType(TypeTypeValue type)
@@ -236,8 +235,15 @@ namespace ScriptEngine.HostedScript.Library
             {
                 var type = target.GetRawValue() as TypeTypeValue;
                 var clrType = GetReflectableClrType(type);
-                var magicCaller = CreatePropertiesMapper(clrType);
-                FillPropertiesTable(result, magicCaller.GetProperties());
+                var mapper = CreatePropertiesMapper(clrType);
+                var actualType = mapper.GetType();
+                var infos = (IEnumerable<VariableInfo>)actualType.InvokeMember("GetProperties",
+                                                          BindingFlags.InvokeMethod,
+                                                          null,
+                                                          mapper,
+                                                          new object[] { });
+                
+                FillPropertiesTable(result, infos);
             }
             else
                 throw RuntimeException.InvalidArgumentType();

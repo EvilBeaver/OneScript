@@ -51,7 +51,12 @@ namespace NUnitTests
 		public void Test_Reflector()
 		{
 			RunSpecificTest(@"reflector.os");
-		}
+        }
+        [Test]
+        public void Test_Zip()
+        {
+            RunSpecificTest(@"zip.os");
+        }
 
 		[Test]
 		[Ignore("Внутри валится очень много тестов, надо чинить механизм.")]
