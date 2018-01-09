@@ -53,8 +53,19 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("УстановитьПеременнуюСреды", "SetEnvironmentVariable")]
         public void SetEnvironmentVariable(string varName, string value, EnvironmentVariableTargetEnum target = EnvironmentVariableTargetEnum.Process)
         {
-            EnvironmentVariableTarget targetParam;
-            Enum.TryParse(target.ToString(), out targetParam);
+            EnvironmentVariableTarget targetParam = EnvironmentVariableTarget.User;
+            switch (target)
+            {
+                case EnvironmentVariableTargetEnum.Process:
+                    targetParam = EnvironmentVariableTarget.Process;
+                    break;
+                case EnvironmentVariableTargetEnum.User:
+                    targetParam = EnvironmentVariableTarget.User;
+                    break;
+                case EnvironmentVariableTargetEnum.Machine:
+                    targetParam = EnvironmentVariableTarget.Machine;
+                    break;
+            }
             System.Environment.SetEnvironmentVariable(varName, value, targetParam);
         }
 
