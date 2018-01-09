@@ -258,5 +258,16 @@ namespace OneScript.ASPNETHandler
             }
 
         }
+
+        private IRuntimeContextInstance CreateServiceInstance(string sourceCode)
+        {
+            var code = _hostedScript.EngineInstance.Loader.FromString(sourceCode);
+            var compiler = _hostedScript.GetCompilerService();
+            var byteCode = compiler.CreateModule(code);
+            var module = _hostedScript.EngineInstance.LoadModuleImage(byteCode);
+            var runner = _hostedScript.EngineInstance.NewObject(module);
+            return runner;
+        }
+
     }
 }
