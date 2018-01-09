@@ -209,73 +209,42 @@ namespace OneScript.ASPNETHandler
             #endregion
 
             var runner = CreateServiceInstance(module.Value);
-            int exitCode = 0;
 
-            try
+            ProduceResponse(context, runner);
+        }
+
+        private static void ProduceResponse(HttpContext context, IRuntimeContextInstance runner)
+        {
+            int methodIndex = runner.FindMethod("ОбработкаВызоваHTTPСервиса");
+            IValue result;
+            IValue[] args = new IValue[1];
+            args[0] = new ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceRequestImpl(context);
+            runner.CallAsFunction(methodIndex, args, out result);
+
+            // Обрабатываем результаты
+            var response = (ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl) result;
+            context.Response.StatusCode = response.StatusCode;
+
+            if (response.Headers != null)
             {
-                int methodIndex = runner.FindMethod("ОбработкаВызоваHTTPСервиса");
-                IValue result;
-                IValue[] args = new IValue[1];
-                args[0] = new ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceRequestImpl(context);
-                runner.CallAsFunction(methodIndex, args, out result);
-
-                // Обрабатываем результаты
-                var response = (ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl) result;
-                context.Response.StatusCode = response.StatusCode;
-
-                if (response.Headers != null)
+                foreach (var ch in response.Headers)
                 {
-
-                    foreach (var ch in response.Headers)
-                    {
-                        context.Response.AddHeader(ch.Key.AsString(), ch.Value.AsString());
-                    }
+                    context.Response.AddHeader(ch.Key.AsString(), ch.Value.AsString());
                 }
-
-                if (response.Reason != "")
-                {
-                    context.Response.Status = response.Reason;
-                }
-
-                if (response.BodyStream != null)
-                {
-                    response.BodyStream.Seek(0, SeekOrigin.Begin);
-                    response.BodyStream.CopyTo(context.Response.OutputStream);
-                }
-
-                context.Response.Charset = response.ContentCharset;
-            }
-            catch (ScriptInterruptionException e)
-            {
-                exitCode = e.ExitCode;
-                context.Response.StatusCode = 500;
-                context.Response.Status = "Script interrupted";
-                context.Response.SubStatusCode = exitCode;
-                context.Response.StatusDescription = e.Message;
-            }
-            catch (RuntimeException e)
-            {
-                context.Response.Clear();
-                context.Response.ClearHeaders();
-                context.Response.ClearContent();
-                context.Response.StatusCode = 500;
-                context.Response.ContentEncoding = Encoding.UTF8;
-                context.Response.Write(e.ErrorDescription);
-            }
-            catch (Exception e)
-            {
-                context.Response.Clear();
-                context.Response.ClearHeaders();
-                context.Response.ClearContent();
-                context.Response.StatusCode = 500;
-                context.Response.ContentEncoding = Encoding.UTF8;
-                context.Response.Write(e.Message);
-            }
-            finally
-            {
-                context.Response.End();
             }
 
+            if (response.Reason != "")
+            {
+                context.Response.Status = response.Reason;
+            }
+
+            if (response.BodyStream != null)
+            {
+                response.BodyStream.Seek(0, SeekOrigin.Begin);
+                response.BodyStream.CopyTo(context.Response.OutputStream);
+            }
+
+            context.Response.Charset = response.ContentCharset;
         }
 
         private IRuntimeContextInstance CreateServiceInstance(LoadedModuleHandle module)
