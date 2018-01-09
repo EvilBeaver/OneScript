@@ -55,6 +55,7 @@ namespace OneScript.ASPNETHandler
                     {
                         _assembliesForAttaching.Add(System.Reflection.Assembly.Load(assemblyName));
                     }
+                    // TODO: Исправить - должно падать. Если конфиг сайта неработоспособен - сайт не должен быть работоспособен.
                     catch {/*не загрузилась, ничего не делаем*/ }
                 }
             }
@@ -88,9 +89,7 @@ namespace OneScript.ASPNETHandler
                 _hostedScript = new HostedScriptEngine();
                 // Размещаем oscript.cfg вместе с web.config. Так наверное привычнее
                 _hostedScript.CustomConfig = _configFilePath ?? HttpContext.Current.Server.MapPath("~/oscript.cfg");
-                _hostedScript.Initialize();
                 _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
-
                 // Аттачим доп сборки. По идее должны лежать в Bin
                 foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
                 {
@@ -142,6 +141,12 @@ namespace OneScript.ASPNETHandler
                         }
                     }
                 }
+
+                // Сообщить и СтартовыйСценарий должны падать (null+null).
+                // попутно этот метод настраивает внутренние переменные у SystemGlobalContext
+                _hostedScript.SetGlobalEnvironment(null, null);
+                _hostedScript.Initialize();
+
             }
             catch (Exception ex)
             {
