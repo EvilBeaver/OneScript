@@ -180,15 +180,14 @@ namespace OneScript.ASPNETHandler
 
             #region Загружаем скрипт (файл .os)
             // Кэшируем исходный файл, если файл изменился (изменили скрипт .os) загружаем заново
-            // Как это сделать с откомпилированным кодом, чтобы не компилировать?
             // В Linux под Mono не работает подписка на изменение файла.
-            string sourceCode = null;
+            LoadedModuleHandle? module = null;
             ObjectCache cache = MemoryCache.Default;
 
             if (_cachingEnabled)
-                sourceCode = cache[context.Request.PhysicalPath] as string;
+                module = cache[context.Request.PhysicalPath] as LoadedModuleHandle?;
 
-            if (sourceCode == null)
+            if (module == null)
             {
                 CacheItemPolicy policy = new CacheItemPolicy();
 
@@ -197,12 +196,12 @@ namespace OneScript.ASPNETHandler
                 policy.ChangeMonitors.Add(new HostFileChangeMonitor(filePaths));
 
                 // Загружаем файл и помещаем его в кэш
-                sourceCode = File.ReadAllText(context.Request.PhysicalPath);
-                cache.Set(context.Request.PhysicalPath, sourceCode, policy);
+                module = LoadByteCode(context.Request.PhysicalPath);
+                cache.Set(context.Request.PhysicalPath, module, policy);
             }
             #endregion
 
-            var runner = CreateServiceInstance(sourceCode);
+            var runner = CreateServiceInstance(module.Value);
 
             int exitCode = 0;
 
@@ -262,15 +261,19 @@ namespace OneScript.ASPNETHandler
 
         }
 
-        private IRuntimeContextInstance CreateServiceInstance(string sourceCode)
+        private IRuntimeContextInstance CreateServiceInstance(LoadedModuleHandle module)
         {
-            var code = _hostedScript.EngineInstance.Loader.FromString(sourceCode);
-            var compiler = _hostedScript.GetCompilerService();
-            var byteCode = compiler.CreateModule(code);
-            var module = _hostedScript.EngineInstance.LoadModuleImage(byteCode);
             var runner = _hostedScript.EngineInstance.NewObject(module);
             return runner;
         }
 
+        private LoadedModuleHandle LoadByteCode(string filePath)
+        {
+            var code = _hostedScript.EngineInstance.Loader.FromFile(filePath);
+            var compiler = _hostedScript.GetCompilerService();
+            var byteCode = compiler.CreateModule(code);
+            var module = _hostedScript.EngineInstance.LoadModuleImage(byteCode);
+            return module;
+        }
     }
 }
