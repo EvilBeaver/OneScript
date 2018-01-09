@@ -59,32 +59,60 @@ namespace OneScript.ASPNETHandler
 
         public ASPNETHandler()
         {
-            _hostedScript = new HostedScriptEngine();
-            _hostedScript.Initialize();
-            _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
 
-            // Аттачим доп сборки. По идее должны лежать в Bin
-            foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
-            {
-                try
-                {
-                    _hostedScript.AttachAssembly(assembly);
-                }
-                catch { /*что-то не так, ничего не делаем*/}
-            }
+            // Инициализируем логгирование, если надо
+            string logPath = appSettings["logToPath"];
+            StreamWriter logWriter = null;
 
-            //Загружаем библиотечные скрипты aka общие модули
             try
             {
-                System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
+                if (logPath != null)
+                {
+                    logPath = HttpContext.Current.Server.MapPath(logPath);
+                    string logFileName = Guid.NewGuid().ToString().Replace("-", "") + ".txt";
+                    logWriter = File.CreateText(Path.Combine(logPath, logFileName));
+                }
+            }
+            catch { /*что-то не так, ничего не делаем. Возможно нет папки или прав на запись.*/}
+
+            // Если определена секция logToPath и удалось создать/открыть файл, считаем, что логгирование включено
+
+            WriteToLog(logWriter, "Start loading.");
+
+            try
+            {
+                _hostedScript = new HostedScriptEngine();
+                // Размещаем oscript.cfg вместе с web.config. Так наверное привычнее
+                _hostedScript.CustomConfig = HttpContext.Current.Server.MapPath("~/oscript.cfg");
+                _hostedScript.Initialize();
+                _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+
+                // Аттачим доп сборки. По идее должны лежать в Bin
+                foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
+                {
+                    try
+                    {
+                        _hostedScript.AttachAssembly(assembly);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Возникла проблема при аттаче сборки
+                        WriteToLog(logWriter, "Assembly attaching error: " + ex.Message);
+                    }
+                }
+
+                //Загружаем библиотечные скрипты aka общие модули
+
+
                 string libPath = appSettings["commonModulesPath"];
 
                 if (libPath != null)
                 {
                     libPath = HttpContext.Current.Server.MapPath(libPath);
-                    
+
                     string[] files = System.IO.Directory.GetFiles(libPath, "*.os");
-                    
+
 
                     foreach (string filePathName in files)
                     {
@@ -96,19 +124,52 @@ namespace OneScript.ASPNETHandler
                         try
                         {
                             ICodeSource src = _hostedScript.Loader.FromFile(filePathName);
-                            
+
                             var compilerService = _hostedScript.GetCompilerService();
                             var module = compilerService.CreateModule(src);
                             var loaded = _hostedScript.EngineInstance.LoadModuleImage(module);
                             var instance = (IValue)_hostedScript.EngineInstance.NewObject(loaded);
                             _hostedScript.EngineInstance.Environment.SetGlobalProperty(System.IO.Path.GetFileNameWithoutExtension(filePathName), instance);
- 
+
                         }
-                        catch (Exception e){ var m = e;/*что-то не так, ничего не делаем*/}
+                        catch (Exception ex)
+                        {
+                            // Возникла проблема при загрузке файла os, логгируем, если логгирование включено
+                            WriteToLog(logWriter, "Error loading " + System.IO.Path.GetFileNameWithoutExtension(filePathName) + " : " + ex.Message);
+                        }
                     }
                 }
             }
-            catch { /*что-то не так, ничего не делаем*/}
+            catch (Exception ex)
+            {
+                // Возникла проблема при инициализации хэндлера
+                WriteToLog(logWriter, ex.Message);
+            }
+
+            WriteToLog(logWriter, "End loading.");
+            // Закрываем лог, если надо
+            if (logWriter != null)
+            {
+                try
+                {
+                    logWriter.Flush();
+                    logWriter.Close();
+                }
+                catch
+                { /*что-то не так, ничего не делаем.*/ }
+            }
+
+        }
+
+        void WriteToLog(TextWriter logWriter, string message)
+        {
+            if (logWriter == null)
+                return;
+            try
+            {
+                logWriter.WriteLine(message);
+            }
+            catch { /* что-то не так, ничего не делаем */ }
         }
 
         public void ProcessRequest(HttpContext context)
