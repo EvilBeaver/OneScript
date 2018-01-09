@@ -215,13 +215,13 @@ namespace OneScript.ASPNETHandler
                 runner.CallAsFunction(methodIndex, args, out result);
 
                 // Обрабатываем результаты
-                ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl response = (ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl)result;
+                var response = (ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl)result;
                 context.Response.StatusCode = response.StatusCode;
 
                 if (response.Headers != null)
                 {
 
-                    foreach (ScriptEngine.HostedScript.Library.KeyAndValueImpl ch in response.Headers)
+                    foreach (var ch in response.Headers)
                     {
                         context.Response.AddHeader(ch.Key.AsString(), ch.Value.AsString());
                     }
