@@ -45,14 +45,17 @@ namespace ScriptEngine.HostedScript.Library
 
         /// <summary>
         /// Позволяет установить переменную среды. 
-        /// Переменная устанавливается в области видимости процесса и очищается после его завершения.
+        /// По умолчанию переменная устанавливается в области видимости процесса и очищается после его завершения.
         /// </summary>
         /// <param name="varName">Имя переменной</param>
         /// <param name="value">Значение переменной</param>
+        /// <param name="target">Расположение переменной среды</param>
         [ContextMethod("УстановитьПеременнуюСреды", "SetEnvironmentVariable")]
-        public void SetEnvironmentVariable(string varName, string value)
+        public void SetEnvironmentVariable(string varName, string value, EnvironmentVariableTargetEnum target = EnvironmentVariableTargetEnum.Process)
         {
-            System.Environment.SetEnvironmentVariable(varName, value);
+            EnvironmentVariableTarget targetParam;
+            Enum.TryParse(target.ToString(), out targetParam);
+            System.Environment.SetEnvironmentVariable(varName, value, targetParam);
         }
 
         /// <summary>
