@@ -31,8 +31,6 @@ namespace OneScript.ASPNETHandler
         // web.config -> <appSettings> -> <add key="ASPNetHandler" value="attachAssembly"/> Сделано так для простоты. Меньше настроек - дольше жизнь :)
         static System.Collections.Generic.List<System.Reflection.Assembly> _assembliesForAttaching;
 
-        private static string _configFilePath;
-
         public bool IsReusable
         {
             // Разрешаем повторное использование и храним среду выполнения и контекст 
@@ -43,9 +41,8 @@ namespace OneScript.ASPNETHandler
             _assembliesForAttaching = new List<System.Reflection.Assembly>();
 
             System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
-                
+
             _cachingEnabled = (appSettings["cachingEnabled"] == "true");
-            _configFilePath = appSettings["configFilePath"];
 
             foreach (string assemblyName in appSettings.AllKeys)
             {
@@ -62,21 +59,117 @@ namespace OneScript.ASPNETHandler
 
         public ASPNETHandler()
         {
-            _hostedScript = new HostedScriptEngine();
-            if (_configFilePath == null)
-                _configFilePath = Path.Combine(Directory.GetCurrentDirectory(), "oscript.cfg");
-            _hostedScript.CustomConfig = _configFilePath;
-            _hostedScript.Initialize();
-            _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
-            // Аттачим доп сборки. По идее должны лежать в Bin
-            foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
+            System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
+
+            // Инициализируем логгирование, если надо
+            string logPath = appSettings["logToPath"];
+            StreamWriter logWriter = null;
+
+            try
+            {
+                if (logPath != null)
+                {
+                    logPath = HttpContext.Current.Server.MapPath(logPath);
+                    string logFileName = Guid.NewGuid().ToString().Replace("-", "") + ".txt";
+                    logWriter = File.CreateText(Path.Combine(logPath, logFileName));
+                }
+            }
+            catch { /*что-то не так, ничего не делаем. Возможно нет папки или прав на запись.*/}
+
+            // Если определена секция logToPath и удалось создать/открыть файл, считаем, что логгирование включено
+
+            WriteToLog(logWriter, "Start loading.");
+
+            try
+            {
+                _hostedScript = new HostedScriptEngine();
+                // Размещаем oscript.cfg вместе с web.config. Так наверное привычнее
+                _hostedScript.CustomConfig = HttpContext.Current.Server.MapPath("~/oscript.cfg");
+                _hostedScript.Initialize();
+                _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+
+                // Аттачим доп сборки. По идее должны лежать в Bin
+                foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
+                {
+                    try
+                    {
+                        _hostedScript.AttachAssembly(assembly);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Возникла проблема при аттаче сборки
+                        WriteToLog(logWriter, "Assembly attaching error: " + ex.Message);
+                    }
+                }
+
+                //Загружаем библиотечные скрипты aka общие модули
+
+
+                string libPath = appSettings["commonModulesPath"];
+
+                if (libPath != null)
+                {
+                    libPath = HttpContext.Current.Server.MapPath(libPath);
+
+                    string[] files = System.IO.Directory.GetFiles(libPath, "*.os");
+
+
+                    foreach (string filePathName in files)
+                    {
+                        _hostedScript.InjectGlobalProperty(System.IO.Path.GetFileNameWithoutExtension(filePathName), ValueFactory.Create(), true);
+                    }
+
+                    foreach (string filePathName in files)
+                    {
+                        try
+                        {
+                            ICodeSource src = _hostedScript.Loader.FromFile(filePathName);
+
+                            var compilerService = _hostedScript.GetCompilerService();
+                            var module = compilerService.CreateModule(src);
+                            var loaded = _hostedScript.EngineInstance.LoadModuleImage(module);
+                            var instance = (IValue)_hostedScript.EngineInstance.NewObject(loaded);
+                            _hostedScript.EngineInstance.Environment.SetGlobalProperty(System.IO.Path.GetFileNameWithoutExtension(filePathName), instance);
+
+                        }
+                        catch (Exception ex)
+                        {
+                            // Возникла проблема при загрузке файла os, логгируем, если логгирование включено
+                            WriteToLog(logWriter, "Error loading " + System.IO.Path.GetFileNameWithoutExtension(filePathName) + " : " + ex.Message);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Возникла проблема при инициализации хэндлера
+                WriteToLog(logWriter, ex.Message);
+            }
+
+            WriteToLog(logWriter, "End loading.");
+            // Закрываем лог, если надо
+            if (logWriter != null)
             {
                 try
                 {
-                    _hostedScript.AttachAssembly(assembly);
+                    logWriter.Flush();
+                    logWriter.Close();
                 }
-                catch { /*что-то не так, ничего не делаем*/}
+                catch
+                { /*что-то не так, ничего не делаем.*/ }
             }
+
+        }
+
+        void WriteToLog(TextWriter logWriter, string message)
+        {
+            if (logWriter == null)
+                return;
+            try
+            {
+                logWriter.WriteLine(message);
+            }
+            catch { /* что-то не так, ничего не делаем */ }
         }
 
         public void ProcessRequest(HttpContext context)
@@ -175,5 +268,6 @@ namespace OneScript.ASPNETHandler
             var runner = _hostedScript.EngineInstance.NewObject(module);
             return runner;
         }
+
     }
 }
