@@ -147,6 +147,7 @@ namespace OneScript.ASPNETHandler
             {
                 // Возникла проблема при инициализации хэндлера
                 WriteToLog(logWriter, ex.Message);
+                throw; // Must fail!
             }
 
             WriteToLog(logWriter, "End loading.");
