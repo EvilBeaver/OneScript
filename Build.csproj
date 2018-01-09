@@ -68,7 +68,7 @@
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
             <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**"/>
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/HTTPServices.dll"/>
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/ASPNETHandler.dll"/>
         </ItemGroup>
         
         <Copy SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)" />
