@@ -185,24 +185,30 @@ namespace OneScript.ASPNETHandler
             ObjectCache cache = MemoryCache.Default;
 
             if (_cachingEnabled)
+            {
                 module = cache[context.Request.PhysicalPath] as LoadedModuleHandle?;
 
-            if (module == null)
-            {
-                CacheItemPolicy policy = new CacheItemPolicy();
+                if (module == null)
+                {
+                    CacheItemPolicy policy = new CacheItemPolicy();
 
-                List<string> filePaths = new List<string>();
-                filePaths.Add(context.Request.PhysicalPath);
-                policy.ChangeMonitors.Add(new HostFileChangeMonitor(filePaths));
+                    List<string> filePaths = new List<string>();
+                    filePaths.Add(context.Request.PhysicalPath);
+                    policy.ChangeMonitors.Add(new HostFileChangeMonitor(filePaths));
 
-                // Загружаем файл и помещаем его в кэш
-                module = LoadByteCode(context.Request.PhysicalPath);
-                cache.Set(context.Request.PhysicalPath, module, policy);
+                    // Загружаем файл и помещаем его в кэш
+                    module = LoadByteCode(context.Request.PhysicalPath);
+                    cache.Set(context.Request.PhysicalPath, module, policy);
+                }
             }
+            else
+            {
+                module = LoadByteCode(context.Request.PhysicalPath);
+            }
+
             #endregion
 
             var runner = CreateServiceInstance(module.Value);
-
             int exitCode = 0;
 
             try
@@ -211,11 +217,10 @@ namespace OneScript.ASPNETHandler
                 IValue result;
                 IValue[] args = new IValue[1];
                 args[0] = new ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceRequestImpl(context);
-
                 runner.CallAsFunction(methodIndex, args, out result);
 
                 // Обрабатываем результаты
-                var response = (ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl)result;
+                var response = (ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl) result;
                 context.Response.StatusCode = response.StatusCode;
 
                 if (response.Headers != null)
@@ -239,7 +244,6 @@ namespace OneScript.ASPNETHandler
                 }
 
                 context.Response.Charset = response.ContentCharset;
-
             }
             catch (ScriptInterruptionException e)
             {
@@ -248,6 +252,24 @@ namespace OneScript.ASPNETHandler
                 context.Response.Status = "Script interrupted";
                 context.Response.SubStatusCode = exitCode;
                 context.Response.StatusDescription = e.Message;
+            }
+            catch (RuntimeException e)
+            {
+                context.Response.Clear();
+                context.Response.ClearHeaders();
+                context.Response.ClearContent();
+                context.Response.StatusCode = 500;
+                context.Response.ContentEncoding = Encoding.UTF8;
+                context.Response.Write(e.ErrorDescription);
+            }
+            catch (Exception e)
+            {
+                context.Response.Clear();
+                context.Response.ClearHeaders();
+                context.Response.ClearContent();
+                context.Response.StatusCode = 500;
+                context.Response.ContentEncoding = Encoding.UTF8;
+                context.Response.Write(e.Message);
             }
             finally
             {
