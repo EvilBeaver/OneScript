@@ -142,9 +142,8 @@ namespace OneScript.ASPNETHandler
                     }
                 }
 
-                // Сообщить и СтартовыйСценарий должны падать (null+null).
-                // попутно этот метод настраивает внутренние переменные у SystemGlobalContext
-                _hostedScript.SetGlobalEnvironment(null, null);
+                // метод настраивает внутренние переменные у SystemGlobalContext
+                _hostedScript.SetGlobalEnvironment(new ASPNetApplicationHost(), new AspEntryScriptSrc());
                 _hostedScript.Initialize();
 
             }
