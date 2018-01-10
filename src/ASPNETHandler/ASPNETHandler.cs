@@ -60,7 +60,7 @@ namespace OneScript.ASPNETHandler
                     // TODO: Исправить - должно падать. Если конфиг сайта неработоспособен - сайт не должен быть работоспособен.
                     catch(Exception ex)
                     {
-                        WriteToLog(logWriter, "Error loading assembly: " + assemblyName + " " + ex.Message);
+                        WriteToLog(logWriter, "Error loading assembly: " + assemblyName + " " + ex.ToString());
                         if (appSettings["handlerLoadingPolicy"] == "strict")
                             throw; // Must fail!
                     }
