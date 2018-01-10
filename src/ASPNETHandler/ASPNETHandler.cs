@@ -31,8 +31,6 @@ namespace OneScript.ASPNETHandler
         // web.config -> <appSettings> -> <add key="ASPNetHandler" value="attachAssembly"/> Сделано так для простоты. Меньше настроек - дольше жизнь :)
         static List<System.Reflection.Assembly> _assembliesForAttaching;
 
-        private static string _configFilePath;
-
         public bool IsReusable
         {
             // Разрешаем повторное использование и храним среду выполнения и контекст 
@@ -45,7 +43,6 @@ namespace OneScript.ASPNETHandler
             System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
 
             _cachingEnabled = (appSettings["cachingEnabled"] == "true");
-            _configFilePath = appSettings["configFilePath"];
 
             foreach (string assemblyName in appSettings.AllKeys)
             {
@@ -56,6 +53,8 @@ namespace OneScript.ASPNETHandler
                         _assembliesForAttaching.Add(System.Reflection.Assembly.Load(assemblyName));
                     }
                     // TODO: Исправить - должно падать. Если конфиг сайта неработоспособен - сайт не должен быть работоспособен.
+                    // Спорное утверждение. Это загрузка внешних компонент aka sql etc. 
+                    // И что из-за одной dll, которой нет физически, она не используется и она есть в конфиге огрести неработоспособное приложение? 
                     catch {/*не загрузилась, ничего не делаем*/ }
                 }
             }
@@ -88,7 +87,7 @@ namespace OneScript.ASPNETHandler
             {
                 _hostedScript = new HostedScriptEngine();
                 // Размещаем oscript.cfg вместе с web.config. Так наверное привычнее
-                _hostedScript.CustomConfig = _configFilePath ?? HttpContext.Current.Server.MapPath("~/oscript.cfg");
+                _hostedScript.CustomConfig = appSettings["configFilePath"] ?? HttpContext.Current.Server.MapPath("~/oscript.cfg");
                 _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
                 // Аттачим доп сборки. По идее должны лежать в Bin
                 foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
@@ -143,30 +142,36 @@ namespace OneScript.ASPNETHandler
                 }
 
                 // метод настраивает внутренние переменные у SystemGlobalContext
-                _hostedScript.SetGlobalEnvironment(new ASPNetApplicationHost(), new AspEntryScriptSrc());
-                _hostedScript.Initialize();
+                // давай использовать эту опцию для разных вот таких недоделанных случаев
+                // потом будем или удалять или менять название опции, если это опционально
+                if (appSettings["advancedFeatures"] == "true")
+                    _hostedScript.SetGlobalEnvironment(new ASPNetApplicationHost(), new AspEntryScriptSrc());
 
+                _hostedScript.Initialize();
             }
             catch (Exception ex)
             {
                 // Возникла проблема при инициализации хэндлера
                 WriteToLog(logWriter, ex.Message);
-                throw; // Must fail!
-            }
 
-            WriteToLog(logWriter, "End loading.");
-            // Закрываем лог, если надо
-            if (logWriter != null)
+                if (appSettings["advancedFeatures"] == "true")
+                    throw; // Must fail!
+            }
+            finally
             {
-                try
+                WriteToLog(logWriter, "End loading.");
+                // Закрываем лог, если надо
+                if (logWriter != null)
                 {
-                    logWriter.Flush();
-                    logWriter.Close();
+                    try
+                    {
+                        logWriter.Flush();
+                        logWriter.Close();
+                    }
+                    catch
+                    { /*что-то не так, ничего не делаем.*/ }
                 }
-                catch
-                { /*что-то не так, ничего не делаем.*/ }
             }
-
         }
 
         void WriteToLog(TextWriter logWriter, string message)
@@ -182,40 +187,46 @@ namespace OneScript.ASPNETHandler
 
         public void ProcessRequest(HttpContext context)
         {
-
-            #region Загружаем скрипт (файл .os)
-            // Кэшируем исходный файл, если файл изменился (изменили скрипт .os) загружаем заново
-            // В Linux под Mono не работает подписка на изменение файла.
-            LoadedModuleHandle? module = null;
-            ObjectCache cache = MemoryCache.Default;
-
-            if (_cachingEnabled)
+            try
             {
-                module = cache[context.Request.PhysicalPath] as LoadedModuleHandle?;
+                #region Загружаем скрипт (файл .os)
+                // Кэшируем исходный файл, если файл изменился (изменили скрипт .os) загружаем заново
+                // В Linux под Mono не работает подписка на изменение файла.
+                LoadedModuleHandle? module = null;
+                ObjectCache cache = MemoryCache.Default;
 
-                if (module == null)
+                if (_cachingEnabled)
                 {
-                    CacheItemPolicy policy = new CacheItemPolicy();
+                    module = cache[context.Request.PhysicalPath] as LoadedModuleHandle?;
 
-                    List<string> filePaths = new List<string>();
-                    filePaths.Add(context.Request.PhysicalPath);
-                    policy.ChangeMonitors.Add(new HostFileChangeMonitor(filePaths));
+                    if (module == null)
+                    {
+                        CacheItemPolicy policy = new CacheItemPolicy();
 
-                    // Загружаем файл и помещаем его в кэш
-                    module = LoadByteCode(context.Request.PhysicalPath);
-                    cache.Set(context.Request.PhysicalPath, module, policy);
+                        List<string> filePaths = new List<string>();
+                        filePaths.Add(context.Request.PhysicalPath);
+                        policy.ChangeMonitors.Add(new HostFileChangeMonitor(filePaths));
+
+                        // Загружаем файл и помещаем его в кэш
+                        module = LoadByteCode(context.Request.PhysicalPath);
+                        cache.Set(context.Request.PhysicalPath, module, policy);
+                    }
                 }
+                else
+                {
+                    module = LoadByteCode(context.Request.PhysicalPath);
+                }
+
+                #endregion
+
+                var runner = CreateServiceInstance(module.Value);
+
+                ProduceResponse(context, runner);
             }
-            else
+            finally
             {
-                module = LoadByteCode(context.Request.PhysicalPath);
+                context.Response.End();
             }
-
-            #endregion
-
-            var runner = CreateServiceInstance(module.Value);
-
-            ProduceResponse(context, runner);
         }
 
         private static void ProduceResponse(HttpContext context, IRuntimeContextInstance runner)
