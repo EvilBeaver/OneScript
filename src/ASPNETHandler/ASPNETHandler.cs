@@ -143,6 +143,8 @@ namespace OneScript.ASPNETHandler
                 // метод настраивает внутренние переменные у SystemGlobalContext
                 if (appSettings["advancedFeatures"] == "true")
                     _hostedScript.SetGlobalEnvironment(new ASPNetApplicationHost(), new AspEntryScriptSrc());
+                else
+                    _hostedScript.SetGlobalEnvironment(new ASPNetNullApplicationHost(), new ASPNetNullEntryScriptSrc());
 
                 _hostedScript.Initialize();
             }
