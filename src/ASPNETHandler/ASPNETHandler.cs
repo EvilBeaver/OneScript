@@ -154,7 +154,7 @@ namespace OneScript.ASPNETHandler
                 // Возникла проблема при инициализации хэндлера
                 WriteToLog(logWriter, ex.Message);
 
-                if (appSettings["advancedFeatures"] == "true")
+                if (appSettings["errorActionPreferenceWhenHandlerCreating"] == "stop")
                     throw; // Must fail!
             }
             finally
