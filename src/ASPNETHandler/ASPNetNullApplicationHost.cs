@@ -23,25 +23,29 @@ namespace OneScript.ASPNETHandler
         {
 
         }
-        // Обработчик Сообщить, в HTTPСервисе ничего не делает, также поступаем и мы
+        
         public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
+            // Обработчик Сообщить, в HTTPСервисе ничего не делает, также поступаем и мы
             return;
         }
-        // Непонятно что это, наверное аналог системного диалога, на сервере нет никаких диалогов
+        
         public void ShowExceptionInfo(Exception exc)
         {
+            // Непонятно что это, наверное аналог системного диалога, на сервере нет никаких диалогов
             return;
         }
-        // Мы не можем вводить никаких строк на сервере в 1С это недоступно
+        
         public bool InputString(out string result, int maxLen)
         {
+            // Мы не можем вводить никаких строк на сервере в 1С это недоступно
             result = null; 
             return false;
         }
-        // У нас нет никаких аргументов командной строки
+        
         public string[] GetCommandLineArguments()
         {
+            // У нас нет никаких аргументов командной строки
             return new string[0]; // возвращаем массив из 0 аргументов т.к у нас их нет
         }
     }
