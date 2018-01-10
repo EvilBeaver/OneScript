@@ -17,7 +17,7 @@ using ScriptEngine.Environment;
 namespace OneScript.ASPNETHandler
 {
     // Класс заглушка стартового скрипта. У нас нет стартового скрипта, поскольку это веб-приложение
-    class ASPNetNullEntryScriptSrc : ICodeSource
+    class AspNetNullEntryScriptSrc : ICodeSource
     {
         public string Code
         {

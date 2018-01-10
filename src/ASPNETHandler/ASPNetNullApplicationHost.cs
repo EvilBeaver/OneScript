@@ -17,21 +17,21 @@ namespace OneScript.ASPNETHandler
 {
     // Класс-заглушка для вывода Сообщить.
     // Поведение как на сервере 1С
-    public class ASPNetNullApplicationHost : IHostApplication
+    public class AspNetNullApplicationHost : IHostApplication
     {
-        public ASPNetNullApplicationHost()
+        public AspNetNullApplicationHost()
         {
 
         }
         // Обработчик Сообщить, в HTTPСервисе ничего не делает, также поступаем и мы
         public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
-
+            return;
         }
         // Непонятно что это, наверное аналог системного диалога, на сервере нет никаких диалогов
         public void ShowExceptionInfo(Exception exc)
         {
-
+            return;
         }
         // Мы не можем вводить никаких строк на сервере в 1С это недоступно
         public bool InputString(out string result, int maxLen)
