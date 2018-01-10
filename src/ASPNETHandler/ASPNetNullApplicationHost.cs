@@ -27,13 +27,11 @@ namespace OneScript.ASPNETHandler
         public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
             // Обработчик Сообщить, в HTTPСервисе ничего не делает, также поступаем и мы
-            return;
         }
         
         public void ShowExceptionInfo(Exception exc)
         {
             // Непонятно что это, наверное аналог системного диалога, на сервере нет никаких диалогов
-            return;
         }
         
         public bool InputString(out string result, int maxLen)
