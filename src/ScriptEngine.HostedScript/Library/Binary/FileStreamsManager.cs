@@ -101,7 +101,7 @@ public class FileStreamsManager : AutoContext<FileStreamsManager>
     /// Имя открываемого файла. </param>
     /// 
     [ContextMethod("ОткрытьДляДописывания", "OpenForAppend")]
-    public IValue OpenForAppend(string fileName)
+    public FileStreamContext OpenForAppend(string fileName)
     {
         return new FileStreamContext(fileName, FileOpenModeEnum.Append, FileAccessEnum.ReadAndWrite);
     }
@@ -124,10 +124,10 @@ public class FileStreamsManager : AutoContext<FileStreamsManager>
 
     ///
     [ContextMethod("ОткрытьДляЗаписи", "OpenForWrite")]
-    public IValue OpenForWrite(string fileName)
+    public FileStreamContext OpenForWrite(string fileName)
     {
-        // TODO: Судя по описанию - открывается без обрезки (Truncate). Надо проверить.
-        return new FileStreamContext(fileName, File.OpenWrite(fileName));
+        // TODO: Судя по описанию - открывается без обрезки (Truncate). Надо проверить в 1С.
+        return new FileStreamContext(fileName, FileOpenModeEnum.OpenOrCreate, FileAccessEnum.Write);
     }
 
 
@@ -142,9 +142,9 @@ public class FileStreamsManager : AutoContext<FileStreamsManager>
     /// <returns name="FileStream"/>
     ///
     [ContextMethod("ОткрытьДляЧтения", "OpenForRead")]
-    public IValue OpenForRead(string fileName)
+    public FileStreamContext OpenForRead(string fileName)
     {
-        return new FileStreamContext(fileName, File.OpenRead(fileName));
+        return new FileStreamContext(fileName, FileOpenModeEnum.Open, FileAccessEnum.Read);
     }
 
 
@@ -162,7 +162,7 @@ public class FileStreamsManager : AutoContext<FileStreamsManager>
     [ContextMethod("Создать", "Create")]
     public IValue Create(string fileName, int bufferSize = 0)
     {
-        return new FileStreamContext(fileName, File.Create(fileName, bufferSize == 0 ? 8192: bufferSize));
+        return new FileStreamContext(fileName, new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, bufferSize == 0 ? 8192 : bufferSize));
     }
 
 

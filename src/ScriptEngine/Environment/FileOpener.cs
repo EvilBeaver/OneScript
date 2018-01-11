@@ -5,9 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace ScriptEngine.Environment
@@ -16,18 +14,25 @@ namespace ScriptEngine.Environment
     {
         public static StreamReader OpenReader(string filename)
         {
-            FileStream input = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            Encoding enc = AssumeEncoding(input);
+            return OpenReader(filename, FileShare.ReadWrite);
+        }
+        
+        public static StreamReader OpenReader(string filename, FileShare shareMode, Encoding encoding = null)
+        {
+            var input = new FileStream(filename, FileMode.Open, FileAccess.Read, shareMode);
 
-			var reader = new StreamReader(input, enc, true);
-			
-			return reader;
+            if (encoding == null)
+            {
+                var enc = AssumeEncoding(input);
+                return new StreamReader(input, enc, true);
+            }
 
+            return new StreamReader(input, encoding);
         }
 
         public static StreamReader OpenReader(string filename, Encoding encoding)
         {
-            return new StreamReader(filename, encoding);
+            return OpenReader(filename, FileShare.ReadWrite, encoding);
         }
 
         public static StreamWriter OpenWriter(string filename)

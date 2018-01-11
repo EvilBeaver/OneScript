@@ -482,7 +482,7 @@ namespace ScriptEngine.HostedScript.Library
             
         }
 
-        [ContextMethod("IsValueFilled", null, isDeprecated: true)]
+        [ContextMethod("IsValueFilled", IsDeprecated = true, ThrowOnUse = false)]
         [Obsolete]
         public bool IsValueFilled(IValue value)
         {
@@ -582,7 +582,11 @@ namespace ScriptEngine.HostedScript.Library
             }
             else if (pathName == null)
             {
+#if NETSTANDARD2_0
+                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#else
                 return Marshal.GetActiveObject(className);
+#endif
             }
             else if (pathName.Length == 0)
             {
@@ -590,14 +594,18 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
+#if NETSTANDARD2_0
+                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#else
                 var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
                 persistFile.Load(pathName, 0);
                 
                 return (object)persistFile;
+#endif
             }
         }
 
-        #region IAttachableContext Members
+#region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
             out IVariable[] variables, 
@@ -611,9 +619,9 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        #endregion
+#endregion
 
-        #region IRuntimeContextInstance Members
+#region IRuntimeContextInstance Members
 
         public bool IsIndexed
         {
@@ -706,7 +714,7 @@ namespace ScriptEngine.HostedScript.Library
             retValue = _methods.GetMethod(methodNumber)(this, arguments);
         }
 
-        #endregion
+#endregion
 
         private static readonly ContextMethodsMapper<SystemGlobalContext> _methods;
 

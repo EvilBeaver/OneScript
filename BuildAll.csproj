@@ -7,7 +7,7 @@
 	<BinFolder>$(OutputPathForBuild)\bin\</BinFolder>
 	<LibFolder>$(OutputPathForBuild)\lib\</LibFolder>
 	<DocFolder>$(OutputPathForBuild)\doc\</DocFolder>
-  <DebugDest>$(OutputPathForBuild)\vscode\</DebugDest>
+	<DebugDest>$(OutputPathForBuild)\vscode\</DebugDest>
 	<MDDocFolder>$(MSBuildProjectDirectory)\mddoc</MDDocFolder>
 	<ExamplesFolder>$(OutputPathForBuild)\examples\</ExamplesFolder>
 	<Solution>$(MSBuildProjectDirectory)\src\1Script.sln</Solution>
@@ -104,8 +104,11 @@
 	<Target Name="PreparePackage">
 	
 		<!--Сборка документации-->
-		<CallTarget Targets="GenerateDocs"/>
-
+		<CallTarget Targets="GenerateDocs" Condition="'$(OneScriptDocumenter)' != ''"/>
+		
+		<!--Сборка библиотеки-->
+		<CallTarget Targets="CreateLibrary"/>
+		
 		<CreateItem Include="$(OutputPathForBuild)\*.pdb;$(OutputPathForBuild)\*.XML;$(OutputPathForBuild)\StandaloneRunner.exe">
 			<Output TaskParameter="Include" ItemName="RemoveUnnessesaryFiles" />
 		</CreateItem>
@@ -121,9 +124,11 @@
 		  <DbgFiles Include="$(OutputPathForBuild)\Newtonsoft.Json.dll"/>
 		</ItemGroup>
 
-		<Copy SourceFiles="@(DbgFiles)"  DestinationFolder="$(DebugDest)\bin"/>
+		<Copy SourceFiles="@(DbgFiles)" DestinationFolder="$(DebugDest)\bin"/>
+		<Move SourceFiles="$(OutputPathForBuild)\README.md" DestinationFolder="$(DebugDest)"/>
 		<Move SourceFiles="$(OutputPathForBuild)\package.json" DestinationFolder="$(DebugDest)"/>
 		<Move SourceFiles="$(OutputPathForBuild)\images\mono-debug-icon.png" DestinationFolder="$(DebugDest)\images"/>
+		<RemoveDir Directories="$(OutputPathForBuild)\images"/>
 		
 		<ItemGroup>
 			
@@ -136,28 +141,48 @@
 			<BinaryFiles Include="$(OutputPathForBuild)\Newtonsoft.Json.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\ICSharpCode.AvalonEdit.dll"/>
 			<BinaryFiles Include="$(OutputPathForBuild)\oscript.cfg"/>
+			<BinaryFiles Include="$(OutputPathForBuild)\ASPNETHandler.dll"/>
 
-			<LibraryFiles Include="$(MSBuildProjectDirectory)\oscript-library\src\**\*" Exclude="$(MSBuildProjectDirectory)\oscript-library\**\*.git"/>
 			<ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
 
 		</ItemGroup>
 		
 		<Move SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)"/> 
-		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/> 
 		<Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
 		
 		<!-- Удаление артефактов NUnit -->
 		<ItemGroup>
-			<NUnitArtifacts Include="$(OutputPathForBuild)\*.dll"/>
-      <NUnitArtifacts Include="$(OutputPathForBuild)\ru\*.dll"/>
+			<UnwantedArtifacts Include="$(OutputPathForBuild)\*.dll"/>
+			<UnwantedArtifacts Include="$(OutputPathForBuild)\ru\*.dll"/>
+			<UnwantedArtifacts Include="$(OutputPathForBuild)\roslyn\*.*"/>
 		</ItemGroup>
 		<Delete Files="@(DbgFiles)"/>
-    <Delete Files="@(NUnitArtifacts)"/>
-    <RemoveDir Directories="$(OutputPathForBuild)\ru"/>
-
+		<Delete Files="@(UnwantedArtifacts)"/>
+		<RemoveDir Directories="$(OutputPathForBuild)\ru"/>
+		
 		<!-- Копирование скрипта запуска для opm -->
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/> 
 		
+		<CallTarget Targets="InstallStdlib" Condition="'$(StandardLibraryPacks)' != ''"/>
+		
+	</Target>
+	
+	<Target Name="CreateLibrary" DependsOnTargets="Compile">
+	
+		<MakeDir Directories="@(LibFolder)"/>
+		
+		<Exec Command="&quot;$(OutputPathForBuild)oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.13.0.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
+		<Exec Command="&quot;$(OutputPathForBuild)oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
+		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
+		<DeleteTree Directories="$(LibFolder)\tmp"/> 
+		
+	</Target>
+	
+	<Target Name="InstallStdlib">
+		<ItemGroup>
+			<LibraryFiles Include="$(StandardLibraryPacks)\**\*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/>
 	</Target>
 	
 	<Target Name="CreateInstall" DependsOnTargets="PrepareDistOutputFolder">

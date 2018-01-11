@@ -49,7 +49,6 @@ namespace ScriptEngine
         {
             SetDefaultEnvironmentIfNeeded();
 
-            var symbolsContext = Environment.SymbolsContext;
             UpdateContexts();
 
             _attachedScriptsFactory = new AttachedScriptsFactory(this);

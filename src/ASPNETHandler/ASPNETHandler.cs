@@ -29,7 +29,9 @@ namespace OneScript.ASPNETHandler
         static bool _cachingEnabled;
         // Список дополнительных сборок, которые надо приаттачить к движку. Могут быть разные расширения
         // web.config -> <appSettings> -> <add key="ASPNetHandler" value="attachAssembly"/> Сделано так для простоты. Меньше настроек - дольше жизнь :)
-        static System.Collections.Generic.List<System.Reflection.Assembly> _assembliesForAttaching;
+        static List<System.Reflection.Assembly> _assembliesForAttaching;
+
+        private static string _configFilePath;
 
         public bool IsReusable
         {
@@ -41,8 +43,9 @@ namespace OneScript.ASPNETHandler
             _assembliesForAttaching = new List<System.Reflection.Assembly>();
 
             System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
-                
+
             _cachingEnabled = (appSettings["cachingEnabled"] == "true");
+            _configFilePath = appSettings["configFilePath"];
 
             foreach (string assemblyName in appSettings.AllKeys)
             {
@@ -52,6 +55,7 @@ namespace OneScript.ASPNETHandler
                     {
                         _assembliesForAttaching.Add(System.Reflection.Assembly.Load(assemblyName));
                     }
+                    // TODO: Исправить - должно падать. Если конфиг сайта неработоспособен - сайт не должен быть работоспособен.
                     catch {/*не загрузилась, ничего не делаем*/ }
                 }
             }
@@ -59,18 +63,121 @@ namespace OneScript.ASPNETHandler
 
         public ASPNETHandler()
         {
-            _hostedScript = new HostedScriptEngine();
-            _hostedScript.Initialize();
-            _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
-            // Аттачим доп сборки. По идее должны лежать в Bin
-            foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
+            System.Collections.Specialized.NameValueCollection appSettings = System.Web.Configuration.WebConfigurationManager.AppSettings;
+
+            // Инициализируем логгирование, если надо
+            string logPath = appSettings["logToPath"];
+            StreamWriter logWriter = null;
+
+            try
+            {
+                if (logPath != null)
+                {
+                    logPath = HttpContext.Current.Server.MapPath(logPath);
+                    string logFileName = Guid.NewGuid().ToString().Replace("-", "") + ".txt";
+                    logWriter = File.CreateText(Path.Combine(logPath, logFileName));
+                }
+            }
+            catch { /*что-то не так, ничего не делаем. Возможно нет папки или прав на запись.*/}
+
+            // Если определена секция logToPath и удалось создать/открыть файл, считаем, что логгирование включено
+
+            WriteToLog(logWriter, "Start loading.");
+
+            try
+            {
+                _hostedScript = new HostedScriptEngine();
+                // Размещаем oscript.cfg вместе с web.config. Так наверное привычнее
+                _hostedScript.CustomConfig = _configFilePath ?? HttpContext.Current.Server.MapPath("~/oscript.cfg");
+                _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+                // Аттачим доп сборки. По идее должны лежать в Bin
+                foreach (System.Reflection.Assembly assembly in _assembliesForAttaching)
+                {
+                    try
+                    {
+                        _hostedScript.AttachAssembly(assembly);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Возникла проблема при аттаче сборки
+                        WriteToLog(logWriter, "Assembly attaching error: " + ex.Message);
+                    }
+                }
+
+                //Загружаем библиотечные скрипты aka общие модули
+
+
+                string libPath = appSettings["commonModulesPath"];
+
+                if (libPath != null)
+                {
+                    libPath = HttpContext.Current.Server.MapPath(libPath);
+
+                    string[] files = System.IO.Directory.GetFiles(libPath, "*.os");
+
+
+                    foreach (string filePathName in files)
+                    {
+                        _hostedScript.InjectGlobalProperty(System.IO.Path.GetFileNameWithoutExtension(filePathName), ValueFactory.Create(), true);
+                    }
+
+                    foreach (string filePathName in files)
+                    {
+                        try
+                        {
+                            ICodeSource src = _hostedScript.Loader.FromFile(filePathName);
+
+                            var compilerService = _hostedScript.GetCompilerService();
+                            var module = compilerService.CreateModule(src);
+                            var loaded = _hostedScript.EngineInstance.LoadModuleImage(module);
+                            var instance = (IValue)_hostedScript.EngineInstance.NewObject(loaded);
+                            _hostedScript.EngineInstance.Environment.SetGlobalProperty(System.IO.Path.GetFileNameWithoutExtension(filePathName), instance);
+
+                        }
+                        catch (Exception ex)
+                        {
+                            // Возникла проблема при загрузке файла os, логгируем, если логгирование включено
+                            WriteToLog(logWriter, "Error loading " + System.IO.Path.GetFileNameWithoutExtension(filePathName) + " : " + ex.Message);
+                        }
+                    }
+                }
+
+                // метод настраивает внутренние переменные у SystemGlobalContext
+                _hostedScript.SetGlobalEnvironment(new ASPNetApplicationHost(), new AspEntryScriptSrc());
+                _hostedScript.Initialize();
+
+            }
+            catch (Exception ex)
+            {
+                // Возникла проблема при инициализации хэндлера
+                WriteToLog(logWriter, ex.Message);
+                throw; // Must fail!
+            }
+
+            WriteToLog(logWriter, "End loading.");
+            // Закрываем лог, если надо
+            if (logWriter != null)
             {
                 try
                 {
-                    _hostedScript.AttachAssembly(assembly);
+                    logWriter.Flush();
+                    logWriter.Close();
                 }
-                catch { /*что-то не так, ничего не делаем*/}
+                catch
+                { /*что-то не так, ничего не делаем.*/ }
             }
+
+        }
+
+        void WriteToLog(TextWriter logWriter, string message)
+        {
+            if (logWriter == null)
+                return;
+            try
+            {
+                logWriter.WriteLine(message);
+            }
+            catch { /* что-то не так, ничего не делаем */ }
         }
 
         public void ProcessRequest(HttpContext context)
@@ -78,87 +185,86 @@ namespace OneScript.ASPNETHandler
 
             #region Загружаем скрипт (файл .os)
             // Кэшируем исходный файл, если файл изменился (изменили скрипт .os) загружаем заново
-            // Как это сделать с откомпилированным кодом, чтобы не компилировать?
             // В Linux под Mono не работает подписка на изменение файла.
-            string sourceCode = null;
+            LoadedModuleHandle? module = null;
             ObjectCache cache = MemoryCache.Default;
 
             if (_cachingEnabled)
-                sourceCode = cache[context.Request.PhysicalPath] as string;
-
-            if (sourceCode == null)
             {
-                CacheItemPolicy policy = new CacheItemPolicy();
+                module = cache[context.Request.PhysicalPath] as LoadedModuleHandle?;
 
-                List<string> filePaths = new List<string>();
-                filePaths.Add(context.Request.PhysicalPath);
-                policy.ChangeMonitors.Add(new HostFileChangeMonitor(filePaths));
+                if (module == null)
+                {
+                    CacheItemPolicy policy = new CacheItemPolicy();
 
-                // Загружаем файл и помещаем его в кэш
-                sourceCode = File.ReadAllText(context.Request.PhysicalPath);
-                cache.Set(context.Request.PhysicalPath, sourceCode, policy);
+                    List<string> filePaths = new List<string>();
+                    filePaths.Add(context.Request.PhysicalPath);
+                    policy.ChangeMonitors.Add(new HostFileChangeMonitor(filePaths));
+
+                    // Загружаем файл и помещаем его в кэш
+                    module = LoadByteCode(context.Request.PhysicalPath);
+                    cache.Set(context.Request.PhysicalPath, module, policy);
+                }
             }
+            else
+            {
+                module = LoadByteCode(context.Request.PhysicalPath);
+            }
+
             #endregion
 
-            var runner = _hostedScript.EngineInstance.AttachedScriptsFactory.LoadFromString(
-                _hostedScript.EngineInstance.GetCompilerService(), sourceCode);
+            var runner = CreateServiceInstance(module.Value);
 
-            int exitCode = 0;
+            ProduceResponse(context, runner);
+        }
 
-            try
+        private static void ProduceResponse(HttpContext context, IRuntimeContextInstance runner)
+        {
+            int methodIndex = runner.FindMethod("ОбработкаВызоваHTTPСервиса");
+            IValue result;
+            IValue[] args = new IValue[1];
+            args[0] = new ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceRequestImpl(context);
+            runner.CallAsFunction(methodIndex, args, out result);
+
+            // Обрабатываем результаты
+            var response = (ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl) result;
+            context.Response.StatusCode = response.StatusCode;
+
+            if (response.Headers != null)
             {
-                int methodIndex = runner.FindMethod("ОбработкаВызоваHTTPСервиса");
-                IValue result;
-                IValue[] args = new IValue[1];
-                args[0] = new ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceRequestImpl(context);
-
-                runner.CallAsFunction(methodIndex, args, out result);
-
-                // Обрабатываем результаты
-                ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl response = (ScriptEngine.HostedScript.Library.HTTPService.HTTPServiceResponseImpl)result;
-                context.Response.StatusCode = response.StatusCode;
-
-                if (response.Headers != null)
+                foreach (var ch in response.Headers)
                 {
-
-                    foreach (ScriptEngine.HostedScript.Library.KeyAndValueImpl ch in response.Headers)
-                    {
-                        context.Response.AddHeader(ch.Key.AsString(), ch.Value.AsString());
-                    }
+                    context.Response.AddHeader(ch.Key.AsString(), ch.Value.AsString());
                 }
-
-                if (response.Reason != "")
-                {
-                    context.Response.Status = response.Reason;
-                }
-
-                if (response.BodyStream != null)
-                {
-                    response.BodyStream.Seek(0, SeekOrigin.Begin);
-                    response.BodyStream.CopyTo(context.Response.OutputStream);
-                }
-
-                context.Response.Charset = response.ContentCharset;
-
             }
-            catch (ScriptInterruptionException e)
+
+            if (response.Reason != "")
             {
-                exitCode = e.ExitCode;
-                context.Response.StatusCode = 500;
-                context.Response.Status = "Script running error";
-                context.Response.SubStatusCode = exitCode;
-                context.Response.StatusDescription = e.Message;
-            }
-            catch (Exception e)
-            {
-                context.Response.StatusCode = 500;
-                context.Response.Status = e.Message;
-            }
-            finally
-            {
-                context.Response.End();
+                context.Response.Status = response.Reason;
             }
 
+            if (response.BodyStream != null)
+            {
+                response.BodyStream.Seek(0, SeekOrigin.Begin);
+                response.BodyStream.CopyTo(context.Response.OutputStream);
+            }
+
+            context.Response.Charset = response.ContentCharset;
+        }
+
+        private IRuntimeContextInstance CreateServiceInstance(LoadedModuleHandle module)
+        {
+            var runner = _hostedScript.EngineInstance.NewObject(module);
+            return runner;
+        }
+
+        private LoadedModuleHandle LoadByteCode(string filePath)
+        {
+            var code = _hostedScript.EngineInstance.Loader.FromFile(filePath);
+            var compiler = _hostedScript.GetCompilerService();
+            var byteCode = compiler.CreateModule(code);
+            var module = _hostedScript.EngineInstance.LoadModuleImage(byteCode);
+            return module;
         }
     }
 }
