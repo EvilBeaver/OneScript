@@ -23,7 +23,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                throw new InvalidOperationException("Type is not defined");
+                throw new InvalidOperationException($"Type {GetType()} is not defined");
             }
         }
 
