@@ -141,10 +141,11 @@ namespace OneScript.ASPNETHandler
                 }
 
                 // метод настраивает внутренние переменные у SystemGlobalContext
-                if (appSettings["classicHTTPService"] == "true")
-                    _hostedScript.SetGlobalEnvironment(new AspNetNullApplicationHost(), new AspNetNullEntryScriptSrc());
+                if (appSettings["enableEcho"] == "true")
+                    _hostedScript.SetGlobalEnvironment(new ASPNetApplicationHost(), new AspEntryScriptSrc(appSettings["startupScript"] ?? HttpContext.Current.Server.MapPath("~/web.config")));
                 else
-                    _hostedScript.SetGlobalEnvironment(new ASPNetApplicationHost(), new AspEntryScriptSrc());
+                    _hostedScript.SetGlobalEnvironment(new AspNetNullApplicationHost(), new AspNetNullEntryScriptSrc());
+                
 
                 _hostedScript.Initialize();
             }
