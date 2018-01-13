@@ -11,14 +11,19 @@ namespace OneScript.ASPNETHandler
 {
     class AspEntryScriptSrc : ICodeSource
     {
+        string _sourceDescription;
+
         public string Code
         {
             get { return ""; }
         }
-
+        public AspEntryScriptSrc(string sourceDescription)
+        {
+            _sourceDescription = sourceDescription;
+        }
         public string SourceDescription
         {
-            get { return Path.Combine(Directory.GetCurrentDirectory(), "web.config"); }
+            get { return _sourceDescription; }
         }
     }
 }
