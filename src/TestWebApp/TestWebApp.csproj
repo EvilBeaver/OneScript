@@ -51,7 +51,6 @@
     <Content Include="Default.os" />
     <Content Include="Default.ospt" />
     <Content Include="source.ospt" />
-    <Content Include="scripts\ОбщийМодуль.os" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
