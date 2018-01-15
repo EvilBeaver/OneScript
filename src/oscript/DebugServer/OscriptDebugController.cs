@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 
 using OneScript.DebugProtocol;
+using OneScript.DebugProtocol.FSM;
 
 using ScriptEngine;
 using ScriptEngine.Machine;
@@ -20,18 +21,19 @@ using Variable = OneScript.DebugProtocol.Variable;
 
 namespace oscript.DebugServer
 {
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IncludeExceptionDetailInFaults = true)]
     class OscriptDebugController : IDebugController, IDebuggerService
     {
         private readonly ManualResetEventSlim _debugCommandEvent = new ManualResetEventSlim();
 
-        private IDebugEventListener _eventChannel;
         private readonly int _port;
         private MachineInstance _machine;
 
         private ServiceHost _serviceHost;
 
         private readonly DebuggerFSM _debugFSM;
+
+        public event EventHandler<ProcessExitedEventArgs> ProcessExited;
+        public event EventHandler<ThreadStoppedEventArgs> ThreadStopped;
 
         public OscriptDebugController(int listenerPort)
         {
@@ -43,11 +45,11 @@ namespace oscript.DebugServer
             var runningState = new RunningState(this);
             var stoppedState = new StoppedState(this);
 
-            _debugFSM.AddState(initialState, DebuggerCommands.Run, runningState);
-            _debugFSM.AddState(initialState, DebuggerCommands.Help, initialState);
-            _debugFSM.AddState(initialState, DebuggerCommands.SetBreakpoint, initialState);
-            _debugFSM.AddState(initialState, DebuggerCommands.Exit, initialState); // выход пока не проработан
-            _debugFSM.AddState(runningState, DebuggerCommands.OutgoingEvent, stoppedState);
+            _debugFSM.AddTransition(initialState, DebuggerCommands.Run, runningState);
+            _debugFSM.AddTransition(initialState, DebuggerCommands.Help, initialState);
+            _debugFSM.AddTransition(initialState, DebuggerCommands.SetBreakpoint, initialState);
+            _debugFSM.AddTransition(initialState, DebuggerCommands.Exit, initialState); // выход пока не проработан
+            _debugFSM.AddTransition(runningState, DebuggerCommands.OutgoingEvent, stoppedState);
         }
 
         public void WaitForDebugEvent(DebugEventType theEvent)
@@ -72,11 +74,11 @@ namespace oscript.DebugServer
 
         public void NotifyProcessExit(int exitCode)
         {
-            if (!CallbackChannelIsReady())
-                return; // нет подписчика
+            //if (!CallbackChannelIsReady())
+            //    return; // нет подписчика
 
-            _eventChannel.ProcessExited(exitCode);
-            _serviceHost?.Close();
+            //_eventChannel.ProcessExited(exitCode);
+            //_serviceHost?.Close();
         }
 
         public void OnMachineReady(MachineInstance instance)
@@ -107,11 +109,11 @@ namespace oscript.DebugServer
 
         private bool CallbackChannelIsReady()
         {
-            if (_eventChannel != null)
-            {
-                var ico = (ICommunicationObject) _eventChannel;
-                return ico.State == CommunicationState.Opened;
-            }
+            //if (_eventChannel != null)
+            //{
+            //    var ico = (ICommunicationObject) _eventChannel;
+            //    return ico.State == CommunicationState.Opened;
+            //}
             return false;
         }
 
@@ -287,13 +289,13 @@ namespace oscript.DebugServer
             bool selected = false;
             while (!selected)
             {
-                Output.Write($"{_debugFSM.CurrentState.Prompt}>");
+                Output.Write($"{((ConsoleDebuggerState)_debugFSM.CurrentState).Prompt}>");
                 var line = Console.ReadLine();
                 var parser = new CmdLineHelper(SplitArguments(line));
                 var commandName = parser.Next();
                 DebuggerCommands command;
 
-                if (_debugFSM.SelectCommand(commandName, out command))
+                if (SelectCommand(commandName, out command))
                 {
                     selected = true;
                     _debugFSM.DispatchCommand(command, parser.Tail());
@@ -301,9 +303,32 @@ namespace oscript.DebugServer
                 else
                 {
                     Output.WriteLine($"Неизвестная команда {commandName}");
-                }    
+                }
             }
             
+        }
+
+        private bool SelectCommand(string commandName, out DebuggerCommands command)
+        {
+            bool selected = true;
+            switch (commandName)
+            {
+                case "run":
+                    command = DebuggerCommands.Run;
+                    break;
+                case "bp":
+                    command = DebuggerCommands.SetBreakpoint;
+                    break;
+                case "exit":
+                    command = DebuggerCommands.Exit;
+                    break;
+                default:
+                    selected = false;
+                    command = default(DebuggerCommands);
+                    break;
+            }
+
+            return selected;
         }
 
         private string[] SplitArguments(string line)

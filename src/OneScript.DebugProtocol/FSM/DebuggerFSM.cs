@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using OneScript.DebugProtocol.FSM;
+
 namespace oscript.DebugServer
 {
-    internal class DebuggerFSM
+    public class DebuggerFSM
     {
         private class StateRecord
         {
@@ -16,9 +18,10 @@ namespace oscript.DebugServer
         }
 
         private List<StateRecord> _statesTable = new List<StateRecord>();
+        
         public DebuggerState CurrentState { get; private set; }
         
-        public void AddState(DebuggerState state, DebuggerCommands command, DebuggerState nextState)
+        public void AddTransition(DebuggerState state, DebuggerCommands command, DebuggerState nextState)
         {
             var record = new StateRecord()
             {
@@ -43,31 +46,10 @@ namespace oscript.DebugServer
             {
                 throw new InvalidDebuggerCommandException();
             }
-
-            try
-            {
-                availableTransition.state.ExecuteCommand(command, arguments);
-            }
-            catch (InvalidDebuggerCommandException e)
-            {
-                Output.WriteLine(e.Message);
-            }
-
+            
+            CurrentState.ExecuteCommand(command, arguments);
             CurrentState = availableTransition.nextState;
             CurrentState.Enter();
-        }
-
-        public bool SelectCommand(string token, out DebuggerCommands command)
-        {
-            var cmd = CurrentState.Commands.FirstOrDefault(x => x.Token == token);
-            if (cmd != null)
-            {
-                command = cmd.Command;
-                return true;
-            }
-
-            command = default(DebuggerCommands);
-            return false;
         }
     }
 

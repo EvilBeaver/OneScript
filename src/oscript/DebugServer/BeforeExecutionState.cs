@@ -1,29 +1,13 @@
-﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
-at http://mozilla.org/MPL/2.0/.
-----------------------------------------------------------*/
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using ScriptEngine.Machine;
+﻿using OneScript.DebugProtocol.FSM;
 
 namespace oscript.DebugServer
 {
-    internal class BeforeExecutionState : DebuggerState
+    internal class BeforeExecutionState : ConsoleDebuggerState
     {
-        private OscriptDebugController _controller;
-
         private bool _initialPromptPrinted;
 
-        public BeforeExecutionState(OscriptDebugController controller)
+        public BeforeExecutionState(OscriptDebugController controller) : base(controller)
         {
-            this._controller = controller;
             Prompt = "init";
 
             FillCommands();
@@ -91,7 +75,7 @@ namespace oscript.DebugServer
                 _initialPromptPrinted = true;
             }
 
-        _controller.InputCommand();
+            _controller.InputCommand();
         }
 
         private void PrintHelp(object[] args)
@@ -101,47 +85,6 @@ namespace oscript.DebugServer
             {
                 Output.WriteLine(cmdDescr.Token);
             }
-        }
-    }
-
-    internal class RunningState : DebuggerState
-    {
-        private OscriptDebugController oscriptDebugController;
-
-        public RunningState(OscriptDebugController oscriptDebugController)
-        {
-            this.oscriptDebugController = oscriptDebugController;
-
-            AddCommand(new DebuggerCommandDescription()
-            {
-                Action = StopEventHandler,
-                Command = DebuggerCommands.OutgoingEvent
-            });
-        }
-
-        private void StopEventHandler(object[] obj)
-        {
-            Output.WriteLine("Machine stopped: " + obj);
-        }
-
-        public override void Enter()
-        {
-            oscriptDebugController.Execute();
-        }
-    }
-
-    internal class StoppedState : DebuggerState
-    {
-        private OscriptDebugController oscriptDebugController;
-
-        public StoppedState(OscriptDebugController oscriptDebugController)
-        {
-            this.oscriptDebugController = oscriptDebugController;
-        }
-
-        public override void Enter()
-        {
-            oscriptDebugController.WaitForDebugEvent(DebugEventType.Continue);
         }
     }
 }
