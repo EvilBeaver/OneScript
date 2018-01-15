@@ -21,7 +21,7 @@ namespace oscript.DebugServer
             _commands = new List<DebuggerCommandDescription>();
         }
 
-        public virtual void ExecuteCommand(DebuggerCommands command, string[] arguments)
+        public virtual void ExecuteCommand(DebuggerCommands command, object[] arguments)
         {
             RunCommand(command, arguments);
         }
@@ -40,7 +40,7 @@ namespace oscript.DebugServer
             _commands.Add(cmd);
         }
 
-        protected void RunCommand(DebuggerCommands cmd, string[] args)
+        protected void RunCommand(DebuggerCommands cmd, object[] args)
         {
             var cmdDescr = Commands.First(x => x.Command == cmd);
             cmdDescr.Action(args);

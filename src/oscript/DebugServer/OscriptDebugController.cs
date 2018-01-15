@@ -43,9 +43,10 @@ namespace oscript.DebugServer
             var runningState = new RunningState(this);
             var stoppedState = new StoppedState(this);
 
-            _debugFSM.AddState(initialState, DebuggerCommands.Execute, runningState);
+            _debugFSM.AddState(initialState, DebuggerCommands.Run, runningState);
             _debugFSM.AddState(initialState, DebuggerCommands.Help, initialState);
             _debugFSM.AddState(initialState, DebuggerCommands.SetBreakpoint, initialState);
+            _debugFSM.AddState(initialState, DebuggerCommands.Exit, initialState); // выход пока не проработан
             _debugFSM.AddState(runningState, DebuggerCommands.OutgoingEvent, stoppedState);
         }
 
@@ -55,16 +56,13 @@ namespace oscript.DebugServer
             {
                 case DebugEventType.BeginExecution:
 
-                    //var host = new ServiceHost(this);
-                    //var binding = Binder.GetBinding();
-                    //host.AddServiceEndpoint(typeof(IDebuggerService), binding, Binder.GetDebuggerUri(_port));
-                    //_serviceHost = host;
-                    //host.Open();
-
-
                     _debugFSM.Start();
                     _debugCommandEvent.Wait(); // процесс 1скрипт не стартует, пока не получено разрешение от дебагера
 
+                    break;
+                case DebugEventType.Continue:
+                    _debugCommandEvent.Reset();
+                    _debugCommandEvent.Wait();
                     break;
                 default:
                     throw new InvalidOperationException($"event {theEvent} cant't be waited");
@@ -89,12 +87,7 @@ namespace oscript.DebugServer
 
         private void MachineStopHanlder(object sender, MachineStoppedEventArgs e)
         {
-            if (!CallbackChannelIsReady())
-                return; // нет подписчика
-            
-            _debugCommandEvent.Reset();
-            _eventChannel.ThreadStopped(1, ConvertStopReason(e.Reason));
-            _debugCommandEvent.Wait();
+            _debugFSM.DispatchCommand(DebuggerCommands.OutgoingEvent, new object[]{e.Reason});
         }
 
         private ThreadStopReason ConvertStopReason(MachineStopReason reason)
@@ -133,8 +126,8 @@ namespace oscript.DebugServer
 
         private void RegisterEventListener()
         {
-            _eventChannel = OperationContext.Current.
-                   GetCallbackChannel<IDebugEventListener>();
+            //_eventChannel = OperationContext.Current.
+            //       GetCallbackChannel<IDebugEventListener>();
         }
 
         public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)

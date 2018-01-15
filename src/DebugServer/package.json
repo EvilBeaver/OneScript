@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript",
   "icon": "images/mono-debug-icon.png",
@@ -51,7 +51,8 @@
             "args": [],
             "cwd": "${workspaceRoot}",
             "runtimeExecutable": null,
-            "debugPort": 2801 
+            "debugPort": 2801,
+            "protocol":"internal"
           }
         ],
         "configurationAttributes": {
@@ -88,7 +89,16 @@
                 "type": "number",
                 "description": "Порт для запуска отладчика. Одновременные сеансы отладки должны быть разделены по портам",
                 "default": 2801
-              }
+              },
+              "protocol": {
+                "type": "string",
+                "description": "Вариант протокола взаимодействия с отлаживаемым процессом",
+                "enum" : ["wcf", "internal"]
+              },
+              "protocolVersion": {
+                "type": "string",
+                "description": "Версия протокола взаимодействия с отлаживаемым процессом"
+              } 
             }
           },
           "attach": {

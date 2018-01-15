@@ -36,7 +36,7 @@ namespace oscript.DebugServer
             CurrentState.Enter();
         }
 
-        public void DispatchCommand(DebuggerCommands command, string[] arguments)
+        public void DispatchCommand(DebuggerCommands command, object[] arguments)
         {
             var availableTransition = _statesTable.FirstOrDefault(x => x.command == command && x.state == CurrentState);
             if (availableTransition == null)

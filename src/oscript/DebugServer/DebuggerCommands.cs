@@ -16,7 +16,7 @@ namespace oscript.DebugServer
     internal enum DebuggerCommands
     {
         IllegalCommand,
-        Execute,
+        Run,
         SetBreakpoint,
         Next,
         StepIn,

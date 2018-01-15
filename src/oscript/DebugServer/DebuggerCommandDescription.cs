@@ -18,6 +18,6 @@ namespace oscript.DebugServer
         public string Token { get; set; }
         public DebuggerCommands Command { get; set; }
         public string HelpString { get; set; }
-        public Action<string[]> Action { get; set; }
+        public Action<object[]> Action { get; set; }
     }
 }
