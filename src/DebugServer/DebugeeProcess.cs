@@ -72,7 +72,7 @@ namespace DebugServer
             _process.BeginErrorReadLine();
         }
         
-        public void Connect(int port, IDebugEventListener listener)
+        public void Connect(int port, IDebuggerService listener)
         {
             var channelFactory = new DuplexChannelFactory<IDebuggerService>(listener, Binder.GetBinding(), new EndpointAddress(Binder.GetDebuggerUri(port)));
 

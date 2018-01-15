@@ -15,10 +15,9 @@ namespace oscript.DebugServer
 
         private void FillCommands()
         {
-            AddCommand(new DebuggerCommandDescription()
+            AddCommand(new ConsoleDebugCommandDescription()
             {
-                Token = "bp",
-                Command = DebuggerCommands.SetBreakpoint,
+                Command = "bp",
                 HelpString = "Создание точки останова. Аргументы:" +
                              "\n <путь к файлу>" +
                              "\n <номер строки в файле>" +
@@ -28,26 +27,23 @@ namespace oscript.DebugServer
 
             });
 
-            AddCommand(new DebuggerCommandDescription()
+            AddCommand(new ConsoleDebugCommandDescription()
             {
-                Token = "help",
-                Command = DebuggerCommands.Help,
+                Command = "help",
                 HelpString = "Показывает эту справку",
                 Action = PrintHelp
             });
 
-            AddCommand(new DebuggerCommandDescription()
+            AddCommand(new ConsoleDebugCommandDescription()
             {
-                Token = "exit",
-                Command = DebuggerCommands.Exit,
+                Command = "exit",
                 HelpString = "Выход из отладки",
                 Action = ExitDebugger
             });
 
-            AddCommand(new DebuggerCommandDescription()
+            AddCommand(new ConsoleDebugCommandDescription()
             {
-                Token = "run",
-                Command = DebuggerCommands.Run,
+                Command = "run",
                 HelpString = "Запуск потока выполнения",
                 Action = (args) => { }
             });
@@ -75,7 +71,7 @@ namespace oscript.DebugServer
                 _initialPromptPrinted = true;
             }
 
-            _controller.InputCommand();
+            Controller.InputCommand();
         }
 
         private void PrintHelp(object[] args)
@@ -83,7 +79,7 @@ namespace oscript.DebugServer
             Output.WriteLine("Доступные команды:");
             foreach (var cmdDescr in Commands)
             {
-                Output.WriteLine(cmdDescr.Token);
+                Output.WriteLine(cmdDescr.Command);
             }
         }
     }

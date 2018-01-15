@@ -9,7 +9,7 @@ namespace oscript.DebugServer
             AddCommand(new DebuggerCommandDescription()
             {
                 Action = StopEventHandler,
-                Command = DebuggerCommands.OutgoingEvent
+                Command = "break"
             });
         }
 

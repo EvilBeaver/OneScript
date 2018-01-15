@@ -53,7 +53,7 @@ namespace oscript.DebugServer
         }
     }
 
-    internal class InvalidDebuggerCommandException : ApplicationException
+    public class InvalidDebuggerCommandException : ApplicationException
     {
         public InvalidDebuggerCommandException() : base("Команда не поддерживается в данном режиме")
         {
