@@ -18,7 +18,7 @@ namespace OneScript.DebugProtocol.FSM
             _commands = new List<DebuggerCommandDescription>();
         }
 
-        public virtual void ExecuteCommand(DebuggerCommands command, object[] arguments)
+        public virtual void ExecuteCommand(string command, object[] arguments)
         {
             RunCommand(command, arguments);
         }
@@ -35,7 +35,7 @@ namespace OneScript.DebugProtocol.FSM
             _commands.Add(cmd);
         }
 
-        protected void RunCommand(DebuggerCommands cmd, object[] args)
+        protected void RunCommand(string cmd, object[] args)
         {
             var cmdDescr = Commands.First(x => x.Command == cmd);
             cmdDescr.Action(args);

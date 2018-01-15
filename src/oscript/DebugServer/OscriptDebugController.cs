@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.ServiceModel;
 using System.Text;
 using System.Threading;
@@ -45,11 +46,11 @@ namespace oscript.DebugServer
             var runningState = new RunningState(this);
             var stoppedState = new StoppedState(this);
 
-            _debugFSM.AddTransition(initialState, DebuggerCommands.Run, runningState);
-            _debugFSM.AddTransition(initialState, DebuggerCommands.Help, initialState);
-            _debugFSM.AddTransition(initialState, DebuggerCommands.SetBreakpoint, initialState);
-            _debugFSM.AddTransition(initialState, DebuggerCommands.Exit, initialState); // выход пока не проработан
-            _debugFSM.AddTransition(runningState, DebuggerCommands.OutgoingEvent, stoppedState);
+            _debugFSM.AddTransition(initialState, "run", runningState);
+            _debugFSM.AddTransition(initialState, "help", initialState);
+            _debugFSM.AddTransition(initialState, "bp", initialState);
+            _debugFSM.AddTransition(initialState, "exit", initialState); // выход пока не проработан
+            _debugFSM.AddTransition(runningState, "break", stoppedState);
         }
 
         public void WaitForDebugEvent(DebugEventType theEvent)
@@ -89,7 +90,7 @@ namespace oscript.DebugServer
 
         private void MachineStopHanlder(object sender, MachineStoppedEventArgs e)
         {
-            _debugFSM.DispatchCommand(DebuggerCommands.OutgoingEvent, new object[]{e.Reason});
+            //_debugFSM.DispatchCommand(DebuggerCommands.OutgoingEvent, new object[]{e.Reason});
         }
 
         private ThreadStopReason ConvertStopReason(MachineStopReason reason)
@@ -293,42 +294,16 @@ namespace oscript.DebugServer
                 var line = Console.ReadLine();
                 var parser = new CmdLineHelper(SplitArguments(line));
                 var commandName = parser.Next();
-                DebuggerCommands command;
-
-                if (SelectCommand(commandName, out command))
+                try
                 {
-                    selected = true;
-                    _debugFSM.DispatchCommand(command, parser.Tail());
+                    _debugFSM.DispatchCommand(commandName, parser.Tail());
                 }
-                else
+                catch(InvalidDebuggerCommandException)
                 {
                     Output.WriteLine($"Неизвестная команда {commandName}");
                 }
             }
             
-        }
-
-        private bool SelectCommand(string commandName, out DebuggerCommands command)
-        {
-            bool selected = true;
-            switch (commandName)
-            {
-                case "run":
-                    command = DebuggerCommands.Run;
-                    break;
-                case "bp":
-                    command = DebuggerCommands.SetBreakpoint;
-                    break;
-                case "exit":
-                    command = DebuggerCommands.Exit;
-                    break;
-                default:
-                    selected = false;
-                    command = default(DebuggerCommands);
-                    break;
-            }
-
-            return selected;
         }
 
         private string[] SplitArguments(string line)

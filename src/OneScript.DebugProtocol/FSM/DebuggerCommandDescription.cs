@@ -11,7 +11,7 @@ namespace OneScript.DebugProtocol.FSM
 {
     public class DebuggerCommandDescription
     {
-        public DebuggerCommands Command { get; set; }
+        public string Command { get; set; }
         public Action<object[]> Action { get; set; }
     }
 }

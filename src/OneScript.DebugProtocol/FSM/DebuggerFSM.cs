@@ -13,7 +13,7 @@ namespace oscript.DebugServer
         private class StateRecord
         {
             public DebuggerState state;
-            public DebuggerCommands command;
+            public string command;
             public DebuggerState nextState;
         }
 
@@ -21,7 +21,7 @@ namespace oscript.DebugServer
         
         public DebuggerState CurrentState { get; private set; }
         
-        public void AddTransition(DebuggerState state, DebuggerCommands command, DebuggerState nextState)
+        public void AddTransition(DebuggerState state, string command, DebuggerState nextState)
         {
             var record = new StateRecord()
             {
@@ -39,7 +39,7 @@ namespace oscript.DebugServer
             CurrentState.Enter();
         }
 
-        public void DispatchCommand(DebuggerCommands command, object[] arguments)
+        public void DispatchCommand(string command, object[] arguments)
         {
             var availableTransition = _statesTable.FirstOrDefault(x => x.command == command && x.state == CurrentState);
             if (availableTransition == null)
