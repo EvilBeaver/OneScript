@@ -1,10 +1,12 @@
-﻿using OneScript.DebugProtocol.FSM;
+﻿using System;
+
+using OneScript.DebugProtocol.FSM;
 
 namespace oscript.DebugServer
 {
     internal class RunningState : ConsoleDebuggerState
     {
-        public RunningState(OscriptDebugController controller) : base(controller)
+        public RunningState(InteractiveDebugController controller) : base(controller)
         {
             AddCommand(new DebuggerCommandDescription()
             {
@@ -20,7 +22,8 @@ namespace oscript.DebugServer
 
         public override void Enter()
         {
-            Controller.Execute();
+            throw new NotImplementedException();
+            //Controller.Execute();
         }
     }
 }

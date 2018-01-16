@@ -6,7 +6,7 @@ namespace oscript.DebugServer
     {
         private bool _initialPromptPrinted;
 
-        public BeforeExecutionState(OscriptDebugController controller) : base(controller)
+        public BeforeExecutionState(InteractiveDebugController controller) : base(controller)
         {
             Prompt = "init";
 

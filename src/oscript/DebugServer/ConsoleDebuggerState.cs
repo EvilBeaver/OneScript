@@ -17,9 +17,9 @@ namespace oscript.DebugServer
 {
     internal abstract class ConsoleDebuggerState : DebuggerState
     {
-        protected OscriptDebugController Controller { get; }
+        protected InteractiveDebugController Controller { get; }
 
-        protected ConsoleDebuggerState(OscriptDebugController controller)
+        protected ConsoleDebuggerState(InteractiveDebugController controller)
         {
             Controller = controller;
         }

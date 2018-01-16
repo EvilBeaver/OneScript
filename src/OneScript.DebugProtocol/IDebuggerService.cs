@@ -12,12 +12,17 @@ using System.ServiceModel;
 
 namespace OneScript.DebugProtocol
 {
+    [ServiceContract(
+        Namespace = "http://oscript.io/services/debugger", 
+        SessionMode = SessionMode.Required,
+        CallbackContract = typeof(IDebugEventListener))]
     public interface IDebuggerService
     {
         /// <summary>
         /// Разрешает потоку виртуальной машины начать выполнение скрипта
         /// Все точки останова уже установлены, все настройки сделаны
         /// </summary>
+        [OperationContract(IsOneWay = true)]
         void Execute();
         
         /// <summary>
@@ -25,11 +30,13 @@ namespace OneScript.DebugProtocol
         /// </summary>
         /// <param name="breaksToSet"></param>
         /// <returns>Возвращает установленные точки (те, которые смог установить)</returns>
+        [OperationContract]
         Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet);
 
         /// <summary>
         /// Запрашивает состояние кадров стека вызовов
         /// </summary>
+        [OperationContract]
         StackFrame[] GetStackFrames();
 
         /// <summary>
@@ -38,6 +45,7 @@ namespace OneScript.DebugProtocol
         /// <param name="frameIndex"></param>
         /// <param name="path"></param>
         /// <returns></returns>
+        [OperationContract]
         Variable[] GetVariables(int frameIndex, int[] path);
 
         /// <summary>
@@ -46,27 +54,39 @@ namespace OneScript.DebugProtocol
         /// <param name="contextFrame">Кадр стека, относительно которого вычисляем</param>
         /// <param name="expression">Выражение</param>
         /// <returns>Переменная с результатом</returns>
+        [OperationContract]
         Variable Evaluate(int contextFrame, string expression);
 
+        [OperationContract(IsOneWay = true)]
         void Next();
 
+        [OperationContract(IsOneWay = true)]
         void StepIn();
 
+        [OperationContract(IsOneWay = true)]
         void StepOut();
 
-        event EventHandler<ProcessExitedEventArgs> ProcessExited;
-        event EventHandler<ThreadStoppedEventArgs> ThreadStopped;
+        //event EventHandler<ProcessExitedEventArgs> ProcessExited;
+        //event EventHandler<ThreadStoppedEventArgs> ThreadStopped;
     }
 
-    public class ThreadStoppedEventArgs : EventArgs
-    {
-        public ThreadStopReason Reason { get; set; }
-    }
+    //public class ThreadStoppedEventArgs : EventArgs
+    //{
+    //    public ThreadStopReason Reason { get; set; }
+    //}
 
-    public class ProcessExitedEventArgs : EventArgs
-    {
-        public int ThreadId { get; set; }
-        public ThreadStopReason Reason { get; set; }
-    }
+    //public class ProcessExitedEventArgs : EventArgs
+    //{
+    //    public int ThreadId { get; set; }
+    //    public ThreadStopReason Reason { get; set; }
+    //}
     
+    public interface IDebugEventListener
+    {
+        [OperationContract(IsOneWay = true)]
+        void ThreadStopped(int threadId, ThreadStopReason reason);
+
+        [OperationContract(IsOneWay = true)]
+        void ProcessExited(int exitCode);
+    }
 }

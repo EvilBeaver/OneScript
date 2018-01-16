@@ -20,7 +20,7 @@ using VSCodeDebug;
 
 namespace DebugServer
 {
-    internal class OscriptDebugSession : DebugSession
+    internal class OscriptDebugSession : DebugSession, IDebugEventListener
     {
         private DebugeeProcess _process;
         private bool _startupPerformed = false;
@@ -155,8 +155,7 @@ namespace DebugServer
             int port = getInt(args, "debugPort", 2801);
             try
             {
-                // FIXME: просто заглушка чтобы скомпилировалось. Требует переделки
-                _process.Connect(port, null);
+                _process.Connect(port, this);
             }
             catch (Exception e)
             {

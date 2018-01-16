@@ -4,7 +4,7 @@ namespace oscript.DebugServer
 {
     internal class StoppedState : ConsoleDebuggerState
     {
-        public StoppedState(OscriptDebugController controller) : base(controller)
+        public StoppedState(InteractiveDebugController controller) : base(controller)
         {
         }
 
