@@ -19,7 +19,6 @@ namespace oscript.DebugServer
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IncludeExceptionDetailInFaults = true)]
     internal class WcfDebugService : IDebuggerService
     {
-        
         private WcfDebugController Controller { get; }
 
         public MachineInstance Machine { get; set; }

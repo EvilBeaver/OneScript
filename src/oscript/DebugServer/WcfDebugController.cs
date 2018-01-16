@@ -59,10 +59,6 @@ namespace oscript.DebugServer
                     DebugCommandEvent.Wait(); // процесс 1скрипт не стартует, пока не получено разрешение от дебагера
 
                     break;
-                case DebugEventType.Continue:
-                    DebugCommandEvent.Reset();
-                    DebugCommandEvent.Wait();
-                    break;
                 default:
                     throw new InvalidOperationException($"event {theEvent} cant't be waited");
             }
