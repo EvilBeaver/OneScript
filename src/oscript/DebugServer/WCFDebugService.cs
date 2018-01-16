@@ -29,10 +29,9 @@ namespace oscript.DebugServer
 
         public MachineInstance Machine { get; set; }
 
-        public WcfDebugService()
+        public WcfDebugService(WcfDebugController controller)
         {
-            Controller = DebugBehavior.GetDebugController() as WcfDebugController;
-            Debug.Assert(Controller != null, "Debug behavior is not created for WCF-debug channel");
+            Controller = controller;
         }
 
         #region WCF Communication methods

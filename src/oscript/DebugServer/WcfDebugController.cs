@@ -22,6 +22,8 @@ namespace oscript.DebugServer
         private ServiceHost _serviceHost;
         private IDebugEventListener _eventChannel;
 
+        private MachineInstance _machine;
+
         public WcfDebugController(int listenerPort)
         {
             _port = listenerPort;
@@ -50,7 +52,9 @@ namespace oscript.DebugServer
             {
                 case DebugEventType.BeginExecution:
 
-                    var host = new ServiceHost(this);
+                    var serviceInstance = new WcfDebugService(this);
+                    serviceInstance.Machine = _machine;
+                    var host = new ServiceHost(serviceInstance);
                     var binding = Binder.GetBinding();
                     host.AddServiceEndpoint(typeof(IDebuggerService), binding, Binder.GetDebuggerUri(_port));
                     _serviceHost = host;
@@ -73,7 +77,13 @@ namespace oscript.DebugServer
             _eventChannel.ProcessExited(exitCode);
             _serviceHost?.Close();
         }
-        
+
+        public override void OnMachineReady(MachineInstance instance)
+        {
+            base.OnMachineReady(instance);
+            _machine = instance;
+        }
+
         protected override void OnMachineStopped(MachineInstance machine, MachineStopReason reason)
         {
             if (!CallbackChannelIsReady())
