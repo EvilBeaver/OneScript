@@ -83,6 +83,15 @@ namespace OneScript.ASPNETHandler
             try
             {
                 _hostedScript = new HostedScriptEngine();
+                // метод настраивает внутренние переменные у SystemGlobalContext
+                if (appSettings["enableEcho"] == "true")
+                    _hostedScript.SetGlobalEnvironment(new ASPNetApplicationHost(), new AspEntryScriptSrc(appSettings["startupScript"] ?? HttpContext.Current.Server.MapPath("~/web.config")));
+                else
+                    _hostedScript.SetGlobalEnvironment(new AspNetNullApplicationHost(), new AspNetNullEntryScriptSrc());
+
+                _hostedScript.Initialize();
+
+
                 // Размещаем oscript.cfg вместе с web.config. Так наверное привычнее
                 _hostedScript.CustomConfig = appSettings["configFilePath"] ?? HttpContext.Current.Server.MapPath("~/oscript.cfg");
                 _hostedScript.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
@@ -128,7 +137,6 @@ namespace OneScript.ASPNETHandler
                             var loaded = _hostedScript.EngineInstance.LoadModuleImage(module);
                             var instance = (IValue)_hostedScript.EngineInstance.NewObject(loaded);
                             _hostedScript.EngineInstance.Environment.SetGlobalProperty(System.IO.Path.GetFileNameWithoutExtension(filePathName), instance);
-
                         }
                         catch (Exception ex)
                         {
@@ -140,14 +148,6 @@ namespace OneScript.ASPNETHandler
                     }
                 }
 
-                // метод настраивает внутренние переменные у SystemGlobalContext
-                if (appSettings["enableEcho"] == "true")
-                    _hostedScript.SetGlobalEnvironment(new ASPNetApplicationHost(), new AspEntryScriptSrc(appSettings["startupScript"] ?? HttpContext.Current.Server.MapPath("~/web.config")));
-                else
-                    _hostedScript.SetGlobalEnvironment(new AspNetNullApplicationHost(), new AspNetNullEntryScriptSrc());
-                
-
-                _hostedScript.Initialize();
             }
             catch (Exception ex)
             {

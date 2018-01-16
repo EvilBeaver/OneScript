@@ -196,9 +196,15 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             // Параметры запроса
             MapImpl queryOptions = new MapImpl();
 
-            for (int i = 0; i < _httpContext.Request.Params.Count; i++)
-                queryOptions.Insert(ValueFactory.Create(_httpContext.Request.Params.GetKey(i))
-                                   , ValueFactory.Create(_httpContext.Request.Params.Get(i))
+            // Изменено для совместимости. в 1С только параметры командной строки
+            // Надо перенести в Контекст
+            //for (int i = 0; i < _httpContext.Request.Params.Count; i++)
+            //    queryOptions.Insert(ValueFactory.Create(_httpContext.Request.Params.GetKey(i))
+            //                       , ValueFactory.Create(_httpContext.Request.Params.Get(i))
+            //                       );
+            for (int i = 0; i < _httpContext.Request.QueryString.Count; i++)
+                queryOptions.Insert(ValueFactory.Create(_httpContext.Request.QueryString.GetKey(i))
+                                   , ValueFactory.Create(_httpContext.Request.QueryString.Get(i))
                                    );
 
             _queryOptions = new FixedMapImpl(queryOptions);
