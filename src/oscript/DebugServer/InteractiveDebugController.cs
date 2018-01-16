@@ -11,19 +11,21 @@ namespace oscript.DebugServer
 {
     internal class InteractiveDebugController : DebugControllerBase
     {
-
         public InteractiveDebugController()
         {
+            DebugFsm = new DebuggerFSM();
             var initialState = new BeforeExecutionState(this);
             var runningState = new RunningState(this);
             var stoppedState = new StoppedState(this);
 
             DebugFsm.AddTransition(initialState, "run", runningState);
-            //DebugFsm.AddTransition(initialState, "help", initialState);
+            DebugFsm.AddTransition(initialState, "help", initialState);
             DebugFsm.AddTransition(initialState, "bp", initialState);
             DebugFsm.AddTransition(initialState, "exit", initialState); // выход пока не проработан
             DebugFsm.AddTransition(runningState, "break", stoppedState);
         }
+
+        public DebuggerFSM DebugFsm { get; }
 
         public override void WaitForDebugEvent(DebugEventType theEvent)
         {

@@ -7,12 +7,6 @@ namespace oscript.DebugServer
     internal abstract class DebugControllerBase : IDebugController
     {
         protected ManualResetEventSlim DebugCommandEvent { get; } = new ManualResetEventSlim();
-        public DebuggerFSM DebugFsm { get; }
-
-        public DebugControllerBase()
-        {
-            DebugFsm = new DebuggerFSM();
-        }
         
         public abstract void WaitForDebugEvent(DebugEventType theEvent);
 

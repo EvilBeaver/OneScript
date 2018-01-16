@@ -56,8 +56,6 @@ namespace oscript.DebugServer
                     _serviceHost = host;
                     host.Open();
 
-
-                    DebugFsm.Start();
                     DebugCommandEvent.Wait(); // процесс 1скрипт не стартует, пока не получено разрешение от дебагера
 
                     break;
