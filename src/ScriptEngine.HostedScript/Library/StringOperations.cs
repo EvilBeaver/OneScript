@@ -49,8 +49,8 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="inputString">Строка, начало которой проверяется на совпадение с подстрокой поиска.</param>
         /// <param name="searchString">Строка, содержащая предполагаемое начало строки. В случае если переданное значение является пустой строкой генерируется исключительная ситуация.</param>
-        [ContextMethod("СтрНачинаетсяС", "StrStartWith")]
-        public bool StrStartWith(string inputString, string searchString)
+        [ContextMethod("СтрНачинаетсяС", "StrStartsWith")]
+        public bool StrStartsWith(string inputString, string searchString)
         {
             bool result = false;
 
@@ -64,6 +64,13 @@ namespace ScriptEngine.HostedScript.Library
             }
 
             return result;
+        }
+
+        [ContextMethod("StrStartWith", IsDeprecated = true, ThrowOnUse = false)]
+        [Obsolete]
+        public bool StrStartWith(string inputString, string searchString)
+        {
+            return StrStartsWith(inputString, searchString);
         }
 
         /// <summary>
