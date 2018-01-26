@@ -105,6 +105,9 @@ namespace ScriptEngine.HostedScript.Library
         public ArrayImpl StrSplit(string inputString, string stringDelimiter, bool includeEmpty = true)
         {
             string[] arrParsed;
+            if (includeEmpty == null)
+                includeEmpty = true;
+            
             if(!string.IsNullOrEmpty(inputString))
             {
                 if(!string.IsNullOrEmpty(stringDelimiter))
