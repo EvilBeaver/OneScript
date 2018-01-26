@@ -965,6 +965,7 @@ namespace ScriptEngine.Machine
             if (!instance.DynamicMethodSignatures)
             {
                 realArgs = new IValue[methInfo.ArgCount];
+                var skippedArg = ValueFactory.CreateInvalidValueMarker();
                 for (int i = 0; i < realArgs.Length; i++)
                 {
                     if (i < argValues.Length)
@@ -973,7 +974,7 @@ namespace ScriptEngine.Machine
                     }
                     else
                     {
-                        realArgs[i] = null;
+                        realArgs[i] = skippedArg;
                     }
                 }
             }

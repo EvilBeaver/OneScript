@@ -7,6 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -385,13 +387,50 @@ namespace ScriptEngine.Machine.Contexts
             });
         }
 
+        private ContextCallableDelegate<TInstance> CreateFunction(System.Reflection.MethodInfo target)
+        {
+            var methodClojure = CreateDelegateExpr(target);
+
+            var instParam = Expression.Parameter(typeof(TInstance),"inst");
+            var argsParam = Expression.Parameter(typeof(IValue[]),"args");
+
+            var argsPass = new List<Expression>();
+            argsPass.Add(instParam);
+            
+            var parameters = target.GetParameters();
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var convertMethod = GetType().GetMethod("ConvertParam",
+                                                        BindingFlags.Static | BindingFlags.NonPublic,
+                                                        null,
+                                                        new Type[] { typeof(IValue) },
+                                                        null)?.MakeGenericMethod(parameters[i].ParameterType);
+                System.Diagnostics.Debug.Assert(convertMethod != null);
+                var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
+                var conversionCall = Expression.Call(convertMethod, indexedArg);
+                argsPass.Add(conversionCall);
+            }
+
+            var methodCall = Expression.Invoke(methodClojure, argsPass);
+            
+            var convertRetMethod = GetType().GetMethod("ConvertReturnValue", BindingFlags.Static | BindingFlags.NonPublic)?.MakeGenericMethod(target.ReturnType);
+            System.Diagnostics.Debug.Assert(convertRetMethod != null);
+            var convertReturnCall = Expression.Call(convertRetMethod, methodCall);
+            var body = convertReturnCall;
+
+            var l = Expression.Lambda<ContextCallableDelegate<TInstance>>(body, instParam, argsParam);
+
+            return l.Compile();
+            
+        }
+
         private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, TRet>(System.Reflection.MethodInfo target)
         {
             var method = (Func<TInstance, T1, T2, T3, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, TRet>), target);
 
             return new ContextCallableDelegate<TInstance>((inst, args) =>
             {
-                return ConvertReturnValue(method(inst, 
+                return ConvertReturnValue(method(inst,
                     ConvertParam<T1>(args[0]),
                     ConvertParam<T2>(args[1]), 
                     ConvertParam<T3>(args[2])));
@@ -483,12 +522,55 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private T ConvertParam<T>(IValue value)
+        private Expression CreateDelegateExpr(System.Reflection.MethodInfo target)
+        {
+            var types = new List<Type>();
+            types.Add(target.DeclaringType);
+            types.AddRange(target.GetParameters().Select(x => x.ParameterType));
+            types.Add(target.ReturnType);
+            var funcType = Expression.GetFuncType(types.ToArray());
+
+            var deleg = target.CreateDelegate(funcType);
+
+            var delegateExpr = Expression.Constant(deleg);
+            var conversion = Expression.Convert(delegateExpr, funcType);
+            
+            var delegateCreator = Expression.Lambda(conversion).Compile();
+            var methodClojure = Expression.Constant(delegateCreator.DynamicInvoke());
+
+            return methodClojure;
+        }
+
+        private object[] CreateDefaultArgs(System.Reflection.MethodInfo target)
+        {
+            var parameters = target.GetParameters();
+            var result = new object[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var p = parameters[i];
+                if (p.HasDefaultValue)
+                {
+                    result[i] = p.DefaultValue;
+                }
+            }
+
+            return result;
+        }
+
+        private static T ConvertParam<T>(IValue value)
         {
             return ContextValuesMarshaller.ConvertParam<T>(value);
         }
 
-        private IValue ConvertReturnValue<TRet>(TRet param)
+        private static T ConvertParam<T>(IValue value, object def)
+        {
+            if (value.DataType == DataType.NotAValidValue)
+                return (T) def;
+
+            return ContextValuesMarshaller.ConvertParam<T>(value);
+        }
+
+        private static IValue ConvertReturnValue<TRet>(TRet param)
         {
             return ContextValuesMarshaller.ConvertReturnValue<TRet>(param);
         }
@@ -498,6 +580,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             public ContextCallableDelegate<TInstance> method;
             public ScriptEngine.Machine.MethodInfo methodInfo;
+            public System.Reflection.MethodInfo nativeMethodInfo;
         }
 
     }
