@@ -457,15 +457,15 @@ namespace ScriptEngine.Compiler
                     
                     if(_lastExtractedLexem.Token != Token.ClosePar)
                         NextToken();
-
-                    if (_previousExtractedLexem.Token == Token.Comma && _lastExtractedLexem.Token == Token.ClosePar)
-                        throw CompilerException.IdentifierExpected();
                 }
                 else
                 {
                     throw CompilerException.TokenExpected(Token.Comma);
                 }
             }
+            
+            if (_previousExtractedLexem.Token == Token.Comma)
+                throw CompilerException.IdentifierExpected();
 
             method.Params = paramsList.ToArray();
  
