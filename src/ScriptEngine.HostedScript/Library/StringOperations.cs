@@ -102,7 +102,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="stringDelimiter">Строка символов, каждый из которых является индивидуальным разделителем.</param>
         /// <param name="includeEmpty">Указывает необходимость включать в результат пустые строки, которые могут образоваться в результате разделения исходной строки. Значение по умолчанию: Истина. </param>
         [ContextMethod("СтрРазделить", "StrSplit")]
-        public ArrayImpl StrSplit(string inputString, string stringDelimiter, bool includeEmpty = true)
+        public ArrayImpl StrSplit(string inputString, string stringDelimiter, bool? includeEmpty = true)
         {
             string[] arrParsed;
             if (includeEmpty == null)
@@ -112,7 +112,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 if(!string.IsNullOrEmpty(stringDelimiter))
                 {
-                    arrParsed = inputString.Split(new string[] { stringDelimiter }, includeEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
+                    arrParsed = inputString.Split(new string[] { stringDelimiter }, (bool) includeEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
                 }
                 else
                 {
