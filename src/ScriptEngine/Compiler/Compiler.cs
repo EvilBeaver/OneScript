@@ -26,6 +26,7 @@ namespace ScriptEngine.Compiler
         private Parser _parser;
         private ICompilerContext _ctx;
         private ModuleImage _module;
+        private Lexem _previousExtractedLexem;
         private Lexem _lastExtractedLexem;
         private bool _inMethodScope = false;
         private bool _isMethodsDefined = false;
@@ -456,6 +457,9 @@ namespace ScriptEngine.Compiler
                     
                     if(_lastExtractedLexem.Token != Token.ClosePar)
                         NextToken();
+
+                    if (_previousExtractedLexem.Token == Token.Comma && _lastExtractedLexem.Token == Token.ClosePar)
+                        throw CompilerException.IdentifierExpected();
                 }
                 else
                 {
@@ -1844,6 +1848,7 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
+                _previousExtractedLexem = _lastExtractedLexem;
                 _lastExtractedLexem = _parser.NextLexem();
             }
             else
