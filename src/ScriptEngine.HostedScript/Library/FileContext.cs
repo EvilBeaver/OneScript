@@ -7,7 +7,10 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
-using Delimon.Win32.IO;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -119,11 +122,11 @@ namespace ScriptEngine.HostedScript.Library
             {
                 File.GetAttributes(FullName);
             }
-            catch (System.IO.FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 return false;
             }
-            catch (System.IO.DirectoryNotFoundException)
+            catch (DirectoryNotFoundException)
             {
                 return false;
             }
@@ -169,9 +172,9 @@ namespace ScriptEngine.HostedScript.Library
             FileSystemInfo entry = new FileInfo(FullName);
 
             if(value)
-                entry.Attributes |= FileAttributes.Hidden;
+                entry.Attributes |= System.IO.FileAttributes.Hidden;
             else
-                entry.Attributes &= ~FileAttributes.Hidden;
+                entry.Attributes &= ~System.IO.FileAttributes.Hidden;
         }
 
         [ContextMethod("УстановитьТолькоЧтение", "SetReadOnly")]
@@ -179,9 +182,9 @@ namespace ScriptEngine.HostedScript.Library
         {
             FileSystemInfo entry = new FileInfo(FullName);
             if (value)
-                entry.Attributes |= FileAttributes.ReadOnly;
+                entry.Attributes |= System.IO.FileAttributes.ReadOnly;
             else
-                entry.Attributes &= ~FileAttributes.ReadOnly;
+                entry.Attributes &= ~System.IO.FileAttributes.ReadOnly;
         }
 
         [ContextMethod("УстановитьВремяИзменения", "SetModificationTime")]

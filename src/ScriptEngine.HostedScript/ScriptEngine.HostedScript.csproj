@@ -21,13 +21,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Include="Delimon.Win32.IO">
-      <HintPath>Delimon.Win32.IO.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-  </ItemGroup>
 
   <PropertyGroup>
     <PackageId>OneScript.StandardLibrary</PackageId>

@@ -8,9 +8,10 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security;
-using Delimon.Win32.IO;
+using System.Text;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -119,7 +120,7 @@ namespace ScriptEngine.HostedScript.Library
                 if (recursive)
                     folders = Directory.GetDirectories(dir).Select(x => new FileContext(x));
 
-                entries = Directory.GetFiles(dir, mask)
+                entries = Directory.EnumerateFileSystemEntries(dir, mask)
                                    .Select(x => new FileContext(x));
             }
             catch (SecurityException)
