@@ -8,10 +8,11 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
-using System.IO;
+//using System.IO;
 using System.Linq;
 using System.Security;
-using System.Text;
+
+using PathTooLong;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -19,6 +20,9 @@ namespace ScriptEngine.HostedScript.Library
     public class FileOperations : GlobalContextBase<FileOperations>
     {
 
+        private static readonly IFileSystemScanner _fileSystemScanner = new FileSystemScanner();
+        private static readonly IFileSystemManager _fileSystemManager = new FileSystemManager();
+        
         /// <summary>
         /// Копирует файл из одного расположения в другое. Перезаписывает приемник, если он существует.
         /// </summary>
@@ -48,7 +52,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("КаталогВременныхФайлов", "TempFilesDir")]
         public string TempFilesDir()
         {
-            return Path.GetTempPath();
+            return System.IO.Path.GetTempPath();
         }
 
         /// <summary>
@@ -60,7 +64,7 @@ namespace ScriptEngine.HostedScript.Library
         public string GetTempFilename(string ext = null)
         {
             // примитивная реализация "в лоб"
-            var fn = Path.GetRandomFileName();
+            var fn = System.IO.Path.GetRandomFileName();
             if (ext != null && !String.IsNullOrWhiteSpace(ext))
             {
                 if(ext[0] == '.')
@@ -69,7 +73,7 @@ namespace ScriptEngine.HostedScript.Library
                     fn += "." + ext;
             }
 
-            return Path.Combine(TempFilesDir(), fn);
+            return System.IO.Path.Combine(TempFilesDir(), fn);
 
         }
 
@@ -96,12 +100,12 @@ namespace ScriptEngine.HostedScript.Library
                     return new ArrayImpl();
                 }
             }
-            else if (File.Exists(dir))
+            else if (_fileSystemScanner.IsFile(dir))
             {
                 return new ArrayImpl();
             }
 
-            if(!Directory.Exists(dir))
+            if(!_fileSystemScanner.IsDirectory(dir))
                 return new ArrayImpl();
 
             var filesFound = FindFilesV8Compatible(dir, mask, recursive);
@@ -118,9 +122,10 @@ namespace ScriptEngine.HostedScript.Library
             try
             {
                 if (recursive)
-                    folders = Directory.GetDirectories(dir).Select(x => new FileContext(x));
+                    folders = ((DirectoryDataSnapshot) _fileSystemScanner.GetFileSystemDataDeep(dir)).Directories.Select(x => new FileContext(x.FullName));
 
-                entries = Directory.EnumerateFileSystemEntries(dir, mask)
+                // TODO: _fileSystemScanner.EnumerateDirectoryContents(dir).Where(data => data) 
+                entries = System.IO.Directory.EnumerateFileSystemEntries(dir, mask)
                                    .Select(x => new FileContext(x));
             }
             catch (SecurityException)
@@ -139,7 +144,7 @@ namespace ScriptEngine.HostedScript.Library
                     try
                     {
                         var attrs = fileFound.GetAttributes();
-                        if (attrs.HasFlag(FileAttributes.ReparsePoint))
+                        if (attrs.HasFlag(System.IO.FileAttributes.ReparsePoint))
                         {
                             collectedFiles.Add(fileFound);
                             continue;
@@ -162,7 +167,7 @@ namespace ScriptEngine.HostedScript.Library
                     try
                     {
                         var attrs = folder.GetAttributes();
-                        if (!attrs.HasFlag(FileAttributes.ReparsePoint))
+                        if (!attrs.HasFlag(System.IO.FileAttributes.ReparsePoint))
                         {
                             collectedFiles.AddRange(FindFilesV8Compatible(folder.FullName, mask, true));
                         }
@@ -193,7 +198,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (mask == null)
             {
-                if (Directory.Exists(path))
+                if (_fileSystemScanner.IsDirectory(path))
                 {
                     System.IO.Directory.Delete(path, true);
                 }
@@ -205,7 +210,7 @@ namespace ScriptEngine.HostedScript.Library
             else
             {
                 // bugfix #419
-                if (!Directory.Exists(path))
+                if (!_fileSystemScanner.IsDirectory(path))
                     return;
 
                 var entries = System.IO.Directory.EnumerateFileSystemEntries(path, mask)
@@ -213,7 +218,7 @@ namespace ScriptEngine.HostedScript.Library
                     .ToArray();
                 foreach (var item in entries)
                 {
-                    System.IO.FileInfo finfo = new System.IO.FileInfo(item);
+                    var finfo = new System.IO.FileInfo(item);
                     if (finfo.Attributes.HasFlag(System.IO.FileAttributes.Directory))
                     {
                         //recursively delete directory
@@ -231,20 +236,20 @@ namespace ScriptEngine.HostedScript.Library
         {
             if (recursive)
             {
-                var subfolders = Directory.GetDirectories(path);
+                var subfolders = _fileSystemScanner.EnumerateDirectoryContents(path).Where(data => data.IsDirectory).Select(data => data.FullName);
                 foreach (var s in subfolders)
                 {
                     DeleteDirectory(s, recursive);
                 }
             }
 
-            var files = Directory.GetFiles(path);
+            var files = _fileSystemScanner.EnumerateDirectoryContents(path).Where(data => !data.IsDirectory).Select(data => data.FullName);
             foreach (var f in files)
             {
-                File.Delete(f);
+                _fileSystemManager.Delete(f);
             }
 
-            Directory.Delete(path);
+            _fileSystemManager.Delete(path);
         }
 
         /// <summary>
@@ -282,7 +287,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьРазделительПути","GetPathSeparator")]
         public string GetPathSeparator()
         {
-            return new string(new char[]{Path.DirectorySeparatorChar});
+            return new string(new char[]{System.IO.Path.DirectorySeparatorChar});
         }
 
         /// <summary>
@@ -312,11 +317,11 @@ namespace ScriptEngine.HostedScript.Library
         public string CombinePath(string path1, string path2, string path3 = null, string path4 = null)
         {
             if (path3 == null)
-                return Path.Combine(path1, path2);
+                return System.IO.Path.Combine(path1, path2);
             else if (path4 == null)
-                return Path.Combine(path1, path2, path3);
+                return System.IO.Path.Combine(path1, path2, path3);
             else
-                return Path.Combine(path1, path2, path3, path4);
+                return System.IO.Path.Combine(path1, path2, path3, path4);
         }
 
         public static IAttachableContext CreateInstance()
