@@ -59,3 +59,5 @@ src/DebugServer/node_modules/
 src/OpenCover
 TestResult.xml
 tests/component/Component.dll
+
+!src/ScriptEngine.HostedScript/Delimon.Win32.IO.dll
