@@ -57,12 +57,7 @@ namespace ScriptEngine
 
         public void UpdateContexts()
         {
-            _machine.Cleanup();
-            foreach (var item in Environment.AttachedContexts)
-            {
-                _machine.AttachContext(item, false);
-            }
-            _machine.ContextsAttached();
+            Environment.LoadMemory(_machine);
         }
 
         private void SetDefaultEnvironmentIfNeeded()

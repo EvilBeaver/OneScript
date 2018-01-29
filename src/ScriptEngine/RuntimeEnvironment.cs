@@ -132,6 +132,15 @@ namespace ScriptEngine
             _objects.Add(context);
         }
 
+        public void LoadMemory(MachineInstance machine)
+        {
+            machine.Cleanup();
+            foreach (var item in AttachedContexts)
+            {
+                machine.AttachContext(item, false);
+            }
+            machine.ContextsAttached();
+        }
     }
 
     public struct UserAddedScript

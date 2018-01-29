@@ -15,7 +15,6 @@ namespace ScriptEngine.Machine.Contexts
     public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable
     {
         private readonly LoadedModule _module;
-        private MachineInstance _machine;
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
@@ -103,12 +102,11 @@ namespace ScriptEngine.Machine.Contexts
 
         protected virtual void OnInstanceCreation()
         {
-            _machine.ExecuteModuleBody(this);
+            MachineInstance.Current.ExecuteModuleBody(this);
         }
 
         public void Initialize(MachineInstance runner)
         {
-            _machine = runner;
             OnInstanceCreation();
         }
 

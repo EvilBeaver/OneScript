@@ -2475,6 +2475,19 @@ namespace ScriptEngine.Machine
             };
         }
 
-        
+        // multithreaded instance
+        [ThreadStatic]
+        private static MachineInstance _currentThreadWorker;
+
+        public static MachineInstance Current
+        {
+            get
+            {
+                if(_currentThreadWorker == null)
+                    _currentThreadWorker = new MachineInstance();
+
+                return _currentThreadWorker;
+            }
+        }
     }
 }
