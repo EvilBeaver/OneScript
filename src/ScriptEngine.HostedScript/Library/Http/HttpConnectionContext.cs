@@ -245,7 +245,6 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             var webRequest = CreateRequest(request.ResourceAddress);
             webRequest.Method = method;
-            webRequest.KeepAlive = false;
             SetRequestHeaders(request, webRequest);
             SetRequestBody(request, webRequest);
 
@@ -298,7 +297,7 @@ namespace ScriptEngine.HostedScript.Library.Http
                 var key = item.Key.AsString();
                 var value = item.Value.AsString();
 
-                switch(key.ToUpperInvariant())
+                switch (key.ToUpperInvariant())
                 {
                     case "CONTENT-TYPE":
                         webRequest.ContentType = value;
@@ -323,7 +322,18 @@ namespace ScriptEngine.HostedScript.Library.Http
                         webRequest.TransferEncoding = value;
                         break;
                     case "CONNECTION":
-                        webRequest.Connection = value;
+                        if (value.Equals("KEEP-ALIVE", StringComparison.OrdinalIgnoreCase))
+                        {
+                            webRequest.KeepAlive = true;
+                        }
+                        else if (value.Equals("CLOSE", StringComparison.OrdinalIgnoreCase))
+                        {
+                            webRequest.KeepAlive = false;
+                        }
+                        else
+                        {
+                            webRequest.Connection = value;
+                        }
                         break;
                     case "DATE":
                         try 
