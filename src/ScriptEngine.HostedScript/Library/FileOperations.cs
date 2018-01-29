@@ -281,7 +281,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьРазделительПути","GetPathSeparator")]
         public string GetPathSeparator()
         {
-            return new string(new char[]{Path.DirectorySeparatorChar});
+            return new string(new char[]{System.IO.Path.DirectorySeparatorChar});
         }
 
         /// <summary>
@@ -311,11 +311,11 @@ namespace ScriptEngine.HostedScript.Library
         public string CombinePath(string path1, string path2, string path3 = null, string path4 = null)
         {
             if (path3 == null)
-                return Path.Combine(path1, path2);
+                return System.IO.Path.Combine(path1, path2);
             else if (path4 == null)
-                return Path.Combine(path1, path2, path3);
+                return System.IO.Path.Combine(path1, path2, path3);
             else
-                return Path.Combine(path1, path2, path3, path4);
+                return System.IO.Path.Combine(path1, path2, path3, path4);
         }
 
         public static IAttachableContext CreateInstance()
