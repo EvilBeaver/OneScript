@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -249,6 +250,16 @@ namespace ScriptEngine.Machine.Contexts
 
             private static InvocationExpression MethodCallExpression(System.Reflection.MethodInfo target, out ParameterExpression instParam, out ParameterExpression argsParam)
             {
+                // For those who dare:
+                // Код ниже формирует следующую лямбду с 2-мя замыканиями realMethodDelegate и defaults:
+                // (inst, args) => 
+                // {
+                //    realMethodDelegate(inst,
+                //        ConvertParam<TypeOfArg1>(args[i], defaults[i]),
+                //        ...
+                //        ConvertParam<TypeOfArgN>(args[i], defaults[i]));
+                // }
+
                 var methodClojure = CreateDelegateExpr(target);
 
                 instParam = Expression.Parameter(typeof(TInstance), "inst");
@@ -258,17 +269,32 @@ namespace ScriptEngine.Machine.Contexts
                 argsPass.Add(instParam);
 
                 var parameters = target.GetParameters();
+                object[] defaultValues = new object[parameters.Length];
+                var defaultsClojure = Expression.Constant(defaultValues);
+
                 for (int i = 0; i < parameters.Length; i++)
                 {
                     var convertMethod = typeof(InternalMethInfo).GetMethod("ConvertParam",
                                             BindingFlags.Static | BindingFlags.NonPublic,
                                             null,
-                                            new Type[] {typeof(IValue)},
+                                            new Type[]
+                                            {
+                                                typeof(IValue),
+                                                typeof(object)
+                                            },
                                             null)?.MakeGenericMethod(parameters[i].ParameterType);
                     System.Diagnostics.Debug.Assert(convertMethod != null);
+
+                    if (parameters[i].HasDefaultValue)
+                    {
+                        defaultValues[i] = parameters[i].DefaultValue;
+                    }
+
                     var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
-                    var conversionCall = Expression.Call(convertMethod, indexedArg);
+                    var defaultArg = Expression.ArrayIndex(defaultsClojure, Expression.Constant(i));
+                    var conversionCall = Expression.Call(convertMethod, indexedArg, defaultArg);
                     argsPass.Add(conversionCall);
+                    
                 }
 
                 var methodCall = Expression.Invoke(methodClojure, argsPass);
