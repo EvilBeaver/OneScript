@@ -407,8 +407,7 @@ namespace ScriptEngine.Compiler
             method.Params = paramsList.ToArray();
  
             #endregion
-
-            NextToken();
+            
             bool isExportedMethod = false;
             if (_lastExtractedLexem.Token == Token.Export)
             {
