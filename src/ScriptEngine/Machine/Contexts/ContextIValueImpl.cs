@@ -79,7 +79,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public string AsString()
         {
-            return ToString();
+            return SystemType.Name;
         }
 
         public IRuntimeContextInstance AsObject()
