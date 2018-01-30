@@ -26,6 +26,7 @@ namespace ScriptEngine.Compiler
         private Parser _parser;
         private ICompilerContext _ctx;
         private ModuleImage _module;
+        private Lexem _previousExtractedLexem;
         private Lexem _lastExtractedLexem;
         private bool _inMethodScope = false;
         private bool _isMethodsDefined = false;
@@ -397,77 +398,16 @@ namespace ScriptEngine.Compiler
             } 
             #endregion
             
-            NextToken();
-
             #region Parameters list
             var paramsList = new List<ParameterDefinition>();
             var methodCtx = new SymbolScope();
 
-            while (_lastExtractedLexem.Token != Token.ClosePar)
-            {
-                var param = new ParameterDefinition();
-                string name;
-
-                if (_lastExtractedLexem.Token == Token.ByValParam)
-                {
-                    param.IsByValue = true;
-                    NextToken();
-                    if (IsUserSymbol(ref _lastExtractedLexem))
-                    {
-                        name = _lastExtractedLexem.Content;
-                    }
-                    else
-                    {
-                        throw CompilerException.IdentifierExpected();
-                    }
-                }
-                else if (IsUserSymbol(ref _lastExtractedLexem))
-                {
-                    param.IsByValue = false;
-                    name = _lastExtractedLexem.Content;
-                }
-                else
-                {
-                    throw CompilerException.UnexpectedOperation();
-                }
-
-                NextToken();
-                if (_lastExtractedLexem.Token == Token.Equal)
-                {
-                    param.HasDefaultValue = true;
-                    NextToken();
-                    if (IsLiteral(ref _lastExtractedLexem))
-                    {
-                        var cd = CreateConstDefinition(ref _lastExtractedLexem);
-                        var num = GetConstNumber(ref cd);
-                        param.DefaultValueIndex = num;
-                        NextToken();
-                    }
-                    else
-                    {
-                        throw CompilerException.UnexpectedOperation();
-                    }
-                }
-
-                if (_lastExtractedLexem.Token == Token.Comma || _lastExtractedLexem.Token == Token.ClosePar)
-                {
-                    paramsList.Add(param);
-                    methodCtx.DefineVariable(name);
-                    
-                    if(_lastExtractedLexem.Token != Token.ClosePar)
-                        NextToken();
-                }
-                else
-                {
-                    throw CompilerException.TokenExpected(Token.Comma);
-                }
-            }
+            BuildMethodParametersList(paramsList, methodCtx);
 
             method.Params = paramsList.ToArray();
  
             #endregion
-
-            NextToken();
+            
             bool isExportedMethod = false;
             if (_lastExtractedLexem.Token == Token.Export)
             {
@@ -523,6 +463,83 @@ namespace ScriptEngine.Compiler
 
             NextToken(); 
             
+        }
+
+        private void BuildMethodParametersList(List<ParameterDefinition> paramsList, SymbolScope methodCtx)
+        {
+            NextToken(); // (
+            while (_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                // [Знач] Идентификатор[= Литерал][,[Знач] Идентификатор[= Литерал]]
+                var param = BuildParameterDefinition();
+
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    paramsList.Add(param);
+                    methodCtx.DefineVariable(param.Name);
+                    NextToken();
+
+                    if (_lastExtractedLexem.Token == Token.ClosePar) // сразу после запятой не можем выйти из цикла, т.к. ждем в этом месте параметр
+                    {
+                        throw CompilerException.IdentifierExpected();
+                    }
+
+                    continue;
+                }
+                
+                paramsList.Add(param);
+                methodCtx.DefineVariable(param.Name);
+            }
+            
+            NextToken(); // )
+        }
+
+        private ParameterDefinition BuildParameterDefinition()
+        {
+            var param = new ParameterDefinition();
+            
+            if (_lastExtractedLexem.Token == Token.ByValParam)
+            {
+                param.IsByValue = true;
+                NextToken();
+                if (IsUserSymbol(ref _lastExtractedLexem))
+                {
+                    param.Name = _lastExtractedLexem.Content;
+                }
+                else
+                {
+                    throw CompilerException.IdentifierExpected();
+                }
+            }
+            else if (IsUserSymbol(ref _lastExtractedLexem))
+            {
+                param.IsByValue = false;
+                param.Name = _lastExtractedLexem.Content;
+            }
+            else
+            {
+                throw CompilerException.IdentifierExpected();
+            }
+
+            NextToken();
+            if (_lastExtractedLexem.Token == Token.Equal)
+            {
+                param.HasDefaultValue = true;
+                NextToken();
+                if (IsLiteral(ref _lastExtractedLexem))
+                {
+                    var cd = CreateConstDefinition(ref _lastExtractedLexem);
+                    var num = GetConstNumber(ref cd);
+                    param.DefaultValueIndex = num;
+                    NextToken();
+                }
+                else
+                {
+                    throw CompilerException.UnexpectedOperation();
+                }
+            }
+
+            return param;
         }
 
         private void DispatchMethodBody()
@@ -1844,6 +1861,7 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
+                _previousExtractedLexem = _lastExtractedLexem;
                 _lastExtractedLexem = _parser.NextLexem();
             }
             else
