@@ -95,7 +95,7 @@ namespace ScriptEngine
 
         internal IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module, "Сценарий");
+            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
             scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
             if (externalContext != null)
             {
