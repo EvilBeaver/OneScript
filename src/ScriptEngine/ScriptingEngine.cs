@@ -16,13 +16,15 @@ namespace ScriptEngine
 {
     public class ScriptingEngine : IDisposable
     {
-        private readonly MachineInstance _machine = new MachineInstance();
+        private readonly MachineInstance _machine;
         private readonly ScriptSourceFactory _scriptFactory;
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
 
         public ScriptingEngine()
         {
+            _machine = MachineInstance.Current;
+
             TypeManager.Initialize(new StandartTypeManager());
             GlobalsManager.Reset();
             ContextDiscoverer.DiscoverClasses(System.Reflection.Assembly.GetExecutingAssembly());
@@ -121,7 +123,7 @@ namespace ScriptEngine
 
         public void InitializeSDO(ScriptDrivenObject sdo)
         {
-            sdo.Initialize(_machine);
+            sdo.Initialize();
         }
 
         public void ExecuteModule(LoadedModuleHandle module)

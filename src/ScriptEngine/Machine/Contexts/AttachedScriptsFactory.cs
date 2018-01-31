@@ -191,7 +191,7 @@ namespace ScriptEngine.Machine.Contexts
             var newObj = new UserScriptContextInstance(module, typeName, arguments);
             newObj.AddProperty("ЭтотОбъект", "ThisObject", newObj);
             newObj.InitOwnData();
-            newObj.Initialize(_instance._engine.Machine);
+            newObj.Initialize();
 
             return newObj;
         }
