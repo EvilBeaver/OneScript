@@ -306,7 +306,7 @@ namespace ScriptEngine.HostedScript.Library
                     if (number < 1 || number > 11)
                         throw new RuntimeException("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
 
-                    if (arguments[number] != null)
+                    if (arguments[number] != null && arguments[number].DataType != DataType.NotAValidValue)
                         return arguments[number].AsString();
                     else
                         return "";
