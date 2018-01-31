@@ -189,7 +189,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="path">Каталог из которого удаляются файлы, или сам файл.</param>
         /// <param name="mask">Маска файлов. Необязательный параметр. Если указан, то первый параметр трактуется, как каталог.</param>
         [ContextMethod("УдалитьФайлы", "DeleteFiles")]
-        public void DeleteFiles(string path, string mask = "")
+        public void DeleteFiles(string path, string mask = null)
         {
             if (mask == null)
             {
