@@ -293,7 +293,7 @@ namespace ScriptEngine.HostedScript.Library
 
             var re = new System.Text.RegularExpressions.Regex(@"(%%)|(%\d+)|(%\D)");
             int matchCount = 0;
-            int passedArgsCount = arguments.Skip(1).Count(x => x != null && x.DataType != DataType.Undefined);
+            int passedArgsCount = arguments.Skip(1).Count(x => x.DataType != DataType.NotAValidValue && x.DataType != DataType.Undefined);
             var result = re.Replace(srcFormat, (m) =>
             {
                 if (m.Groups[1].Success)

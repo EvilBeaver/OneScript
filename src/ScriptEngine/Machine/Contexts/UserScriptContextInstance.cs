@@ -26,6 +26,7 @@ namespace ScriptEngine.Machine.Contexts
         internal UserScriptContextInstance(LoadedModule module) : base(module)
         {
             _module = module;
+            ConstructorParams = new IValue[0];
         }
 
         internal UserScriptContextInstance(LoadedModule module, string asObjectOfType, IValue[] args = null)
