@@ -335,7 +335,7 @@ namespace ScriptEngine.Machine.Contexts
 
             private static T ConvertParam<T>(IValue value, object def)
             {
-                if (value.DataType == DataType.NotAValidValue)
+                if (value == null || value.DataType == DataType.NotAValidValue)
                     return (T)def;
 
                 return ContextValuesMarshaller.ConvertParam<T>(value);

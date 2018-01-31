@@ -1089,7 +1089,6 @@ namespace ScriptEngine.Machine
                 var argValue = factArgs[i];
                 if (argValue.DataType == DataType.NotAValidValue)
                 {
-                    argValue = null;
                     signatureCheck[i] = false;
                 }
                 else
