@@ -15,7 +15,7 @@ using RegExp = System.Text.RegularExpressions;
 namespace ScriptEngine.HostedScript.Library.Regex
 {
     [ContextClass("РегулярноеВыражение", "Regex")]
-    class RegExpImpl : AutoContext<RegExpImpl>
+    public class RegExpImpl : AutoContext<RegExpImpl>
     {
         private RegExp.Regex _regex;
         private readonly string _pattern;
