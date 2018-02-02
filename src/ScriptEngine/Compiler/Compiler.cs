@@ -415,6 +415,8 @@ namespace ScriptEngine.Compiler
                 NextToken();
             }
 
+            method.IsExport = isExportedMethod;
+
             #region Body
             // тело
 
@@ -450,6 +452,7 @@ namespace ScriptEngine.Compiler
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(descriptor);
 
+            // TODO: deprecate?
             if (isExportedMethod)
             {
                 _module.ExportedMethods.Add(new ExportedSymbol()
