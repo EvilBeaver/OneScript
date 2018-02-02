@@ -212,7 +212,7 @@ namespace ScriptEngine.HostedScript.Library
 
             foreach (var methInfo in methods)
             {
-                if (methInfo.IsExport) { continue; }
+                if (!methInfo.IsExport) { continue; }
                 
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(methInfo.Name));

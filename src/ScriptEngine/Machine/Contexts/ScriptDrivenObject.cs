@@ -117,7 +117,7 @@ namespace ScriptEngine.Machine.Contexts
             for (int i = 0; i < _module.Methods.Length; i++)
             {
                 var item = _module.Methods[i];
-                if (item.Signature.IsExport) { continue; }
+                if (!item.Signature.IsExport) { continue; }
                 
                 if (StringComparer.OrdinalIgnoreCase.Compare(item.Signature.Name, methodName) == 0
                     || (alias != null && StringComparer.OrdinalIgnoreCase.Compare(item.Signature.Name, alias) == 0))
