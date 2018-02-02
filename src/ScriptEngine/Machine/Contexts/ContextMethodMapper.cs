@@ -203,6 +203,7 @@ namespace ScriptEngine.Machine.Contexts
 
                 var scriptMethInfo = new ScriptEngine.Machine.MethodInfo();
                 scriptMethInfo.IsFunction = isFunc;
+                scriptMethInfo.IsExport = true;
                 scriptMethInfo.IsDeprecated = binding.IsDeprecated;
                 scriptMethInfo.ThrowOnUseDeprecated = binding.ThrowOnUse;
                 scriptMethInfo.Name = binding.GetName();
