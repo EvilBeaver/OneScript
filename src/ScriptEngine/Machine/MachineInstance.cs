@@ -965,6 +965,7 @@ namespace ScriptEngine.Machine
             if (!instance.DynamicMethodSignatures)
             {
                 realArgs = new IValue[methInfo.ArgCount];
+                var skippedArg = ValueFactory.CreateInvalidValueMarker();
                 for (int i = 0; i < realArgs.Length; i++)
                 {
                     if (i < argValues.Length)
@@ -973,7 +974,7 @@ namespace ScriptEngine.Machine
                     }
                     else
                     {
-                        realArgs[i] = null;
+                        realArgs[i] = skippedArg;
                     }
                 }
             }
@@ -1088,7 +1089,6 @@ namespace ScriptEngine.Machine
                 var argValue = factArgs[i];
                 if (argValue.DataType == DataType.NotAValidValue)
                 {
-                    argValue = null;
                     signatureCheck[i] = false;
                 }
                 else
@@ -2475,6 +2475,19 @@ namespace ScriptEngine.Machine
             };
         }
 
-        
+        // multithreaded instance
+        [ThreadStatic]
+        private static MachineInstance _currentThreadWorker;
+
+        public static MachineInstance Current
+        {
+            get
+            {
+                if(_currentThreadWorker == null)
+                    _currentThreadWorker = new MachineInstance();
+
+                return _currentThreadWorker;
+            }
+        }
     }
 }

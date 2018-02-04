@@ -35,12 +35,11 @@
     </Page>
     <Compile Update="**\*.xaml.cs" SubType="Code" DependentUpon="%(Filename)" />
 	
-	  <!-- Resources -->
-    <EmbeddedResource Update="Properties\Resources.resx" DesignTime="True" AutoGen="True" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
-    <Compile Update="Properties\Resources.Designer.cs" AutoGen="True" DependentUpon="Resources.resx" DesignTime="True" />
-	  <EmbeddedResource Include="Controls\1CV8Syntax.xshd" />
-	  <EmbeddedResource Include="Resources\module_icons.png" />
-    <EmbeddedResource Include="script_badge.ico" />
+    <!-- Resources -->
+    <Resource Include="Controls/1CV8Syntax.xshd" />
+    <Resource Include="Resources/module_icons.png" />
+    <Resource Include="script_badge.ico" />
+    
     <PackageReference Include="AvalonEdit" Version="4.4.2.9744" />
 	
     <!-- Settings -->

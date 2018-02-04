@@ -52,6 +52,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
         }
 
+
         public byte[] Buffer
         {
             get

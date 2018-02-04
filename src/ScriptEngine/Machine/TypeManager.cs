@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
-    interface ITypeManager
+    public interface ITypeManager
     {
         Type GetImplementingClass(int typeId);
         TypeDescriptor GetTypeByName(string name);
@@ -218,6 +218,8 @@ namespace ScriptEngine.Machine
         {
             _instance = instance;
         }
+
+        public static ITypeManager Instance => _instance;
 
         public static Type GetImplementingClass(int typeId)
         {
