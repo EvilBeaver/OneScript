@@ -242,6 +242,7 @@ namespace ScriptEngine.HostedScript.Library
             strTemplateMethodInfo.Name = STRTEMPLATE_NAME_RU;
             strTemplateMethodInfo.Alias = STRTEMPLATE_NAME_EN;
             strTemplateMethodInfo.Params = new ParameterDefinition[11];
+            strTemplateMethodInfo.IsExport = true;
 
             strTemplateMethodInfo.Params[0] = new ParameterDefinition()
             {

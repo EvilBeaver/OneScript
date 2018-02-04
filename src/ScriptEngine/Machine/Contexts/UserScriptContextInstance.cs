@@ -155,7 +155,7 @@ namespace ScriptEngine.Machine.Contexts
         
         public override int GetMethodsCount()
         {
-            return _module.ExportedMethods.Length;
+            return _module.Methods.Length;
         }
         
     }
