@@ -218,14 +218,7 @@ namespace OneScript.ASPNETHandler
 
         public void ProcessRequest(HttpContext context)
         {
-            try
-            {
-                CallScriptHandler(context);
-            }
-            finally
-            {
-                context.Response.End();
-            }
+            CallScriptHandler(context);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -261,6 +254,7 @@ namespace OneScript.ASPNETHandler
             }
 
             context.Response.Charset = response.ContentCharset;
+            context.Response.End();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
