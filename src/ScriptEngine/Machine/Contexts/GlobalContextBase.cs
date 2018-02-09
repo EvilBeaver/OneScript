@@ -98,11 +98,6 @@ namespace ScriptEngine.Machine.Contexts
             return prop.Name;
         }
 
-        public VariableInfo GetPropertyInfo(int propNum)
-        {
-            return _properties.GetPropertyInfo(propNum);
-        }
-
         public virtual int FindMethod(string name)
         {
             return _methods.FindMethod(name);

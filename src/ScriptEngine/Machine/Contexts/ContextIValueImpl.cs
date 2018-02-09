@@ -176,17 +176,6 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual VariableInfo GetPropertyInfo(int propNum)
-        {
-            return new VariableInfo()
-            {
-                Identifier = GetPropName(propNum),
-                CanGet = IsPropReadable(propNum),
-                CanSet = IsPropWritable(propNum),
-                Type = SymbolType.ContextProperty
-            };
-        }
-
         public virtual int GetMethodsCount()
         {
             throw new NotImplementedException();

@@ -246,17 +246,6 @@ namespace oscript
 			throw new InvalidOperationException("global props are not writable");
 		}
 
-		public VariableInfo GetPropertyInfo(int propNum)
-		{
-			return new VariableInfo()
-			{
-				Identifier = GetPropName(propNum),
-				CanGet = IsPropReadable(propNum),
-				CanSet = IsPropWritable(propNum),
-				Index = propNum
-			};
-		}
-
 		public int FindMethod(string name)
 		{
 			return _methods.FindMethod(name);

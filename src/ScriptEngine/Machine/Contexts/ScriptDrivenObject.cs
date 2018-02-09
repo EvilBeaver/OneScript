@@ -353,18 +353,6 @@ namespace ScriptEngine.Machine.Contexts
             
         }
 
-        public VariableInfo GetPropertyInfo(int propNum)
-        {
-            if (PropDefinedInScript(propNum))
-            {
-                return _module.Properties[propNum - VARIABLE_COUNT].Signature;
-            }
-            else
-            {
-                return new VariableInfo(GetPropName(propNum), propNum);
-            }
-        }
-
         public override int GetPropCount()
         {
             return VARIABLE_COUNT + _module.ExportedProperies.Length;

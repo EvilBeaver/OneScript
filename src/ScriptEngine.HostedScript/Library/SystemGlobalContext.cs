@@ -684,11 +684,6 @@ namespace ScriptEngine.HostedScript.Library
             return _propHolder.GetProperties().First(x => x.Value == index).Key;
         }
 
-        public VariableInfo GetPropertyInfo(int propNum)
-        {
-            return _propHolder.GetPropertyInfo(propNum);
-        }
-
         public int FindMethod(string name)
         {
             return _methods.FindMethod(name);

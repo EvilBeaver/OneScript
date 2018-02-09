@@ -335,18 +335,6 @@ namespace ScriptEngine.Compiler
                                 SymbolicName = symbolicName,
                                 Index = definition.CodeIndex
                             });
-                            _module.Properties.Add(new PropertyDescriptor()
-                            {
-                                Signature = new VariableInfo()
-                                {
-                                    Identifier = symbolicName,
-                                    Annotations = annotations,
-                                    CanGet = true,
-                                    CanSet = true,
-                                    Index = definition.CodeIndex
-                                },
-                                Index = definition.CodeIndex
-                            });
                             NextToken();
                         }
                         if (_lastExtractedLexem.Token == Token.Comma)
