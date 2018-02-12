@@ -11,11 +11,7 @@ PREFIX=/usr
 
 all: dist
 
-dist: ${OSCRIPTEXE} lib
-
-lib: ${OSCRIPTEXE}
-	test -d ${LIB_OUTPUTDIR} || mkdir -p ${LIB_OUTPUTDIR}
-	cp -r oscript-library/src/* ${LIB_OUTPUTDIR}
+dist: ${OSCRIPTEXE}
 
 NUGET:
 	nuget restore ${SOLUTION_FILE}
@@ -33,7 +29,7 @@ clean:
 
 ${OPMOS}:
 
-install: install_bin install_lib
+install: install_bin
 
 install_bin:
 	mkdir -p ${PREFIX}/share/oscript/bin
@@ -41,22 +37,11 @@ install_bin:
 	cp install/builders/deb/oscript ${PREFIX}/bin/oscript
 	cp install/builders/deb/oscript-cgi ${PREFIX}/bin/oscript-cgi
 
-install_lib:
-	mkdir -p ${PREFIX}/share/oscript/lib
-	cp -r ${LIB_OUTPUTDIR}/* ${PREFIX}/share/oscript/lib
-	cp install/builders/deb/oscript-opm ${PREFIX}/bin/oscript-opm
-	ln -s ${PREFIX}/bin/oscript-opm ${PREFIX}/bin/opm
-
-uninstall: uninstall_lib uninstall_bin
+uninstall: uninstall_bin
 
 uninstall_bin:
 	rm -rf ${PREFIX}/share/oscript/bin
 	rm ${PREFIX}/bin/oscript
 	rm ${PREFIX}/bin/oscript-cgi
 
-uninstall_lib:
-	rm ${PREFIX}/bin/opm
-	rm ${PREFIX}/bin/oscript-opm
-	rm -rf ${PREFIX}/share/oscript/lib
-
-.PHONY: all install uninstall dist lib clean
+.PHONY: all install uninstall dist clean
