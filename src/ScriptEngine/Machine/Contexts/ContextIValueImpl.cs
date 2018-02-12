@@ -20,7 +20,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                throw new InvalidOperationException("Type is not defined");
+                throw new InvalidOperationException($"Type {GetType()} is not defined");
             }
         }
 
@@ -174,17 +174,6 @@ namespace ScriptEngine.Machine.Contexts
         public virtual string GetPropName(int propNum)
         {
             throw new NotImplementedException();
-        }
-
-        public virtual VariableInfo GetPropertyInfo(int propNum)
-        {
-            return new VariableInfo()
-            {
-                Identifier = GetPropName(propNum),
-                CanGet = IsPropReadable(propNum),
-                CanSet = IsPropWritable(propNum),
-                Type = SymbolType.ContextProperty
-            };
         }
 
         public virtual int GetMethodsCount()

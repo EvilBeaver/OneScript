@@ -65,13 +65,6 @@ namespace ScriptEngine
     }
 
     [Serializable]
-    struct PropertyDescriptor
-    {
-        public VariableInfo Signature;
-        public int Index;
-    }
-
-    [Serializable]
     struct ExportedSymbol
     {
         public string SymbolicName;

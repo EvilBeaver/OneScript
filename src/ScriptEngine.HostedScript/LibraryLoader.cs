@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace ScriptEngine.HostedScript
 {
-    class LibraryLoader : ScriptDrivenObject
+    public class LibraryLoader : ScriptDrivenObject
     {
         private readonly RuntimeEnvironment _env;
         private readonly ScriptingEngine _engine;

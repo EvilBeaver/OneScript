@@ -11,7 +11,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.Binary
 {
-    internal interface IStreamWrapper
+    public interface IStreamWrapper
     {
         Stream GetUnderlyingStream();
 

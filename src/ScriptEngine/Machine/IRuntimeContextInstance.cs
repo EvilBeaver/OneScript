@@ -27,8 +27,7 @@ namespace ScriptEngine.Machine
 
         int GetPropCount();
         string GetPropName(int propNum);
-        VariableInfo GetPropertyInfo(int propNum);
-        
+
         int FindMethod(string name);
         int GetMethodsCount();
         MethodInfo GetMethodInfo(int methodNumber);
@@ -52,12 +51,19 @@ namespace ScriptEngine.Machine
 
         public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextInstance context)
         {
-            for (int i = 0; i < context.GetPropCount(); i++)
+            VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
+            for (int i = 0; i < infos.Length; i++)
             {
-                yield return context.GetPropertyInfo(i);
+                infos[i] = new VariableInfo()
+                {
+                    Identifier = context.GetPropName(i),
+                    Type = SymbolType.ContextProperty,
+                    Index = i
+                };
             }
-        }
 
+            return infos;
+        }
     }
 
 }

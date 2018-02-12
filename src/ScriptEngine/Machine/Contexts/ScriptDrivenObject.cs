@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+﻿﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -353,16 +353,6 @@ namespace ScriptEngine.Machine.Contexts
             
         }
 
-        public VariableInfo GetPropertyInfo(int propNum)
-        {
-            if (PropDefinedInScript(propNum))
-            {
-                var mappedIndex = _module.ExportedProperies[propNum - VARIABLE_COUNT].Index;
-                return _module.Variables[mappedIndex];
-            }
-            return new VariableInfo(GetOwnPropName(propNum), propNum);
-        }
-
         public override int GetPropCount()
         {
             return VARIABLE_COUNT + _module.ExportedProperies.Length;
@@ -370,7 +360,14 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string GetPropName(int propNum)
         {
-            return GetPropertyInfo(propNum).Identifier;
+            if(PropDefinedInScript(propNum))
+            {
+                return _module.ExportedProperies[propNum - VARIABLE_COUNT].SymbolicName;
+            }
+            else
+            {
+                return GetOwnPropName(propNum);
+            }
         }
 
         #endregion

@@ -333,11 +333,6 @@ namespace ScriptEngine.Machine.Contexts
             return _instance.GetPropName(propNum);
         }
 
-        public VariableInfo GetPropertyInfo(int propNum)
-        {
-            return _instance.GetPropertyInfo(propNum);
-        }
-
         public int GetMethodsCount()
         {
             return _instance.GetMethodsCount();
