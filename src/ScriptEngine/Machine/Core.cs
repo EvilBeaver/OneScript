@@ -182,6 +182,7 @@ namespace ScriptEngine.Machine
         public string Name;
         public string Alias;
         public bool IsFunction;
+        public bool IsExport;
         public bool IsDeprecated;
         public bool ThrowOnUseDeprecated;
         public ParameterDefinition[] Params;
@@ -202,6 +203,7 @@ namespace ScriptEngine.Machine
     [Serializable]
     public struct ParameterDefinition
     {
+        public string Name;
         public bool IsByValue;
         public bool HasDefaultValue;
         public int DefaultValueIndex;

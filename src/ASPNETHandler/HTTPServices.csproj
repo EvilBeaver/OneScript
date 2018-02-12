@@ -7,6 +7,9 @@
         <TargetFrameworks>net452</TargetFrameworks>
         <RootNamespace>ASPNETHandler</RootNamespace>
     </PropertyGroup>
+    <ItemGroup>
+      <Compile Remove="AspNetGlobalContextFunctions.cs" />
+    </ItemGroup>
 
     <ItemGroup>
     

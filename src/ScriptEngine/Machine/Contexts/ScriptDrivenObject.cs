@@ -1,4 +1,4 @@
-﻿﻿/*----------------------------------------------------------
+﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -14,7 +14,6 @@ namespace ScriptEngine.Machine.Contexts
     public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable
     {
         private readonly LoadedModule _module;
-        private MachineInstance _machine;
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
@@ -102,12 +101,11 @@ namespace ScriptEngine.Machine.Contexts
 
         protected virtual void OnInstanceCreation()
         {
-            _machine.ExecuteModuleBody(this);
+            MachineInstance.Current.ExecuteModuleBody(this);
         }
 
-        public void Initialize(MachineInstance runner)
+        public void Initialize()
         {
-            _machine = runner;
             OnInstanceCreation();
         }
 
@@ -131,7 +129,7 @@ namespace ScriptEngine.Machine.Contexts
 
         protected IValue CallScriptMethod(int methodIndex, IValue[] parameters)
         {
-            var returnValue = _machine.ExecuteMethod(this, methodIndex, parameters);
+            var returnValue = MachineInstance.Current.ExecuteMethod(this, methodIndex, parameters);
 
             return returnValue;
         }
@@ -198,9 +196,6 @@ namespace ScriptEngine.Machine.Contexts
 
             variables = _state;
             methods = AttachMethods();
-
-            _machine = machine;
-
         }
 
         private MethodInfo[] AttachMethods()
@@ -332,7 +327,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                _machine.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
+                MachineInstance.Current.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
             }
             else
             {
@@ -344,7 +339,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                retValue = _machine.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
+                retValue = MachineInstance.Current.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
             }
             else
             {

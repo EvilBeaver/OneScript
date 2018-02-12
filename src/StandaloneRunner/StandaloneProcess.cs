@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 using oscript;
@@ -23,8 +24,29 @@ namespace StandaloneRunner
     {
         public string[] CommandLineArguments { get; set; }
 
+        private Stream _sourceStream;
+
         public int Run()
         {
+            if (_sourceStream == null && CommandLineArguments != null && CommandLineArguments.Length > 1)
+            {
+                var firstArg = CommandLineArguments[0];
+                if (firstArg == "-loadDump")
+                {
+                    var path = CommandLineArguments[1];
+                    CommandLineArguments = CommandLineArguments.Skip(2).ToArray();
+                    using (var dumpStream = new FileStream(path, FileMode.Open))
+                    {
+                        _sourceStream = GetCodeStream(dumpStream);
+                    }
+                    
+                    Run(); //ну да, говнокод и лапша, время жмет
+                }
+            }
+
+            if (_sourceStream == null)
+                _sourceStream = LocateCode();
+
             var engine = new HostedScriptEngine();
             var src = new BinaryCodeSource();
             engine.SetGlobalEnvironment(this, src);
@@ -34,19 +56,18 @@ namespace StandaloneRunner
                 ScriptModuleHandle module;
                 engine.Initialize();
 
-                using (var codeStream = LocateCode())
-                using (var binReader = new BinaryReader(codeStream))
+                using (var binReader = new BinaryReader(_sourceStream))
                 {
                     var modulesCount = binReader.ReadInt32();
 
                     var reader = new ModulePersistor();
 
-                    var entry = reader.Read(codeStream);
+                    var entry = reader.Read(_sourceStream);
                     --modulesCount;
 
                     while (modulesCount-- > 0)
                     {
-                        var userScript = reader.Read(codeStream);
+                        var userScript = reader.Read(_sourceStream);
                         engine.LoadUserScript(userScript);
                     }
 
@@ -68,30 +89,35 @@ namespace StandaloneRunner
             }
         }
 
+        private Stream GetCodeStream(Stream sourceStream)
+        {
+            const int SIGN_SIZE = 8;
+            sourceStream.Position = sourceStream.Length - SIGN_SIZE;
+            var signature = new byte[SIGN_SIZE];
+            sourceStream.Read(signature, 0, SIGN_SIZE);
+
+            if (signature[0] == 0x4f && signature[1] == 0x53 && signature[2] == 0x4d && signature[3] == 0x44)
+            {
+                var codeOffset = BitConverter.ToInt32(signature, 4);
+                var codeLen = sourceStream.Length - codeOffset - SIGN_SIZE;
+
+                sourceStream.Seek(codeOffset, SeekOrigin.Begin);
+                var code = new byte[codeLen];
+                sourceStream.Read(code, 0, (int)codeLen);
+                var ms = new MemoryStream(code);
+
+                return ms;
+            }
+
+            throw new InvalidOperationException("No module found");
+        }
+
         private Stream LocateCode()
         {
             var fileName = Assembly.GetExecutingAssembly().Location;
             using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
-                const int SIGN_SIZE = 8;
-                fs.Position = fs.Length - SIGN_SIZE;
-                var signature = new byte[SIGN_SIZE];
-                fs.Read(signature, 0, SIGN_SIZE);
-
-                if (signature[0] == 0x4f && signature[1] == 0x53 && signature[2] == 0x4d && signature[3] == 0x44)
-                {
-                    var codeOffset = BitConverter.ToInt32(signature, 4);
-                    var codeLen = fs.Length - codeOffset - SIGN_SIZE;
-
-                    fs.Seek(codeOffset, SeekOrigin.Begin);
-                    var code = new byte[codeLen];
-                    fs.Read(code, 0, (int)codeLen);
-                    var ms = new MemoryStream(code);
-
-                    return ms;
-                }
-
-                throw new InvalidOperationException("No module found");
+                return GetCodeStream(fs);
             }
         }
 

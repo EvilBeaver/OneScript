@@ -7,6 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -87,19 +90,19 @@ namespace ScriptEngine.Machine.Contexts
         public ContextCallableDelegate<TInstance> GetMethod(int number)
         {
             Init();
-            return _methodPtrs[number].method;
+            return _methodPtrs[number].Method;
         }
 
         public ScriptEngine.Machine.MethodInfo GetMethodInfo(int number)
         {
             Init();
-            return _methodPtrs[number].methodInfo;
+            return _methodPtrs[number].MethodInfo;
         }
 
         public IEnumerable<MethodInfo> GetMethods()
         {
             Init();
-            return _methodPtrs.Select(x => x.methodInfo);
+            return _methodPtrs.Select(x => x.MethodInfo);
         }
 
         public int FindMethod(string name)
@@ -112,8 +115,8 @@ namespace ScriptEngine.Machine.Contexts
             // Надо будет понаблюдать или вообще замерить
             //
             var idx = _methodPtrs.FindIndex(x => 
-                String.Compare(x.methodInfo.Name, name, StringComparison.OrdinalIgnoreCase) == 0 
-                || String.Compare(x.methodInfo.Alias, name, StringComparison.OrdinalIgnoreCase) == 0 );
+                String.Compare(x.MethodInfo.Name, name, StringComparison.OrdinalIgnoreCase) == 0 
+                || String.Compare(x.MethodInfo.Alias, name, StringComparison.OrdinalIgnoreCase) == 0 );
             if (idx < 0)
             {
                 throw RuntimeException.MethodNotFoundException(name);
@@ -130,374 +133,219 @@ namespace ScriptEngine.Machine.Contexts
                 return _methodPtrs.Count;
             }
         }
-
+        
         private void MapType(Type type)
         {
             var methods = type.GetMethods()
                 .SelectMany(method => method.GetCustomAttributes(typeof(ContextMethodAttribute), false)
                     .Select(attr => new {
                         Method = method,
-                        Binding = (ContextMethodAttribute) attr
+                        Binding = (ContextMethodAttribute)attr
                     })
                 );
-            
+
             foreach (var item in methods)
             {
-                const int MAX_ARG_SUPPORTED = 8;
-                var parameters = item.Method.GetParameters();
-                var paramTypes = parameters.Select(x=>x.ParameterType).ToList();
-                var isFunc = item.Method.ReturnType != typeof(void);
-                if (isFunc)
+                _methodPtrs.Add(new InternalMethInfo(item.Method, item.Binding));
+            }
+        }
+        
+        private class InternalMethInfo
+        {
+            private readonly Lazy<ContextCallableDelegate<TInstance>> _method;
+            public MethodInfo MethodInfo { get; }
+
+            public InternalMethInfo(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
+            {
+                _method = new Lazy<ContextCallableDelegate<TInstance>>(()=>
                 {
-                    paramTypes.Add(item.Method.ReturnType);
-                }
-                var argNum = paramTypes.Count;
-                
-                if (argNum <= MAX_ARG_SUPPORTED)
-                {
-                    var action = ResolveGeneric(argNum, paramTypes.ToArray(), isFunc);
-                    var methPtr = (ContextCallableDelegate<TInstance>)action.Invoke(this, new object[] { item.Method });
+                    var isFunc = target.ReturnType != typeof(void);
+                    return isFunc ? CreateFunction(target) : CreateProcedure(target);
+                });
 
-                    if (isFunc)
-                        argNum--;
-
-                    var paramDefs = new ParameterDefinition[argNum];
-                    for (int i = 0; i < argNum; i++)
-                    {
-                        var pd = new ParameterDefinition();
-                        if (parameters[i].GetCustomAttributes(typeof(ByRefAttribute), false).Length != 0)
-                        {
-                            if (paramTypes[i] != typeof(IVariable))
-                            {
-                                throw new InvalidOperationException("Attribute ByRef can be applied only on IVariable parameters");
-                            }
-                            pd.IsByValue = false;
-                        }
-                        else
-                        {
-                            pd.IsByValue = true;
-                        }
-
-                        if (parameters[i].IsOptional)
-                        {
-                            pd.HasDefaultValue = true;
-                            pd.DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX;
-                        }
-                        
-                        paramDefs[i] = pd;
-
-                    }
-
-                    var scriptMethInfo = new ScriptEngine.Machine.MethodInfo();
-                    scriptMethInfo.IsFunction = isFunc;
-                    scriptMethInfo.IsDeprecated = item.Binding.IsDeprecated;
-                    scriptMethInfo.ThrowOnUseDeprecated = item.Binding.ThrowOnUse;
-                    scriptMethInfo.Name = item.Binding.GetName();
-                    scriptMethInfo.Alias = item.Binding.GetAlias(item.Method.Name);
-
-                    scriptMethInfo.Params = paramDefs;
-
-                    _methodPtrs.Add(new InternalMethInfo()
-                    {
-                        method = methPtr,
-                        methodInfo = scriptMethInfo
-                    });
-
-                }
-                else
-                    throw new NotSupportedException(string.Format("Only {0} parameters supported", MAX_ARG_SUPPORTED));
-                
+                MethodInfo = CreateMetadata(target, binding);
             }
 
-        }
+            public ContextCallableDelegate<TInstance> Method => _method.Value;
 
-        private System.Reflection.MethodInfo ResolveGeneric(int argNum, Type[] typeArgs, bool asFunc)
-        {
-            string methName = asFunc ? "CreateFunction" : "CreateAction";
-            
-            var method = this.GetType().GetMembers(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                    .Where(x => x.MemberType == System.Reflection.MemberTypes.Method && x.Name == methName)
-                    .Select(x => (System.Reflection.MethodInfo)x)
-                    .Where(x => x.GetGenericArguments().Length == argNum)
-                    .First();
+            private static MethodInfo CreateMetadata(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
+            {
+                var parameters = target.GetParameters();
+                var isFunc = target.ReturnType != typeof(void);
+                var argNum = parameters.Length;
 
-            if (argNum > 0)
-                return method.MakeGenericMethod(typeArgs);
-            else
-                return method;
-
-        }
-
-        private ContextCallableDelegate<TInstance> CreateAction(System.Reflection.MethodInfo target)
-        {
-            var method = (Action<TInstance>)Delegate.CreateDelegate(typeof(Action<TInstance>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) => 
+                var paramDefs = new ParameterDefinition[argNum];
+                for (int i = 0; i < argNum; i++)
                 {
-                    method(inst);
-                    return null;
-                });
+                    var pd = new ParameterDefinition();
+                    if (parameters[i].GetCustomAttributes(typeof(ByRefAttribute), false).Length != 0)
+                    {
+                        if (parameters[i].ParameterType != typeof(IVariable))
+                        {
+                            throw new InvalidOperationException("Attribute ByRef can be applied only on IVariable parameters");
+                        }
+                        pd.IsByValue = false;
+                    }
+                    else
+                    {
+                        pd.IsByValue = true;
+                    }
+
+                    if (parameters[i].IsOptional)
+                    {
+                        pd.HasDefaultValue = true;
+                        pd.DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX;
+                    }
+
+                    paramDefs[i] = pd;
+
+                }
+
+                var scriptMethInfo = new ScriptEngine.Machine.MethodInfo();
+                scriptMethInfo.IsFunction = isFunc;
+                scriptMethInfo.IsExport = true;
+                scriptMethInfo.IsDeprecated = binding.IsDeprecated;
+                scriptMethInfo.ThrowOnUseDeprecated = binding.ThrowOnUse;
+                scriptMethInfo.Name = binding.GetName();
+                scriptMethInfo.Alias = binding.GetAlias(target.Name);
+
+                scriptMethInfo.Params = paramDefs;
+
+                return scriptMethInfo;
+            }
+
+            private static ContextCallableDelegate<TInstance> CreateFunction(System.Reflection.MethodInfo target)
+            {
+                var methodCall = MethodCallExpression(target, out var instParam, out var argsParam);
+
+                var convertRetMethod = typeof(InternalMethInfo).GetMethod("ConvertReturnValue", BindingFlags.Static | BindingFlags.NonPublic)?.MakeGenericMethod(target.ReturnType);
+                System.Diagnostics.Debug.Assert(convertRetMethod != null);
+                var convertReturnCall = Expression.Call(convertRetMethod, methodCall);
+                var body = convertReturnCall;
+
+                var l = Expression.Lambda<ContextCallableDelegate<TInstance>>(body, instParam, argsParam);
+
+                return l.Compile();
+
+            }
+            private static ContextCallableDelegate<TInstance> CreateProcedure(System.Reflection.MethodInfo target)
+            {
+                var methodCall = MethodCallExpression(target, out var instParam, out var argsParam);
+                var returnLabel = Expression.Label(typeof(IValue));
+                var defaultValue = Expression.Constant(null, typeof(IValue));
+                var returnExpr = Expression.Return(
+                    returnLabel,
+                    defaultValue,
+                    typeof(IValue)
+                );
+
+                var body = Expression.Block(
+                    methodCall, 
+                    returnExpr,
+                    Expression.Label(returnLabel, defaultValue)
+                    );
+
+                var l = Expression.Lambda<ContextCallableDelegate<TInstance>>(body, instParam, argsParam);
+                return l.Compile();
+            }
+
+            private static InvocationExpression MethodCallExpression(System.Reflection.MethodInfo target, out ParameterExpression instParam, out ParameterExpression argsParam)
+            {
+                // For those who dare:
+                // Код ниже формирует следующую лямбду с 2-мя замыканиями realMethodDelegate и defaults:
+                // (inst, args) => 
+                // {
+                //    realMethodDelegate(inst,
+                //        ConvertParam<TypeOfArg1>(args[i], defaults[i]),
+                //        ...
+                //        ConvertParam<TypeOfArgN>(args[i], defaults[i]));
+                // }
+
+                var methodClojure = CreateDelegateExpr(target);
+
+                instParam = Expression.Parameter(typeof(TInstance), "inst");
+                argsParam = Expression.Parameter(typeof(IValue[]), "args");
+
+                var argsPass = new List<Expression>();
+                argsPass.Add(instParam);
+
+                var parameters = target.GetParameters();
+                object[] defaultValues = new object[parameters.Length];
+                var defaultsClojure = Expression.Constant(defaultValues);
+
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    var convertMethod = typeof(InternalMethInfo).GetMethod("ConvertParam",
+                                            BindingFlags.Static | BindingFlags.NonPublic,
+                                            null,
+                                            new Type[]
+                                            {
+                                                typeof(IValue),
+                                                typeof(object)
+                                            },
+                                            null)?.MakeGenericMethod(parameters[i].ParameterType);
+                    System.Diagnostics.Debug.Assert(convertMethod != null);
+
+                    if (parameters[i].HasDefaultValue)
+                    {
+                        defaultValues[i] = parameters[i].DefaultValue;
+                    }
+
+                    var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
+                    var defaultArg = Expression.ArrayIndex(defaultsClojure, Expression.Constant(i));
+                    var conversionCall = Expression.Call(convertMethod, indexedArg, defaultArg);
+                    argsPass.Add(conversionCall);
+                    
+                }
+
+                var methodCall = Expression.Invoke(methodClojure, argsPass);
+                return methodCall;
+            }
+
+            private static Expression CreateDelegateExpr(System.Reflection.MethodInfo target)
+            {
+                var types = new List<Type>();
+                types.Add(target.DeclaringType);
+                types.AddRange(target.GetParameters().Select(x => x.ParameterType));
+                Type delegateType;
+                if (target.ReturnType == typeof(void))
+                {
+                    delegateType = Expression.GetActionType(types.ToArray());
+                }
+                else
+                {
+                    types.Add(target.ReturnType);
+                    delegateType = Expression.GetFuncType(types.ToArray());
+                }
                 
-        }
+                var deleg = target.CreateDelegate(delegateType);
 
-        private ContextCallableDelegate<TInstance> CreateAction<T>(System.Reflection.MethodInfo target)
-        {
-            var method = (Action<TInstance, T>)Delegate.CreateDelegate(typeof(Action<TInstance, T>), target);
+                var delegateExpr = Expression.Constant(deleg);
+                var conversion = Expression.Convert(delegateExpr, delegateType);
 
-            return new ContextCallableDelegate<TInstance>((inst, args) => 
-                {
-                    method(inst, ConvertParam<T>(args[0]));
-                    return null;
-                });
-        }
+                var delegateCreator = Expression.Lambda(conversion).Compile();
+                var methodClojure = Expression.Constant(delegateCreator.DynamicInvoke());
 
-        private ContextCallableDelegate<TInstance> CreateAction<T1, T2>(System.Reflection.MethodInfo target)
-        {
-            var method = (Action<TInstance, T1, T2>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2>), target);
+                return methodClojure;
+            }
 
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            private static T ConvertParam<T>(IValue value)
             {
-                method(inst, ConvertParam<T1>(args[0]), ConvertParam<T2>(args[1]));
-                return null;
-            });
-        }
+                return ContextValuesMarshaller.ConvertParam<T>(value);
+            }
 
-        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3>(System.Reflection.MethodInfo target)
-        {
-            var method = (Action<TInstance, T1, T2, T3>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2, T3>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            private static T ConvertParam<T>(IValue value, object def)
             {
-                method(inst, ConvertParam<T1>(args[0]), ConvertParam<T2>(args[1]), ConvertParam<T3>(args[2]));
-                return null;
-            });
-        }
+                if (value == null || value.DataType == DataType.NotAValidValue)
+                    return (T)def;
 
-        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3, T4>(System.Reflection.MethodInfo target)
-        {
-            var method = (Action<TInstance, T1,T2,T3,T4>)Delegate.CreateDelegate(typeof(Action<TInstance, T1,T2,T3,T4>), target);
+                return ContextValuesMarshaller.ConvertParam<T>(value);
+            }
 
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
+            private static IValue ConvertReturnValue<TRet>(TRet param)
             {
-                method(inst, ConvertParam<T1>(args[0]), ConvertParam<T2>(args[1]), ConvertParam<T3>(args[2]), ConvertParam<T4>(args[3]));
-                return null;
-            });
-        }
-
-        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3, T4, T5>(System.Reflection.MethodInfo target)
-        {
-            var method = (Action<TInstance, T1, T2, T3, T4, T5>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2, T3, T4, T5>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                method(inst, 
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]),
-                    ConvertParam<T3>(args[2]),
-                    ConvertParam<T4>(args[3]),
-                    ConvertParam<T5>(args[4]));
-                return null;
-            });
-        }
-
-        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3, T4, T5, T6>(System.Reflection.MethodInfo target)
-        {
-            var method = (Action<TInstance, T1, T2, T3, T4, T5, T6>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2, T3, T4, T5, T6>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                method(inst,
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]),
-                    ConvertParam<T3>(args[2]),
-                    ConvertParam<T4>(args[3]),
-                    ConvertParam<T5>(args[4]),
-                    ConvertParam<T6>(args[5]));
-                return null;
-            });
-        }
-
-        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3, T4, T5, T6, T7>(System.Reflection.MethodInfo target)
-        {
-            var method = (Action<TInstance, T1, T2, T3, T4, T5, T6, T7>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2, T3, T4, T5, T6, T7>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                method(inst,
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]),
-                    ConvertParam<T3>(args[2]),
-                    ConvertParam<T4>(args[3]),
-                    ConvertParam<T5>(args[4]),
-                    ConvertParam<T6>(args[5]),
-                    ConvertParam<T7>(args[6]));
-                return null;
-            });
-        }
-
-        private ContextCallableDelegate<TInstance> CreateAction<T1, T2, T3, T4, T5, T6, T7, T8>(System.Reflection.MethodInfo target)
-        {
-            var method = (Action<TInstance, T1, T2, T3, T4, T5, T6, T7, T8>)Delegate.CreateDelegate(typeof(Action<TInstance, T1, T2, T3, T4, T5, T6, T7, T8>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                method(inst,
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]),
-                    ConvertParam<T3>(args[2]),
-                    ConvertParam<T4>(args[3]),
-                    ConvertParam<T5>(args[4]),
-                    ConvertParam<T6>(args[5]),
-                    ConvertParam<T7>(args[6]),
-                    ConvertParam<T8>(args[7]));
-                return null;
-            });
-        }
-
-        private ContextCallableDelegate<TInstance> CreateFunction<TRet>(System.Reflection.MethodInfo target)
-        {
-            var method = (Func<TInstance, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, TRet>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                return ConvertReturnValue(method(inst));
-            });
-
-        }
-
-        private ContextCallableDelegate<TInstance> CreateFunction<T, TRet>(System.Reflection.MethodInfo target)
-        {
-            var method = (Func<TInstance, T, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T, TRet>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                return ConvertReturnValue(method(inst, ConvertParam<T>(args[0])));
-            });
-        }
-
-        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, TRet>(System.Reflection.MethodInfo target)
-        {
-            var method = (Func<TInstance, T1, T2, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, TRet>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                return ConvertReturnValue(method(inst, ConvertParam<T1>(args[0]), ConvertParam<T2>(args[1])));
-            });
-        }
-
-        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, TRet>(System.Reflection.MethodInfo target)
-        {
-            var method = (Func<TInstance, T1, T2, T3, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, TRet>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                return ConvertReturnValue(method(inst, 
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]), 
-                    ConvertParam<T3>(args[2])));
-            });
-        }
-
-        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, T4, TRet>(System.Reflection.MethodInfo target)
-        {
-            var method = (Func<TInstance, T1, T2, T3, T4, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, T4, TRet>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                return ConvertReturnValue(method(inst, 
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]),
-                    ConvertParam<T3>(args[2]), 
-                    ConvertParam<T4>(args[3])));
-            });
-
-        }
-
-        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, T4, T5, TRet>(System.Reflection.MethodInfo target)
-        {
-            var method = (Func<TInstance, T1, T2, T3, T4, T5, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, T4, T5, TRet>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                return ConvertReturnValue(method(inst,
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]),
-                    ConvertParam<T3>(args[2]),
-                    ConvertParam<T4>(args[3]),
-                    ConvertParam<T5>(args[4])));
-            });
-
-        }
-
-        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, T4, T5, T6, TRet>(System.Reflection.MethodInfo target)
-        {
-            var method = (Func<TInstance, T1, T2, T3, T4, T5, T6, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, T4, T5, T6, TRet>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                return ConvertReturnValue(method(inst,
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]),
-                    ConvertParam<T3>(args[2]),
-                    ConvertParam<T4>(args[3]),
-                    ConvertParam<T5>(args[4]),
-                    ConvertParam<T6>(args[5])));
-            });
-
-        }
-
-        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, T4, T5, T6, T7, TRet>(System.Reflection.MethodInfo target)
-        {
-            var method = (Func<TInstance, T1, T2, T3, T4, T5, T6, T7, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, T4, T5, T6, T7, TRet>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                return ConvertReturnValue(method(inst,
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]),
-                    ConvertParam<T3>(args[2]),
-                    ConvertParam<T4>(args[3]),
-                    ConvertParam<T5>(args[4]),
-                    ConvertParam<T6>(args[5]),
-                    ConvertParam<T7>(args[6])));
-            });
-
-        }
-
-        private ContextCallableDelegate<TInstance> CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, TRet>(System.Reflection.MethodInfo target)
-        {
-            var method = (Func<TInstance, T1, T2, T3, T4, T5, T6, T7, T8, TRet>)Delegate.CreateDelegate(typeof(Func<TInstance, T1, T2, T3, T4, T5, T6, T7, T8, TRet>), target);
-
-            return new ContextCallableDelegate<TInstance>((inst, args) =>
-            {
-                return ConvertReturnValue(method(inst,
-                    ConvertParam<T1>(args[0]),
-                    ConvertParam<T2>(args[1]),
-                    ConvertParam<T3>(args[2]),
-                    ConvertParam<T4>(args[3]),
-                    ConvertParam<T5>(args[4]),
-                    ConvertParam<T6>(args[5]),
-                    ConvertParam<T7>(args[6]),
-                    ConvertParam<T8>(args[7])));
-            });
-
-        }
-
-        private T ConvertParam<T>(IValue value)
-        {
-            return ContextValuesMarshaller.ConvertParam<T>(value);
-        }
-
-        private IValue ConvertReturnValue<TRet>(TRet param)
-        {
-            return ContextValuesMarshaller.ConvertReturnValue<TRet>(param);
-        }
-
-
-        private struct InternalMethInfo
-        {
-            public ContextCallableDelegate<TInstance> method;
-            public ScriptEngine.Machine.MethodInfo methodInfo;
+                return ContextValuesMarshaller.ConvertReturnValue<TRet>(param);
+            }
         }
 
     }

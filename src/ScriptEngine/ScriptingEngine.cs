@@ -16,13 +16,15 @@ namespace ScriptEngine
 {
     public class ScriptingEngine : IDisposable
     {
-        private readonly MachineInstance _machine = new MachineInstance();
+        private readonly MachineInstance _machine;
         private readonly ScriptSourceFactory _scriptFactory;
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
 
         public ScriptingEngine()
         {
+            _machine = MachineInstance.Current;
+
             TypeManager.Initialize(new StandartTypeManager());
             GlobalsManager.Reset();
             ContextDiscoverer.DiscoverClasses(System.Reflection.Assembly.GetExecutingAssembly());
@@ -57,12 +59,7 @@ namespace ScriptEngine
 
         public void UpdateContexts()
         {
-            _machine.Cleanup();
-            foreach (var item in Environment.AttachedContexts)
-            {
-                _machine.AttachContext(item, false);
-            }
-            _machine.ContextsAttached();
+            Environment.LoadMemory(_machine);
         }
 
         private void SetDefaultEnvironmentIfNeeded()
@@ -98,7 +95,7 @@ namespace ScriptEngine
 
         internal IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module, "Сценарий");
+            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
             scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
             if (externalContext != null)
             {
@@ -126,7 +123,7 @@ namespace ScriptEngine
 
         public void InitializeSDO(ScriptDrivenObject sdo)
         {
-            sdo.Initialize(_machine);
+            sdo.Initialize();
         }
 
         public void ExecuteModule(LoadedModuleHandle module)

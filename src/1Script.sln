@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.csproj", "{4585BA5D-9EC4-4C89-8250-2033D2AC2999}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -22,7 +22,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D14BF321-348C-46B8-B96A-43A22BA7AC10}"
 	ProjectSection(SolutionItems) = preProject
 		..\Build.csproj = ..\Build.csproj
-		..\BuildAll.csproj = ..\BuildAll.csproj
 		oscommon.targets = oscommon.targets
 	EndProjectSection
 EndProject
@@ -46,7 +45,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oscriptTests", "oscriptTest
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{91059C5B-526C-4B81-B106-99DEFF542D1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HTTPServices", "ASPNETHandler\HTTPServices.csproj", "{B7CD7F52-E387-490E-8F77-E1FB060401B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HTTPServices", "ASPNETHandler\HTTPServices.csproj", "{B7CD7F52-E387-490E-8F77-E1FB060401B5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebApp", "TestWebApp\TestWebApp.csproj", "{6DE97986-8304-45AE-BD47-63A5563F9C3A}"
 EndProject
@@ -88,14 +87,12 @@ Global
 		{BBE794A6-B159-422F-B655-B7F03F25F223}.Release|x86.ActiveCfg = Release|x86
 		{BBE794A6-B159-422F-B655-B7F03F25F223}.ReleaseNetStandard|x86.ActiveCfg = Release|x86
 		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|x86.Build.0 = Debug|Any CPU
 		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|x86.ActiveCfg = Release|Any CPU
 		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.ReleaseNetStandard|x86.ActiveCfg = Release|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Release|x86.ActiveCfg = Release|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.ReleaseNetStandard|x86.ActiveCfg = Release|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C979F151-AA29-47E4-B020-3039BA0986D9}.Debug|x86.Build.0 = Debug|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|x86.ActiveCfg = Release|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.Release|x86.Build.0 = Release|Any CPU
 		{C979F151-AA29-47E4-B020-3039BA0986D9}.ReleaseNetStandard|x86.ActiveCfg = Release|Any CPU
@@ -116,6 +113,7 @@ Global
 		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Release|x86.ActiveCfg = Release|Any CPU
 		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.ReleaseNetStandard|x86.ActiveCfg = Release|Any CPU
+		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.ReleaseNetStandard|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

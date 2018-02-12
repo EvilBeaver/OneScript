@@ -157,7 +157,6 @@ pipeline {
             agent { label 'windows' }
 
             environment {
-                NugetPath = "${tool 'nuget'}"
                 InnoSetupPath = "${tool 'InnoSetup'}"
             }
             
@@ -169,7 +168,16 @@ pipeline {
                     }
                     
                     unstash 'buildResults'
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions"
+                    script
+                    {
+                        if (env.BRANCH_NAME == "preview") {
+                            echo 'Building preview'
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions /p:Suffix=-pre%BUILD_NUMBER%"
+                        }
+                        else{
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions"
+                        }
+                    }
                     archiveArtifacts artifacts: 'built/**', fingerprint: true
                     stash includes: 'built/**', name: 'winDist'
                 }
