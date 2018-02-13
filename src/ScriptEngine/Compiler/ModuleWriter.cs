@@ -84,6 +84,27 @@ namespace ScriptEngine.Compiler
             }
         }
 
+        private void WriteAnnotationsList(TextWriter output, AnnotationDefinition[] annotations)
+        {
+            output.WriteLine(".annotations [");
+            foreach (var annotation in annotations)
+            {
+                output.Write(" {0}", annotation.Name);
+                if (annotation.ParamCount != 0)
+                {
+                    var delimiter = ": ";
+                    foreach (var parameter in annotation.Parameters)
+                    {
+                        output.Write(delimiter);
+                        output.Write(parameter);
+                        delimiter = ", ";
+                    }
+                }
+                output.WriteLine("");
+            }
+            output.WriteLine("]");
+        }
+
         private void WriteMethodDefinition(TextWriter output, MethodDescriptor item)
         {
             output.Write(item.Signature.IsFunction ? "Func " : "Proc ");
@@ -91,15 +112,19 @@ namespace ScriptEngine.Compiler
                 item.Signature.Name,
                 item.EntryPoint,
                 item.Variables.Count));
-            output.Write(string.Format(".args {0}\n", item.Signature.ArgCount));
+            if (item.Signature.AnnotationsCount != 0)
+            {
+                WriteAnnotationsList(output, item.Signature.Annotations);
+            }
+            output.Write(".args {0}\n", item.Signature.ArgCount);
             if (item.Signature.Params != null)
             {
                 for (int i = 0; i < item.Signature.Params.Length; i++)
                 {
-                    output.Write(string.Format("{0,-3}: ByVal={1}", i, item.Signature.Params[i].IsByValue.ToString()));
+                    output.Write("{0,-3}: ByVal={1}", i, item.Signature.Params[i].IsByValue);
                     if (item.Signature.Params[i].HasDefaultValue)
                     {
-                        output.Write(string.Format(" defValue: {0}\n", item.Signature.Params[i].DefaultValueIndex));
+                        output.Write(" defValue: {0}\n", item.Signature.Params[i].DefaultValueIndex);
                     }
                     else
                     {

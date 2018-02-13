@@ -104,8 +104,12 @@ namespace ScriptEngine.Machine
             for (int i = 0; i < arguments.Length; i++)
             {
                 if (arguments[i] is IVariable)
-                    _currentFrame.Locals[i] = Variable.CreateReference((IVariable)arguments[i], method.Variables[i]);
-                else if(arguments[i] == null)
+                {
+                    // TODO: Alias ?
+                    _currentFrame.Locals[i] =
+                        Variable.CreateReference((IVariable) arguments[i], method.Variables[i].Identifier);
+                }
+                else if (arguments[i] == null)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
                 else
                     _currentFrame.Locals[i] = Variable.Create(arguments[i], method.Variables[i]);
@@ -902,7 +906,9 @@ namespace ScriptEngine.Machine
                                 }
                                 else
                                 {
-                                    frame.Locals[i] = Variable.CreateReference((IVariable)argValues[i], methDescr.Variables[i]);
+                                    // TODO: Alias ?
+                                    frame.Locals[i] = Variable.CreateReference((IVariable) argValues[i],
+                                        methDescr.Variables[i].Identifier);
                                 }
                             }
                             else if (argValues[i] == null)

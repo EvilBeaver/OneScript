@@ -5,9 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.Machine
 {
@@ -189,6 +186,7 @@ namespace ScriptEngine.Machine
         public bool IsDeprecated;
         public bool ThrowOnUseDeprecated;
         public ParameterDefinition[] Params;
+        public AnnotationDefinition[] Annotations;
 
         public int ArgCount
         {
@@ -197,6 +195,8 @@ namespace ScriptEngine.Machine
                 return Params != null ? Params.Length : 0;
             }
         }
+
+        public int AnnotationsCount => Annotations?.Length ?? 0;
 
     }
 
@@ -207,12 +207,49 @@ namespace ScriptEngine.Machine
         public bool IsByValue;
         public bool HasDefaultValue;
         public int DefaultValueIndex;
+        public AnnotationDefinition[] Annotations;
+
+        public int AnnotationsCount => Annotations?.Length ?? 0;
 
         public const int UNDEFINED_VALUE_INDEX = -1;
 
         public bool IsDefaultValueDefined()
         {
             return HasDefaultValue && DefaultValueIndex != UNDEFINED_VALUE_INDEX;
+        }
+    }
+
+    [Serializable]
+    public struct AnnotationDefinition
+    {
+        public string Name;
+        public AnnotationParameter[] Parameters;
+
+        public int ParamCount => Parameters?.Length ?? 0;
+    }
+
+    [Serializable]
+    public struct AnnotationParameter
+    {
+        public string Name;
+        public int ValueIndex;
+
+        [NonSerialized]
+        public IValue RuntimeValue;
+        
+        public const int UNDEFINED_VALUE_INDEX = -1;
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Name))
+            {
+                return string.Format("[{0}]", ValueIndex);
+            }
+            if (ValueIndex == UNDEFINED_VALUE_INDEX)
+            {
+                return Name;
+            }
+            return String.Format("{0}=[{1}]", Name, ValueIndex);
         }
     }
 
@@ -264,6 +301,24 @@ namespace ScriptEngine.Machine
         public string Identifier;
         public string Alias;
         public SymbolType Type;
+        
+        public bool CanGet;
+        public bool CanSet;
+        
+        public AnnotationDefinition[] Annotations;
+
+        public VariableInfo(string name, int index = -1)
+        {
+            Index = index;
+            Identifier = name;
+            Alias = null;
+            CanGet = true;
+            CanSet = true;
+            Annotations = null;
+            Type = SymbolType.Variable;
+        }
+        
+        public int AnnotationsCount => Annotations?.Length ?? 0;
     }
 
     struct VariableBinding

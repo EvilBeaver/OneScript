@@ -39,6 +39,15 @@ namespace ScriptEngine.Machine
             };
         }
 
+        public static IVariable Create(IValue val, VariableInfo metadata)
+        {
+            return new Variable()
+            {
+                _val = val,
+                Name = metadata.Identifier
+            };
+        }
+
         public static IVariable CreateReference(IVariable variable, string refName)
         {
             return VariableReference.CreateSimpleReference(variable, refName);
