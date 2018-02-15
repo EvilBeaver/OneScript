@@ -23,6 +23,9 @@ namespace ScriptEngine.Machine
         public int GetHashCode(IValue obj)
         {
             object CLR_obj;
+            if (obj.DataType == DataType.Undefined)
+                return obj.GetHashCode();
+
             try
             {
                 CLR_obj = ContextValuesMarshaller.ConvertToCLRObject(obj);
