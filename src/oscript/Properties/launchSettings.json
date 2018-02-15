@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "oscript": {
+      "commandName": "Project",
+      "commandLineArgs": "-locale=ru",
+      "workingDirectory": "D:\\work\\repo_git\\OneScript\\src\\oscript\\bin\\x86\\Debug\\net452"
+    }
+  }
+}

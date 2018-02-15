@@ -14,11 +14,16 @@ namespace oscript
 {
 	public static class Program
 	{
+
 		public static Encoding ConsoleOutputEncoding
 		{
 			get { return Output.ConsoleOutputEncoding; }
 			set { Output.ConsoleOutputEncoding = value; }
 		}
+
+        public enum Loc { en, ru };
+
+        public static Loc LocaleMessage = Loc.en;
 
 		public static int Main(string[] args)
 		{

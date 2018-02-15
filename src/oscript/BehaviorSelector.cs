@@ -86,6 +86,10 @@ namespace oscript
             {
                 return ProcessEncodingKey(helper);
             }
+            else if (param.StartsWith("-locale="))
+            {
+                return ProcessLocaleKey(helper);
+            }
             else if (param.StartsWith("-codestat="))
             {
                 var prefixLen = ("-codestat=").Length;
@@ -113,7 +117,7 @@ namespace oscript
                         }
                     }
                 }
-                else if(arg != null)
+                else if (arg != null)
                 {
                     var path = arg;
                     return new DebugBehavior(port, path, helper.Tail());
@@ -174,6 +178,33 @@ namespace oscript
 
             return null;
         }
+
+        private static AppBehavior ProcessLocaleKey(CmdLineHelper helper)
+        {
+            var param = helper.Current();
+            var prefixLen = ("-locale=").Length;
+            if (param.Length > prefixLen)
+            {
+                var locValue = param.Substring(prefixLen);
+                
+                try
+                {
+                    if (locValue == "en")
+                        Program.LocaleMessage = Program.Loc.en;
+                    else
+                        Program.LocaleMessage = Program.Loc.ru;
+                }
+                catch
+                {
+                    Output.WriteLine("Wrong set locale");
+                }
+
+                return Select(helper.Tail());
+            }
+
+            return null;
+        }
+
     }
 
 }
