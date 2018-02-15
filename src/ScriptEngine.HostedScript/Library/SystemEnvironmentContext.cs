@@ -176,7 +176,19 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПеременныеСреды", "EnvironmentVariables")]
         public IRuntimeContextInstance EnvironmentVariables()
         {
-            SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.EnvironmentVariables' is deprecated, use 'EnvironmentVariables' from global context");
+            var hostedScript = new HostedScriptEngine();
+            var work_cfg = hostedScript.GetWorkingConfig();
+            var locale_cfg = work_cfg["locale"];
+            bool WriteRu = false;
+            if (!string.IsNullOrWhiteSpace(locale_cfg))
+            {
+                WriteRu = hostedScript.GetWorkingConfig()["locale"].Equals("ru");
+            }
+            if (WriteRu)
+                SystemLogger.Write("ПРЕДУПРЕЖДЕНИЕ! Устаревший метод: 'SystemInfo.EnvironmentVariables' устарел, используйте 'EnvironmentVariables' глобального контекста");
+            else
+                SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.EnvironmentVariables' is deprecated, use 'EnvironmentVariables' from global context");
+
             var varsMap = new MapImpl();
             var allVars = System.Environment.GetEnvironmentVariables();
             foreach (DictionaryEntry item in allVars)

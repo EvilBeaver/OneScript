@@ -190,9 +190,9 @@ namespace oscript
                 try
                 {
                     if (locValue == "en")
-                        Program.LocaleMessage = Program.Loc.en;
+                        Program.LocaleMessage = Program.LocaleApp.en;
                     else
-                        Program.LocaleMessage = Program.Loc.ru;
+                        Program.LocaleMessage = Program.LocaleApp.ru;
                 }
                 catch
                 {

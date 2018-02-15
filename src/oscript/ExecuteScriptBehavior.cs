@@ -46,6 +46,21 @@ namespace oscript
             hostedScript.DebugController = DebugController;
             hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
+            //////////////////////////////////////////////////////////
+
+            var work_cfg = hostedScript.GetWorkingConfig();
+            var locale_cfg = work_cfg["locale"];
+            if (!String.IsNullOrWhiteSpace(locale_cfg))
+            {
+                if (hostedScript.GetWorkingConfig()["locale"].Equals("ru"))
+                    Program.LocaleMessage = Program.LocaleApp.ru;
+                else
+                    Program.LocaleMessage = Program.LocaleApp.en;
+            }
+            else
+                Program.LocaleMessage = Program.LocaleApp.en;
+            //////////////////////////////////////////////////////////
+
             var source = hostedScript.Loader.FromFile(_path);
 
             Process process;
