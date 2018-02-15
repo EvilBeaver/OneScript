@@ -231,6 +231,7 @@ namespace ScriptEngine.Machine
             mlocals.Variables = _currentFrame.Locals;
             runner._scopes.Add(mlocals);
             frame.ModuleScope = mlocals;
+            frame.ModuleLoadIndex = runner._scopes.Count - 1;
 
             try
             {
@@ -241,8 +242,8 @@ namespace ScriptEngine.Machine
             {
                 if (!separate)
                 {
-                    _scopes.RemoveAt(_scopes.Count - 1);
                     PopFrame();
+                    _scopes.RemoveAt(_scopes.Count - 1);
                 }
             }
 
@@ -290,7 +291,6 @@ namespace ScriptEngine.Machine
         
         private void PushFrame(ExecutionFrame frame)
         {
-            //CodeStat_StopFrameStatistics();
             _callStack.Push(frame);
             SetFrame(frame);
         }
@@ -299,13 +299,12 @@ namespace ScriptEngine.Machine
         {
             _callStack.Pop();
             SetFrame(_callStack.Peek());
-            //CodeStat_ResumeFrameStatistics();
         }
 
         private void SetFrame(ExecutionFrame frame)
         {
             SetModule(frame.Module);
-            _scopes[_scopes.Count - 1] = frame.ModuleScope;
+            _scopes[frame.ModuleLoadIndex] = frame.ModuleScope;
             _currentFrame = frame;
         }
         
@@ -338,7 +337,7 @@ namespace ScriptEngine.Machine
         {
             var module = sdo.Module.Module;
             var methDescr = module.Methods[methodIndex];
-            var frame = new ExecutionFrame();
+            var frame = CreateNewFrame();
             frame.MethodName = methDescr.Signature.Name;
             frame.Locals = new IVariable[methDescr.Variables.Count];
             frame.Module = module;
@@ -839,6 +838,13 @@ namespace ScriptEngine.Machine
             _currentFrame.DiscardReturnValue = needsDiscarding;
         }
 
+        private ExecutionFrame CreateNewFrame()
+        {
+            var frame = new ExecutionFrame();
+            frame.ModuleLoadIndex = _scopes.Count - 1;
+            return frame;
+        }
+
         private bool MethodCallImpl(int arg, bool asFunc)
         {
             var methodRef = _module.MethodRefs[arg];
@@ -887,7 +893,7 @@ namespace ScriptEngine.Machine
                     NextInstruction();
 
                     var methDescr = _module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
-                    var frame = new ExecutionFrame();
+                    var frame = CreateNewFrame();
                     frame.Module = _module;
                     frame.ModuleScope = TopScope;
                     frame.MethodName = methInfo.Name;
@@ -1524,6 +1530,7 @@ namespace ScriptEngine.Machine
             mlocals.Variables = _currentFrame.Locals;
             _scopes.Add(mlocals);
             frame.ModuleScope = mlocals;
+            frame.ModuleLoadIndex = _scopes.Count - 1;
 
             try
             {
@@ -1532,8 +1539,8 @@ namespace ScriptEngine.Machine
             }
             finally
             {
-                _scopes.RemoveAt(_scopes.Count - 1);
                 PopFrame();
+                _scopes.RemoveAt(_scopes.Count - 1);
             }
 
             NextInstruction();
