@@ -36,6 +36,7 @@ namespace ScriptEngine.Compiler
 
         private void WriteImage(TextWriter output, ModuleImage module)
         {
+            output.WriteLine(".loadAt: {0}", module.LoadAddress);
             output.WriteLine(".variableFrame:");
             module.Variables.ForEach(x=>output.WriteLine(" " + x));
 

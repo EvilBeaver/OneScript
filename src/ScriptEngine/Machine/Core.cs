@@ -319,6 +319,11 @@ namespace ScriptEngine.Machine
         }
         
         public int AnnotationsCount => Annotations?.Length ?? 0;
+
+        public override string ToString()
+        {
+            return $"{Index}:{Identifier}";
+        }
     }
 
     struct VariableBinding

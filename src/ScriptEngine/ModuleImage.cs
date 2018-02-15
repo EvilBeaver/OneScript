@@ -38,6 +38,7 @@ namespace ScriptEngine
         public IList<ConstDefinition> Constants { get; set; }
         public IList<ExportedSymbol> ExportedProperties { get; set; }
         public IList<ExportedSymbol> ExportedMethods { get; set; }
+        public int LoadAddress { get; set; }
 
         // Привязка к исходному коду для отладочной информации в RuntimeException
         [NonSerialized]
