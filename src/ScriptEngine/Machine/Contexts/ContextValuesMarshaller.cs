@@ -197,7 +197,7 @@ namespace ScriptEngine.Machine.Contexts
 				if (result is IObjectWrapper)
 					result = ((IObjectWrapper)result).UnderlyingObject;
 				else
-				    throw new ValueMarshallingException("Тип не поддерживает преобразование в CLR-объект");
+				    throw new ValueMarshallingException($"Тип {val.GetType()} не поддерживает преобразование в CLR-объект");
 
                 break;
 			}
