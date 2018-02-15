@@ -100,7 +100,7 @@ namespace ScriptEngine.Compiler
             _parser.Start();
             NextToken();
             PushStructureToken(Token.EndOfText);
-            BuildCodeBatch();
+            BuildModuleBody();
 
             return _module;
         }

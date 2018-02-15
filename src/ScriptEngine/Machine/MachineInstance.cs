@@ -1508,9 +1508,14 @@ namespace ScriptEngine.Machine
             
             var frame = new ExecutionFrame();
             frame.MethodName = module.ModuleInfo.ModuleName;
-            frame.Locals = new IVariable[0];
+            var method = module.Methods[0];
+            frame.Locals = new IVariable[method.Variables.Count];
             frame.InstructionPointer = 0;
             frame.Module = module;
+            for (int i = 0; i < frame.Locals.Length; i++)
+            {
+                frame.Locals[i] = Variable.Create(ValueFactory.Create(), method.Variables[i]);
+            }
 
             var mlocals = new Scope();
             mlocals.Instance = new UserScriptContextInstance(module);
