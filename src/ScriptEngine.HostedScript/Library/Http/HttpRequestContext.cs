@@ -102,9 +102,9 @@ namespace ScriptEngine.HostedScript.Library.Http
         /// <param name="data">Строка с данными</param>
         /// <param name="encoding">КодировкаТекста или Строка. Кодировка в которой отправляются данные.</param>
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
-        public void SetBodyFromString(string data, IValue encoding = null)
+        public void SetBodyFromString(string data, IValue encoding = null, ByteOrderMarkUsageEnum bomUsage = ByteOrderMarkUsageEnum.Auto)
         {
-            SetBody(new HttpRequestBodyString(data, encoding));
+            SetBody(new HttpRequestBodyString(data, encoding, bomUsage));
         }
 
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
