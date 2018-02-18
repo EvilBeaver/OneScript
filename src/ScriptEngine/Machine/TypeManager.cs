@@ -43,26 +43,33 @@ namespace ScriptEngine.Machine
             foreach (var item in Enum.GetValues(typeof(DataType)))
             {
                 DataType typeEnum = (DataType)item;
-                string alias;
+                string alias = String.Empty;
+                string alterAlias = String.Empty;
                 switch (typeEnum)
                 {
                     case DataType.Undefined:
                         alias = "Неопределено";
+                        alterAlias = "Undefined";
                         break;
                     case DataType.Boolean:
                         alias = "Булево";
+                        alterAlias = "Boolean";
                         break;
                     case DataType.String:
                         alias = "Строка";
+                        alterAlias = "String";
                         break;
                     case DataType.Date:
                         alias = "Дата";
+                        alterAlias = "Date";
                         break;
                     case DataType.Number:
                         alias = "Число";
+                        alterAlias = "Number";
                         break;
                     case DataType.Type:
                         alias = "Тип";
+                        alterAlias = "Type";
                         break;
                     case DataType.Object:
                         alias = "Object";
@@ -74,6 +81,7 @@ namespace ScriptEngine.Machine
                 var td = new TypeDescriptor()
                 {
                     Name = alias,
+                    AlterName = alterAlias,
                     ID = (int)typeEnum
                 };
 
@@ -142,6 +150,11 @@ namespace ScriptEngine.Machine
         private void RegisterType(TypeDescriptor td, Type implementingClass)
         {
             _knownTypesIndexes.Add(td.Name, td.ID);
+            if (td.AlterName != null && td.AlterName != String.Empty)
+            {
+                _knownTypesIndexes.Add(td.AlterName, td.ID);
+            }
+
             _knownTypes.Add(new KnownType()
                 {
                     Descriptor = td,
