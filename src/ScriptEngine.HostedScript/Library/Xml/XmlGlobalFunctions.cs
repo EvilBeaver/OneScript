@@ -74,6 +74,11 @@ namespace ScriptEngine.HostedScript.Library.Xml
             {
                 return ValueFactory.Create();
             }
+            else if (typeValue.Equals(TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext))))
+            {
+                byte[] bytes = Convert.FromBase64String(presentation);
+                return new BinaryDataContext(bytes);
+            }
             else
             {
                 throw RuntimeException.InvalidArgumentValue();
