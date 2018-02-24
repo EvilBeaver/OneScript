@@ -1237,7 +1237,51 @@ namespace ScriptEngine.Machine
                 argValues[i] = BreakVariableLink(argValue);
             }
 
-            var typeName = _operationStack.Pop().AsString();
+            var varType = _operationStack.Pop();
+            var typeName = varType.AsString();
+
+            // "Type 2" ctor args unboxing subroutine
+            do
+            {
+                if (varType.DataType != DataType.Type && varType.DataType != DataType.String)
+                {
+                    break;
+                }
+
+                if (argValues.Count() > 1)
+                {
+                    break;
+                }
+
+                if (varType.DataType == DataType.Type)
+                {
+                    var typeVariable = (TypeTypeValue)((Variable)varType).Value;
+                    typeName = typeVariable.Value.Name;
+                }
+
+                if (argValues.Count() == 0)
+                {
+                    break;
+                }
+
+                if ((argValues[0] is IEnumerable<IValue>) == false)
+                {
+                    break;
+                }
+
+                IEnumerable<IValue> boxedArgs = argValues[0] as IEnumerable<IValue>;
+                int argsCount = boxedArgs.Count();
+                IValue[] unboxedArgs = new IValue[argsCount];
+                int i = 0;
+                foreach (IValue item in boxedArgs)
+                {
+                    unboxedArgs[i++] = item;
+                }
+
+                argValues = unboxedArgs;
+
+            } while (false);
+
             var clrType = TypeManager.GetFactoryFor(typeName);
 
             var ctors = clrType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)

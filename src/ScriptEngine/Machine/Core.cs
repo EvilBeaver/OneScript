@@ -257,6 +257,7 @@ namespace ScriptEngine.Machine
     {
         public int ID;
         public string Name;
+        public string AlterName;
 
         public override string ToString()
         {
