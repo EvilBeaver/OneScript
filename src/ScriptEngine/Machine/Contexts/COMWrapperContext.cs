@@ -106,7 +106,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private static bool TypeIsRuntimeCallableWrapper(Type type)
         {
-            return type.FullName == "System.__ComObject"; // string, cause it's hidden type
+            return type.FullName == "System.__ComObject" || type.BaseType.FullName == "System.__ComObject"; // string, cause it's hidden type
         }
 
         public static object[] MarshalArguments(IValue[] arguments)
