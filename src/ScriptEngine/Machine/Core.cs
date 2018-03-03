@@ -295,6 +295,7 @@ namespace ScriptEngine.Machine
         ContextProperty
     }
 
+    [Serializable]
     public struct VariableInfo
     {
         public int Index;
@@ -307,17 +308,6 @@ namespace ScriptEngine.Machine
         
         public AnnotationDefinition[] Annotations;
 
-        public VariableInfo(string name, int index = -1)
-        {
-            Index = index;
-            Identifier = name;
-            Alias = null;
-            CanGet = true;
-            CanSet = true;
-            Annotations = null;
-            Type = SymbolType.Variable;
-        }
-        
         public int AnnotationsCount => Annotations?.Length ?? 0;
     }
 
