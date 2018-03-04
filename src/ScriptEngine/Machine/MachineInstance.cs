@@ -340,6 +340,7 @@ namespace ScriptEngine.Machine
             frame.Locals = new IVariable[methDescr.Variables.Count];
             frame.Module = module;
             frame.ModuleScope = CreateModuleScope(sdo);
+            frame.ModuleLoadIndex = module.LoadAddress;
             frame.IsReentrantCall = true;
             for (int i = 0; i < frame.Locals.Length; i++)
             {

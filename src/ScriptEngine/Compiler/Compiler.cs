@@ -84,6 +84,7 @@ namespace ScriptEngine.Compiler
         public ModuleImage CompileExpression(Parser parser, ICompilerContext context)
         {
             _module = new ModuleImage();
+            _module.LoadAddress = context.TopIndex();
             _ctx = context;
             _parser = parser;
             _parser.Start();
@@ -96,6 +97,7 @@ namespace ScriptEngine.Compiler
         public ModuleImage CompileExecBatch(Parser parser, ICompilerContext context)
         {
             _module = new ModuleImage();
+            _module.LoadAddress = context.TopIndex();
             _ctx = context;
             _parser = parser;
             _parser.Start();
