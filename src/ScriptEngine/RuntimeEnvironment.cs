@@ -107,7 +107,19 @@ namespace ScriptEngine
         
         public IEnumerable<UserAddedScript> GetUserAddedScripts()
         {
-            return _externalScripts;
+            // Костыль. Чтобы скомпилированный EXE загружал модули в правильном порядке,
+            // упорядочиваем список в том порядке, в котором добавлялись свойства.
+            return _externalScripts.OrderBy(script =>
+            {
+                try
+                {
+                    return _injectedProperties.FindProperty(script.Symbol);
+                }
+                catch
+                {
+                    return 0;
+                }
+            });
         }
 
         private void RegisterSymbolScope(IRuntimeContextInstance provider, bool asDynamicScope)
