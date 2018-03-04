@@ -15,13 +15,29 @@ namespace ScriptEngine.HostedScript.Library.Http
         string _data;
         Encoding _encoding;
         
-        public HttpRequestBodyString(string body, IValue encoding = null)
+        public HttpRequestBodyString(string body, IValue encoding = null, ByteOrderMarkUsageEnum bomUsage = ByteOrderMarkUsageEnum.Auto)
         {
             _data = body;
+
+            var addBom = false;
+
             if (encoding == null)
-                _encoding = new UTF8Encoding(true);
+            {
+                if (bomUsage == ByteOrderMarkUsageEnum.Use)
+                    addBom = true;
+                
+                _encoding = new UTF8Encoding(addBom);
+            }
             else
-                _encoding = TextEncodingEnum.GetEncoding(encoding);
+            {
+                if (encoding.AsString().Equals("utf-16", StringComparison.OrdinalIgnoreCase)
+                    || encoding.AsString().Equals("utf-32", StringComparison.OrdinalIgnoreCase) && bomUsage == ByteOrderMarkUsageEnum.Auto)
+                    addBom = true;
+                else
+                    addBom = bomUsage == ByteOrderMarkUsageEnum.Use;
+
+                _encoding = TextEncodingEnum.GetEncoding(encoding, addBom);
+            }
         }
 
         public IValue GetAsString()

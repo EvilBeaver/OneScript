@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -97,9 +98,11 @@ namespace ScriptEngine.Machine
 
                     break;
                 case DataType.Number:
-                    var numInfo = System.Globalization.NumberFormatInfo.InvariantInfo;
-                    var numStyle = System.Globalization.NumberStyles.AllowDecimalPoint
-                                |System.Globalization.NumberStyles.AllowLeadingSign;
+                    var numInfo = NumberFormatInfo.InvariantInfo;
+                    var numStyle = NumberStyles.AllowDecimalPoint
+                                |NumberStyles.AllowLeadingSign
+                                |NumberStyles.AllowLeadingWhite
+                                |NumberStyles.AllowTrailingWhite;
 
                     try
                     {

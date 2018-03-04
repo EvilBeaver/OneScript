@@ -1437,6 +1437,7 @@ namespace ScriptEngine.Compiler
             else if (_lastExtractedLexem.Token == Token.Question)
             {
                 BuildQuestionOperator();
+                BuildContinuationRightHand();
             }
             else
             {
