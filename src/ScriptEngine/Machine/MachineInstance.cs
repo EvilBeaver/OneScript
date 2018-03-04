@@ -48,7 +48,7 @@ namespace ScriptEngine.Machine
             public int stackSize;
         }
         
-        public void AttachContext(IAttachableContext context, bool detachable)
+        public void AttachContext(IAttachableContext context)
         {
             IVariable[] vars;
             MethodInfo[] methods;
@@ -57,8 +57,7 @@ namespace ScriptEngine.Machine
             {
                 Variables = vars,
                 Methods = methods,
-                Instance = context,
-                Detachable = detachable
+                Instance = context
             };
 
             _scopes.Add(scope);
@@ -226,7 +225,6 @@ namespace ScriptEngine.Machine
             
             var mlocals = new Scope();
             mlocals.Instance = new UserScriptContextInstance(code);
-            mlocals.Detachable = true;
             mlocals.Methods = TopScope.Methods;
             mlocals.Variables = _currentFrame.Locals;
             runner._scopes.Add(mlocals);
@@ -1525,7 +1523,6 @@ namespace ScriptEngine.Machine
 
             var mlocals = new Scope();
             mlocals.Instance = new UserScriptContextInstance(module);
-            mlocals.Detachable = true;
             mlocals.Methods = TopScope.Methods;
             mlocals.Variables = _currentFrame.Locals;
             _scopes.Add(mlocals);
