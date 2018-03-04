@@ -257,7 +257,7 @@ namespace ScriptEngine.Machine.Contexts
                 if (_methodSearchCache.TryGetValue(name, out index))
                     return index;
                 else
-                    throw RuntimeException.MethodNotFoundException(name);
+                    throw RuntimeException.MethodNotFoundException(name, _module.ModuleInfo.ModuleName);
             }
         }
 

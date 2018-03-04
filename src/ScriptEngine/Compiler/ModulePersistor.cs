@@ -106,7 +106,7 @@ namespace ScriptEngine.Compiler
 			moduleImage.ModuleInfo = new ModuleInformation
 			{
 				CodeIndexer = new CompiledCodeIndexer(),
-				ModuleName = Path.GetFileName(path),
+				ModuleName = string.Format("{0}:{1}", Path.GetFileName(path), userScript.Symbol),
 				Origin = path
 			};
 
