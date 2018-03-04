@@ -137,7 +137,7 @@ namespace ScriptEngine
             machine.Cleanup();
             foreach (var item in AttachedContexts)
             {
-                machine.AttachContext(item, false);
+                machine.AttachContext(item);
             }
             machine.ContextsAttached();
         }

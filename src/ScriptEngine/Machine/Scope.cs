@@ -16,7 +16,6 @@ namespace ScriptEngine.Machine
         public IVariable[] Variables;
         public MethodInfo[] Methods;
         public IRuntimeContextInstance Instance;
-        public bool Detachable;
     }
 
 }
