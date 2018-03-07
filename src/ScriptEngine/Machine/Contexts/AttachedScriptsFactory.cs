@@ -112,10 +112,10 @@ namespace ScriptEngine.Machine.Contexts
                 return;
             }
 
-            var moduleHandle = CreateModuleFromSource(compiler, code, null);
-            var loadedHandle = _engine.LoadModuleImage(moduleHandle);
+            var module = CompileModuleFromSource(compiler, code, null);
+            var loaded = new LoadedModule(module);
 
-            _loadedModules.Add(typeName, loadedHandle.Module);
+            _loadedModules.Add(typeName, loaded);
             using(var md5Hash = MD5.Create())
             {
                 var hash = GetMd5Hash(md5Hash, code.Code);
@@ -154,12 +154,21 @@ namespace ScriptEngine.Machine.Contexts
 
         private IRuntimeContextInstance LoadAndCreate(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
-            var moduleHandle = CreateModuleFromSource(compiler, code, externalContext);
-            var loadedHandle = _engine.LoadModuleImage(moduleHandle);
-            return _engine.NewObject(loadedHandle.Module, externalContext);
+            var module = CompileModuleFromSource(compiler, code, externalContext);
+            var loadedHandle = new LoadedModule(module);
+            return _engine.NewObject(loadedHandle, externalContext);
         }
 
+        [Obsolete]
         public ScriptModuleHandle CreateModuleFromSource(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
+        {
+            return new ScriptModuleHandle()
+            {
+                Module = CompileModuleFromSource(compiler, code, externalContext)
+            };
+        }
+
+        public ModuleImage CompileModuleFromSource(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
             compiler.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);
             if (externalContext != null)
@@ -170,7 +179,7 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
 
-            return compiler.CreateModule(code);
+            return compiler.Compile(code);
         }
 
         private static AttachedScriptsFactory _instance;
