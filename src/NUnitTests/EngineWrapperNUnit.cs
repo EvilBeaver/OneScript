@@ -43,12 +43,12 @@ namespace NUnitTests
 		
 		private int RunTestScript(ICodeSource source, string resourceName)
 		{
-			var module = Engine.GetCompilerService().CreateModule(source);
+			var module = Engine.GetCompilerService().Compile(source);
 
 			Engine.LoadUserScript(new UserAddedScript
 			{
 				Type = UserAddedScriptType.Class,
-				Module = module,
+				Image = module,
 				Symbol = resourceName
 			});
 

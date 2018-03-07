@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.csproj", "{4585BA5D-9EC4-4C89-8250-2033D2AC2999}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -102,7 +102,7 @@ Global
 		{727A498F-BF50-42F8-8523-40C0B5B1B233}.Release|x86.Build.0 = Release|Any CPU
 		{727A498F-BF50-42F8-8523-40C0B5B1B233}.ReleaseNetStandard|x86.ActiveCfg = Release|Any CPU
 		{727A498F-BF50-42F8-8523-40C0B5B1B233}.ReleaseNetStandard|x86.Build.0 = Release|Any CPU
-		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.Debug|x86.ActiveCfg = Debug|x86
 		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.Release|x86.ActiveCfg = Release|Any CPU
 		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB}.ReleaseNetStandard|x86.ActiveCfg = Release|Any CPU
 		{B7CD7F52-E387-490E-8F77-E1FB060401B5}.Debug|x86.ActiveCfg = Debug|Any CPU

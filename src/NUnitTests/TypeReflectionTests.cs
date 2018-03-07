@@ -29,11 +29,11 @@ namespace NUnitTests
             host.Environment = new RuntimeEnvironment();
         }
   
-        private LoadedModuleHandle LoadFromString(string code)
+        private LoadedModule LoadFromString(string code)
         {
             var codeSrc = host.Loader.FromString(code);
             var cmp = host.GetCompilerService();
-            var image = cmp.CreateModule(codeSrc);
+            var image = cmp.Compile(codeSrc);
             var module = host.LoadModuleImage(image);
 
             return module;
