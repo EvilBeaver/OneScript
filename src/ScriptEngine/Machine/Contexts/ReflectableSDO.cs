@@ -22,12 +22,13 @@ namespace ScriptEngine.Machine.Contexts
         IndexedNameValueCollection<ReflectedMethodInfo> _reflectedMethods;
         IndexedNameValueCollection<ReflectedPropertyInfo> _reflectedProperties;
 
+        [Obsolete]
         public ReflectableSDO(ScriptDrivenObject instance, LoadedModuleHandle module)
             : this(instance, module.Module)
         {
         }
 
-        internal ReflectableSDO(ScriptDrivenObject instance, LoadedModule module)
+        public ReflectableSDO(ScriptDrivenObject instance, LoadedModule module)
         {
             _module = module;
             _instance = instance;

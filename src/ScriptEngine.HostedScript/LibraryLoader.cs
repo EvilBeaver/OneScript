@@ -30,22 +30,21 @@ namespace ScriptEngine.HostedScript
             public bool asClass;
         }
         
-        private LibraryLoader(LoadedModuleHandle moduleHandle, RuntimeEnvironment _env, ScriptingEngine _engine): base(moduleHandle)
+        private LibraryLoader(LoadedModule moduleHandle, RuntimeEnvironment env, ScriptingEngine engine): base(moduleHandle)
         {
-            this._env = _env;
-            this._engine = _engine;
-            this._customized = true;
+            _env = env;
+            _engine = engine;
+            _customized = true;
 
             _engine.InitializeSDO(this);
 
         }
 
-        private LibraryLoader(RuntimeEnvironment _env, ScriptingEngine _engine)
-            : base(new LoadedModuleHandle(), true)
+        private LibraryLoader(RuntimeEnvironment env, ScriptingEngine engine)
         {
-            this._env = _env;
-            this._engine = _engine;
-            this._customized = false;
+            _env = env;
+            _engine = engine;
+            _customized = false;
         }
         
         #region Static part
@@ -64,7 +63,7 @@ namespace ScriptEngine.HostedScript
                 compiler.DefineMethod(mi);
             }
 
-            var module = compiler.CreateModule(code);
+            var module = compiler.Compile(code);
             var loadedModule = engine.LoadModuleImage(module);
 
             return new LibraryLoader(loadedModule, env, engine);

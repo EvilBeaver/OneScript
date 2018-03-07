@@ -145,12 +145,13 @@ namespace ScriptEngine.Machine.Contexts
 
         /////////////////////////////////////////////////////////////////////////////////////
 
+        [Obsolete]
         public static Type ReflectModule(LoadedModuleHandle module, string asTypeName)
         {
             return ReflectModule(module.Module, asTypeName);
         }
 
-        internal static Type ReflectModule(LoadedModule module, string asTypeName)
+        public static Type ReflectModule(LoadedModule module, string asTypeName)
         {
             return new ReflectedClassType(module, asTypeName);
         }

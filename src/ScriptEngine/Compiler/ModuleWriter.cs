@@ -23,15 +23,15 @@ namespace ScriptEngine.Compiler
 
         public void Write(TextWriter output, ICodeSource source)
         {
-            var module = _compiler.CreateModule(source).Module;
+            var module = _compiler.Compile(source);
 
             WriteImage(output, module);
 
         }
 
-        public void Write(TextWriter output, ScriptModuleHandle module)
+        public void Write(TextWriter output, ModuleImage module)
         {
-            WriteImage(output, module.Module);
+            WriteImage(output, module);
         }
 
         private void WriteImage(TextWriter output, ModuleImage module)
