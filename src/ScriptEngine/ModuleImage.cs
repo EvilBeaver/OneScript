@@ -14,7 +14,7 @@ using ScriptEngine.Environment;
 namespace ScriptEngine
 {
     [Serializable]
-    class ModuleImage
+    public class ModuleImage
     {
         public ModuleImage()
         {
@@ -44,7 +44,7 @@ namespace ScriptEngine
         [NonSerialized]
         private ModuleInformation _source;
 
-        internal ModuleInformation ModuleInfo 
+        public ModuleInformation ModuleInfo 
         {
             get
             {
@@ -58,7 +58,7 @@ namespace ScriptEngine
     }
 
     [Serializable]
-    struct MethodDescriptor
+    public struct MethodDescriptor
     {
         public MethodInfo Signature;
         public VariablesFrame Variables;
@@ -66,7 +66,7 @@ namespace ScriptEngine
     }
 
     [Serializable]
-    struct ExportedSymbol
+    public struct ExportedSymbol
     {
         public string SymbolicName;
         public int Index;

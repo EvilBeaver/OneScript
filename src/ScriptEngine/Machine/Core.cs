@@ -9,7 +9,7 @@ using System;
 namespace ScriptEngine.Machine
 {
     [Serializable]
-    enum OperationCode
+    public enum OperationCode
     {
         Nop,
         PushVar,
@@ -132,7 +132,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct Command
+    public struct Command
     {
         public OperationCode Code;
         public int Argument;
@@ -159,7 +159,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct ConstDefinition : IEquatable<ConstDefinition>
+    public struct ConstDefinition : IEquatable<ConstDefinition>
     {
         public DataType Type;
         public string Presentation;
@@ -283,7 +283,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct SymbolBinding
+    public struct SymbolBinding
     {
         public int CodeIndex;
         public int ContextIndex;

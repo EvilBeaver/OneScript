@@ -85,15 +85,8 @@ namespace ScriptEngine
             cs.DirectiveResolver = DirectiveResolver;
             return cs;
         }
-
-        public LoadedModuleHandle LoadModuleImage(ScriptModuleHandle moduleImage)
-        {
-            var handle = new LoadedModuleHandle();
-            handle.Module = new LoadedModule(moduleImage.Module);
-            return handle;
-        }
-
-        internal IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
+        
+        public IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
             scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
@@ -111,14 +104,24 @@ namespace ScriptEngine
             return scriptContext;
         }
 
+        [Obsolete]
         public IRuntimeContextInstance NewObject(LoadedModuleHandle module)
         {
             return NewObject(module.Module); 
         }
 
+        [Obsolete]
         public IRuntimeContextInstance NewObject(LoadedModuleHandle module, ExternalContextData externalContext)
         {
             return NewObject(module.Module, externalContext);
+        }
+
+        [Obsolete]
+        public LoadedModuleHandle LoadModuleImage(ScriptModuleHandle moduleImage)
+        {
+            var handle = new LoadedModuleHandle();
+            handle.Module = new LoadedModule(moduleImage.Module);
+            return handle;
         }
 
         public void InitializeSDO(ScriptDrivenObject sdo)

@@ -12,7 +12,7 @@ using ScriptEngine.Machine;
 namespace ScriptEngine
 {
     [Serializable]
-    internal class VariablesFrame : IList<VariableInfo>
+    public class VariablesFrame : IList<VariableInfo>
     {
         private readonly List<VariableInfo> _data;
 
