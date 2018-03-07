@@ -124,14 +124,25 @@ namespace ScriptEngine
             return handle;
         }
 
+        public LoadedModule LoadModuleImage(ModuleImage moduleImage)
+        {
+            return new LoadedModule(moduleImage);
+        }
+
         public void InitializeSDO(ScriptDrivenObject sdo)
         {
             sdo.Initialize();
         }
 
+        [Obsolete]
         public void ExecuteModule(LoadedModuleHandle module)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module.Module);
+            ExecuteModule(module.Module);
+        }
+
+        public void ExecuteModule(LoadedModule module)
+        {
+            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
             InitializeSDO(scriptContext);
         }
 
@@ -183,7 +194,7 @@ namespace ScriptEngine
 
             foreach (var script in scripts)
             {
-                var loaded = LoadModuleImage(script.Module);
+                var loaded = LoadModuleImage(script.Image);
                 var instance = (IValue)NewObject(loaded);
                 env.SetGlobalProperty(script.Symbol, instance);
             }
