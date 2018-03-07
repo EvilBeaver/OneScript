@@ -13,13 +13,13 @@ namespace ScriptEngine.Environment
     [Obsolete]
     public struct ScriptModuleHandle
     {
-        internal ModuleImage Module { get; set; }
+        public ModuleImage Module { get; set; }
     }
 
     [Obsolete]
     public struct LoadedModuleHandle
     {
-        internal LoadedModule Module { get; set; }
+        public LoadedModule Module { get; set; }
     }
 
 }

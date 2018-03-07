@@ -182,11 +182,11 @@ namespace ScriptEngine.HostedScript
         {
             if (script.Type == UserAddedScriptType.Class)
             {
-                _engine.AttachedScriptsFactory.LoadAndRegister(script.Symbol, script.Module);
+                _engine.AttachedScriptsFactory.LoadAndRegister(script.Symbol, script.Image);
             }
             else
             {
-                var loaded = _engine.LoadModuleImage(script.Module);
+                var loaded = _engine.LoadModuleImage(script.Image);
                 var instance = (IValue)_engine.NewObject(loaded);
                 _env.InjectGlobalProperty(instance, script.Symbol, true);
             }
@@ -203,15 +203,21 @@ namespace ScriptEngine.HostedScript
             Initialize();
             _engine.DebugController?.OnMachineReady(_engine.Machine);
             _engine.DebugController?.WaitForDebugEvent(DebugEventType.BeginExecution);
-            var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
-            return InitProcess(host, ref module);
+            var module = _engine.LoadModuleImage(compilerSvc.Compile(src));
+            return InitProcess(host, module);
         }
 
+        [Obsolete]
         public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle, ICodeSource src)
         {
+            return CreateProcess(host, moduleHandle.Module, src);
+        }
+
+        public Process CreateProcess(IHostApplication host, ModuleImage moduleImage, ICodeSource src)
+        {
             SetGlobalEnvironment(host, src);
-            var module = _engine.LoadModuleImage(moduleHandle);
-            return InitProcess(host, ref module);
+            var module = _engine.LoadModuleImage(moduleImage);
+            return InitProcess(host, module);
         }
 
         public void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
@@ -221,7 +227,7 @@ namespace ScriptEngine.HostedScript
             _globalCtx.InitInstance();
         }
 
-        private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
+        private Process InitProcess(IHostApplication host, LoadedModule module)
         {
             Initialize();
             
