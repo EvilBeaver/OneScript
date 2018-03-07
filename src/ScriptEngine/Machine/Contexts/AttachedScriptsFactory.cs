@@ -126,12 +126,18 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
+        [Obsolete]
         public void LoadAndRegister(string typeName, ScriptModuleHandle moduleHandle)
+        {
+            LoadAndRegister(typeName, moduleHandle.Module);
+        }
+
+        public void LoadAndRegister(string typeName, ModuleImage moduleImage)
         {
             if (_loadedModules.ContainsKey(typeName))
             {
                 var alreadyLoadedSrc = _loadedModules[typeName].ModuleInfo.Origin;
-                var currentSrc = moduleHandle.Module.ModuleInfo.Origin;
+                var currentSrc = moduleImage.ModuleInfo.Origin;
 
                 if(alreadyLoadedSrc != currentSrc)
                     throw new RuntimeException("Type «" + typeName + "» already registered");
@@ -139,8 +145,8 @@ namespace ScriptEngine.Machine.Contexts
                 return;
             }
 
-            var loadedHandle = _engine.LoadModuleImage(moduleHandle);
-            _loadedModules.Add(typeName, loadedHandle.Module);
+            var loadedModule = new LoadedModule(moduleImage);
+            _loadedModules.Add(typeName, loadedModule);
             
             TypeManager.RegisterType(typeName, typeof(AttachedScriptsFactory));
 
