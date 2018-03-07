@@ -148,6 +148,8 @@ namespace OneScript.ASPNETHandler
                     }
                 }
 
+                _hostedScript.EngineInstance.Environment.LoadMemory(MachineInstance.Current);
+
             }
             catch (Exception ex)
             {
