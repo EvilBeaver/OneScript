@@ -100,17 +100,14 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj;
         }
 
-        public static IValue ConvertReturnValue<TRet>(TRet param)
+        public static IValue ConvertReturnValue(object objParam, Type type)
         {
-            var type = typeof(TRet);
-            object objParam = (object)param;
-
             if (objParam == null)
                 return ValueFactory.Create();
 
             if (type == typeof(IValue))
             {
-                return (IValue)param;
+                return (IValue)objParam;
             }
             else if (type == typeof(string))
             {
@@ -152,7 +149,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 var wrapperType = typeof(CLREnumValueWrapper<>).MakeGenericType(new Type[] { type });
                 var constructor = wrapperType.GetConstructor(new Type[] { typeof(EnumerationContext), type, typeof(DataType) });
-                var osValue = (EnumerationValue)constructor.Invoke(new object[] { null, param, DataType.Enumeration });
+                var osValue = (EnumerationValue)constructor.Invoke(new object[] { null, objParam, DataType.Enumeration });
                 return osValue;
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
@@ -163,7 +160,13 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw new NotSupportedException("Type is not supported");
             }
+        }
 
+        public static IValue ConvertReturnValue<TRet>(TRet param)
+        {
+            var type = typeof(TRet);
+
+            return ConvertReturnValue(param, type);
         }
 
 		public static object ConvertToCLRObject(IValue val)

@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
+using ScriptEngine.Machine.Contexts;
+
 namespace ScriptEngine.Machine.Reflection
 {
     public class ReflectedFieldInfo : FieldInfo
@@ -41,7 +43,7 @@ namespace ScriptEngine.Machine.Reflection
             if(irc == null)
                 throw new ArgumentException();
 
-            return irc.GetPropValue(_info.Index);
+            return ContextValuesMarshaller.ConvertReturnValue(irc.GetPropValue(_info.Index));
         }
         
         public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, CultureInfo culture)

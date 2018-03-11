@@ -387,7 +387,8 @@ namespace ScriptEngine.Machine.Contexts
 
         public Type ReflectAsCLRType()
         {
-            return ReflectedClassType.ReflectModule(_module, GetReflectedTypeName());
+            throw new NotImplementedException();
+            //return ReflectedClassType.ReflectModule(_module, GetReflectedTypeName());
         }
 
         protected virtual string GetReflectedTypeName()

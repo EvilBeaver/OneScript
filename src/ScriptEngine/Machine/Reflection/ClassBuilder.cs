@@ -57,9 +57,9 @@ namespace ScriptEngine.Machine.Reflection
 
         public ClassBuilder<T> ExportProperties(bool includeDeprecations = false)
         {
-            var methods = typeof(T).GetMethods()
+            var props = typeof(T).GetProperties()
                                    .Where(MarkedAsContextProperty);
-            _methods.AddRange(methods);
+            _properties.AddRange(props);
             return this;
         }
 
@@ -100,9 +100,11 @@ namespace ScriptEngine.Machine.Reflection
             if (Module == null)
                 throw new InvalidOperationException("Module is not set");
 
-            foreach (var methodDescriptor in Module.Methods)
+            for (int i = 0; i < Module.Methods.Length; i++)
             {
+                var methodDescriptor = Module.Methods[i];
                 var methInfo = CreateMethodInfo(methodDescriptor.Signature);
+                methInfo.SetDispId(i);
                 _methods.Add(methInfo);
             }
 
@@ -124,6 +126,17 @@ namespace ScriptEngine.Machine.Reflection
 
             return reflectedMethod;
 
+        }
+
+        public Type Build()
+        {
+            var classDelegator = new ReflectedClassType<T>();
+            classDelegator.SetName(TypeName);
+            classDelegator.SetFields(_fields);
+            classDelegator.SetProperties(_properties);
+            classDelegator.SetMethods(_methods);
+
+            return classDelegator;
         }
     }
 }

@@ -12,66 +12,36 @@ using System.Linq;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class ReflectedClassType : TypeDelegator
+    public class ReflectedClassType<T> : TypeDelegator where T : ScriptDrivenObject
     {
-        private readonly string _typeName;
+        private string _typeName;
         private PropertyInfo[] _properties;
         private System.Reflection.MethodInfo[] _methods;
         private FieldInfo[] _fields;
         
-        private ReflectedClassType(LoadedModule module, string typeName)
-            :base(typeof(object))
+        public ReflectedClassType()
+            :base(typeof(T))
         {
-            _typeName = typeName;
-
-            ReflectVariables(module);
-            ReflectMethods(module);
         }
 
-        private void ReflectMethods(LoadedModule module)
+        public void SetName(string name)
         {
-            _methods = new System.Reflection.MethodInfo[module.Methods.Length];
-            for (int i = 0; i < _methods.Length; i++)
-            {
-                var reflected = CreateMethodInfo(module.Methods[i].Signature);
-                reflected.SetDispId(i);
-                _methods[i] = reflected;
-            }
+            _typeName = name;
         }
 
-        private void ReflectVariables(LoadedModule module)
+        public void SetFields(IEnumerable<FieldInfo> source)
         {
-            _properties = new PropertyInfo[module.ExportedProperies.Length];
-            _fields = new FieldInfo[0];
-            for (int i = 0; i < module.ExportedProperies.Length; i++)
-            {
-                var reflected = CreatePropInfo(module.ExportedProperies[i]);
-                _properties[i] = reflected;
-            }
+            _fields = source.ToArray();
         }
 
-        private PropertyInfo CreatePropInfo(ExportedSymbol prop)
+        public void SetProperties(IEnumerable<PropertyInfo> source)
         {
-            var pi = new ReflectedPropertyInfo(prop.SymbolicName);
-            pi.SetDispId(prop.Index);
-            return pi;
+            _properties = source.ToArray();
         }
 
-        private ReflectedMethodInfo CreateMethodInfo(ScriptEngine.Machine.MethodInfo methInfo)
+        public void SetMethods(IEnumerable<System.Reflection.MethodInfo> source)
         {
-            var reflectedMethod = new ReflectedMethodInfo(methInfo.Name);
-            reflectedMethod.IsFunction = methInfo.IsFunction;
-            for (int i = 0; i < methInfo.Params.Length; i++)
-            {
-                var currentParam = methInfo.Params[i];
-                var reflectedParam = new ReflectedParamInfo("param" + i.ToString(), currentParam.IsByValue);
-                reflectedParam.SetOwner(reflectedMethod);
-                reflectedParam.SetPosition(i);
-                reflectedMethod.Parameters.Add(reflectedParam);
-            }
-
-            return reflectedMethod;
-
+            _methods = source.ToArray();
         }
 
         public override string Name => _typeName;
@@ -141,19 +111,6 @@ namespace ScriptEngine.Machine.Contexts
         public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
         {
             return new ConstructorInfo[0];
-        }
-
-        /////////////////////////////////////////////////////////////////////////////////////
-
-        [Obsolete]
-        public static Type ReflectModule(LoadedModuleHandle module, string asTypeName)
-        {
-            return ReflectModule(module.Module, asTypeName);
-        }
-
-        public static Type ReflectModule(LoadedModule module, string asTypeName)
-        {
-            return new ReflectedClassType(module, asTypeName);
         }
         
     }
