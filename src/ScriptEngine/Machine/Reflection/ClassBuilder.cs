@@ -13,6 +13,7 @@ namespace ScriptEngine.Machine.Reflection
         private List<SysReflection.MethodInfo> _methods = new List<SysReflection.MethodInfo>();
         private List<SysReflection.PropertyInfo> _properties = new List<SysReflection.PropertyInfo>();
         private List<SysReflection.FieldInfo> _fields = new List<SysReflection.FieldInfo>();
+        private List<SysReflection.ConstructorInfo> _constructors = new List<SysReflection.ConstructorInfo>();
 
         public string TypeName { get; set; }
         public LoadedModule Module { get; set; }
@@ -47,7 +48,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public ClassBuilder<T> ExportClasses(bool includeDeprecations = false)
+        public ClassBuilder<T> ExportMethods(bool includeDeprecations = false)
         {
             var methods = typeof(T).GetMethods()
                                    .Where(x => MarkedAsContextMethod(x, includeDeprecations));
@@ -73,6 +74,25 @@ namespace ScriptEngine.Machine.Reflection
         private bool MarkedAsContextProperty(SysReflection.MemberInfo member)
         {
             return member.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Any();
+        }
+
+        public ClassBuilder<T> ExportConstructor(SysReflection.ConstructorInfo info)
+        {
+            if (info.DeclaringType != typeof(T))
+            {
+                throw new ArgumentException("info must belong to the current class");
+            }
+
+            _constructors.Add(info);
+            return this;
+        }
+
+        public ClassBuilder<T> ExportConstructor(Func<object[], IRuntimeContextInstance> creator)
+        {
+            var info = new ReflectedConstructorInfo(creator);
+            info.SetDeclaringType(typeof(T));
+            _constructors.Add(info);
+            return this;
         }
 
         public ClassBuilder<T> ExportScriptFields()

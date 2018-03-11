@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Machine;
@@ -53,6 +54,25 @@ namespace ScriptEngine
             set
             {
                 _source = value;
+            }
+        }
+
+        private static ModuleImage _emptyInstance;
+
+        static ModuleImage()
+        {
+        }
+
+        public static ModuleImage EmptyModule
+        {
+            get
+            {
+                if (_emptyInstance == null)
+                {
+                    _emptyInstance = new ModuleImage();
+                }
+
+                return _emptyInstance;
             }
         }
     }

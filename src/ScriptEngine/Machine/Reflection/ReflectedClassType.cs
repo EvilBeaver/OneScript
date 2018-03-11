@@ -18,6 +18,7 @@ namespace ScriptEngine.Machine.Contexts
         private PropertyInfo[] _properties;
         private System.Reflection.MethodInfo[] _methods;
         private FieldInfo[] _fields;
+        private ConstructorInfo[] _constructors;
         
         public ReflectedClassType()
             :base(typeof(T))
@@ -44,24 +45,34 @@ namespace ScriptEngine.Machine.Contexts
             _methods = source.ToArray();
         }
 
+        public void SetConstructors(IEnumerable<System.Reflection.ConstructorInfo> source)
+        {
+            _constructors = source.ToArray();
+        }
+
         public override string Name => _typeName;
         public override string FullName => Namespace + "." + Name;
         public override Assembly Assembly => Assembly.GetExecutingAssembly();
         public override bool ContainsGenericParameters => false;
         public override string AssemblyQualifiedName => Assembly.CreateQualifiedName(Assembly.FullName, Name);
-        public override Type UnderlyingSystemType => typeof(ScriptDrivenObject);
-        public override Type BaseType => null;
+        public override Type UnderlyingSystemType => typeof(T);
+        public override Type BaseType => typeof(ScriptDrivenObject);
         public override IEnumerable<CustomAttributeData> CustomAttributes => null;
         public override string Namespace => GetType().Namespace + ".dyn";
 
         public override FieldInfo[] GetFields(BindingFlags bindingAttr)
         {
-            return new FieldInfo[0];
+            return _fields;
         }
 
         public override FieldInfo GetField(string name, BindingFlags bindingAttr)
         {
-            return null;
+            if (bindingAttr.HasFlag(BindingFlags.Public))
+            {
+                return _fields.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Compare(x.Name, name) == 0 || x.IsPublic);
+            }
+
+            return _fields.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Compare(x.Name, name) == 0);
         }
 
         protected override System.Reflection.MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
@@ -97,12 +108,15 @@ namespace ScriptEngine.Machine.Contexts
 
         public override MemberInfo[] GetMember(string name, MemberTypes type, BindingFlags bindingAttr)
         {
+            if(name == null)
+                throw new ArgumentNullException();
+
             switch (type)
             {
                 case MemberTypes.Method:
-                    return new MemberInfo[] { GetMethod(name) };
+                    return new MemberInfo[] { GetMethod(name, bindingAttr) };
                 case MemberTypes.Property:
-                    return new MemberInfo[] { GetProperty(name) };
+                    return new MemberInfo[] { GetProperty(name, bindingAttr) };
                 default:
                     return new MemberInfo[0];
             }
@@ -110,7 +124,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
         {
-            return new ConstructorInfo[0];
+            return _constructors;
         }
         
     }
