@@ -13,6 +13,7 @@ using System.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {
+    [Obsolete]
     public class ReflectableSDO : IValue, IRuntimeContextInstance, IReflect
     {
         readonly ScriptDrivenObject _instance;
