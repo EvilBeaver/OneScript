@@ -149,5 +149,20 @@ namespace NUnitTests
             var defaultGet = reflected.GetMethods(BindingFlags.Public|BindingFlags.NonPublic);
             Assert.AreEqual(2, defaultGet.Length);
         }
+
+        [Test]
+        public void ClassCanBeCreatedViaConstructor()
+        {
+            var cb = new ClassBuilder<UserScriptContextInstance>();
+            var module = LoadFromString("");
+            cb.SetTypeName("testDrive")            
+                .SetModule(module)
+                .ExportDefaults()
+                .ExportConstructor((parameters => new UserScriptContextInstance(module)));
+            var type = cb.Build();
+
+            var instance = type.GetConstructors()[0].Invoke(new object[0]);
+            Assert.IsInstanceOf<UserScriptContextInstance>(instance);
+        }
     }
 }

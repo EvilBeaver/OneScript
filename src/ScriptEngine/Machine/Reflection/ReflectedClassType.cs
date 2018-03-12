@@ -56,7 +56,7 @@ namespace ScriptEngine.Machine.Contexts
         public override bool ContainsGenericParameters => false;
         public override string AssemblyQualifiedName => Assembly.CreateQualifiedName(Assembly.FullName, Name);
         public override Type UnderlyingSystemType => typeof(T);
-        public override Type BaseType => typeof(ScriptDrivenObject);
+        public override Type BaseType => typeof(T).BaseType;
         public override IEnumerable<CustomAttributeData> CustomAttributes => null;
         public override string Namespace => GetType().Namespace + ".dyn";
 
