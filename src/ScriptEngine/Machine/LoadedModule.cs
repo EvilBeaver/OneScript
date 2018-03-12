@@ -13,9 +13,9 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    class LoadedModule
+    public class LoadedModule
     {
-        internal LoadedModule(ModuleImage image)
+        public LoadedModule(ModuleImage image)
         {
             Code = image.Code.ToArray();
             EntryMethodIndex = image.EntryMethodIndex;

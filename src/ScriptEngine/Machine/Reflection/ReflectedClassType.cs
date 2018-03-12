@@ -12,66 +12,42 @@ using System.Linq;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class ReflectedClassType : TypeDelegator
+    public class ReflectedClassType<T> : TypeDelegator where T : ScriptDrivenObject
     {
-        private readonly string _typeName;
+        private string _typeName;
         private PropertyInfo[] _properties;
         private System.Reflection.MethodInfo[] _methods;
         private FieldInfo[] _fields;
+        private ConstructorInfo[] _constructors;
         
-        private ReflectedClassType(LoadedModule module, string typeName)
-            :base(typeof(object))
+        public ReflectedClassType()
+            :base(typeof(T))
         {
-            _typeName = typeName;
-
-            ReflectVariables(module);
-            ReflectMethods(module);
         }
 
-        private void ReflectMethods(LoadedModule module)
+        public void SetName(string name)
         {
-            _methods = new System.Reflection.MethodInfo[module.Methods.Length];
-            for (int i = 0; i < _methods.Length; i++)
-            {
-                var reflected = CreateMethodInfo(module.Methods[i].Signature);
-                reflected.SetDispId(i);
-                _methods[i] = reflected;
-            }
+            _typeName = name;
         }
 
-        private void ReflectVariables(LoadedModule module)
+        public void SetFields(IEnumerable<FieldInfo> source)
         {
-            _properties = new PropertyInfo[module.ExportedProperies.Length];
-            _fields = new FieldInfo[0];
-            for (int i = 0; i < module.ExportedProperies.Length; i++)
-            {
-                var reflected = CreatePropInfo(module.ExportedProperies[i]);
-                _properties[i] = reflected;
-            }
+            _fields = source.ToArray();
         }
 
-        private PropertyInfo CreatePropInfo(ExportedSymbol prop)
+        public void SetProperties(IEnumerable<PropertyInfo> source)
         {
-            var pi = new ReflectedPropertyInfo(prop.SymbolicName);
-            pi.SetDispId(prop.Index);
-            return pi;
+            _properties = source.ToArray();
         }
 
-        private ReflectedMethodInfo CreateMethodInfo(ScriptEngine.Machine.MethodInfo methInfo)
+        public void SetMethods(IEnumerable<System.Reflection.MethodInfo> source)
         {
-            var reflectedMethod = new ReflectedMethodInfo(methInfo.Name);
-            reflectedMethod.IsFunction = methInfo.IsFunction;
-            for (int i = 0; i < methInfo.Params.Length; i++)
-            {
-                var currentParam = methInfo.Params[i];
-                var reflectedParam = new ReflectedParamInfo("param" + i.ToString(), currentParam.IsByValue);
-                reflectedParam.SetOwner(reflectedMethod);
-                reflectedParam.SetPosition(i);
-                reflectedMethod.Parameters.Add(reflectedParam);
-            }
+            _methods = source.ToArray();
+        }
 
-            return reflectedMethod;
-
+        public void SetConstructors(IEnumerable<System.Reflection.ConstructorInfo> source)
+        {
+            _constructors = source.ToArray();
         }
 
         public override string Name => _typeName;
@@ -79,19 +55,32 @@ namespace ScriptEngine.Machine.Contexts
         public override Assembly Assembly => Assembly.GetExecutingAssembly();
         public override bool ContainsGenericParameters => false;
         public override string AssemblyQualifiedName => Assembly.CreateQualifiedName(Assembly.FullName, Name);
-        public override Type UnderlyingSystemType => typeof(ScriptDrivenObject);
-        public override Type BaseType => null;
+        public override Type UnderlyingSystemType => typeof(T);
+        public override Type BaseType => typeof(T).BaseType;
         public override IEnumerable<CustomAttributeData> CustomAttributes => null;
         public override string Namespace => GetType().Namespace + ".dyn";
 
         public override FieldInfo[] GetFields(BindingFlags bindingAttr)
         {
-            return new FieldInfo[0];
+            IEnumerable<FieldInfo> result;
+            bool showPublic = bindingAttr.HasFlag(BindingFlags.Public);
+            bool showPrivate = bindingAttr.HasFlag(BindingFlags.NonPublic);
+            if (showPublic && showPrivate)
+                result = _fields;
+            else
+                result = _fields.Where(x => x.IsPublic && showPublic || x.IsPrivate && showPrivate);
+            
+            return result.ToArray();
         }
 
         public override FieldInfo GetField(string name, BindingFlags bindingAttr)
         {
-            return null;
+            if (bindingAttr.HasFlag(BindingFlags.Public))
+            {
+                return _fields.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Compare(x.Name, name) == 0 || x.IsPublic);
+            }
+
+            return _fields.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Compare(x.Name, name) == 0);
         }
 
         protected override System.Reflection.MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
@@ -101,12 +90,22 @@ namespace ScriptEngine.Machine.Contexts
 
         public override System.Reflection.MethodInfo[] GetMethods(BindingFlags bindingAttr)
         {
-            return _methods;
+            bool showPrivate = bindingAttr.HasFlag(BindingFlags.NonPublic);
+            bool showPublic = bindingAttr.HasFlag(BindingFlags.Public);
+            return _methods.Where(x=>x.IsPublic && showPublic || x.IsPrivate && showPrivate).ToArray();
         }
 
         public override PropertyInfo[] GetProperties(BindingFlags bindingAttr)
         {
-            return _properties;
+            bool showPrivate = bindingAttr.HasFlag(BindingFlags.NonPublic);
+            bool showPublic = bindingAttr.HasFlag(BindingFlags.Public);
+
+            return _properties.Where(x =>
+            {
+                var isPublic = (x.GetMethod?.IsPublic) == true || (x.SetMethod?.IsPublic) == true;
+                return isPublic && showPublic || !isPublic && showPrivate;
+
+            }).ToArray();
         }
 
         protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
@@ -127,12 +126,17 @@ namespace ScriptEngine.Machine.Contexts
 
         public override MemberInfo[] GetMember(string name, MemberTypes type, BindingFlags bindingAttr)
         {
+            if(name == null)
+                throw new ArgumentNullException();
+
             switch (type)
             {
+                case MemberTypes.Field:
+                    return new MemberInfo[] { GetField(name, bindingAttr) };
                 case MemberTypes.Method:
-                    return new MemberInfo[] { GetMethod(name) };
+                    return new MemberInfo[] { GetMethod(name, bindingAttr) };
                 case MemberTypes.Property:
-                    return new MemberInfo[] { GetProperty(name) };
+                    return new MemberInfo[] { GetProperty(name, bindingAttr) };
                 default:
                     return new MemberInfo[0];
             }
@@ -140,19 +144,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
         {
-            return new ConstructorInfo[0];
-        }
-
-        /////////////////////////////////////////////////////////////////////////////////////
-
-        public static Type ReflectModule(LoadedModuleHandle module, string asTypeName)
-        {
-            return ReflectModule(module.Module, asTypeName);
-        }
-
-        internal static Type ReflectModule(LoadedModule module, string asTypeName)
-        {
-            return new ReflectedClassType(module, asTypeName);
+            return _constructors;
         }
         
     }

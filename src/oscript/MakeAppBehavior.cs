@@ -66,7 +66,7 @@ namespace oscript
 	        var source = engine.Loader.FromFile(_codePath);
 	        var compiler = engine.GetCompilerService();
 	        engine.SetGlobalEnvironment(new DoNothingHost(), source);
-	        var entry = compiler.CreateModule(source);
+	        var entry = compiler.Compile(source);
 
 	        var embeddedContext = engine.GetUserAddedScripts();
 
@@ -80,7 +80,7 @@ namespace oscript
 	            {
 	                Type = UserAddedScriptType.Module,
 	                Symbol = "$entry",
-	                Module = entry
+	                Image = entry
 	            }, output);
 
 	            foreach (var item in userAddedScripts)

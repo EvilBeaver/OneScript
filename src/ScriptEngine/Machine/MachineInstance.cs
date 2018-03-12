@@ -85,7 +85,7 @@ namespace ScriptEngine.Machine
 
         internal void ExecuteModuleBody(IRunnable sdo)
         {
-            var module = sdo.Module.Module;
+            var module = sdo.Module;
             if (module.EntryMethodIndex >= 0)
             {
                 var entryRef = module.MethodRefs[module.EntryMethodIndex];
@@ -333,7 +333,7 @@ namespace ScriptEngine.Machine
         
         private void PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
         {
-            var module = sdo.Module.Module;
+            var module = sdo.Module;
             var methDescr = module.Methods[methodIndex];
             var frame = CreateNewFrame();
             frame.MethodName = methDescr.Signature.Name;

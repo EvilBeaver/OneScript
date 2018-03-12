@@ -67,7 +67,7 @@ namespace ScriptEngine.Compiler
 		{
 			var nameBytes = Encoding.UTF8.GetBytes(script.Symbol);
 			var bodyStream = new MemoryStream(8 * 1024);
-			_formatter.Serialize(bodyStream, FromHandle(script.Module));
+			_formatter.Serialize(bodyStream, script.Image);
 
 			var header = new ModuleHeader
 			{
@@ -83,12 +83,7 @@ namespace ScriptEngine.Compiler
 			bodyStream.WriteTo(output);
 			bodyStream.Dispose();
 		}
-
-		private ModuleImage FromHandle(ScriptModuleHandle module)
-		{
-			return module.Module;
-		}
-
+        
 		public UserAddedScript Read(Stream input)
 		{
 			var header = ReadStruct<ModuleHeader>(input);
@@ -110,10 +105,7 @@ namespace ScriptEngine.Compiler
 				Origin = path
 			};
 
-			userScript.Module = new ScriptModuleHandle
-			{
-				Module = moduleImage
-			};
+		    userScript.Image = moduleImage;
 			userScript.Type = header.IsClass ? UserAddedScriptType.Class : UserAddedScriptType.Module;
 
 			return userScript;

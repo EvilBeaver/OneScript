@@ -13,28 +13,27 @@ namespace ScriptEngine.Machine.Contexts
 {
     public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable
     {
-        private readonly LoadedModule _module;
+        private LoadedModule _module;
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
         private MethodInfo[] _attachableMethods;
         private readonly Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        
+
+        [Obsolete]
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
         {
         }
 
+        [Obsolete]
         public ScriptDrivenObject(LoadedModuleHandle module, bool deffered) : this(module.Module, deffered)
         {
         }
+        
+        public LoadedModule Module => _module;
 
-        public LoadedModuleHandle Module => new LoadedModuleHandle()
-        {
-            Module = _module
-        };
-
-        internal ScriptDrivenObject(LoadedModule module, bool deffered)
+        protected ScriptDrivenObject(LoadedModule module, bool deffered)
             : base(TypeManager.GetTypeByName("Object"))
         {
             _module = module;
@@ -44,11 +43,20 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        internal ScriptDrivenObject(LoadedModule module)
+        protected ScriptDrivenObject(LoadedModule module)
             : base(TypeManager.GetTypeByName("Object"))
         {
             _module = module;
             InitOwnData();
+        }
+
+        protected ScriptDrivenObject()
+        {
+        }
+
+        protected void SetModule(LoadedModule module)
+        {
+            _module = module;
         }
 
         public void InitOwnData()
@@ -379,7 +387,8 @@ namespace ScriptEngine.Machine.Contexts
 
         public Type ReflectAsCLRType()
         {
-            return ReflectedClassType.ReflectModule(_module, GetReflectedTypeName());
+            throw new NotImplementedException();
+            //return ReflectedClassType.ReflectModule(_module, GetReflectedTypeName());
         }
 
         protected virtual string GetReflectedTypeName()

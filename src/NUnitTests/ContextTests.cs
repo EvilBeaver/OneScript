@@ -180,7 +180,7 @@ namespace NUnitTests
                 ВЗ = 5.7;
                 ВЗ = К.ТестDouble(Арг);");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 wasException = true;
             }
@@ -222,7 +222,7 @@ namespace NUnitTests
                 ВЗ = 5.7;
                 ВЗ = К.ТестInt(Арг);");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 wasException = true;
             }
@@ -263,7 +263,7 @@ namespace NUnitTests
                 ВЗ = 5.7;
                 ВЗ = К.ТестUInt(Арг);");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 wasException = true;
             }
@@ -305,7 +305,7 @@ namespace NUnitTests
                 ВЗ = 5.7;
                 ВЗ = К.ТестLong(Арг);");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 wasException = true;
             }
@@ -347,7 +347,7 @@ namespace NUnitTests
                 ВЗ = 5.7;
                 ВЗ = К.ТестULong(Арг);");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 wasException = true;
             }
@@ -389,7 +389,7 @@ namespace NUnitTests
                 ВЗ = 5.7;
                 ВЗ = К.ТестDateTime(Арг);");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 wasException = true;
             }
@@ -431,7 +431,7 @@ namespace NUnitTests
                 ВЗ = 5.7;
                 ВЗ = К.ТестBool(Арг);");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 wasException = true;
             }

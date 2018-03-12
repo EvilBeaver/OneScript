@@ -22,6 +22,6 @@ namespace ScriptEngine.Machine
 
     internal interface IRunnable : IAttachableContext
     {
-        LoadedModuleHandle Module { get; }
+        LoadedModule Module { get; }
     }
 }

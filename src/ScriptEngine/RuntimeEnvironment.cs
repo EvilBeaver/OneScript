@@ -82,23 +82,35 @@ namespace ScriptEngine
             }
         }
 
+        [Obsolete]
         public void NotifyClassAdded(ScriptModuleHandle module, string symbol)
+        {
+            NotifyClassAdded(module.Module, symbol);
+        }
+
+        [Obsolete]
+        public void NotifyModuleAdded(ScriptModuleHandle module, string symbol)
+        {
+            NotifyModuleAdded(module.Module, symbol);
+        }
+
+        public void NotifyClassAdded(ModuleImage module, string symbol)
         {
             _externalScripts.Add(new UserAddedScript()
                 {
                     Type = UserAddedScriptType.Class,
                     Symbol = symbol,
-                    Module = module
+                    Image = module
                 });
         }
-
-        public void NotifyModuleAdded(ScriptModuleHandle module, string symbol)
+        
+        public void NotifyModuleAdded(ModuleImage module, string symbol)
         {
             var script = new UserAddedScript()
             {
                 Type = UserAddedScriptType.Module,
                 Symbol = symbol,
-                Module = module
+                Image = module
             };
 
             _externalScripts.Add(script);
@@ -158,8 +170,14 @@ namespace ScriptEngine
     public struct UserAddedScript
     {
         public UserAddedScriptType Type;
-        public ScriptModuleHandle Module;
+        public ModuleImage Image;
         public string Symbol;
+
+        [Obsolete]
+        public ScriptModuleHandle Module {
+            get => new ScriptModuleHandle() {Module = Image}; 
+            set => Image = value.Module;
+        }
     }
 
     public enum UserAddedScriptType
