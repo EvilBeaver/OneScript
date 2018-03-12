@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -95,7 +96,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public ClassBuilder<T> ExportScriptFields()
+        public ClassBuilder<T> ExportScriptVariables()
         {
             if(Module == null)
                 throw new InvalidOperationException("Module is not set");
@@ -134,7 +135,9 @@ namespace ScriptEngine.Machine.Reflection
         private ReflectedMethodInfo CreateMethodInfo(MethodInfo methInfo)
         {
             var reflectedMethod = new ReflectedMethodInfo(methInfo.Name);
+            reflectedMethod.SetPrivate(!methInfo.IsExport);
             reflectedMethod.IsFunction = methInfo.IsFunction;
+
             for (int i = 0; i < methInfo.Params.Length; i++)
             {
                 var currentParam = methInfo.Params[i];
@@ -148,6 +151,35 @@ namespace ScriptEngine.Machine.Reflection
 
         }
 
+        public ClassBuilder<T> ExportScriptConstructors()
+        {
+            var statics = typeof(T).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
+                                   .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute));
+
+            foreach (var staticConstructor in statics)
+            {
+                var action = new Func<object[], IRuntimeContextInstance>((parameters) =>
+                {
+                    return (IRuntimeContextInstance)staticConstructor.Invoke(null, SysReflection.BindingFlags.InvokeMethod, null, parameters, CultureInfo.CurrentCulture);
+                });
+
+                ExportConstructor(action);
+            }
+
+            return this;
+        }
+
+        public ClassBuilder<T> ExportDefaults()
+        {
+            ExportMethods();
+            ExportProperties();
+            ExportScriptVariables();
+            ExportScriptMethods();
+            ExportScriptConstructors();
+
+            return this;
+        }
+
         public Type Build()
         {
             var classDelegator = new ReflectedClassType<T>();
@@ -155,8 +187,10 @@ namespace ScriptEngine.Machine.Reflection
             classDelegator.SetFields(_fields);
             classDelegator.SetProperties(_properties);
             classDelegator.SetMethods(_methods);
+            classDelegator.SetConstructors(_constructors);
 
             return classDelegator;
         }
+        
     }
 }

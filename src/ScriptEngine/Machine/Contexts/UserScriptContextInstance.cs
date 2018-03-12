@@ -23,13 +23,13 @@ namespace ScriptEngine.Machine.Contexts
             TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
         }
 
-        internal UserScriptContextInstance(LoadedModule module) : base(module)
+        public UserScriptContextInstance(LoadedModule module) : base(module)
         {
             _module = module;
             ConstructorParams = new IValue[0];
         }
 
-        internal UserScriptContextInstance(LoadedModule module, string asObjectOfType, IValue[] args = null)
+        public UserScriptContextInstance(LoadedModule module, string asObjectOfType, IValue[] args = null)
             : base(module, true)
         {
             DefineType(TypeManager.GetTypeByName(asObjectOfType));

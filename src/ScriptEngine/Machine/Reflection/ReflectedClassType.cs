@@ -62,7 +62,15 @@ namespace ScriptEngine.Machine.Contexts
 
         public override FieldInfo[] GetFields(BindingFlags bindingAttr)
         {
-            return _fields;
+            IEnumerable<FieldInfo> result;
+            bool showPublic = bindingAttr.HasFlag(BindingFlags.Public);
+            bool showPrivate = bindingAttr.HasFlag(BindingFlags.NonPublic);
+            if (showPublic && showPrivate)
+                result = _fields;
+            else
+                result = _fields.Where(x => x.IsPublic && showPublic || x.IsPrivate && showPrivate);
+            
+            return result.ToArray();
         }
 
         public override FieldInfo GetField(string name, BindingFlags bindingAttr)
@@ -82,12 +90,22 @@ namespace ScriptEngine.Machine.Contexts
 
         public override System.Reflection.MethodInfo[] GetMethods(BindingFlags bindingAttr)
         {
-            return _methods;
+            bool showPrivate = bindingAttr.HasFlag(BindingFlags.NonPublic);
+            bool showPublic = bindingAttr.HasFlag(BindingFlags.Public);
+            return _methods.Where(x=>x.IsPublic && showPublic || x.IsPrivate && showPrivate).ToArray();
         }
 
         public override PropertyInfo[] GetProperties(BindingFlags bindingAttr)
         {
-            return _properties;
+            bool showPrivate = bindingAttr.HasFlag(BindingFlags.NonPublic);
+            bool showPublic = bindingAttr.HasFlag(BindingFlags.Public);
+
+            return _properties.Where(x =>
+            {
+                var isPublic = (x.GetMethod?.IsPublic) == true || (x.SetMethod?.IsPublic) == true;
+                return isPublic && showPublic || !isPublic && showPrivate;
+
+            }).ToArray();
         }
 
         protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
@@ -113,6 +131,8 @@ namespace ScriptEngine.Machine.Contexts
 
             switch (type)
             {
+                case MemberTypes.Field:
+                    return new MemberInfo[] { GetField(name, bindingAttr) };
                 case MemberTypes.Method:
                     return new MemberInfo[] { GetMethod(name, bindingAttr) };
                 case MemberTypes.Property:
