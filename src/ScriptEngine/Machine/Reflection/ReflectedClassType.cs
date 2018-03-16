@@ -10,6 +10,8 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 
+using ScriptEngine.Machine.Reflection;
+
 namespace ScriptEngine.Machine.Contexts
 {
     public class ReflectedClassType<T> : TypeDelegator where T : ScriptDrivenObject
@@ -32,7 +34,15 @@ namespace ScriptEngine.Machine.Contexts
 
         public void SetFields(IEnumerable<FieldInfo> source)
         {
-            _fields = source.ToArray();
+            _fields = source.Select(x =>
+            {
+                if (x is ReflectedFieldInfo refl)
+                {
+                    refl.SetDeclaringType(this);
+                }
+
+                return x;
+            }).ToArray();
         }
 
         public void SetProperties(IEnumerable<PropertyInfo> source)
@@ -42,12 +52,26 @@ namespace ScriptEngine.Machine.Contexts
 
         public void SetMethods(IEnumerable<System.Reflection.MethodInfo> source)
         {
-            _methods = source.ToArray();
+            _methods = source.Select(x =>
+            {
+                if (x is ReflectedMethodInfo refl)
+                {
+                    refl.SetDeclaringType(this);
+                }
+
+                return x;
+            }).ToArray();
         }
 
         public void SetConstructors(IEnumerable<System.Reflection.ConstructorInfo> source)
         {
-            _constructors = source.ToArray();
+            _constructors = source.Select(x =>
+            {
+                if(x is ReflectedConstructorInfo refl)
+                    refl.SetDeclaringType(this);
+                return x;
+
+            }).ToArray();
         }
 
         public override string Name => _typeName;

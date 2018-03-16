@@ -115,7 +115,6 @@ namespace ScriptEngine.Machine.Reflection
                     System.Diagnostics.Debug.Assert(variable.Index == exported.Index, "indices of vars and exports are equal");
 
                 var fieldInfo = new ReflectedFieldInfo(variable, exportFlag);
-                fieldInfo.SetDeclaringType(typeof(T));
                 _fields.Add(fieldInfo);
             }
 
@@ -131,7 +130,6 @@ namespace ScriptEngine.Machine.Reflection
             {
                 var methodDescriptor = Module.Methods[i];
                 var methInfo = CreateMethodInfo(methodDescriptor.Signature);
-                methInfo.SetDispId(i);
                 _methods.Add(methInfo);
             }
 

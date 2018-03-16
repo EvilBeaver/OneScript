@@ -99,9 +99,18 @@ namespace ScriptEngine.Machine.Contexts
             IValue[] engineParameters = parameters.Select(x => COMWrapperContext.CreateIValue(x)).ToArray();
             IValue retVal = null;
 
-            inst.CallAsFunction(_dispId, engineParameters, out retVal);
+            inst.CallAsFunction(GetDispatchIndex(inst), engineParameters, out retVal);
 
             return COMWrapperContext.MarshalIValue(retVal);
+        }
+
+        private int GetDispatchIndex(IRuntimeContextInstance obj)
+        {
+            if (_dispId != -1)
+                return obj.FindMethod(Name);
+
+            return _dispId;
+            
         }
 
         public override RuntimeMethodHandle MethodHandle
