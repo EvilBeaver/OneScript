@@ -26,28 +26,25 @@ namespace oscript.DebugServer
             var runningState = new RunningState(this);
             var stoppedState = new StoppedState(this);
 
+            // from initial
             DebugFsm.AddTransition(initialState, "run", runningState);
             DebugFsm.AddTransition(initialState, "help", initialState);
             DebugFsm.AddTransition(initialState, "bp", initialState);
-            DebugFsm.AddTransition(initialState, "exit", initialState); // выход пока не проработан
-            DebugFsm.AddTransition(runningState, "break", stoppedState);
+            DebugFsm.AddTransition(initialState, "exit", new FinalState(this));
+            // from stopped
+            DebugFsm.AddTransition(stoppedState, "run", runningState);
+            DebugFsm.AddTransition(stoppedState, "help", stoppedState);
+            DebugFsm.AddTransition(stoppedState, "bp", stoppedState);
+            DebugFsm.AddTransition(initialState, "exit", new FinalState(this));
+
         }
 
         public DebuggerFSM DebugFsm { get; }
 
-        public void WaitForDebugEvent(DebugEventType theEvent)
+        public override void Wait()
         {
-            switch (theEvent)
-            {
-                case DebugEventType.BeginExecution:
-
-                    DebugFsm.Start();
-                    DebugCommandEvent.Wait();
-
-                    break;
-                default:
-                    throw new InvalidOperationException($"event {theEvent} cant't be waited");
-            }
+            DebugFsm.Start();
+            base.Wait();
         }
 
         public override void NotifyProcessExit(int exitCode)

@@ -22,19 +22,16 @@ namespace OneScript.DebugProtocol.FSM
         {
             RunCommand(command, arguments);
         }
+
+        public abstract void Enter();
         
-        public virtual void Enter()
-        {
-            
-        }
-        
-        public IEnumerable<DebuggerCommandDescription> Commands => _commands;
+        public List<DebuggerCommandDescription> Commands => _commands;
 
         protected void AddCommand(DebuggerCommandDescription cmd)
         {
             _commands.Add(cmd);
         }
-
+        
         protected void RunCommand(string cmd, object[] args)
         {
             var cmdDescr = Commands.First(x => x.Command == cmd);

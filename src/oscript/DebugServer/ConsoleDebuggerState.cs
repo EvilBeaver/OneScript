@@ -15,7 +15,7 @@ using OneScript.DebugProtocol.FSM;
 
 namespace oscript.DebugServer
 {
-    internal abstract class ConsoleDebuggerState : DebuggerState
+    abstract class ConsoleDebuggerState : DebuggerState
     {
         protected InteractiveDebugController Controller { get; }
 
