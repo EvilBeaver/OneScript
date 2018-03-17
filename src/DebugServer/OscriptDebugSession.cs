@@ -321,8 +321,8 @@ namespace DebugServer
         {
             var firstFrameIdx = (int?)arguments.startFrame ?? 0;
             var limit = (int?) arguments.levels ?? 0;
-
-            var processFrames = _process.GetStackTrace(firstFrameIdx, limit);
+            var threadId = (int) arguments.threadId;
+            var processFrames = _process.GetStackTrace(threadId, firstFrameIdx, limit);
             var frames = new VSCodeDebug.StackFrame[processFrames.Length];
             for (int i = 0; i < processFrames.Length; i++)
             {

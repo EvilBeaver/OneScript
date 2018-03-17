@@ -26,9 +26,7 @@ namespace oscript.DebugServer
     internal class WcfDebugService : IDebuggerService
     {
         private WcfDebugController Controller { get; }
-
-        public MachineInstance Machine { get; set; }
-
+        
         public WcfDebugService(WcfDebugController controller)
         {
             Controller = controller;
@@ -36,11 +34,12 @@ namespace oscript.DebugServer
 
         #region WCF Communication methods
 
-        public void Execute()
+        public void Execute(int threadId)
         {
             RegisterEventListener();
-            Machine.PrepareDebugContinuation();
-            Controller.ThreadEvent.Set();
+            var token = Controller.GetTokenForThread(threadId);
+            token.Machine.PrepareDebugContinuation();
+            token.ThreadEvent.Set();
         }
 
         private void RegisterEventListener()
@@ -64,7 +63,10 @@ namespace oscript.DebugServer
                     .Select(x => x.Line)
                     .ToArray();
 
-                Machine.SetBreakpointsForModule(item.Key, lines);
+                foreach (var machine in Controller.GetAllTokens().Select(x=>x.Machine))
+                {
+                    machine.SetBreakpointsForModule(item.Key, lines);
+                }
 
                 foreach (var line in lines)
                 {
@@ -80,9 +82,10 @@ namespace oscript.DebugServer
             return confirmedBreakpoints.ToArray();
         }
 
-        public StackFrame[] GetStackFrames()
+        public StackFrame[] GetStackFrames(int threadId)
         {
-            var frames = Machine.GetExecutionFrames();
+            var machine = Controller.GetTokenForThread(threadId).Machine;
+            var frames = machine.GetExecutionFrames();
             var result = new StackFrame[frames.Count];
             int index = 0;
             foreach (var frameInfo in frames)
@@ -98,9 +101,10 @@ namespace oscript.DebugServer
             return result;
         }
 
-        public OneScript.DebugProtocol.Variable[] GetVariables(int frameId, int[] path)
+        public OneScript.DebugProtocol.Variable[] GetVariables(int threadId, int frameId, int[] path)
         {
-            var locals = Machine.GetFrameLocals(frameId);
+            var machine = Controller.GetTokenForThread(threadId).Machine;
+            var locals = machine.GetFrameLocals(frameId);
             foreach (var step in path)
             {
                 var variable = locals[step];
@@ -141,11 +145,11 @@ namespace oscript.DebugServer
             return result;
         }
 
-        public Variable Evaluate(int contextFrame, string expression)
+        public Variable Evaluate(int threadId, int contextFrame, string expression)
         {
             try
             {
-                var value = Machine.Evaluate(expression, true);
+                var value = GetMachine(threadId).Evaluate(expression, true);
                 return new Variable()
                 {
                     Name = "$evalResult",
@@ -166,22 +170,30 @@ namespace oscript.DebugServer
             }
         }
 
-        public void Next()
+        public void Next(int threadId)
         {
-            Machine.StepOver();
-            Controller.ThreadEvent.Set();
+            var t = Controller.GetTokenForThread(threadId);
+            t.Machine.StepOver();
+            t.ThreadEvent.Set();
         }
 
-        public void StepIn()
+        public void StepIn(int threadId)
         {
-            Machine.StepIn();
-            Controller.ThreadEvent.Set();
+            var t = Controller.GetTokenForThread(threadId);
+            t.Machine.StepIn();
+            t.ThreadEvent.Set();
         }
 
-        public void StepOut()
+        public void StepOut(int threadId)
         {
-            Machine.StepOut();
-            Controller.ThreadEvent.Set();
+            var t = Controller.GetTokenForThread(threadId);
+            t.Machine.StepOut();
+            t.ThreadEvent.Set();
+        }
+
+        private MachineInstance GetMachine(int threadId)
+        {
+            return Controller.GetTokenForThread(threadId).Machine;
         }
 
         private static bool HasProperties(IValue variable)

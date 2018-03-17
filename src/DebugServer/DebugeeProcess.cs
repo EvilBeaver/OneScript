@@ -146,12 +146,12 @@ namespace DebugServer
 
         public void BeginExecution()
         {
-            _debugger.Instance.Execute();
+            _debugger.Instance.Execute(1);
         }
         
-        public StackFrame[] GetStackTrace(int firstFrameIdx, int limit)
+        public StackFrame[] GetStackTrace(int threadId, int firstFrameIdx, int limit)
         {
-            var allFrames = _debugger.Instance.GetStackFrames();
+            var allFrames = _debugger.Instance.GetStackFrames(threadId);
             
             if (limit == 0)
                 limit = allFrames.Length;
@@ -178,7 +178,7 @@ namespace DebugServer
         {
             try
             {
-                return _debugger.Instance.Evaluate(0, expression);
+                return _debugger.Instance.Evaluate(frame.ThreadId, frame.Index, expression);
             }
             catch (FaultException e)
             {
@@ -188,17 +188,17 @@ namespace DebugServer
 
         public void Next()
         {
-            _debugger.Instance.Next();
+            _debugger.Instance.Next(1);
         }
 
         public void StepIn()
         {
-            _debugger.Instance.StepIn();
+            _debugger.Instance.StepIn(1);
         }
 
         internal void StepOut()
         {
-            _debugger.Instance.StepOut();
+            _debugger.Instance.StepOut(1);
         }
     }
 }

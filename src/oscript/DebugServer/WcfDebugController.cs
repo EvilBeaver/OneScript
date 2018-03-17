@@ -21,16 +21,14 @@ namespace oscript.DebugServer
         private readonly int _port;
         private ServiceHost _serviceHost;
         private IDebugEventListener _eventChannel;
-
+        
         private MachineInstance _machine;
 
         public WcfDebugController(int listenerPort)
         {
             _port = listenerPort;
         }
-
-        public ManualResetEventSlim ThreadEvent => DebugCommandEvent;
-
+        
         private ThreadStopReason ConvertStopReason(MachineStopReason reason)
         {
             switch(reason)
@@ -46,26 +44,14 @@ namespace oscript.DebugServer
             }
         }
 
-        public override void WaitForDebugEvent(DebugEventType theEvent)
+        public override void Init()
         {
-            switch (theEvent)
-            {
-                case DebugEventType.BeginExecution:
-
-                    var serviceInstance = new WcfDebugService(this);
-                    serviceInstance.Machine = _machine;
-                    var host = new ServiceHost(serviceInstance);
-                    var binding = Binder.GetBinding();
-                    host.AddServiceEndpoint(typeof(IDebuggerService), binding, Binder.GetDebuggerUri(_port));
-                    _serviceHost = host;
-                    host.Open();
-
-                    DebugCommandEvent.Wait(); // процесс 1скрипт не стартует, пока не получено разрешение от дебагера
-
-                    break;
-                default:
-                    throw new InvalidOperationException($"event {theEvent} cant't be waited");
-            }
+            var serviceInstance = new WcfDebugService(this);
+            var host = new ServiceHost(serviceInstance);
+            var binding = Binder.GetBinding();
+            host.AddServiceEndpoint(typeof(IDebuggerService), binding, Binder.GetDebuggerUri(_port));
+            _serviceHost = host;
+            host.Open();
 
         }
 
@@ -78,20 +64,15 @@ namespace oscript.DebugServer
             _serviceHost?.Close();
         }
 
-        public override void OnMachineReady(MachineInstance instance)
-        {
-            base.OnMachineReady(instance);
-            _machine = instance;
-        }
-
         protected override void OnMachineStopped(MachineInstance machine, MachineStopReason reason)
         {
             if (!CallbackChannelIsReady())
                 return; // нет подписчика
 
-            DebugCommandEvent.Reset();
+            var handle = GetTokenForThread(Thread.CurrentThread.ManagedThreadId);
+            handle.ThreadEvent.Reset();
             _eventChannel.ThreadStopped(1, ConvertStopReason(reason));
-            DebugCommandEvent.Wait();
+            handle.ThreadEvent.Wait();
         }
 
         private bool CallbackChannelIsReady()

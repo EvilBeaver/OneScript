@@ -17,6 +17,8 @@ namespace oscript.DebugServer
 {
     internal class InteractiveDebugController : DebugControllerBase
     {
+        protected ManualResetEventSlim DebugCommandEvent { get; } = new ManualResetEventSlim();
+
         public InteractiveDebugController()
         {
             DebugFsm = new DebuggerFSM();
@@ -33,9 +35,19 @@ namespace oscript.DebugServer
 
         public DebuggerFSM DebugFsm { get; }
 
-        public override void WaitForDebugEvent(DebugEventType theEvent)
+        public void WaitForDebugEvent(DebugEventType theEvent)
         {
-            throw new NotImplementedException();
+            switch (theEvent)
+            {
+                case DebugEventType.BeginExecution:
+
+                    DebugFsm.Start();
+                    DebugCommandEvent.Wait();
+
+                    break;
+                default:
+                    throw new InvalidOperationException($"event {theEvent} cant't be waited");
+            }
         }
 
         public override void NotifyProcessExit(int exitCode)
@@ -56,8 +68,7 @@ namespace oscript.DebugServer
 
         private void InteractiveInput()
         {
-            bool selected = false;
-            while (!selected)
+            while (true)
             {
                 Output.Write($"{((ConsoleDebuggerState)DebugFsm.CurrentState).Prompt}>");
                 var line = Console.ReadLine();
@@ -66,6 +77,7 @@ namespace oscript.DebugServer
                 try
                 {
                     DebugFsm.DispatchCommand(commandName, parser.Tail());
+                    break;
                 }
                 catch (InvalidDebuggerCommandException)
                 {
