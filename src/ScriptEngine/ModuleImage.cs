@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using ScriptEngine.Machine;
@@ -14,7 +15,7 @@ using ScriptEngine.Environment;
 namespace ScriptEngine
 {
     [Serializable]
-    class ModuleImage
+    public class ModuleImage
     {
         public ModuleImage()
         {
@@ -38,12 +39,13 @@ namespace ScriptEngine
         public IList<ConstDefinition> Constants { get; set; }
         public IList<ExportedSymbol> ExportedProperties { get; set; }
         public IList<ExportedSymbol> ExportedMethods { get; set; }
+        public int LoadAddress { get; set; }
 
         // Привязка к исходному коду для отладочной информации в RuntimeException
         [NonSerialized]
         private ModuleInformation _source;
 
-        internal ModuleInformation ModuleInfo 
+        public ModuleInformation ModuleInfo 
         {
             get
             {
@@ -54,10 +56,29 @@ namespace ScriptEngine
                 _source = value;
             }
         }
+
+        private static ModuleImage _emptyInstance;
+
+        static ModuleImage()
+        {
+        }
+
+        public static ModuleImage EmptyModule
+        {
+            get
+            {
+                if (_emptyInstance == null)
+                {
+                    _emptyInstance = new ModuleImage();
+                }
+
+                return _emptyInstance;
+            }
+        }
     }
 
     [Serializable]
-    struct MethodDescriptor
+    public struct MethodDescriptor
     {
         public MethodInfo Signature;
         public VariablesFrame Variables;
@@ -65,7 +86,7 @@ namespace ScriptEngine
     }
 
     [Serializable]
-    struct ExportedSymbol
+    public struct ExportedSymbol
     {
         public string SymbolicName;
         public int Index;

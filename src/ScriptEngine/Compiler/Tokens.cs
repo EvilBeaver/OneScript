@@ -65,7 +65,7 @@ namespace ScriptEngine.Compiler
             AddToken(Token.Loop, "цикл", "do");
             AddToken(Token.EndLoop, "конеццикла", "enddo");
             AddToken(Token.Return, "возврат", "return");
-            AddToken(Token.Continue, "продолжить", "contınue");
+            AddToken(Token.Continue, "продолжить", "continue");
             AddToken(Token.Break, "прервать", "break");
             AddToken(Token.Try, "попытка", "try");
             AddToken(Token.Exception, "исключение", "except");

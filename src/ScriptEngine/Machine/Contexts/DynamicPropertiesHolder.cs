@@ -75,6 +75,18 @@ namespace ScriptEngine.Machine.Contexts
             return _propNumbers.AsEnumerable();
         }
 
+        public VariableInfo GetPropertyInfo(int idx)
+        {
+            return new VariableInfo()
+            {
+                Identifier = GetPropertyName(idx),
+                CanGet = true,
+                CanSet = true,
+                Index = idx,
+                Type = SymbolType.ContextProperty
+            };
+        }
+
         public int Count => _propNumbers.Count;
         
         private bool IsValidIdentifier(string name)

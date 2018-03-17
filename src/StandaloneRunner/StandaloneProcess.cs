@@ -12,6 +12,7 @@ using System.Reflection;
 
 using oscript;
 
+using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
@@ -53,7 +54,7 @@ namespace StandaloneRunner
 
             try
             {
-                ScriptModuleHandle module;
+                ModuleImage module;
                 engine.Initialize();
 
                 using (var binReader = new BinaryReader(_sourceStream))
@@ -71,7 +72,7 @@ namespace StandaloneRunner
                         engine.LoadUserScript(userScript);
                     }
 
-                    module = entry.Module;
+                    module = entry.Image;
                 }
 
                 var process = engine.CreateProcess(this, module, src);

@@ -77,6 +77,9 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Свойство", "Property")]
         public bool HasProperty(string name, [ByRef] IVariable value = null)
         {
+            if (!Utils.IsValidIdentifier(name))
+                throw new RuntimeException("Задано неправильное имя атрибута структуры");
+
             int propIndex;
             try
             {

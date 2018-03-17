@@ -48,7 +48,7 @@ namespace ScriptEngine.Machine
             public int stackSize;
         }
         
-        public void AttachContext(IAttachableContext context, bool detachable)
+        public void AttachContext(IAttachableContext context)
         {
             IVariable[] vars;
             MethodInfo[] methods;
@@ -57,8 +57,7 @@ namespace ScriptEngine.Machine
             {
                 Variables = vars,
                 Methods = methods,
-                Instance = context,
-                Detachable = detachable
+                Instance = context
             };
 
             _scopes.Add(scope);
@@ -86,7 +85,7 @@ namespace ScriptEngine.Machine
 
         internal void ExecuteModuleBody(IRunnable sdo)
         {
-            var module = sdo.Module.Module;
+            var module = sdo.Module;
             if (module.EntryMethodIndex >= 0)
             {
                 var entryRef = module.MethodRefs[module.EntryMethodIndex];
@@ -104,8 +103,12 @@ namespace ScriptEngine.Machine
             for (int i = 0; i < arguments.Length; i++)
             {
                 if (arguments[i] is IVariable)
-                    _currentFrame.Locals[i] = Variable.CreateReference((IVariable)arguments[i], method.Variables[i]);
-                else if(arguments[i] == null)
+                {
+                    // TODO: Alias ?
+                    _currentFrame.Locals[i] =
+                        Variable.CreateReference((IVariable) arguments[i], method.Variables[i].Identifier);
+                }
+                else if (arguments[i] == null)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
                 else
                     _currentFrame.Locals[i] = Variable.Create(arguments[i], method.Variables[i]);
@@ -222,11 +225,11 @@ namespace ScriptEngine.Machine
             
             var mlocals = new Scope();
             mlocals.Instance = new UserScriptContextInstance(code);
-            mlocals.Detachable = true;
             mlocals.Methods = TopScope.Methods;
             mlocals.Variables = _currentFrame.Locals;
             runner._scopes.Add(mlocals);
             frame.ModuleScope = mlocals;
+            frame.ModuleLoadIndex = runner._scopes.Count - 1;
 
             try
             {
@@ -237,8 +240,8 @@ namespace ScriptEngine.Machine
             {
                 if (!separate)
                 {
-                    _scopes.RemoveAt(_scopes.Count - 1);
                     PopFrame();
+                    _scopes.RemoveAt(_scopes.Count - 1);
                 }
             }
 
@@ -286,7 +289,6 @@ namespace ScriptEngine.Machine
         
         private void PushFrame(ExecutionFrame frame)
         {
-            //CodeStat_StopFrameStatistics();
             _callStack.Push(frame);
             SetFrame(frame);
         }
@@ -295,13 +297,12 @@ namespace ScriptEngine.Machine
         {
             _callStack.Pop();
             SetFrame(_callStack.Peek());
-            //CodeStat_ResumeFrameStatistics();
         }
 
         private void SetFrame(ExecutionFrame frame)
         {
             SetModule(frame.Module);
-            _scopes[_scopes.Count - 1] = frame.ModuleScope;
+            _scopes[frame.ModuleLoadIndex] = frame.ModuleScope;
             _currentFrame = frame;
         }
         
@@ -332,13 +333,14 @@ namespace ScriptEngine.Machine
         
         private void PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
         {
-            var module = sdo.Module.Module;
+            var module = sdo.Module;
             var methDescr = module.Methods[methodIndex];
-            var frame = new ExecutionFrame();
+            var frame = CreateNewFrame();
             frame.MethodName = methDescr.Signature.Name;
             frame.Locals = new IVariable[methDescr.Variables.Count];
             frame.Module = module;
             frame.ModuleScope = CreateModuleScope(sdo);
+            frame.ModuleLoadIndex = module.LoadAddress;
             frame.IsReentrantCall = true;
             for (int i = 0; i < frame.Locals.Length; i++)
             {
@@ -835,6 +837,13 @@ namespace ScriptEngine.Machine
             _currentFrame.DiscardReturnValue = needsDiscarding;
         }
 
+        private ExecutionFrame CreateNewFrame()
+        {
+            var frame = new ExecutionFrame();
+            frame.ModuleLoadIndex = _scopes.Count - 1;
+            return frame;
+        }
+
         private bool MethodCallImpl(int arg, bool asFunc)
         {
             var methodRef = _module.MethodRefs[arg];
@@ -883,7 +892,7 @@ namespace ScriptEngine.Machine
                     NextInstruction();
 
                     var methDescr = _module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
-                    var frame = new ExecutionFrame();
+                    var frame = CreateNewFrame();
                     frame.Module = _module;
                     frame.ModuleScope = TopScope;
                     frame.MethodName = methInfo.Name;
@@ -902,7 +911,9 @@ namespace ScriptEngine.Machine
                                 }
                                 else
                                 {
-                                    frame.Locals[i] = Variable.CreateReference((IVariable)argValues[i], methDescr.Variables[i]);
+                                    // TODO: Alias ?
+                                    frame.Locals[i] = Variable.CreateReference((IVariable) argValues[i],
+                                        methDescr.Variables[i].Identifier);
                                 }
                             }
                             else if (argValues[i] == null)
@@ -1502,17 +1513,22 @@ namespace ScriptEngine.Machine
             
             var frame = new ExecutionFrame();
             frame.MethodName = module.ModuleInfo.ModuleName;
-            frame.Locals = new IVariable[0];
+            var method = module.Methods[0];
+            frame.Locals = new IVariable[method.Variables.Count];
             frame.InstructionPointer = 0;
             frame.Module = module;
+            for (int i = 0; i < frame.Locals.Length; i++)
+            {
+                frame.Locals[i] = Variable.Create(ValueFactory.Create(), method.Variables[i]);
+            }
 
             var mlocals = new Scope();
             mlocals.Instance = new UserScriptContextInstance(module);
-            mlocals.Detachable = true;
             mlocals.Methods = TopScope.Methods;
             mlocals.Variables = _currentFrame.Locals;
             _scopes.Add(mlocals);
             frame.ModuleScope = mlocals;
+            frame.ModuleLoadIndex = _scopes.Count - 1;
 
             try
             {
@@ -1521,8 +1537,8 @@ namespace ScriptEngine.Machine
             }
             finally
             {
-                _scopes.RemoveAt(_scopes.Count - 1);
                 PopFrame();
+                _scopes.RemoveAt(_scopes.Count - 1);
             }
 
             NextInstruction();
