@@ -76,6 +76,11 @@ namespace oscript.DebugServer
             return _machinesOnThreads.Values.ToArray();
         }
 
+        public int[] GetAllThreadIds()
+        {
+            return _machinesOnThreads.Keys.ToArray();
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             var tokens = GetAllTokens();

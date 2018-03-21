@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Linq;
 
 using ScriptEngine.Machine;
 
@@ -34,6 +35,14 @@ namespace oscript.DebugServer
 
             AddCommand(new ConsoleDebugCommandDescription()
             {
+                Command = "threads",
+                HelpString = "Список потоков, выполняющих скрипты",
+                Action = GetThreadsAction
+
+            });
+
+            AddCommand(new ConsoleDebugCommandDescription()
+            {
                 Command = "help",
                 HelpString = "Показывает эту справку",
                 Action = PrintHelp
@@ -49,9 +58,17 @@ namespace oscript.DebugServer
             AddCommand(new ConsoleDebugCommandDescription()
             {
                 Command = "run",
-                HelpString = "Запуск потока выполнения",
+                HelpString = "Запуск потока выполнения\n\t[номер-потока] - необязательный номер потока, который нужно стартовать",
                 Action = (args) => { }
             });
+        }
+
+        private void GetThreadsAction(object[] obj)
+        {
+            foreach (var threadId in Controller.GetAllThreadIds())
+            {
+                Output.WriteLine(threadId.ToString());
+            }
         }
 
         private void ExitDebugger(object[] obj)
@@ -69,7 +86,31 @@ namespace oscript.DebugServer
 
         private void SetBpAction(object[] args)
         {
-            Output.WriteLine("SetBP - dummy execution");
+            var argsWalk = GetArgsWalker(args);
+            var srcLine = argsWalk.Next();
+            var lineNumberStr = argsWalk.Next();
+            if (srcLine == null || lineNumberStr == null)
+            {
+                PrintHelp(new object[]{"bp"});
+                return;
+            }
+
+            int lineNumber;
+            if (!Int32.TryParse(lineNumberStr, out lineNumber))
+            {
+                Output.WriteLine("Некорректный номер строки");
+            }
+
+            foreach (var token in Controller.GetAllTokens())
+            {
+                token.Machine.SetBreakpoint(srcLine, lineNumber, out var bpId);
+                Output.WriteLine("Установлена точка " + bpId);
+            }
+        }
+
+        private static CmdLineHelper GetArgsWalker(object[] args)
+        {
+            return new CmdLineHelper(args.Cast<string>().ToArray());
         }
 
         public override void Enter()
@@ -79,10 +120,27 @@ namespace oscript.DebugServer
 
         private void PrintHelp(object[] args)
         {
-            Output.WriteLine("Доступные команды:");
-            foreach (var cmdDescr in Commands)
+            if (args.Length == 0)
             {
-                Output.WriteLine(cmdDescr.Command);
+                Output.WriteLine("Доступные команды:");
+                foreach (var cmdDescr in Commands)
+                {
+                    Output.WriteLine(cmdDescr.Command);
+                }
+            }
+            else
+            {
+                var argsWalk = GetArgsWalker(args);
+                var cmdName = argsWalk.Next();
+                var command = Commands.Find(x => x.Command == cmdName) as ConsoleDebugCommandDescription;
+                if (command == null)
+                {
+                    Output.WriteLine($"Неизвестная команда {cmdName}");
+                }
+                else
+                {
+                    Output.WriteLine(command.HelpString);
+                }
             }
         }
     }

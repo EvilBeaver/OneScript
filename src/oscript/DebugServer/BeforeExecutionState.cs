@@ -28,10 +28,15 @@ namespace oscript.DebugServer
             Commands.Clear();
             Commands.AddRange(newCommands);
 
-            Output.WriteLine("Режим ожидания запуска. Ни одна строка кода еще не выполнена.\n" +
+            if(!_initialPromptPrinted)
+            {
+                Output.WriteLine("Режим ожидания запуска. Ни одна строка кода еще не выполнена.\n" +
                                  "Для просмотра списка доступных команд введите help\n" +
                                  "Для запуска программы введите run\n" +
                                  "Выход: exit\n");
+
+                _initialPromptPrinted = true;
+            }
 
             base.Enter();
         }

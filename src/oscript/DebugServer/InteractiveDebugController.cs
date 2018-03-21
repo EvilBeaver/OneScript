@@ -28,11 +28,13 @@ namespace oscript.DebugServer
 
             // from initial
             DebugFsm.AddTransition(initialState, "run", runningState);
+            DebugFsm.AddTransition(initialState, "threads", initialState);
             DebugFsm.AddTransition(initialState, "help", initialState);
             DebugFsm.AddTransition(initialState, "bp", initialState);
             DebugFsm.AddTransition(initialState, "exit", new FinalState(this));
             // from stopped
             DebugFsm.AddTransition(stoppedState, "run", runningState);
+            DebugFsm.AddTransition(stoppedState, "threads", stoppedState);
             DebugFsm.AddTransition(stoppedState, "help", stoppedState);
             DebugFsm.AddTransition(stoppedState, "bp", stoppedState);
             DebugFsm.AddTransition(initialState, "exit", new FinalState(this));

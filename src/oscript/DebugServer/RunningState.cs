@@ -28,8 +28,7 @@ namespace oscript.DebugServer
 
         public override void Enter()
         {
-            throw new NotImplementedException();
-            //Controller.Execute();
+            
         }
     }
 }
