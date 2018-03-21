@@ -5,14 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+
 namespace ScriptEngine.Machine
 {
-    public interface IDebugController
+    public interface IDebugController : IDisposable
     {
-        void WaitForDebugEvent(DebugEventType theEvent);
-
-        void OnMachineReady(MachineInstance instance);
-
+        void Init();
+        void Wait();
         void NotifyProcessExit(int exitCode);
+
+        void AttachToThread(MachineInstance machine);
     }
 }

@@ -201,8 +201,12 @@ namespace ScriptEngine.HostedScript
         {
             SetGlobalEnvironment(host, src);
             Initialize();
-            _engine.DebugController?.OnMachineReady(_engine.Machine);
-            _engine.DebugController?.WaitForDebugEvent(DebugEventType.BeginExecution);
+            if (_engine.DebugController != null)
+            {
+                _engine.DebugController.Init();
+                _engine.DebugController.AttachToThread(_engine.Machine);
+                _engine.DebugController.Wait();
+            }
             var module = _engine.LoadModuleImage(compilerSvc.Compile(src));
             return InitProcess(host, module);
         }

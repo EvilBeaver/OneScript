@@ -23,7 +23,7 @@ namespace OneScript.DebugProtocol
         /// Все точки останова уже установлены, все настройки сделаны
         /// </summary>
         [OperationContract(IsOneWay = true)]
-        void Execute();
+        void Execute(int threadId);
         
         /// <summary>
         /// Установка точек остановки
@@ -37,7 +37,7 @@ namespace OneScript.DebugProtocol
         /// Запрашивает состояние кадров стека вызовов
         /// </summary>
         [OperationContract]
-        StackFrame[] GetStackFrames();
+        StackFrame[] GetStackFrames(int threadId);
 
         /// <summary>
         /// Получает значения переменных
@@ -46,7 +46,7 @@ namespace OneScript.DebugProtocol
         /// <param name="path"></param>
         /// <returns></returns>
         [OperationContract]
-        Variable[] GetVariables(int frameIndex, int[] path);
+        Variable[] GetVariables(int threadId, int frameIndex, int[] path);
 
         /// <summary>
         /// Вычисление выражения на остановленном процессе
@@ -55,18 +55,32 @@ namespace OneScript.DebugProtocol
         /// <param name="expression">Выражение</param>
         /// <returns>Переменная с результатом</returns>
         [OperationContract]
-        Variable Evaluate(int contextFrame, string expression);
+        Variable Evaluate(int threadId, int contextFrame, string expression);
 
         [OperationContract(IsOneWay = true)]
-        void Next();
+        void Next(int threadId);
 
         [OperationContract(IsOneWay = true)]
-        void StepIn();
+        void StepIn(int threadId);
 
         [OperationContract(IsOneWay = true)]
-        void StepOut();
+        void StepOut(int threadId);
+
+        [OperationContract]
+        int[] GetThreads();
     }
 
+    //public class ThreadStoppedEventArgs : EventArgs
+    //{
+    //    public ThreadStopReason Reason { get; set; }
+    //}
+
+    //public class ProcessExitedEventArgs : EventArgs
+    //{
+    //    public int ThreadId { get; set; }
+    //    public ThreadStopReason Reason { get; set; }
+    //}
+    
     public interface IDebugEventListener
     {
         [OperationContract(IsOneWay = true)]
