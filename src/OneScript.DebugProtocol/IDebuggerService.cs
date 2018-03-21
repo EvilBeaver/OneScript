@@ -66,8 +66,8 @@ namespace OneScript.DebugProtocol
         [OperationContract(IsOneWay = true)]
         void StepOut(int threadId);
 
-        //event EventHandler<ProcessExitedEventArgs> ProcessExited;
-        //event EventHandler<ThreadStoppedEventArgs> ThreadStopped;
+        [OperationContract]
+        int[] GetThreads();
     }
 
     //public class ThreadStoppedEventArgs : EventArgs

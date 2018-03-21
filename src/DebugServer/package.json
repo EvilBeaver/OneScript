@@ -35,7 +35,7 @@
       {
         "type": "oscript",
         "label": "1Script Debugger",
-        "program": "./bin/Debug/DebugServer.exe",
+        "program": "./bin/Debug/net452/DebugServer.exe",
         "osx": {
           "runtime": "mono"
         },

@@ -37,9 +37,21 @@ namespace oscript.DebugServer
         public void Execute(int threadId)
         {
             RegisterEventListener();
-            var token = Controller.GetTokenForThread(threadId);
-            token.Machine.PrepareDebugContinuation();
-            token.ThreadEvent.Set();
+            if (threadId > 0)
+            {
+                var token = Controller.GetTokenForThread(threadId);
+                token.Machine.PrepareDebugContinuation();
+                token.ThreadEvent.Set();        
+            }
+            else
+            {
+                var tokens = Controller.GetAllTokens();
+                foreach (var token in tokens)
+                {
+                    token.Machine.PrepareDebugContinuation();
+                    token.ThreadEvent.Set();
+                }
+            }
         }
 
         private void RegisterEventListener()
@@ -189,6 +201,11 @@ namespace oscript.DebugServer
             var t = Controller.GetTokenForThread(threadId);
             t.Machine.StepOut();
             t.ThreadEvent.Set();
+        }
+
+        public int[] GetThreads()
+        {
+            return Controller.GetAllThreadIds();
         }
 
         private MachineInstance GetMachine(int threadId)

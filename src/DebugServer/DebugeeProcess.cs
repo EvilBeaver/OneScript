@@ -144,9 +144,9 @@ namespace DebugServer
             return confirmedBreaks;
         }
 
-        public void BeginExecution()
+        public void BeginExecution(int threadId)
         {
-            _debugger.Instance.Execute(1);
+            _debugger.Instance.Execute(threadId);
         }
         
         public StackFrame[] GetStackTrace(int threadId, int firstFrameIdx, int limit)
@@ -199,6 +199,11 @@ namespace DebugServer
         internal void StepOut()
         {
             _debugger.Instance.StepOut(1);
+        }
+
+        public int[] GetThreads()
+        {
+            return _debugger.Instance.GetThreads();
         }
     }
 }
