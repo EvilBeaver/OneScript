@@ -51,6 +51,7 @@ namespace OneScript.DebugProtocol
         /// <summary>
         /// Вычисление выражения на остановленном процессе
         /// </summary>
+        /// <param name="threadId"></param>
         /// <param name="contextFrame">Кадр стека, относительно которого вычисляем</param>
         /// <param name="expression">Выражение</param>
         /// <returns>Переменная с результатом</returns>

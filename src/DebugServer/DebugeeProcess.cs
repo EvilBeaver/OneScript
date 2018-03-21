@@ -162,6 +162,7 @@ namespace DebugServer
             var result = new List<StackFrame>();
             for (int i = firstFrameIdx; i < limit && i < allFrames.Length; i++)
             {
+                allFrames[i].ThreadId = threadId;
                 result.Add(allFrames[i]);
             }
 
