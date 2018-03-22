@@ -39,7 +39,6 @@ namespace ScriptEngine.Machine.Contexts
 
         public void ReorderPropertyNumbers()
         {
-            _propNumbers.Clear();
             var sorted = _propNumbers.OrderBy(x => x.Value).Select(x => x.Key).ToArray();
             _propNumbers.Clear();
             for (int i = 0; i < sorted.Length; i++)
