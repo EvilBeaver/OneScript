@@ -21,8 +21,6 @@ namespace oscript.DebugServer
         private readonly int _port;
         private ServiceHost _serviceHost;
         private IDebugEventListener _eventChannel;
-        
-        private MachineInstance _machine;
 
         public WcfDebugController(int listenerPort)
         {
