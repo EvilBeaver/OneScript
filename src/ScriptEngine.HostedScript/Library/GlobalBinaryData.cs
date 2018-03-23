@@ -37,15 +37,17 @@ namespace ScriptEngine.HostedScript.Library
         {
             // Сделано на int т.к. BinaryContext.Size имеет тип int;
 
-            System.IO.MemoryStream stream = new System.IO.MemoryStream();
-
-            foreach(IValue cbd in array)
+            using (var stream = new System.IO.MemoryStream())
             {
-                byte[] buffer = ((BinaryDataContext)cbd.AsObject()).Buffer;
-                stream.Write(buffer, 0, buffer.Length);
-            }
 
-            return new BinaryDataContext(stream.GetBuffer());
+                foreach (var cbd in array)
+                {
+                    byte[] buffer = ((BinaryDataContext) cbd.AsObject()).Buffer;
+                    stream.Write(buffer, 0, buffer.Length);
+                }
+
+                return new BinaryDataContext(stream.ToArray());
+            }
         }
 
         /// <summary>

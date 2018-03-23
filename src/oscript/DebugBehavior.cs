@@ -29,11 +29,10 @@ namespace oscript
         public override int Execute()
         {
             var executor = new ExecuteScriptBehavior(_path, _args);
-            executor.DebugController = new OscriptDebugController(_port);
+            executor.DebugController = new WcfDebugController(_port);
 
             return executor.Execute();
         }
         
-       
     }
 }

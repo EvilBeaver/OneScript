@@ -22,6 +22,7 @@ namespace StandaloneRunner
 			return Run(args);
 		}
 
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 		private static int Run(string[] args)
 		{
 			var sp = new StandaloneProcess
@@ -31,6 +32,7 @@ namespace StandaloneRunner
 			return sp.Run();
 		}
 
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 		private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
 		{
 			var resourceName = "StandaloneRunner." + new AssemblyName(args.Name).Name + ".dll";

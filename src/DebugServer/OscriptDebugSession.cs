@@ -246,7 +246,7 @@ namespace DebugServer
             SessionLog.WriteLine("thread stopped");
             _framesHandles.Reset();
             _variableHandles.Reset();
-            SendEvent(new StoppedEvent(1, reason.ToString()));
+            SendEvent(new StoppedEvent(threadId, reason.ToString()));
         }
         
         public void ProcessExited(int exitCode)
@@ -264,7 +264,7 @@ namespace DebugServer
                 return;
             }
             SessionLog.WriteLine("Config Done. Process is started");
-            _process.BeginExecution();
+            _process.BeginExecution(-1);
             _startupPerformed = true;
             SendResponse(response);
         }
@@ -272,7 +272,7 @@ namespace DebugServer
         public override void Continue(Response response, dynamic arguments)
         {
             SendResponse(response);
-            _process.BeginExecution();
+            _process.BeginExecution(-1);
         }
 
         public override void Next(Response response, dynamic arguments)
@@ -319,10 +319,12 @@ namespace DebugServer
 
         public override void StackTrace(Response response, dynamic arguments)
         {
+            SessionLog.WriteLine("Stacktrace request accepted");
+            SessionLog.WriteLine(arguments.ToString());
             var firstFrameIdx = (int?)arguments.startFrame ?? 0;
             var limit = (int?) arguments.levels ?? 0;
-
-            var processFrames = _process.GetStackTrace(firstFrameIdx, limit);
+            var threadId = (int) arguments.threadId;
+            var processFrames = _process.GetStackTrace(threadId, firstFrameIdx, limit);
             var frames = new VSCodeDebug.StackFrame[processFrames.Length];
             for (int i = 0; i < processFrames.Length; i++)
             {
@@ -347,8 +349,8 @@ namespace DebugServer
             }
             
             var frameVariablesHandle = _variableHandles.Create(frame);
-            var scope = new Scope("Локальные переменные", frameVariablesHandle);
-            SendResponse(response, new ScopesResponseBody(new Scope[] {scope}));
+            var localScope = new Scope("Локальные переменные", frameVariablesHandle);
+            SendResponse(response, new ScopesResponseBody(new Scope[] {localScope}));
             SessionLog.WriteLine("Scopes done");
         }
 
@@ -389,9 +391,15 @@ namespace DebugServer
         public override void Threads(Response response, dynamic arguments)
         {
             var threads = new List<VSCodeDebug.Thread>();
-            threads.Add(new VSCodeDebug.Thread(1, "main"));
             SessionLog.WriteLine("Threads request accepted");
+            var processThreads = _process.GetThreads();
+            for (int i = 0; i < processThreads.Length; i++)
+            {
+                threads.Add(new VSCodeDebug.Thread(processThreads[i], "Thread "+i));
+            }
+            
             SendResponse(response, new ThreadsResponseBody(threads));
+            SessionLog.WriteLine("Threads processed");
         }
 
         public override void Evaluate(Response response, dynamic arguments)

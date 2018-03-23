@@ -78,7 +78,7 @@ namespace oscript
             {
                 return new CgiBehavior();
             }
-            else if (param == "-version")
+            else if (param == "-version" || param == "-v")
             {
                 return new ShowVersionBehavior();
             }

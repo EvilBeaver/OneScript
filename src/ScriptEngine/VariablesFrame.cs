@@ -7,27 +7,26 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using ScriptEngine.Machine;
 
 namespace ScriptEngine
 {
     [Serializable]
-    internal class VariablesFrame : IList<string>
+    public class VariablesFrame : IList<VariableInfo>
     {
-        private readonly List<string> _data;
+        private readonly List<VariableInfo> _data;
 
         public VariablesFrame()
         {
-            _data = new List<string>();
+            _data = new List<VariableInfo>();
         }
 
-        public VariablesFrame(IEnumerable<string> src)
+        public VariablesFrame(IEnumerable<VariableInfo> src)
         {
-            _data = new List<string>(src);
+            _data = new List<VariableInfo>(src);
         }
 
-        public IEnumerator<string> GetEnumerator()
+        public IEnumerator<VariableInfo> GetEnumerator()
         {
             return _data.GetEnumerator();
         }
@@ -37,7 +36,7 @@ namespace ScriptEngine
             return ((IEnumerable) _data).GetEnumerator();
         }
 
-        public void Add(string item)
+        public void Add(VariableInfo item)
         {
             _data.Add(item);
         }
@@ -47,17 +46,17 @@ namespace ScriptEngine
             _data.Clear();
         }
 
-        public bool Contains(string item)
+        public bool Contains(VariableInfo item)
         {
             return _data.Contains(item);
         }
 
-        public void CopyTo(string[] array, int arrayIndex)
+        public void CopyTo(VariableInfo[] array, int arrayIndex)
         {
             _data.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(string item)
+        public bool Remove(VariableInfo item)
         {
             return _data.Remove(item);
         }
@@ -72,12 +71,12 @@ namespace ScriptEngine
             get { return false; }
         }
 
-        public int IndexOf(string item)
+        public int IndexOf(VariableInfo item)
         {
             return _data.IndexOf(item);
         }
 
-        public void Insert(int index, string item)
+        public void Insert(int index, VariableInfo item)
         {
             _data.Insert(index, item);
         }
@@ -87,7 +86,7 @@ namespace ScriptEngine
             _data.RemoveAt(index);
         }
 
-        public string this[int index]
+        public VariableInfo this[int index]
         {
             get { return _data[index]; }
             set { _data[index] = value; }

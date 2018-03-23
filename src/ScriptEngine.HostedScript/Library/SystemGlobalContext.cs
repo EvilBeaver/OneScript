@@ -85,7 +85,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Сообщить", "Message")]
 		public void Echo(string message, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
-            ApplicationHost.Echo(message, status);
+            ApplicationHost.Echo(message ?? "", status);
         }
 
         /// <summary>

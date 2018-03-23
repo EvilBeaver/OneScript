@@ -92,7 +92,7 @@ namespace OneScript.DebugProtocol
         {
             if(_variables != null)
                 return;
-            var variables = process.GetVariables(_stackFrameIndex, _path);
+            var variables = process.GetVariables(1, _stackFrameIndex, _path);
             _variables = variables;
         }
 

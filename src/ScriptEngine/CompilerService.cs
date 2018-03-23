@@ -66,11 +66,20 @@ namespace ScriptEngine
             }
         }
 
+        [Obsolete]
         public ScriptModuleHandle CreateModule(ICodeSource source)
+        {
+            return new ScriptModuleHandle()
+                {
+                    Module = Compile(source)
+                };
+        }
+
+        public ModuleImage Compile(ICodeSource source)
         {
             try
             {
-                return Compile(source);
+                return CompileInternal(source);
             }
             finally
             {
@@ -78,8 +87,8 @@ namespace ScriptEngine
                 _scope = null;
             }
         }
-        
-        private ScriptModuleHandle Compile(ICodeSource source)
+
+        private ModuleImage CompileInternal(ICodeSource source)
         {
             RegisterScopeIfNeeded();
 
@@ -135,10 +144,7 @@ namespace ScriptEngine
             mi.Origin = source.SourceDescription;
             compiledImage.ModuleInfo = mi;
 
-            return new ScriptModuleHandle()
-            {
-                Module = compiledImage
-            };
+            return compiledImage;
         }
 
         private bool ResolveDirective(string directive, string value, bool codeEntered)

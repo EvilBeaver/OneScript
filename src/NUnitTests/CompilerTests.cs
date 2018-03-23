@@ -33,7 +33,7 @@ namespace NUnitTests
 					Возврат
 				КонецПроцедуры");
 
-			var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+		    var module = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -44,7 +44,7 @@ namespace NUnitTests
 					Возврат 4
 				КонецФункции");
 
-			var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+			var module = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -55,7 +55,7 @@ namespace NUnitTests
 					Прервать
 				КонецЕсли");
 
-			var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+			var module = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -70,7 +70,7 @@ namespace NUnitTests
 					Ф = 3
 				КонецЕсли");
 
-			var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+			var module = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 		
 
@@ -85,7 +85,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+				var module = host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -105,7 +105,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+				var module = host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -125,7 +125,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+				var module = host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -152,7 +152,7 @@ namespace NUnitTests
 				Р = Ф1(,,) + Ф1(,);
 				");
 
-			var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+			var module = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 		
 		[Test(Description = "Не компилируется вызов метода вообще без параметров")]
@@ -168,7 +168,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+				var module = host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{

@@ -85,15 +85,8 @@ namespace ScriptEngine
             cs.DirectiveResolver = DirectiveResolver;
             return cs;
         }
-
-        public LoadedModuleHandle LoadModuleImage(ScriptModuleHandle moduleImage)
-        {
-            var handle = new LoadedModuleHandle();
-            handle.Module = new LoadedModule(moduleImage.Module);
-            return handle;
-        }
-
-        internal IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
+        
+        public IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
             scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
@@ -111,14 +104,29 @@ namespace ScriptEngine
             return scriptContext;
         }
 
+        [Obsolete]
         public IRuntimeContextInstance NewObject(LoadedModuleHandle module)
         {
             return NewObject(module.Module); 
         }
 
+        [Obsolete]
         public IRuntimeContextInstance NewObject(LoadedModuleHandle module, ExternalContextData externalContext)
         {
             return NewObject(module.Module, externalContext);
+        }
+
+        [Obsolete]
+        public LoadedModuleHandle LoadModuleImage(ScriptModuleHandle moduleImage)
+        {
+            var handle = new LoadedModuleHandle();
+            handle.Module = new LoadedModule(moduleImage.Module);
+            return handle;
+        }
+
+        public LoadedModule LoadModuleImage(ModuleImage moduleImage)
+        {
+            return new LoadedModule(moduleImage);
         }
 
         public void InitializeSDO(ScriptDrivenObject sdo)
@@ -126,9 +134,15 @@ namespace ScriptEngine
             sdo.Initialize();
         }
 
+        [Obsolete]
         public void ExecuteModule(LoadedModuleHandle module)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module.Module);
+            ExecuteModule(module.Module);
+        }
+
+        public void ExecuteModule(LoadedModule module)
+        {
+            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
             InitializeSDO(scriptContext);
         }
 
@@ -169,7 +183,7 @@ namespace ScriptEngine
 
         public void Dispose()
         {
-            AttachedScriptsFactory.Dispose();
+            AttachedScriptsFactory.SetInstance(null);
         }
 
         #endregion
@@ -180,7 +194,7 @@ namespace ScriptEngine
 
             foreach (var script in scripts)
             {
-                var loaded = LoadModuleImage(script.Module);
+                var loaded = LoadModuleImage(script.Image);
                 var instance = (IValue)NewObject(loaded);
                 env.SetGlobalProperty(script.Symbol, instance);
             }

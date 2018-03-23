@@ -133,7 +133,7 @@ namespace OneScript.ASPNETHandler
                             ICodeSource src = _hostedScript.Loader.FromFile(filePathName);
 
                             var compilerService = _hostedScript.GetCompilerService();
-                            var module = compilerService.CreateModule(src);
+                            var module = compilerService.Compile(src);
                             var loaded = _hostedScript.EngineInstance.LoadModuleImage(module);
                             var instance = (IValue)_hostedScript.EngineInstance.NewObject(loaded);
                             _hostedScript.EngineInstance.Environment.SetGlobalProperty(System.IO.Path.GetFileNameWithoutExtension(filePathName), instance);
@@ -147,6 +147,8 @@ namespace OneScript.ASPNETHandler
                         }
                     }
                 }
+
+                _hostedScript.EngineInstance.Environment.LoadMemory(MachineInstance.Current);
 
             }
             catch (Exception ex)
@@ -218,14 +220,7 @@ namespace OneScript.ASPNETHandler
 
         public void ProcessRequest(HttpContext context)
         {
-            try
-            {
-                CallScriptHandler(context);
-            }
-            finally
-            {
-                context.Response.End();
-            }
+            CallScriptHandler(context);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -261,21 +256,22 @@ namespace OneScript.ASPNETHandler
             }
 
             context.Response.Charset = response.ContentCharset;
+            context.Response.End();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IRuntimeContextInstance CreateServiceInstance(LoadedModuleHandle module)
+        private IRuntimeContextInstance CreateServiceInstance(LoadedModule module)
         {
             var runner = _hostedScript.EngineInstance.NewObject(module);
             return runner;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private LoadedModuleHandle LoadByteCode(string filePath)
+        private LoadedModule LoadByteCode(string filePath)
         {
             var code = _hostedScript.EngineInstance.Loader.FromFile(filePath);
             var compiler = _hostedScript.GetCompilerService();
-            var byteCode = compiler.CreateModule(code);
+            var byteCode = compiler.Compile(code);
             var module = _hostedScript.EngineInstance.LoadModuleImage(byteCode);
             return module;
         }
@@ -286,12 +282,12 @@ namespace OneScript.ASPNETHandler
             #region Загружаем скрипт (файл .os)
             // Кэшируем исходный файл, если файл изменился (изменили скрипт .os) загружаем заново
             // В Linux под Mono не работает подписка на изменение файла.
-            LoadedModuleHandle? module = null;
+            LoadedModule module = null;
             ObjectCache cache = MemoryCache.Default;
 
             if (_cachingEnabled)
             {
-                module = cache[context.Request.PhysicalPath] as LoadedModuleHandle?;
+                module = cache[context.Request.PhysicalPath] as LoadedModule;
 
                 if (module == null)
                 {
@@ -313,7 +309,7 @@ namespace OneScript.ASPNETHandler
 
             #endregion
 
-            var runner = CreateServiceInstance(module.Value);
+            var runner = CreateServiceInstance(module);
 
             ProduceResponse(context, runner);
         }

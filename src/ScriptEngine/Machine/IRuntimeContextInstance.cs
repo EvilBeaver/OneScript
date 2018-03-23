@@ -27,7 +27,7 @@ namespace ScriptEngine.Machine
 
         int GetPropCount();
         string GetPropName(int propNum);
-        
+
         int FindMethod(string name);
         int GetMethodsCount();
         MethodInfo GetMethodInfo(int methodNumber);

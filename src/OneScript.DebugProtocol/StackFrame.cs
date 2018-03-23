@@ -31,6 +31,8 @@ namespace OneScript.DebugProtocol
         [DataMember]
         public Variable[] Variables { get; set; }
 
+        public int ThreadId { get; set; }
+
         int IVariableLocator.Count
         {
             get
@@ -72,7 +74,7 @@ namespace OneScript.DebugProtocol
         {
             if (Variables != null)
                 return;
-            var variables = process.GetVariables(Index, new int[0]);
+            var variables = process.GetVariables(1, Index, new int[0]);
             Variables = variables;
         }
 
