@@ -71,17 +71,6 @@ namespace OneScript.DebugProtocol
         int[] GetThreads();
     }
 
-    //public class ThreadStoppedEventArgs : EventArgs
-    //{
-    //    public ThreadStopReason Reason { get; set; }
-    //}
-
-    //public class ProcessExitedEventArgs : EventArgs
-    //{
-    //    public int ThreadId { get; set; }
-    //    public ThreadStopReason Reason { get; set; }
-    //}
-    
     public interface IDebugEventListener
     {
         [OperationContract(IsOneWay = true)]
