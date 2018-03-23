@@ -19,9 +19,9 @@ namespace ScriptEngine.Environment
             ReaderEncoding = Encoding.UTF8;
         }
         
-        public ICodeSource FromString(string source)
+        public ICodeSource FromString(string code)
         {
-            return new StringBasedSource(source);
+            return new StringBasedSource(code);
         }
 
         public ICodeSource FromFile(string path)
