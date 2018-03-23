@@ -284,7 +284,6 @@ namespace ScriptEngine.Machine
         internal void Cleanup()
         {
             Reset();
-            GC.Collect();
         }
         
         private void PushFrame(ExecutionFrame frame)
