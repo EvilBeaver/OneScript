@@ -18,7 +18,7 @@ using ScriptEngine.HostedScript.Library.Binary;
 namespace ScriptEngine.HostedScript.Library.Hash
 {
     [ContextClass("ХешированиеДанных", "DataHashing")]
-    public class HashImpl : AutoContext<HashImpl>
+    public class HashImpl : AutoContext<HashImpl>, IDisposable
     {
         protected HashAlgorithm _provider;
         protected IValue _enumValue;

@@ -192,12 +192,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             _instance = factory;
         }
-
-        public static void Dispose()
-        {
-            _instance = null;
-        }
-
+        
         [ScriptConstructor(ParametrizeWithClassName = true)]
         public static IRuntimeContextInstance ScriptFactory(string typeName, IValue[] arguments)
         {

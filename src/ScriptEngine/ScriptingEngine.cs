@@ -183,7 +183,7 @@ namespace ScriptEngine
 
         public void Dispose()
         {
-            AttachedScriptsFactory.Dispose();
+            AttachedScriptsFactory.SetInstance(null);
         }
 
         #endregion

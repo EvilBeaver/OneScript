@@ -14,7 +14,7 @@ using System.Collections.Generic;
 
 namespace ScriptEngine.HostedScript
 {
-    public class HostedScriptEngine
+    public class HostedScriptEngine : IDisposable
     {
         private readonly ScriptingEngine _engine;
         private readonly SystemGlobalContext _globalCtx;
@@ -252,6 +252,7 @@ namespace ScriptEngine.HostedScript
 
         public void Dispose()
         {
+            _engine?.Dispose();
             _codeStat?.EndCodeStat();
         }
     }
