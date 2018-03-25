@@ -350,8 +350,14 @@ namespace ScriptEngine.Machine
             PushFrame(frame);
         }
 
-        private void PrepareCodeStatisticsData()
+        private void PrepareCodeStatisticsData(LoadedModule _module)
         {
+            if (_codeStatCollector == null
+                || _codeStatCollector.IsPrepared(_module.ModuleInfo.Origin))
+            {
+                return;
+            }
+            
             foreach (var method in _module.Methods)
             {
                 var instructionPointer = method.EntryPoint;
@@ -360,7 +366,7 @@ namespace ScriptEngine.Machine
                     if (_module.Code[instructionPointer].Code == OperationCode.LineNum)
                     {
                         var entry = new CodeStatEntry(
-                            CurrentScript?.Source,
+                            _module.ModuleInfo.Origin,
                             method.Signature.Name,
                             _module.Code[instructionPointer].Argument
                         );
@@ -375,18 +381,12 @@ namespace ScriptEngine.Machine
                     instructionPointer++;
                 }
             }
+            _codeStatCollector.MarkPrepared(_module.ModuleInfo.Origin);
         }
 
         private void ExecuteCode()
         {
-            if (_codeStatCollector != null)
-            {
-                if (!_codeStatCollector.IsPrepared(CurrentScript?.Source))
-                {
-                    PrepareCodeStatisticsData();
-                    _codeStatCollector.MarkPrepared(CurrentScript?.Source);
-                }
-            }
+            PrepareCodeStatisticsData(_module);
 
             while (true)
             {
@@ -1509,10 +1509,11 @@ namespace ScriptEngine.Machine
         {
             var code = _operationStack.Pop().AsString();
             var module = CompileExecutionBatchModule(code);
+            PrepareCodeStatisticsData(module);
             
             var frame = new ExecutionFrame();
-            frame.MethodName = module.ModuleInfo.ModuleName;
             var method = module.Methods[0];
+            frame.MethodName = method.Signature.Name;
             frame.Locals = new IVariable[method.Variables.Count];
             frame.InstructionPointer = 0;
             frame.Module = module;
@@ -2412,6 +2413,7 @@ namespace ScriptEngine.Machine
         private LoadedModule CompileExecutionBatchModule(string execBatch)
         {
             var ctx = ExtractCompilerContext();
+            var entryId = CurrentCodeEntry().ToString();
 
             ICodeSource stringSource = new StringBasedSource(execBatch);
             var parser = new Parser();
@@ -2420,8 +2422,9 @@ namespace ScriptEngine.Machine
             ctx.PushScope(new SymbolScope()); // скоуп выражения
             var modImg = compiler.CompileExecBatch(parser, ctx);
             modImg.ModuleInfo = new ModuleInformation();
-            modImg.ModuleInfo.Origin = "<exec.module>";
-            modImg.ModuleInfo.ModuleName = "<exec.module>";
+            modImg.ModuleInfo.Origin = $"{entryId}:<exec>";
+            modImg.ModuleInfo.ModuleName = $"{entryId}:<exec>";
+            modImg.ModuleInfo.CodeIndexer = parser.GetCodeIndexer();
             var code = new LoadedModule(modImg);
             return code;
         }
