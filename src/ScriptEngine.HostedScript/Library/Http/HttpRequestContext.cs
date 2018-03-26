@@ -113,6 +113,12 @@ namespace ScriptEngine.HostedScript.Library.Http
             return _body.GetAsString();
         }
 
+        [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsString")]
+        public GenericStream GetBodyAsStream()
+        {
+            return new GenericStream(_body.GetDataStream());
+        }
+
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static HttpRequestContext Constructor()
         {
