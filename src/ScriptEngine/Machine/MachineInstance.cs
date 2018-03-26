@@ -405,6 +405,12 @@ namespace ScriptEngine.Machine
                         throw;
                     }
 
+                    if (exc.CallStackFrames == null)
+                    {
+                        CreateFullCallstack();
+                        exc.InitCallStackFrames(_fullCallstackCache);
+                    }
+
                     var handler = _exceptionsStack.Pop();
 
                     // Раскрутка стека вызовов

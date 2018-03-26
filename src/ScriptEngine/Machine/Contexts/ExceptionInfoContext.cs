@@ -98,6 +98,21 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        [ContextMethod("ПолучитьСтекВызовов", "GetStackTrace")]
+        public IValue GetStackTrace()
+        {
+            if (_exc is RuntimeException rte)
+            {
+                var frames = rte.CallStackFrames;
+                if (frames == null)
+                    return ValueFactory.Create();
+
+                return new StackTraceCollectionContext(frames);
+            }
+            else
+                return ValueFactory.Create();
+        }
+
         private string SafeMarshallingNullString(string src)
         {
             return src == null ? "" : src;
