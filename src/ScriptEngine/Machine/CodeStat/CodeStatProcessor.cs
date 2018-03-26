@@ -60,6 +60,10 @@ namespace ScriptEngine.Machine
             CodeStatDataCollection data = new CodeStatDataCollection();
             foreach (var item in _codeStat)
             {
+                if (!IsPrepared(item.Key.ScriptFileName))
+                {
+                    continue;
+                }
                 data.Add(new CodeStatData(item.Key, _watchers[item.Key].ElapsedMilliseconds, item.Value));
             }
             
