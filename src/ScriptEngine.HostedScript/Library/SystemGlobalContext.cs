@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 
 using ScriptEngine.Environment;
+using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
