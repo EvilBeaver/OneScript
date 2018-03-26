@@ -301,18 +301,9 @@ namespace ScriptEngine.Compiler
 
                 if (!iterator.MoveNext())
                 {
-                    if (isEndOfText)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        isEndOfText = true;
-                    }
+                    isEndOfText = true;
                 }
             }
-
-            return Lexem.Empty();
         }
     }
 
