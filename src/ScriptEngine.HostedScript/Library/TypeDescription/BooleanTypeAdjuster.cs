@@ -16,7 +16,14 @@ namespace ScriptEngine.HostedScript.Library
 			if (value?.DataType == DataType.Boolean)
 				return value;
 
-		    return ValueFactory.Create(value?.AsBoolean() ?? false);
+            try
+            {
+                return ValueFactory.Create(value?.AsBoolean() ?? false);
+            }
+            catch (RuntimeException)
+            {
+                return ValueFactory.Create(false);
+            }
 		    
 		}
 	}
