@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using ScriptEngine.Environment;
@@ -88,6 +89,14 @@ namespace ScriptEngine
         
         public IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
         {
+            var scriptContext = CreateUninitializedSDO(module, externalContext);
+            InitializeSDO(scriptContext);
+
+            return scriptContext;
+        }
+
+        private ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
+        {
             var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
             scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
             if (externalContext != null)
@@ -99,8 +108,6 @@ namespace ScriptEngine
             }
 
             scriptContext.InitOwnData();
-            InitializeSDO(scriptContext);
-
             return scriptContext;
         }
 
@@ -190,13 +197,26 @@ namespace ScriptEngine
 
         public void CompileEnvironmentModules(RuntimeEnvironment env)
         {
-            var scripts = env.GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module && env.GetGlobalProperty(x.Symbol) == null);
+            var scripts = env.GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module && env.GetGlobalProperty(x.Symbol) == null)
+                             .ToArray();
 
-            foreach (var script in scripts)
+            if (scripts.Length > 0)
             {
-                var loaded = LoadModuleImage(script.Image);
-                var instance = (IValue)NewObject(loaded);
-                env.SetGlobalProperty(script.Symbol, instance);
+                var loadedObjects = new ScriptDrivenObject[scripts.Length];
+                for(var i = 0; i < scripts.Length; i++)
+                {
+                    var script = scripts[i];
+                    var loaded = LoadModuleImage(script.Image);
+
+                    var instance = CreateUninitializedSDO(loaded);
+                    env.SetGlobalProperty(script.Symbol, instance);
+                    loadedObjects[i] = instance;
+                }
+
+                foreach (var instance in loadedObjects)
+                {
+                    InitializeSDO(instance);
+                }
             }
         }
         
