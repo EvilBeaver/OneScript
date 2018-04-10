@@ -237,7 +237,7 @@ pipeline {
                 fi
                 mkdir targetContent
                 mv built/* targetContent/
-                mv -t tarfgetContent built/*.exe built/*.zip built/vscode/*.vsix
+                mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
                 mv output/*.rpm targetContent/
                 mv output/*.deb targetContent/
 
@@ -266,7 +266,7 @@ pipeline {
                     rm -rf targetContent
                 fi
                 mkdir targetContent
-                mv -t tarfgetContent built/*.exe built/*.zip built/vscode/*.vsix
+                mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
                 mv output/*.rpm targetContent/
                 mv output/*.deb targetContent/
 
