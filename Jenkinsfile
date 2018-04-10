@@ -236,7 +236,6 @@ pipeline {
                     rm -rf targetContent
                 fi
                 mkdir targetContent
-                mv built/* targetContent/
                 mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
                 mv output/*.rpm targetContent/
                 mv output/*.deb targetContent/
