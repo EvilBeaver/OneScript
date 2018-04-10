@@ -237,7 +237,7 @@ pipeline {
                 fi
                 mkdir targetContent
                 mv built/* targetContent/
-				mv built/vsix/*.vsix targetContent/
+				mv built/vscode/*.vsix targetContent/
                 mv output/*.rpm targetContent/
                 mv output/*.deb targetContent/
 
@@ -267,7 +267,7 @@ pipeline {
                 fi
                 mkdir targetContent
                 mv built/* targetContent/
-				mv built/vsix/*.vsix targetContent/
+				mv built/vscode/*.vsix targetContent/
                 mv output/*.rpm targetContent/
                 mv output/*.deb targetContent/
 				
