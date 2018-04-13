@@ -124,19 +124,6 @@ namespace ScriptEngine
                 }
             }
 
-            foreach (var item in _predefinedVariables)
-            {
-                var varDef = _scope.GetVariable(item);
-                if (varDef.Type == SymbolType.ContextProperty)
-                {
-                    compiledImage.ExportedProperties.Add(new ExportedSymbol()
-                    {
-                        SymbolicName = varDef.Identifier,
-                        Index = varDef.Index
-                    });
-                }
-            }
-
             var mi = new ModuleInformation();
             mi.CodeIndexer = parser.GetCodeIndexer();
             // пока у модулей нет собственных имен, будет совпадать с источником модуля
