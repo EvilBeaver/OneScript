@@ -26,6 +26,7 @@ namespace ScriptEngine.Machine
 
 
         public Scope ModuleScope { get; set; }
+        public int ModuleLoadIndex { get; set; }
 
         public override string ToString()
         {

@@ -14,15 +14,13 @@ using System.Collections.Generic;
 
 namespace ScriptEngine.HostedScript
 {
-    public class HostedScriptEngine
+    public class HostedScriptEngine : IDisposable
     {
-        readonly ScriptingEngine _engine;
-
-        readonly SystemGlobalContext _globalCtx;
-
-        readonly RuntimeEnvironment _env;
-        bool _isInitialized;
-        bool _configInitialized;
+        private readonly ScriptingEngine _engine;
+        private readonly SystemGlobalContext _globalCtx;
+        private readonly RuntimeEnvironment _env;
+        private bool _isInitialized;
+        private bool _configInitialized;
 
         private CodeStatProcessor _codeStat;
 
@@ -81,7 +79,6 @@ namespace ScriptEngine.HostedScript
             if (!_isInitialized)
             {
                 _engine.Initialize();
-                TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
                 _isInitialized = true;
             }
         }
@@ -185,11 +182,11 @@ namespace ScriptEngine.HostedScript
         {
             if (script.Type == UserAddedScriptType.Class)
             {
-                _engine.AttachedScriptsFactory.LoadAndRegister(script.Symbol, script.Module);
+                _engine.AttachedScriptsFactory.LoadAndRegister(script.Symbol, script.Image);
             }
             else
             {
-                var loaded = _engine.LoadModuleImage(script.Module);
+                var loaded = _engine.LoadModuleImage(script.Image);
                 var instance = (IValue)_engine.NewObject(loaded);
                 _env.InjectGlobalProperty(instance, script.Symbol, true);
             }
@@ -204,17 +201,27 @@ namespace ScriptEngine.HostedScript
         {
             SetGlobalEnvironment(host, src);
             Initialize();
-            _engine.DebugController?.OnMachineReady(_engine.Machine);
-            _engine.DebugController?.WaitForDebugEvent(DebugEventType.BeginExecution);
-            var module = _engine.LoadModuleImage(compilerSvc.CreateModule(src));
-            return InitProcess(host, ref module);
+            if (_engine.DebugController != null)
+            {
+                _engine.DebugController.Init();
+                _engine.DebugController.AttachToThread(_engine.Machine);
+                _engine.DebugController.Wait();
+            }
+            var module = _engine.LoadModuleImage(compilerSvc.Compile(src));
+            return InitProcess(host, module);
         }
 
+        [Obsolete]
         public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle, ICodeSource src)
         {
+            return CreateProcess(host, moduleHandle.Module, src);
+        }
+
+        public Process CreateProcess(IHostApplication host, ModuleImage moduleImage, ICodeSource src)
+        {
             SetGlobalEnvironment(host, src);
-            var module = _engine.LoadModuleImage(moduleHandle);
-            return InitProcess(host, ref module);
+            var module = _engine.LoadModuleImage(moduleImage);
+            return InitProcess(host, module);
         }
 
         public void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
@@ -224,7 +231,7 @@ namespace ScriptEngine.HostedScript
             _globalCtx.InitInstance();
         }
 
-        private Process InitProcess(IHostApplication host, ref LoadedModuleHandle module)
+        private Process InitProcess(IHostApplication host, LoadedModule module)
         {
             Initialize();
             
@@ -245,6 +252,7 @@ namespace ScriptEngine.HostedScript
 
         public void Dispose()
         {
+            _engine?.Dispose();
             _codeStat?.EndCodeStat();
         }
     }

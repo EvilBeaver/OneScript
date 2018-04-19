@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
-using OneScript.DebugProtocol;
 
 namespace ScriptEngine.HostedScript
 {
@@ -19,10 +18,9 @@ namespace ScriptEngine.HostedScript
         ScriptingEngine _engine;
 
         readonly IHostApplication _host;
+        readonly LoadedModule _module;
 
-        readonly LoadedModuleHandle _module;
-
-        internal Process(IHostApplication host, LoadedModuleHandle src, ScriptingEngine runtime)
+        internal Process(IHostApplication host, LoadedModule src, ScriptingEngine runtime)
         {
             _host = host;
             _engine = runtime;

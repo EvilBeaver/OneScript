@@ -39,7 +39,6 @@ namespace ScriptEngine.Machine.Contexts
 
         public void ReorderPropertyNumbers()
         {
-            _propNumbers.Clear();
             var sorted = _propNumbers.OrderBy(x => x.Value).Select(x => x.Key).ToArray();
             _propNumbers.Clear();
             for (int i = 0; i < sorted.Length; i++)
@@ -73,6 +72,18 @@ namespace ScriptEngine.Machine.Contexts
         public IEnumerable<KeyValuePair<string, int>> GetProperties()
         {
             return _propNumbers.AsEnumerable();
+        }
+
+        public VariableInfo GetPropertyInfo(int idx)
+        {
+            return new VariableInfo()
+            {
+                Identifier = GetPropertyName(idx),
+                CanGet = true,
+                CanSet = true,
+                Index = idx,
+                Type = SymbolType.ContextProperty
+            };
         }
 
         public int Count => _propNumbers.Count;

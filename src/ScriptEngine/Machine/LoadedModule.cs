@@ -13,37 +13,66 @@ using System.Text;
 
 namespace ScriptEngine.Machine
 {
-    class LoadedModule
+    public class LoadedModule
     {
-        internal LoadedModule(ModuleImage image)
+        public LoadedModule(ModuleImage image)
         {
-            this.Code = image.Code.ToArray();
-            this.EntryMethodIndex = image.EntryMethodIndex;
-            this.MethodRefs = image.MethodRefs.ToArray();
-            this.VariableRefs = image.VariableRefs.ToArray();
-            this.Methods = image.Methods.ToArray();
-            this.Constants = new IValue[image.Constants.Count];
-            this.Variables = new VariablesFrame(image.Variables);
-            this.ExportedProperies = image.ExportedProperties.ToArray();
-            this.ExportedMethods = image.ExportedMethods.ToArray();
-            this.ModuleInfo = image.ModuleInfo;
+            Code = image.Code.ToArray();
+            EntryMethodIndex = image.EntryMethodIndex;
+            MethodRefs = image.MethodRefs.ToArray();
+            VariableRefs = image.VariableRefs.ToArray();
+            Methods = image.Methods.ToArray();
+            Constants = new IValue[image.Constants.Count];
+            Variables = new VariablesFrame(image.Variables);
+            ExportedProperies = image.ExportedProperties.ToArray();
+            ExportedMethods = image.ExportedMethods.ToArray();
+            ModuleInfo = image.ModuleInfo;
+            LoadAddress = image.LoadAddress;
             for (int i = 0; i < image.Constants.Count; i++)
             {
                 var def = image.Constants[i];
-                this.Constants[i] = ValueFactory.Parse(def.Presentation, def.Type);
+                Constants[i] = ValueFactory.Parse(def.Presentation, def.Type);
+            }
+            
+            // Resolve annotation constants
+            for (int i = 0; i < Methods.Length; i++)
+            {
+                EvaluateAnnotationParametersValues(Methods[i].Signature.Annotations);
+                for (int j = 0; j < Methods[i].Signature.ArgCount; j++)
+                {
+                    EvaluateAnnotationParametersValues(Methods[i].Signature.Params[j].Annotations);
+                }
+            }
+
+        }
+
+        private void EvaluateAnnotationParametersValues(AnnotationDefinition[] annotations)
+        {
+            for (int i = 0; i < annotations?.Length; i++)
+            {
+                var parameters = annotations[i].Parameters;
+                for (int j = 0; j < parameters?.Length; j++)
+                {
+                    var pa = parameters[j];
+                    if (pa.ValueIndex != AnnotationParameter.UNDEFINED_VALUE_INDEX)
+                    {
+                        annotations[i].Parameters[j].RuntimeValue = Constants[pa.ValueIndex];
+                    }
+                }
             }
         }
 
-        public VariablesFrame Variables { get; private set; }
-        public int EntryMethodIndex { get; private set; }
-        public Command[] Code { get; private set;}
-        public SymbolBinding[] VariableRefs { get; private set; }
-        public SymbolBinding[] MethodRefs { get; private set; }
-        public MethodDescriptor[] Methods { get; private set; }
-        public IValue[] Constants { get; private set; }
-        public ExportedSymbol[] ExportedProperies { get; private set; }
-        public ExportedSymbol[] ExportedMethods { get; private set; }
-        public ModuleInformation ModuleInfo { get; private set; }
+        public VariablesFrame Variables { get; }
+        public int EntryMethodIndex { get; }
+        public Command[] Code { get; }
+        public SymbolBinding[] VariableRefs { get; }
+        public SymbolBinding[] MethodRefs { get; }
+        public MethodDescriptor[] Methods { get; }
+        public IValue[] Constants { get; }
+        public ExportedSymbol[] ExportedProperies { get; }
+        public ExportedSymbol[] ExportedMethods { get; }
+        public ModuleInformation ModuleInfo { get; }
+        public int LoadAddress { get; }
     }
 
     

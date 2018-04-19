@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 
 using ScriptEngine.Environment;
+using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -85,7 +86,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Сообщить", "Message")]
 		public void Echo(string message, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
-            ApplicationHost.Echo(message, status);
+            ApplicationHost.Echo(message ?? "", status);
         }
 
         /// <summary>
@@ -544,7 +545,8 @@ namespace ScriptEngine.HostedScript.Library
                     var propIdx = acceptor.FindProperty(srcProperty);
                     var srcPropIdx = source.FindProperty(srcProperty);
 
-                    acceptor.SetPropValue(propIdx, source.GetPropValue(srcPropIdx));
+                    if(source.IsPropReadable(propIdx) && acceptor.IsPropWritable(propIdx))
+                        acceptor.SetPropValue(propIdx, source.GetPropValue(srcPropIdx));
 
                 }
                 catch(PropertyAccessException)
@@ -582,7 +584,11 @@ namespace ScriptEngine.HostedScript.Library
             }
             else if (pathName == null)
             {
+#if NETSTANDARD2_0
+                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#else
                 return Marshal.GetActiveObject(className);
+#endif
             }
             else if (pathName.Length == 0)
             {
@@ -590,14 +596,18 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
+#if NETSTANDARD2_0
+                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#else
                 var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
                 persistFile.Load(pathName, 0);
                 
                 return (object)persistFile;
+#endif
             }
         }
 
-        #region IAttachableContext Members
+#region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
             out IVariable[] variables, 
@@ -611,9 +621,9 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        #endregion
+#endregion
 
-        #region IRuntimeContextInstance Members
+#region IRuntimeContextInstance Members
 
         public bool IsIndexed
         {
@@ -701,7 +711,7 @@ namespace ScriptEngine.HostedScript.Library
             retValue = _methods.GetMethod(methodNumber)(this, arguments);
         }
 
-        #endregion
+#endregion
 
         private static readonly ContextMethodsMapper<SystemGlobalContext> _methods;
 

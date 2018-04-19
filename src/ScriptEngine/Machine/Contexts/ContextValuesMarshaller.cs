@@ -51,6 +51,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value;
             }
+            else if (value == SimpleConstantValue.Undefined()) 
+            {
+                // Если тип параметра не IValue и не IVariable && Неопределено -> null
+                valueObj = null;
+            }
             else if (type == typeof(string))
             {
                 valueObj = value.AsString();
@@ -95,16 +100,14 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj;
         }
 
-        public static IValue ConvertReturnValue<TRet>(TRet param)
+        public static IValue ConvertReturnValue(object objParam, Type type)
         {
-            var type = typeof(TRet);
-            object objParam = (object)param;
+            if (objParam == null)
+                return ValueFactory.Create();
+
             if (type == typeof(IValue))
             {
-                if (param != null)
-                    return (IValue)param;
-                else
-                    return ValueFactory.Create();
+                return (IValue)objParam;
             }
             else if (type == typeof(string))
             {
@@ -146,21 +149,24 @@ namespace ScriptEngine.Machine.Contexts
             {
                 var wrapperType = typeof(CLREnumValueWrapper<>).MakeGenericType(new Type[] { type });
                 var constructor = wrapperType.GetConstructor(new Type[] { typeof(EnumerationContext), type, typeof(DataType) });
-                var osValue = (EnumerationValue)constructor.Invoke(new object[] { null, param, DataType.Enumeration });
+                var osValue = (EnumerationValue)constructor.Invoke(new object[] { null, objParam, DataType.Enumeration });
                 return osValue;
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
-                if (objParam != null)
-                    return ValueFactory.Create((IRuntimeContextInstance)objParam);
-                else
-                    return ValueFactory.Create();
+                return ValueFactory.Create((IRuntimeContextInstance)objParam);
             }
             else
             {
                 throw new NotSupportedException("Type is not supported");
             }
+        }
 
+        public static IValue ConvertReturnValue<TRet>(TRet param)
+        {
+            var type = typeof(TRet);
+
+            return ConvertReturnValue(param, type);
         }
 
 		public static object ConvertToCLRObject(IValue val)
@@ -194,7 +200,7 @@ namespace ScriptEngine.Machine.Contexts
 				if (result is IObjectWrapper)
 					result = ((IObjectWrapper)result).UnderlyingObject;
 				else
-				    throw new ValueMarshallingException("Тип не поддерживает преобразование в CLR-объект");
+				    throw new ValueMarshallingException($"Тип {val.GetType()} не поддерживает преобразование в CLR-объект");
 
                 break;
 			}

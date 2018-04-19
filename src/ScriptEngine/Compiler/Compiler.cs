@@ -26,6 +26,7 @@ namespace ScriptEngine.Compiler
         private Parser _parser;
         private ICompilerContext _ctx;
         private ModuleImage _module;
+        private Lexem _previousExtractedLexem;
         private Lexem _lastExtractedLexem;
         private bool _inMethodScope = false;
         private bool _isMethodsDefined = false;
@@ -36,6 +37,7 @@ namespace ScriptEngine.Compiler
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
+        private readonly List<AnnotationDefinition> _annotations = new List<AnnotationDefinition>();
 
         private struct ForwardedMethodDecl
         {
@@ -68,6 +70,7 @@ namespace ScriptEngine.Compiler
         public ModuleImage Compile(Parser parser, ICompilerContext context)
         {
             _module = new ModuleImage();
+            _module.LoadAddress = context.TopIndex();
             _ctx = context;
             _parser = parser;
             _parser.Start();
@@ -81,6 +84,7 @@ namespace ScriptEngine.Compiler
         public ModuleImage CompileExpression(Parser parser, ICompilerContext context)
         {
             _module = new ModuleImage();
+            _module.LoadAddress = context.TopIndex();
             _ctx = context;
             _parser = parser;
             _parser.Start();
@@ -93,14 +97,84 @@ namespace ScriptEngine.Compiler
         public ModuleImage CompileExecBatch(Parser parser, ICompilerContext context)
         {
             _module = new ModuleImage();
+            _module.LoadAddress = context.TopIndex();
             _ctx = context;
             _parser = parser;
             _parser.Start();
             NextToken();
             PushStructureToken(Token.EndOfText);
-            BuildCodeBatch();
+            BuildModuleBody();
 
             return _module;
+        }
+
+        private AnnotationParameter BuildAnnotationParameter()
+        {
+            // id | id = value | value
+            var result = new AnnotationParameter();
+            if (_lastExtractedLexem.Type == LexemType.Identifier)
+            {
+                result.Name = _lastExtractedLexem.Content;
+                NextToken();
+                if (_lastExtractedLexem.Token != Token.Equal)
+                {
+                    result.ValueIndex = AnnotationParameter.UNDEFINED_VALUE_INDEX;
+                    return result;
+                }
+                NextToken();
+            }
+            
+            var cDef = CreateConstDefinition(ref _lastExtractedLexem);
+            result.ValueIndex = GetConstNumber(ref cDef);
+            
+            NextToken();
+            
+            return result;
+        }
+
+        private IList<AnnotationParameter> BuildAnnotationParameters()
+        {
+            var parameters = new List<AnnotationParameter>();
+            while (_lastExtractedLexem.Token != Token.EndOfText)
+            {
+                parameters.Add(BuildAnnotationParameter());
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    NextToken();
+                    continue;
+                }
+                if (_lastExtractedLexem.Token == Token.ClosePar)
+                {
+                    NextToken();
+                    break;
+                }
+                throw CompilerException.UnexpectedOperation();
+            }
+            return parameters;
+        }
+
+        private void BuildAnnotations()
+        {
+            while (_lastExtractedLexem.Type == LexemType.Annotation)
+            {
+                var annotation = new AnnotationDefinition() {Name = _lastExtractedLexem.Content};
+
+                NextToken();
+                if (_lastExtractedLexem.Token == Token.OpenPar)
+                {
+                    NextToken();
+                    annotation.Parameters = BuildAnnotationParameters().ToArray();
+                }
+                
+                _annotations.Add(annotation);
+            }
+        }
+
+        private AnnotationDefinition[] ExtractAnnotations()
+        {
+            var result = _annotations.ToArray();
+            _annotations.Clear();
+            return result;
         }
 
         private void BuildModule()
@@ -209,6 +283,10 @@ namespace ScriptEngine.Compiler
                     HandleDirective(isCodeEntered);
                     UpdateCompositeContext(); // костыль для #330
                 }
+                else if (_lastExtractedLexem.Type == LexemType.Annotation)
+                {
+                    BuildAnnotations();
+                }
                 else
                 {
                     throw CompilerException.UnexpectedOperation();
@@ -234,6 +312,7 @@ namespace ScriptEngine.Compiler
                     if (IsUserSymbol(ref _lastExtractedLexem))
                     {
                         var symbolicName = _lastExtractedLexem.Content;
+                        var annotations = ExtractAnnotations();
                         var definition = _ctx.DefineVariable(symbolicName);
                         if (_inMethodScope)
                         {
@@ -250,7 +329,14 @@ namespace ScriptEngine.Compiler
                             }
 
                             _module.VariableRefs.Add(definition);
-                            _module.Variables.Add(symbolicName);
+                            _module.Variables.Add(new VariableInfo()
+                            {
+                                Identifier = symbolicName,
+                                Annotations = annotations,
+                                CanGet = true,
+                                CanSet = true,
+                                Index = definition.CodeIndex
+                            });
                         }
                         NextToken();
                         if (_lastExtractedLexem.Token == Token.Export)
@@ -333,7 +419,7 @@ namespace ScriptEngine.Compiler
 
             for (int i = 0; i < localCtx.VariableCount; i++)
             {
-                descriptor.Variables.Add(localCtx.GetVariable(i).Identifier);
+                descriptor.Variables.Add(localCtx.GetVariable(i));
             }
             
         }
@@ -389,6 +475,7 @@ namespace ScriptEngine.Compiler
             MethodInfo method = new MethodInfo();
             method.Name = _lastExtractedLexem.Content;
             method.IsFunction = _isFunctionProcessed;
+            method.Annotations = ExtractAnnotations();
 
             NextToken();
             if (_lastExtractedLexem.Token != Token.OpenPar)
@@ -397,83 +484,24 @@ namespace ScriptEngine.Compiler
             } 
             #endregion
             
-            NextToken();
-
             #region Parameters list
             var paramsList = new List<ParameterDefinition>();
             var methodCtx = new SymbolScope();
 
-            while (_lastExtractedLexem.Token != Token.ClosePar)
-            {
-                var param = new ParameterDefinition();
-                string name;
-
-                if (_lastExtractedLexem.Token == Token.ByValParam)
-                {
-                    param.IsByValue = true;
-                    NextToken();
-                    if (IsUserSymbol(ref _lastExtractedLexem))
-                    {
-                        name = _lastExtractedLexem.Content;
-                    }
-                    else
-                    {
-                        throw CompilerException.IdentifierExpected();
-                    }
-                }
-                else if (IsUserSymbol(ref _lastExtractedLexem))
-                {
-                    param.IsByValue = false;
-                    name = _lastExtractedLexem.Content;
-                }
-                else
-                {
-                    throw CompilerException.UnexpectedOperation();
-                }
-
-                NextToken();
-                if (_lastExtractedLexem.Token == Token.Equal)
-                {
-                    param.HasDefaultValue = true;
-                    NextToken();
-                    if (IsLiteral(ref _lastExtractedLexem))
-                    {
-                        var cd = CreateConstDefinition(ref _lastExtractedLexem);
-                        var num = GetConstNumber(ref cd);
-                        param.DefaultValueIndex = num;
-                        NextToken();
-                    }
-                    else
-                    {
-                        throw CompilerException.UnexpectedOperation();
-                    }
-                }
-
-                if (_lastExtractedLexem.Token == Token.Comma || _lastExtractedLexem.Token == Token.ClosePar)
-                {
-                    paramsList.Add(param);
-                    methodCtx.DefineVariable(name);
-                    
-                    if(_lastExtractedLexem.Token != Token.ClosePar)
-                        NextToken();
-                }
-                else
-                {
-                    throw CompilerException.TokenExpected(Token.Comma);
-                }
-            }
+            BuildMethodParametersList(paramsList, methodCtx);
 
             method.Params = paramsList.ToArray();
  
             #endregion
-
-            NextToken();
+            
             bool isExportedMethod = false;
             if (_lastExtractedLexem.Token == Token.Export)
             {
                 isExportedMethod = true;
                 NextToken();
             }
+
+            method.IsExport = isExportedMethod;
 
             #region Body
             // тело
@@ -510,6 +538,7 @@ namespace ScriptEngine.Compiler
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(descriptor);
 
+            // TODO: deprecate?
             if (isExportedMethod)
             {
                 _module.ExportedMethods.Add(new ExportedSymbol()
@@ -523,6 +552,89 @@ namespace ScriptEngine.Compiler
 
             NextToken(); 
             
+        }
+
+        private void BuildMethodParametersList(List<ParameterDefinition> paramsList, SymbolScope methodCtx)
+        {
+            NextToken(); // (
+            while (_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                // [Знач] Идентификатор[= Литерал][,[Знач] Идентификатор[= Литерал]]
+                var param = BuildParameterDefinition();
+
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    paramsList.Add(param);
+                    methodCtx.DefineVariable(param.Name);
+                    NextToken();
+
+                    if (_lastExtractedLexem.Token == Token.ClosePar) // сразу после запятой не можем выйти из цикла, т.к. ждем в этом месте параметр
+                    {
+                        throw CompilerException.IdentifierExpected();
+                    }
+
+                    continue;
+                }
+                
+                paramsList.Add(param);
+                methodCtx.DefineVariable(param.Name);
+            }
+            
+            NextToken(); // )
+        }
+
+        private ParameterDefinition BuildParameterDefinition()
+        {
+            var param = new ParameterDefinition();
+            
+            if (_lastExtractedLexem.Type == LexemType.Annotation)
+            {
+                BuildAnnotations();
+                param.Annotations = ExtractAnnotations();
+            }
+            
+            if (_lastExtractedLexem.Token == Token.ByValParam)
+            {
+                param.IsByValue = true;
+                NextToken();
+                if (IsUserSymbol(ref _lastExtractedLexem))
+                {
+                    param.Name = _lastExtractedLexem.Content;
+                }
+                else
+                {
+                    throw CompilerException.IdentifierExpected();
+                }
+            }
+            else if (IsUserSymbol(ref _lastExtractedLexem))
+            {
+                param.IsByValue = false;
+                param.Name = _lastExtractedLexem.Content;
+            }
+            else
+            {
+                throw CompilerException.IdentifierExpected();
+            }
+
+            NextToken();
+            if (_lastExtractedLexem.Token == Token.Equal)
+            {
+                param.HasDefaultValue = true;
+                NextToken();
+                if (IsLiteral(ref _lastExtractedLexem))
+                {
+                    var cd = CreateConstDefinition(ref _lastExtractedLexem);
+                    var num = GetConstNumber(ref cd);
+                    param.DefaultValueIndex = num;
+                    NextToken();
+                }
+                else
+                {
+                    throw CompilerException.UnexpectedOperation();
+                }
+            }
+
+            return param;
         }
 
         private void DispatchMethodBody()
@@ -1325,6 +1437,7 @@ namespace ScriptEngine.Compiler
             else if (_lastExtractedLexem.Token == Token.Question)
             {
                 BuildQuestionOperator();
+                BuildContinuationRightHand();
             }
             else
             {
@@ -1844,6 +1957,7 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
+                _previousExtractedLexem = _lastExtractedLexem;
                 _lastExtractedLexem = _parser.NextLexem();
             }
             else

@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -65,9 +66,13 @@ namespace ScriptEngine.Machine
             {
                 case DataType.Boolean:
 
-                    if (string.Compare(presentation, "истина", true) == 0 || string.Compare(presentation, "true", true) == 0)
+                    if (String.Compare(presentation, "истина", StringComparison.OrdinalIgnoreCase) == 0 
+                        || String.Compare(presentation, "true", StringComparison.OrdinalIgnoreCase) == 0 
+                        || String.Compare(presentation, "да", StringComparison.OrdinalIgnoreCase) == 0)
                         result = ValueFactory.Create(true);
-                    else if (string.Compare(presentation, "ложь", true) == 0 || string.Compare(presentation, "false", true) == 0)
+                    else if (String.Compare(presentation, "ложь", StringComparison.OrdinalIgnoreCase) == 0 
+                             || String.Compare(presentation, "false", StringComparison.OrdinalIgnoreCase) == 0
+                             || String.Compare(presentation, "нет", StringComparison.OrdinalIgnoreCase) == 0)
                         result = ValueFactory.Create(false);
                     else
                         throw RuntimeException.ConvertToBooleanException();
@@ -93,9 +98,11 @@ namespace ScriptEngine.Machine
 
                     break;
                 case DataType.Number:
-                    var numInfo = System.Globalization.NumberFormatInfo.InvariantInfo;
-                    var numStyle = System.Globalization.NumberStyles.AllowDecimalPoint
-                                |System.Globalization.NumberStyles.AllowLeadingSign;
+                    var numInfo = NumberFormatInfo.InvariantInfo;
+                    var numStyle = NumberStyles.AllowDecimalPoint
+                                |NumberStyles.AllowLeadingSign
+                                |NumberStyles.AllowLeadingWhite
+                                |NumberStyles.AllowTrailingWhite;
 
                     try
                     {

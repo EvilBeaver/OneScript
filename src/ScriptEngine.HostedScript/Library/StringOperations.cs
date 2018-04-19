@@ -49,8 +49,8 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="inputString">Строка, начало которой проверяется на совпадение с подстрокой поиска.</param>
         /// <param name="searchString">Строка, содержащая предполагаемое начало строки. В случае если переданное значение является пустой строкой генерируется исключительная ситуация.</param>
-        [ContextMethod("СтрНачинаетсяС", "StrStartWith")]
-        public bool StrStartWith(string inputString, string searchString)
+        [ContextMethod("СтрНачинаетсяС", "StrStartsWith")]
+        public bool StrStartsWith(string inputString, string searchString)
         {
             bool result = false;
 
@@ -64,6 +64,13 @@ namespace ScriptEngine.HostedScript.Library
             }
 
             return result;
+        }
+
+        [ContextMethod("StrStartWith", IsDeprecated = true, ThrowOnUse = false)]
+        [Obsolete]
+        public bool StrStartWith(string inputString, string searchString)
+        {
+            return StrStartsWith(inputString, searchString);
         }
 
         /// <summary>
@@ -95,14 +102,17 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="stringDelimiter">Строка символов, каждый из которых является индивидуальным разделителем.</param>
         /// <param name="includeEmpty">Указывает необходимость включать в результат пустые строки, которые могут образоваться в результате разделения исходной строки. Значение по умолчанию: Истина. </param>
         [ContextMethod("СтрРазделить", "StrSplit")]
-        public ArrayImpl StrSplit(string inputString, string stringDelimiter, bool includeEmpty = true)
+        public ArrayImpl StrSplit(string inputString, string stringDelimiter, bool? includeEmpty = true)
         {
             string[] arrParsed;
+            if (includeEmpty == null)
+                includeEmpty = true;
+            
             if(!string.IsNullOrEmpty(inputString))
             {
                 if(!string.IsNullOrEmpty(stringDelimiter))
                 {
-                    arrParsed = inputString.Split(new string[] { stringDelimiter }, includeEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
+                    arrParsed = inputString.Split(new string[] { stringDelimiter }, (bool) includeEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
                 }
                 else
                 {
@@ -232,6 +242,7 @@ namespace ScriptEngine.HostedScript.Library
             strTemplateMethodInfo.Name = STRTEMPLATE_NAME_RU;
             strTemplateMethodInfo.Alias = STRTEMPLATE_NAME_EN;
             strTemplateMethodInfo.Params = new ParameterDefinition[11];
+            strTemplateMethodInfo.IsExport = true;
 
             strTemplateMethodInfo.Params[0] = new ParameterDefinition()
             {
@@ -283,7 +294,7 @@ namespace ScriptEngine.HostedScript.Library
 
             var re = new System.Text.RegularExpressions.Regex(@"(%%)|(%\d+)|(%\D)");
             int matchCount = 0;
-            int passedArgsCount = arguments.Skip(1).Count(x => x != null && x.DataType != DataType.Undefined);
+            int passedArgsCount = arguments.Skip(1).Count(x => x.DataType != DataType.NotAValidValue && x.DataType != DataType.Undefined);
             var result = re.Replace(srcFormat, (m) =>
             {
                 if (m.Groups[1].Success)
@@ -296,7 +307,7 @@ namespace ScriptEngine.HostedScript.Library
                     if (number < 1 || number > 11)
                         throw new RuntimeException("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
 
-                    if (arguments[number] != null)
+                    if (arguments[number] != null && arguments[number].DataType != DataType.NotAValidValue)
                         return arguments[number].AsString();
                     else
                         return "";

@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
-    interface ITypeManager
+    public interface ITypeManager
     {
         Type GetImplementingClass(int typeId);
         TypeDescriptor GetTypeByName(string name);
@@ -43,29 +43,37 @@ namespace ScriptEngine.Machine
             foreach (var item in Enum.GetValues(typeof(DataType)))
             {
                 DataType typeEnum = (DataType)item;
+                string name;
                 string alias;
                 switch (typeEnum)
                 {
                     case DataType.Undefined:
-                        alias = "Неопределено";
+                        name = "Неопределено";
+                        alias = "Undefined";
                         break;
                     case DataType.Boolean:
-                        alias = "Булево";
+                        name = "Булево";
+                        alias = "Boolean";
                         break;
                     case DataType.String:
-                        alias = "Строка";
+                        name = "Строка";
+                        alias = "String";
                         break;
                     case DataType.Date:
-                        alias = "Дата";
+                        name = "Дата";
+                        alias = "Date";
                         break;
                     case DataType.Number:
-                        alias = "Число";
+                        name = "Число";
+                        alias = "Number";
                         break;
                     case DataType.Type:
-                        alias = "Тип";
+                        name = "Тип";
+                        alias = "Type";
                         break;
                     case DataType.Object:
-                        alias = "Object";
+                        name = "Object";
+                        alias = null;
                         break;
                     default:
                         continue;
@@ -73,11 +81,16 @@ namespace ScriptEngine.Machine
 
                 var td = new TypeDescriptor()
                 {
-                    Name = alias,
+                    Name = name,
                     ID = (int)typeEnum
                 };
 
                 RegisterType(td, typeof(DataType));
+
+                if (alias != null)
+                {
+                    RegisterAliasFor(td, alias);
+                }
 
             }
 
@@ -218,6 +231,8 @@ namespace ScriptEngine.Machine
         {
             _instance = instance;
         }
+
+        public static ITypeManager Instance => _instance;
 
         public static Type GetImplementingClass(int typeId)
         {

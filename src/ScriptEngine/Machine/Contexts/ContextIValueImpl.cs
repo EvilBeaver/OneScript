@@ -5,9 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -17,14 +14,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public ContextIValueImpl()
         {
-            if (TypeManager.IsKnownType(this.GetType()))
-            {
-                _type = TypeManager.GetTypeByFrameworkType(this.GetType());
-            }
-            else
-            {
-                throw new InvalidOperationException("Type is not defined");
-            }
+
         }
 
         public ContextIValueImpl(TypeDescriptor type)
@@ -39,7 +29,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string ToString()
         {
-            return _type.Name;
+            return _type.Name ?? base.ToString();
         }
         
         #region IValue Members
@@ -51,7 +41,22 @@ namespace ScriptEngine.Machine.Contexts
 
         public TypeDescriptor SystemType
         {
-            get { return _type; }
+            get
+            {
+                if (_type.Name == null)
+                {
+                    if (TypeManager.IsKnownType(this.GetType()))
+                    {
+                        _type = TypeManager.GetTypeByFrameworkType(this.GetType());
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Type {GetType()} is not defined");
+                    }
+                }
+
+                return _type;
+            }
         }
 
         public decimal AsNumber()
@@ -69,9 +74,9 @@ namespace ScriptEngine.Machine.Contexts
             throw RuntimeException.ConvertToBooleanException();
         }
 
-        public string AsString()
+        public virtual string AsString()
         {
-            return ToString();
+            return SystemType.Name;
         }
 
         public IRuntimeContextInstance AsObject()

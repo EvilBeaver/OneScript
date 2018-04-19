@@ -5,14 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.Machine
 {
     [Serializable]
-    enum OperationCode
+    public enum OperationCode
     {
         Nop,
         PushVar,
@@ -135,7 +132,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct Command
+    public struct Command
     {
         public OperationCode Code;
         public int Argument;
@@ -162,7 +159,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct ConstDefinition : IEquatable<ConstDefinition>
+    public struct ConstDefinition : IEquatable<ConstDefinition>
     {
         public DataType Type;
         public string Presentation;
@@ -185,9 +182,11 @@ namespace ScriptEngine.Machine
         public string Name;
         public string Alias;
         public bool IsFunction;
+        public bool IsExport;
         public bool IsDeprecated;
         public bool ThrowOnUseDeprecated;
         public ParameterDefinition[] Params;
+        public AnnotationDefinition[] Annotations;
 
         public int ArgCount
         {
@@ -197,20 +196,60 @@ namespace ScriptEngine.Machine
             }
         }
 
+        public int AnnotationsCount => Annotations?.Length ?? 0;
+
     }
 
     [Serializable]
     public struct ParameterDefinition
     {
+        public string Name;
         public bool IsByValue;
         public bool HasDefaultValue;
         public int DefaultValueIndex;
+        public AnnotationDefinition[] Annotations;
+
+        public int AnnotationsCount => Annotations?.Length ?? 0;
 
         public const int UNDEFINED_VALUE_INDEX = -1;
 
         public bool IsDefaultValueDefined()
         {
             return HasDefaultValue && DefaultValueIndex != UNDEFINED_VALUE_INDEX;
+        }
+    }
+
+    [Serializable]
+    public struct AnnotationDefinition
+    {
+        public string Name;
+        public AnnotationParameter[] Parameters;
+
+        public int ParamCount => Parameters?.Length ?? 0;
+    }
+
+    [Serializable]
+    public struct AnnotationParameter
+    {
+        public string Name;
+        public int ValueIndex;
+
+        [NonSerialized]
+        public IValue RuntimeValue;
+        
+        public const int UNDEFINED_VALUE_INDEX = -1;
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Name))
+            {
+                return string.Format("[{0}]", ValueIndex);
+            }
+            if (ValueIndex == UNDEFINED_VALUE_INDEX)
+            {
+                return Name;
+            }
+            return String.Format("{0}=[{1}]", Name, ValueIndex);
         }
     }
 
@@ -244,7 +283,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    struct SymbolBinding
+    public struct SymbolBinding
     {
         public int CodeIndex;
         public int ContextIndex;
@@ -256,12 +295,25 @@ namespace ScriptEngine.Machine
         ContextProperty
     }
 
+    [Serializable]
     public struct VariableInfo
     {
         public int Index;
         public string Identifier;
         public string Alias;
         public SymbolType Type;
+        
+        public bool CanGet;
+        public bool CanSet;
+        
+        public AnnotationDefinition[] Annotations;
+
+        public int AnnotationsCount => Annotations?.Length ?? 0;
+
+        public override string ToString()
+        {
+            return $"{Index}:{Identifier}";
+        }
     }
 
     struct VariableBinding

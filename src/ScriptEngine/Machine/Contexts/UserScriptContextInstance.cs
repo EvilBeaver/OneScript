@@ -15,15 +15,23 @@ namespace ScriptEngine.Machine.Contexts
         readonly LoadedModule _module;
         Dictionary<string, int> _ownPropertyIndexes;
         List<IValue> _ownProperties;
+
+        private Func<string> _asStringOverride;
         
         public IValue[] ConstructorParams { get; private set; }
         
-        internal UserScriptContextInstance(LoadedModule module) : base(module)
+        static UserScriptContextInstance()
         {
-            _module = module;
+            TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
         }
 
-        internal UserScriptContextInstance(LoadedModule module, string asObjectOfType, IValue[] args = null)
+        public UserScriptContextInstance(LoadedModule module) : base(module)
+        {
+            _module = module;
+            ConstructorParams = new IValue[0];
+        }
+
+        public UserScriptContextInstance(LoadedModule module, string asObjectOfType, IValue[] args = null)
             : base(module, true)
         {
             DefineType(TypeManager.GetTypeByName(asObjectOfType));
@@ -39,6 +47,8 @@ namespace ScriptEngine.Machine.Contexts
 
         protected override void OnInstanceCreation()
         {
+            ActivateAsStringOverride();
+
             base.OnInstanceCreation();
             var methId = GetScriptMethod("ПриСозданииОбъекта", "OnObjectCreate");
             int constructorParamsCount = ConstructorParams.Count();
@@ -82,7 +92,41 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
         }
-        
+
+        private void ActivateAsStringOverride()
+        {
+            var methId = GetScriptMethod("ОбработкаПолученияПредставления", "PresentationGetProcessing");
+            if (methId == -1)
+                _asStringOverride = base.AsString;
+            else
+            {
+                var signature = GetMethodInfo(methId);
+                if (signature.ArgCount != 2)
+                    throw new RuntimeException("Обработчик получения представления должен иметь 2 параметра");
+
+                _asStringOverride = () => GetOverridenPresentation(methId);
+            }
+        }
+
+        private string GetOverridenPresentation(int methId)
+        {
+            var standard = ValueFactory.Create(true);
+            var strValue = ValueFactory.Create();
+
+            var arguments = new IValue[2]
+            {
+                Variable.Create(strValue, "string"),
+                Variable.Create(standard, "standardProcessing")
+            };
+
+            CallScriptMethod(methId, arguments);
+
+            if (arguments[1].AsBoolean() == true)
+                return base.AsString();
+
+            return arguments[0].AsString();
+        }
+
         public void AddProperty(string name, string alias, IValue value)
         {
             if(_ownProperties == null)
@@ -138,7 +182,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _ownProperties[index];
         }
-
+        
         protected override string GetOwnPropName(int index)
         {
             if (_ownProperties == null)
@@ -149,8 +193,12 @@ namespace ScriptEngine.Machine.Contexts
         
         public override int GetMethodsCount()
         {
-            return _module.ExportedMethods.Length;
+            return _module.Methods.Length;
         }
-        
+
+        public override string AsString()
+        {
+            return _asStringOverride();
+        }
     }
 }

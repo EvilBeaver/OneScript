@@ -66,11 +66,20 @@ namespace ScriptEngine
             }
         }
 
+        [Obsolete]
         public ScriptModuleHandle CreateModule(ICodeSource source)
+        {
+            return new ScriptModuleHandle()
+                {
+                    Module = Compile(source)
+                };
+        }
+
+        public ModuleImage Compile(ICodeSource source)
         {
             try
             {
-                return Compile(source);
+                return CompileInternal(source);
             }
             finally
             {
@@ -78,8 +87,8 @@ namespace ScriptEngine
                 _scope = null;
             }
         }
-        
-        private ScriptModuleHandle Compile(ICodeSource source)
+
+        private ModuleImage CompileInternal(ICodeSource source)
         {
             RegisterScopeIfNeeded();
 
@@ -115,19 +124,6 @@ namespace ScriptEngine
                 }
             }
 
-            foreach (var item in _predefinedVariables)
-            {
-                var varDef = _scope.GetVariable(item);
-                if (varDef.Type == SymbolType.ContextProperty)
-                {
-                    compiledImage.ExportedProperties.Add(new ExportedSymbol()
-                    {
-                        SymbolicName = varDef.Identifier,
-                        Index = varDef.Index
-                    });
-                }
-            }
-
             var mi = new ModuleInformation();
             mi.CodeIndexer = parser.GetCodeIndexer();
             // пока у модулей нет собственных имен, будет совпадать с источником модуля
@@ -135,10 +131,7 @@ namespace ScriptEngine
             mi.Origin = source.SourceDescription;
             compiledImage.ModuleInfo = mi;
 
-            return new ScriptModuleHandle()
-            {
-                Module = compiledImage
-            };
+            return compiledImage;
         }
 
         private bool ResolveDirective(string directive, string value, bool codeEntered)

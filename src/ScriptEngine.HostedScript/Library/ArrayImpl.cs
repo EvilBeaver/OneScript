@@ -36,12 +36,18 @@ namespace ScriptEngine.HostedScript.Library
 
         public override IValue GetIndexedValue(IValue index)
         {
-            return Get((int)index.AsNumber());
+            if(index.DataType == DataType.Number)
+                return Get((int)index.AsNumber());
+
+            return base.GetIndexedValue(index);
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            _values[(int)index.AsNumber()] = val;
+            if (index.DataType == DataType.Number)
+                _values[(int)index.AsNumber()] = val;
+            else
+                base.SetIndexedValue(index, val);
         }
 
         public override bool IsPropReadable(int propNum)

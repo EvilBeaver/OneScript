@@ -64,17 +64,21 @@ namespace oscript
             {
                 var codepath = helper.Next();
                 var output = helper.Next();
-
+                var makeBin = helper.Next();
                 if (output != null && codepath != null)
                 {
-                    return new MakeAppBehavior(codepath, output);
+                    var appMaker = new MakeAppBehavior(codepath, output);
+                    if (makeBin != null && makeBin == "-bin")
+                        appMaker.CreateDumpOnly = true;
+
+                    return appMaker;
                 }
             }
             else if (param == "-cgi")
             {
                 return new CgiBehavior();
             }
-            else if (param == "-version")
+            else if (param == "-version" || param == "-v")
             {
                 return new ShowVersionBehavior();
             }

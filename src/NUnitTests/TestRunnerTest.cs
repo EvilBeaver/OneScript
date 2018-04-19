@@ -51,7 +51,12 @@ namespace NUnitTests
 		public void Test_Reflector()
 		{
 			RunSpecificTest(@"reflector.os");
-		}
+        }
+        [Test]
+        public void Test_Zip()
+        {
+            RunSpecificTest(@"zip.os");
+        }
 
 		[Test]
 		[Ignore("Внутри валится очень много тестов, надо чинить механизм.")]
@@ -77,7 +82,7 @@ namespace NUnitTests
 					Возврат ?(Который = 0, ЭтотОбъект, ThisObject);
 				КонецФункции
 				A = 333;");
-			var module = host.Engine.GetCompilerService().CreateModule(moduleSource);
+			var module = host.Engine.GetCompilerService().Compile(moduleSource);
 			var loadedModule = host.Engine.EngineInstance.LoadModuleImage(module);
 			var instance = host.Engine.EngineInstance.NewObject(loadedModule);
 			var methodIndex = instance.FindMethod("ФЭтотОбъект");

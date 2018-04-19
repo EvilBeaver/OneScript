@@ -139,6 +139,19 @@ namespace ScriptEngine.HostedScript.Library.Http
         }
 
         /// <summary>
+        /// Интерпретировать ответ, как Поток
+        /// </summary>
+        /// <returns>Поток</returns>
+        [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
+        public IValue GetBodyAsStream()
+        {
+            if (_body == null)
+                return ValueFactory.Create();
+
+            return new GenericStream(_body.OpenReadStream(), true);
+        }
+
+        /// <summary>
         /// Получить файл, в который записан ответ сервера.
         /// </summary>
         /// <returns>Строка. Имя файла с ответом. Если ответ не записывался в файл - возвращает Неопределено.</returns>

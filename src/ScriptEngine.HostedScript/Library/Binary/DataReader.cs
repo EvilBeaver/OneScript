@@ -47,8 +47,8 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие.
         /// </summary>
         ///
-        /// <param name="binaryData">
-        /// Экземпляр объекта ДвоичныеДанные, из которого будет выполнено чтение. </param>
+        /// <param name="dataSource">
+        /// Путь к файлу или экземпляр объекта ДвоичныеДанные, из которого будет выполнено чтение. </param>
         /// <param name="textEncoding">
         /// Определяет кодировку текста, используемую для чтения данных. По-умолчанию используется кодировка UTF-8.
         /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста, так и в виде строки с указанием названия кодировки.
@@ -63,71 +63,29 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// <param name="convertibleSplitterOfLines">
         /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
         /// Значение по умолчанию: ВК + ПС. </param>
-        [ScriptConstructor(Name = "На основании двоичных данных")]
-        public static IRuntimeContextInstance Constructor(BinaryDataContext binaryData, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
+        [ScriptConstructor(Name = "На основании двоичных данных или имени файла")]
+        public static IRuntimeContextInstance Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
         {
-            var stream = new MemoryStream(binaryData.Buffer);
-            return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
-        }
+            if (dataSource.DataType == DataType.String)
+            {
+                var stream = new FileStream(dataSource.AsString(), FileMode.Open, FileAccess.Read, FileShare.Read);
+                return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
+            }
+            else
+            {
+                var obj = dataSource.AsObject();
+                Stream stream;
+                if (obj is BinaryDataContext)
+                    stream = new MemoryStream(((BinaryDataContext)obj).Buffer);
+                else if (obj is IStreamWrapper)
+                    stream = ((IStreamWrapper) obj).GetUnderlyingStream();
+                else
+                    throw RuntimeException.InvalidArgumentType("dataSource");
 
-        /// <summary>
-        /// 
-        /// Создает объект чтения из заданного файла.
-        /// При этом будет файл, указанный в параметре ИмяФайла, будет автоматически открыт на чтение. 
-        /// Если файл с таким именем не существует, будет сгенерировано исключение.
-        /// 
-        /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие. При этом файл, указанный в параметре &lt;ИмяФайла&gt;, будет автоматически закрыт.
-        /// </summary>
-        ///
-        /// <param name="fileName">
-        /// Имя файла, из которого будет выполнено чтение данных. </param>
-        /// <param name="textEncoding">
-        /// Определяет кодировку текста, используемую для чтения файла. По-умолчанию используется кодировка UTF-8.
-        /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста, так и в виде строки с указанием названия кодировки.
-        /// Значение по умолчанию: UTF8. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
-        /// <param name="byteOrder">
-        /// Порядок байтов, используемый для декодирования целых чисел при чтении из потока.
-        /// Значение по умолчанию: LittleEndian. </param>
-        /// <param name="lineSplitter">
-        /// Строка, используемая в качестве разделителя строки в файле.
-        /// Значение по умолчанию: Неопределено. </param>
-        /// <param name="convertibleSplitterOfLines">
-        /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
-        /// Значение по умолчанию: ВК + ПС. </param>
-        [ScriptConstructor(Name = "На основании имени файла")]
-        public static IRuntimeContextInstance Constructor(string fileName, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
-        {
-            var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-            return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
+                return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
+            }
         }
-
-        /// <summary>
-        /// 
-        /// Создает объект чтения из данного потока.
-        /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие.
-        /// </summary>
-        ///
-        /// <param name="stream">
-        /// Поток, из которого будет производиться чтение данных. Типы: Поток (Stream), ПотокВПамяти (MemoryStream), ФайловыйПоток (FileStream) </param>
-        /// <param name="textEncoding">
-        /// Определяет кодировку текста, используемую для чтения данных. По-умолчанию используется кодировка UTF-8.
-        /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста, так и в виде строки с указанием названия кодировки.
-        /// Значение по умолчанию: UTF8. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
-        /// <param name="byteOrder">
-        /// Порядок байтов, используемый для декодирования целых чисел при чтении из потока.
-        /// Значение по умолчанию: LittleEndian. </param>
-        /// <param name="lineSplitter">
-        /// Определяет строку, разделяющую строки в потоке.
-        /// Значение по умолчанию: Неопределено. </param>
-        /// <param name="convertibleSplitterOfLines">
-        /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
-        /// Значение по умолчанию: ВК + ПС. </param>
-        [ScriptConstructor(Name = "На основании потока")]
-        public static IRuntimeContextInstance Constructor1(IStreamWrapper stream, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
-        {
-            return new DataReader(stream.GetUnderlyingStream(), textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
-        }
-
+        
         /// <summary>
         /// 
         /// Кодировка текста, используемая по-умолчанию для данного экземпляра ЧтениеДанных.

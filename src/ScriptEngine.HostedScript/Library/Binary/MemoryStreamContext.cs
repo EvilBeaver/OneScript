@@ -275,7 +275,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// </summary>
         /// <returns></returns>
         [ContextMethod("ЗакрытьИПолучитьДвоичныеДанные")]
-        private BinaryDataContext CloseAndGetBinaryData()
+        public BinaryDataContext CloseAndGetBinaryData()
         {
             byte[] bytes;
             if (_shouldBeCopiedOnClose)

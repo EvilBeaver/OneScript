@@ -57,13 +57,24 @@ namespace ScriptEngine.Machine
             {
                 Func< IValue[], object > invoker = (IValue[] callParams) =>
                 {
-                    return instance.GetType().InvokeMember(name,
-                        BindingFlags.InvokeMethod | BindingFlags.IgnoreCase
-                            | BindingFlags.Public | BindingFlags.OptionalParamBinding
-                            | BindingFlags.Instance,
-                        new ValueBinder(),
-                        instance,
-                        callParams.Cast<object>().ToArray());
+
+                    try
+                    {
+                        return instance.GetType().InvokeMember(name,
+                                        BindingFlags.InvokeMethod | BindingFlags.IgnoreCase
+                                            | BindingFlags.Public | BindingFlags.OptionalParamBinding
+                                            | BindingFlags.Instance,
+                                        new ValueBinder(),
+                                        instance,
+                                        callParams.Cast<object>().ToArray());
+                    }
+                    catch (TargetInvocationException e)
+                    {
+                        if (e.InnerException != null)
+                            throw e.InnerException;
+
+                        throw;
+                    }
                 };
 
                 id = _methodNames.RegisterName(name);
