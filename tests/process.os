@@ -138,6 +138,7 @@
 	|  -compile    shows compiled module without execution
 	|  -check [-env=<entrypoint-file>]provides syntax check
 	|  -check -cgi provides syntax check in CGI-mode
+	|  -version    output version string
 	|
 	|  -encoding=<encoding-name> set output encoding
 	|  -codestat=<filename> write code statistics
