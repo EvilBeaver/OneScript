@@ -16,7 +16,7 @@ namespace ScriptEngine.HostedScript.Library
     /// Системное перечисление для специальных папок.
     /// </summary>
     [SystemEnum("СпециальнаяПапка", "SpecialFolder")]
-    class SpecialFolderEnum : EnumerationContext
+    public class SpecialFolderEnum : EnumerationContext
     {
         private SpecialFolderEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
