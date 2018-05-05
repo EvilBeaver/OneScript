@@ -1749,7 +1749,7 @@ namespace ScriptEngine.Machine
             if (start < 1)
                 start = 1;
 
-            if (len > str.Length || len < 0)
+            if (start+len > str.Length || len < 0)
                 len = str.Length-start+1;
 
             string result;

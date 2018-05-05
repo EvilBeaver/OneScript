@@ -4,15 +4,15 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using ScriptEngine.Environment;
+
 using System;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
-using ScriptEngine.Machine.Reflection;
+using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.Machine.Contexts
+namespace ScriptEngine.Machine.Reflection
 {
     public class ReflectedClassType<T> : TypeDelegator where T : ScriptDrivenObject
     {

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using ScriptEngine.Machine;
 
@@ -51,20 +52,31 @@ namespace ScriptEngine.Compiler
 
         private SymbolBinding GetSymbol(string symbol, Func<SymbolScope, int> extract)
         {
+            if (TryGetSymbol(symbol, extract, out var result))
+            {
+                return result;
+            }
+
+            throw new SymbolNotFoundException(symbol);
+        }
+
+        private bool TryGetSymbol(string symbol, Func<SymbolScope, int> extract, out SymbolBinding result)
+        {
             for (int i = _scopeStack.Count - 1; i >= 0; i--)
             {
                 var number = extract(_scopeStack[i]);
                 if (number < 0)
                     continue;
 
-                var result = new SymbolBinding();
+                result = new SymbolBinding();
                 result.CodeIndex = number;
                 result.ContextIndex = i;
-                return result;
-                
+                return true;
+
             }
 
-            throw new SymbolNotFoundException(symbol);
+            result = default(SymbolBinding);
+            return false;
         }
 
         private bool HasSymbol(Func<SymbolScope, bool> definitionCheck)
@@ -82,13 +94,11 @@ namespace ScriptEngine.Compiler
         public VariableBinding GetVariable(string name)
         {
             var sb = GetSymbol(name, x => ExtractVariableIndex(name, x));
-
             return new VariableBinding()
             {
                 type = _scopeStack[sb.ContextIndex].GetVariable(sb.CodeIndex).Type,
                 binding = sb
             };
-
         }
 
         public SymbolBinding GetMethod(string name)
@@ -96,6 +106,29 @@ namespace ScriptEngine.Compiler
             return GetSymbol(name, x => ExtractMethodIndex(name, x));
         }
 
+        public bool TryGetMethod(string name, out SymbolBinding result)
+        {
+            return TryGetSymbol(name, x => ExtractMethodIndex(name, x), out result);
+        }
+
+        public bool TryGetVariable(string name, out VariableBinding vb)
+        {
+            var hasSymbol = TryGetSymbol(name, x => ExtractVariableIndex(name, x), out var sb);
+            if (!hasSymbol)
+            {
+                vb = default(VariableBinding);
+                return false;
+            }
+
+            vb = new VariableBinding()
+            {
+                type = _scopeStack[sb.ContextIndex].GetVariable(sb.CodeIndex).Type,
+                binding = sb
+            };
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int ExtractVariableIndex(string name, SymbolScope scope)
         {
             if (scope.IsVarDefined(name))
@@ -106,6 +139,7 @@ namespace ScriptEngine.Compiler
                 return -1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int ExtractMethodIndex(string name, SymbolScope scope)
         {
             if (scope.IsMethodDefined(name))

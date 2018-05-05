@@ -1678,9 +1678,9 @@ namespace ScriptEngine.Compiler
 
         private void BuildLoadVariable(string identifier)
         {
-            try
+            var hasVar = _ctx.TryGetVariable(identifier, out var varBinding);
+            if (hasVar)
             {
-                var varBinding = _ctx.GetVariable(identifier);
                 if (varBinding.binding.ContextIndex == _ctx.TopIndex())
                 {
                     AddCommand(OperationCode.LoadLoc, varBinding.binding.CodeIndex);
@@ -1691,7 +1691,7 @@ namespace ScriptEngine.Compiler
                     AddCommand(OperationCode.LoadVar, num);
                 }
             }
-            catch (SymbolNotFoundException)
+            else
             {
                 // can create variable
                 var binding = _ctx.DefineVariable(identifier);
@@ -1716,11 +1716,11 @@ namespace ScriptEngine.Compiler
 
         private void BuildMethodCall(string identifier, bool[] argsPassed, bool asFunction)
         {
-            try
+            var hasMethod = _ctx.TryGetMethod(identifier, out var methBinding);
+            if (hasMethod)
             {
-                var methBinding = _ctx.GetMethod(identifier);
                 var scope = _ctx.GetScope(methBinding.ContextIndex);
-                
+
                 // dynamic scope checks signatures only at runtime
                 if (!scope.IsDynamicScope)
                 {
@@ -1732,13 +1732,12 @@ namespace ScriptEngine.Compiler
                     CheckFactArguments(methInfo, argsPassed);
                 }
 
-                if(asFunction)
+                if (asFunction)
                     AddCommand(OperationCode.CallFunc, GetMethodRefNumber(ref methBinding));
                 else
-                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(ref methBinding));
-
+                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(ref methBinding)); 
             }
-            catch (SymbolNotFoundException)
+            else
             {
                 // can be defined later
                 var forwarded = new ForwardedMethodDecl();

@@ -182,7 +182,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _ownProperties[index];
         }
-
+        
         protected override string GetOwnPropName(int index)
         {
             if (_ownProperties == null)

@@ -164,5 +164,41 @@ namespace NUnitTests
             var instance = type.GetConstructors()[0].Invoke(new object[0]);
             Assert.IsInstanceOf<UserScriptContextInstance>(instance);
         }
+
+        [Test]
+        public void ClassCanExposeNativeMethodByName()
+        {
+            var cb = new ClassBuilder<UserScriptContextInstance>();
+            var module = LoadFromString("");
+            cb.SetTypeName("testDrive")
+              .SetModule(module)
+              .ExportClassMethod("GetMethodsCount")
+              .ExportConstructor((parameters => new UserScriptContextInstance(module)));
+            var type = cb.Build();
+
+            Assert.IsNotNull(type.GetMethod("GetMethodsCount"));
+        }
+
+        [Test]
+        public void ClassCanExposeNativeMethodDirectly()
+        {
+            var cb = new ClassBuilder<UserScriptContextInstance>();
+            var module = LoadFromString("");
+            var nativeMethod = typeof(UserScriptContextInstance).GetMethod("AddProperty",
+                                                                           BindingFlags.Public | BindingFlags.Instance,
+                                                                           null,
+                                                                           new Type[]
+                                                                           {
+                                                                               typeof(string),
+                                                                               typeof(IValue)
+                                                                           }, null);
+            cb.SetTypeName("testDrive")
+              .SetModule(module)
+              .ExportClassMethod(nativeMethod)
+              .ExportConstructor((parameters => new UserScriptContextInstance(module)));
+            var type = cb.Build();
+
+            Assert.IsNotNull(type.GetMethod("AddProperty"));
+        }
     }
 }

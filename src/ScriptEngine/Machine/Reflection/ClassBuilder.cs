@@ -43,6 +43,19 @@ namespace ScriptEngine.Machine.Reflection
             if(mi == null)
                 throw new InvalidOperationException($"Method '{methodName}' not found in {typeof(T)}");
 
+            ExportClassMethod(mi);
+            return this;
+        }
+
+        public ClassBuilder<T> ExportClassMethod(SysReflection.MethodInfo nativeMethod)
+        {
+            if(nativeMethod == null)
+                throw new ArgumentNullException(nameof(nativeMethod));
+
+            if (nativeMethod.ReflectedType != typeof(T))
+                throw new InvalidOperationException($"Method '{nativeMethod.Name}' not found in {typeof(T)}");
+
+            _methods.Add(nativeMethod);
             return this;
         }
 

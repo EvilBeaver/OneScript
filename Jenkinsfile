@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = 20
+        ReleaseNumber = 21
         outputEnc = '65001'
     }
 
@@ -236,7 +236,7 @@ pipeline {
                     rm -rf targetContent
                 fi
                 mkdir targetContent
-                mv built/* targetContent/
+                mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
                 mv output/*.rpm targetContent/
                 mv output/*.deb targetContent/
 
@@ -261,15 +261,15 @@ pipeline {
                 unstash 'vsix'
                 
                 sh """
-				if [ -d "targetContent" ]; then
+                if [ -d "targetContent" ]; then
                     rm -rf targetContent
                 fi
                 mkdir targetContent
-                mv built/* targetContent/
+                mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
                 mv output/*.rpm targetContent/
                 mv output/*.deb targetContent/
-				
-				cd targetContent
+
+                cd targetContent
                 TARGET="/var/www/oscript.io/download/versions/latest/"
                 sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
                 

@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 
 using ScriptEngine.Environment;
+using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -544,7 +545,8 @@ namespace ScriptEngine.HostedScript.Library
                     var propIdx = acceptor.FindProperty(srcProperty);
                     var srcPropIdx = source.FindProperty(srcProperty);
 
-                    acceptor.SetPropValue(propIdx, source.GetPropValue(srcPropIdx));
+                    if(source.IsPropReadable(propIdx) && acceptor.IsPropWritable(propIdx))
+                        acceptor.SetPropValue(propIdx, source.GetPropValue(srcPropIdx));
 
                 }
                 catch(PropertyAccessException)

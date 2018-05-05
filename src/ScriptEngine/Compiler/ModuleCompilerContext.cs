@@ -51,17 +51,20 @@ namespace ScriptEngine.Compiler
 
         public SymbolBinding GetMethod(string name)
         {
-            try
-            {
-                var sb = _moduleCtx.GetMethod(name);
-                ShiftIndex(ref sb);
-
-                return sb;
-            }
-            catch (SymbolNotFoundException)
-            {
+            if(!_moduleCtx.TryGetMethod(name, out var sb))
                 return _outerCtx.GetMethod(name);
-            }
+
+            ShiftIndex(ref sb);
+            return sb;
+        }
+
+        public bool TryGetMethod(string name, out SymbolBinding binding)
+        {
+            if (!_moduleCtx.TryGetMethod(name, out binding))
+                return _outerCtx.TryGetMethod(name, out binding);
+
+            ShiftIndex(ref binding);
+            return true;
         }
 
         public SymbolScope GetScope(int scopeIndex)
@@ -78,18 +81,22 @@ namespace ScriptEngine.Compiler
 
         public VariableBinding GetVariable(string name)
         {
-            try
-            {
-                var vb = _moduleCtx.GetVariable(name);
-                ShiftIndex(ref vb.binding);
-
-                return vb;
-                
-            }
-            catch (SymbolNotFoundException)
-            {
+            if (!_moduleCtx.TryGetVariable(name, out var vb))
                 return _outerCtx.GetVariable(name);
-            }
+
+            ShiftIndex(ref vb.binding);
+            return vb;
+
+        }
+
+        public bool TryGetVariable(string name, out VariableBinding binding)
+        {
+            if (!_moduleCtx.TryGetVariable(name, out binding))
+                return _outerCtx.TryGetVariable(name, out binding);
+
+            ShiftIndex(ref binding.binding);
+            return true;
+
         }
 
         public SymbolScope Peek()
