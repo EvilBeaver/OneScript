@@ -21,6 +21,8 @@ namespace ScriptEngine.Compiler
     }
 
     class Compiler    {
+        public const string BODY_METHOD_NAME = "$entry";
+
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
         private Parser _parser;
@@ -395,7 +397,7 @@ namespace ScriptEngine.Compiler
             if (entry != _module.Code.Count)
             {
                 var bodyMethod = new MethodInfo();
-                bodyMethod.Name = "$entry";
+                bodyMethod.Name = BODY_METHOD_NAME;
                 var descriptor = new MethodDescriptor();
                 descriptor.EntryPoint = entry;
                 descriptor.Signature = bodyMethod;

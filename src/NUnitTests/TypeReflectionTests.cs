@@ -48,7 +48,7 @@ namespace NUnitTests
 
             var reflected = CreateDummyType(script);
             Assert.AreEqual("Dummy", reflected.Name);
-            Assert.AreEqual("ScriptEngine.Machine.Contexts.dyn.Dummy", reflected.FullName);
+            Assert.AreEqual("ScriptEngine.Machine.Reflection.dyn.Dummy", reflected.FullName);
 
         }
 
@@ -199,6 +199,21 @@ namespace NUnitTests
             var type = cb.Build();
 
             Assert.IsNotNull(type.GetMethod("AddProperty"));
+        }
+
+        [Test]
+        public void CheckMethodBodyIsNotReflected()
+        {
+            string script = "Процедура Внутренняя()\n" +
+                            "КонецПроцедуры\n\n" +
+                            "Процедура Внешняя() Экспорт\n" +
+                            "КонецПроцедуры\n" +
+                            "ТелоМодуля = 2;";
+
+            var reflected = CreateDummyType(script);
+
+            var defaultGet = reflected.GetMethods(BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.AreEqual(2, defaultGet.Length);
         }
     }
 }
