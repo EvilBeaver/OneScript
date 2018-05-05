@@ -13,6 +13,8 @@ namespace ScriptEngine.Machine
 {
     public class RuntimeException : ScriptException
     {
+        private List<ExecutionFrameInfo> _frames;
+
         public RuntimeException() : base()
         {
         }
@@ -24,6 +26,18 @@ namespace ScriptEngine.Machine
         public RuntimeException(string msg, Exception inner)
             : base(new CodePositionInfo(), msg, inner)
         {
+        }
+
+        public IEnumerable<ExecutionFrameInfo> GetStackTrace()
+        {
+            return _frames.AsReadOnly();
+        }
+
+        internal IList<ExecutionFrameInfo> CallStackFrames => _frames;
+
+        internal void InitCallStackFrames(IEnumerable<ExecutionFrameInfo> src)
+        {
+            _frames = src == null ? new List<ExecutionFrameInfo>() : new List<ExecutionFrameInfo>(src);
         }
 
         public static RuntimeException DeprecatedMethodCall(string name)
