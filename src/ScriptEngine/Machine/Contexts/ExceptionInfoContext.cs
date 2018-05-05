@@ -98,6 +98,11 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        /// <summary>
+        /// Предоставляет доступ к стеку вызовов процедур.
+        /// Подробнее см. класс КоллекцияКадровСтекаВызовов
+        /// </summary>
+        /// <returns></returns>
         [ContextMethod("ПолучитьСтекВызовов", "GetStackTrace")]
         public IValue GetStackTrace()
         {
