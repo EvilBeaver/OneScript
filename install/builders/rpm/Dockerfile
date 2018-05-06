@@ -1,4 +1,4 @@
-FROM fedora
+FROM fedora:26
 MAINTAINER Chmouel Boudjnah <chmouel@enovance.com>
 
 
