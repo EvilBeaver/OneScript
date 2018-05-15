@@ -142,6 +142,9 @@ namespace ScriptEngine.Machine.Reflection
             for (int i = 0; i < Module.Methods.Length; i++)
             {
                 var methodDescriptor = Module.Methods[i];
+                if(methodDescriptor.Signature.Name == Compiler.Compiler.BODY_METHOD_NAME)
+                    continue;
+
                 var methInfo = CreateMethodInfo(methodDescriptor.Signature);
                 _methods.Add(methInfo);
             }
