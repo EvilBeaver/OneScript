@@ -235,6 +235,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             if (uriBuilder.Scheme == HTTPS_SCHEME)
             {
                 request.ServerCertificateValidationCallback = delegate { return true; };
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
             }
 
             return request;
