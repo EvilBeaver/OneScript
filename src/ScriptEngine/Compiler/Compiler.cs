@@ -622,21 +622,47 @@ namespace ScriptEngine.Compiler
             if (_lastExtractedLexem.Token == Token.Equal)
             {
                 param.HasDefaultValue = true;
-                NextToken();
-                if (IsLiteral(ref _lastExtractedLexem))
-                {
-                    var cd = CreateConstDefinition(ref _lastExtractedLexem);
-                    var num = GetConstNumber(ref cd);
-                    param.DefaultValueIndex = num;
-                    NextToken();
-                }
-                else
-                {
-                    throw CompilerException.UnexpectedOperation();
-                }
+                param.DefaultValueIndex = BuildDefaultParameterValue();
             }
 
             return param;
+        }
+
+        private int BuildDefaultParameterValue()
+        {
+            NextToken();
+
+            bool hasSign = false;
+            bool signIsMinus = _lastExtractedLexem.Token == Token.Minus;
+            if (signIsMinus || _lastExtractedLexem.Token == Token.Plus)
+            {
+                hasSign = true;
+                NextToken();
+            }
+
+            if (IsLiteral(ref _lastExtractedLexem))
+            {
+                var cd = CreateConstDefinition(ref _lastExtractedLexem);
+                if (hasSign)
+                {
+                    if (_lastExtractedLexem.Type == LexemType.NumberLiteral && signIsMinus)
+                    {
+                        cd.Presentation = '-' + cd.Presentation;
+                    }
+                    else if (_lastExtractedLexem.Type == LexemType.StringLiteral
+                          || _lastExtractedLexem.Type == LexemType.DateLiteral)
+                    {
+                        throw CompilerException.NumberExpected();
+                    }
+                }
+
+                NextToken();
+                return GetConstNumber(ref cd);
+            }
+            else
+            {
+                throw CompilerException.LiteralExpected();
+            }
         }
 
         private void DispatchMethodBody()
