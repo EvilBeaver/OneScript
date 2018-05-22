@@ -11,6 +11,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
+using ScriptEngine.Machine.Reflection;
+
 namespace ScriptEngine.Machine.Contexts
 {
    
@@ -22,12 +24,14 @@ namespace ScriptEngine.Machine.Contexts
 
         private Type _declaringType;
 
-	    readonly List<ParameterInfo> _parameters;
+        private readonly List<ParameterInfo> _parameters;
+        private List<UserAnnotationAttribute> _annotations;
 
         public ReflectedMethodInfo(string name)
         {
             _name = name;
             _parameters = new List<ParameterInfo>();
+            _annotations = new List<UserAnnotationAttribute>();
         }
 
         public void SetDeclaringType(Type declaringType)
@@ -45,13 +49,7 @@ namespace ScriptEngine.Machine.Contexts
             _isPrivate = makePrivate;
         }
 
-        public List<ParameterInfo> Parameters
-        {
-            get
-            {
-                return _parameters;
-            }
-        }
+        public List<ParameterInfo> Parameters => _parameters;
 
         public bool IsFunction { get; set; }
 
@@ -127,24 +125,28 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (attributeType == typeof(DispIdAttribute))
             {
-                return this.GetCustomAttributes(inherit);
+                DispIdAttribute[] attribs = new DispIdAttribute[1];
+                attribs[0] = new DispIdAttribute(_dispId);
+                return attribs;
             }
             else
             {
-                return new object[0];
+                return GetCustomAttributes(inherit);
             }
         }
 
         public override object[] GetCustomAttributes(bool inherit)
         {
-            DispIdAttribute[] attribs = new DispIdAttribute[1];
-            attribs[0] = new DispIdAttribute(_dispId);
-            return attribs;
+            List<Attribute> data = new List<Attribute>();
+            data.Add(new DispIdAttribute(_dispId));
+
+            data.AddRange(_annotations);
+            return data.ToArray();
         }
 
         public override bool IsDefined(Type attributeType, bool inherit)
         {
-            return attributeType == typeof(DispIdAttribute);
+            return attributeType == typeof(DispIdAttribute) || _annotations.Count > 0 && attributeType == typeof(UserAnnotationAttribute);
         }
 
         public override string Name
