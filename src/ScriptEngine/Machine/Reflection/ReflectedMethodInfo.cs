@@ -129,10 +129,13 @@ namespace ScriptEngine.Machine.Contexts
                 attribs[0] = new DispIdAttribute(_dispId);
                 return attribs;
             }
-            else
+
+            if(attributeType == typeof(UserAnnotationAttribute))
             {
-                return GetCustomAttributes(inherit);
+                return _annotations.ToArray();
             }
+
+            return new object[0];
         }
 
         public override object[] GetCustomAttributes(bool inherit)
@@ -157,6 +160,14 @@ namespace ScriptEngine.Machine.Contexts
         public override Type ReflectedType
         {
             get { return _declaringType; }
+        }
+
+        public void AddAnnotation(AnnotationDefinition annotation)
+        {
+            _annotations.Add(new UserAnnotationAttribute()
+            {
+                Annotation = annotation
+            });
         }
     }
 }

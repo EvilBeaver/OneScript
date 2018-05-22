@@ -215,5 +215,38 @@ namespace NUnitTests
             var defaultGet = reflected.GetMethods(BindingFlags.Public | BindingFlags.NonPublic);
             Assert.AreEqual(2, defaultGet.Length);
         }
+
+        [Test]
+        public void CheckMethodAnnotationsReflected()
+        {
+            string script = "&Аннотация\n" +
+                            "&ДругаяАннотация\n" +
+                            "Процедура Внешняя() Экспорт\n" +
+                            "КонецПроцедуры";
+
+            var reflected = CreateDummyType(script);
+            var method = reflected.GetMethod("Внешняя");
+            Assert.NotNull(method);
+            Assert.AreEqual(3, method.GetCustomAttributes(false).Length);
+            Assert.AreEqual(2, method.GetCustomAttributes(typeof(UserAnnotationAttribute), false).Length);
+
+            var first = (UserAnnotationAttribute)method.GetCustomAttributes(typeof(UserAnnotationAttribute), false)[0];
+            Assert.AreEqual("Аннотация", first.Annotation.Name);
+        }
+
+        [Test]
+        public void CheckParametersAnnotationsReflected()
+        {
+            string script = "Процедура Внешняя(&Аннотация Параметр) Экспорт\n" +
+                            "КонецПроцедуры";
+
+            var reflected = CreateDummyType(script);
+            var method = reflected.GetMethod("Внешняя");
+            Assert.NotNull(method);
+            var param = method.GetParameters()[0];
+
+            var first = (UserAnnotationAttribute)param.GetCustomAttributes(typeof(UserAnnotationAttribute), false)[0];
+            Assert.AreEqual("Аннотация", first.Annotation.Name);
+        }
     }
 }
