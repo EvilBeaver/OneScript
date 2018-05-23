@@ -164,17 +164,23 @@ namespace ScriptEngine.Machine.Reflection
                 var reflectedParam = new ReflectedParamInfo(currentParam.Name, currentParam.IsByValue);
                 reflectedParam.SetOwner(reflectedMethod);
                 reflectedParam.SetPosition(i);
-                foreach (var annotation in currentParam.Annotations)
+                if (currentParam.Annotations != null)
                 {
-                    reflectedParam.AddAnnotation(annotation);
+                    foreach (var annotation in currentParam.Annotations)
+                    {
+                        reflectedParam.AddAnnotation(annotation);
+                    }
                 }
 
                 reflectedMethod.Parameters.Add(reflectedParam);
             }
 
-            foreach (var annotation in methInfo.Annotations)
+            if(methInfo.Annotations != null)
             {
-                reflectedMethod.AddAnnotation(annotation);
+                foreach (var annotation in methInfo.Annotations)
+                {
+                    reflectedMethod.AddAnnotation(annotation);
+                }
             }
 
             return reflectedMethod;

@@ -237,7 +237,7 @@ namespace NUnitTests
         [Test]
         public void CheckParametersAnnotationsReflected()
         {
-            string script = "Процедура Внешняя(&Аннотация Параметр) Экспорт\n" +
+            string script = "Процедура Внешняя(&Аннотация Параметр, ПараметрБезАннотации) Экспорт\n" +
                             "КонецПроцедуры";
 
             var reflected = CreateDummyType(script);
