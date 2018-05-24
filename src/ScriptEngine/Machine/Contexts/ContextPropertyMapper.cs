@@ -60,7 +60,7 @@ namespace ScriptEngine.Machine.Contexts
             _name = attrib.GetName();
             _alias = attrib.GetAlias();
             if (string.IsNullOrEmpty(_alias))
-                _alias = _name;
+                _alias = propInfo.Name;
 
             Func<TInstance, IValue> cantReadAction = (inst) => { throw RuntimeException.PropIsNotReadableException(_name); };
             Action<TInstance, IValue> cantWriteAction = (inst, val) => { throw RuntimeException.PropIsNotWritableException(_name); };
