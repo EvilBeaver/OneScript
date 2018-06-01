@@ -545,7 +545,7 @@ namespace ScriptEngine.HostedScript.Library
                     var propIdx = acceptor.FindProperty(srcProperty);
                     var srcPropIdx = source.FindProperty(srcProperty);
 
-                    if(source.IsPropReadable(propIdx) && acceptor.IsPropWritable(propIdx))
+                    if(source.IsPropReadable(srcPropIdx) && acceptor.IsPropWritable(propIdx))
                         acceptor.SetPropValue(propIdx, source.GetPropValue(srcPropIdx));
 
                 }
