@@ -86,7 +86,7 @@ namespace ScriptEngine.Machine.Reflection
 
         public override MethodAttributes Attributes
         {
-            get { throw new NotImplementedException(); }
+            get { return MethodAttributes.Public; }
         }
 
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
