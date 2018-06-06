@@ -501,7 +501,6 @@ namespace ScriptEngine.HostedScript.Library
         public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
         {
             IEnumerable<string> sourceProperties;
-            IEnumerable<string> ignoredPropCollection;
             
             if (filledProperties == null)
             {
@@ -511,50 +510,48 @@ namespace ScriptEngine.HostedScript.Library
                     names[i] = source.GetPropName(i);
                 }
 
-                sourceProperties = names;
+                if (ignoredProperties != null)
+                {
+                    IEnumerable<string> ignoredPropCollection = ignoredProperties.Split(',')
+                        .Select(x => x.Trim())
+                        .Where(x => x.Length > 0);
+
+                    sourceProperties = names.Where(x => !ignoredPropCollection.Contains(x));
+                }
+                else
+                {
+                    sourceProperties = names;
+                }
             }
             else
             {
                 sourceProperties = filledProperties.Split(',')
                     .Select(x => x.Trim())
-                    .Where(x => x.Length > 0)
-                    .ToArray();
+                    .Where(x => x.Length > 0);
 
                 // Проверка существования заявленных свойств
                 foreach (var item in sourceProperties)
                 {
-                    acceptor.FindProperty(item);
+                    acceptor.FindProperty(item); // бросает PropertyAccessException если свойства нет
                 }
             }
-
-            if(ignoredProperties != null)
-            {
-                ignoredPropCollection = ignoredProperties.Split(',')
-                    .Select(x => x.Trim())
-                    .Where(x => x.Length > 0);
-            }
-            else
-            {
-                ignoredPropCollection = new string[0];
-            }
-
-            foreach (var srcProperty in sourceProperties.Where(x=>!ignoredPropCollection.Contains(x)))
+            
+            foreach (var srcProperty in sourceProperties)
             {
                 try
                 {
-                    var propIdx = acceptor.FindProperty(srcProperty);
+                    var accPropIdx = acceptor.FindProperty(srcProperty);
                     var srcPropIdx = source.FindProperty(srcProperty);
 
-                    if(source.IsPropReadable(srcPropIdx) && acceptor.IsPropWritable(propIdx))
-                        acceptor.SetPropValue(propIdx, source.GetPropValue(srcPropIdx));
+                    if(source.IsPropReadable(srcPropIdx) && acceptor.IsPropWritable(accPropIdx))
+                        acceptor.SetPropValue(accPropIdx, source.GetPropValue(srcPropIdx));
 
                 }
                 catch(PropertyAccessException)
                 {
+                    // игнорировать свойства Источника, которых нет в Приемнике, если не задано явно
                 }
-
             }
-
         }
 
 
