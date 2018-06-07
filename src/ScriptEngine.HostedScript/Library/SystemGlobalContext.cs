@@ -500,9 +500,43 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
         public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, IValue filledProperties = null, IValue ignoredProperties = null)
         {
-            IEnumerable<string> sourceProperties;
+            string strFilled;
+            string strIgnored;
 
             if (filledProperties == null || filledProperties.DataType == DataType.Undefined)
+            {
+                strFilled = null;
+            }
+            else if (filledProperties.DataType == DataType.String)
+            {
+                strFilled = filledProperties.AsString();
+            }
+            else
+            {
+                throw RuntimeException.InvalidArgumentType(3, nameof(filledProperties));
+            }
+
+            if (ignoredProperties == null || ignoredProperties.DataType == DataType.Undefined)
+            {
+                strIgnored = null;
+            }
+            else if (ignoredProperties.DataType == DataType.String)
+            {
+                strIgnored = ignoredProperties.AsString();
+            }
+            else
+            {
+                throw RuntimeException.InvalidArgumentType(4, nameof(ignoredProperties));
+            }
+
+            FillPropertyValuesStr(acceptor, source, strFilled, strIgnored);
+        }
+
+        public void FillPropertyValuesStr(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
+        {
+            IEnumerable<string> sourceProperties;
+
+            if (filledProperties == null)
             {
                 string[] names = new string[source.GetPropCount()];
                 for (int i = 0; i < names.Length; i++)
@@ -510,42 +544,22 @@ namespace ScriptEngine.HostedScript.Library
                     names[i] = source.GetPropName(i);
                 }
 
-
-                if (ignoredProperties == null || ignoredProperties.DataType == DataType.Undefined)
+                if (ignoredProperties == null)
                 {
                     sourceProperties = names;
                 }
-                else if ( ignoredProperties.DataType == DataType.String)
+                else
                 {
-                    IEnumerable<string> ignoredPropCollection = ignoredProperties.AsString()
-                        .Split(',')
+                    IEnumerable<string> ignoredPropCollection = ignoredProperties.Split(',')
                         .Select(x => x.Trim())
                         .Where(x => x.Length > 0);
 
                     sourceProperties = names.Where(x => !ignoredPropCollection.Contains(x));
                 }
-                else
-                {
-                    throw RuntimeException.InvalidArgumentType(4, nameof(ignoredProperties));
-                }
             }
             else
             {
-                if( filledProperties.DataType != DataType.String )
-                {
-                    throw RuntimeException.InvalidArgumentType(3, nameof(filledProperties));
-                }
-
-                if (ignoredProperties != null
-                    && ignoredProperties.DataType != DataType.Undefined
-                    && ignoredProperties.DataType != DataType.String
-                   )
-                {
-                    throw RuntimeException.InvalidArgumentType(4, nameof(ignoredProperties));
-                }
-
-                sourceProperties = filledProperties.AsString()
-                    .Split(',')
+                sourceProperties = filledProperties.Split(',')
                     .Select(x => x.Trim())
                     .Where(x => x.Length > 0);
 
@@ -555,21 +569,22 @@ namespace ScriptEngine.HostedScript.Library
                     acceptor.FindProperty(item); // бросает PropertyAccessException если свойства нет
                 }
             }
-            
+
+
             foreach (var srcProperty in sourceProperties)
             {
                 try
                 {
-                    var accPropIdx = acceptor.FindProperty(srcProperty);
                     var srcPropIdx = source.FindProperty(srcProperty);
+                    var accPropIdx = acceptor.FindProperty(srcProperty); // бросает PropertyAccessException если свойства нет
 
-                    if(source.IsPropReadable(srcPropIdx) && acceptor.IsPropWritable(accPropIdx))
+                    if (source.IsPropReadable(srcPropIdx) && acceptor.IsPropWritable(accPropIdx))
                         acceptor.SetPropValue(accPropIdx, source.GetPropValue(srcPropIdx));
 
                 }
-                catch(PropertyAccessException)
+                catch (PropertyAccessException)
                 {
-                    // игнорировать свойства Источника, которых нет в Приемнике, если не задано явно
+                    // игнорировать свойства Источника, которых нет в Приемнике
                 }
             }
         }
