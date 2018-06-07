@@ -498,11 +498,11 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="filledProperties">Заполняемые свойства (строка, через запятую)</param>
         /// <param name="ignoredProperties">Игнорируемые свойства (строка, через запятую)</param>
         [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
-        public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
+        public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, IValue filledProperties = null, IValue ignoredProperties = null)
         {
             IEnumerable<string> sourceProperties;
-            
-            if (filledProperties == null)
+
+            if (filledProperties == null || filledProperties.DataType == DataType.Undefined)
             {
                 string[] names = new string[source.GetPropCount()];
                 for (int i = 0; i < names.Length; i++)
@@ -510,9 +510,15 @@ namespace ScriptEngine.HostedScript.Library
                     names[i] = source.GetPropName(i);
                 }
 
-                if (ignoredProperties != null)
+
+                if (ignoredProperties == null || ignoredProperties.DataType == DataType.Undefined)
                 {
-                    IEnumerable<string> ignoredPropCollection = ignoredProperties.Split(',')
+                    sourceProperties = names;
+                }
+                else if ( ignoredProperties.DataType == DataType.String)
+                {
+                    IEnumerable<string> ignoredPropCollection = ignoredProperties.AsString()
+                        .Split(',')
                         .Select(x => x.Trim())
                         .Where(x => x.Length > 0);
 
@@ -520,12 +526,26 @@ namespace ScriptEngine.HostedScript.Library
                 }
                 else
                 {
-                    sourceProperties = names;
+                    throw RuntimeException.InvalidArgumentType(4, nameof(ignoredProperties));
                 }
             }
             else
             {
-                sourceProperties = filledProperties.Split(',')
+                if( filledProperties.DataType != DataType.String )
+                {
+                    throw RuntimeException.InvalidArgumentType(3, nameof(filledProperties));
+                }
+
+                if (ignoredProperties != null
+                    && ignoredProperties.DataType != DataType.Undefined
+                    && ignoredProperties.DataType != DataType.String
+                   )
+                {
+                    throw RuntimeException.InvalidArgumentType(4, nameof(ignoredProperties));
+                }
+
+                sourceProperties = filledProperties.AsString()
+                    .Split(',')
                     .Select(x => x.Trim())
                     .Where(x => x.Length > 0);
 
