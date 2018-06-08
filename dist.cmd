@@ -1,6 +1,6 @@
 @echo Full distr and tests
-@echo add MSBuild 12 to your path
+@echo add MSBuild 15 to your path
 
-MSBuild.exe ./BuildAll.csproj
-MSBuild.exe ./BuildAll.csproj /t:CreateZipForUpdateDll
-MSBuild.exe ./BuildAll.csproj /t:xUnitTest
+MSBuild.exe ./Build.csproj
+MSBuild.exe ./Build.csproj /t:CreateZipForUpdateDll
+MSBuild.exe ./Build.csproj /t:xUnitTest
