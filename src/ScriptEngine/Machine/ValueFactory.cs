@@ -80,10 +80,12 @@ namespace ScriptEngine.Machine
                     break;
                 case DataType.Date:
                     string format;
-                    if (presentation.Length == 8)
-                        format = "yyyyMMdd";
-                    else if (presentation.Length == 14)
+                    if (presentation.Length == 14)
                         format = "yyyyMMddHHmmss";
+                    else if (presentation.Length == 8)
+                        format = "yyyyMMdd";
+                    else if (presentation.Length == 12)
+                        format = "yyyyMMddHHmm";
                     else
                         throw RuntimeException.ConvertToDateException();
 
