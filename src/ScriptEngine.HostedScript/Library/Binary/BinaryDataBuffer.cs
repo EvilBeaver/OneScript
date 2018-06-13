@@ -175,14 +175,14 @@ namespace ScriptEngine.HostedScript.Library.Binary
         ///
         ///
         [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
-        public void WriteInt16(int position, int value, IValue byteOrder = null)
+        public void WriteInt16(int position, long value, IValue byteOrder = null)
         {
             ThrowIfReadonly();
 
-            if (value < short.MinValue || value > short.MaxValue)
+            if (value < ushort.MinValue || value > ushort.MaxValue)
                 throw RuntimeException.InvalidArgumentValue();
 
-            var bytes = GetBytes(value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
+            var bytes = GetBytes((ushort)value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             CopyBytes(position, bytes);
         }
 
@@ -200,11 +200,14 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Порядок байтов, который будет использован для кодировки числа при записи в буфер. Если не установлен, то будет использован порядок байтов, заданный для текущего экземпляра БуферДвоичныхДанных.
         /// Значение по умолчанию: Неопределено. </param>
         [ContextMethod("ЗаписатьЦелое32", "WriteInt32")]
-        public void WriteInt32(int position, int value, IValue byteOrder = null)
+        public void WriteInt32(int position, long value, IValue byteOrder = null)
         {
             ThrowIfReadonly();
 
-            var bytes = GetBytes(value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
+            if (value < uint.MinValue || value > uint.MaxValue)
+                throw RuntimeException.InvalidArgumentValue();
+
+            var bytes = GetBytes((uint)value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             CopyBytes(position, bytes);
         }
 
