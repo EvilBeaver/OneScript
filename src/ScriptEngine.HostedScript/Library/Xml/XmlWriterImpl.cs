@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         private int _depth;
         private Stack<Dictionary<string, string>> _nsmap = new Stack<Dictionary<string, string>>();
 
-        private const int INDENT_SIZE = 4;
+        private const string DEFAULT_INDENT_STRING = "    ";
 
         public XmlWriterImpl()
         {
@@ -229,28 +229,28 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         }
 
-        private void ApplySettings(IValue encoding)
+        private void ApplySettings(IValue encodingOrSettings)
         {
-            var rawEncoding = encoding?.GetRawValue();
+            var rawEncoding = encodingOrSettings?.GetRawValue();
             if (rawEncoding is XmlWriterSettingsImpl)
             {
                 _settings = rawEncoding as XmlWriterSettingsImpl;
             }
-            else if ((encoding?.DataType ?? DataType.String) == DataType.String)
+            else if ((encodingOrSettings?.DataType ?? DataType.String) == DataType.String)
             {
-                _settings = (XmlWriterSettingsImpl) XmlWriterSettingsImpl.Constructor(encoding, null,
-                    ValueFactory.Create(Indent), null, ValueFactory.Create("    "));
+                _settings = (XmlWriterSettingsImpl) XmlWriterSettingsImpl.Constructor(encodingOrSettings, null,
+                    ValueFactory.Create(Indent), null, ValueFactory.Create(DEFAULT_INDENT_STRING));
             }
             else
             {
-                throw RuntimeException.InvalidArgumentType(nameof(encoding));
+                throw RuntimeException.InvalidArgumentType(nameof(encodingOrSettings));
             }
         }
 
         [ContextMethod("ОткрытьФайл","OpenFile")]
-        public void OpenFile(string path, IValue encoding = null, IValue addBOM = null)
+        public void OpenFile(string path, IValue encodingOrSettings = null, IValue addBOM = null)
         {
-            ApplySettings(encoding);
+            ApplySettings(encodingOrSettings);
             var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
             var clrSettings = _settings.GetClrSettings();
             _writer = new XmlTextWriter(new StreamWriterWithSettings(fs, clrSettings));
@@ -259,9 +259,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("УстановитьСтроку","SetString")]
-        public void SetString(IValue encoding = null)
+        public void SetString(IValue encodingOrSettings = null)
         {
-            ApplySettings(encoding);
+            ApplySettings(encodingOrSettings);
             _stringWriter = new StringWriterWithSettings(_settings.GetClrSettings());
             _writer = new XmlTextWriter(_stringWriter);
             SetDefaultOptions();
