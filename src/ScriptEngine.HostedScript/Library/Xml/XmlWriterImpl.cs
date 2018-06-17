@@ -252,7 +252,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             ApplySettings(encodingOrSettings);
             var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
-            var clrSettings = _settings.GetClrSettings();
+            var clrSettings = _settings.GetClrSettings(addBOM?.AsBoolean() ?? true);
             _writer = new XmlTextWriter(new StreamWriterWithSettings(fs, clrSettings));
             _stringWriter = null;
             SetDefaultOptions();
