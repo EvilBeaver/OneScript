@@ -314,6 +314,17 @@ namespace ScriptEngine.HostedScript.Library.Xml
                 }
             }
 
+            public override void Write(string value)
+            {
+                if (value == " /")
+                {
+                    // TODO: грязный костыль
+                    base.Write("/");
+                    return;
+                }
+                base.Write(value);
+            }
+
             public override void Close()
             {
                 _baseObject.Close();
