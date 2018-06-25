@@ -20,9 +20,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
     {
         private XmlTextWriter _writer;
         private XmlWriterSettingsImpl _settings = (XmlWriterSettingsImpl)XmlWriterSettingsImpl.Constructor(); 
-        private StringWriter _stringWriter;
         private int _depth;
         private Stack<Dictionary<string, string>> _nsmap = new Stack<Dictionary<string, string>>();
+        private StringBuilder _stringBuffer;
 
         private const string DEFAULT_INDENT_STRING = "    ";
 
@@ -211,12 +211,12 @@ namespace ScriptEngine.HostedScript.Library.Xml
             {
                 _writer.Flush();
                 _writer.Close();
-                _stringWriter.Close();
 
-                var sb = _stringWriter.GetStringBuilder();
                 Dispose();
 
-                return ValueFactory.Create(sb.ToString());
+                var result = _stringBuffer.ToString();
+                _stringBuffer = null;
+                return ValueFactory.Create(result);
             }
             else
             {
@@ -253,8 +253,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
             ApplySettings(encodingOrSettings);
             var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
             var clrSettings = _settings.GetClrSettings(addBOM?.AsBoolean() ?? true);
-            _writer = new XmlTextWriter(new StreamWriterWithSettings(fs, clrSettings));
-            _stringWriter = null;
+            _writer = new XmlTextWriter(new TextWriterWithSettings(fs, clrSettings));
             SetDefaultOptions();
         }
 
@@ -262,8 +261,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
         public void SetString(IValue encodingOrSettings = null)
         {
             ApplySettings(encodingOrSettings);
-            _stringWriter = new StringWriterWithSettings(_settings.GetClrSettings());
-            _writer = new XmlTextWriter(_stringWriter);
+            _stringBuffer = new StringBuilder();
+            _writer = new XmlTextWriter(new TextWriterWithSettings(_stringBuffer, _settings.GetClrSettings()));
             SetDefaultOptions();
         }
 
@@ -281,60 +280,44 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         private bool IsOpenForString()
         {
-            return _stringWriter != null;
+            return _stringBuffer != null;
         }
 
-        private sealed class StreamWriterWithSettings : StreamWriter
+        private sealed class TextWriterWithSettings : TextWriter
         {
+            private readonly TextWriter _baseObject;
             private readonly XmlWriterSettings _settings;
 
-            public override Encoding Encoding
+            public TextWriterWithSettings(Stream stream, XmlWriterSettings settings)
             {
-                get { return _settings.Encoding; }
+                _baseObject = new StreamWriter(stream, settings.Encoding);
+                _settings = settings;
             }
             
-            public StreamWriterWithSettings(Stream w, XmlWriterSettings settings) : base(w, settings.Encoding)
+            public TextWriterWithSettings(StringBuilder buffer, XmlWriterSettings settings)
             {
+                _baseObject = new StringWriter(buffer);
                 _settings = settings;
             }
-
+            
+            public override Encoding Encoding => _settings.Encoding;
+            
             public override void Write(char value)
             {
                 if (value == '\xfeff')
                 {
-                    base.Write(_settings.IndentChars);
+                    _baseObject.Write(_settings.IndentChars);
                 }
                 else
                 {
-                    base.Write(value);
+                    _baseObject.Write(value);
                 }
             }
-        }
 
-        private sealed class StringWriterWithSettings : StringWriter
-        {
-            private readonly XmlWriterSettings _settings;
-
-            public StringWriterWithSettings(XmlWriterSettings settings)
+            public override void Close()
             {
-                _settings = settings;
-            }
-
-            public override Encoding Encoding
-            {
-                get { return _settings.Encoding; }
-            }
-
-            public override void Write(char value)
-            {
-                if (value == '\xfeff')
-                {
-                    base.Write(_settings.IndentChars);
-                }
-                else
-                {
-                    base.Write(value);
-                }
+                _baseObject.Close();
+                base.Close();
             }
         }
 
@@ -342,11 +325,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             if (_writer != null)
                 _writer.Close();
-            if (_stringWriter != null)
-                _stringWriter.Dispose();
 
             _writer = null;
-            _stringWriter = null;
         }
 
         [ScriptConstructor]
