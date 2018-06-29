@@ -18,6 +18,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
     [ContextClass("ЗаписьXML", "XMLWriter")]
     public class XmlWriterImpl : AutoContext<XmlWriterImpl>, IDisposable
     {
+        private TextWriterWithSettings _internalTextWriter;
         private XmlTextWriter _writer;
         private XmlWriterSettingsImpl _settings = (XmlWriterSettingsImpl)XmlWriterSettingsImpl.Constructor(); 
         private int _depth;
@@ -109,7 +110,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ЗаписатьКонецЭлемента","WriteEndElement")]
         public void WriteEndElement()
         {
+            _internalTextWriter.TrimEndSlashes = true;
             _writer.WriteEndElement();
+            _internalTextWriter.TrimEndSlashes = false;
             ExitScope();
         }
 
@@ -253,7 +256,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
             ApplySettings(encodingOrSettings);
             var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
             var clrSettings = _settings.GetClrSettings(addBOM?.AsBoolean() ?? true);
-            _writer = new XmlTextWriter(new TextWriterWithSettings(fs, clrSettings));
+            _internalTextWriter = new TextWriterWithSettings(fs, clrSettings);
+            _writer = new XmlTextWriter(_internalTextWriter);
             SetDefaultOptions();
         }
 
@@ -262,7 +266,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             ApplySettings(encodingOrSettings);
             _stringBuffer = new StringBuilder();
-            _writer = new XmlTextWriter(new TextWriterWithSettings(_stringBuffer, _settings.GetClrSettings()));
+            _internalTextWriter = new TextWriterWithSettings(_stringBuffer, _settings.GetClrSettings());
+            _writer = new XmlTextWriter(_internalTextWriter);
             SetDefaultOptions();
         }
 
@@ -300,6 +305,12 @@ namespace ScriptEngine.HostedScript.Library.Xml
                 _settings = settings;
             }
             
+            /// <summary>
+            /// Признак необходимости заменять строку ` /` на `/`.
+            /// См. https://github.com/EvilBeaver/OneScript/issues/768#issuecomment-397848410
+            /// </summary>
+            public bool TrimEndSlashes { get; set; }
+            
             public override Encoding Encoding => _settings.Encoding;
             
             public override void Write(char value)
@@ -316,9 +327,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
             public override void Write(string value)
             {
-                if (value == " /")
+                if (value == " /" && TrimEndSlashes)
                 {
-                    // TODO: грязный костыль
                     base.Write("/");
                     return;
                 }
