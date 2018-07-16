@@ -118,9 +118,10 @@ namespace ScriptEngine.HostedScript.Library
                 {
                     arrParsed = new string[] { inputString };
                 }
-            } else
+            }
+            else
             {
-                arrParsed = new string[] { string.Empty };
+                arrParsed = (bool) includeEmpty ? new string[] { string.Empty } : new string[0];
             }
             return new ArrayImpl(arrParsed.Select(x => ValueFactory.Create(x)));
         }

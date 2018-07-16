@@ -36,7 +36,10 @@ namespace ScriptEngine.HostedScript.Library
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            _content[index] = val;
+            if (index.DataType != DataType.Undefined)
+            {
+                _content[index] = val;
+            }
         }
 
         public override bool IsPropReadable(int propNum)
@@ -57,9 +60,9 @@ namespace ScriptEngine.HostedScript.Library
         #region ICollectionContext Members
 
         [ContextMethod("Вставить", "Insert")]
-        public void Insert(IValue key, IValue val)
+        public void Insert(IValue key, IValue val=null)
         {
-            SetIndexedValue(key, val);
+            SetIndexedValue(key, val ?? ValueFactory.Create() );
         }
 
         [ContextMethod("Получить", "Get")]
