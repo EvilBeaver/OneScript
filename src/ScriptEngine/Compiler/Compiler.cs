@@ -1387,6 +1387,9 @@ namespace ScriptEngine.Compiler
                 case Token.Modulo:
                     opCode = OperationCode.Mod;
                     break;
+                case Token.UnaryPlus:
+                    opCode = OperationCode.Number;
+                    break;
                 case Token.UnaryMinus:
                     opCode = OperationCode.Neg;
                     break;
@@ -1438,6 +1441,10 @@ namespace ScriptEngine.Compiler
             else if (LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
             {
                 ProcessPrimaryIdentifier();
+            }
+            else if (_lastExtractedLexem.Token == Token.Plus)
+            {
+                ProcessPrimaryUnaryPlus();
             }
             else if (_lastExtractedLexem.Token == Token.Minus)
             {
@@ -1493,18 +1500,35 @@ namespace ScriptEngine.Compiler
             }
         }
 
+        private bool LastExtractedIsPimary()
+        {
+            return LanguageDef.IsLiteral(ref _lastExtractedLexem)
+                || LanguageDef.IsIdentifier(ref _lastExtractedLexem)
+                || _lastExtractedLexem.Token == Token.OpenPar;
+        }
+
         private void ProcessPrimaryUnaryMinus()
         {
             NextToken();
-            if (!(LanguageDef.IsLiteral(ref _lastExtractedLexem)
-                || LanguageDef.IsIdentifier(ref _lastExtractedLexem)
-                || _lastExtractedLexem.Token == Token.OpenPar))
+            if (!LastExtractedIsPimary())
             {
                 throw CompilerException.ExpressionExpected();
             }
 
             BuildPrimaryNode();
             AddCommand(OperationCode.Neg, 0);
+        }
+
+        private void ProcessPrimaryUnaryPlus()
+        {
+            NextToken();
+            if (!LastExtractedIsPimary())
+            {
+                throw CompilerException.ExpressionExpected();
+            }
+
+            BuildPrimaryNode();
+            AddCommand(OperationCode.Number, 0);
         }
 
         private void ProcessSubexpression()
