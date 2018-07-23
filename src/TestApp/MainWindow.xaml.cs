@@ -238,10 +238,13 @@ namespace TestApp
 
         private void Open_Execute(object sender, ExecutedRoutedEventArgs e)
         {
+            if (!SaveModified())
+                return;
+
             var dlg = new Microsoft.Win32.OpenFileDialog();
             dlg.Filter = GetFileDialogFilter();
             dlg.Multiselect = false;
-            if (dlg.ShowDialog() == true)
+            if (dlg.ShowDialog() == true  )
             {
                 var hostedScript = new HostedScriptEngine();
                 hostedScript.CustomConfig = CustomConfigPath(dlg.FileName);
@@ -302,7 +305,7 @@ namespace TestApp
                 dlg.FileName = System.IO.Path.GetFileName(_currentDocPath);
             }
 
-            if (dlg.ShowDialog() == true)
+            if (dlg.ShowDialog() == true )
             {
                 var filename = dlg.FileName;
                 DumpCodeToFile(filename);
@@ -339,7 +342,7 @@ namespace TestApp
             if (answer == MessageBoxResult.Cancel)
                 return false;
             else if (answer == MessageBoxResult.Yes)
-                return !SaveFile();
+                return SaveFile();
 
             return true;
         }

@@ -13,4 +13,4 @@ Depends: mono-runtime,
   libmono-corlib4.0-cil | libmono-corlib4.5-cil,
   libmono-i18n4.0-all | libmono-i18n4.5-all
 Recommends: mono-complete
-Origin: https://bitbucket.org/EvilBeaver/1script/ 
+Origin: https://github.com/EvilBeaver/OneScript/ 

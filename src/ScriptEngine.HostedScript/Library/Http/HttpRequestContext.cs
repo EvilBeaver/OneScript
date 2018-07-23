@@ -20,7 +20,7 @@ namespace ScriptEngine.HostedScript.Library.Http
     /// Данные и заголоки HTTP запроса.
     /// </summary>
     [ContextClass("HTTPЗапрос", "HTTPRequest")]
-    public class HttpRequestContext : AutoContext<HttpRequestContext>
+    public class HttpRequestContext : AutoContext<HttpRequestContext>, IDisposable
     {
 
         IHttpRequestBody _body;
@@ -142,5 +142,9 @@ namespace ScriptEngine.HostedScript.Library.Http
             return ctx;
         }
 
+        public void Dispose()
+        {
+            _body?.Dispose();
+        }
     }
 }

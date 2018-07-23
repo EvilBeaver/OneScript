@@ -159,6 +159,19 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
         }
 
+        private static ulong AsUnsignedLong( IValue value, ulong maxValue=ulong.MaxValue )
+        {
+            if (value.DataType != DataType.Number)
+                throw RuntimeException.InvalidArgumentType(2,nameof(value));
+
+            var number = value.AsNumber();
+            if ( number < 0 || number > maxValue || number != (ulong)number )
+                throw RuntimeException.InvalidArgumentValue(number);
+
+            return (ulong)number;
+        }
+
+
         /// <summary>
         /// 
         /// Записать целое 16-битное положительное число в заданную позицию.
@@ -175,14 +188,12 @@ namespace ScriptEngine.HostedScript.Library.Binary
         ///
         ///
         [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
-        public void WriteInt16(int position, int value, IValue byteOrder = null)
+        public void WriteInt16(int position, IValue value, IValue byteOrder = null)
         {
             ThrowIfReadonly();
 
-            if (value < short.MinValue || value > short.MaxValue)
-                throw RuntimeException.InvalidArgumentValue();
-
-            var bytes = GetBytes(value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
+            var number = AsUnsignedLong(value,ushort.MaxValue);
+            var bytes = GetBytes( (ushort)number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             CopyBytes(position, bytes);
         }
 
@@ -200,11 +211,12 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Порядок байтов, который будет использован для кодировки числа при записи в буфер. Если не установлен, то будет использован порядок байтов, заданный для текущего экземпляра БуферДвоичныхДанных.
         /// Значение по умолчанию: Неопределено. </param>
         [ContextMethod("ЗаписатьЦелое32", "WriteInt32")]
-        public void WriteInt32(int position, int value, IValue byteOrder = null)
+        public void WriteInt32(int position, IValue value, IValue byteOrder = null)
         {
             ThrowIfReadonly();
 
-            var bytes = GetBytes(value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
+            var number = AsUnsignedLong(value, uint.MaxValue);
+            var bytes = GetBytes((uint)number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             CopyBytes(position, bytes);
         }
 
@@ -227,11 +239,12 @@ namespace ScriptEngine.HostedScript.Library.Binary
 
         ///
         [ContextMethod("ЗаписатьЦелое64", "WriteInt64")]
-        public void WriteInt64(int position, long value, IValue byteOrder = null)
+        public void WriteInt64(int position, IValue value, IValue byteOrder = null)
         {
             ThrowIfReadonly();
 
-            var bytes = GetBytes(value, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
+            var number = AsUnsignedLong(value);
+            var bytes = GetBytes( number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             CopyBytes(position, bytes);
         }
 
@@ -480,14 +493,11 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Значение, которое требуется установить в заданную позицию буфера.
         /// Если значение больше 255 или меньше 0, будет выдана ошибка о неверном значении параметра. </param>
         [ContextMethod("Установить", "Set")]
-        public void Set(int position, int value)
+        public void Set(int position, IValue value)
         {
             ThrowIfReadonly();
 
-            if (value < byte.MinValue || value > byte.MaxValue)
-                throw RuntimeException.InvalidArgumentValue();
-
-            _buffer[position] = (byte)value;
+            _buffer[position] = (byte)AsUnsignedLong(value, byte.MaxValue);
         }
 
 
