@@ -62,7 +62,7 @@ namespace ScriptEngine.Machine
                     var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
                     var condition = Expression.Condition(
                             Expression.Equal(indexedArg, Expression.Constant(null, typeof(IValue))),
-                            Expression.Constant(parameters[i].DefaultValue),
+                            Expression.Constant(parameters[i].DefaultValue, parameters[i].ParameterType),
                             indexedArg
                         );
 
