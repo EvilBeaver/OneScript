@@ -45,7 +45,7 @@ pipeline {
                             sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarQube.Scanner.MSBuild.exe";
                             def sonarcommandStart = "@" + sqScannerMsBuildHome + " begin /k:1script /n:OneScript /v:\"1.0.${env.ReleaseNumber}\"";
                             def makeAnalyzis = false
-                            if (env.BRANCH_NAME == "develop") {
+                            /*if (env.BRANCH_NAME == "develop") {
                                 echo 'Analysing develop branch'
                             } else if (env.BRANCH_NAME.startsWith("PR-")) {
                                 // Report PR issues           
@@ -66,7 +66,7 @@ pipeline {
                                 }
                             } else {
                                 makeAnalyzis = false
-                            }
+                            }*/
 
                             if (makeAnalyzis) {
                                 bat "${sonarcommandStart}"
