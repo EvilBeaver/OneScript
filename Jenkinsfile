@@ -47,9 +47,6 @@ pipeline {
                             def makeAnalyzis = true
                             if (env.BRANCH_NAME == "develop") {
                                 echo 'Analysing develop branch'
-                                withCredentials([string(credentialsId: 'opensonar_token', variable: 'sonarToken')]) {
-                                    sonarcommandStart = sonarcommandStart + " /d:sonar.login=${sonarToken}"
-                                }
                             } else if (env.BRANCH_NAME.startsWith("PR-")) {
                                 // Report PR issues           
                                 def PRNumber = env.BRANCH_NAME.tokenize("PR-")[0]
