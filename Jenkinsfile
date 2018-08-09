@@ -42,11 +42,14 @@ pipeline {
                     withSonarQubeEnv('silverbulleters') {
                         script {
                             def sqScannerMsBuildHome = tool 'sonar-scanner for msbuild';
-                            sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarQube.Scanner.MSBuild.exe";
+                            sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarScanner.MSBuild.exe";
                             def sonarcommandStart = "@" + sqScannerMsBuildHome + " begin /k:1script /n:OneScript /v:\"1.0.${env.ReleaseNumber}\"";
                             def makeAnalyzis = true
                             if (env.BRANCH_NAME == "develop") {
                                 echo 'Analysing develop branch'
+                                withCredentials([string(credentialsId: 'opensonar_token', variable: 'sonarToken')]) {
+                                    sonarcommandStart = sonarcommandStart + " /d:sonar.login=${sonarToken}"
+                                }
                             } else if (env.BRANCH_NAME.startsWith("PR-")) {
                                 // Report PR issues           
                                 def PRNumber = env.BRANCH_NAME.tokenize("PR-")[0]
