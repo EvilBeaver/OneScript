@@ -1,6 +1,6 @@
 {
    "firstName": "Иван",
-   "lastName": "Иванов",
+   "lastName": "\"Иванов\"",
    "address": {
        "streetAddress": "Московское ш., 101, кв.101",
        "city": "Ленинград",
