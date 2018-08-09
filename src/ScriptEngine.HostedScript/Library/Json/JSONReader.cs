@@ -124,6 +124,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                         decimal d = Convert.ToDecimal(_reader.Value);
                         return ValueFactory.Create(d);
                     }
+                    else if (type == JsonToken.Date)
+                    {
+                        return ValueFactory.Create((DateTime)_reader.Value);
+                    }
                     else
                         throw new RuntimeException("Ошибка при получении значения атрибута контекста (ТекущееЗначение): Текущее значение JSON не может быть получено");
                 }
