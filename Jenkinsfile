@@ -44,7 +44,7 @@ pipeline {
                             def sqScannerMsBuildHome = tool 'sonar-scanner for msbuild';
                             sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarQube.Scanner.MSBuild.exe";
                             def sonarcommandStart = "@" + sqScannerMsBuildHome + " begin /k:1script /n:OneScript /v:\"1.0.${env.ReleaseNumber}\"";
-                            def makeAnalyzis = false
+                            def makeAnalyzis = true
                             if (env.BRANCH_NAME == "develop") {
                                 echo 'Analysing develop branch'
                             } else if (env.BRANCH_NAME.startsWith("PR-")) {
