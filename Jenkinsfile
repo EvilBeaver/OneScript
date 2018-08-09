@@ -42,7 +42,7 @@ pipeline {
                     withSonarQubeEnv('silverbulleters') {
                         script {
                             def sqScannerMsBuildHome = tool 'sonar-scanner for msbuild';
-                            sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarQube.Scanner.MSBuild.exe";
+                            sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarScanner.MSBuild.exe";
                             def sonarcommandStart = "@" + sqScannerMsBuildHome + " begin /k:1script /n:OneScript /v:\"1.0.${env.ReleaseNumber}\"";
                             def makeAnalyzis = false
                             /*if (env.BRANCH_NAME == "develop") {
