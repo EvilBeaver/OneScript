@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using Newtonsoft.Json;
+using System;
 
 namespace ScriptEngine.HostedScript.Library.Json
 {
@@ -180,5 +181,49 @@ namespace ScriptEngine.HostedScript.Library.Json
             return ResStruct;
         }
 
+        /// <summary>
+        /// 
+        /// Выполняет преобразование строки, прочитанной в JSON-формате, в значение типа Дата.
+        /// </summary>
+        ///
+        /// <param name="String">
+        /// Строка, которую требуется преобразовать в дату. </param>
+        /// <param name="Format">
+        /// Формат, в котором представлена дата в строке, подлежащей преобразованию. </param>
+
+        ///
+        /// <returns name="Date">
+        /// Значения данного типа содержит дату григорианского календаря (с 01 января 0001 года) и время с точностью до секунды.</returns>
+
+        ///
+        [ContextMethod("ПрочитатьДатуJSON", "ReadJSONDate")]
+        public IValue ReadJSONDate(string String, IValue Format)
+        {
+         
+            var format = Format.GetRawValue() as SelfAwareEnumValue<JSONDateFormatEnum>;
+            var JSONDateFormatEnum = GlobalsManager.GetEnum<JSONDateFormatEnum>();
+            DateFormatHandling dateFormatHandling = new DateFormatHandling();
+
+            if (format == JSONDateFormatEnum.ISO || format == null)
+                dateFormatHandling = DateFormatHandling.IsoDateFormat;
+            else if (format == JSONDateFormatEnum.Microsoft)
+                dateFormatHandling = DateFormatHandling.MicrosoftDateFormat;
+            else
+                throw new RuntimeException("Формат даты JavaScript не поддерживается.");
+
+            string json = @"{""Date"":""" + String +  @"""}";
+
+            var settings = new JsonSerializerSettings
+            {
+                DateFormatHandling = dateFormatHandling
+        };
+            var result = JsonConvert.DeserializeObject<ConvertedDate>(json, settings);
+            return ValueFactory.Create((DateTime)result.Date);
+        }
+    }
+
+    class ConvertedDate
+    {
+        public DateTime Date { get; set; }
     }
 }
