@@ -120,11 +120,20 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        private static ValueTable.ValueTable CreateAnnotationTable(AnnotationDefinition[] annotations)
+        private static ValueTable.ValueTable EmptyAnnotationsTable()
         {
             var annotationsTable = new ValueTable.ValueTable();
-            var annotationNameColumn = annotationsTable.Columns.Add("Имя");
-            var annotationParamsColumn = annotationsTable.Columns.Add("Параметры");
+            annotationsTable.Columns.Add("Имя");
+            annotationsTable.Columns.Add("Параметры");
+
+            return annotationsTable;
+        }
+
+        private static ValueTable.ValueTable CreateAnnotationTable(AnnotationDefinition[] annotations)
+        {
+            var annotationsTable = EmptyAnnotationsTable();
+            var annotationNameColumn = annotationsTable.Columns.FindColumnByName("Имя");
+            var annotationParamsColumn = annotationsTable.Columns.FindColumnByName("Параметры");
 
             foreach (var annotation in annotations)
             {
@@ -270,11 +279,8 @@ namespace ScriptEngine.HostedScript.Library
                 new_row.Set(countColumn, ValueFactory.Create(methInfo.ArgCount));
                 new_row.Set(isFunctionColumn, ValueFactory.Create(methInfo.IsFunction));
 
-                if (methInfo.AnnotationsCount != 0)
-                {
-                    new_row.Set(annotationsColumn, CreateAnnotationTable(methInfo.Annotations));
-                }
-                
+                new_row.Set(annotationsColumn, methInfo.AnnotationsCount != 0 ? CreateAnnotationTable(methInfo.Annotations) : EmptyAnnotationsTable());
+
                 var paramTable = new ValueTable.ValueTable();
                 var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
                 var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
@@ -293,10 +299,7 @@ namespace ScriptEngine.HostedScript.Library
                         paramRow.Set(paramNameColumn, ValueFactory.Create(name));
                         paramRow.Set(paramByValue, ValueFactory.Create(param.IsByValue));
                         paramRow.Set(paramHasDefaultValue, ValueFactory.Create(param.HasDefaultValue));
-                        if (param.AnnotationsCount != 0)
-                        {
-                            paramRow.Set(paramAnnotationsColumn, CreateAnnotationTable(param.Annotations));
-                        }
+                        paramRow.Set(paramAnnotationsColumn, param.AnnotationsCount != 0 ? CreateAnnotationTable(param.Annotations) : EmptyAnnotationsTable());
                     }
                 }
             }
@@ -338,10 +341,7 @@ namespace ScriptEngine.HostedScript.Library
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(propInfo.Identifier));
 
-                if (propInfo.AnnotationsCount != 0)
-                {
-                    new_row.Set(annotationsColumn, CreateAnnotationTable(propInfo.Annotations));
-                }
+                new_row.Set(annotationsColumn, propInfo.AnnotationsCount != 0 ? CreateAnnotationTable(propInfo.Annotations) : EmptyAnnotationsTable());
             }
         }
 
