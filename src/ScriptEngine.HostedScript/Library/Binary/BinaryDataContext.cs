@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
+using System.Text;
 
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -59,6 +60,20 @@ namespace ScriptEngine.HostedScript.Library.Binary
             {
                 return _buffer;
             }
+        }
+
+        public override string AsString()
+        {
+            const int LIMIT = 50;
+            StringBuilder hex = new StringBuilder(LIMIT);
+            for (int i = 0; i < LIMIT; i++)
+            {
+                hex.AppendFormat("{0:X2} ", _buffer[i]);
+            }
+
+            hex.Append("…");
+
+            return hex.ToString();
         }
 
         /// <summary>
