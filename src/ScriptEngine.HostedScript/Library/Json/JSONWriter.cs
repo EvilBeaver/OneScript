@@ -123,6 +123,7 @@ namespace ScriptEngine.HostedScript.Library.Json
              if (_settings.EscapeSingleQuotes == true || !_settings.UseDoubleQuotes)
                 fval = fval.Replace("'", "\\'");
 
+            fval = fval.Replace("\"", "\\\"");
 
             _writer.WriteRawValue(_writer.QuoteChar + fval + _writer.QuoteChar);
         }
