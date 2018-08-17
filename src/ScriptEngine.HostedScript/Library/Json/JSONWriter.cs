@@ -10,8 +10,6 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using Newtonsoft.Json;
 using System.IO;
-using System.Text;
-using System.Globalization;
 using System.Threading;
 
 namespace ScriptEngine.HostedScript.Library.Json
@@ -257,6 +255,12 @@ namespace ScriptEngine.HostedScript.Library.Json
             if (!IsOpen())
                 NotOpenException();
 
+            if (value.SystemType.Name == "Null")
+            {
+                _writer.WriteNull();
+                return;
+            }
+
             switch (value.DataType)
             {
                 case DataType.String:
@@ -289,10 +293,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                     _writer.WriteValue(value.AsBoolean());
                     break;
                 case DataType.Undefined:
-                    _writer.WriteNull();
+                    _writer.WriteUndefined();
                     break;
                 default:
-                    throw new RuntimeException("Тип переданного значения не поддерживается.");
+                            throw new RuntimeException("Тип переданного значения не поддерживается.");
             }
         }
 

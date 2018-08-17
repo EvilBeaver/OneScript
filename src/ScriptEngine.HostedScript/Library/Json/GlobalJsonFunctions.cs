@@ -190,11 +190,9 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// Строка, которую требуется преобразовать в дату. </param>
         /// <param name="Format">
         /// Формат, в котором представлена дата в строке, подлежащей преобразованию. </param>
-
         ///
         /// <returns name="Date">
         /// Значения данного типа содержит дату григорианского календаря (с 01 января 0001 года) и время с точностью до секунды.</returns>
-
         ///
         [ContextMethod("ПрочитатьДатуJSON", "ReadJSONDate")]
         public IValue ReadJSONDate(string String, IValue Format)
@@ -220,10 +218,149 @@ namespace ScriptEngine.HostedScript.Library.Json
             var result = JsonConvert.DeserializeObject<ConvertedDate>(json, settings);
             return ValueFactory.Create((DateTime)result.Date);
         }
-    }
+
+        /// <summary>
+        /// 
+        /// Выполняет сериализацию Значение в формат JSON. Результат помещает в объект ЗаписьJSON.
+        /// Если методу требуется передать значение недопустимого типа, то можно использовать функцию преобразования значения (параметры ИмяФункцииПреобразования и МодульФункцииПреобразования).
+        /// </summary>
+        ///
+        /// <param name="JSONWriter">
+        /// Объект, через который осуществляется запись JSON. Поток JSON должен быть подготовлен для записи значения. </param>
+        /// <param name="Value">
+        /// Объект записи JSON. Меняет состояние потока записи. 
+        /// <param name="SerializationSettings">
+        /// В текущий версии не обрабатывается. Настройки сериализации в JSON. </param>
+        /// <param name="ConversionFunctionName">
+        /// В текущий версии не обрабатывается. Значение по умолчанию: Неопределено. </param>
+        /// <param name="ConversionFunctionModule">
+        /// Указывает контекст, в котором реализована функция преобразования значения в значение формата JSON.
+        ///В текущий версии не обрабатывается.  Значение по умолчанию: Неопределено. </param>
+        /// <param name="ConversionFunctionAdditionalParameters">
+        /// В текущий версии не обрабатывается. Значение по умолчанию: Неопределено. </param>
+        ///
+        ///
+        [ContextMethod("ЗаписатьJSON", "WriteJSON")]
+        public void WriteJSON(JSONWriter Writer, IValue Value, IValue SerializationSettings = null, string ConversionFunctionName = null, IValue ConversionFunctionModule = null, IValue ConversionFunctionAdditionalParameters = null)
+        {
+
+            var RawValue = Value.GetRawValue();
+
+            if (RawValue is ArrayImpl)
+            {
+                Writer.WriteStartArray();
+                foreach (var item in (ArrayImpl)RawValue)
+                {
+                    if (item is StructureImpl || item is MapImpl || item is FixedStructureImpl || item is FixedMapImpl)
+                    {
+                        WriteJSON(Writer, item);
+                    }
+                    else if (item is ArrayImpl || item is FixedArrayImpl)
+                    {
+                        WriteJSON(Writer, item);
+                    }
+                    else
+                        Writer.WriteValue(item);
+                }
+                Writer.WriteEndArray();
+            }
+            else if (RawValue is FixedArrayImpl)
+            {
+                Writer.WriteStartArray();
+                foreach (var item in (FixedArrayImpl)RawValue)
+                {
+                    if (item is StructureImpl || item is MapImpl || item is FixedStructureImpl || item is FixedMapImpl)
+                    {
+                        WriteJSON(Writer, item);
+                    }
+                    else if (item is ArrayImpl || item is FixedArrayImpl)
+                    {
+                        WriteJSON(Writer, item);
+                    }
+                    else
+                        Writer.WriteValue(item);
+                }
+                Writer.WriteEndArray();
+            }
+            else if (RawValue is StructureImpl)
+            {
+                Writer.WriteStartObject();
+                foreach (var item in (StructureImpl)RawValue)
+                {
+                    if (item.Value is StructureImpl || item.Value is MapImpl || item.Value is FixedStructureImpl || item.Value is FixedMapImpl || item.Value is ArrayImpl || item.Value is FixedArrayImpl)
+                    {
+                        Writer.WritePropertyName(item.Key.AsString());
+                        WriteJSON(Writer, item.Value);
+                    }
+                    else { 
+                        Writer.WritePropertyName(item.Key.AsString());
+                        Writer.WriteValue(item.Value);
+                    }
+                }
+                Writer.WriteEndObject();
+            }
+            else if (RawValue is FixedStructureImpl)
+            {
+                Writer.WriteStartObject();
+                foreach (var item in (FixedStructureImpl)RawValue)
+                {
+                    if (item.Value is StructureImpl || item.Value is MapImpl || item.Value is FixedStructureImpl || item.Value is FixedMapImpl || item.Value is ArrayImpl || item.Value is FixedArrayImpl)
+                    {
+                        Writer.WritePropertyName(item.Key.AsString());
+                        WriteJSON(Writer, item.Value);
+                    }
+                    else
+                    {
+                        Writer.WritePropertyName(item.Key.AsString());
+                        Writer.WriteValue(item.Value);
+                    }
+                }
+                Writer.WriteEndObject();
+            }
+            else if (RawValue is MapImpl)
+            {
+                Writer.WriteStartObject();
+                foreach (var item in (MapImpl)RawValue)
+                {
+                    if (item.Value is StructureImpl || item.Value is MapImpl || item.Value is FixedStructureImpl || item.Value is FixedMapImpl || item.Value is ArrayImpl || item.Value is FixedArrayImpl)
+                    {
+                        Writer.WritePropertyName(item.Key.AsString());
+                        WriteJSON(Writer, item.Value);
+                    }
+                    else
+                    {
+                        Writer.WritePropertyName(item.Key.AsString());
+                        Writer.WriteValue(item.Value);
+                    }
+                }
+                Writer.WriteEndObject();
+            }
+            else if (RawValue is FixedMapImpl)
+            {
+                Writer.WriteStartObject();
+                foreach (var item in (FixedMapImpl)RawValue)
+                {
+                    if (item.Value is StructureImpl || item.Value is MapImpl || item.Value is FixedStructureImpl || item.Value is FixedMapImpl || item.Value is ArrayImpl || item.Value is FixedArrayImpl)
+                    {
+                        Writer.WritePropertyName(item.Key.AsString());
+                        WriteJSON(Writer, item.Value);
+                    }
+                    else
+                    {
+                        Writer.WritePropertyName(item.Key.AsString());
+                        Writer.WriteValue(item.Value);
+                    }
+                }
+                Writer.WriteEndObject();
+            }
+            else
+                Writer.WriteValue(RawValue);
+        }
+     }
 
     class ConvertedDate
     {
         public DateTime Date { get; set; }
     }
+
 }
