@@ -136,10 +136,6 @@ namespace ScriptEngine.HostedScript.Library.Json
 
                 _writer.WriteRawValue(fval);
 
-                //}
-                /* else if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.SymbolsNotInBMP)
-                     throw new NotImplementedException("Свойство \"СимволыВнеBMP\" не поддерживается");*/
-
             }
             else
             {
@@ -161,8 +157,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                 fval = fval.Replace("\b", "\\b");
                 fval = fval.Replace("\t", "\\t");
                 fval = fval.Replace("/", "\\/");
-
-                //fval = fval.Replace("\"", "\\\"");
 
             _writer.WriteRawValue(_writer.QuoteChar + fval + _writer.QuoteChar);
             }

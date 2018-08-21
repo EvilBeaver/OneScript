@@ -251,16 +251,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                 Writer.WriteStartArray();
                 foreach (var item in (ArrayImpl)RawValue)
                 {
-                    if (item is StructureImpl || item is MapImpl || item is FixedStructureImpl || item is FixedMapImpl)
-                    {
                         WriteJSON(Writer, item);
-                    }
-                    else if (item is ArrayImpl || item is FixedArrayImpl)
-                    {
-                        WriteJSON(Writer, item);
-                    }
-                    else
-                        Writer.WriteValue(item);
                 }
                 Writer.WriteEndArray();
             }
@@ -269,16 +260,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                 Writer.WriteStartArray();
                 foreach (var item in (FixedArrayImpl)RawValue)
                 {
-                    if (item is StructureImpl || item is MapImpl || item is FixedStructureImpl || item is FixedMapImpl)
-                    {
                         WriteJSON(Writer, item);
-                    }
-                    else if (item is ArrayImpl || item is FixedArrayImpl)
-                    {
-                        WriteJSON(Writer, item);
-                    }
-                    else
-                        Writer.WriteValue(item);
                 }
                 Writer.WriteEndArray();
             }
@@ -287,15 +269,8 @@ namespace ScriptEngine.HostedScript.Library.Json
                 Writer.WriteStartObject();
                 foreach (var item in (StructureImpl)RawValue)
                 {
-                    if (item.Value is StructureImpl || item.Value is MapImpl || item.Value is FixedStructureImpl || item.Value is FixedMapImpl || item.Value is ArrayImpl || item.Value is FixedArrayImpl)
-                    {
                         Writer.WritePropertyName(item.Key.AsString());
                         WriteJSON(Writer, item.Value);
-                    }
-                    else { 
-                        Writer.WritePropertyName(item.Key.AsString());
-                        Writer.WriteValue(item.Value);
-                    }
                 }
                 Writer.WriteEndObject();
             }
@@ -304,16 +279,8 @@ namespace ScriptEngine.HostedScript.Library.Json
                 Writer.WriteStartObject();
                 foreach (var item in (FixedStructureImpl)RawValue)
                 {
-                    if (item.Value is StructureImpl || item.Value is MapImpl || item.Value is FixedStructureImpl || item.Value is FixedMapImpl || item.Value is ArrayImpl || item.Value is FixedArrayImpl)
-                    {
                         Writer.WritePropertyName(item.Key.AsString());
                         WriteJSON(Writer, item.Value);
-                    }
-                    else
-                    {
-                        Writer.WritePropertyName(item.Key.AsString());
-                        Writer.WriteValue(item.Value);
-                    }
                 }
                 Writer.WriteEndObject();
             }
@@ -322,16 +289,8 @@ namespace ScriptEngine.HostedScript.Library.Json
                 Writer.WriteStartObject();
                 foreach (var item in (MapImpl)RawValue)
                 {
-                    if (item.Value is StructureImpl || item.Value is MapImpl || item.Value is FixedStructureImpl || item.Value is FixedMapImpl || item.Value is ArrayImpl || item.Value is FixedArrayImpl)
-                    {
                         Writer.WritePropertyName(item.Key.AsString());
                         WriteJSON(Writer, item.Value);
-                    }
-                    else
-                    {
-                        Writer.WritePropertyName(item.Key.AsString());
-                        Writer.WriteValue(item.Value);
-                    }
                 }
                 Writer.WriteEndObject();
             }
@@ -340,16 +299,8 @@ namespace ScriptEngine.HostedScript.Library.Json
                 Writer.WriteStartObject();
                 foreach (var item in (FixedMapImpl)RawValue)
                 {
-                    if (item.Value is StructureImpl || item.Value is MapImpl || item.Value is FixedStructureImpl || item.Value is FixedMapImpl || item.Value is ArrayImpl || item.Value is FixedArrayImpl)
-                    {
-                        Writer.WritePropertyName(item.Key.AsString());
-                        WriteJSON(Writer, item.Value);
-                    }
-                    else
-                    {
-                        Writer.WritePropertyName(item.Key.AsString());
-                        Writer.WriteValue(item.Value);
-                    }
+                       Writer.WritePropertyName(item.Key.AsString());
+                       WriteJSON(Writer, item.Value);
                 }
                 Writer.WriteEndObject();
             }
