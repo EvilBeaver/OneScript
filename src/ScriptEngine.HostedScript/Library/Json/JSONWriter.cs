@@ -33,6 +33,8 @@ namespace ScriptEngine.HostedScript.Library.Json
             
         }
 
+        private bool _escapeNonAscii;
+
         /// <summary>
         /// 
         /// Возвращает true если для объекта чтения json был задан текст для парсинга.
@@ -56,6 +58,7 @@ namespace ScriptEngine.HostedScript.Library.Json
             _writer.Indentation = INDENT_SIZE;
             _writer.Formatting = Formatting.Indented;
             _settings = new JSONWriterSettings();
+            _escapeNonAscii = false;
         }
 
         private void SetOptions(IValue settings)
@@ -81,11 +84,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                 _writer.Indentation = INDENT_SIZE;
             }
             _writer.Formatting = Formatting.Indented;
-        }
-
-        void WriteStringValue(string val)
-        {
-            string fval = val;
 
             if (_settings.EscapeCharacters != null)
             {
@@ -94,36 +92,80 @@ namespace ScriptEngine.HostedScript.Library.Json
 
                 if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.NotASCIISymbols)
                 {
-                    StringWriter wr = new StringWriter();
-                    var jsonWriter = new JsonTextWriter(wr);
-                    jsonWriter.QuoteChar = '\"';
-                    jsonWriter.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
-                    new JsonSerializer().Serialize(jsonWriter, fval);
-                    string str = wr.ToString();
-                    fval = str.Substring(1, str.Length - 2);
-
+                    _escapeNonAscii = true;
+                    _writer.QuoteChar = '\"';
+                    _writer.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
                 }
                 else if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.SymbolsNotInBMP)
                     throw new NotImplementedException("Свойство \"СимволыВнеBMP\" не поддерживается");
+            }
+        }
+
+        void WriteStringValue(string val)
+        {
+            string fval = val;
+            //bool EscapeNonAscii = false;
+
+            if (_settings.EscapeCharacters != null && _escapeNonAscii)
+            {
+                StringWriter wr = new StringWriter();
+                var jsonWriter = new JsonTextWriter(wr);
+                jsonWriter.QuoteChar = '\"';
+                jsonWriter.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
+                new JsonSerializer().Serialize(jsonWriter, fval);
+                string str = wr.ToString();
+                fval = str.Substring(1, str.Length - 2);
+
+                if (_settings.EscapeAmpersand)
+                    fval = fval.Replace("&", "\\&");
+
+                if (_settings.EscapeSingleQuotes)
+                    fval = fval.Replace("'", "\\u0027");
+
+                fval = fval.Replace("<", "\\u003C");
+                fval = fval.Replace(">", "\\u003E");
+                fval = fval.Replace("\r", "\\r");
+                fval = fval.Replace("\n", "\\n");
+                fval = fval.Replace("\f", "\\f");
+                fval = fval.Replace("\"", "\\\"");
+                fval = fval.Replace("\b", "\\b");
+                fval = fval.Replace("\t", "\\t");
+                fval = fval.Replace("/", "\\/");
+
+                fval = fval.Replace("\\\"", "\"");
+
+                _writer.WriteRawValue(fval);
+
+                //}
+                /* else if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.SymbolsNotInBMP)
+                     throw new NotImplementedException("Свойство \"СимволыВнеBMP\" не поддерживается");*/
 
             }
+            else
+            {
+                if (_settings.EscapeSlash)
+                    fval = fval.Replace("\\", "\\\\");
 
-            if (_settings.EscapeSlash == true)
-                fval = fval.Replace("\\", "\\\\");
-            if (_settings.EscapeAngleBrackets == true) { 
-                fval = fval.Replace("<", "\\<");
-                fval = fval.Replace(">", "\\>");
-            }
-            if (_settings.EscapeLineTerminators == true)
-                fval = fval.Replace("\r", "\\r").Replace("\n", "\\n");
-            if (_settings.EscapeAmpersand == true)
-                fval = fval.Replace("&", "\\&");
-             if (_settings.EscapeSingleQuotes == true || !_settings.UseDoubleQuotes)
-                fval = fval.Replace("'", "\\'");
+                if (_settings.EscapeAmpersand)
+                    fval = fval.Replace("&", "\\&");
 
-            fval = fval.Replace("\"", "\\\"");
+                if (_settings.EscapeSingleQuotes)
+                    fval = fval.Replace("'", "\\u0027");
+
+                fval = fval.Replace("<", "\\u003C");
+                fval = fval.Replace(">", "\\u003E");
+                fval = fval.Replace("\r", "\\r");
+                fval = fval.Replace("\n", "\\n");
+                fval = fval.Replace("\f", "\\f");
+                fval = fval.Replace("\"", "\\\"");
+                fval = fval.Replace("\b", "\\b");
+                fval = fval.Replace("\t", "\\t");
+                fval = fval.Replace("/", "\\/");
+
+                //fval = fval.Replace("\"", "\\\"");
 
             _writer.WriteRawValue(_writer.QuoteChar + fval + _writer.QuoteChar);
+            }
         }
 
         void NotOpenException()
