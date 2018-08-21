@@ -36,7 +36,7 @@ namespace ScriptEngine.HostedScript.Library.Json
 
         private bool _escapeAngleBrackets;
 
-        public JSONWriterSettings(IValue NewLines = null, string PaddingSymbols = null, bool UseDoubleQuotes = true, IValue EscapeCharacters = null, bool EscapeAngleBrackets = false, bool EscapeLineTerminators = false, bool EscapeAmpersand = false, bool EscapeSingleQuotes = false, bool EscapeSlash = false)
+        public JSONWriterSettings(IValue NewLines = null, string PaddingSymbols = null, bool UseDoubleQuotes = true, IValue EscapeCharacters = null, bool EscapeAngleBrackets = false, bool EscapeLineTerminators = true, bool EscapeAmpersand = false, bool EscapeSingleQuotes = false, bool EscapeSlash = false)
         {
             _newLines = NewLines;
             _paddingSymbols = PaddingSymbols;
@@ -91,11 +91,11 @@ namespace ScriptEngine.HostedScript.Library.Json
                                           (paddingSymbols == null ? null : paddingSymbols.AsString()),
                                           (useDoubleQuotes == null? true: useDoubleQuotes.AsBoolean()),
                                           escapeCharacters,
-                                          (escapeAngleBrackets == null ? true : escapeAngleBrackets.AsBoolean()),
+                                          (escapeAngleBrackets == null ? false : escapeAngleBrackets.AsBoolean()),
                                           (escapeLineTerminators == null ? true : escapeLineTerminators.AsBoolean()),
-                                          (escapeAmpersand == null ? true : escapeAmpersand.AsBoolean()),
-                                          (escapeSingleQuotes == null ? true : escapeSingleQuotes.AsBoolean()),
-                                          (escapeSlash == null ? true : escapeSlash.AsBoolean()));
+                                          (escapeAmpersand == null ? false : escapeAmpersand.AsBoolean()),
+                                          (escapeSingleQuotes == null ? false : escapeSingleQuotes.AsBoolean()),
+                                          (escapeSlash == null ? false : escapeSlash.AsBoolean()));
         }
 
         /// <summary>
