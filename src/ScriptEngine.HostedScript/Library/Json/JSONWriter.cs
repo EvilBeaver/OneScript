@@ -168,7 +168,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                     char c = sb[i];
                     if ((int)c >= 0 && (int)c <= 31)
                     {
-                        string unicode = "\\u" + ((int)c).ToString("X4");
+                        string unicode = "\\u" + ((int)c).ToString("X4").ToLower();
                         sb.Replace(c.ToString(), unicode, i, unicode.Length);
                         Length = Length + 5;
                         i = i + 5;
