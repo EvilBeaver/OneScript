@@ -105,8 +105,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         void WriteStringValue(string val)
         {
             string fval = val;
-            //bool EscapeNonAscii = false;
-
+ 
             if (_settings.EscapeCharacters != null && _escapeNonAscii)
             {
                 StringWriter wr = new StringWriter();
@@ -146,7 +145,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                 if (_settings.EscapeAmpersand)
                     fval = fval.Replace("&", "\\&");
 
-                if (_settings.EscapeSingleQuotes)
+                if (_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes)
                     fval = fval.Replace("'", "\\u0027");
 
                 fval = fval.Replace("<", "\\u003C");
