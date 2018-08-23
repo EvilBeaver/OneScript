@@ -11,6 +11,7 @@ using ScriptEngine.Machine.Contexts;
 using Newtonsoft.Json;
 using System.IO;
 using System.Threading;
+using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.Json
 {
@@ -104,8 +105,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         void WriteStringValue(string val)
         {
             string fval = val;
-            //bool EscapeNonAscii = false;
-
+ 
             if (_settings.EscapeCharacters != null && _escapeNonAscii)
             {
                 StringWriter wr = new StringWriter();
@@ -145,7 +145,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                 if (_settings.EscapeAmpersand)
                     fval = fval.Replace("&", "\\&");
 
-                if (_settings.EscapeSingleQuotes)
+                if (_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes)
                     fval = fval.Replace("'", "\\u0027");
 
                 fval = fval.Replace("<", "\\u003C");
@@ -158,7 +158,24 @@ namespace ScriptEngine.HostedScript.Library.Json
                 fval = fval.Replace("\t", "\\t");
                 fval = fval.Replace("/", "\\/");
 
-            _writer.WriteRawValue(_writer.QuoteChar + fval + _writer.QuoteChar);
+                // Спец. символы: \u0000, \u0001, \u0002, ... , \u001e, \u001f;
+
+                var sb = new StringBuilder(fval);
+
+                int Length = fval.Length;
+                for (var i = 0; i < Length; i++)
+                {
+                    char c = sb[i];
+                    if ((int)c >= 0 && (int)c <= 31)
+                    {
+                        string unicode = "\\u" + ((int)c).ToString("X4").ToLower();
+                        sb.Replace(c.ToString(), unicode, i, 1);
+                        Length = Length + 5;
+                        i = i + 5;
+                    }
+                }
+                fval = sb.ToString();
+                _writer.WriteRawValue(_writer.QuoteChar + fval + _writer.QuoteChar);
             }
         }
 
