@@ -10,9 +10,8 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using Newtonsoft.Json;
 using System.IO;
-using System.Text;
-using System.Globalization;
 using System.Threading;
+using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.Json
 {
@@ -34,6 +33,8 @@ namespace ScriptEngine.HostedScript.Library.Json
         {
             
         }
+
+        private bool _escapeNonAscii;
 
         /// <summary>
         /// 
@@ -58,6 +59,7 @@ namespace ScriptEngine.HostedScript.Library.Json
             _writer.Indentation = INDENT_SIZE;
             _writer.Formatting = Formatting.Indented;
             _settings = new JSONWriterSettings();
+            _escapeNonAscii = false;
         }
 
         private void SetOptions(IValue settings)
@@ -83,11 +85,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                 _writer.Indentation = INDENT_SIZE;
             }
             _writer.Formatting = Formatting.Indented;
-        }
-
-        void WriteStringValue(string val)
-        {
-            string fval = val;
 
             if (_settings.EscapeCharacters != null)
             {
@@ -96,36 +93,90 @@ namespace ScriptEngine.HostedScript.Library.Json
 
                 if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.NotASCIISymbols)
                 {
-                    StringWriter wr = new StringWriter();
-                    var jsonWriter = new JsonTextWriter(wr);
-                    jsonWriter.QuoteChar = '\"';
-                    jsonWriter.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
-                    new JsonSerializer().Serialize(jsonWriter, fval);
-                    string str = wr.ToString();
-                    fval = str.Substring(1, str.Length - 2);
-
+                    _escapeNonAscii = true;
+                    _writer.QuoteChar = '\"';
+                    _writer.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
                 }
                 else if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.SymbolsNotInBMP)
                     throw new NotImplementedException("Свойство \"СимволыВнеBMP\" не поддерживается");
+            }
+        }
+
+        void WriteStringValue(string val)
+        {
+            string fval = val;
+ 
+            if (_settings.EscapeCharacters != null && _escapeNonAscii)
+            {
+                StringWriter wr = new StringWriter();
+                var jsonWriter = new JsonTextWriter(wr);
+                jsonWriter.QuoteChar = '\"';
+                jsonWriter.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
+                new JsonSerializer().Serialize(jsonWriter, fval);
+                string str = wr.ToString();
+                fval = str.Substring(1, str.Length - 2);
+
+                if (_settings.EscapeAmpersand)
+                    fval = fval.Replace("&", "\\&");
+
+                if (_settings.EscapeSingleQuotes)
+                    fval = fval.Replace("'", "\\u0027");
+
+                fval = fval.Replace("<", "\\u003C");
+                fval = fval.Replace(">", "\\u003E");
+                fval = fval.Replace("\r", "\\r");
+                fval = fval.Replace("\n", "\\n");
+                fval = fval.Replace("\f", "\\f");
+                fval = fval.Replace("\"", "\\\"");
+                fval = fval.Replace("\b", "\\b");
+                fval = fval.Replace("\t", "\\t");
+                fval = fval.Replace("/", "\\/");
+
+                fval = fval.Replace("\\\"", "\"");
+
+                _writer.WriteRawValue(fval);
 
             }
+            else
+            {
+                if (_settings.EscapeSlash)
+                    fval = fval.Replace("\\", "\\\\");
 
-            if (_settings.EscapeSlash == true)
-                fval = fval.Replace("\\", "\\\\");
-            if (_settings.EscapeAngleBrackets == true) { 
-                fval = fval.Replace("<", "\\<");
-                fval = fval.Replace(">", "\\>");
+                if (_settings.EscapeAmpersand)
+                    fval = fval.Replace("&", "\\&");
+
+                if (_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes)
+                    fval = fval.Replace("'", "\\u0027");
+
+                fval = fval.Replace("<", "\\u003C");
+                fval = fval.Replace(">", "\\u003E");
+                fval = fval.Replace("\r", "\\r");
+                fval = fval.Replace("\n", "\\n");
+                fval = fval.Replace("\f", "\\f");
+                fval = fval.Replace("\"", "\\\"");
+                fval = fval.Replace("\b", "\\b");
+                fval = fval.Replace("\t", "\\t");
+                fval = fval.Replace("/", "\\/");
+
+                // Спец. символы: \u0000, \u0001, \u0002, ... , \u001e, \u001f;
+
+                var sb = new StringBuilder(fval);
+
+                int Length = fval.Length;
+                for (var i = 0; i < Length; i++)
+                {
+                    char c = sb[i];
+                    if ((int)c >= 0 && (int)c <= 31)
+                    {
+                        string unicode = "\\u" + ((int)c).ToString("X4").ToLower();
+                        sb.Replace(c.ToString(), unicode, i, 1);
+                        Length = Length + 5;
+                        i = i + 5;
+                    }
+                }
+                fval = sb.ToString();
+                _writer.WriteRawValue(_writer.QuoteChar + fval + _writer.QuoteChar);
             }
-            if (_settings.EscapeLineTerminators == true)
-                fval = fval.Replace("\r", "\\r").Replace("\n", "\\n");
-            if (_settings.EscapeAmpersand == true)
-                fval = fval.Replace("&", "\\&");
-             if (_settings.EscapeSingleQuotes == true || !_settings.UseDoubleQuotes)
-                fval = fval.Replace("'", "\\'");
-
-            fval = fval.Replace("\"", "\\\"");
-
-            _writer.WriteRawValue(_writer.QuoteChar + fval + _writer.QuoteChar);
         }
 
         void NotOpenException()
@@ -257,6 +308,12 @@ namespace ScriptEngine.HostedScript.Library.Json
             if (!IsOpen())
                 NotOpenException();
 
+            if (value.SystemType.Name == "Null")
+            {
+                _writer.WriteNull();
+                return;
+            }
+
             switch (value.DataType)
             {
                 case DataType.String:
@@ -289,10 +346,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                     _writer.WriteValue(value.AsBoolean());
                     break;
                 case DataType.Undefined:
-                    _writer.WriteNull();
+                    _writer.WriteUndefined();
                     break;
                 default:
-                    throw new RuntimeException("Тип переданного значения не поддерживается.");
+                            throw new RuntimeException("Тип переданного значения не поддерживается.");
             }
         }
 
