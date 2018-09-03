@@ -139,40 +139,94 @@ namespace ScriptEngine.HostedScript.Library.Json
             }
             else
             {
-                if (_settings.EscapeSlash)
-                    fval = fval.Replace("\\", "\\\\");
-
-                if (_settings.EscapeAmpersand)
-                    fval = fval.Replace("&", "\\&");
-
-                if (_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes)
-                    fval = fval.Replace("'", "\\u0027");
-
-                fval = fval.Replace("<", "\\u003C");
-                fval = fval.Replace(">", "\\u003E");
-                fval = fval.Replace("\r", "\\r");
-                fval = fval.Replace("\n", "\\n");
-                fval = fval.Replace("\f", "\\f");
-                fval = fval.Replace("\"", "\\\"");
-                fval = fval.Replace("\b", "\\b");
-                fval = fval.Replace("\t", "\\t");
-                fval = fval.Replace("/", "\\/");
-
-                // Спец. символы: \u0000, \u0001, \u0002, ... , \u001e, \u001f;
-
                 var sb = new StringBuilder(fval);
 
                 int Length = fval.Length;
                 for (var i = 0; i < Length; i++)
                 {
                     char c = sb[i];
-                    if ((int)c >= 0 && (int)c <= 31)
+                    if (_settings.EscapeSlash && c == '\\')
+                    {
+                        sb.Replace("\\", "\\\\", i, 1);
+                        Length++;
+                        i++;
+                    }
+                    else if (_settings.EscapeAmpersand && c == '&')
+                    {
+                        sb.Replace("&", "\\&", i, 1);
+                        Length++;
+                        i++;
+                    }
+                    else if ((_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes) && c == '\'')
+                    {
+                        sb.Replace("'", "\\u0027", i, 1);
+                        Length = Length + 5;
+                        i = i + 5;
+                    }
+                    else if (c == '<')
+                    {
+                        sb.Replace("<", "\\u003C", i, 1);
+                        Length = Length + 5;
+                        i = i + 5;
+                    }
+                    else if (c == '>')
+                    {
+                        sb.Replace(">", "\\u003E", i, 1);
+                        Length = Length + 5;
+                        i = i + 5;
+                    }
+                    else if (c == '\r')
+                    {
+                        sb.Replace("\r", "\\r", i, 1);
+                        Length++;
+                        i++;
+                    }
+                    else if (c == '\n')
+                    {
+                        sb.Replace("\n", "\\n", i, 1);
+                        Length++;
+                        i++;
+                    }
+                    else if (c == '\f')
+                    {
+                        sb.Replace("\f", "\\f", i, 1);
+                        Length++;
+                        i++;
+                    }
+                    else if (c == '\"')
+                    {
+                        sb.Replace("\"", "\\\"", i, 1);
+                        Length++;
+                        i++;
+                    }
+                    else if (c == '\b')
+                    {
+                        sb.Replace("\b", "\\b", i, 1);
+                        Length++;
+                        i++;
+                    }
+                    else if (c == '\t')
+                    {
+                        sb.Replace("\t", "\\t", i, 1);
+                        Length++;
+                        i++;
+                    }
+                    else if (c == '/')
+                    {
+                        sb.Replace("/", "\\/", i, 1);
+                        Length++;
+                        i++;
+                    }
+
+                    // Спец. символы: \u0000, \u0001, \u0002, ... , \u001e, \u001f;
+                    else if ((int)c >= 0 && (int)c <= 31)
                     {
                         string unicode = "\\u" + ((int)c).ToString("X4").ToLower();
                         sb.Replace(c.ToString(), unicode, i, 1);
                         Length = Length + 5;
                         i = i + 5;
                     }
+                    
                 }
                 fval = sb.ToString();
                 _writer.WriteRawValue(_writer.QuoteChar + fval + _writer.QuoteChar);
