@@ -194,7 +194,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((string)objParam);
             }
-            else if (type == typeof(int) || type == typeof(uint) || type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort))
+            else if (type == typeof(int) || type == typeof(uint) || type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort) || type == typeof(single))
             {
                 return ValueFactory.Create(System.Convert.ToInt32(objParam));
             }
