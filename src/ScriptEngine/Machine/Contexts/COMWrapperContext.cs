@@ -194,7 +194,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((string)objParam);
             }
-            else if (type == typeof(int) || type == typeof(uint) || type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort) || type == typeof(single))
+            else if (type == typeof(int) || type == typeof(uint) || type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort))
             {
                 return ValueFactory.Create(System.Convert.ToInt32(objParam));
             }
@@ -205,6 +205,10 @@ namespace ScriptEngine.Machine.Contexts
             else if (type == typeof(double))
             {
                 return ValueFactory.Create((decimal)(double)objParam);
+            }
+            else if (type == typeof(Single))
+            {
+                return ValueFactory.Create((decimal)System.Convert.ToDouble(objParam));
             }
             else if (type == typeof(decimal))
             {
