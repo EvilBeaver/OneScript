@@ -58,6 +58,26 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
+        public override Type ReturnType
+        {
+            get
+            {
+                if (IsFunction)
+                    return typeof(IValue);
+                else
+                    return typeof(void);
+            }
+        }
+
+        public override IEnumerable<CustomAttributeData> CustomAttributes
+        {
+            get
+            {
+                return new CustomAttributeData[0];
+            }
+        }
+
+
         public override ICustomAttributeProvider ReturnTypeCustomAttributes
         {
             get { throw new NotImplementedException(); }
@@ -100,6 +120,18 @@ namespace ScriptEngine.Machine.Contexts
             inst.CallAsFunction(GetDispatchIndex(inst), engineParameters, out retVal);
 
             return COMWrapperContext.MarshalIValue(retVal);
+        }
+
+        /// <summary>
+        /// Прямой вызов скриптового кода, минуя медленные интерфейсы Reflection
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public IValue InvokeDirect(IRuntimeContextInstance instance, IValue[] parameters)
+        {
+            instance.CallAsFunction(GetDispatchIndex(instance), parameters, out var retVal);
+            return retVal;
         }
 
         private int GetDispatchIndex(IRuntimeContextInstance obj)

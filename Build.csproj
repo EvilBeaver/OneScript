@@ -97,7 +97,7 @@
     <Target Name="GatherLibrary" DependsOnTargets="Make;PrepareArtifactsRoot">
         
         <MakeDir Directories="$(LibFolder)" />
-        <Exec Command="&quot;$(BinFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.13.0.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
+        <Exec Command="&quot;$(BinFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.14.4.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
         <Exec Command="&quot;$(BinFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
         <DeleteTree Directories="$(LibFolder)\tmp"/>

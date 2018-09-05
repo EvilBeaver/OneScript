@@ -25,10 +25,11 @@ namespace ScriptEngine.Compiler
         {
             _priority.Add(Token.Plus, 5);
             _priority.Add(Token.Minus, 5);
-            _priority.Add(Token.UnaryMinus, 5);
             _priority.Add(Token.Multiply, 6);
             _priority.Add(Token.Division, 6);
             _priority.Add(Token.Modulo, 6);
+            _priority.Add(Token.UnaryPlus, 7);
+            _priority.Add(Token.UnaryMinus, 7);
 
             _priority.Add(Token.Or, 1);
             _priority.Add(Token.And, 2);
@@ -362,6 +363,7 @@ namespace ScriptEngine.Compiler
         // operators
         Plus,
         Minus,
+        UnaryPlus,
         UnaryMinus,
         Multiply,
         Division,

@@ -50,7 +50,7 @@ namespace ScriptEngine.HostedScript.Library
             _properties.Add(getter);
         }
 
-        internal ScriptingEngine EngineInstance{ get; set; }
+        public ScriptingEngine EngineInstance{ get; set; }
 
         public void InitInstance()
         {

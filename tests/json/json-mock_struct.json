@@ -1,0 +1,29 @@
+{
+   "firstName": "Иван", 
+   "lastName": "\"Иванов\"", 
+   "address": {
+       "streetAddress": "Московское ш., 101, кв.101",
+       "city": "Ленинград",
+       "postalCode": 101101,
+	   "float":1.54,
+	   "date": "2012-04-23T18:25:43",
+	   "nestedStruct": {
+		   "int": 1,
+		    "nestednestedArray": [
+				"1",
+				"2"
+   ],
+   "nestednestedStruct":{
+	   "date": "2012-04-23T18:25:43",
+	   "dateMicrosoft": "1995-02-04T24:00"
+   }
+	   }
+   },
+   "phoneNumbers": [
+       "812 123-1234",
+       "916 123-4567",
+	   [
+	   "1", "2"
+	   ]
+   ]
+}
