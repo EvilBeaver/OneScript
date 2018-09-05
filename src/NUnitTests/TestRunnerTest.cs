@@ -57,6 +57,12 @@ namespace NUnitTests
         {
             RunSpecificTest(@"zip.os");
         }
+		
+		[Test]
+		public void Test_XmlWrite()
+		{
+			RunSpecificTest(@"xmlwrite.os");
+		}
 
 		[Test]
 		[Ignore("Внутри валится очень много тестов, надо чинить механизм.")]

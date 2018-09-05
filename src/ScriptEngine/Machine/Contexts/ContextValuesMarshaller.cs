@@ -30,6 +30,26 @@ namespace ScriptEngine.Machine.Contexts
            
         }
 
+        public static T ConvertParam<T>(IValue value, T defaultValue)
+        {
+            var type = typeof(T);
+            object valueObj = ConvertParam(value, type);
+            if (valueObj == null)
+            {
+                return defaultValue;
+            }
+            
+            try
+            {
+                return (T)valueObj;
+            }
+            catch (InvalidCastException)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+           
+        }
+
         public static object ConvertParam(IValue value, Type type)
         {
             object valueObj;
