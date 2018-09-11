@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
-
   <PropertyGroup>
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
@@ -11,17 +10,14 @@
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
-  
   <PropertyGroup>
     <AssemblyTitle>1C (BSL) language runtime</AssemblyTitle>
   </PropertyGroup>
-  
   <ItemGroup>
-	  <None Include="oscript.cfg">
+    <None Include="oscript.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
   <PropertyGroup>
     <PackageId>OneScript.StandardLibrary</PackageId>
     <PackageVersion>1.0.$(ReleaseNumber)$(Suffix)</PackageVersion>
@@ -34,23 +30,17 @@
     <PackageDescription>Standard class libraries for 1Script - collections, network, filesystem etc...</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
-
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net452'">
     <DocumentationFile></DocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net452|AnyCPU'">
-    <OutputPath>C:\Program Files (x86)\OneScript\bin\</OutputPath>
-  </PropertyGroup>
-
+  
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net452|AnyCPU'">
     <OutputPath>C:\Program Files (x86)\OneScript\bin\</OutputPath>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
-  
+
   <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
     <Message Text="Copying StandaloneRunner resources" />
     <ItemGroup>
@@ -58,8 +48,6 @@
       <CopyToStandalone Include="$(TargetDir)Ionic.Zip.dll" />
       <CopyToStandalone Include="$(TargetDir)Newtonsoft.Json.dll" />
     </ItemGroup>
-
     <Copy SourceFiles="@(CopyToStandalone)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
   </Target>
-  
 </Project>
