@@ -382,7 +382,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                     _writer.WriteValue(value.AsBoolean());
                     break;
                 case DataType.Undefined:
-                    _writer.WriteUndefined();
+                    _writer.WriteNull();
                     break;
                 default:
                             throw new RuntimeException("Тип переданного значения не поддерживается.");
