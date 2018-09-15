@@ -14,7 +14,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Reflection
 {
-    public class ReflectedClassType<T> : TypeDelegator where T : ScriptDrivenObject
+    public class ReflectedClassType<T> : TypeDelegator where T : ContextIValueImpl
     {
         private string _typeName;
         private PropertyInfo[] _properties;
