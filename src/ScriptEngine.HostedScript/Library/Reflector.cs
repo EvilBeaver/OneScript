@@ -312,15 +312,16 @@ namespace ScriptEngine.HostedScript.Library
             var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
             var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
             var paramsColumn = result.Columns.Add("Параметры", new TypeDescription(), "Параметры");
+            var isExportlColumn = result.Columns.Add("Экспорт", new TypeDescription(), "Экспорт");
 
             foreach (var methInfo in methods)
             {
-                if (!methInfo.IsExport) { continue; }
                 
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(methInfo.Name));
                 new_row.Set(countColumn, ValueFactory.Create(methInfo.ArgCount));
                 new_row.Set(isFunctionColumn, ValueFactory.Create(methInfo.IsFunction));
+                new_row.Set(isExportlColumn, ValueFactory.Create(methInfo.IsExport));
 
                 new_row.Set(annotationsColumn, methInfo.AnnotationsCount != 0 ? CreateAnnotationTable(methInfo.Annotations) : EmptyAnnotationsTable());
 
