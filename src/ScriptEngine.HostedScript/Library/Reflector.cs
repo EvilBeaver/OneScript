@@ -8,11 +8,13 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.HostedScript.Library.ValueTable;
+using ScriptEngine.Machine.Reflection;
 
 using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
@@ -168,15 +170,7 @@ namespace ScriptEngine.HostedScript.Library
         private static bool MethodExistsForType(TypeTypeValue type, string methodName)
         {
             var clrType = GetReflectableClrType(type);
-            var mapper = CreateMethodsMapper(clrType);
-
-            var actualType = mapper.GetType();
-            int result = (int)actualType.InvokeMember("FindMethod", 
-                BindingFlags.InvokeMethod,
-                null,
-                mapper,
-                new object[]{methodName});
-            return result >= 0;
+            return clrType.GetMethod(methodName) != null;
         }
 
         private static object CreateMethodsMapper(Type clrType)
@@ -202,14 +196,21 @@ namespace ScriptEngine.HostedScript.Library
             }
             catch (InvalidOperationException)
             {
-                throw RuntimeException.InvalidArgumentValue("Тип не может быть отражен.");
+                throw NonReflectableType();
             }
 
-            var attrs = clrType.GetCustomAttributes(typeof(ContextClassAttribute), false).ToArray();
-            if (attrs.Length == 0)
-                throw RuntimeException.InvalidArgumentValue("Тип не может быть отражен.");
+            Type reflectableType;
+            if (clrType == typeof(AttachedScriptsFactory))
+                reflectableType = ReflectUserType(type.Value.Name);
+            else
+                reflectableType = ReflectContext(clrType);
 
-            return clrType;
+            return reflectableType;
+        }
+
+        private static RuntimeException NonReflectableType()
+        {
+            return RuntimeException.InvalidArgumentValue("Тип не может быть отражен.");
         }
 
         /// <summary>
@@ -239,26 +240,68 @@ namespace ScriptEngine.HostedScript.Library
         private static void FillMethodsTableForType(TypeTypeValue type, ValueTable.ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
-            var mapper = CreateMethodsMapper(clrType);
-            var actualType = mapper.GetType();
-            var infos = (IEnumerable<MethodInfo>)actualType.InvokeMember("GetMethods",
-                                                      BindingFlags.InvokeMethod,
-                                                      null,
-                                                      mapper,
-                                                      new object[0]);
-            FillMethodsTable(result, infos);
+            var clrMethods = clrType.GetMethods();
+            FillMethodsTable(result, ConvertToOsMethods(clrMethods));
+        }
+
+        private static IEnumerable<MethodInfo> ConvertToOsMethods(IEnumerable<System.Reflection.MethodInfo> source)
+        {
+            var dest = new List<MethodInfo>();
+            foreach (var methodInfo in source)
+            {
+                var osMethod = new MethodInfo();
+                osMethod.Name = methodInfo.Name;
+                osMethod.Alias = null;
+                osMethod.IsExport = methodInfo.IsPublic;
+                osMethod.IsFunction = methodInfo.ReturnType != typeof(void);
+                osMethod.Annotations = GetAnnotations(methodInfo.GetCustomAttributes<UserAnnotationAttribute>());
+
+                var methodParameters = methodInfo.GetParameters();
+                var osParams = new ParameterDefinition[methodParameters.Length];
+                for (int i = 0; i < osParams.Length; i++)
+                {
+                    var parameterInfo = methodParameters[i];
+                    var osParam = new ParameterDefinition();
+                    osParam.Name = parameterInfo.Name;
+                    osParam.IsByValue = parameterInfo.GetCustomAttribute<ByRefAttribute>() != null;
+                    osParam.HasDefaultValue = parameterInfo.HasDefaultValue;
+                    osParam.DefaultValueIndex = -1;
+                    osParam.Annotations = GetAnnotations(parameterInfo.GetCustomAttributes<UserAnnotationAttribute>());
+                    osParams[i] = osParam;
+                }
+                dest.Add(osMethod);
+            }
+
+            return dest;
+        }
+
+        private static AnnotationDefinition[] GetAnnotations(IEnumerable<UserAnnotationAttribute> attributes)
+        {
+            return attributes.Select(x => x.Annotation).ToArray();
         }
 
         private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable.ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
-            var mapper = CreatePropertiesMapper(clrType);
-            var actualType = mapper.GetType();
-            var infos = (IEnumerable<VariableInfo>) actualType.InvokeMember("GetProperties",
-                BindingFlags.InvokeMethod,
-                null,
-                mapper,
-                new object[0]);
+            var nativeProps = clrType.GetProperties()
+                                     .Select(x => new
+                                     {
+                                         PropDef = x.GetCustomAttribute<ContextPropertyAttribute>(),
+                                         Prop = x
+                                     })
+                                     .Where(x=>x.PropDef != null)
+                                     .ToArray();
+
+            var infos = new VariableInfo[nativeProps.Length];
+            for (int i = 0; i < nativeProps.Length; i++)
+            {
+                infos[i] = new VariableInfo();
+                infos[i].Type = SymbolType.ContextProperty;
+                infos[i].Index = i;
+                infos[i].Identifier = nativeProps[i].PropDef.GetName();
+                infos[i].Annotations = GetAnnotations(nativeProps[i].Prop.GetCustomAttributes<UserAnnotationAttribute>());
+            }
+
             FillPropertiesTable(result, infos);
         }
         
@@ -269,15 +312,16 @@ namespace ScriptEngine.HostedScript.Library
             var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
             var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
             var paramsColumn = result.Columns.Add("Параметры", new TypeDescription(), "Параметры");
+            var isExportlColumn = result.Columns.Add("Экспорт", new TypeDescription(), "Экспорт");
 
             foreach (var methInfo in methods)
             {
-                if (!methInfo.IsExport) { continue; }
                 
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(methInfo.Name));
                 new_row.Set(countColumn, ValueFactory.Create(methInfo.ArgCount));
                 new_row.Set(isFunctionColumn, ValueFactory.Create(methInfo.IsFunction));
+                new_row.Set(isExportlColumn, ValueFactory.Create(methInfo.IsExport));
 
                 new_row.Set(annotationsColumn, methInfo.AnnotationsCount != 0 ? CreateAnnotationTable(methInfo.Annotations) : EmptyAnnotationsTable());
 
@@ -343,6 +387,41 @@ namespace ScriptEngine.HostedScript.Library
 
                 new_row.Set(annotationsColumn, propInfo.AnnotationsCount != 0 ? CreateAnnotationTable(propInfo.Annotations) : EmptyAnnotationsTable());
             }
+        }
+
+        public static Type ReflectUserType(string typeName)
+        {
+            LoadedModule module;
+            try
+            {
+                module = AttachedScriptsFactory.GetModuleOfType(typeName);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw NonReflectableType();
+            }
+
+            var builder = new ClassBuilder<UserScriptContextInstance>();
+
+            return builder
+                   .SetTypeName(typeName)
+                   .SetModule(module)
+                   .ExportDefaults()
+                   .Build();
+        }
+
+        public static Type ReflectContext(Type clrType)
+        {
+            var attrib = clrType.GetCustomAttribute<ContextClassAttribute>();
+            if (attrib == null || !typeof(ContextIValueImpl).IsAssignableFrom(clrType))
+                throw NonReflectableType();
+
+            var builderType = typeof(ClassBuilder<>).MakeGenericType(clrType);
+            var builder = (IReflectedClassBuilder)Activator.CreateInstance(builderType);
+
+            return builder.SetTypeName(attrib.GetName())
+                   .ExportDefaults()
+                   .Build();
         }
 
         [ScriptConstructor]
