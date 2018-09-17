@@ -240,20 +240,44 @@ namespace ScriptEngine.HostedScript.Library
         private static void FillMethodsTableForType(TypeTypeValue type, ValueTable.ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
-            //var mapper = CreateMethodsMapper(clrType);
-            //var actualType = mapper.GetType();
-            //var infos = (IEnumerable<MethodInfo>)actualType.InvokeMember("GetMethods",
-            //                                          BindingFlags.InvokeMethod,
-            //                                          null,
-            //                                          mapper,
-            //                                          new object[0]);
             var clrMethods = clrType.GetMethods();
             FillMethodsTable(result, ConvertToOsMethods(clrMethods));
         }
 
         private static IEnumerable<MethodInfo> ConvertToOsMethods(IEnumerable<System.Reflection.MethodInfo> source)
         {
-            throw new NotImplementedException();
+            var dest = new List<MethodInfo>();
+            foreach (var methodInfo in source)
+            {
+                var osMethod = new MethodInfo();
+                osMethod.Name = methodInfo.Name;
+                osMethod.Alias = null;
+                osMethod.IsExport = methodInfo.IsPublic;
+                osMethod.IsFunction = methodInfo.ReturnType != typeof(void);
+                osMethod.Annotations = GetAnnotations(methodInfo.GetCustomAttributes<UserAnnotationAttribute>());
+
+                var methodParameters = methodInfo.GetParameters();
+                var osParams = new ParameterDefinition[methodParameters.Length];
+                for (int i = 0; i < osParams.Length; i++)
+                {
+                    var parameterInfo = methodParameters[i];
+                    var osParam = new ParameterDefinition();
+                    osParam.Name = parameterInfo.Name;
+                    osParam.IsByValue = parameterInfo.GetCustomAttribute<ByRefAttribute>() != null;
+                    osParam.HasDefaultValue = parameterInfo.HasDefaultValue;
+                    osParam.DefaultValueIndex = -1;
+                    osParam.Annotations = GetAnnotations(parameterInfo.GetCustomAttributes<UserAnnotationAttribute>());
+                    osParams[i] = osParam;
+                }
+                dest.Add(osMethod);
+            }
+
+            return dest;
+        }
+
+        private static AnnotationDefinition[] GetAnnotations(IEnumerable<UserAnnotationAttribute> attributes)
+        {
+            return attributes.Select(x => x.Annotation).ToArray();
         }
 
         private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable.ValueTable result)

@@ -55,7 +55,11 @@ namespace ScriptEngine.Machine.Reflection
             if (nativeMethod.ReflectedType != typeof(T))
                 throw new InvalidOperationException($"Method '{nativeMethod.Name}' not found in {typeof(T)}");
 
-            _methods.Add(nativeMethod);
+            if(MarkedAsContextMethod(nativeMethod, true))
+                _methods.Add(new WrappedMethodInfo(nativeMethod));
+            else
+                _methods.Add(nativeMethod);
+
             return this;
         }
 
@@ -71,11 +75,13 @@ namespace ScriptEngine.Machine.Reflection
         public IReflectedClassBuilder ExportMethods(bool includeDeprecations = false)
         {
             var methods = typeof(T).GetMethods()
-                                   .Where(x => MarkedAsContextMethod(x, includeDeprecations));
+                                   .Where(x => MarkedAsContextMethod(x, includeDeprecations))
+                                   .Select(x=>new WrappedMethodInfo(x));
+
             _methods.AddRange(methods);
             return this;
         }
-
+        
         public IReflectedClassBuilder ExportProperties(bool includeDeprecations = false)
         {
             var props = typeof(T).GetProperties()
@@ -158,12 +164,20 @@ namespace ScriptEngine.Machine.Reflection
             reflectedMethod.SetPrivate(!methInfo.IsExport);
             reflectedMethod.IsFunction = methInfo.IsFunction;
 
+            var unknownVal = ValueFactory.CreateInvalidValueMarker();
+
             for (int i = 0; i < methInfo.Params.Length; i++)
             {
                 var currentParam = methInfo.Params[i];
                 var reflectedParam = new ReflectedParamInfo(currentParam.Name, currentParam.IsByValue);
                 reflectedParam.SetOwner(reflectedMethod);
                 reflectedParam.SetPosition(i);
+                if (currentParam.HasDefaultValue)
+                {
+
+                }
+
+                reflectedParam.SetDefaultValue(unknownVal);
                 if (currentParam.Annotations != null)
                 {
                     foreach (var annotation in currentParam.Annotations)
@@ -209,9 +223,12 @@ namespace ScriptEngine.Machine.Reflection
         {
             ExportMethods();
             ExportProperties();
-            ExportScriptVariables();
-            ExportScriptMethods();
-            ExportScriptConstructors();
+            if (Module != null)
+            {
+                ExportScriptVariables();
+                ExportScriptMethods();
+                ExportScriptConstructors();
+            }
 
             return this;
         }
