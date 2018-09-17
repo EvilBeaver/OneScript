@@ -119,6 +119,16 @@ namespace oscript
                     return new DebugBehavior(port, path, helper.Tail());
                 }
             }
+            else if (param == "-serialize")
+            {
+                var path = helper.Next();
+                if (path != null)
+                {
+                    return new SerializeModuleBehavior(path);
+                }
+
+                return new ShowUsageBehavior();
+            }
 
             return null;
         }

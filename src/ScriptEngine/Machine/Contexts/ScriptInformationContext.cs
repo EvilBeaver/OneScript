@@ -53,7 +53,7 @@ namespace ScriptEngine.Machine.Contexts
                 }
                 else
                 {
-                    throw new RuntimeException("Источник сценария не является файловым");
+                    return System.IO.Directory.GetCurrentDirectory();
                 }
             }
         }
