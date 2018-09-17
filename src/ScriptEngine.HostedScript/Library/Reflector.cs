@@ -283,13 +283,25 @@ namespace ScriptEngine.HostedScript.Library
         private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable.ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
-            var mapper = CreatePropertiesMapper(clrType);
-            var actualType = mapper.GetType();
-            var infos = (IEnumerable<VariableInfo>) actualType.InvokeMember("GetProperties",
-                BindingFlags.InvokeMethod,
-                null,
-                mapper,
-                new object[0]);
+            var nativeProps = clrType.GetProperties()
+                                     .Select(x => new
+                                     {
+                                         PropDef = x.GetCustomAttribute<ContextPropertyAttribute>(),
+                                         Prop = x
+                                     })
+                                     .Where(x=>x.PropDef != null)
+                                     .ToArray();
+
+            var infos = new VariableInfo[nativeProps.Length];
+            for (int i = 0; i < nativeProps.Length; i++)
+            {
+                infos[i] = new VariableInfo();
+                infos[i].Type = SymbolType.ContextProperty;
+                infos[i].Index = i;
+                infos[i].Identifier = nativeProps[i].PropDef.GetName();
+                infos[i].Annotations = GetAnnotations(nativeProps[i].Prop.GetCustomAttributes<UserAnnotationAttribute>());
+            }
+
             FillPropertiesTable(result, infos);
         }
         
