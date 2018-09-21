@@ -290,22 +290,38 @@ namespace ScriptEngine.HostedScript.Library
                                          PropDef = x.GetCustomAttribute<ContextPropertyAttribute>(),
                                          Prop = x
                                      })
-                                     .Where(x=>x.PropDef != null)
-                                     .ToArray();
+                                     .Where(x=>x.PropDef != null);
 
-            var infos = new VariableInfo[nativeProps.Length];
-            for (int i = 0; i < nativeProps.Length; i++)
+            int indices = 0;
+            var infos = new List<VariableInfo>();
+            foreach(var prop in nativeProps)
             {
-                infos[i] = new VariableInfo();
-                infos[i].Type = SymbolType.ContextProperty;
-                infos[i].Index = i;
-                infos[i].Identifier = nativeProps[i].PropDef.GetName();
-                infos[i].Annotations = GetAnnotations(nativeProps[i].Prop.GetCustomAttributes<UserAnnotationAttribute>());
+                var info = new VariableInfo();
+                info.Type = SymbolType.ContextProperty;
+                info.Index = indices++;
+                info.Identifier = prop.PropDef.GetName();
+                info.Annotations = GetAnnotations(prop.Prop.GetCustomAttributes<UserAnnotationAttribute>());
+                infos.Add(info);
+            }
+
+            if (clrType.BaseType == typeof(ScriptDrivenObject))
+            {
+                var nativeFields = clrType.GetFields();
+                foreach(var field in nativeFields)
+                {
+                    var info = new VariableInfo();
+                    info.Type = SymbolType.ContextProperty;
+                    info.Index = indices++;
+                    info.Identifier = field.Name;
+                    info.Annotations = GetAnnotations(field.GetCustomAttributes<UserAnnotationAttribute>());
+                    infos.Add(info);
+                }
             }
 
             FillPropertiesTable(result, infos);
+
         }
-        
+
         private static void FillMethodsTable(ValueTable.ValueTable result, IEnumerable<MethodInfo> methods)
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");

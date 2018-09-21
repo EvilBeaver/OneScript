@@ -134,6 +134,14 @@ namespace ScriptEngine.Machine.Reflection
                     System.Diagnostics.Debug.Assert(variable.Index == exported.Index, "indices of vars and exports are equal");
 
                 var fieldInfo = new ReflectedFieldInfo(variable, exportFlag);
+                if (variable.Annotations != null)
+                {
+                    foreach (var annotation in variable.Annotations)
+                    {
+                        fieldInfo.AddAnnotation(annotation);
+                    }
+                }
+
                 _fields.Add(fieldInfo);
             }
 
