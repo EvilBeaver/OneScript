@@ -258,6 +258,7 @@ namespace ScriptEngine.HostedScript.Library
 
                 var methodParameters = methodInfo.GetParameters();
                 var osParams = new ParameterDefinition[methodParameters.Length];
+                osMethod.Params = osParams;
                 for (int i = 0; i < osParams.Length; i++)
                 {
                     var parameterInfo = methodParameters[i];
