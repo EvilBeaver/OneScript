@@ -17,10 +17,11 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class ReflectedParamInfo : ParameterInfo
     {
-        private readonly List<object> _attributes;
+        private readonly List<Attribute> _attributes;
 
         public ReflectedParamInfo(string name, bool isByVal)
         {
+            _attributes = new List<Attribute>();
             NameImpl = name;
             AttrsImpl = ParameterAttributes.In;
             if (!isByVal)
@@ -29,7 +30,6 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             ClassImpl = typeof(IValue);
-            _attributes = new List<object>();
         }
 
         internal void SetOwner(MemberInfo owner)
@@ -59,14 +59,20 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool HasDefaultValue => DefaultValue != null;
 
+        private IEnumerable<Attribute> GetCustomAttributesInternal(bool inherit)
+        {
+            return _attributes;
+        }
+
         public override object[] GetCustomAttributes(bool inherit)
         {
-            return _attributes.ToArray();
+            return GetCustomAttributesInternal(inherit).ToArray();
         }
 
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
-            return GetCustomAttributes(inherit).Where(x => x.GetType() == attributeType).ToArray();
+            var attribs = GetCustomAttributesInternal(inherit);
+            return attribs.Where(x => x.GetType() == attributeType).ToArray();
         }
 
         public override bool IsDefined(Type attributeType, bool inherit)
