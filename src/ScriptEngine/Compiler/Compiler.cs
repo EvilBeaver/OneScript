@@ -465,13 +465,6 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.IdentifierExpected();
             }
 
-            // issue #375
-            if (String.Compare(_lastExtractedLexem.Content, "выполнить", StringComparison.OrdinalIgnoreCase) == 0
-                || String.Compare(_lastExtractedLexem.Content, "execute", StringComparison.OrdinalIgnoreCase) == 0)
-            {
-                SystemLogger.Write($"WARNING! Method name '{_lastExtractedLexem.Content}' is DEPRECATED. Rename it");
-            }
-
             int definitionLine = _parser.CurrentLine;
             MethodInfo method = new MethodInfo();
             method.Name = _lastExtractedLexem.Content;
@@ -811,10 +804,6 @@ namespace ScriptEngine.Compiler
 
             while (_lastExtractedLexem.Token == Token.ElseIf)
             {
-                if (_lastExtractedLexem.Content.Equals("ElseIf", StringComparison.OrdinalIgnoreCase))
-                {
-                    SystemLogger.Write("WARNING! 'ElseIf' is deprecated! Use 'ElsIf' instead");
-                }
                 _module.Code[jumpFalseIndex] = new Command()
                 {
                     Code = OperationCode.JmpFalse,
@@ -1133,9 +1122,7 @@ namespace ScriptEngine.Compiler
             var jmpIndex = AddCommand(OperationCode.Jmp, -1);
 
             Assert(_lastExtractedLexem.Token == Token.Exception);
-            if (StringComparer.OrdinalIgnoreCase.Compare(_lastExtractedLexem.Content, "Exception") == 0)
-                SystemLogger.Write("WARNING! BREAKING CHANGE: Keyword 'Exception' is not supported anymore. Consider using 'Except'");
-
+            
             var beginHandler = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
             CorrectCommandArgument(beginTryIndex, beginHandler);

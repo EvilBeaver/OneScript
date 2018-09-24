@@ -50,7 +50,6 @@ namespace ScriptEngine.Compiler
             AddToken(Token.Then, "тогда", "then");
             AddToken(Token.Else, "иначе", "else");
             AddToken(Token.ElseIf, "иначеесли", "elsif");
-            AddToken(Token.ElseIf, "elseif"); // TODO: Deprecated 'ElseIf'
             AddToken(Token.EndIf, "конецесли", "endif");
             AddToken(Token.VarDef, "перем", "var");
             AddToken(Token.ByValParam, "знач", "val");
@@ -71,8 +70,6 @@ namespace ScriptEngine.Compiler
             AddToken(Token.Try, "попытка", "try");
             AddToken(Token.Exception, "исключение", "except");
             AddToken(Token.Execute, "выполнить", "execute");
-            // обратная совместимость с beta 1.0
-            AddToken(Token.Exception, "exception");
             AddToken(Token.RaiseException, "вызватьисключение", "raise");
             AddToken(Token.EndTry, "конецпопытки", "endtry");
             AddToken(Token.NewObject, "новый", "new");
