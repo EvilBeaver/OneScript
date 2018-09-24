@@ -240,7 +240,7 @@ namespace ScriptEngine.HostedScript.Library
         private static void FillMethodsTableForType(TypeTypeValue type, ValueTable.ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
-            var clrMethods = clrType.GetMethods();
+            var clrMethods = clrType.GetMethods(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);
             FillMethodsTable(result, ConvertToOsMethods(clrMethods));
         }
 
