@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup>
     <PackageId>OneScript.StandardLibrary</PackageId>
-    <PackageVersion>1.0.$(ReleaseNumber)$(Suffix)</PackageVersion>
+    <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
     <Title>OneScript Main Client Libraries</Title>
     <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
     <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
