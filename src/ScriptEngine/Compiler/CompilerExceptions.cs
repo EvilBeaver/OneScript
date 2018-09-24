@@ -128,6 +128,16 @@ namespace ScriptEngine.Compiler
             return new CompilerException("Ожидается выражение");
         }
 
+        public static CompilerException LiteralExpected()
+        {
+            return new CompilerException("Ожидается константа");
+        }
+
+        public static CompilerException NumberExpected()
+        {
+            return new CompilerException("Ожидается числовая константа");
+        }
+
     }
 
     public class ExtraClosedParenthesis : CompilerException

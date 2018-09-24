@@ -15,7 +15,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Reflection
 {
-    public class ClassBuilder<T> where T: ScriptDrivenObject
+    public class ClassBuilder<T> : IReflectedClassBuilder where T: ContextIValueImpl
     {
         private List<SysReflection.MethodInfo> _methods = new List<SysReflection.MethodInfo>();
         private List<SysReflection.PropertyInfo> _properties = new List<SysReflection.PropertyInfo>();
@@ -25,19 +25,19 @@ namespace ScriptEngine.Machine.Reflection
         public string TypeName { get; set; }
         public LoadedModule Module { get; set; }
 
-        public ClassBuilder<T> SetTypeName(string typeName)
+        public IReflectedClassBuilder SetTypeName(string typeName)
         {
             TypeName = typeName;
             return this;
         }
 
-        public ClassBuilder<T> SetModule(LoadedModule module)
+        public IReflectedClassBuilder SetModule(LoadedModule module)
         {
             Module = module;
             return this;
         }
 
-        public ClassBuilder<T> ExportClassMethod(string methodName)
+        public IReflectedClassBuilder ExportClassMethod(string methodName)
         {
             var mi = typeof(T).GetMethod(methodName);
             if(mi == null)
@@ -47,7 +47,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public ClassBuilder<T> ExportClassMethod(SysReflection.MethodInfo nativeMethod)
+        public IReflectedClassBuilder ExportClassMethod(SysReflection.MethodInfo nativeMethod)
         {
             if(nativeMethod == null)
                 throw new ArgumentNullException(nameof(nativeMethod));
@@ -55,11 +55,15 @@ namespace ScriptEngine.Machine.Reflection
             if (nativeMethod.ReflectedType != typeof(T))
                 throw new InvalidOperationException($"Method '{nativeMethod.Name}' not found in {typeof(T)}");
 
-            _methods.Add(nativeMethod);
+            if(MarkedAsContextMethod(nativeMethod, true))
+                _methods.Add(new WrappedMethodInfo(nativeMethod));
+            else
+                _methods.Add(nativeMethod);
+
             return this;
         }
 
-        public ClassBuilder<T> ExportProperty(string propName)
+        public IReflectedClassBuilder ExportProperty(string propName)
         {
             var mi = typeof(T).GetProperty(propName);
             if (mi == null)
@@ -68,15 +72,17 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public ClassBuilder<T> ExportMethods(bool includeDeprecations = false)
+        public IReflectedClassBuilder ExportMethods(bool includeDeprecations = false)
         {
             var methods = typeof(T).GetMethods()
-                                   .Where(x => MarkedAsContextMethod(x, includeDeprecations));
+                                   .Where(x => MarkedAsContextMethod(x, includeDeprecations))
+                                   .Select(x=>new WrappedMethodInfo(x));
+
             _methods.AddRange(methods);
             return this;
         }
-
-        public ClassBuilder<T> ExportProperties(bool includeDeprecations = false)
+        
+        public IReflectedClassBuilder ExportProperties(bool includeDeprecations = false)
         {
             var props = typeof(T).GetProperties()
                                    .Where(MarkedAsContextProperty);
@@ -96,7 +102,7 @@ namespace ScriptEngine.Machine.Reflection
             return member.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Any();
         }
 
-        public ClassBuilder<T> ExportConstructor(SysReflection.ConstructorInfo info)
+        public IReflectedClassBuilder ExportConstructor(SysReflection.ConstructorInfo info)
         {
             if (info.DeclaringType != typeof(T))
             {
@@ -107,7 +113,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public ClassBuilder<T> ExportConstructor(Func<object[], IRuntimeContextInstance> creator)
+        public IReflectedClassBuilder ExportConstructor(Func<object[], IRuntimeContextInstance> creator)
         {
             var info = new ReflectedConstructorInfo(creator);
             info.SetDeclaringType(typeof(T));
@@ -115,7 +121,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public ClassBuilder<T> ExportScriptVariables()
+        public IReflectedClassBuilder ExportScriptVariables()
         {
             if(Module == null)
                 throw new InvalidOperationException("Module is not set");
@@ -128,13 +134,21 @@ namespace ScriptEngine.Machine.Reflection
                     System.Diagnostics.Debug.Assert(variable.Index == exported.Index, "indices of vars and exports are equal");
 
                 var fieldInfo = new ReflectedFieldInfo(variable, exportFlag);
+                if (variable.Annotations != null)
+                {
+                    foreach (var annotation in variable.Annotations)
+                    {
+                        fieldInfo.AddAnnotation(annotation);
+                    }
+                }
+
                 _fields.Add(fieldInfo);
             }
 
             return this;
         }
 
-        public ClassBuilder<T> ExportScriptMethods()
+        public IReflectedClassBuilder ExportScriptMethods()
         {
             if (Module == null)
                 throw new InvalidOperationException("Module is not set");
@@ -142,6 +156,9 @@ namespace ScriptEngine.Machine.Reflection
             for (int i = 0; i < Module.Methods.Length; i++)
             {
                 var methodDescriptor = Module.Methods[i];
+                if(methodDescriptor.Signature.Name == Compiler.Compiler.BODY_METHOD_NAME)
+                    continue;
+
                 var methInfo = CreateMethodInfo(methodDescriptor.Signature);
                 _methods.Add(methInfo);
             }
@@ -155,20 +172,44 @@ namespace ScriptEngine.Machine.Reflection
             reflectedMethod.SetPrivate(!methInfo.IsExport);
             reflectedMethod.IsFunction = methInfo.IsFunction;
 
+            var unknownVal = ValueFactory.CreateInvalidValueMarker();
+
             for (int i = 0; i < methInfo.Params.Length; i++)
             {
                 var currentParam = methInfo.Params[i];
                 var reflectedParam = new ReflectedParamInfo(currentParam.Name, currentParam.IsByValue);
                 reflectedParam.SetOwner(reflectedMethod);
                 reflectedParam.SetPosition(i);
+                if (currentParam.HasDefaultValue)
+                {
+
+                }
+
+                reflectedParam.SetDefaultValue(unknownVal);
+                if (currentParam.Annotations != null)
+                {
+                    foreach (var annotation in currentParam.Annotations)
+                    {
+                        reflectedParam.AddAnnotation(annotation);
+                    }
+                }
+
                 reflectedMethod.Parameters.Add(reflectedParam);
+            }
+
+            if(methInfo.Annotations != null)
+            {
+                foreach (var annotation in methInfo.Annotations)
+                {
+                    reflectedMethod.AddAnnotation(annotation);
+                }
             }
 
             return reflectedMethod;
 
         }
 
-        public ClassBuilder<T> ExportScriptConstructors()
+        public IReflectedClassBuilder ExportScriptConstructors()
         {
             var statics = typeof(T).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
                                    .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute));
@@ -186,13 +227,16 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public ClassBuilder<T> ExportDefaults()
+        public IReflectedClassBuilder ExportDefaults()
         {
             ExportMethods();
             ExportProperties();
-            ExportScriptVariables();
-            ExportScriptMethods();
-            ExportScriptConstructors();
+            if (Module != null)
+            {
+                ExportScriptVariables();
+                ExportScriptMethods();
+                ExportScriptConstructors();
+            }
 
             return this;
         }
@@ -210,4 +254,5 @@ namespace ScriptEngine.Machine.Reflection
         }
         
     }
+    
 }

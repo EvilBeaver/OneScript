@@ -11,6 +11,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
+using ScriptEngine.Machine.Reflection;
+
 namespace ScriptEngine.Machine.Contexts
 {
    
@@ -22,12 +24,14 @@ namespace ScriptEngine.Machine.Contexts
 
         private Type _declaringType;
 
-	    readonly List<ParameterInfo> _parameters;
+        private readonly List<ParameterInfo> _parameters;
+        private List<UserAnnotationAttribute> _annotations;
 
         public ReflectedMethodInfo(string name)
         {
             _name = name;
             _parameters = new List<ParameterInfo>();
+            _annotations = new List<UserAnnotationAttribute>();
         }
 
         public void SetDeclaringType(Type declaringType)
@@ -45,13 +49,7 @@ namespace ScriptEngine.Machine.Contexts
             _isPrivate = makePrivate;
         }
 
-        public List<ParameterInfo> Parameters
-        {
-            get
-            {
-                return _parameters;
-            }
-        }
+        public List<ParameterInfo> Parameters => _parameters;
 
         public bool IsFunction { get; set; }
 
@@ -59,6 +57,26 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw new NotImplementedException();
         }
+
+        public override Type ReturnType
+        {
+            get
+            {
+                if (IsFunction)
+                    return typeof(IValue);
+                else
+                    return typeof(void);
+            }
+        }
+
+        public override IEnumerable<CustomAttributeData> CustomAttributes
+        {
+            get
+            {
+                return new CustomAttributeData[0];
+            }
+        }
+
 
         public override ICustomAttributeProvider ReturnTypeCustomAttributes
         {
@@ -104,6 +122,18 @@ namespace ScriptEngine.Machine.Contexts
             return COMWrapperContext.MarshalIValue(retVal);
         }
 
+        /// <summary>
+        /// Прямой вызов скриптового кода, минуя медленные интерфейсы Reflection
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public IValue InvokeDirect(IRuntimeContextInstance instance, IValue[] parameters)
+        {
+            instance.CallAsFunction(GetDispatchIndex(instance), parameters, out var retVal);
+            return retVal;
+        }
+
         private int GetDispatchIndex(IRuntimeContextInstance obj)
         {
             if (_dispId != -1)
@@ -127,24 +157,31 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (attributeType == typeof(DispIdAttribute))
             {
-                return this.GetCustomAttributes(inherit);
+                DispIdAttribute[] attribs = new DispIdAttribute[1];
+                attribs[0] = new DispIdAttribute(_dispId);
+                return attribs;
             }
-            else
+
+            if(attributeType == typeof(UserAnnotationAttribute))
             {
-                return new object[0];
+                return _annotations.ToArray();
             }
+
+            return new object[0];
         }
 
         public override object[] GetCustomAttributes(bool inherit)
         {
-            DispIdAttribute[] attribs = new DispIdAttribute[1];
-            attribs[0] = new DispIdAttribute(_dispId);
-            return attribs;
+            List<Attribute> data = new List<Attribute>();
+            data.Add(new DispIdAttribute(_dispId));
+
+            data.AddRange(_annotations);
+            return data.ToArray();
         }
 
         public override bool IsDefined(Type attributeType, bool inherit)
         {
-            return attributeType == typeof(DispIdAttribute);
+            return attributeType == typeof(DispIdAttribute) || _annotations.Count > 0 && attributeType == typeof(UserAnnotationAttribute);
         }
 
         public override string Name
@@ -155,6 +192,14 @@ namespace ScriptEngine.Machine.Contexts
         public override Type ReflectedType
         {
             get { return _declaringType; }
+        }
+
+        public void AddAnnotation(AnnotationDefinition annotation)
+        {
+            _annotations.Add(new UserAnnotationAttribute()
+            {
+                Annotation = annotation
+            });
         }
     }
 }

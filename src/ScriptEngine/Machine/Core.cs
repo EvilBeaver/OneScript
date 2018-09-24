@@ -183,7 +183,9 @@ namespace ScriptEngine.Machine
         public string Alias;
         public bool IsFunction;
         public bool IsExport;
+        [NonSerialized]
         public bool IsDeprecated;
+        [NonSerialized]
         public bool ThrowOnUseDeprecated;
         public ParameterDefinition[] Params;
         public AnnotationDefinition[] Annotations;

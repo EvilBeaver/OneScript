@@ -115,7 +115,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                 {
                     var type = _reader.TokenType;
 
-                    if (type == JsonToken.String || type == JsonToken.Comment || type == JsonToken.PropertyName)
+                    if (type == JsonToken.String || type == JsonToken.Comment || type == JsonToken.PropertyName) 
                         return ValueFactory.Create((string)_reader.Value);
                     else if (type == JsonToken.Boolean)
                         return ValueFactory.Create((bool)_reader.Value);
@@ -124,8 +124,39 @@ namespace ScriptEngine.HostedScript.Library.Json
                         decimal d = Convert.ToDecimal(_reader.Value);
                         return ValueFactory.Create(d);
                     }
+                    else if (type == JsonToken.Date)
+                    {
+                        return ValueFactory.Create((DateTime)_reader.Value);
+                    }
+                    else if (type == JsonToken.Null)
+                    {
+                        return ValueFactory.CreateNullValue();
+                    }
+                    else if (type == JsonToken.Undefined)
+                    {
+                        return ValueFactory.Create();
+                    }
                     else
                         throw new RuntimeException("Ошибка при получении значения атрибута контекста (ТекущееЗначение): Текущее значение JSON не может быть получено");
+                }
+                else
+                    throw new RuntimeException("Источник данных JSON не открыт");
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// Тип текущего значения в документе JSON во внутреннем формате.
+        /// null - если чтение еще не началось или достигнут конец файла.
+        /// </summary>
+        /// <value>CurrentJsonTokenType</value>
+        public JsonToken CurrentJsonTokenType
+        {
+            get
+            {
+                if (IsOpen())
+                {
+                    return _reader.TokenType;
                 }
                 else
                     throw new RuntimeException("Источник данных JSON не открыт");
@@ -295,6 +326,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         public bool Read()
         {
             return _reader.Read();
+            
         }
 
 

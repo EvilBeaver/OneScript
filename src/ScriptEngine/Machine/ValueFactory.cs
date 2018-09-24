@@ -46,7 +46,7 @@ namespace ScriptEngine.Machine
 
         public static IValue CreateInvalidValueMarker()
         {
-            return new InvalidValue();
+            return InvalidValue.Instance;
         }
 
         public static IValue CreateNullValue()
@@ -80,10 +80,12 @@ namespace ScriptEngine.Machine
                     break;
                 case DataType.Date:
                     string format;
-                    if (presentation.Length == 8)
-                        format = "yyyyMMdd";
-                    else if (presentation.Length == 14)
+                    if (presentation.Length == 14)
                         format = "yyyyMMddHHmmss";
+                    else if (presentation.Length == 8)
+                        format = "yyyyMMdd";
+                    else if (presentation.Length == 12)
+                        format = "yyyyMMddHHmm";
                     else
                         throw RuntimeException.ConvertToDateException();
 
@@ -135,6 +137,9 @@ namespace ScriptEngine.Machine
 
         class InvalidValue : IValue
         {
+            private static IValue _instance = new InvalidValue();
+
+            internal static IValue Instance => _instance;
 
             #region IValue Members
 

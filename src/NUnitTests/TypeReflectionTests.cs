@@ -48,7 +48,7 @@ namespace NUnitTests
 
             var reflected = CreateDummyType(script);
             Assert.AreEqual("Dummy", reflected.Name);
-            Assert.AreEqual("ScriptEngine.Machine.Contexts.dyn.Dummy", reflected.FullName);
+            Assert.AreEqual("ScriptEngine.Machine.Reflection.dyn.Dummy", reflected.FullName);
 
         }
 
@@ -199,6 +199,54 @@ namespace NUnitTests
             var type = cb.Build();
 
             Assert.IsNotNull(type.GetMethod("AddProperty"));
+        }
+
+        [Test]
+        public void CheckMethodBodyIsNotReflected()
+        {
+            string script = "Процедура Внутренняя()\n" +
+                            "КонецПроцедуры\n\n" +
+                            "Процедура Внешняя() Экспорт\n" +
+                            "КонецПроцедуры\n" +
+                            "ТелоМодуля = 2;";
+
+            var reflected = CreateDummyType(script);
+
+            var defaultGet = reflected.GetMethods(BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.AreEqual(2, defaultGet.Length);
+        }
+
+        [Test]
+        public void CheckMethodAnnotationsReflected()
+        {
+            string script = "&Аннотация\n" +
+                            "&ДругаяАннотация\n" +
+                            "Процедура Внешняя() Экспорт\n" +
+                            "КонецПроцедуры";
+
+            var reflected = CreateDummyType(script);
+            var method = reflected.GetMethod("Внешняя");
+            Assert.NotNull(method);
+            Assert.AreEqual(3, method.GetCustomAttributes(false).Length);
+            Assert.AreEqual(2, method.GetCustomAttributes(typeof(UserAnnotationAttribute), false).Length);
+
+            var first = (UserAnnotationAttribute)method.GetCustomAttributes(typeof(UserAnnotationAttribute), false)[0];
+            Assert.AreEqual("Аннотация", first.Annotation.Name);
+        }
+
+        [Test]
+        public void CheckParametersAnnotationsReflected()
+        {
+            string script = "Процедура Внешняя(&Аннотация Параметр, ПараметрБезАннотации) Экспорт\n" +
+                            "КонецПроцедуры";
+
+            var reflected = CreateDummyType(script);
+            var method = reflected.GetMethod("Внешняя");
+            Assert.NotNull(method);
+            var param = method.GetParameters()[0];
+
+            var first = (UserAnnotationAttribute)param.GetCustomAttributes(typeof(UserAnnotationAttribute), false)[0];
+            Assert.AreEqual("Аннотация", first.Annotation.Name);
         }
     }
 }

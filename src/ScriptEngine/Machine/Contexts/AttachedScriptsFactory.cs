@@ -181,7 +181,7 @@ namespace ScriptEngine.Machine.Contexts
 
             return compiler.Compile(code);
         }
-
+        
         private static AttachedScriptsFactory _instance;
 
         static AttachedScriptsFactory()
@@ -192,7 +192,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             _instance = factory;
         }
-        
+
+        public static LoadedModule GetModuleOfType(string typeName)
+        {
+            return _instance._loadedModules[typeName];
+        }
+
         [ScriptConstructor(ParametrizeWithClassName = true)]
         public static IRuntimeContextInstance ScriptFactory(string typeName, IValue[] arguments)
         {

@@ -60,10 +60,17 @@ namespace ScriptEngine.Machine.Contexts
             _name = attrib.GetName();
             _alias = attrib.GetAlias();
             if (string.IsNullOrEmpty(_alias))
-                _alias = _name;
+                _alias = propInfo.Name;
 
-            Func<TInstance, IValue> cantReadAction = (inst) => { throw RuntimeException.PropIsNotReadableException(_name); };
-            Action<TInstance, IValue> cantWriteAction = (inst, val) => { throw RuntimeException.PropIsNotWritableException(_name); };
+            IValue CantReadAction(TInstance inst)
+            {
+                throw RuntimeException.PropIsNotReadableException(_name);
+            }
+
+            void CantWriteAction(TInstance inst, IValue val)
+            {
+                throw RuntimeException.PropIsNotWritableException(_name);
+            }
 
             this.CanRead = attrib.CanRead;
             this.CanWrite = attrib.CanWrite;
@@ -73,7 +80,7 @@ namespace ScriptEngine.Machine.Contexts
                 var getMethodInfo = propInfo.GetGetMethod();
                 if (getMethodInfo == null)
                 {
-                    _getter = cantReadAction;
+                    _getter = CantReadAction;
                 }
                 else
                 {
@@ -89,7 +96,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                _getter = cantReadAction;
+                _getter = CantReadAction;
             }
 
             if (attrib.CanWrite)
@@ -97,7 +104,7 @@ namespace ScriptEngine.Machine.Contexts
                 var setMethodInfo = propInfo.GetSetMethod();
                 if (setMethodInfo == null)
                 {
-                    _setter = cantWriteAction;
+                    _setter = CantWriteAction;
                 }
                 else
                 {
@@ -113,29 +120,17 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                _setter = cantWriteAction;
+                _setter = CantWriteAction;
             }
         }
 
-        public Func<TInstance, IValue> Getter
-        {
-            get { return _getter; }
-        }
+        public Func<TInstance, IValue> Getter => _getter;
 
-        public Action<TInstance, IValue> Setter
-        {
-            get { return _setter; }
-        }
-        
-        public string Name
-        {
-            get { return _name; }
-        }
+        public Action<TInstance, IValue> Setter => _setter;
 
-        public string Alias
-        {
-            get { return _alias; }
-        }
+        public string Name => _name;
+
+        public string Alias => _alias;
 
         public bool CanRead { get; private set; }
         public bool CanWrite { get; private set; }

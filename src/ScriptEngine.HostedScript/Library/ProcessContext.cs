@@ -244,6 +244,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 foreach (var kv in env)
                 {
+                    sInfo.EnvironmentVariables.Remove(kv.Key.AsString());
                     sInfo.EnvironmentVariables[kv.Key.AsString()] = kv.Value.AsString();
                 }
             }
