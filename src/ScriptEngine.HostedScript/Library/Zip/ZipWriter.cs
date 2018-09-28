@@ -4,8 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using Ionic.Zip;
-using Ionic.Zlib;
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
@@ -13,6 +12,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+
+using ICSharpCode.SharpZipLib.Zip;
+using ICSharpCode.SharpZipLib.Zip.Compression;
 
 namespace ScriptEngine.HostedScript.Library.Zip
 {
@@ -23,6 +25,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
     public class ZipWriter : AutoContext<ZipWriter>, IDisposable
     {
         private ZipFile _zip;
+
+        private ZipOutputStream _stream;
         private string _filename;
 
         public ZipWriter()
@@ -49,7 +53,12 @@ namespace ScriptEngine.HostedScript.Library.Zip
             SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod = null)
         {
             _filename = filename;
-            _zip = new ZipFile();
+            ZipOutputStream _stream = new ZipOutputStream(File.Create(filename));
+
+            _stream.Password = password;
+            _stream.SetComment(comment);
+            _stream.SetLevel();
+                
             _zip.AlternateEncoding = Encoding.GetEncoding(866); // fuck non-russian encodings on non-ascii files
             _zip.AlternateEncodingUsage = ZipOption.Always;
             _zip.Password = password;
@@ -266,14 +275,14 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         }
 
-        private CompressionLevel MakeZipCompressionLevel(SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel)
+        private Deflater.CompressionLevel MakeZipCompressionLevel(SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel)
         {
             if (compressionLevel == null)
-                return CompressionLevel.Default;
+                return Deflater.CompressionLevel.DEFAULT_COMPRESSION;
 
             var owner = (ZipCompressionLevelEnum)compressionLevel.Owner;
             if (compressionLevel == owner.Minimal)
-                return CompressionLevel.BestSpeed;
+                return Deflater.CompressionLevel.BEST_SPEED;
             if (compressionLevel == owner.Optimal)
                 return CompressionLevel.Default;
             if (compressionLevel == owner.Maximal)
