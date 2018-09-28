@@ -24,11 +24,15 @@ namespace ScriptEngine.HostedScript.Library.Zip
     [ContextClass("ЗаписьZipФайла", "ZipFileWriter")]
     public class ZipWriter : AutoContext<ZipWriter>, IDisposable
     {
-        private ZipFile _zip;
+        
+        private ZipOutputStream _zip;
 
-        private ZipOutputStream _stream;
         private string _filename;
 
+        private CompressionMethod compressMeth;
+
+        private EncryptionAlgorithm encryptAlgoritm;
+        
         public ZipWriter()
         {
 
@@ -52,22 +56,24 @@ namespace ScriptEngine.HostedScript.Library.Zip
             SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel = null,
             SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod = null)
         {
+            _zip = new ZipOutputStream(File.Create(filename));
+            
             _filename = filename;
-            ZipOutputStream _stream = new ZipOutputStream(File.Create(filename));
+            
+            _zip.Password = password;
+            _zip.SetComment(comment);
+            _zip.SetLevel(MakeZipCompressionLevel(compressionLevel));
 
-            _stream.Password = password;
-            _stream.SetComment(comment);
-            _stream.SetLevel();
-                
+            _zip.UseZip64 = UseZip64.Dynamic;
+            
+            /*
             _zip.AlternateEncoding = Encoding.GetEncoding(866); // fuck non-russian encodings on non-ascii files
             _zip.AlternateEncodingUsage = ZipOption.Always;
-            _zip.Password = password;
-            _zip.Comment = comment;
-            _zip.CompressionMethod = MakeZipCompressionMethod(compressionMethod);
-            _zip.CompressionLevel = MakeZipCompressionLevel(compressionLevel);
-            _zip.UseZip64WhenSaving = Zip64Option.AsNecessary;
-            // Zlib падает с NullReferenceException, если задать шифрование
-            //_zip.Encryption = MakeZipEncryption(encryptionMethod);
+             */
+               
+            compressMeth = MakeZipCompressionMethod(compressionMethod);
+            encryptAlgoritm = MakeZipEncryption(encryptionMethod);
+              
         }
 
         /// <summary>
@@ -78,7 +84,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             CheckIfOpened();
 
-            _zip.Save(_filename);
+            _zip.Finish();
             Dispose(true);
         }
 
@@ -158,7 +164,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             else
                 pathInArchive = "";
 
-            _zip.AddFile(file, pathInArchive);
+            AddFileToStream(file, pathInArchive);
         }
 
         private void AddFilesByMask(string file, SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
@@ -219,8 +225,30 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 else
                     pathInArchive = "";
 
-                _zip.AddFile(item, pathInArchive);
+                AddFileToStream(item, pathInArchive);
             }
+        }
+
+        private void AddFileToStream(string file, string pathInArchive)
+        {
+            var entry = new ZipEntry(Path.Combine(pathInArchive,file));
+            entry.DateTime = DateTime.Now;
+            entry.CompressionMethod = compressMeth;
+            
+            _zip.PutNextEntry(entry);
+            byte[] buffer = new byte[4096];
+
+            using (FileStream fs = File.OpenRead(file)) {
+
+                int sourceBytes;
+                do
+                {
+                    sourceBytes = fs.Read(buffer, 0, buffer.Length);
+                    _zip.Write(buffer, 0, sourceBytes);
+                } while (sourceBytes > 0);
+            }
+            _zip.Finish();
+            
         }
 
         // возвращает относительный путь или "", если путь не является относительным
@@ -263,30 +291,30 @@ namespace ScriptEngine.HostedScript.Library.Zip
         private CompressionMethod MakeZipCompressionMethod(SelfAwareEnumValue<ZipCompressionMethodEnum> compressionMethod)
         {
             if (compressionMethod == null)
-                return CompressionMethod.Deflate;
+                return CompressionMethod.Deflated;
 
             var owner = (ZipCompressionMethodEnum)compressionMethod.Owner;
             if (compressionMethod == owner.Deflate)
-                return CompressionMethod.Deflate;
+                return CompressionMethod.Deflated;
             if (compressionMethod == owner.Copy)
-                return CompressionMethod.None;
+                return CompressionMethod.Stored;
 
             throw RuntimeException.InvalidArgumentValue();
 
         }
 
-        private Deflater.CompressionLevel MakeZipCompressionLevel(SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel)
+        private int MakeZipCompressionLevel(SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel)
         {
             if (compressionLevel == null)
-                return Deflater.CompressionLevel.DEFAULT_COMPRESSION;
+                return Deflater.DEFAULT_COMPRESSION;
 
             var owner = (ZipCompressionLevelEnum)compressionLevel.Owner;
             if (compressionLevel == owner.Minimal)
-                return Deflater.CompressionLevel.BEST_SPEED;
+                return Deflater.BEST_SPEED;
             if (compressionLevel == owner.Optimal)
-                return CompressionLevel.Default;
+                return Deflater.DEFAULT_COMPRESSION;
             if (compressionLevel == owner.Maximal)
-                return CompressionLevel.BestCompression;
+                return Deflater.BEST_COMPRESSION;
 
             throw RuntimeException.InvalidArgumentValue();
         }
@@ -294,16 +322,16 @@ namespace ScriptEngine.HostedScript.Library.Zip
         private EncryptionAlgorithm MakeZipEncryption(SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod)
         {
             if (encryptionMethod == null)
-                return EncryptionAlgorithm.PkzipWeak;
+                return EncryptionAlgorithm.PkzipClassic;
             
             var enumOwner = (ZipEncryptionMethodEnum)encryptionMethod.Owner;
 
             if(encryptionMethod == enumOwner.Zip20)
-                return EncryptionAlgorithm.PkzipWeak;
+                return EncryptionAlgorithm.PkzipClassic;
             if (encryptionMethod == enumOwner.Aes128)
-                return EncryptionAlgorithm.WinZipAes128;
+                return EncryptionAlgorithm.Aes128;
             if (encryptionMethod == enumOwner.Aes256)
-                return EncryptionAlgorithm.WinZipAes256;
+                return EncryptionAlgorithm.Aes256;
 
             throw RuntimeException.InvalidArgumentValue();
 
@@ -372,6 +400,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             {
                 if (_zip != null)
                 {
+                    _zip.Close();
                     _zip.Dispose();
                     _zip = null;
                 }

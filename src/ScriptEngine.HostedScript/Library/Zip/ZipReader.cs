@@ -9,6 +9,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -48,8 +49,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ContextMethod("Открыть","Open")]
         public void Open(string filename, string password = null)
         {
-            // fuck non-russian encodings on non-ascii files
-            _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = Encoding.GetEncoding(866) });
+            FileStream fs = File.OpenRead(filename);
+            _zip = new ZipFile(fs);
             _zip.Password = password;
         }
 
