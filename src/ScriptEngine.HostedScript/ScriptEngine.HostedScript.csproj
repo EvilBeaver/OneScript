@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup>
     <PackageId>OneScript.StandardLibrary</PackageId>
-    <PackageVersion>1.0.$(ReleaseNumber)$(Suffix)</PackageVersion>
+    <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
     <Title>OneScript Main Client Libraries</Title>
     <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
     <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
@@ -32,7 +32,7 @@
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net452'">
-    <DocumentationFile></DocumentationFile>
+    <DocumentationFile>bin\Release\net452\ScriptEngine.HostedScript.xml</DocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
   
