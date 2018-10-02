@@ -25,15 +25,12 @@ namespace ScriptEngine.HostedScript.Library.Zip
     {
         ZipFile _zip;
         ZipFileEntriesCollection _entriesWrapper;
+        string _password;
 
         public ZipReader()
         {
         }
 	    
-        public ZipReader(string filename, string password = null)
-        {
-            Open(filename, password);
-        }
 
         private void CheckIfOpened()
         {
@@ -49,9 +46,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ContextMethod("Открыть","Open")]
         public void Open(string filename, string password = null)
         {
-            FileStream fs = File.OpenRead(filename);
-            _zip = new ZipFile(fs);
+
+            _zip = new ZipFile(filename);
             _zip.Password = password;
+            _password = password;
+
         }
 
 
@@ -61,12 +60,15 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="where">Строка. Каталог в который извлекаются файлы</param>
         /// <param name="restorePaths">РежимВосстановленияПутейФайловZIP</param>
         [ContextMethod("ИзвлечьВсе","ExtractAll")]
-        public void ExtractAll(string where, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null)
+        public void ExtractAll(string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null)
         {
             CheckIfOpened();
-            _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
-            _zip.ExtractExistingFile = ExtractExistingFileAction.OverwriteSilently;
-            _zip.ExtractAll(where);
+
+            foreach (var entry in Elements)
+            {
+                Extract(entry, destination, restorePaths);
+            }
+
         }
 
         /// <summary>
@@ -80,10 +82,39 @@ namespace ScriptEngine.HostedScript.Library.Zip
         public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null)
         {
             CheckIfOpened();
+
             var realEntry = entry.GetZipEntry();
-            _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
-            realEntry.Password = password;
-            realEntry.Extract(destination);
+            var flattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
+
+            if (!Directory.Exists(destination))
+            {
+                Directory.CreateDirectory(destination);
+            }
+
+            string fileName;
+            if (realEntry.IsDirectory)
+            {
+                if (flattenFoldersOnExtract)
+                    Directory.CreateDirectory(Path.Combine(destination, entry.Path, realEntry.Name));
+            }
+            else
+            {
+                if (flattenFoldersOnExtract)
+                    fileName = Path.Combine(destination, entry.Path, entry.Name);
+                else
+                    fileName = Path.Combine(destination, entry.Name);
+
+                if (password != null)
+                    _zip.Password = password;
+
+                using (var streamReader = _zip.GetInputStream(realEntry.ZipFileIndex))
+                    using (var streamWriter = new FileStream(fileName, FileMode.CreateNew))
+                        streamReader.CopyTo(streamWriter);
+
+                if (password != null)
+                    _zip.Password = _password;
+            }
+
         }
 
         /// <summary>
@@ -106,11 +137,19 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 CheckIfOpened();
 
                 if (_entriesWrapper == null)
-                    _entriesWrapper = new ZipFileEntriesCollection(_zip.Entries);
+                    _entriesWrapper = new ZipFileEntriesCollection(GetEntries());
 
                 return _entriesWrapper;
             }
         }
+
+        private IEnumerable<ZipEntry> GetEntries()
+        {
+            var enumer = _zip.GetEnumerator();
+            while (enumer.MoveNext())
+                yield return (ZipEntry)enumer.Current;
+        }
+
 
         private static bool FlattenPathsOnExtraction(SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths)
         {
@@ -133,7 +172,10 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ScriptConstructor(Name = "На основании имени файла")]
         public static ZipReader ConstructByNameAndPassword(IValue filename, IValue password = null)
         {
-            return new ZipReader(filename.AsString(), password?.AsString());
+            var zipReader = new ZipReader();
+            zipReader.Open(filename.AsString(), password?.AsString());
+
+            return zipReader;
         }
 
         public void Dispose()
@@ -141,7 +183,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _entriesWrapper = null;
             if (_zip != null)
             {
-                _zip.Dispose();
+                _zip.Close();
                 _zip = null;
             }
         }

@@ -56,6 +56,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel = null,
             SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod = null)
         {
+
             _zip = new ZipOutputStream(File.Create(filename));
             
             _filename = filename;
