@@ -59,14 +59,15 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// </summary>
         /// <param name="where">Строка. Каталог в который извлекаются файлы</param>
         /// <param name="restorePaths">РежимВосстановленияПутейФайловZIP</param>
+        /// <param name="overwrite">Признак замены существующих файлов при распаковке</param>
         [ContextMethod("ИзвлечьВсе","ExtractAll")]
-        public void ExtractAll(string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null)
+        public void ExtractAll(string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, bool overwrite = true)
         {
             CheckIfOpened();
 
             foreach (var entry in Elements)
             {
-                Extract(entry, destination, restorePaths);
+                Extract(entry, destination, restorePaths, null, overwrite);
             }
 
         }
@@ -78,8 +79,9 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="destination">Каталог, в который извлекается элемент.</param>
         /// <param name="restorePaths">РежимВосстановленияПутейФайлов</param>
         /// <param name="password">Пароль элемента (если отличается от пароля к архиву)</param>
+        /// <param name="overwrite">Признак замены существующего файла при распаковке</param>
         [ContextMethod("Извлечь", "Extract")]
-        public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null)
+        public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null, bool overwrite = true)
         {
             CheckIfOpened();
 
@@ -107,8 +109,10 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 if (password != null)
                     _zip.Password = password;
 
+                var fileMode = (overwrite) ? FileMode.Create : FileMode.CreateNew;
+
                 using (var streamReader = _zip.GetInputStream(realEntry.ZipFileIndex))
-                    using (var streamWriter = new FileStream(fileName, FileMode.CreateNew))
+                    using (var streamWriter = new FileStream(fileName, fileMode))
                         streamReader.CopyTo(streamWriter);
 
                 if (password != null)
