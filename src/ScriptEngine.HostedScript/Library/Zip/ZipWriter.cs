@@ -85,7 +85,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             CheckIfOpened();
 
-            _zip.Finish();
+            _zip.Close();
+
             Dispose(true);
         }
 
@@ -98,6 +99,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ContextMethod("Добавить", "Add")]
         public void Add(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode = null, SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories = null)
         {
+
             CheckIfOpened();
 
             var pathIsMasked = file.IndexOfAny(new[] { '*', '?' }) >= 0;
@@ -105,7 +107,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             var recursiveFlag = GetRecursiveFlag(recurseSubdirectories);
             var searchOption = recursiveFlag ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-            if(pathIsMasked)
+            if (pathIsMasked)
             {
                 AddFilesByMask(file, searchOption, storePathMode);
             }
@@ -130,42 +132,20 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 allFilesMask = "*.*";
 
             var filesToAdd = Directory.EnumerateFiles(dir, allFilesMask, searchOption);
-            AddEnumeratedFiles(filesToAdd, GetPathForParentFolder(dir), storePathMode);
-        }
 
-        private string GetPathForParentFolder(string dir)
-        {
-            var rootPath = GetRelativePath(dir, Directory.GetCurrentDirectory());
-            if (rootPath == "")
-                rootPath = Path.Combine(Directory.GetCurrentDirectory(), dir, "..");
+            var dirInfo = new DirectoryInfo(dir);
+            string relativePath;
+            if (dir == dirInfo.FullName)
+                relativePath = dirInfo.Parent.FullName;
             else
-                rootPath = Directory.GetCurrentDirectory();
-            return rootPath;
+                relativePath = Directory.GetCurrentDirectory();
+
+            AddEnumeratedFiles(filesToAdd, storePathMode, relativePath);
         }
 
         private void AddSingleFile(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
-            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
-            if (storePathMode == null)
-                storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
-
-            var currDir = Directory.GetCurrentDirectory();
-
-            string pathInArchive;
-            if (storePathMode == storeModeEnum.StoreFullPath)
-                pathInArchive = null;
-            else if (storePathMode == storeModeEnum.StoreRelativePath)
-            {
-                var relativePath = GetRelativePath(file, currDir);
-                if (relativePath == "")
-                    pathInArchive = ".";
-                else
-                    pathInArchive = Path.GetDirectoryName(relativePath);
-            }
-            else
-                pathInArchive = "";
-
-            AddFileToStream(file, pathInArchive);
+            AddFileToStream(file, storePathMode);
         }
 
         private void AddFilesByMask(string file, SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
@@ -205,80 +185,58 @@ namespace ScriptEngine.HostedScript.Library.Zip
             }
 
             filesToAdd = Directory.EnumerateFiles(path, mask, searchOption);
-            var relativePath = Path.GetFullPath(path);
-            AddEnumeratedFiles(filesToAdd, relativePath, storePathMode);
+            AddEnumeratedFiles(filesToAdd, storePathMode, Path.GetFullPath(path));
 
         }
 
-        private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, string relativePath, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode, string relativePath = null)
         {
-            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
-            if (storePathMode == null)
-                storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.DontStorePath;
-
             foreach (var item in filesToAdd)
-            {
-                string pathInArchive;
-                if (storePathMode == storeModeEnum.StoreRelativePath)
-                    pathInArchive = Path.GetDirectoryName(GetRelativePath(item, relativePath));
-                else if (storePathMode == storeModeEnum.StoreFullPath)
-                    pathInArchive = null;
-                else
-                    pathInArchive = "";
-
-                AddFileToStream(item, pathInArchive);
-            }
+                AddFileToStream(item, storePathMode, relativePath);
         }
 
-        private void AddFileToStream(string file, string pathInArchive)
+        private void AddFileToStream(string fileName, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode = null, string relativePath = null)
         {
-            var entry = new ZipEntry(Path.Combine(pathInArchive,file));
+
+            var file = new FileInfo(fileName);
+
+            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
+
+            var storeMode = storePathMode;
+            if (storeMode == null)
+                storeMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
+
+            string pathInArchive = null;
+            if (storeMode == storeModeEnum.StoreFullPath)
+                pathInArchive = file.FullName;
+            else if (storeMode == storeModeEnum.StoreRelativePath)
+            {
+                string currentDir;
+                if (relativePath != null)
+                    currentDir = relativePath;
+                else
+                    currentDir = Directory.GetCurrentDirectory();
+
+                pathInArchive = file.FullName;
+                if (pathInArchive == currentDir)
+                    pathInArchive = string.Empty;
+                else if (pathInArchive.StartsWith(currentDir))
+                    pathInArchive = pathInArchive.Substring(currentDir.Length);
+                else
+                    pathInArchive = file.Name;
+            }
+            else if (storeMode == storeModeEnum.DontStorePath)
+                pathInArchive = file.Name;
+
+            var entry = new ZipEntry(pathInArchive);
             entry.DateTime = DateTime.Now;
             entry.CompressionMethod = compressMeth;
             
             _zip.PutNextEntry(entry);
-            byte[] buffer = new byte[4096];
 
-            using (FileStream fs = File.OpenRead(file)) {
+            using (FileStream fs = File.OpenRead(fileName))
+                fs.CopyTo(_zip);
 
-                int sourceBytes;
-                do
-                {
-                    sourceBytes = fs.Read(buffer, 0, buffer.Length);
-                    _zip.Write(buffer, 0, sourceBytes);
-                } while (sourceBytes > 0);
-            }
-            _zip.Finish();
-            
-        }
-
-        // возвращает относительный путь или "", если путь не является относительным
-        private string GetRelativePath(string filespec, string rootfolder)
-        {
-            var currDir = Directory.GetCurrentDirectory();
-
-            DirectoryInfo directory = new DirectoryInfo(Path.Combine(currDir, rootfolder));
-            var folderpath = directory.FullName;
-
-            var filepath = Path.Combine(currDir, filespec);
-
-            if (Directory.Exists(filespec))
-            {
-                DirectoryInfo dir = new DirectoryInfo(filepath);
-                filepath = dir.FullName;
-            }
-            else {
-                FileInfo file = new FileInfo(filepath);
-                filepath = file.FullName;
-            }
-
-            if (!filepath.StartsWith(folderpath))
-                return "";
-
-            var res = filepath.Substring(folderpath.Length + 1);
-            if (res == "")
-                res = ".";
-            return res;
         }
 
         private static bool GetRecursiveFlag(SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories)

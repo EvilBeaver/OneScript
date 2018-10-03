@@ -125,4 +125,15 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A4A871EF-C5A7-478F-907E-31C69A869973}
 	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
+		$0.TextStylePolicy = $2
+		$2.inheritsSet = null
+		$2.scope = application/xaml+xml
+		$0.XmlFormattingPolicy = $3
+		$3.inheritsSet = null
+		$3.scope = application/xaml+xml
+	EndGlobalSection
 EndGlobal

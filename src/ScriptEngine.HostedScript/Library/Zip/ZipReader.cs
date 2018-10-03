@@ -61,13 +61,13 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="restorePaths">РежимВосстановленияПутейФайловZIP</param>
         /// <param name="overwrite">Признак замены существующих файлов при распаковке</param>
         [ContextMethod("ИзвлечьВсе","ExtractAll")]
-        public void ExtractAll(string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, bool overwrite = true)
+        public void ExtractAll(string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null)
         {
             CheckIfOpened();
 
             foreach (var entry in Elements)
             {
-                Extract(entry, destination, restorePaths, null, overwrite);
+                Extract(entry, destination, restorePaths);
             }
 
         }
@@ -81,35 +81,39 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="password">Пароль элемента (если отличается от пароля к архиву)</param>
         /// <param name="overwrite">Признак замены существующего файла при распаковке</param>
         [ContextMethod("Извлечь", "Extract")]
-        public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null, bool overwrite = true)
+        public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null)
         {
             CheckIfOpened();
 
             var realEntry = entry.GetZipEntry();
-            var flattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
+            var restoreFoldersOnExtract = GetRestorePathsOnExtractionFlag(restorePaths);
 
             if (!Directory.Exists(destination))
-            {
                 Directory.CreateDirectory(destination);
-            }
 
             string fileName;
             if (realEntry.IsDirectory)
             {
-                if (flattenFoldersOnExtract)
+                if (restoreFoldersOnExtract)
                     Directory.CreateDirectory(Path.Combine(destination, entry.Path, realEntry.Name));
             }
             else
             {
-                if (flattenFoldersOnExtract)
+
+                if (restoreFoldersOnExtract)
                     fileName = Path.Combine(destination, entry.Path, entry.Name);
                 else
                     fileName = Path.Combine(destination, entry.Name);
 
+                var fileInfo = new FileInfo(fileName);
+                if (!Directory.Exists(fileInfo.DirectoryName))
+                    Directory.CreateDirectory(fileInfo.DirectoryName);
+
+
+                var fileMode = (File.Exists(fileName)) ? FileMode.Create : FileMode.CreateNew;
+
                 if (password != null)
                     _zip.Password = password;
-
-                var fileMode = (overwrite) ? FileMode.Create : FileMode.CreateNew;
 
                 using (var streamReader = _zip.GetInputStream(realEntry.ZipFileIndex))
                     using (var streamWriter = new FileStream(fileName, fileMode))
@@ -155,16 +159,16 @@ namespace ScriptEngine.HostedScript.Library.Zip
         }
 
 
-        private static bool FlattenPathsOnExtraction(SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths)
+        private static bool GetRestorePathsOnExtractionFlag(SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths)
         {
-            bool flattenFlag = false;
+            bool restoreFlag = true; // default
             if (restorePaths != null)
             {
                 var zipEnum = (ZipRestoreFilePathsModeEnum)restorePaths.Owner;
-                flattenFlag = restorePaths == zipEnum.DoNotRestore;
+                restoreFlag = restorePaths == zipEnum.Restore;
             }
 
-            return flattenFlag;
+            return restoreFlag;
         }
 
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
