@@ -193,6 +193,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
         private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode, string relativePath)
         {
 
+            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
+
             var storeMode = storePathMode;
             if (storeMode == null)
                 storeMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
