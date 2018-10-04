@@ -145,7 +145,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         private void AddSingleFile(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
         {
-            AddFileToStream(file, storePathMode);
+            IEnumerable<string> filesToAdd = new string[] {file};
+            AddEnumeratedFiles(filesToAdd, storePathMode, Directory.GetCurrentDirectory());
         }
 
         private void AddFilesByMask(string file, SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
@@ -189,39 +190,34 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         }
 
-        private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode, string relativePath = null)
+        private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode, string relativePath)
         {
-            foreach (var item in filesToAdd)
-                AddFileToStream(item, storePathMode, relativePath);
-        }
-
-        private void AddFileToStream(string fileName, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode = null, string relativePath = null)
-        {
-
-            var file = new FileInfo(fileName);
-
-            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
 
             var storeMode = storePathMode;
             if (storeMode == null)
                 storeMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
+
+            foreach (var item in filesToAdd)
+                AddFileToStream(item, storeMode, relativePath);
+        }
+
+        private void AddFileToStream(string fileName, SelfAwareEnumValue<ZipStorePathModeEnum> storeMode, string relativePath)
+        {
+
+            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
+
+            var file = new FileInfo(fileName);
 
             string pathInArchive = null;
             if (storeMode == storeModeEnum.StoreFullPath)
                 pathInArchive = file.FullName;
             else if (storeMode == storeModeEnum.StoreRelativePath)
             {
-                string currentDir;
-                if (relativePath != null)
-                    currentDir = relativePath;
-                else
-                    currentDir = Directory.GetCurrentDirectory();
-
                 pathInArchive = file.FullName;
-                if (pathInArchive == currentDir)
+                if (pathInArchive == relativePath)
                     pathInArchive = string.Empty;
-                else if (pathInArchive.StartsWith(currentDir))
-                    pathInArchive = pathInArchive.Substring(currentDir.Length);
+                else if (pathInArchive.StartsWith(relativePath))
+                    pathInArchive = pathInArchive.Substring(relativePath.Length);
                 else
                     pathInArchive = file.Name;
             }

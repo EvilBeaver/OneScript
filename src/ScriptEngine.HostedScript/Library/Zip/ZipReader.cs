@@ -59,7 +59,6 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// </summary>
         /// <param name="where">Строка. Каталог в который извлекаются файлы</param>
         /// <param name="restorePaths">РежимВосстановленияПутейФайловZIP</param>
-        /// <param name="overwrite">Признак замены существующих файлов при распаковке</param>
         [ContextMethod("ИзвлечьВсе","ExtractAll")]
         public void ExtractAll(string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null)
         {
@@ -79,7 +78,6 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="destination">Каталог, в который извлекается элемент.</param>
         /// <param name="restorePaths">РежимВосстановленияПутейФайлов</param>
         /// <param name="password">Пароль элемента (если отличается от пароля к архиву)</param>
-        /// <param name="overwrite">Признак замены существующего файла при распаковке</param>
         [ContextMethod("Извлечь", "Extract")]
         public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null)
         {
@@ -101,13 +99,14 @@ namespace ScriptEngine.HostedScript.Library.Zip
             {
 
                 if (restoreFoldersOnExtract)
+                {
                     fileName = Path.Combine(destination, entry.Path, entry.Name);
+                    var fileInfo = new FileInfo(fileName);
+                    if (!Directory.Exists(fileInfo.DirectoryName))
+                        Directory.CreateDirectory(fileInfo.DirectoryName);
+                }
                 else
                     fileName = Path.Combine(destination, entry.Name);
-
-                var fileInfo = new FileInfo(fileName);
-                if (!Directory.Exists(fileInfo.DirectoryName))
-                    Directory.CreateDirectory(fileInfo.DirectoryName);
 
 
                 var fileMode = (File.Exists(fileName)) ? FileMode.Create : FileMode.CreateNew;
@@ -115,12 +114,17 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 if (password != null)
                     _zip.Password = password;
 
-                using (var streamReader = _zip.GetInputStream(realEntry.ZipFileIndex))
-                    using (var streamWriter = new FileStream(fileName, fileMode))
-                        streamReader.CopyTo(streamWriter);
-
-                if (password != null)
-                    _zip.Password = _password;
+                try
+                {
+                    using (var streamReader = _zip.GetInputStream(realEntry.ZipFileIndex))
+                        using (var streamWriter = new FileStream(fileName, fileMode))
+                            streamReader.CopyTo(streamWriter);
+                }
+                finally
+                {
+                    if (password != null)
+                        _zip.Password = _password;
+                }
             }
 
         }
