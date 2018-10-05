@@ -6,8 +6,8 @@
     <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DotNetZip" Version="1.9.3" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="SharpZipLib" Version="1.0.0" />
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
   <PropertyGroup>
@@ -26,7 +26,6 @@
     <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
     <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
     <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageDescription>Standard class libraries for 1Script - collections, network, filesystem etc...</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
@@ -35,17 +34,11 @@
     <DocumentationFile>bin\Release\net452\ScriptEngine.HostedScript.xml</DocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net452|AnyCPU'">
-    <OutputPath>C:\Program Files (x86)\OneScript\bin\</OutputPath>
-    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-  </PropertyGroup>
-
   <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
     <Message Text="Copying StandaloneRunner resources" />
     <ItemGroup>
       <CopyToStandalone Include="$(TargetPath)" />
-      <CopyToStandalone Include="$(TargetDir)Ionic.Zip.dll" />
+      <CopyToStandalone Include="$(TargetDir)ICSharpCode.SharpZipLib.dll" />
       <CopyToStandalone Include="$(TargetDir)Newtonsoft.Json.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(CopyToStandalone)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />

@@ -1,5 +1,8 @@
 .vs/
 .idea/
+.DS_Store
+.vscode/
+tmp/
 
 *.vssscc
 *.vspscc

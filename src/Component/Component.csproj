@@ -22,7 +22,7 @@
     <MonoDevelop>
       <Properties>
         <Policies>
-          <StandardHeader Text="This Source Code Form is subject to the terms of the &#xA;Mozilla Public License, v.2.0. If a copy of the MPL &#xA;was not distributed with this file, You can obtain one &#xA;at http://mozilla.org/MPL/2.0/." IncludeInNewFiles="True" />
+          <StandardHeader IncludeInNewFiles="True" Text="This Source Code Form is subject to the terms of the &#xA;Mozilla Public License, v.2.0. If a copy of the MPL &#xA;was not distributed with this file, You can obtain one &#xA;at http://mozilla.org/MPL/2.0/." />
         </Policies>
       </Properties>
     </MonoDevelop>
