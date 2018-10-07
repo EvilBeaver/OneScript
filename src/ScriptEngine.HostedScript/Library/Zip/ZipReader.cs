@@ -47,6 +47,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
         public void Open(string filename, string password = null)
         {
 
+            ZipStrings.CodePage = 866;
+
             _zip = new ZipFile(filename);
             _zip.Password = password;
             _password = password;

@@ -57,8 +57,10 @@ namespace ScriptEngine.HostedScript.Library.Zip
             SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod = null)
         {
 
+            ZipStrings.CodePage = 866;
+
             _zip = new ZipOutputStream(File.Create(filename));
-            
+
             _filename = filename;
             
             _zip.Password = password;
@@ -67,11 +69,6 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
             _zip.UseZip64 = UseZip64.Dynamic;
             
-            /*
-            _zip.AlternateEncoding = Encoding.GetEncoding(866); // fuck non-russian encodings on non-ascii files
-            _zip.AlternateEncodingUsage = ZipOption.Always;
-             */
-               
             compressMeth = MakeZipCompressionMethod(compressionMethod);
             encryptAlgoritm = MakeZipEncryption(encryptionMethod);
               
