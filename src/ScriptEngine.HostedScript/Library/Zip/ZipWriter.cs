@@ -57,8 +57,6 @@ namespace ScriptEngine.HostedScript.Library.Zip
             SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod = null)
         {
 
-            ZipStrings.CodePage = 866;
-
             _zip = new ZipOutputStream(File.Create(filename));
 
             _filename = filename;
