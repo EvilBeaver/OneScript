@@ -78,7 +78,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         {
             const int LIMIT = 50;
             StringBuilder hex = new StringBuilder(LIMIT);
-            for (int i = 0; i < LIMIT; i++)
+            for (int i = 0; i < LIMIT && i < _buffer.Length; i++)
             {
                 hex.AppendFormat("{0:X2} ", _buffer[i]);
             }
