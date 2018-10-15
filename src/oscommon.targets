@@ -2,7 +2,7 @@
 	
     <!--Свойства сборки по умолчанию-->
     <PropertyGroup>
-        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">21</ReleaseNumber>
+        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">1.1.0</ReleaseNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
         <Configuration Condition="'$(Release)' == ''">Release</Configuration>
@@ -11,7 +11,7 @@
 	
     <!--Общие свойства для проектов-->
     <PropertyGroup>
-        <Version>1.0.$(ReleaseNumber).$(BuildNumber)</Version>
+        <Version>$(ReleaseNumber).$(BuildNumber)</Version>
         <FileVersion>$(Version)</FileVersion>
         <Product>1C (BSL) language runtime</Product>
         <Copyright>Copyright (c) 2017 EvilBeaver</Copyright>
