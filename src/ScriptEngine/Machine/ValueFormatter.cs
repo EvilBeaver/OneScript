@@ -78,8 +78,10 @@ namespace ScriptEngine.Machine
 
         #region Number formatting
 
-        private static string FormatNumber(decimal p, FormatParametersList formatParameters)
+        private static string FormatNumber(decimal num, FormatParametersList formatParameters)
         {
+            int[] numberGroupSizes = null;
+
             var locale = formatParameters.GetParamValue(LOCALE);
             NumberFormatInfo nf;
             if (locale != null)
@@ -94,23 +96,24 @@ namespace ScriptEngine.Machine
             }
 
             string param;
+            string zeroAppearance;
 
-            if (p == 0)
+            if (formatParameters.HasParam(NUM_ZERO_APPEARANCE, out param))
             {
-                if (formatParameters.HasParam(NUM_ZERO_APPEARANCE, out param))
-                {
-                    if (param == "")
-                        return "0";
-                    else
-                        return param;
-                }
-                else
-                    return "";
+                zeroAppearance = (param == "") ? "0" : param;
+            }
+            else
+                zeroAppearance = "";
+
+            if (num == 0)
+            {
+                return zeroAppearance;
             }
 
             bool hasDigitLimits = false;
             int totalDigits = 0;
             int fractionDigits = 0;
+            bool largeGroupSize = false;
 
             if (formatParameters.HasParam(NUM_MAX_SIZE, out param))
             {
@@ -140,21 +143,27 @@ namespace ScriptEngine.Machine
 
             if (formatParameters.HasParam(NUM_FRACTION_DELIMITER, out param))
             {
-                nf.NumberDecimalSeparator = param;
+                if (param.Length > 0)
+                    nf.NumberDecimalSeparator = param.Length > 1 ? param.Substring(0, 1) : param;
             }
 
             if (formatParameters.HasParam(NUM_GROUPS_DELIMITER, out param))
             {
-                nf.NumberGroupSeparator = param;
-            }
-            else
-            {
-                nf.NumberGroupSeparator = " ";
+                nf.NumberGroupSeparator = param.Length>1? param.Substring(0,1): param;
             }
 
             if (formatParameters.HasParam(NUM_GROUPING, out param))
             {
-                nf.NumberGroupSizes = ParseGroupSizes(param);
+                numberGroupSizes = ParseGroupSizes(param);
+                if (numberGroupSizes.Any(x => x > 9))
+                {
+                    nf.NumberGroupSizes = new int[] { 0 };
+                    largeGroupSize = true;
+                }
+                else
+                {
+                    nf.NumberGroupSizes = numberGroupSizes;
+                }
             }
 
             if (formatParameters.HasParam(NUM_NEGATIVE_APPEARANCE, out param))
@@ -174,51 +183,86 @@ namespace ScriptEngine.Machine
 
             if (hasDigitLimits)
             {
-                ApplyNumericSizeRestrictions(ref p, totalDigits, fractionDigits);
+                ApplyNumericSizeRestrictions(ref num, totalDigits, fractionDigits);
 
-                int repeatCount = totalDigits - fractionDigits;
-                if (repeatCount < 0)
-                    repeatCount = 1;
-                    
-                formatBuilder.Append(leadingFormatSpecifier, repeatCount);
+                if (num == 0)
+                {
+                    return zeroAppearance;
+                }
 
-                ApplyDigitsGrouping(formatBuilder, nf);
+                if (totalDigits == 0)
+                {
+                    formatBuilder.Append("#,0.");
+                    formatBuilder.Append('0', fractionDigits);
+                }
+                else
+                {
+                    int intDigits = totalDigits - fractionDigits;
 
-                formatBuilder.Append('.');
-                formatBuilder.Append('#', fractionDigits);
+                    if (intDigits > 2)
+                    {
+                        formatBuilder.Append(leadingFormatSpecifier, intDigits-1);
+                        formatBuilder.Append(',');
+                    }
 
+                    if (intDigits > 0)
+                    {
+                        formatBuilder.Append("0.");
+                        formatBuilder.Append('0', fractionDigits);
+                    }
+                    else
+                    {
+                        formatBuilder.Append("#.");
+                        formatBuilder.Append('0', totalDigits);
+                    }
+                }
             }
             else
             {
-                int precision = GetDecimalPrecision(Decimal.GetBits(p));
+                int precision = GetDecimalPrecision(Decimal.GetBits(num));
                 nf.NumberDecimalDigits = precision;
                 formatBuilder.Append("N");
             }
 
-            return p.ToString(formatBuilder.ToString(), nf);
+            if( largeGroupSize )
+            {
+                string decSeparator = nf.NumberDecimalSeparator;
+                nf.NumberDecimalSeparator = ".";
 
+                string preformatted = num.ToString(formatBuilder.ToString(), nf);
+                nf.NumberDecimalSeparator = decSeparator;
+
+                return ApplyDigitsGrouping( preformatted, nf, numberGroupSizes );
+            }
+            else
+            {
+                return num.ToString(formatBuilder.ToString(), nf);
+            }
         }
 
         private static int[] ParseGroupSizes(string param)
         {
-            if (param == "" || param == "0")
-                return new[] { 0 };
-
             List<int> sizes = new List<int>();
-            for (int i = 0; i < param.Length; i++)
+            for (int i = 0, ngroup=0; ngroup<2; ++ngroup )
             {
-                if (Char.IsNumber(param, i))
+                while (i < param.Length && !Char.IsNumber(param, i)) ++i;
+                int start = i;
+                while (i < param.Length && Char.IsNumber(param, i)) ++i;
+
+                int value = 0;
+                if (i > start)
                 {
-                    sizes.Add(GetCharInteger(param[i]));
+                    value = Int32.Parse(param.Substring(start, i-start));
+                    if (value == 0 && ngroup > 0)
+                        break;
                 }
+
+                sizes.Add(value);
+                if( value==0 )
+                   break;
             }
 
             return sizes.ToArray();
-        }
-
-        private static int GetCharInteger(char digit)
-        {
-            return (int)digit - 0x30; // keycode offset
         }
 
         public static void ApplyNumericSizeRestrictions(ref decimal p, int totalDigits, int fractionDigits)
@@ -226,7 +270,7 @@ namespace ScriptEngine.Machine
             if (totalDigits == 0)
                 return;
 
-            decimal value = Math.Round(p, fractionDigits);
+            decimal value = Math.Round(p, fractionDigits < 29 ? fractionDigits : 28);
             int sign = Math.Sign(value);
             value = Math.Abs(value);
 
@@ -277,40 +321,49 @@ namespace ScriptEngine.Machine
             p = value * sign;
         }
 
-        private static void ApplyDigitsGrouping(StringBuilder builder, NumberFormatInfo nf)
+        private static string ApplyDigitsGrouping(string str, NumberFormatInfo nf, int[] numberGroupSizes )
         {
-            const char SEPARATOR_PLACEHOLDER = ',';
+            StringBuilder builder = new StringBuilder(str);
+            int decPos = str.IndexOf('.');
 
-            int firstIndex = builder.Length;
-            if (firstIndex <= 0)
-                return;
+            int firstIndex = decPos>=0 ? decPos: builder.Length;
+
+            int size = numberGroupSizes[0];
+            if (size == 0)
+                return str;
 
             int offset = firstIndex;
-            for (int i = 0; i < nf.NumberGroupSizes.Length; i++)
-            {
-                int size = nf.NumberGroupSizes[i];
-                int insertionPoint = offset - size;
-                if (insertionPoint <= 0)
-                    break;
+            int insertionPoint = offset - size;
+            if (insertionPoint <= 0)
+               return str;
 
-                builder.Insert(insertionPoint, SEPARATOR_PLACEHOLDER);
-                offset -= size;
+            builder.Insert(insertionPoint, nf.NumberGroupSeparator);
+            offset -= size;
+
+            if (numberGroupSizes.Length > 1)
+            {
+              size = numberGroupSizes[1];
             }
 
-            if (offset > 0)
+            if ( size > 0 )
             {
-                int size = nf.NumberGroupSizes[nf.NumberGroupSizes.Length - 1];
                 while (offset > 0)
                 {
-                    int insertionPoint = offset - size;
+                    insertionPoint = offset - size;
                     if (insertionPoint <= 0)
-                        break;
+                       break;
 
-                    builder.Insert(insertionPoint, SEPARATOR_PLACEHOLDER);
+                    builder.Insert(insertionPoint, nf.NumberGroupSeparator);
                     offset -= size;
                 }
             }
 
+            if (decPos >= 0)
+            {
+                builder.Replace(".", nf.NumberDecimalSeparator, decPos, str.Length - decPos);
+            }
+            
+            return builder.ToString();
         }
 
         private static int GetDecimalPrecision(int[] bits)
