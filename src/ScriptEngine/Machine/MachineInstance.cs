@@ -100,7 +100,7 @@ namespace ScriptEngine.Machine
         {
             PrepareReentrantMethodExecution(sdo, methodIndex);
             var method = _module.Methods[methodIndex];
-            for (int i = 0; i < method.Variables.Count; i++)
+            for (int i = 0; i < method.Signature.Params.Length; i++)
             {
                 if (i >= arguments.Length)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
