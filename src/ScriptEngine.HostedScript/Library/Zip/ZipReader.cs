@@ -1,4 +1,4 @@
-/*----------------------------------------------------------
+﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -28,8 +28,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         private string _password;
 
-        public ZipReader()
+        static ZipReader()
         {
+            ZipStrings.CodePage = 866;
+            var field = ZipCodepageAdHoc.GetBackingField(typeof(ZipStrings), "SystemDefaultCodePage");
+            field.SetValue(null, 866);
         }
 	    
 
