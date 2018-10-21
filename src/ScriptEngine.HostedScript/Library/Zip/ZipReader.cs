@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -23,9 +23,10 @@ namespace ScriptEngine.HostedScript.Library.Zip
     [ContextClass("ЧтениеZipФайла", "ZipFileReader")]
     public class ZipReader : AutoContext<ZipReader>, IDisposable
     {
-        ZipFile _zip;
-        ZipFileEntriesCollection _entriesWrapper;
-        string _password;
+        private ZipFile _zip;
+        private ZipFileEntriesCollection _entriesWrapper;
+
+        private string _password;
 
         public ZipReader()
         {
