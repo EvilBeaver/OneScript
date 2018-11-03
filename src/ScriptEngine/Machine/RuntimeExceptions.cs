@@ -13,6 +13,8 @@ namespace ScriptEngine.Machine
 {
     public class RuntimeException : ScriptException
     {
+        private List<ExecutionFrameInfo> _frames;
+
         public RuntimeException() : base()
         {
         }
@@ -24,6 +26,18 @@ namespace ScriptEngine.Machine
         public RuntimeException(string msg, Exception inner)
             : base(new CodePositionInfo(), msg, inner)
         {
+        }
+
+        public IEnumerable<ExecutionFrameInfo> GetStackTrace()
+        {
+            return _frames.AsReadOnly();
+        }
+
+        internal IList<ExecutionFrameInfo> CallStackFrames => _frames;
+
+        internal void InitCallStackFrames(IEnumerable<ExecutionFrameInfo> src)
+        {
+            _frames = src == null ? new List<ExecutionFrameInfo>() : new List<ExecutionFrameInfo>(src);
         }
 
         public static RuntimeException DeprecatedMethodCall(string name)
@@ -94,6 +108,11 @@ namespace ScriptEngine.Machine
         public static RuntimeException InvalidArgumentType(string argName)
         {
             return new RuntimeException(String.Format("Неверный тип аргумента '{0}'", argName));
+        }
+
+        public static RuntimeException InvalidArgumentType(int argNum, string argName="" )
+        {
+            return new RuntimeException(String.Format("Неверный тип аргумента номер {0} '{1}'", argNum, argName ));
         }
 
         public static RuntimeException InvalidArgumentValue()

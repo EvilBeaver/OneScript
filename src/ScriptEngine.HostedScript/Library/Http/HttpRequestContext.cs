@@ -20,7 +20,7 @@ namespace ScriptEngine.HostedScript.Library.Http
     /// Данные и заголоки HTTP запроса.
     /// </summary>
     [ContextClass("HTTPЗапрос", "HTTPRequest")]
-    public class HttpRequestContext : AutoContext<HttpRequestContext>
+    public class HttpRequestContext : AutoContext<HttpRequestContext>, IDisposable
     {
 
         IHttpRequestBody _body;
@@ -113,6 +113,12 @@ namespace ScriptEngine.HostedScript.Library.Http
             return _body.GetAsString();
         }
 
+        [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
+        public GenericStream GetBodyAsStream()
+        {
+            return new GenericStream(_body.GetDataStream());
+        }
+
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static HttpRequestContext Constructor()
         {
@@ -136,5 +142,9 @@ namespace ScriptEngine.HostedScript.Library.Http
             return ctx;
         }
 
+        public void Dispose()
+        {
+            _body?.Dispose();
+        }
     }
 }

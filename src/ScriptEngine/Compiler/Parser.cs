@@ -301,18 +301,9 @@ namespace ScriptEngine.Compiler
 
                 if (!iterator.MoveNext())
                 {
-                    if (isEndOfText)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        isEndOfText = true;
-                    }
+                    isEndOfText = true;
                 }
             }
-
-            return Lexem.Empty();
         }
     }
 
@@ -410,6 +401,28 @@ namespace ScriptEngine.Compiler
 
     class DateParserState : ParserState
     {
+        private string FullDateTimeString( StringBuilder numbers )
+        {
+            if (numbers.Length == 12) // yyyyMMddHHmm
+            {
+                numbers.Append("00");
+            }
+            if (numbers.Length == 8) // yyyyMMdd
+            {
+                numbers.Append("000000");
+            }
+            else if (numbers.Length != 14) // yyyyMMddHHmmss
+            {
+                throw new FormatException();
+            }
+
+            string date = numbers.ToString();
+ 
+            DateTime.ParseExact(date, "yyyyMMddHHmmss", System.Globalization.CultureInfo.InvariantCulture);
+
+            return date;
+        }
+
         public override Lexem ReadNextLexem(ParseIterator iterator)
         {
             var numbers = new StringBuilder();
@@ -422,16 +435,23 @@ namespace ScriptEngine.Compiler
                     iterator.GetContents(1, 1);
                     iterator.MoveNext();
 
-                    var lex = new Lexem()
+                    try
                     {
-                        Type = LexemType.DateLiteral,
-                        Content = numbers.ToString()
-                    };
+                        var lex = new Lexem()
+                        {
+                            Type = LexemType.DateLiteral,
+                            Content = FullDateTimeString(numbers)
+                        };
 
-                    return lex;
+                        return lex;
+                    }
+                    catch( FormatException )
+                    {
+                        throw CreateExceptionOnCurrentLine("Некорректный литерал даты", iterator);
+                    }
                 }
 
-                if(Char.IsDigit(cs))
+                if (Char.IsDigit(cs))
                 {
                     numbers.Append(cs);
                 }

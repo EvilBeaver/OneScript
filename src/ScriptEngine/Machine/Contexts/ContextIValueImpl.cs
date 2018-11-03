@@ -74,7 +74,7 @@ namespace ScriptEngine.Machine.Contexts
             throw RuntimeException.ConvertToBooleanException();
         }
 
-        public string AsString()
+        public virtual string AsString()
         {
             return SystemType.Name;
         }

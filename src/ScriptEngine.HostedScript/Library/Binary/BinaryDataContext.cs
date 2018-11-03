@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
+using System.Text;
 
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -44,11 +45,23 @@ namespace ScriptEngine.HostedScript.Library.Binary
         }
 
         [ContextMethod("Записать","Write")]
-        public void Write(string filename)
+        public void Write(IValue filenameOrStream)
         {
-            using(var fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
+            if(filenameOrStream.DataType == DataType.String)
             {
-                fs.Write(_buffer, 0, _buffer.Length);
+                var filename = filenameOrStream.AsString();
+                using (var fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
+                {
+                    fs.Write(_buffer, 0, _buffer.Length);
+                }
+            }
+            else if(filenameOrStream.AsObject() is IStreamWrapper stream)
+            {
+                stream.GetUnderlyingStream().Write(_buffer, 0, _buffer.Length);
+            }
+            else
+            {
+                throw RuntimeException.InvalidArgumentType("filenameOrStream");
             }
         }
 
@@ -59,6 +72,20 @@ namespace ScriptEngine.HostedScript.Library.Binary
             {
                 return _buffer;
             }
+        }
+
+        public override string AsString()
+        {
+            const int LIMIT = 50;
+            StringBuilder hex = new StringBuilder(LIMIT);
+            for (int i = 0; i < LIMIT && i < _buffer.Length; i++)
+            {
+                hex.AppendFormat("{0:X2} ", _buffer[i]);
+            }
+
+            hex.Append("…");
+
+            return hex.ToString();
         }
 
         /// <summary>

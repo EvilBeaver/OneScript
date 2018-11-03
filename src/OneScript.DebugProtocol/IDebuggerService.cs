@@ -51,6 +51,7 @@ namespace OneScript.DebugProtocol
         /// <summary>
         /// Вычисление выражения на остановленном процессе
         /// </summary>
+        /// <param name="threadId"></param>
         /// <param name="contextFrame">Кадр стека, относительно которого вычисляем</param>
         /// <param name="expression">Выражение</param>
         /// <returns>Переменная с результатом</returns>
@@ -70,17 +71,6 @@ namespace OneScript.DebugProtocol
         int[] GetThreads();
     }
 
-    //public class ThreadStoppedEventArgs : EventArgs
-    //{
-    //    public ThreadStopReason Reason { get; set; }
-    //}
-
-    //public class ProcessExitedEventArgs : EventArgs
-    //{
-    //    public int ThreadId { get; set; }
-    //    public ThreadStopReason Reason { get; set; }
-    //}
-    
     public interface IDebugEventListener
     {
         [OperationContract(IsOneWay = true)]

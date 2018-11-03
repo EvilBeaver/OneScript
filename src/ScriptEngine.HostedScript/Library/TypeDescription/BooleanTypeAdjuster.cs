@@ -16,14 +16,15 @@ namespace ScriptEngine.HostedScript.Library
 			if (value?.DataType == DataType.Boolean)
 				return value;
 
-			try
-			{
-				// TODO: вменяемое приведение без Попытки
-				return ValueFactory.Create(value.AsBoolean());
-
-			} catch { }
-
-			return ValueFactory.Create(false);
+            try
+            {
+                return ValueFactory.Create(value?.AsBoolean() ?? false);
+            }
+            catch (RuntimeException)
+            {
+                return ValueFactory.Create(false);
+            }
+		    
 		}
 	}
 }

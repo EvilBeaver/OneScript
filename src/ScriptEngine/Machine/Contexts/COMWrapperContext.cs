@@ -206,6 +206,10 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((decimal)(double)objParam);
             }
+            else if (type == typeof(Single))
+            {
+                return ValueFactory.Create((decimal)System.Convert.ToDouble(objParam));
+            }
             else if (type == typeof(decimal))
             {
                 return ValueFactory.Create((decimal)objParam);

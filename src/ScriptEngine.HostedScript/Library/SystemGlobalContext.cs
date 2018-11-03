@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 
 using ScriptEngine.Environment;
+using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -49,7 +50,7 @@ namespace ScriptEngine.HostedScript.Library
             _properties.Add(getter);
         }
 
-        internal ScriptingEngine EngineInstance{ get; set; }
+        public ScriptingEngine EngineInstance{ get; set; }
 
         public void InitInstance()
         {
@@ -85,7 +86,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Сообщить", "Message")]
 		public void Echo(string message, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
-            ApplicationHost.Echo(message, status);
+            ApplicationHost.Echo(message ?? "", status);
         }
 
         /// <summary>
@@ -497,11 +498,44 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="filledProperties">Заполняемые свойства (строка, через запятую)</param>
         /// <param name="ignoredProperties">Игнорируемые свойства (строка, через запятую)</param>
         [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
-        public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
+        public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, IValue filledProperties = null, IValue ignoredProperties = null)
+        {
+            string strFilled;
+            string strIgnored;
+
+            if (filledProperties == null || filledProperties.DataType == DataType.Undefined)
+            {
+                strFilled = null;
+            }
+            else if (filledProperties.DataType == DataType.String)
+            {
+                strFilled = filledProperties.AsString();
+            }
+            else
+            {
+                throw RuntimeException.InvalidArgumentType(3, nameof(filledProperties));
+            }
+
+            if (ignoredProperties == null || ignoredProperties.DataType == DataType.Undefined)
+            {
+                strIgnored = null;
+            }
+            else if (ignoredProperties.DataType == DataType.String)
+            {
+                strIgnored = ignoredProperties.AsString();
+            }
+            else
+            {
+                throw RuntimeException.InvalidArgumentType(4, nameof(ignoredProperties));
+            }
+
+            FillPropertyValuesStr(acceptor, source, strFilled, strIgnored);
+        }
+
+        public void FillPropertyValuesStr(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
         {
             IEnumerable<string> sourceProperties;
-            IEnumerable<string> ignoredPropCollection;
-            
+
             if (filledProperties == null)
             {
                 string[] names = new string[source.GetPropCount()];
@@ -510,49 +544,49 @@ namespace ScriptEngine.HostedScript.Library
                     names[i] = source.GetPropName(i);
                 }
 
-                sourceProperties = names;
+                if (ignoredProperties == null)
+                {
+                    sourceProperties = names;
+                }
+                else
+                {
+                    IEnumerable<string> ignoredPropCollection = ignoredProperties.Split(',')
+                        .Select(x => x.Trim())
+                        .Where(x => x.Length > 0);
+
+                    sourceProperties = names.Where(x => !ignoredPropCollection.Contains(x));
+                }
             }
             else
             {
                 sourceProperties = filledProperties.Split(',')
                     .Select(x => x.Trim())
-                    .Where(x => x.Length > 0)
-                    .ToArray();
+                    .Where(x => x.Length > 0);
 
                 // Проверка существования заявленных свойств
                 foreach (var item in sourceProperties)
                 {
-                    acceptor.FindProperty(item);
+                    acceptor.FindProperty(item); // бросает PropertyAccessException если свойства нет
                 }
             }
 
-            if(ignoredProperties != null)
-            {
-                ignoredPropCollection = ignoredProperties.Split(',')
-                    .Select(x => x.Trim())
-                    .Where(x => x.Length > 0);
-            }
-            else
-            {
-                ignoredPropCollection = new string[0];
-            }
 
-            foreach (var srcProperty in sourceProperties.Where(x=>!ignoredPropCollection.Contains(x)))
+            foreach (var srcProperty in sourceProperties)
             {
                 try
                 {
-                    var propIdx = acceptor.FindProperty(srcProperty);
                     var srcPropIdx = source.FindProperty(srcProperty);
+                    var accPropIdx = acceptor.FindProperty(srcProperty); // бросает PropertyAccessException если свойства нет
 
-                    acceptor.SetPropValue(propIdx, source.GetPropValue(srcPropIdx));
+                    if (source.IsPropReadable(srcPropIdx) && acceptor.IsPropWritable(accPropIdx))
+                        acceptor.SetPropValue(accPropIdx, source.GetPropValue(srcPropIdx));
 
                 }
-                catch(PropertyAccessException)
+                catch (PropertyAccessException)
                 {
+                    // игнорировать свойства Источника, которых нет в Приемнике
                 }
-
             }
-
         }
 
 

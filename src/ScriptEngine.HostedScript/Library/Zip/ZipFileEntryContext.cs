@@ -4,13 +4,15 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using Ionic.Zip;
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace ScriptEngine.HostedScript.Library.Zip
 {
@@ -37,7 +39,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                return _entry.LastModified;
+                return _entry.DateTime;
             }
         }
 
@@ -46,7 +48,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                return _entry.UsesEncryption;
+                return _entry.IsCrypted;
             }
         }
 
@@ -55,7 +57,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                var filename = _entry.FileName;
+                var filename = _entry.Name;
                 return System.IO.Path.GetFileName(filename);
             }
         }
@@ -65,7 +67,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                var filename = _entry.FileName;
+                var filename = _entry.Name;
                 return System.IO.Path.GetFileNameWithoutExtension(filename);
             }
         }
@@ -75,7 +77,14 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                return _entry.Attributes.HasFlag(System.IO.FileAttributes.Hidden);
+                if ((_entry.ExternalFileAttributes & 0x02) != 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
@@ -84,7 +93,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                return _entry.FileName;
+                return _entry.Name;
             }
         }
 
@@ -93,7 +102,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                var filename = _entry.FileName;
+                var filename = _entry.Name;
                 var dir = System.IO.Path.GetDirectoryName(filename);
                 if (dir != String.Empty && !dir.EndsWith(new string(new []{System.IO.Path.DirectorySeparatorChar})))
                     return dir + System.IO.Path.DirectorySeparatorChar;
@@ -107,7 +116,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                return _entry.UncompressedSize;
+                return _entry.Size;
             }
         }
 
@@ -125,7 +134,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                var filename = _entry.FileName;
+                var filename = _entry.Name;
                 return System.IO.Path.GetExtension(filename);
             }
         }
@@ -135,7 +144,14 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             get
             {
-                return _entry.Attributes.HasFlag(System.IO.FileAttributes.ReadOnly);
+                if ((_entry.ExternalFileAttributes & 0x01) != 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
     }

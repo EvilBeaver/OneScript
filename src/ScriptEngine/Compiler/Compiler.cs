@@ -21,12 +21,13 @@ namespace ScriptEngine.Compiler
     }
 
     class Compiler    {
+        public const string BODY_METHOD_NAME = "$entry";
+
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
         private Parser _parser;
         private ICompilerContext _ctx;
         private ModuleImage _module;
-        private Lexem _previousExtractedLexem;
         private Lexem _lastExtractedLexem;
         private bool _inMethodScope = false;
         private bool _isMethodsDefined = false;
@@ -395,7 +396,7 @@ namespace ScriptEngine.Compiler
             if (entry != _module.Code.Count)
             {
                 var bodyMethod = new MethodInfo();
-                bodyMethod.Name = "$entry";
+                bodyMethod.Name = BODY_METHOD_NAME;
                 var descriptor = new MethodDescriptor();
                 descriptor.EntryPoint = entry;
                 descriptor.Signature = bodyMethod;
@@ -462,13 +463,6 @@ namespace ScriptEngine.Compiler
             if (!IsUserSymbol(ref _lastExtractedLexem))
             {
                 throw CompilerException.IdentifierExpected();
-            }
-
-            // issue #375
-            if (String.Compare(_lastExtractedLexem.Content, "выполнить", StringComparison.OrdinalIgnoreCase) == 0
-                || String.Compare(_lastExtractedLexem.Content, "execute", StringComparison.OrdinalIgnoreCase) == 0)
-            {
-                SystemLogger.Write($"WARNING! Method name '{_lastExtractedLexem.Content}' is DEPRECATED. Rename it");
             }
 
             int definitionLine = _parser.CurrentLine;
@@ -620,21 +614,47 @@ namespace ScriptEngine.Compiler
             if (_lastExtractedLexem.Token == Token.Equal)
             {
                 param.HasDefaultValue = true;
-                NextToken();
-                if (IsLiteral(ref _lastExtractedLexem))
-                {
-                    var cd = CreateConstDefinition(ref _lastExtractedLexem);
-                    var num = GetConstNumber(ref cd);
-                    param.DefaultValueIndex = num;
-                    NextToken();
-                }
-                else
-                {
-                    throw CompilerException.UnexpectedOperation();
-                }
+                param.DefaultValueIndex = BuildDefaultParameterValue();
             }
 
             return param;
+        }
+
+        private int BuildDefaultParameterValue()
+        {
+            NextToken();
+
+            bool hasSign = false;
+            bool signIsMinus = _lastExtractedLexem.Token == Token.Minus;
+            if (signIsMinus || _lastExtractedLexem.Token == Token.Plus)
+            {
+                hasSign = true;
+                NextToken();
+            }
+
+            if (IsLiteral(ref _lastExtractedLexem))
+            {
+                var cd = CreateConstDefinition(ref _lastExtractedLexem);
+                if (hasSign)
+                {
+                    if (_lastExtractedLexem.Type == LexemType.NumberLiteral && signIsMinus)
+                    {
+                        cd.Presentation = '-' + cd.Presentation;
+                    }
+                    else if (_lastExtractedLexem.Type == LexemType.StringLiteral
+                          || _lastExtractedLexem.Type == LexemType.DateLiteral)
+                    {
+                        throw CompilerException.NumberExpected();
+                    }
+                }
+
+                NextToken();
+                return GetConstNumber(ref cd);
+            }
+            else
+            {
+                throw CompilerException.LiteralExpected();
+            }
         }
 
         private void DispatchMethodBody()
@@ -784,10 +804,6 @@ namespace ScriptEngine.Compiler
 
             while (_lastExtractedLexem.Token == Token.ElseIf)
             {
-                if (_lastExtractedLexem.Content.Equals("ElseIf", StringComparison.OrdinalIgnoreCase))
-                {
-                    SystemLogger.Write("WARNING! 'ElseIf' is deprecated! Use 'ElsIf' instead");
-                }
                 _module.Code[jumpFalseIndex] = new Command()
                 {
                     Code = OperationCode.JmpFalse,
@@ -1106,9 +1122,7 @@ namespace ScriptEngine.Compiler
             var jmpIndex = AddCommand(OperationCode.Jmp, -1);
 
             Assert(_lastExtractedLexem.Token == Token.Exception);
-            if (StringComparer.OrdinalIgnoreCase.Compare(_lastExtractedLexem.Content, "Exception") == 0)
-                SystemLogger.Write("WARNING! BREAKING CHANGE: Keyword 'Exception' is not supported anymore. Consider using 'Except'");
-
+            
             var beginHandler = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
             CorrectCommandArgument(beginTryIndex, beginHandler);
@@ -1359,6 +1373,9 @@ namespace ScriptEngine.Compiler
                 case Token.Modulo:
                     opCode = OperationCode.Mod;
                     break;
+                case Token.UnaryPlus:
+                    opCode = OperationCode.Number;
+                    break;
                 case Token.UnaryMinus:
                     opCode = OperationCode.Neg;
                     break;
@@ -1410,6 +1427,10 @@ namespace ScriptEngine.Compiler
             else if (LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
             {
                 ProcessPrimaryIdentifier();
+            }
+            else if (_lastExtractedLexem.Token == Token.Plus)
+            {
+                ProcessPrimaryUnaryPlus();
             }
             else if (_lastExtractedLexem.Token == Token.Minus)
             {
@@ -1465,18 +1486,35 @@ namespace ScriptEngine.Compiler
             }
         }
 
+        private bool LastExtractedIsPimary()
+        {
+            return LanguageDef.IsLiteral(ref _lastExtractedLexem)
+                || LanguageDef.IsIdentifier(ref _lastExtractedLexem)
+                || _lastExtractedLexem.Token == Token.OpenPar;
+        }
+
         private void ProcessPrimaryUnaryMinus()
         {
             NextToken();
-            if (!(LanguageDef.IsLiteral(ref _lastExtractedLexem)
-                || LanguageDef.IsIdentifier(ref _lastExtractedLexem)
-                || _lastExtractedLexem.Token == Token.OpenPar))
+            if (!LastExtractedIsPimary())
             {
                 throw CompilerException.ExpressionExpected();
             }
 
             BuildPrimaryNode();
             AddCommand(OperationCode.Neg, 0);
+        }
+
+        private void ProcessPrimaryUnaryPlus()
+        {
+            NextToken();
+            if (!LastExtractedIsPimary())
+            {
+                throw CompilerException.ExpressionExpected();
+            }
+
+            BuildPrimaryNode();
+            AddCommand(OperationCode.Number, 0);
         }
 
         private void ProcessSubexpression()
@@ -1678,9 +1716,9 @@ namespace ScriptEngine.Compiler
 
         private void BuildLoadVariable(string identifier)
         {
-            try
+            var hasVar = _ctx.TryGetVariable(identifier, out var varBinding);
+            if (hasVar)
             {
-                var varBinding = _ctx.GetVariable(identifier);
                 if (varBinding.binding.ContextIndex == _ctx.TopIndex())
                 {
                     AddCommand(OperationCode.LoadLoc, varBinding.binding.CodeIndex);
@@ -1691,7 +1729,7 @@ namespace ScriptEngine.Compiler
                     AddCommand(OperationCode.LoadVar, num);
                 }
             }
-            catch (SymbolNotFoundException)
+            else
             {
                 // can create variable
                 var binding = _ctx.DefineVariable(identifier);
@@ -1716,11 +1754,11 @@ namespace ScriptEngine.Compiler
 
         private void BuildMethodCall(string identifier, bool[] argsPassed, bool asFunction)
         {
-            try
+            var hasMethod = _ctx.TryGetMethod(identifier, out var methBinding);
+            if (hasMethod)
             {
-                var methBinding = _ctx.GetMethod(identifier);
                 var scope = _ctx.GetScope(methBinding.ContextIndex);
-                
+
                 // dynamic scope checks signatures only at runtime
                 if (!scope.IsDynamicScope)
                 {
@@ -1732,13 +1770,12 @@ namespace ScriptEngine.Compiler
                     CheckFactArguments(methInfo, argsPassed);
                 }
 
-                if(asFunction)
+                if (asFunction)
                     AddCommand(OperationCode.CallFunc, GetMethodRefNumber(ref methBinding));
                 else
-                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(ref methBinding));
-
+                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(ref methBinding)); 
             }
-            catch (SymbolNotFoundException)
+            else
             {
                 // can be defined later
                 var forwarded = new ForwardedMethodDecl();
@@ -1957,7 +1994,6 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
-                _previousExtractedLexem = _lastExtractedLexem;
                 _lastExtractedLexem = _parser.NextLexem();
             }
             else

@@ -15,6 +15,8 @@ namespace ScriptEngine.Machine.Contexts
         readonly LoadedModule _module;
         Dictionary<string, int> _ownPropertyIndexes;
         List<IValue> _ownProperties;
+
+        private Func<string> _asStringOverride;
         
         public IValue[] ConstructorParams { get; private set; }
         
@@ -45,6 +47,8 @@ namespace ScriptEngine.Machine.Contexts
 
         protected override void OnInstanceCreation()
         {
+            ActivateAsStringOverride();
+
             base.OnInstanceCreation();
             var methId = GetScriptMethod("ПриСозданииОбъекта", "OnObjectCreate");
             int constructorParamsCount = ConstructorParams.Count();
@@ -88,7 +92,41 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
         }
-        
+
+        private void ActivateAsStringOverride()
+        {
+            var methId = GetScriptMethod("ОбработкаПолученияПредставления", "PresentationGetProcessing");
+            if (methId == -1)
+                _asStringOverride = base.AsString;
+            else
+            {
+                var signature = GetMethodInfo(methId);
+                if (signature.ArgCount != 2)
+                    throw new RuntimeException("Обработчик получения представления должен иметь 2 параметра");
+
+                _asStringOverride = () => GetOverridenPresentation(methId);
+            }
+        }
+
+        private string GetOverridenPresentation(int methId)
+        {
+            var standard = ValueFactory.Create(true);
+            var strValue = ValueFactory.Create();
+
+            var arguments = new IValue[2]
+            {
+                Variable.Create(strValue, "string"),
+                Variable.Create(standard, "standardProcessing")
+            };
+
+            CallScriptMethod(methId, arguments);
+
+            if (arguments[1].AsBoolean() == true)
+                return base.AsString();
+
+            return arguments[0].AsString();
+        }
+
         public void AddProperty(string name, string alias, IValue value)
         {
             if(_ownProperties == null)
@@ -144,7 +182,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _ownProperties[index];
         }
-
+        
         protected override string GetOwnPropName(int index)
         {
             if (_ownProperties == null)
@@ -157,6 +195,10 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _module.Methods.Length;
         }
-        
+
+        public override string AsString()
+        {
+            return _asStringOverride();
+        }
     }
 }

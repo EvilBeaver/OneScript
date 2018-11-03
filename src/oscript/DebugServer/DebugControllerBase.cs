@@ -59,7 +59,7 @@ namespace oscript.DebugServer
             OnMachineStopped((MachineInstance)sender, e.Reason);
         }
 
-        protected abstract void OnMachineStopped(MachineInstance machine, MachineStopReason e);
+        protected abstract void OnMachineStopped(MachineInstance machine, MachineStopReason reason);
 
         public void Dispose()
         {

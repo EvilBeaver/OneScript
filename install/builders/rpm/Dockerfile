@@ -1,4 +1,4 @@
-FROM fedora
+FROM fedora:26
 MAINTAINER Chmouel Boudjnah <chmouel@enovance.com>
 
 
@@ -6,7 +6,7 @@ MAINTAINER Chmouel Boudjnah <chmouel@enovance.com>
 RUN dnf update -y && dnf -y group install 'Development Tools'
 
 # Install git command to access GitHub repository
-RUN dnf -y install sudo git rpmdevtools rpm-build yum-utils dnf-plugins-core dnf-plugins-extras 
+RUN dnf -y install sudo git rpmdevtools rpm-build yum-utils dnf-plugins-core
 
 RUN sed -i.bak -n -e '/^Defaults.*requiretty/ { s/^/# /;};/^%wheel.*ALL$/ { s/^/# / ;} ;/^#.*wheel.*NOPASSWD/ { s/^#[ ]*//;};p' /etc/sudoers
 

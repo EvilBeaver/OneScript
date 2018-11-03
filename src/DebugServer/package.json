@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript",
   "icon": "images/mono-debug-icon.png",
@@ -35,7 +35,7 @@
       {
         "type": "oscript",
         "label": "1Script Debugger",
-        "program": "./bin/Debug/net452/DebugServer.exe",
+        "program": "./bin/DebugServer.exe",
         "osx": {
           "runtime": "mono"
         },

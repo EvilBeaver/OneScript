@@ -30,6 +30,26 @@ namespace ScriptEngine.Machine.Contexts
            
         }
 
+        public static T ConvertParam<T>(IValue value, T defaultValue)
+        {
+            var type = typeof(T);
+            object valueObj = ConvertParam(value, type);
+            if (valueObj == null)
+            {
+                return defaultValue;
+            }
+            
+            try
+            {
+                return (T)valueObj;
+            }
+            catch (InvalidCastException)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+           
+        }
+
         public static object ConvertParam(IValue value, Type type)
         {
             object valueObj;
@@ -60,13 +80,29 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsString();
             }
-            else if (type == typeof(int) || type == typeof(short) || type == typeof(sbyte))
+            else if (type == typeof(int))
             {
                 valueObj = (int)value.AsNumber();
             }
-            else if (type == typeof(uint) || type == typeof(ushort) || type == typeof(byte))
+            else if (type == typeof(sbyte))
+            {
+                valueObj = (sbyte)value.AsNumber();
+            }
+            else if (type == typeof(short))
+            {
+                valueObj = (short)value.AsNumber();
+            }
+            else if (type == typeof(ushort))
+            {
+                valueObj = (ushort)value.AsNumber();
+            }
+            else if (type == typeof(uint))
             {
                 valueObj = (uint)value.AsNumber();
+            }
+            else if (type == typeof(byte))
+            {
+                valueObj = (byte)value.AsNumber();
             }
             else if (type == typeof(long))
             {
@@ -76,7 +112,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = (ulong)value.AsNumber();
             }
-            else if (type == typeof(double) || type == typeof(decimal))
+            else if (type == typeof(double))
+            {
+                valueObj = (double)value.AsNumber();
+            }
+            else if (type == typeof(decimal))
             {
                 valueObj = value.AsNumber();
             }

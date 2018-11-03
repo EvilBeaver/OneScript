@@ -188,6 +188,13 @@ namespace ScriptEngine.HostedScript.Library.Net
             _client.Close();
         }
 
+        /// <summary>
+        /// Возвращает адрес удаленного узла соединения
+        /// </summary>
+        [ContextProperty("УдаленныйУзел", "RemoteEndPoint")]
+        public string RemoteEndPoint => _client.Client.RemoteEndPoint.ToString();
+
+
         public void Dispose()
         {
             Close();
