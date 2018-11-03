@@ -26,16 +26,15 @@ namespace ScriptEngine.HostedScript.Library.Zip
     {
         
         private ZipOutputStream _zip;
-
         private string _filename;
-
         private CompressionMethod compressMeth;
-
         private EncryptionAlgorithm encryptAlgoritm;
         
-        public ZipWriter()
+        static ZipWriter()
         {
-
+            ZipStrings.CodePage = 866;
+            var field = ZipCodepageAdHoc.GetBackingField(typeof(ZipStrings), "SystemDefaultCodePage");
+            field.SetValue(null, 866);
         }
 
         /// <summary>
