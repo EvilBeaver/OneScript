@@ -33,8 +33,17 @@ namespace ScriptEngine.Machine
                 var def = image.Constants[i];
                 Constants[i] = ValueFactory.Parse(def.Presentation, def.Type);
             }
-            
-            // Resolve annotation constants
+
+            ResolveAnnotationConstants();
+        }
+
+        private void ResolveAnnotationConstants()
+        {
+            for (int i = 0; i < Variables.Count; i++)
+            {
+                EvaluateAnnotationParametersValues(Variables[i].Annotations);
+            }
+
             for (int i = 0; i < Methods.Length; i++)
             {
                 EvaluateAnnotationParametersValues(Methods[i].Signature.Annotations);
@@ -43,7 +52,6 @@ namespace ScriptEngine.Machine
                     EvaluateAnnotationParametersValues(Methods[i].Signature.Params[j].Annotations);
                 }
             }
-
         }
 
         private void EvaluateAnnotationParametersValues(AnnotationDefinition[] annotations)

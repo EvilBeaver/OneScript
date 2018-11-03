@@ -113,7 +113,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             return _body.GetAsString();
         }
 
-        [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsString")]
+        [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
         public GenericStream GetBodyAsStream()
         {
             return new GenericStream(_body.GetDataStream());

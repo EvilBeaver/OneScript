@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using ScriptEngine.Machine.Reflection;
@@ -16,19 +17,19 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class ReflectedParamInfo : ParameterInfo
     {
-        private List<Attribute> _annotations;
+        private readonly List<Attribute> _attributes;
 
         public ReflectedParamInfo(string name, bool isByVal)
         {
+            _attributes = new List<Attribute>();
             NameImpl = name;
             AttrsImpl = ParameterAttributes.In;
             if (!isByVal)
             {
-                AttrsImpl |= ParameterAttributes.Out;
+                _attributes.Add(new ByRefAttribute());
             }
 
             ClassImpl = typeof(IValue);
-            _annotations= new List<Attribute>();
         }
 
         internal void SetOwner(MemberInfo owner)
@@ -43,23 +44,40 @@ namespace ScriptEngine.Machine.Contexts
 
         public void AddAnnotation(AnnotationDefinition annotation)
         {
-            _annotations.Add(new UserAnnotationAttribute()
+            _attributes.Add(new UserAnnotationAttribute()
             {
                 Annotation = annotation
             });
         }
 
+        public void SetDefaultValue(IValue val)
+        {
+            DefaultValueImpl = val;
+        }
+
+        public override object DefaultValue => DefaultValueImpl;
+
+        public override bool HasDefaultValue => DefaultValue != null;
+
+        private IEnumerable<Attribute> GetCustomAttributesInternal(bool inherit)
+        {
+            return _attributes;
+        }
+
         public override object[] GetCustomAttributes(bool inherit)
         {
-            return _annotations.ToArray();
+            return GetCustomAttributesInternal(inherit).ToArray();
         }
 
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
-            if (attributeType == typeof(UserAnnotationAttribute))
-                return GetCustomAttributes(inherit);
-            else
-                return base.GetCustomAttributes(attributeType, inherit);
+            var attribs = GetCustomAttributesInternal(inherit);
+            return attribs.Where(x => x.GetType() == attributeType).ToArray();
+        }
+
+        public override bool IsDefined(Type attributeType, bool inherit)
+        {
+            return GetCustomAttributes(inherit).Any(x => x.GetType() == attributeType);
         }
     }
 }

@@ -13,7 +13,7 @@
   
   <PropertyGroup>
     <PackageId>OneScript</PackageId>
-    <PackageVersion>1.0.$(ReleaseNumber)$(Suffix)</PackageVersion>
+    <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
     <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
     <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
     <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>

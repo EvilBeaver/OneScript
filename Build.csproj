@@ -2,7 +2,7 @@
     <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
     
     <PropertyGroup>
-        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">20</ReleaseNumber>
+        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">1.1.0</ReleaseNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
 
@@ -172,14 +172,14 @@
 
     <!-- ZIP -->
     <Target Name="CreateZip" DependsOnTargets="PrepareArtifactsRoot">		
-        <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(TempFolder)/*&quot; &quot;$(ArtifactsRoot)/OneScript-1.0.$(ReleaseNumber).zip&quot;"/>
-        <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(MDDocFolder)/*&quot; &quot;$(ArtifactsRoot)/mddoc-1.0.$(ReleaseNumber).zip&quot;"/>
+        <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(TempFolder)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber).zip&quot;"/>
+        <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(MDDocFolder)/*&quot; &quot;$(ArtifactsRoot)/mddoc-$(ReleaseNumber).zip&quot;"/>
     </Target>
 
     <!-- MSI -->
     <Target Name="CreateMSI">
         <MSBuild Projects="$(MSBuildProjectDirectory)\src\Installer\Installer.wixproj"
-                    Properties="Configuration=$(Configuration);OutputPath=$(ArtifactsRoot);OutputPathForBuild=$(ArtifactsRoot);Version=$1.0.$(ReleaseNumber).$(BuildNumber)" />
+                    Properties="Configuration=$(Configuration);OutputPath=$(ArtifactsRoot);OutputPathForBuild=$(ArtifactsRoot);Version=$(ReleaseNumber).$(BuildNumber)" />
     </Target>
 
 

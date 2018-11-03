@@ -279,7 +279,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         public void WriteChars(string line, IValue encoding = null)
         {
             if(encoding == null)
-                _binaryWriter.Write(line);
+                _binaryWriter.Write(line.ToCharArray());
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding, _writeBOM);
@@ -312,7 +312,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             // Кому надо - попросит PR.
 
             if (encoding == null)
-                _binaryWriter.Write(line);
+                _binaryWriter.Write(line.ToCharArray());
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding, _writeBOM);
@@ -321,9 +321,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
 
             if(lineSplitter == null)
-                _binaryWriter.Write(LineSplitter);
+                _binaryWriter.Write(LineSplitter.ToCharArray());
             else
-                _binaryWriter.Write(lineSplitter);
+                _binaryWriter.Write(lineSplitter.ToCharArray());
         }
 
         private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, IValue byteOrder = null)

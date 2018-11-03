@@ -2074,7 +2074,7 @@ namespace ScriptEngine.Machine
 
         private void Integer(int arg)
         {
-            var num = (int)_operationStack.Pop().AsNumber();
+            var num = Math.Truncate(_operationStack.Pop().AsNumber());
             _operationStack.Push(ValueFactory.Create(num));
             NextInstruction();
         }

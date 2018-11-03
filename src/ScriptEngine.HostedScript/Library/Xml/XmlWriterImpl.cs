@@ -18,15 +18,18 @@ namespace ScriptEngine.HostedScript.Library.Xml
     [ContextClass("ЗаписьXML", "XMLWriter")]
     public class XmlWriterImpl : AutoContext<XmlWriterImpl>, IDisposable
     {
+        private TextWriterWithSettings _internalTextWriter;
         private XmlTextWriter _writer;
-        private StringWriter _stringWriter;
+        private XmlWriterSettingsImpl _settings = (XmlWriterSettingsImpl)XmlWriterSettingsImpl.Constructor(); 
         private int _depth;
         private Stack<Dictionary<string, string>> _nsmap = new Stack<Dictionary<string, string>>();
+        private StringBuilder _stringBuffer;
 
-        private const int INDENT_SIZE = 4;
+        private const string DEFAULT_INDENT_STRING = "    ";
 
         public XmlWriterImpl()
         {
+            Indent = true;
             _nsmap.Push(new Dictionary<string, string>());
         }
 
@@ -46,24 +49,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         #region Properties
 
         [ContextProperty("Отступ","Indent")]
-        public bool Indent 
-        { 
-            get
-            {
-                return _writer.Formatting.HasFlag(Formatting.Indented);
-            }
-            set
-            {
-                if(value)
-                {
-                    _writer.Formatting = Formatting.Indented;
-                }
-                else
-                {
-                    _writer.Formatting = Formatting.None;
-                }
-            }
-        }
+        public bool Indent { get; set; }
 
         [ContextProperty("КонтекстПространствИмен", "NamespaceContext")]
         public XmlNamespaceContext NamespaceContext
@@ -75,12 +61,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextProperty("Параметры", "Settings")]
-        public object Settings
+        public XmlWriterSettingsImpl Settings
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { return _settings; }
         }
 
         #endregion
@@ -88,8 +71,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
         #region Methods
 
         [ContextMethod("ЗаписатьАтрибут","WriteAttribute")]
-		public void WriteAttribute(string localName, string valueOrNamespace, string value = null)
-		{
+        public void WriteAttribute(string localName, string valueOrNamespace, string value = null)
+        {
             if(value == null)
             {
                 _writer.WriteAttributeString(localName, valueOrNamespace);
@@ -101,39 +84,41 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ЗаписатьБезОбработки","WriteRaw")]
-		public void WriteRaw(string data)
-		{
+        public void WriteRaw(string data)
+        {
             _writer.WriteRaw(data);
         }
 
         [ContextMethod("ЗаписатьИнструкциюОбработки","WriteProcessingInstruction")]
-		public void WriteProcessingInstruction(string name, string text)
-		{
+        public void WriteProcessingInstruction(string name, string text)
+        {
             _writer.WriteProcessingInstruction(name, text);
         }
 
         [ContextMethod("ЗаписатьКомментарий","WriteComment")]
-		public void WriteComment(string text)
-		{
+        public void WriteComment(string text)
+        {
             _writer.WriteComment(text);
         }
 
         [ContextMethod("ЗаписатьКонецАтрибута","WriteEndAttribute")]
-		public void WriteEndAttribute()
-		{
+        public void WriteEndAttribute()
+        {
             _writer.WriteEndAttribute();
         }
 
         [ContextMethod("ЗаписатьКонецЭлемента","WriteEndElement")]
-		public void WriteEndElement()
-		{
+        public void WriteEndElement()
+        {
+            _internalTextWriter.TrimEndSlashes = true;
             _writer.WriteEndElement();
+            _internalTextWriter.TrimEndSlashes = false;
             ExitScope();
         }
 
         [ContextMethod("ЗаписатьНачалоАтрибута","WriteStartAttribute")]
-		public void WriteStartAttribute(string name, string ns = null)
-		{
+        public void WriteStartAttribute(string name, string ns = null)
+        {
             if(ns == null)
             {
                 _writer.WriteStartAttribute(name);
@@ -147,7 +132,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         [ContextMethod("ЗаписатьНачалоЭлемента","WriteStartElement")]
         public void WriteStartElement(string name, string ns = null)
-		{
+        {
             if (ns == null)
             {
                 _writer.WriteStartElement(name);
@@ -160,45 +145,45 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ЗаписатьОбъявлениеXML","WriteXMLDeclaration")]
-		public void WriteXMLDeclaration()
-		{
+        public void WriteXMLDeclaration()
+        {
             _writer.WriteStartDocument();
         }
 
         [ContextMethod("ЗаписатьСекциюCDATA","WriteCDATASection")]
-		public void WriteCDATASection(string data)
-		{
+        public void WriteCDATASection(string data)
+        {
             _writer.WriteCData(data);
         }
 
         [ContextMethod("ЗаписатьСоответствиеПространстваИмен","WriteNamespaceMapping")]
-		public void WriteNamespaceMapping(string prefix, string uri)
-		{
+        public void WriteNamespaceMapping(string prefix, string uri)
+        {
             _writer.WriteAttributeString("xmlns", prefix, null, uri);
             _nsmap.Peek()[prefix] = uri;
         }
 
         [ContextMethod("ЗаписатьСсылкуНаСущность","WriteEntityReference")]
-		public void WriteEntityReference(string name)
-		{
+        public void WriteEntityReference(string name)
+        {
             _writer.WriteEntityRef(name);
         }
 
         [ContextMethod("ЗаписатьТекст","WriteText")]
-		public void WriteText(string text)
-		{
+        public void WriteText(string text)
+        {
             _writer.WriteString(text);
         }
 
         [ContextMethod("ЗаписатьТекущий","WriteCurrent")]
-		public void WriteCurrent(XmlReaderImpl reader)
-		{
+        public void WriteCurrent(XmlReaderImpl reader)
+        {
             _writer.WriteNode(reader.GetNativeReader(), false);
         }
 
         [ContextMethod("ЗаписатьТипДокумента","WriteDocumentType")]
-		public void WriteDocumentType(string name, string varArg2, string varArg3 = null, string varArg4 = null)
-		{
+        public void WriteDocumentType(string name, string varArg2, string varArg3 = null, string varArg4 = null)
+        {
             if(varArg4 != null)
             {
                 _writer.WriteDocType(name, varArg2, varArg3, varArg4);
@@ -214,8 +199,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("НайтиПрефикс","LookupPrefix")]
-		public IValue LookupPrefix(string uri)
-		{
+        public IValue LookupPrefix(string uri)
+        {
             string prefix = _writer.LookupPrefix(uri);
             if (prefix == null)
                 return ValueFactory.Create();
@@ -223,18 +208,18 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("Закрыть","Close")]
-		public IValue Close()
-		{
+        public IValue Close()
+        {
             if(IsOpenForString())
             {
                 _writer.Flush();
                 _writer.Close();
-                _stringWriter.Close();
 
-                var sb = _stringWriter.GetStringBuilder();
                 Dispose();
 
-                return ValueFactory.Create(sb.ToString());
+                var result = _stringBuffer.ToString();
+                _stringBuffer = null;
+                return ValueFactory.Create(result);
             }
             else
             {
@@ -247,54 +232,113 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         }
 
-        [ContextMethod("ОткрытьФайл","OpenFile")]
-		public void OpenFile(string path, string encoding = null, IValue addBOM = null)
-		{
-            Encoding enc;
-            if (addBOM == null)
-                enc = TextEncodingEnum.GetEncodingByName(encoding, true);
+        private void ApplySettings(IValue encodingOrSettings)
+        {
+            var rawEncoding = encodingOrSettings?.GetRawValue();
+            if (rawEncoding is XmlWriterSettingsImpl)
+            {
+                _settings = rawEncoding as XmlWriterSettingsImpl;
+            }
+            else if ((encodingOrSettings?.DataType ?? DataType.String) == DataType.String)
+            {
+                _settings = (XmlWriterSettingsImpl) XmlWriterSettingsImpl.Constructor(encodingOrSettings, null,
+                    ValueFactory.Create(Indent), null, ValueFactory.Create(DEFAULT_INDENT_STRING));
+            }
             else
-                enc = TextEncodingEnum.GetEncodingByName(encoding, addBOM.AsBoolean());
+            {
+                throw RuntimeException.InvalidArgumentType(nameof(encodingOrSettings));
+            }
+        }
 
-            _writer = new XmlTextWriter(path, enc);
-            _stringWriter = null;
+        [ContextMethod("ОткрытьФайл","OpenFile")]
+        public void OpenFile(string path, IValue encodingOrSettings = null, IValue addBOM = null)
+        {
+            ApplySettings(encodingOrSettings);
+            var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
+            var clrSettings = _settings.GetClrSettings(addBOM?.AsBoolean() ?? true);
+            _internalTextWriter = new TextWriterWithSettings(fs, clrSettings);
+            _writer = new XmlTextWriter(_internalTextWriter);
             SetDefaultOptions();
         }
 
         [ContextMethod("УстановитьСтроку","SetString")]
-		public void SetString(string encoding = null)
-		{
-            Encoding enc = TextEncodingEnum.GetEncodingByName(encoding, true);
-            _stringWriter = new StringWriterWithEncoding(enc);            
-            _writer = new XmlTextWriter(_stringWriter);
+        public void SetString(IValue encodingOrSettings = null)
+        {
+            ApplySettings(encodingOrSettings);
+            _stringBuffer = new StringBuilder();
+            _internalTextWriter = new TextWriterWithSettings(_stringBuffer, _settings.GetClrSettings());
+            _writer = new XmlTextWriter(_internalTextWriter);
             SetDefaultOptions();
         }
 
         private void SetDefaultOptions()
         {
-            _writer.Indentation = INDENT_SIZE;
-            this.Indent = true;
+            if (Settings.Indent)
+            {
+                _writer.IndentChar = '\xfeff';
+                _writer.Formatting = Formatting.Indented;
+                _writer.Indentation = 1;
+            }
         }
 
         #endregion
 
         private bool IsOpenForString()
         {
-            return _stringWriter != null;
+            return _stringBuffer != null;
         }
 
-        private sealed class StringWriterWithEncoding : StringWriter
+        private sealed class TextWriterWithSettings : TextWriter
         {
-            private readonly Encoding encoding;
+            private readonly TextWriter _baseObject;
+            private readonly XmlWriterSettings _settings;
 
-            public StringWriterWithEncoding(Encoding encoding)
+            public TextWriterWithSettings(Stream stream, XmlWriterSettings settings)
             {
-                this.encoding = encoding;
+                _baseObject = new StreamWriter(stream, settings.Encoding);
+                _settings = settings;
+            }
+            
+            public TextWriterWithSettings(StringBuilder buffer, XmlWriterSettings settings)
+            {
+                _baseObject = new StringWriter(buffer);
+                _settings = settings;
+            }
+            
+            /// <summary>
+            /// Признак необходимости заменять строку ` /` на `/`.
+            /// См. https://github.com/EvilBeaver/OneScript/issues/768#issuecomment-397848410
+            /// </summary>
+            public bool TrimEndSlashes { get; set; }
+            
+            public override Encoding Encoding => _settings.Encoding;
+            
+            public override void Write(char value)
+            {
+                if (value == '\xfeff')
+                {
+                    _baseObject.Write(_settings.IndentChars);
+                }
+                else
+                {
+                    _baseObject.Write(value);
+                }
             }
 
-            public override Encoding Encoding
+            public override void Write(string value)
             {
-                get { return encoding; }
+                if (value == " /" && TrimEndSlashes)
+                {
+                    base.Write("/");
+                    return;
+                }
+                base.Write(value);
+            }
+
+            public override void Close()
+            {
+                _baseObject.Close();
+                base.Close();
             }
         }
 
@@ -302,11 +346,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             if (_writer != null)
                 _writer.Close();
-            if (_stringWriter != null)
-                _stringWriter.Dispose();
 
             _writer = null;
-            _stringWriter = null;
         }
 
         [ScriptConstructor]

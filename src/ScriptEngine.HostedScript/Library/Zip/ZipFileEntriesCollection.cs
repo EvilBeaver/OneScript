@@ -4,13 +4,15 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using Ionic.Zip;
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace ScriptEngine.HostedScript.Library.Zip
 {
@@ -39,7 +41,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ContextMethod("Найти", "Find")]
         public IValue Find(string name)
         {
-            var entry = _entries.FirstOrDefault(x => System.IO.Path.GetFileName(x.GetZipEntry().FileName) == name);
+            var entry = _entries.FirstOrDefault(x => System.IO.Path.GetFileName(x.GetZipEntry().Name) == name);
 
             if (entry == null)
                 return ValueFactory.Create();
