@@ -45,42 +45,42 @@ namespace ScriptEngine.Machine
             var methodInfo = definition.Value.CtorInfo;
             var argsParam = Expression.Parameter(typeof(IValue[]), "args");
             var parameters = methodInfo.GetParameters();
-            var argsToPass = new Expression[parameters.Length];
+            var argsToPass = new List<Expression>();
 
-            int startIndex = 0;
             if (definition.Value.Parametrized && parameters.Length > 0)
             {
-                argsToPass[0] = Expression.Constant(typeName);
+                argsToPass.Add(Expression.Constant(typeName));
                 parameters = parameters.Skip(1).ToArray();
-                startIndex = 1;
             }
 
-            for (int i = 0, j = startIndex; i < parameters.Length; i++, j++)
+            int paramIndex = 0;
+            for (int i = 0; i < arguments.Length; i++)
             {
-                if (parameters[i].HasDefaultValue)
-                {
-                    var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
-                    var condition = Expression.Condition(
-                            Expression.Equal(indexedArg, Expression.Constant(null, typeof(IValue))),
-                            Expression.Constant(parameters[i].DefaultValue, parameters[i].ParameterType),
-                            indexedArg
-                        );
-
-                    argsToPass[j] = condition;
-                }
-                else if (parameters[i].ParameterType.IsArray)
+                if (parameters[paramIndex].ParameterType.IsArray)
                 {
                     // capture all
 
                     var copyMethod = typeof(TypeFactory).GetMethod("CaptureVariantArgs", Refl.BindingFlags.Static | Refl.BindingFlags.InvokeMethod | Refl.BindingFlags.NonPublic);
                     System.Diagnostics.Debug.Assert(copyMethod != null);
 
-                    argsToPass[j] = Expression.Call(copyMethod, argsParam, Expression.Constant(i));
+                    argsToPass.Add(Expression.Call(copyMethod, argsParam, Expression.Constant(i)));
                     break;
+                }
+
+                argsToPass.Add(Expression.ArrayIndex(argsParam, Expression.Constant(i)));
+                ++paramIndex;
+
+            }
+
+            for (int i = paramIndex; i < parameters.Length; i++)
+            {
+                if (parameters[paramIndex].ParameterType.IsArray)
+                {
+                    argsToPass.Add(Expression.NewArrayBounds(typeof(IValue)));
                 }
                 else
                 {
-                    argsToPass[j] = Expression.ArrayIndex(argsParam, Expression.Constant(i));
+                    argsToPass.Add(Expression.Convert(Expression.Constant(parameters[i].DefaultValue), parameters[i].ParameterType));
                 }
             }
 
