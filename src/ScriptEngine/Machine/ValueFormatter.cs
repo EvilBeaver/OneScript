@@ -77,6 +77,12 @@ namespace ScriptEngine.Machine
 
         #region Number formatting
 
+        private static int ParseUnsignedParam(string param)
+        {
+            int paramToInt;
+            return (Int32.TryParse(param, out paramToInt) && paramToInt > 0) ? paramToInt : 0;
+        }
+
         private static string FormatNumber(decimal num, FormatParametersList formatParameters)
         {
             int[] numberGroupSizes = null;
@@ -116,28 +122,14 @@ namespace ScriptEngine.Machine
 
             if (formatParameters.HasParam(NUM_MAX_SIZE, out param))
             {
-                int paramToInt;
-                if (Int32.TryParse(param, out paramToInt))
-                {
-                    if (paramToInt < 0)
-                        paramToInt = 0;
-
-                    hasDigitLimits = true;
-                    totalDigits = paramToInt;
-                }
+                hasDigitLimits = true;
+                totalDigits = ParseUnsignedParam(param);
             }
 
             if (formatParameters.HasParam(NUM_DECIMAL_SIZE, out param))
             {
-                int paramToInt;
-                if (Int32.TryParse(param, out paramToInt))
-                {
-                    if (paramToInt < 0)
-                        paramToInt = 0;
-
-                    hasDigitLimits = true;
-                    fractionDigits = paramToInt;
-                }
+                hasDigitLimits = true;
+                fractionDigits = ParseUnsignedParam(param);
             }
 
             if (formatParameters.HasParam(NUM_FRACTION_DELIMITER, out param))
@@ -148,7 +140,8 @@ namespace ScriptEngine.Machine
 
             if (formatParameters.HasParam(NUM_GROUPS_DELIMITER, out param))
             {
-                nf.NumberGroupSeparator = (param.Length < 2 ? param : param.Substring(0, 1));
+                if (param.Length>0)
+                    nf.NumberGroupSeparator = (param.Length < 2 ? param : param.Substring(0, 1));
             }
 
             if (formatParameters.HasParam(NUM_GROUPING, out param))
