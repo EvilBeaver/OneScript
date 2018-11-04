@@ -1257,7 +1257,7 @@ namespace ScriptEngine.Machine
             }
 
             var instance = constructor(argValues);
-            _operationStack.Push((IValue)instance);
+            _operationStack.Push(instance);
             NextInstruction();
 
         }

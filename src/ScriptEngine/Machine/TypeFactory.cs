@@ -43,6 +43,11 @@ namespace ScriptEngine.Machine
                 return null;
 
             var methodInfo = definition.Value.CtorInfo;
+            if (!typeof(IValue).IsAssignableFrom(methodInfo.ReturnType))
+            {
+                return FallbackConstructor(methodInfo);
+            }
+
             var argsParam = Expression.Parameter(typeof(IValue[]), "args");
             var parameters = methodInfo.GetParameters();
             var argsToPass = new List<Expression>();
@@ -76,7 +81,7 @@ namespace ScriptEngine.Machine
             {
                 if (parameters[paramIndex].ParameterType.IsArray)
                 {
-                    argsToPass.Add(Expression.NewArrayBounds(typeof(IValue)));
+                    argsToPass.Add(Expression.NewArrayInit(typeof(IValue)));
                 }
                 else
                 {
@@ -88,6 +93,15 @@ namespace ScriptEngine.Machine
             var callLambda = Expression.Lambda<InstanceConstructor>(constructorCallExpression, argsParam).Compile();
 
             return callLambda;
+        }
+
+        // Конструктор использующий старое поведение.
+        // применяется для старых внешних библиотек, в которых StaticConstructor возвращает
+        // не IValue а IRuntimeContextInstance.
+        //
+        private InstanceConstructor FallbackConstructor(Refl.MethodInfo methodInfo)
+        {
+            return (args) => (IValue)methodInfo.Invoke(null, args);
         }
 
         internal static IValue[] CaptureVariantArgs(IValue[] sourceArgs, int startingFrom)
