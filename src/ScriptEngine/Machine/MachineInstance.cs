@@ -1244,115 +1244,22 @@ namespace ScriptEngine.Machine
             for (int i = argCount - 1; i >= 0; i--)
             {
                 var argValue = _operationStack.Pop();
-                argValues[i] = BreakVariableLink(argValue);
+                if(argValue.DataType != DataType.NotAValidValue)
+                    argValues[i] = BreakVariableLink(argValue);
             }
 
             var typeName = _operationStack.Pop().AsString();
-            var clrType = TypeManager.GetFactoryFor(typeName);
+            var factory = TypeManager.GetFactoryFor(typeName);
 
-            var ctors = clrType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
-                .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute))
-                .Select(x => new 
-                    {   CtorInfo = x,
-                        Parametrized = ((ScriptConstructorAttribute)x.GetCustomAttributes(typeof(ScriptConstructorAttribute), false)[0]).ParametrizeWithClassName 
-                    });
-
-            foreach (var ctor in ctors)
+            var constructor = factory.GetConstructor(typeName, argValues);
+            if(constructor == null)
             {
-                var parameters = ctor.CtorInfo.GetParameters();
-                List<object> argsToPass = new List<object>();
-                if (ctor.Parametrized)
-                {
-                    if (parameters.Length < 1)
-                    {
-                        continue;
-                    }
-                    if (parameters[0].ParameterType != typeof(string))
-                    {
-                        throw new InvalidOperationException("Type parametrized constructor must have first argument of type String");
-                    }
-                    argsToPass.Add(typeName);
-                    parameters = parameters.Skip(1).ToArray();
-                }
-
-                bool success = (parameters.Length == 0 && argCount == 0)
-                    ||(parameters.Length > 0 && parameters[0].ParameterType.IsArray);
-
-                if (parameters.Length > 0 && parameters.Length < argCount 
-                    && !parameters[parameters.Length-1].ParameterType.IsArray)
-                {
-                    success = false;
-                    continue;
-                }
-                
-                for (int i = 0; i < parameters.Length; i++)
-                {
-                    if (parameters[i].ParameterType.IsArray)
-                    {
-                        // captures all remained args
-                        IValue[] varArgs = new IValue[argCount - i];
-                        for (int j = i, k = 0; k < varArgs.Length; j++, k++)
-                        {
-                            varArgs[k] = argValues[j];
-                        }
-                        argsToPass.Add(varArgs);
-                        success = true;
-                        break;
-                    }
-                    else
-                    {
-                        if (i < argValues.Length)
-                        {
-
-                            if (argValues[i].DataType == DataType.NotAValidValue)
-                            {
-                                argsToPass.Add(null);
-                            }
-                            else
-                                argsToPass.Add(argValues[i]);
-
-                            success = true;
-                        }
-                        else
-                        {
-                            if (parameters[i].IsOptional)
-                            {
-                                argsToPass.Add(null);
-                                success = true;
-                            }
-                            else
-                            {
-                                success = false;
-                                break; // no match
-                            }
-                        }
-                    }
-                }
-
-                if (success)
-                {
-                    object instance = null;
-                    try
-                    {
-                        instance = ctor.CtorInfo.Invoke(null, argsToPass.ToArray());
-                    }
-                    catch (System.Reflection.TargetInvocationException e)
-                    {
-                        if (e.InnerException != null)
-                            throw e.InnerException;
-                        else
-                            throw;
-                    }
-
-                    _operationStack.Push((IValue)instance);
-                    NextInstruction();
-                    return;
-                }
-
+                throw new RuntimeException("Конструктор не найден (" + typeName + ")");
             }
 
-            throw new RuntimeException("Конструктор не найден ("+typeName+")");
-
+            var instance = constructor(typeName, argValues);
+            _operationStack.Push(instance);
+            NextInstruction();
 
         }
 

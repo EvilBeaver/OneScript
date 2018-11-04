@@ -105,7 +105,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ScriptConstructor(Name = "На основании обычного массива")]
-        public static IRuntimeContextInstance Constructor(IValue source)
+        public static FixedArrayImpl Constructor(IValue source)
         {
             var rawSource = source.GetRawValue() as ArrayImpl;
             if (rawSource == null)

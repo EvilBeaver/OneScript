@@ -47,7 +47,7 @@ namespace ScriptEngine.HostedScript.Library
 		}
 
 		[ScriptConstructor]
-		public static IRuntimeContextInstance Constructor(IValue length = null,
+		public static BinaryDataQualifiers Constructor(IValue length = null,
 		                                                  IValue allowedLength = null)
 		{
 			var paramLength = ContextValuesMarshaller.ConvertParam<int>(length);

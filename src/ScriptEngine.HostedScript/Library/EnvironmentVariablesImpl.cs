@@ -30,7 +30,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </example>
         /// <returns>Соответствие</returns>
         [ContextMethod("ПеременныеСреды", "EnvironmentVariables")]
-        public IRuntimeContextInstance EnvironmentVariables(EnvironmentVariableTargetEnum target = EnvironmentVariableTargetEnum.Process)
+        public MapImpl EnvironmentVariables(EnvironmentVariableTargetEnum target = EnvironmentVariableTargetEnum.Process)
         {
             EnvironmentVariableTarget targetParam = GetSystemEnvVariableTarget(target);
             var varsMap = new MapImpl();

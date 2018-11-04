@@ -133,7 +133,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="path">Строка. Путь к файлу</param>
         /// <returns>ЧтениеТекста</returns>
         [ScriptConstructor(Name = "По имени файла без кодировки")]
-        public static IRuntimeContextInstance Constructor (IValue path)
+        public static TextReadImpl Constructor (IValue path)
         {
             var reader = new TextReadImpl ();
             reader.AnalyzeDefaultLineFeed = false;
@@ -151,7 +151,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="monopoly">Открывать файл монопольно</param>
         /// <returns>ЧтениеТекста</returns>
         [ScriptConstructor(Name = "По имени файла")]
-        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding = null,
+        public static TextReadImpl Constructor(IValue path, IValue encoding = null,
             IValue lineDelimiter = null, IValue eolDelimiter = null, IValue monopoly = null)
         {
             var reader = new TextReadImpl();
@@ -171,7 +171,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <returns>ЧтениеТекста</returns>
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
-        public static IRuntimeContextInstance Constructor()
+        public static TextReadImpl Constructor()
         {
             var reader = new TextReadImpl();
             reader.AnalyzeDefaultLineFeed = false;
