@@ -1244,7 +1244,8 @@ namespace ScriptEngine.Machine
             for (int i = argCount - 1; i >= 0; i--)
             {
                 var argValue = _operationStack.Pop();
-                argValues[i] = BreakVariableLink(argValue);
+                if(argValue.DataType != DataType.NotAValidValue)
+                    argValues[i] = BreakVariableLink(argValue);
             }
 
             var typeName = _operationStack.Pop().AsString();
@@ -1256,7 +1257,7 @@ namespace ScriptEngine.Machine
                 throw new RuntimeException("Конструктор не найден (" + typeName + ")");
             }
 
-            var instance = constructor(argValues);
+            var instance = constructor(typeName, argValues);
             _operationStack.Push(instance);
             NextInstruction();
 

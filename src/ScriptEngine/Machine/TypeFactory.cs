@@ -1,4 +1,11 @@
-﻿using ScriptEngine.Machine.Contexts;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +16,12 @@ using Refl = System.Reflection;
 
 namespace ScriptEngine.Machine
 {
-    public delegate IValue InstanceConstructor(IValue[] arguments);
+    public delegate IValue InstanceConstructor(string typeName, IValue[] arguments);
 
     public class TypeFactory
     {
         private readonly Type _clrType;
+
         private Dictionary<int, InstanceConstructor> _constructorsCache = new Dictionary<int, InstanceConstructor>();
 
         public TypeFactory(Type clrType)
@@ -51,14 +59,17 @@ namespace ScriptEngine.Machine
             var argsParam = Expression.Parameter(typeof(IValue[]), "args");
             var parameters = methodInfo.GetParameters();
             var argsToPass = new List<Expression>();
-
+            var typeNameParam = Expression.Parameter(typeof(string), "typeName");
+            int paramIndex = 0;
             if (definition.Value.Parametrized && parameters.Length > 0)
             {
-                argsToPass.Add(Expression.Constant(typeName));
-                parameters = parameters.Skip(1).ToArray();
+                argsToPass.Add(typeNameParam);
+                ++paramIndex;
             }
 
-            int paramIndex = 0;
+            //var typeCast = typeof(ContextValuesMarshaller).GetMethod("ConvertParam", new[]{typeof(IValue),typeof(Type)});
+            //System.Diagnostics.Debug.Assert(typeCast != null);
+
             for (int i = 0; i < arguments.Length; i++)
             {
                 if (parameters[paramIndex].ParameterType.IsArray)
@@ -69,17 +80,30 @@ namespace ScriptEngine.Machine
                     System.Diagnostics.Debug.Assert(copyMethod != null);
 
                     argsToPass.Add(Expression.Call(copyMethod, argsParam, Expression.Constant(i)));
+                    ++paramIndex;
                     break;
                 }
 
-                argsToPass.Add(Expression.ArrayIndex(argsParam, Expression.Constant(i)));
+                
+                if (parameters[paramIndex].ParameterType == typeof(IValue))
+                    argsToPass.Add(Expression.ArrayIndex(argsParam, Expression.Constant(i)));
+                else
+                {
+                    argsToPass.Add(
+                        Expression.Convert(Expression.ArrayIndex(argsParam, 
+                                                              Expression.Constant(i)
+                                                              )
+                                        ,parameters[paramIndex].ParameterType)
+                        );
+                }
+
                 ++paramIndex;
 
             }
 
             for (int i = paramIndex; i < parameters.Length; i++)
             {
-                if (parameters[paramIndex].ParameterType.IsArray)
+                if (parameters[i].ParameterType.IsArray)
                 {
                     argsToPass.Add(Expression.NewArrayInit(typeof(IValue)));
                 }
@@ -90,7 +114,7 @@ namespace ScriptEngine.Machine
             }
 
             var constructorCallExpression = Expression.Call(methodInfo, argsToPass);
-            var callLambda = Expression.Lambda<InstanceConstructor>(constructorCallExpression, argsParam).Compile();
+            var callLambda = Expression.Lambda<InstanceConstructor>(constructorCallExpression, typeNameParam, argsParam).Compile();
 
             return callLambda;
         }
@@ -101,7 +125,16 @@ namespace ScriptEngine.Machine
         //
         private InstanceConstructor FallbackConstructor(Refl.MethodInfo methodInfo)
         {
-            return (args) => (IValue)methodInfo.Invoke(null, args);
+            return (typeName, args) =>
+            {
+                var methArgs = new IValue[methodInfo.GetParameters().Length];
+                for (int i = 0; i < methArgs.Length; i++)
+                {
+                    if (i < args.Length)
+                        methArgs[i] = args[i];
+                }
+                return (IValue) methodInfo.Invoke(null, methArgs);
+            };
         }
 
         internal static IValue[] CaptureVariantArgs(IValue[] sourceArgs, int startingFrom)
