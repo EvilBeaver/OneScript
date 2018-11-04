@@ -29,8 +29,7 @@ namespace ScriptEngine.Machine
         static readonly string[] DATE_FORMAT = { "ДФ", "DF" };
         static readonly string[] DATE_LOCAL_FORMAT = { "ДЛФ", "DLF" };
 
-        // Длины разрядов мантиссы типа decimal в строковом десятичном представлении
-        static readonly int[] decimal_digits_sizes = { 10, 20, 29 };
+        const int MAX_DECIMAL_ROUND = 28; 
 
         public static string Format(IValue value, string format)
         {
@@ -144,12 +143,12 @@ namespace ScriptEngine.Machine
             if (formatParameters.HasParam(NUM_FRACTION_DELIMITER, out param))
             {
                 if (param.Length > 0)
-                    nf.NumberDecimalSeparator = param.Length > 1 ? param.Substring(0, 1) : param;
+                    nf.NumberDecimalSeparator = (param.Length < 2 ? param : param.Substring(0, 1));
             }
 
             if (formatParameters.HasParam(NUM_GROUPS_DELIMITER, out param))
             {
-                nf.NumberGroupSeparator = param.Length>1? param.Substring(0,1): param;
+                nf.NumberGroupSeparator = (param.Length < 2 ? param : param.Substring(0, 1));
             }
 
             if (formatParameters.HasParam(NUM_GROUPING, out param))
@@ -170,25 +169,19 @@ namespace ScriptEngine.Machine
             {
                 int pattern;
                 if (int.TryParse(param, out pattern))
-                    nf.NumberNegativePattern = pattern;
+                    nf.NumberNegativePattern = (pattern >= 0 && pattern <= 4 ? pattern : 1);
             }
 
-            char leadingFormatSpecifier = '#';
-            if (formatParameters.HasParam(NUM_LEADING_ZERO, out param))
-            {
-                leadingFormatSpecifier = '0';
-            }
-
+            bool hasLeadingZeroes = formatParameters.HasParam(NUM_LEADING_ZERO, out param);
+ 
             StringBuilder formatBuilder = new StringBuilder();
 
             if (hasDigitLimits)
             {
-                ApplyNumericSizeRestrictions(ref num, totalDigits, fractionDigits);
+                bool overflov = !ApplyNumericSizeRestrictions(ref num, totalDigits, fractionDigits); ;
 
                 if (num == 0)
-                {
                     return zeroAppearance;
-                }
 
                 if (totalDigits == 0)
                 {
@@ -199,45 +192,66 @@ namespace ScriptEngine.Machine
                 {
                     int intDigits = totalDigits - fractionDigits;
 
-                    if (intDigits > 2)
+                    if (intDigits > 1)
                     {
-                        formatBuilder.Append(leadingFormatSpecifier, intDigits-1);
+                        if( hasLeadingZeroes )
+                            formatBuilder.Append('0', intDigits - 1);
+                        else
+                            formatBuilder.Append('#', 1);
                         formatBuilder.Append(',');
                     }
 
                     if (intDigits > 0)
                     {
                         formatBuilder.Append("0.");
-                        formatBuilder.Append('0', fractionDigits);
+                        if (overflov && totalDigits > MAX_DECIMAL_ROUND)
+                        {
+                            if (intDigits < MAX_DECIMAL_ROUND)
+                                formatBuilder.Append('0', MAX_DECIMAL_ROUND - intDigits);
+                            formatBuilder.Append('9', totalDigits - MAX_DECIMAL_ROUND);
+                        }
+                        else
+                        {
+                            formatBuilder.Append('0', fractionDigits);
+                        }
                     }
                     else
                     {
+                        largeGroupSize = false;
                         formatBuilder.Append("#.");
-                        formatBuilder.Append('0', totalDigits);
+                        if (overflov && totalDigits > MAX_DECIMAL_ROUND)
+                        {
+                            formatBuilder.Append('0', MAX_DECIMAL_ROUND);
+                            formatBuilder.Append('9', totalDigits - MAX_DECIMAL_ROUND);
+                        }
+                        else
+                        {
+                            formatBuilder.Append('0', totalDigits);
+                        }
                     }
                 }
+
+                if (num < 0)
+                    ApplyNegativePattern(formatBuilder, nf);
             }
             else
             {
                 int precision = GetDecimalPrecision(Decimal.GetBits(num));
                 nf.NumberDecimalDigits = precision;
-                formatBuilder.Append("N");
+                formatBuilder.Append('N');
             }
 
-            if( largeGroupSize )
+            if (largeGroupSize)
             {
                 string decSeparator = nf.NumberDecimalSeparator;
                 nf.NumberDecimalSeparator = ".";
-
                 string preformatted = num.ToString(formatBuilder.ToString(), nf);
                 nf.NumberDecimalSeparator = decSeparator;
 
                 return ApplyDigitsGrouping( preformatted, nf, numberGroupSizes );
             }
-            else
-            {
-                return num.ToString(formatBuilder.ToString(), nf);
-            }
+
+            return num.ToString(formatBuilder.ToString(), nf);
         }
 
         private static int[] ParseGroupSizes(string param)
@@ -265,60 +279,61 @@ namespace ScriptEngine.Machine
             return sizes.ToArray();
         }
 
-        public static void ApplyNumericSizeRestrictions(ref decimal p, int totalDigits, int fractionDigits)
+        public static void ApplyNegativePattern(StringBuilder formatBuilder, NumberFormatInfo nf)
         {
-            if (totalDigits == 0)
-                return;
-
-            decimal value = Math.Round(p, fractionDigits < 29 ? fractionDigits : 28);
-            int sign = Math.Sign(value);
-            value = Math.Abs(value);
-
-            if (totalDigits < fractionDigits)
-                totalDigits = fractionDigits;
-
-            if (totalDigits > decimal_digits_sizes[2])
-                totalDigits = decimal_digits_sizes[2];
-
-            var bits = Decimal.GetBits(value);
-
-            int digits = 1;
-
-            for (int i = 0; i < 3; i++)
+            switch (nf.NumberNegativePattern)
             {
-                if ((uint)bits[i] == uint.MaxValue)
-                {
-                    digits = decimal_digits_sizes[i];
-                }
-                else
-                {
-                    uint divided = (uint)bits[i];
-                    if (divided == 0 && digits == 1)
-                    {
-                        digits = 0;
-                        break;
-                    }
-
-                    while ((divided /= 10) >= 1)
-                    {
-                        digits++;
-                    }
+                case 0:
+                    formatBuilder.Insert(0, '(');
+                    formatBuilder.Append(')');
                     break;
-                }
+                case 1:
+                    formatBuilder.Insert(0, nf.NegativeSign);
+                    break;
+                case 2:
+                    formatBuilder.Insert(0, ' ');
+                    formatBuilder.Insert(0, nf.NegativeSign);
+                    break;
+                case 3:
+                    formatBuilder.Append(nf.NegativeSign);
+                    break;
+                case 4:
+                    formatBuilder.Append(' ');
+                    formatBuilder.Append(nf.NegativeSign);
+                    break;
             }
+            formatBuilder.Insert(0, ';');
+        }
 
-            int power = GetDecimalPrecision(bits);
-            int digitsLengthAvailable = totalDigits - power;
+        public static bool ApplyNumericSizeRestrictions(ref decimal num, int totalDigits, int fractionDigits)
+        {
+            if (fractionDigits <= MAX_DECIMAL_ROUND)
+                num = Math.Round(num, fractionDigits, MidpointRounding.AwayFromZero);
 
-            if (digits - power > digitsLengthAvailable)
+            if (totalDigits == 0)
+                return true;
+
+            decimal intVal = Math.Truncate(num);
+            if (intVal == 0)
             {
-                string fake = new String('9', totalDigits);
-                int pointPos = totalDigits - fractionDigits;
-                fake = fake.Insert(pointPos, ".");
-                value = Decimal.Parse(fake, NumberStyles.AllowDecimalPoint, NumberFormatInfo.InvariantInfo);
+                if (totalDigits < fractionDigits && totalDigits <= MAX_DECIMAL_ROUND)
+                    num = Math.Round(num, totalDigits, MidpointRounding.AwayFromZero);
+                return true;
             }
 
-            p = value * sign;
+            int digits = Math.Abs(intVal).ToString(NumberFormatInfo.InvariantInfo).Length; // weird but fast
+
+            if (digits > totalDigits - fractionDigits)
+            {
+                string fake = new String('9', totalDigits <= MAX_DECIMAL_ROUND ? totalDigits : MAX_DECIMAL_ROUND);
+                int pointPos = totalDigits - fractionDigits;
+                if (pointPos < 0) pointPos = 0;
+                fake = fake.Insert(pointPos, ".");
+                num = Decimal.Parse(fake, NumberStyles.AllowDecimalPoint, NumberFormatInfo.InvariantInfo);
+                if (intVal < 0) num = -num;
+                return false;
+            }
+            return true;
         }
 
         private static string ApplyDigitsGrouping(string str, NumberFormatInfo nf, int[] numberGroupSizes )
@@ -330,12 +345,12 @@ namespace ScriptEngine.Machine
 
             int size = numberGroupSizes[0];
             if (size == 0)
-                return str;
+                return str.Replace(".", nf.NumberDecimalSeparator);
 
             int offset = firstIndex;
             int insertionPoint = offset - size;
             if (insertionPoint <= 0)
-               return str;
+               return str.Replace(".", nf.NumberDecimalSeparator);
 
             builder.Insert(insertionPoint, nf.NumberGroupSeparator);
             offset -= size;
@@ -378,9 +393,9 @@ namespace ScriptEngine.Machine
             return (int)power;
         }
 
-        #endregion
+#endregion
 
-        #region Date formatting
+#region Date formatting
 
         private static string FormatDate(DateTime dateTime, FormatParametersList formatParameters)
         {
@@ -505,7 +520,7 @@ namespace ScriptEngine.Machine
             }
         } 
 
-        #endregion
+#endregion
 
         private static string DefaultFormat(IValue value, FormatParametersList formatParameters)
         {
