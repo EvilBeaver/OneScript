@@ -674,7 +674,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         }
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static ValueTable Constructor()
         {
             return new ValueTable();
         }

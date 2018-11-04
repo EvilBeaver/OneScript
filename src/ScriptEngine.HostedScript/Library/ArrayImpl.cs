@@ -174,7 +174,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static ArrayImpl Constructor()
         {
             return new ArrayImpl();
         }
@@ -185,7 +185,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="dimensions">Числовые размерности массива. Например, "Массив(2,3)", создает двумерный массив 2х3.</param>
         /// <returns></returns>
         [ScriptConstructor(Name = "По количеству элементов")]
-        public static IRuntimeContextInstance Constructor(IValue[] dimensions)
+        public static ArrayImpl Constructor(IValue[] dimensions)
         {
             ArrayImpl cloneable = null;
             for (int dim = dimensions.Length - 1; dim >= 0; dim--)

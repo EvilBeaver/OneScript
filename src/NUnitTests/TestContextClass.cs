@@ -29,7 +29,7 @@ namespace NUnitTests
 		}
 		
 		[ScriptConstructor]
-		public static IRuntimeContextInstance Constructor()
+		public static TestContextClass Constructor()
 		{
 			return new TestContextClass();
 		}

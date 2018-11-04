@@ -9,7 +9,7 @@ using Refl = System.Reflection;
 
 namespace ScriptEngine.Machine
 {
-    public delegate IRuntimeContextInstance InstanceConstructor(IValue[] arguments);
+    public delegate IValue InstanceConstructor(IValue[] arguments);
 
     public class TypeFactory
     {

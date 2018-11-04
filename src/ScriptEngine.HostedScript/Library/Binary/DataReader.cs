@@ -64,7 +64,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
         /// Значение по умолчанию: ВК + ПС. </param>
         [ScriptConstructor(Name = "На основании двоичных данных или имени файла")]
-        public static IRuntimeContextInstance Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
+        public static DataReader Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
         {
             if (dataSource.DataType == DataType.String)
             {

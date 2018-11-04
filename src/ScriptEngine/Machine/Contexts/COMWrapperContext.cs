@@ -313,7 +313,7 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor(IValue[] args)
+        public static COMWrapperContext Constructor(IValue[] args)
         {
             return COMWrapperContext.Create(args[0].AsString(), args.Skip(1).ToArray());
         }

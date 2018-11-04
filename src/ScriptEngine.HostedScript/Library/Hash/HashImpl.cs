@@ -129,7 +129,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
 
 
         [ScriptConstructor(Name = "По указанной хеш-функции")]
-        public static IRuntimeContextInstance Constructor(IValue providerEnum)
+        public static HashImpl Constructor(IValue providerEnum)
         {
             var objectProvider = HashFunctionEnum.GetProvider(providerEnum);
             return new HashImpl(objectProvider, providerEnum);

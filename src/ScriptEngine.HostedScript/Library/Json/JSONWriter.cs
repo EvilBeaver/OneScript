@@ -251,7 +251,7 @@ namespace ScriptEngine.HostedScript.Library.Json
             }
         }
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static JSONWriter Constructor()
         {
             return new JSONWriter();
         }

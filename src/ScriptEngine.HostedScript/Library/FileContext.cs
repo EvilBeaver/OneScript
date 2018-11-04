@@ -214,7 +214,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ScriptConstructor(Name = "По имени файла")]
-        public static IRuntimeContextInstance Constructor(IValue name)
+        public static FileContext Constructor(IValue name)
         {
             return new FileContext(name.AsString());
         }

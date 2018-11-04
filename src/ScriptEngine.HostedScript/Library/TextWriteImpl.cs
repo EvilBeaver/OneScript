@@ -127,7 +127,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="append">Признак добавления в конец файла (необязательный)</param>
         /// <param name="eolReplacement">Разделитель строк в файле (необязательный).</param>
         [ScriptConstructor(Name = "По имени файла")]
-        public static IRuntimeContextInstance Constructor(IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue append = null, IValue eolReplacement = null)
+        public static TextWriteImpl Constructor(IValue path, IValue encoding = null, IValue lineDelimiter = null, IValue append = null, IValue eolReplacement = null)
         {
             bool isAppend = append != null && append.AsBoolean();
             var result = new TextWriteImpl ();
@@ -141,7 +141,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
-        public static IRuntimeContextInstance Constructor()
+        public static TextWriteImpl Constructor()
         {
             return new TextWriteImpl();
         }

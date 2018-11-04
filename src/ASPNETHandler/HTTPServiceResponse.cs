@@ -200,7 +200,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         }
 
         [ScriptConstructor(Name = "По коду состояния, причине и заголовкам")]
-        public static IRuntimeContextInstance Constructor(IValue statusCode, IValue reason = null, MapImpl headers = null)
+        public static HTTPServiceResponseImpl Constructor(IValue statusCode, IValue reason = null, MapImpl headers = null)
         {
             var response = new HTTPServiceResponseImpl();
 
