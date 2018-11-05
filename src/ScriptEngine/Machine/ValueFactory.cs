@@ -89,6 +89,13 @@ namespace ScriptEngine.Machine
                     else
                         throw RuntimeException.ConvertToDateException();
 
+                    if (presentation == "00000000"
+                     || presentation == "000000000000"
+                     || presentation == "00000000000000")
+                    {
+                        result = ValueFactory.Create(new DateTime());
+                    }
+                    else
                     try
                     {
                         result = ValueFactory.Create(DateTime.ParseExact(presentation, format, System.Globalization.CultureInfo.InvariantCulture));
