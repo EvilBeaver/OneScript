@@ -76,14 +76,23 @@ namespace ScriptEngine.HostedScript.Library.Binary
 
         public override string AsString()
         {
-            const int LIMIT = 50;
-            StringBuilder hex = new StringBuilder(LIMIT);
-            for (int i = 0; i < LIMIT && i < _buffer.Length; i++)
+            if (_buffer.Length == 0)
+                return "";
+
+            const int LIMIT = 64;
+            int length = _buffer.Length;
+            if (length > LIMIT)
+                length = LIMIT;
+
+            StringBuilder hex = new StringBuilder(length*3);
+            hex.AppendFormat("{0:X2}", _buffer[0]);
+            for (int i = 1; i < length; ++i)
             {
-                hex.AppendFormat("{0:X2} ", _buffer[i]);
+                hex.AppendFormat(" {0:X2}", _buffer[i]);
             }
 
-            hex.Append("…");
+            if (_buffer.Length > LIMIT)
+                hex.Append('…');
 
             return hex.ToString();
         }
