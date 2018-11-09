@@ -2197,11 +2197,33 @@ namespace ScriptEngine.Machine
 
         private void Pow(int arg)
         {
-            var powPower = (double)_operationStack.Pop().AsNumber();
-            var powBase = (double)_operationStack.Pop().AsNumber();
-            double power = Math.Pow(powBase, powPower);
-            _operationStack.Push(ValueFactory.Create((decimal)power));
+            var powPower = _operationStack.Pop().AsNumber();
+            var powBase = _operationStack.Pop().AsNumber();
+
+            int exp = (int)powPower;
+            decimal result;
+            if (exp >= 0 && exp == powPower)
+                result = PowInt(powBase, (uint)exp);
+            else
+                result = (decimal)Math.Pow((double)powBase, (double)powPower);
+
+            _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
+        }
+
+        private decimal PowInt(decimal bas, uint exp)
+        {
+            decimal pow = 1;
+
+            while (true)
+            {
+                if ((exp & 1) == 1) pow *= bas;
+                exp >>= 1;
+                if (exp == 0) break;
+                bas *= bas;
+            }
+
+            return pow;
         }
 
         private void Sqrt(int arg)
