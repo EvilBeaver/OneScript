@@ -6,7 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 using ScriptEngine.Machine;
@@ -120,5 +122,36 @@ namespace ScriptEngine.HostedScript.Library.Binary
             return new BinaryDataContext(filename.AsString());
         }
 
+        public override bool Equals(IValue other)
+        {
+            if (other == null)
+                return false;
+
+            if (other.SystemType.ID == SystemType.ID)
+            {
+                var binData = other.GetRawValue() as BinaryDataContext;
+                Debug.Assert(binData != null);
+
+                return ArraysAreEqual(_buffer, binData._buffer);
+            }
+
+            return false;
+        }
+
+        private static bool ArraysAreEqual(byte[] a1, byte[] a2)
+        {
+            if (a1.LongLength == a2.LongLength)
+            {
+                for (long i = 0; i < a1.Length; i++)
+                {
+                    if (a1[i] != a2[i])
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
     }
 }
