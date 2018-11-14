@@ -142,7 +142,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         {
             if (a1.LongLength == a2.LongLength)
             {
-                for (long i = 0; i < a1.Length; i++)
+                for (long i = 0; i < a1.LongLength; i++)
                 {
                     if (a1[i] != a2[i])
                     {
