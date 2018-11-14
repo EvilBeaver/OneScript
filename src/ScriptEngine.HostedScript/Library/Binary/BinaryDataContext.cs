@@ -82,10 +82,8 @@ namespace ScriptEngine.HostedScript.Library.Binary
                 return "";
 
             const int LIMIT = 64;
-            int length = _buffer.Length;
-            if (length > LIMIT)
-                length = LIMIT;
-
+            int length = Math.Min(_buffer.Length, LIMIT);
+            
             StringBuilder hex = new StringBuilder(length*3);
             hex.AppendFormat("{0:X2}", _buffer[0]);
             for (int i = 1; i < length; ++i)
