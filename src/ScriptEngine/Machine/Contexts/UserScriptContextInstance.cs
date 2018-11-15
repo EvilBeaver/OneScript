@@ -66,10 +66,8 @@ namespace ScriptEngine.Machine.Contexts
                         + "необходимых параметров: " + Math.Min(procParamsCount, reqParamsCount).ToString()
                         + ", передано параметров " + constructorParamsCount.ToString()
                         );
-
-                for (int i = 0; i < procParamsCount; i++)
-                    if (!procInfo.Params[i].HasDefaultValue && ConstructorParams.Count() - 1 < i)
-                        throw RuntimeException.TooLittleArgumentsPassed();
+                else if (procInfo.Params.Skip(constructorParamsCount).Any(param => !param.HasDefaultValue))
+                    throw RuntimeException.TooLittleArgumentsPassed();
 
                 CallAsProcedure(methId, ConstructorParams);
             }
