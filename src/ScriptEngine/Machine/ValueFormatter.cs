@@ -408,6 +408,11 @@ namespace ScriptEngine.Machine
                     builder[i + 1] = 't';
                     i++;
                 }
+
+                if (param[i] == 'р')
+                {
+                    builder[i] = 'f';
+                }
                 
             }
             builder.Replace("/", "\\/");
