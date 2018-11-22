@@ -22,7 +22,7 @@ namespace ScriptEngine.HostedScript.Library.DriveInfo
         }
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor(IValue driveName)
+        public static DriveInfo Constructor(IValue driveName)
         {
             return new DriveInfo(driveName.AsString());
         }

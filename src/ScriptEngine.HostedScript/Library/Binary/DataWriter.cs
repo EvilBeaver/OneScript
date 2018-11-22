@@ -93,7 +93,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Значение по умолчанию: Ложь. </param>
         ///
         [ScriptConstructor(Name = "На основании имени файла")]
-        public static IRuntimeContextInstance Constructor(IValue fileName, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, bool append = false, string convertibleSplitterOfLines = null, bool writeBOM = false)
+        public static DataWriter Constructor(IValue fileName, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, bool append = false, string convertibleSplitterOfLines = null, bool writeBOM = false)
         {
             if(fileName.DataType == DataType.String)
                 return new DataWriter(fileName.AsString(), textEncoding, byteOrder, lineSplitter, append, convertibleSplitterOfLines, writeBOM);
@@ -126,7 +126,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Значение по умолчанию: Ложь. </param>
         ///
         [ScriptConstructor(Name = "На основании потока")]
-        public static IRuntimeContextInstance ConstructorByStream(IValue stream, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null, bool writeBOM = false)
+        public static DataWriter ConstructorByStream(IValue stream, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null, bool writeBOM = false)
         {
             var streamObj = stream.AsObject() as IStreamWrapper;
             if (streamObj == null)
@@ -279,7 +279,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         public void WriteChars(string line, IValue encoding = null)
         {
             if(encoding == null)
-                _binaryWriter.Write(line);
+                _binaryWriter.Write(line.ToCharArray());
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding, _writeBOM);
@@ -312,7 +312,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             // Кому надо - попросит PR.
 
             if (encoding == null)
-                _binaryWriter.Write(line);
+                _binaryWriter.Write(line.ToCharArray());
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding, _writeBOM);
@@ -321,9 +321,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
 
             if(lineSplitter == null)
-                _binaryWriter.Write(LineSplitter);
+                _binaryWriter.Write(LineSplitter.ToCharArray());
             else
-                _binaryWriter.Write(lineSplitter);
+                _binaryWriter.Write(lineSplitter.ToCharArray());
         }
 
         private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, IValue byteOrder = null)

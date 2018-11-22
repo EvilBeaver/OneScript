@@ -23,12 +23,16 @@ namespace ScriptEngine.HostedScript.Library.Zip
     [ContextClass("ЧтениеZipФайла", "ZipFileReader")]
     public class ZipReader : AutoContext<ZipReader>, IDisposable
     {
-        ZipFile _zip;
-        ZipFileEntriesCollection _entriesWrapper;
-        string _password;
+        private ZipFile _zip;
+        private ZipFileEntriesCollection _entriesWrapper;
 
-        public ZipReader()
+        private string _password;
+
+        static ZipReader()
         {
+            ZipStrings.CodePage = 866;
+            var field = ZipCodepageAdHoc.GetBackingField(typeof(ZipStrings), "SystemDefaultCodePage");
+            field.SetValue(null, 866);
         }
 	    
 
@@ -46,8 +50,6 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ContextMethod("Открыть","Open")]
         public void Open(string filename, string password = null)
         {
-
-            ZipStrings.CodePage = 866;
 
             _zip = new ZipFile(filename);
             _zip.Password = password;

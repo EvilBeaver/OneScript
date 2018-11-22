@@ -96,7 +96,7 @@ namespace ScriptEngine.HostedScript.Library
         #endregion
 
         [ScriptConstructor(Name = "Из соответствия")]
-        public static IRuntimeContextInstance Constructor(IValue source)
+        public static FixedMapImpl Constructor(IValue source)
         {
             var rawSource = source.GetRawValue() as MapImpl;
             if (rawSource == null)

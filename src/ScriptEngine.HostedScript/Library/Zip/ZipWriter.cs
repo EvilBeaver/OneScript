@@ -26,16 +26,15 @@ namespace ScriptEngine.HostedScript.Library.Zip
     {
         
         private ZipOutputStream _zip;
-
         private string _filename;
-
         private CompressionMethod compressMeth;
-
         private EncryptionAlgorithm encryptAlgoritm;
         
-        public ZipWriter()
+        static ZipWriter()
         {
-
+            ZipStrings.CodePage = 866;
+            var field = ZipCodepageAdHoc.GetBackingField(typeof(ZipStrings), "SystemDefaultCodePage");
+            field.SetValue(null, 866);
         }
 
         /// <summary>
@@ -56,8 +55,6 @@ namespace ScriptEngine.HostedScript.Library.Zip
             SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel = null,
             SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod = null)
         {
-
-            ZipStrings.CodePage = 866;
 
             _zip = new ZipOutputStream(File.Create(filename));
 

@@ -186,7 +186,7 @@ namespace ScriptEngine.HostedScript.Library
 		}
 
 		[ScriptConstructor]
-		public static IRuntimeContextInstance Constructor(
+		public static TypeDescription Constructor(
 			IValue source = null,
 			IValue p1 = null,
 			IValue p2 = null,
@@ -217,7 +217,7 @@ namespace ScriptEngine.HostedScript.Library
 			throw RuntimeException.InvalidArgumentValue();
 		}
 
-		public static IRuntimeContextInstance ConstructByQualifiers(
+		public static TypeDescription ConstructByQualifiers(
 			IValue types,
 			IValue numberQualifiers = null,
 			IValue stringQualifiers = null,
@@ -236,7 +236,7 @@ namespace ScriptEngine.HostedScript.Library
 			return new TypeDescription(_types, paramNumberQ, paramStringQ, paramDateQ, paramBinaryDataQ);
 		}
 
-		public static IRuntimeContextInstance ConstructByOtherDescription(
+		public static TypeDescription ConstructByOtherDescription(
 			IValue typeDescription = null,
 			IValue addTypes = null,
 			IValue removeTypes = null,

@@ -52,7 +52,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Буфер, на основании которого будет создан поток или начальная емкость будущего потока. </param>
         ///
         [ScriptConstructor(Name = "По буферу или начальной емкости")]
-        public static IRuntimeContextInstance Constructor(IValue bufferOrCapacity)
+        public static MemoryStreamContext Constructor(IValue bufferOrCapacity)
         {
             if (bufferOrCapacity.DataType == DataType.Number)
             {
@@ -70,7 +70,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         ///
         ///
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static MemoryStreamContext Constructor()
         {
             return new MemoryStreamContext();
         }

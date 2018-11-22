@@ -100,13 +100,15 @@ namespace ScriptEngine.Machine
         {
             PrepareReentrantMethodExecution(sdo, methodIndex);
             var method = _module.Methods[methodIndex];
-            for (int i = 0; i < arguments.Length; i++)
+            for (int i = 0; i < method.Signature.Params.Length; i++)
             {
-                if (arguments[i] is IVariable)
+                if (i >= arguments.Length)
+                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
+                else if (arguments[i] is IVariable)
                 {
                     // TODO: Alias ?
                     _currentFrame.Locals[i] =
-                        Variable.CreateReference((IVariable) arguments[i], method.Variables[i].Identifier);
+                        Variable.CreateReference((IVariable)arguments[i], method.Variables[i].Identifier);
                 }
                 else if (arguments[i] == null)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
@@ -1244,115 +1246,22 @@ namespace ScriptEngine.Machine
             for (int i = argCount - 1; i >= 0; i--)
             {
                 var argValue = _operationStack.Pop();
-                argValues[i] = BreakVariableLink(argValue);
+                if(argValue.DataType != DataType.NotAValidValue)
+                    argValues[i] = BreakVariableLink(argValue);
             }
 
             var typeName = _operationStack.Pop().AsString();
-            var clrType = TypeManager.GetFactoryFor(typeName);
+            var factory = TypeManager.GetFactoryFor(typeName);
 
-            var ctors = clrType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
-                .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute))
-                .Select(x => new 
-                    {   CtorInfo = x,
-                        Parametrized = ((ScriptConstructorAttribute)x.GetCustomAttributes(typeof(ScriptConstructorAttribute), false)[0]).ParametrizeWithClassName 
-                    });
-
-            foreach (var ctor in ctors)
+            var constructor = factory.GetConstructor(typeName, argValues);
+            if(constructor == null)
             {
-                var parameters = ctor.CtorInfo.GetParameters();
-                List<object> argsToPass = new List<object>();
-                if (ctor.Parametrized)
-                {
-                    if (parameters.Length < 1)
-                    {
-                        continue;
-                    }
-                    if (parameters[0].ParameterType != typeof(string))
-                    {
-                        throw new InvalidOperationException("Type parametrized constructor must have first argument of type String");
-                    }
-                    argsToPass.Add(typeName);
-                    parameters = parameters.Skip(1).ToArray();
-                }
-
-                bool success = (parameters.Length == 0 && argCount == 0)
-                    ||(parameters.Length > 0 && parameters[0].ParameterType.IsArray);
-
-                if (parameters.Length > 0 && parameters.Length < argCount 
-                    && !parameters[parameters.Length-1].ParameterType.IsArray)
-                {
-                    success = false;
-                    continue;
-                }
-                
-                for (int i = 0; i < parameters.Length; i++)
-                {
-                    if (parameters[i].ParameterType.IsArray)
-                    {
-                        // captures all remained args
-                        IValue[] varArgs = new IValue[argCount - i];
-                        for (int j = i, k = 0; k < varArgs.Length; j++, k++)
-                        {
-                            varArgs[k] = argValues[j];
-                        }
-                        argsToPass.Add(varArgs);
-                        success = true;
-                        break;
-                    }
-                    else
-                    {
-                        if (i < argValues.Length)
-                        {
-
-                            if (argValues[i].DataType == DataType.NotAValidValue)
-                            {
-                                argsToPass.Add(null);
-                            }
-                            else
-                                argsToPass.Add(argValues[i]);
-
-                            success = true;
-                        }
-                        else
-                        {
-                            if (parameters[i].IsOptional)
-                            {
-                                argsToPass.Add(null);
-                                success = true;
-                            }
-                            else
-                            {
-                                success = false;
-                                break; // no match
-                            }
-                        }
-                    }
-                }
-
-                if (success)
-                {
-                    object instance = null;
-                    try
-                    {
-                        instance = ctor.CtorInfo.Invoke(null, argsToPass.ToArray());
-                    }
-                    catch (System.Reflection.TargetInvocationException e)
-                    {
-                        if (e.InnerException != null)
-                            throw e.InnerException;
-                        else
-                            throw;
-                    }
-
-                    _operationStack.Push((IValue)instance);
-                    NextInstruction();
-                    return;
-                }
-
+                throw new RuntimeException("Конструктор не найден (" + typeName + ")");
             }
 
-            throw new RuntimeException("Конструктор не найден ("+typeName+")");
-
+            var instance = constructor(typeName, argValues);
+            _operationStack.Push(instance);
+            NextInstruction();
 
         }
 
@@ -2168,7 +2077,7 @@ namespace ScriptEngine.Machine
 
         private void Integer(int arg)
         {
-            var num = (int)_operationStack.Pop().AsNumber();
+            var num = Math.Truncate(_operationStack.Pop().AsNumber());
             _operationStack.Push(ValueFactory.Create(num));
             NextInstruction();
         }
@@ -2288,11 +2197,33 @@ namespace ScriptEngine.Machine
 
         private void Pow(int arg)
         {
-            var powPower = (double)_operationStack.Pop().AsNumber();
-            var powBase = (double)_operationStack.Pop().AsNumber();
-            double power = Math.Pow(powBase, powPower);
-            _operationStack.Push(ValueFactory.Create((decimal)power));
+            var powPower = _operationStack.Pop().AsNumber();
+            var powBase = _operationStack.Pop().AsNumber();
+
+            int exp = (int)powPower;
+            decimal result;
+            if (exp >= 0 && exp == powPower)
+                result = PowInt(powBase, (uint)exp);
+            else
+                result = (decimal)Math.Pow((double)powBase, (double)powPower);
+
+            _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
+        }
+
+        private decimal PowInt(decimal bas, uint exp)
+        {
+            decimal pow = 1;
+
+            while (true)
+            {
+                if ((exp & 1) == 1) pow *= bas;
+                exp >>= 1;
+                if (exp == 0) break;
+                bas *= bas;
+            }
+
+            return pow;
         }
 
         private void Sqrt(int arg)

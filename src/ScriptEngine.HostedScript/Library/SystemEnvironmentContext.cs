@@ -174,7 +174,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </example>
         /// <returns>Соответствие</returns>
         [ContextMethod("ПеременныеСреды", "EnvironmentVariables")]
-        public IRuntimeContextInstance EnvironmentVariables()
+        public MapImpl EnvironmentVariables()
         {
             SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.EnvironmentVariables' is deprecated, use 'EnvironmentVariables' from global context");
             var varsMap = new MapImpl();
@@ -220,7 +220,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Create()
+        public static SystemEnvironmentContext Create()
         {
             return new SystemEnvironmentContext();
         }

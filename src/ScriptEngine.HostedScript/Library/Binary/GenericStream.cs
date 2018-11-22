@@ -41,6 +41,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         public GenericStream(Stream underlyingStream, bool readOnly)
         {
             _underlyingStream = underlyingStream;
+            _commonImpl = new GenericStreamImpl(_underlyingStream);
             _isReadOnly = readOnly;
         }
 

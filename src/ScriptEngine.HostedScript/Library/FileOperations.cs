@@ -81,7 +81,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="recursive">Флаг рекурсивного поиска в поддиректориях</param>
         /// <returns>Массив объектов Файл, которые были найдены.</returns>
         [ContextMethod("НайтиФайлы", "FindFiles")]
-        public IRuntimeContextInstance FindFiles(string dir, string mask = null, bool recursive = false)
+        public ArrayImpl FindFiles(string dir, string mask = null, bool recursive = false)
         {
             if (mask == null)
             {

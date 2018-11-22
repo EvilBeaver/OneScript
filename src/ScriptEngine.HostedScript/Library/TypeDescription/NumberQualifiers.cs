@@ -85,7 +85,7 @@ namespace ScriptEngine.HostedScript.Library
 		}
 
 		[ScriptConstructor(Name = "На основании описания числа")]
-		public static IRuntimeContextInstance Constructor(IValue digits = null,
+		public static NumberQualifiers Constructor(IValue digits = null,
 		                                                  IValue fractionDigits = null,
 		                                                  IValue allowedSign = null)
 		{

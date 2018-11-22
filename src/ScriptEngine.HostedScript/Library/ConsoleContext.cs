@@ -169,7 +169,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static ConsoleContext Constructor()
         {
             return new ConsoleContext();
         }
