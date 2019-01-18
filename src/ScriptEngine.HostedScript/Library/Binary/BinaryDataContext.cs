@@ -19,7 +19,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
     [ContextClass("ДвоичныеДанные", "BinaryData")]
     public class BinaryDataContext : AutoContext<BinaryDataContext>, IDisposable
     {
-        byte[] _buffer;
+        private byte[] _buffer;
 
         public BinaryDataContext(string filename)
         {
@@ -68,13 +68,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         }
 
 
-        public byte[] Buffer
-        {
-            get
-            {
-                return _buffer;
-            }
-        }
+        public byte[] Buffer => _buffer;
 
         public override string AsString()
         {
