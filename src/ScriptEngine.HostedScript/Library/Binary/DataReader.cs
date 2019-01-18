@@ -302,7 +302,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         {
             return _reader.ReadByte();
         }
-        
+
         /// <summary>
         /// 
         /// Прочитать байты из потока в БуферДвоичныхДанных.
@@ -314,7 +314,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// </remarks>
         ///
         /// <param name="buffer">
-        /// Буфер двоичных данных, в который требуется поместить прочитанные байты. </param>
+        /// Буфер двоичных данных, в который требуется поместить прочитанные байты. 
+        /// или Количество байтов, которые требуется прочитать (остальные параметры игнорируются).
+        /// Если не задано, то выполняется чтение всех данных до конца потока. </param>
         /// <param name="positionInBuffer">
         /// Позиция в буфере, начиная с которой требуется записать прочитанные данные. </param>
         /// <param name="number">
@@ -323,11 +325,15 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// <returns name="BinaryDataBuffer"/>
         ///
         [ContextMethod("ПрочитатьВБуферДвоичныхДанных", "ReadIntoBinaryDataBuffer")]
-        public IValue ReadIntoBinaryDataBuffer(IValue buffer, int positionInBuffer = 0, int number = 0)
+        public IValue ReadIntoBinaryDataBuffer(IValue buffer=null, int positionInBuffer = 0, int number = 0)
         {
-            if (buffer.DataType == DataType.Number && positionInBuffer == 0 && number == 0)
+            if (buffer==null)
             {
-                var stream = ReadSomeBytes(number);
+                return new BinaryDataBuffer(ReadSomeBytes(0).ToArray());
+            }
+            else if (buffer.DataType == DataType.Number)
+            {
+                var stream = ReadSomeBytes((int)buffer.AsNumber());
                 return new BinaryDataBuffer(stream.ToArray());
             }
             else
