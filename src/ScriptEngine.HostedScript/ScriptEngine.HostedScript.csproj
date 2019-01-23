@@ -18,6 +18,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Library\LanguagesEnum.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
   <PropertyGroup>
     <PackageId>OneScript.StandardLibrary</PackageId>
     <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>

@@ -36,10 +36,25 @@ namespace ScriptEngine.HostedScript.Library
         {
             var parser = new FormatParametersList(src);
             string str;
-            if (lang == null)
-                str = parser.EnumerateValues().FirstOrDefault();
-            else
+            if (lang != null)
                 str = parser.GetParamValue(lang);
+            else
+            {
+                if (GlobalProperties.SystemLanguage == LanguagesEnum.Russian)
+                {
+                    str = parser.GetParamValue("ru");
+                    if (str == null)
+                        str = parser.GetParamValue("en");
+                }
+                else
+                {
+                    str = parser.GetParamValue("en");
+                    if (str == null)
+                        str = parser.GetParamValue("ru");
+                }
+                if (str == null)
+                    str = parser.EnumerateValues().FirstOrDefault();
+            }
 
             return str == null ? String.Empty : str;
         }
