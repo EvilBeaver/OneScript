@@ -9,7 +9,7 @@ namespace ScriptEngine.HostedScript.Library
 {
 	public enum LanguagesEnum
     {
-		English,
+        English,
         Russian
     }
 }

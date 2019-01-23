@@ -86,7 +86,7 @@ namespace ScriptEngine.HostedScript
             var cfg = GetWorkingConfig();
             var SystemLanguageStr = cfg["SystemLanguage"];
 
-            if ((SystemLanguageStr != null && SystemLanguageStr.ToLower() == "ru") || (SystemLanguageStr == null && System.Globalization.CultureInfo.CurrentCulture.EnglishName.ToLower().Contains("russian")))
+            if ((SystemLanguageStr != null && String.Compare(SystemLanguageStr, "ru", true) >= 0) || (SystemLanguageStr == null && String.Compare(System.Globalization.CultureInfo.CurrentCulture.EnglishName, "russian", true) >= 0))
                 Locale.SystemLanguage = LanguagesEnum.Russian;
             else
                 Locale.SystemLanguage = LanguagesEnum.English; 
