@@ -87,9 +87,9 @@ namespace ScriptEngine.HostedScript
             var SystemLanguageStr = cfg["SystemLanguage"];
 
             if ((SystemLanguageStr != null && SystemLanguageStr.ToLower() == "ru") || (SystemLanguageStr == null && System.Globalization.CultureInfo.CurrentCulture.EnglishName.ToLower().Contains("russian")))
-                GlobalProperties.SystemLanguage = LanguagesEnum.Russian;
+                Locale.SystemLanguage = LanguagesEnum.Russian;
             else
-                GlobalProperties.SystemLanguage = LanguagesEnum.English; 
+                Locale.SystemLanguage = LanguagesEnum.English; 
         }
 
         private void InitLibraries(KeyValueConfig config)

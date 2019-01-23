@@ -136,7 +136,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                     {
                         return ValueFactory.Create();
                     }
-                    else
+                    else                        
                         throw new RuntimeException("Ошибка при получении значения атрибута контекста (ТекущееЗначение): Текущее значение JSON не может быть получено");
                 }
                 else
