@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ScriptEngine.HostedScript.Library
+namespace ScriptEngine.Machine
 {
 
-    static class Locale
+    public static class Locale
     {
         public static string SystemLanguageISOName;
 
