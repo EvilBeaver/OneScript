@@ -83,13 +83,12 @@ namespace ScriptEngine.HostedScript
             }
 
             // System language
-            var cfg = GetWorkingConfig();
-            var SystemLanguageStr = cfg["SystemLanguage"];
+            var SystemLanguageCfg = GetWorkingConfig()["SystemLanguage"];
 
-            if ((SystemLanguageStr != null && String.Compare(SystemLanguageStr, "ru", true) >= 0) || (SystemLanguageStr == null && String.Compare(System.Globalization.CultureInfo.CurrentCulture.EnglishName, "russian", true) >= 0))
-                Locale.SystemLanguage = LanguagesEnum.Russian;
+            if (SystemLanguageCfg != null)
+                Locale.SystemLanguageISOName = SystemLanguageCfg;
             else
-                Locale.SystemLanguage = LanguagesEnum.English; 
+                Locale.SystemLanguageISOName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
         }
 
         private void InitLibraries(KeyValueConfig config)
