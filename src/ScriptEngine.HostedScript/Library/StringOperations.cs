@@ -110,14 +110,7 @@ namespace ScriptEngine.HostedScript.Library
             
             if(!string.IsNullOrEmpty(inputString))
             {
-                if(!string.IsNullOrEmpty(stringDelimiter))
-                {
-                    arrParsed = inputString.Split(new string[] { stringDelimiter }, (bool) includeEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
-                }
-                else
-                {
-                    arrParsed = new string[] { inputString };
-                }
+                arrParsed = inputString.Split(stringDelimiter?.ToCharArray(), (bool) includeEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
             }
             else
             {
