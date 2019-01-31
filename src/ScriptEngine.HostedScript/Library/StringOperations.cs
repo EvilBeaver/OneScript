@@ -26,22 +26,17 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
-        /// Функция НСтр имеет ограниченную поддержку и может использоваться только для упрощения портирования кода из 1С.
-        /// Возвращает только строку на первом языке из списка, если второй параметр не указан. (Игнорирует "язык по-умолчанию")
+        /// Получает строку на языке, заданном во втором параметре (коды языков в соответствии с  ISO 639-1)
+        /// или на текущем языке системы.
         /// </summary>
         /// <param name="src">Строка на нескольких языках</param>
-        /// <param name="lang">Код языка (если не указан, возвращается первый возможный вариант)</param>
+        /// <param name="lang">Код языка (если не указан, возвращает вариант для текущего языка системы, 
+        /// если вариант не найден, то возвращает вариант для английского языка, если не задан вариант для английского языка,
+        /// то возвращает первый вариант из списка)</param>
         [ContextMethod("НСтр", "NStr")]
         public string NStr(string src, string lang = null)
         {
-            var parser = new FormatParametersList(src);
-            string str;
-            if (lang == null)
-                str = parser.EnumerateValues().FirstOrDefault();
-            else
-                str = parser.GetParamValue(lang);
-
-            return str == null ? String.Empty : str;
+            return Locale.NStr(src, lang);
         }
 
         /// <summary>
