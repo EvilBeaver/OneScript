@@ -57,7 +57,7 @@ namespace ScriptEngine.Compiler
         internal static CompilerException TokenExpected(params Token[] expected)
         {
             var names = expected.Select(x => Enum.GetName(typeof(Token), x));
-            return new CompilerException(Locale.NStr("ru='Ожидается символ: ';en='Expecting: '") + String.Join("/", names));
+            return new CompilerException(Locale.NStr("ru='Ожидается символ: ';en='Expecting symbol: '") + String.Join("/", names));
         }
 
         internal static CompilerException TokenExpected(string tokens)
