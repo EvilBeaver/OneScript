@@ -91,7 +91,7 @@ namespace ScriptEngine.Compiler
         }
 
         internal static CompilerException UnexpectedEndOfText()
-        {            
+        {
             return new CompilerException(Locale.NStr("ru='Обнаружено логическое завершение текста модуля';en='Logical end of module source text encountered'"));
         }
 
@@ -101,7 +101,7 @@ namespace ScriptEngine.Compiler
         }
 
         internal static CompilerException ContinueOutsideOfLoop()
-        {            
+        {
             return new CompilerException(Locale.NStr("ru='Оператор \"Продолжить\" может использоваться только внутри цикла';en='Continue operator may be used only within loop'"));
         }
 
@@ -112,7 +112,6 @@ namespace ScriptEngine.Compiler
 
         internal static CompilerException ProcReturnsAValue()
         {
-            
             return new CompilerException(Locale.NStr("ru='Процедуры не могут возвращать значение';en='Procedures cannot return value'"));
         }
 
@@ -123,7 +122,6 @@ namespace ScriptEngine.Compiler
 
         internal static CompilerException MismatchedRaiseException()
         {
-            
             return new CompilerException(Locale.NStr("ru='Оператор \"ВызватьИсключение\" без параметров может использоваться только в блоке \"Исключение\"';en='Raise operator may be used without arguments only when handling exception'"));
         }
 
