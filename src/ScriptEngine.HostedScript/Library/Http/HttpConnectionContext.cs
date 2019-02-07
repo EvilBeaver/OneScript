@@ -60,6 +60,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             Timeout = timeout;
             _proxy = proxy;
             UseOSAuthentication = useOSAuth;
+
         }
 
         [ContextProperty("ИспользоватьАутентификациюОС", "UseOSAuthentication", CanWrite=false)]
@@ -111,9 +112,6 @@ namespace ScriptEngine.HostedScript.Library.Http
         {
             get; private set;
         }
-
-        [ContextProperty("РазрешитьПеренаправление", "AllowRedirect")]
-        public bool AllowRedirect { get; set; }
 
         /// <summary>
         /// Получить данные методом GET
@@ -248,7 +246,6 @@ namespace ScriptEngine.HostedScript.Library.Http
         private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null)
         {
             var webRequest = CreateRequest(request.ResourceAddress);
-            webRequest.AllowAutoRedirect = AllowRedirect;
             webRequest.Method = method;
             SetRequestHeaders(request, webRequest);
             SetRequestBody(request, webRequest);
