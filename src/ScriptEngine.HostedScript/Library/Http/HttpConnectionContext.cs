@@ -60,7 +60,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             Timeout = timeout;
             _proxy = proxy;
             UseOSAuthentication = useOSAuth;
-
+ 
         }
 
         [ContextProperty("ИспользоватьАутентификациюОС", "UseOSAuthentication", CanWrite=false)]
