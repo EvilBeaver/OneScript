@@ -61,8 +61,6 @@ namespace ScriptEngine.HostedScript.Library.Http
             _proxy = proxy;
             UseOSAuthentication = useOSAuth;
             AllowRedirect = true;
-
-
         }
 
         [ContextProperty("ИспользоватьАутентификациюОС", "UseOSAuthentication", CanWrite=false)]
