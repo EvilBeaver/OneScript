@@ -198,7 +198,9 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("УстановитьПеременнуюСреды","SetEnvironmentVariable")]
         public void SetEnvironmentVariable(string varName, string value)
         {
-            SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.SetEnvironmentVariable' is deprecated, use 'SetEnvironmentVariable' from global context");
+            SystemLogger.Write(string.Format(Locale.NStr("en='{0}';ru='{1}'"),
+                "WARNING! Deprecated method: \"SystemInfo.SetEnvironmentVariable\" is deprecated, use \"SetEnvironmentVariable\" from global context",
+                "Предупреждение! Устаревший метод: \"СистемнаяИнформация.УстановитьПеременнуюСреды\" устарел, используйте метод глобального контекста \"УстановитьПеременнуюСреды\""));
             System.Environment.SetEnvironmentVariable(varName, value);
         }
 
@@ -210,7 +212,9 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьПеременнуюСреды", "GetEnvironmentVariable")]
         public IValue GetEnvironmentVariable(string varName)
         {
-            SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.GetEnvironmentVariable' is deprecated, use 'GetEnvironmentVariable' from global context");
+            SystemLogger.Write(string.Format(Locale.NStr("en='{0}';ru='{1}'"),
+               "WARNING! Deprecated method: \"SystemInfo.GetEnvironmentVariable\" is deprecated, use \"GetEnvironmentVariable\" from global context",
+                "Предупреждение! Устаревший метод: \"СистемнаяИнформация.ПолучитьПеременнуюСреды\" устарел, используйте метод глобального контекста \"ПолучитьПеременнуюСреды\""));
             string value = System.Environment.GetEnvironmentVariable(varName);
             if (value == null)
                 return ValueFactory.Create();
