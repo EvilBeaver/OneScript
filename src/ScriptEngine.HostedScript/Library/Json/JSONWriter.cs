@@ -127,9 +127,9 @@ namespace ScriptEngine.HostedScript.Library.Json
             for (var i = 0; i < Length; i++)
             {
                 char c = sb[i];
-                if (EscapeSlash && c == '\\')
+                if (EscapeSlash && c == '/')
                 {
-                    sb.Replace("\\", "\\\\", i, 1);
+                    sb.Replace("/", "\\/", i, 1);
                     Length++;
                     i++;
                 }
@@ -193,9 +193,9 @@ namespace ScriptEngine.HostedScript.Library.Json
                     Length++;
                     i++;
                 }
-                else if (c == '/')
+                else if (c == '\\')
                 {
-                    sb.Replace("/", "\\/", i, 1);
+                    sb.Replace("\\", "\\\\", i, 1);
                     Length++;
                     i++;
                 }
