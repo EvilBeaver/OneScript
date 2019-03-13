@@ -23,11 +23,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         private int _width;
         private readonly WeakReference _owner;
 
-        // id нужен для правильной работы функции FindProperty.
-        // Порядковый номер колонки не может быть использовать из-за своей изменчивости.
-        private readonly int _id;
-
-        public ValueTableColumn(ValueTableColumnCollection Owner, int id, string Name, string Title, TypeDescription Type, int Width)
+        public ValueTableColumn(ValueTableColumnCollection Owner, string Name, string Title, TypeDescription Type, int Width)
         {
             _name = Name;
             _title = Title;
@@ -35,13 +31,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             _width = Width;
 
             _owner = new WeakReference(Owner);
-            _id = id;
-
-        }
-
-        public int ID
-        {
-            get { return _id; }
         }
 
         /// <summary>
