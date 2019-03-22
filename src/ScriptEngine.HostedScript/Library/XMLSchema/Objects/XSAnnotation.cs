@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -91,6 +92,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         void IXSListOwner.OnListInsert(XSComponentList List, IXSComponent component)
         {
+            Contract.Requires(component is IXSAnnotationItem);
             component.BindToContainer(_rootContainer, this);
             InternalObject.Items.Add(component.SchemaObject);
             Components.Add(component);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -6,11 +7,11 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ИнформацияДляПриложенияXS", "XSAppInfo")]
-    public class XSAppInfo : AutoContext<XSAppInfo>, IXSComponent, IXSAnnotationItem
+    public class XSAppInfo : AutoContext<XSAppInfo>, IXSAnnotationItem
     {
 
         private readonly XmlSchemaAppInfo _appInfo;
-        private IXSComponent _container;
+        private XSAnnotation _container;
         private IXSComponent _rootContainer;
 
         private XSAppInfo() => _appInfo = new XmlSchemaAppInfo();
@@ -80,8 +81,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
+            Contract.Requires(container is XSAnnotation);
             _rootContainer = rootContainer;
-            _container = container;
+            _container = (XSAnnotation)container;
         }
 
         #endregion
