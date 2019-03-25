@@ -132,6 +132,10 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsObject();
             }
+            else if (typeof(IValue).IsAssignableFrom(type))
+            {
+                valueObj = value;
+            }
             else
             {
                 valueObj = CastToCLRObject(value);
@@ -196,9 +200,13 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return ValueFactory.Create((IRuntimeContextInstance)objParam);
             }
+            else if (typeof(IValue).IsAssignableFrom(type))
+            {
+                return (IValue)objParam;
+            }
             else
             {
-                throw new NotSupportedException("Type is not supported");
+                throw new NotSupportedException($"Type {type} is not supported");
             }
         }
 
