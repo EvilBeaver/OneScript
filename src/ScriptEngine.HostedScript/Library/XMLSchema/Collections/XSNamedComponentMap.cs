@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Linq;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -12,10 +12,16 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     public class XSNamedComponentMap : AutoContext<XSNamedComponentMap>, ICollectionContext, IEnumerable<IXSNamedComponent>
     {
         private readonly List<IXSNamedComponent> _items;
-
+      
         internal XSNamedComponentMap() => _items = new List<IXSNamedComponent>();
 
-        internal void Add(IXSNamedComponent value) => _items.Add(value);
+        internal void Add(IXSNamedComponent value)
+        {
+            if (string.IsNullOrWhiteSpace(value.Name))
+                return;
+            _items.Add(value);
+        }
+
         internal void Delete(IXSNamedComponent value) => _items.Remove(value);
 
         #region OneScript
@@ -26,11 +32,20 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public int Count() => _items.Count;
 
         [ContextMethod("Получить", "Get")]
-        public IXSNamedComponent Get(int index) => _items[index];
-
-        public IXSNamedComponent Get(string name)
+        public IXSNamedComponent Get(IValue value)
         {
-            throw new NotImplementedException();
+            DataType DataType = value.DataType;
+            switch (DataType)
+            {
+                case DataType.String:
+                    return _items.FirstOrDefault(x => x.Name.Equals(value.AsString()));
+
+                case DataType.Number:
+                    return _items[(int)value.AsNumber()];
+
+                default:
+                    throw RuntimeException.InvalidArgumentType();
+            }
         }
 
         public IXSNamedComponent Get(string name, string namespaceURI)

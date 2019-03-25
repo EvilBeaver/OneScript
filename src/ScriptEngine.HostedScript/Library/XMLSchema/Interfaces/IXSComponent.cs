@@ -6,7 +6,7 @@ using System.Xml.Schema;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    internal interface IXSComponent : IValue
+    public interface IXSComponent : IValue
     {
         #region OneScript
 

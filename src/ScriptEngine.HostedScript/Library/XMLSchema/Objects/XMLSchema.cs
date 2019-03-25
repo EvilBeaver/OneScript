@@ -17,12 +17,22 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private XMLSchema()
         {
             _schema = new XmlSchema();
+            Components = new XSComponentFixedList();
+            Annotations = new XSComponentFixedList();
             Directives = new XSComponentList(this);
             Content = new XSComponentList(this);
-            Components = new XSComponentFixedList();
+            BlockDefault = new XSDisallowedSubstitutionsUnion();
+            FinalDefault = new XSSchemaFinalUnion();
+            AttributeGroupDefinitions = new XSNamedComponentMap();
+            NotationDeclarations = new XSNamedComponentMap();
+            ElementDeclarations = new XSNamedComponentMap();
+            AttributeGroupDefinitions = new XSNamedComponentMap();
+            ModelGroupDefinitions = new XSNamedComponentMap();
+            IdentityConstraintDefinitions = new XSNamedComponentMap();
+            TypeDefinitions = new XSNamedComponentMap();
         }
 
-        private static string xmltext(XmlSchema xmlSchema)
+        private static string XMLText(XmlSchema xmlSchema)
         {
             if (!xmlSchema.IsCompiled)
             {
@@ -64,13 +74,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                     break;
             }
         }
-        
+
         #region OneScript
 
         #region Properties
 
         [ContextProperty("Аннотация", "Annotation")]
-        public XSAnnotation Annotation { get; }
+        public XSAnnotation Annotation => null;
 
         [ContextProperty("Компоненты", "Components")]
         public XSComponentFixedList Components { get; }
@@ -87,6 +97,58 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         [ContextProperty("ТипКомпоненты", "ComponentType")]
         public XSComponentType ComponentType => XSComponentType.Schema;
 
+        [ContextProperty("ЭлементDOM", "DOMElement")]
+        public IValue DOMElement => null;
+        
+        [ContextProperty("URIПространстваИменСхемыДляСхемыXML", "SchemaForSchemaNamespaceURI")]
+        public string Namespace => XmlSchema.Namespace;
+
+        [ContextProperty("Аннотации", "Annotations")]
+        public XSComponentFixedList Annotations { get; }
+
+        [ContextProperty("БлокировкаПоУмолчанию", "BlockDefault")]
+        public XSDisallowedSubstitutionsUnion BlockDefault { get; }
+
+        [ContextProperty("Версия", "Version")]
+        public string Version
+        {
+            get => _schema.Version;
+            set => _schema.Version = value;
+        }
+
+        [ContextProperty("Директивы", "Directives")]
+        public XSComponentList Directives { get; }
+
+        [ContextProperty("ДокументDOM", "DOMDocument")]
+        public IValue DOMDocument => null;
+
+        [ContextProperty("ЗавершенностьПоУмолчанию", "FinalDefault")]
+        public XSSchemaFinalUnion FinalDefault { get; }
+
+        [ContextProperty("ОбъявленияАтрибутов", "AttributeDeclarations")]
+        public XSNamedComponentMap AttributeDeclarations { get; }
+
+        [ContextProperty("ОбъявленияНотаций", "NotationDeclarations")]
+        public XSNamedComponentMap NotationDeclarations { get; }
+
+        [ContextProperty("ОбъявленияЭлементов", "ElementDeclarations")]
+        public XSNamedComponentMap ElementDeclarations { get; }
+
+        [ContextProperty("ОпределенияГруппАтрибутов", "AttributeGroupDefinitions")]
+        public XSNamedComponentMap AttributeGroupDefinitions { get; }
+
+        [ContextProperty("ОпределенияГруппМоделей", "ModelGroupDefinitions")]
+        public XSNamedComponentMap ModelGroupDefinitions { get; }
+
+        [ContextProperty("ОпределенияОграниченийИдентичности", "IdentityConstraintDefinitions")]
+        public XSNamedComponentMap IdentityConstraintDefinitions { get; }
+
+        [ContextProperty("ОпределенияТипов", "TypeDefinitions")]
+        public XSNamedComponentMap TypeDefinitions { get; }
+
+        [ContextProperty("ПрефиксСхемыДляСхемыXML", "SchemaForSchemaPrefix")]
+        public string SchemaForSchemaPrefix { get; }
+
         [ContextProperty("ПространствоИмен", "TargetNamespace")]
         public string TargetNamespace
         {
@@ -94,15 +156,32 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set => _schema.TargetNamespace = value;
         }
 
-        [ContextProperty("URIПространстваИменСхемыДляСхемыXML", "SchemaForSchemaNamespaceURI")]
-        public string Namespace => XmlSchema.Namespace;
-
-        [ContextProperty("Директивы", "Directives")]
-        public XSComponentList Directives { get; }
+        [ContextProperty("РасположениеСхемы", "SchemaLocation")]
+        public string SchemaLocation { get; set;  }
 
         [ContextProperty("Содержимое", "Content")]
         public XSComponentList Content { get; }
 
+        [ContextProperty("СхемаДляСхемыXML", "SchemaForSchema")]
+        public XMLSchema SchemaForSchema { get; }
+
+        [ContextProperty("ФормаАтрибутовПоУмолчанию", "AttributeFormDefault")]
+        public XSForm AttributeFormDefault
+        {
+            get => XSForm.FromNativeValue(_schema.AttributeFormDefault);
+            set => _schema.AttributeFormDefault = XSForm.ToNativeValue(value); 
+        }
+
+        [ContextProperty("ФормаЭлементовПоУмолчанию", "ElementFormDefault")]
+        public XSForm ElementFormDefault
+        {
+            get => XSForm.FromNativeValue(_schema.ElementFormDefault);
+            set => _schema.ElementFormDefault = XSForm.ToNativeValue(value);
+        }
+
+        [ContextProperty("Язык", "Lang")]
+        public string Lang { get; set; }
+    
         #endregion
 
         #region Methods
@@ -123,7 +202,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public bool Contains(IValue component) => Components.Contains(component);
 
         [ContextMethod("ТекстXML", "XMLText")]
-        public string XMLText() => xmltext(_schema);
+        public string XMLText() => XMLText(_schema);
 
         #endregion
 
@@ -149,14 +228,16 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         void IXSListOwner.OnListInsert(XSComponentList List, IXSComponent component)
         {
             component.BindToContainer(this, this);
-            if (List == Directives)
-            {
-                //_schema.Includes.Add(component.XmlSchemaObject);
-            }
+            Components.Add(component);
+
+            if (component is IXSDirective)
+                _schema.Includes.Add(component.SchemaObject);
             else
-            {
-                //_schema.Items.Add(component.XmlSchemaObject);
-            }
+                _schema.Items.Add(component.SchemaObject);
+
+            if (component is IXSNamedComponent)
+                if (component is XSElementDeclaration)
+                    ElementDeclarations.Add((IXSNamedComponent)component);
         }
 
         void IXSListOwner.OnListDelete(XSComponentList List, IXSComponent component) { }
