@@ -11,7 +11,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     /// </summary>
     /// <see cref="System.Xml.Schema.XmlSchemaImport"/> 
     [ContextClass("ИмпортXS", "XSImport")]
-    public class XSImport : AutoContext<XSImport>, IXSComponent, IXSDirective
+    public class XSImport : AutoContext<XSImport>, IXSDirective
     {
 
         private readonly XmlSchemaImport _import;

@@ -6,7 +6,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ОбъявлениеЭлементаXS", "XSElementDeclaration")]
-    public class XSElementDeclaration : AutoContext<XSElementDeclaration>, IXSComponent, IXSAnnotated
+    public class XSElementDeclaration : AutoContext<XSElementDeclaration>, IXSFragment
     {
 
         private readonly XmlSchemaElement _element;

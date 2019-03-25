@@ -6,7 +6,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ПереопределениеXS", "XSRedefine")]
-    public class XSRedefine : AutoContext<XSRedefine>, IXSComponent, IXSDirective, IXSListOwner
+    public class XSRedefine : AutoContext<XSRedefine>, IXSDirective, IXSListOwner
     {
 
         private readonly XmlSchemaRedefine _redefine;

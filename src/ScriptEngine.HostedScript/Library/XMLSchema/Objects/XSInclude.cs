@@ -6,7 +6,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ВключениеXS", "XSInclude")]
-    public class XSInclude : AutoContext<XSInclude>, IXSComponent, IXSDirective
+    public class XSInclude : AutoContext<XSInclude>, IXSDirective
     {
 
         private readonly XmlSchemaInclude _include;

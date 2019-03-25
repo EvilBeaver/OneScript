@@ -1,7 +1,7 @@
 ﻿namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    internal interface IXSAnnotated
+    public interface IXSAnnotated : IXSComponent
     {
-        XSAnnotation Annotation { get; set; }
+        new XSAnnotation Annotation { get; set; }
     }
 }
