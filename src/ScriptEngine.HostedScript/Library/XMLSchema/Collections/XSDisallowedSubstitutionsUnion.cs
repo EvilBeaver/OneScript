@@ -5,7 +5,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ОбъединениеНедопустимыхПодстановкиXS", "XSDisallowedSubstitutionsUnion")]
-    public class XSDisallowedSubstitutionsUnion: AutoContext<XMLSchema>
+    public class XSDisallowedSubstitutionsUnion : AutoContext<XSDisallowedSubstitutionsUnion>
     {
         private ArrayImpl _values;
 
