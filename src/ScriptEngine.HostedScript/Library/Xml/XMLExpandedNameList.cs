@@ -16,7 +16,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
     /// </summary>
     /// <see cref="XMLExpandedName"/>
     /// <seealso cref="XMLSchema.XSSimpleTypeDefinition"/>
-    class XMLExpandedNameList: AutoContext<XMLExpandedNameList>, ICollectionContext, IEnumerable<XMLExpandedName>
+    public class XMLExpandedNameList: AutoContext<XMLExpandedNameList>, ICollectionContext, IEnumerable<XMLExpandedName>
     {
         private readonly List<XMLExpandedName> _items;
 
