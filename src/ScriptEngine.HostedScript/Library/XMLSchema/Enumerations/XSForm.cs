@@ -12,10 +12,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         {
         }
 
-        public static XSForm FromNativeValue(XmlSchemaForm native)
-        {
-            return EnumerationXSForm.FromNativeValue(native);
-        }
+        public static XSForm FromNativeValue(XmlSchemaForm native) => EnumerationXSForm.FromNativeValue(native);
 
         public static XmlSchemaForm ToNativeValue(IValue wrapper)
         {
