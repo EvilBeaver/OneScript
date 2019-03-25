@@ -59,8 +59,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static EnumerationXSSchemaFinal CreateInstance()
         {
 
-            TypeDescriptor type = TypeManager.RegisterType("ПеречислениеЗавершенностьСхемыXS", typeof(EnumerationXSForm));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("ЗавершенностьСхемыXS", typeof(XSForm));
+            TypeDescriptor type = TypeManager.RegisterType("ПеречислениеЗавершенностьСхемыXS", typeof(EnumerationXSSchemaFinal));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("ЗавершенностьСхемыXS", typeof(XSSchemaFinal));
 
             TypeManager.RegisterAliasFor(type, "EnumerationXSSchemaFinal");
             TypeManager.RegisterAliasFor(enumValueType, "XSSchemaFinal");
