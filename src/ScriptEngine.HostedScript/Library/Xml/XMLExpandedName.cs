@@ -23,6 +23,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         public XmlQualifiedName NativeValue { get; }
 
+        public override string ToString() => NativeValue.ToString();
+
         /// <summary>
         /// URI пространства имен.
         /// </summary>
