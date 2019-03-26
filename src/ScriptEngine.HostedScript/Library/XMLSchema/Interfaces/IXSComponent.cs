@@ -1,26 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ScriptEngine.Machine;
+﻿using ScriptEngine.Machine;
 using System.Xml.Schema;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    public interface IXSComponent : IValue
+    public interface IXSComponent : IRuntimeContextInstance, IValue
     {
         #region OneScript
 
         XSAnnotation Annotation         { get; }
         XSComponentFixedList Components { get; }
-        IValue Container                { get; }
-        IValue RootContainer            { get; }
+        IXSComponent Container          { get; }
+        IXSComponent RootContainer      { get; }
         XMLSchema Schema                { get; }
         XSComponentType ComponentType   { get; }
         //DOMElement
 
-        IValue CloneComponent(IValue recursive = null);
+        IXSComponent CloneComponent(bool recursive = true);
         void UpdateDOMElement();
-        bool Contains(IValue component);
+        bool Contains(IXSComponent component);
 
         #endregion
 

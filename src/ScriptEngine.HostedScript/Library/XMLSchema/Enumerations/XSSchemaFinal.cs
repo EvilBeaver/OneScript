@@ -59,11 +59,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static EnumerationXSSchemaFinal CreateInstance()
         {
 
-            TypeDescriptor type = TypeManager.RegisterType("ПеречислениеЗавершенностьСхемыXS", typeof(EnumerationXSSchemaFinal));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("ЗавершенностьСхемыXS", typeof(XSSchemaFinal));
+            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSSchemaFinal", typeof(EnumerationXSSchemaFinal));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("XSSchemaFinal", typeof(XSSchemaFinal));
 
-            TypeManager.RegisterAliasFor(type, "EnumerationXSSchemaFinal");
-            TypeManager.RegisterAliasFor(enumValueType, "XSSchemaFinal");
+            TypeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьСхемыXS");
+            TypeManager.RegisterAliasFor(enumValueType, "ЗавершенностьСхемыXS");
 
             EnumerationXSSchemaFinal instance = new EnumerationXSSchemaFinal(type, enumValueType);
 

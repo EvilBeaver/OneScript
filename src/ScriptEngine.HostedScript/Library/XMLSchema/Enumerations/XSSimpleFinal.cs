@@ -56,11 +56,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static EnumerationXSSimpleFinal CreateInstance()
         {
 
-            TypeDescriptor type = TypeManager.RegisterType("ПеречислениеЗавершенностьПростогоТипаXS", typeof(EnumerationXSSimpleFinal));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("ЗавершенностьПростогоТипаXS", typeof(XSSimpleFinal));
+            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSSimpleFinal", typeof(EnumerationXSSimpleFinal));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("XSSimpleFinal", typeof(XSSimpleFinal));
 
-            TypeManager.RegisterAliasFor(type, "EnumerationXSSimpleFinal");
-            TypeManager.RegisterAliasFor(enumValueType, "XSSimpleFinal");
+            TypeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьПростогоТипаXS");
+            TypeManager.RegisterAliasFor(enumValueType, "ЗавершенностьПростогоТипаXS");
 
             EnumerationXSSimpleFinal instance = new EnumerationXSSimpleFinal(type, enumValueType);
 

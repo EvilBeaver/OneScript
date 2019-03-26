@@ -19,6 +19,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         {
             if (string.IsNullOrWhiteSpace(value.Name))
                 return;
+
             _items.Add(value);
         }
 

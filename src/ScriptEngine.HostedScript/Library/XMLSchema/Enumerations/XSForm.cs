@@ -14,11 +14,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         public static XSForm FromNativeValue(XmlSchemaForm native) => EnumerationXSForm.FromNativeValue(native);
 
-        public static XmlSchemaForm ToNativeValue(IValue wrapper)
-        {
-            Contract.Requires(wrapper is XSForm);
-            return ((XSForm)wrapper).UnderlyingValue;
-        }
+        public static XmlSchemaForm ToNativeValue(XSForm wrapper) => wrapper.UnderlyingValue;
     }
        
     [SystemEnum("ФормаПредставленияXS", "XSForm")]
@@ -54,11 +50,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static EnumerationXSForm CreateInstance()
         {
  
-            TypeDescriptor type          = TypeManager.RegisterType("ПеречислениеФормаПредставленияXS",  typeof(EnumerationXSForm));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("ФормаПредставленияXS",              typeof(XSForm));
+            TypeDescriptor type          = TypeManager.RegisterType("EnumerationXSForm",  typeof(EnumerationXSForm));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("XSForm",             typeof(XSForm));
 
-            TypeManager.RegisterAliasFor(type,          "EnumerationXSForm");
-            TypeManager.RegisterAliasFor(enumValueType, "XSForm");
+            TypeManager.RegisterAliasFor(type,          "ПеречислениеФормаПредставленияXS"); 
+            TypeManager.RegisterAliasFor(enumValueType, "ФормаПредставленияXS");
 
             EnumerationXSForm instance = new EnumerationXSForm(type, enumValueType);
 

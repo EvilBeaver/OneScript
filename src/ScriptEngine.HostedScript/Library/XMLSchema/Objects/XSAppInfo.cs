@@ -11,8 +11,6 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     {
 
         private readonly XmlSchemaAppInfo _appInfo;
-        private XSAnnotation _container;
-        private IXSComponent _rootContainer;
 
         private XSAppInfo() => _appInfo = new XmlSchemaAppInfo();
 
@@ -27,13 +25,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSComponentFixedList Components => null;
 
         [ContextProperty("Контейнер", "Container")]
-        public IValue Container => _container;
+        public IXSComponent Container { get; private set; }
 
         [ContextProperty("КорневойКонтейнер", "RootContainer")]
-        public IValue RootContainer => _rootContainer;
+        public IXSComponent RootContainer { get; private set; }
 
         [ContextProperty("Схема", "Schema")]
-        public XMLSchema Schema => _rootContainer.Schema;
+        public XMLSchema Schema => RootContainer.Schema;
 
         [ContextProperty("ТипКомпоненты", "ComponentType")]
         public XSComponentType ComponentType => XSComponentType.AppInfo;
@@ -50,19 +48,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IValue CloneComponent(IValue recursive = null)
-        {
-            throw new NotImplementedException();
-        }
+        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
-        public void UpdateDOMElement()
-        {
-            throw new NotImplementedException();
-        }
+        public void UpdateDOMElement() => throw new NotImplementedException();
 
         [ContextMethod("Содержит", "Contains")]
-        public bool Contains(IValue component) => false;
+        public bool Contains(IXSComponent component) => false;
 
         #endregion
 
@@ -82,8 +74,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
             Contract.Requires(container is XSAnnotation);
-            _rootContainer = rootContainer;
-            _container = (XSAnnotation)container;
+            RootContainer = rootContainer;
+            Container = container;
         }
 
         #endregion

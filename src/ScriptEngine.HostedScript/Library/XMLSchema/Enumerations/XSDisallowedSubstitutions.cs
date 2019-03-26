@@ -39,6 +39,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         internal static XSDisallowedSubstitutions FromNativeValue(XmlSchemaDerivationMethod native)
         {
+            
             switch (native)
             {
                 case XmlSchemaDerivationMethod.All:
@@ -57,11 +58,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static EnumerationXSDisallowedSubstitutions CreateInstance()
         {
 
-            TypeDescriptor type = TypeManager.RegisterType("ПеречислениеНедопустимыеПодстановкиXS", typeof(EnumerationXSForm));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("НедопустимыеПодстановкиXS", typeof(XSForm));
+            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSDisallowedSubstitutions", typeof(EnumerationXSDisallowedSubstitutions));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("XSDisallowedSubstitutions",   typeof(XSDisallowedSubstitutions));
 
-            TypeManager.RegisterAliasFor(type, "EnumerationXSDisallowedSubstitutions");
-            TypeManager.RegisterAliasFor(enumValueType, "XSDisallowedSubstitutions");
+            TypeManager.RegisterAliasFor(type, "ПеречислениеНедопустимыеПодстановкиXS"); 
+            TypeManager.RegisterAliasFor(enumValueType, "НедопустимыеПодстановкиXS");
 
             EnumerationXSDisallowedSubstitutions instance = new EnumerationXSDisallowedSubstitutions(type, enumValueType);
 
@@ -74,7 +75,3 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
     }
 }
-
-
-
-

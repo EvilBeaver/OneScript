@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("СписокКомпонентXS", "XSComponentList")]
-    public class XSComponentList : AutoContext<XSComponentList>, ICollectionContext, IEnumerable<IValue>
+    public class XSComponentList : AutoContext<XSComponentList>, ICollectionContext, IEnumerable<IXSComponent>
     {
         private readonly IXSListOwner _owner;
-        private readonly List<IValue> _items;
+        private readonly List<IXSComponent> _items;
       
         internal XSComponentList(IXSListOwner owner)
         {
-            _items = new List<IValue>();
+            _items = new List<IXSComponent>();
             _owner = owner;
         }
 
@@ -24,26 +21,23 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Methods
 
         [ContextMethod("Вставить", "Insert")]
-        public void Insert(int index, IValue value)
+        public void Insert(int index, IXSComponent value)
         {
-            Contract.Requires(value is IXSComponent);
-
             if (_items.Contains(value))
                 return;
 
-            _owner.OnListInsert(this, (IXSComponent)value);
+            _owner.OnListInsert(this, value);
             _items.Insert(index, value);
         }
 
         [ContextMethod("Добавить", "Add")]
-        public void Add(IValue value)
+        public void Add(IXSComponent value)
         {
-            Contract.Requires(value is IXSComponent);
 
             if (_items.Contains(value))
                 return;
 
-            _owner.OnListInsert(this, (IXSComponent)value);
+            _owner.OnListInsert(this, value);
             _items.Add(value);
         }
 
@@ -58,44 +52,40 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         [ContextMethod("Получить", "Get")]
-        public IValue Get(int index) => _items[index];
+        public IXSComponent Get(int index) => _items[index];
      
         [ContextMethod("Содержит", "Contains")]
-        public bool Contains(IValue value) => _items.Contains(value);
+        public bool Contains(IXSComponent value) => _items.Contains(value);
 
         [ContextMethod("Удалить", "Delete")]
         public void Delete(int index)
         {
-            IValue value = _items[index];
+            IXSComponent value = _items[index];
 
-            _owner.OnListDelete(this, (IXSComponent)value);
+            _owner.OnListDelete(this, value);
             _items.RemoveAt(index);
         }
 
-        public void Delete(IValue value)
+        public void Delete(IXSComponent value)
         {
-            Contract.Requires(value is IXSComponent);
-
             int index = _items.IndexOf(value);
             if (index == -1)
                 return;
 
-            _owner.OnListDelete(this, (IXSComponent)value);
+            _owner.OnListDelete(this, value);
             _items.RemoveAt(index);
         }
 
         [ContextMethod("Установить", "Set")]
-        public void Set(int index, IValue value)
+        public void Set(int index, IXSComponent value)
         {
-            Contract.Requires(value is IXSComponent);
-
             if (_items.Contains(value))
                 return;
 
-            IValue currentValue = _items[index];
+            IXSComponent currentValue = _items[index];
 
-            _owner.OnListDelete(this, (IXSComponent)currentValue);
-            _owner.OnListInsert(this, (IXSComponent)value);
+            _owner.OnListDelete(this, currentValue);
+            _owner.OnListInsert(this, value);
 
             _items[index] = value;
         }
@@ -112,7 +102,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #region IEnumerable
 
-        public IEnumerator<IValue> GetEnumerator() => _items.GetEnumerator();
+        public IEnumerator<IXSComponent> GetEnumerator() => _items.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

@@ -6,14 +6,12 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ОбъявлениеЭлементаXS", "XSElementDeclaration")]
-    public class XSElementDeclaration : AutoContext<XSElementDeclaration>, IXSFragment
+    public class XSElementDeclaration : AutoContext<XSElementDeclaration>, IXSFragment, IXSNamedComponent
     {
 
         private readonly XmlSchemaElement _element;
         private XSAnnotation _annotation;
-        private IXSComponent _container;
-        private IXSComponent _rootContainer;
-        
+
         private XSElementDeclaration() => _element = new XmlSchemaElement();
 
         #region OneScript
@@ -35,13 +33,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSComponentFixedList Components { get; }
 
         [ContextProperty("Контейнер", "Container")]
-        public IValue Container => _container;
+        public IXSComponent Container { get; private set; }
 
         [ContextProperty("КорневойКонтейнер", "RootContainer")]
-        public IValue RootContainer => _rootContainer;
+        public IXSComponent RootContainer { get; private set; }
 
         [ContextProperty("Схема", "Schema")]
-        public XMLSchema Schema => _rootContainer.Schema;
+        public XMLSchema Schema => RootContainer.Schema;
 
         [ContextProperty("ТипКомпоненты", "ComponentType")]
         public XSComponentType ComponentType => XSComponentType.ElementDeclaration;
@@ -95,19 +93,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IValue CloneComponent(IValue recursive = null)
-        {
-            throw new NotImplementedException();
-        }
+        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
-        public void UpdateDOMElement()
-        {
-            throw new NotImplementedException();
-        }
+        public void UpdateDOMElement() => throw new NotImplementedException();
 
         [ContextMethod("Содержит", "Contains")]
-        public bool Contains(IValue component) => (component == this);
+        public bool Contains(IXSComponent component) => throw new NotImplementedException();
 
         //ОпределениеТипа(TypeDefinition)
         //РазрешитьСсылку(ResolveReference)
@@ -130,11 +122,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
-            _rootContainer = rootContainer;
-            _container = container;
+            RootContainer = rootContainer;
+            Container = container;
         }
 
         #endregion
-
     }
 }

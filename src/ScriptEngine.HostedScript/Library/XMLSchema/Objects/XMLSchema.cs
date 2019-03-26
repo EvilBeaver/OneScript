@@ -86,10 +86,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSComponentFixedList Components { get; }
 
         [ContextProperty("Контейнер", "Container")]
-        public IValue Container => this;
+        public IXSComponent Container => this;
 
         [ContextProperty("КорневойКонтейнер", "RootContainer")]
-        public IValue RootContainer => this;
+        public IXSComponent RootContainer => this;
 
         [ContextProperty("Схема", "Schema")]
         public XMLSchema Schema => this;
@@ -181,25 +181,19 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         [ContextProperty("Язык", "Lang")]
         public string Lang { get; set; }
-    
+
         #endregion
 
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IValue CloneComponent(IValue recursive = null)
-        {
-            throw new NotImplementedException();
-        }
+        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
-        public void UpdateDOMElement()
-        {
-            throw new NotImplementedException();
-        }
+        public void UpdateDOMElement() => throw new NotImplementedException();
 
         [ContextMethod("Содержит", "Contains")]
-        public bool Contains(IValue component) => Components.Contains(component);
+        public bool Contains(IXSComponent component) => Components.Contains(component);
 
         [ContextMethod("ТекстXML", "XMLText")]
         public string XMLText() => XMLText(_schema);
@@ -219,7 +213,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         XmlSchemaObject IXSComponent.SchemaObject => _schema;
 
-        void IXSComponent.BindToContainer(IXSComponent RootContainer, IXSComponent Container) { }
+        void IXSComponent.BindToContainer(IXSComponent RootContainer, IXSComponent Container)
+            => throw new NotImplementedException();
 
         #endregion
 
@@ -236,15 +231,22 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 _schema.Items.Add(component.SchemaObject);
 
             if (component is IXSNamedComponent)
-                if (component is XSElementDeclaration)
-                    ElementDeclarations.Add((IXSNamedComponent)component);
+                AddNamedComponentToList(component as IXSNamedComponent);
         }
 
         void IXSListOwner.OnListDelete(XSComponentList List, IXSComponent component) { }
 
         void IXSListOwner.OnListClear(XSComponentList List) { }
 
-        #endregion
+        private void AddNamedComponentToList(IXSNamedComponent value)
+        {
+           if (value is XSElementDeclaration)
+                ElementDeclarations.Add(value);
 
+            else if (value is IXSType)
+                TypeDefinitions.Add(value);
+        }
+
+        #endregion
     }
 }

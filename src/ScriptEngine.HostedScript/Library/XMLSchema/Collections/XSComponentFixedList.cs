@@ -7,15 +7,15 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ФиксированныйСписокКомпонентXS", "XSComponentFixedList")]
-    public class XSComponentFixedList : AutoContext<XSComponentFixedList>, ICollectionContext, IEnumerable<IValue>
+    public class XSComponentFixedList : AutoContext<XSComponentFixedList>, ICollectionContext, IEnumerable<IXSComponent>
     {
 
-        private readonly List<IValue> _items;
+        private readonly List<IXSComponent> _items;
 
-        internal XSComponentFixedList() => _items = new List<IValue>();
+        public XSComponentFixedList() => _items = new List<IXSComponent>();
 
-        internal void Add(IXSComponent value) => _items.Add(value);
-        internal void Clear() => _items.Clear();
+        public void Add(IXSComponent value) => _items.Add(value);
+        public void Clear() => _items.Clear();
 
         #region OneScript
 
@@ -25,10 +25,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public int Count() => _items.Count;
 
         [ContextMethod("Получить", "Get")]
-        public IValue Get(int index) => _items[index];
+        public IXSComponent Get(int index) => _items[index];
 
         [ContextMethod("Содержит", "Contains")]
-        public bool Contains(IValue value) => _items.Contains(value);
+        public bool Contains(IXSComponent value) => _items.Contains(value);
 
         #endregion
 
@@ -42,12 +42,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #region IEnumerable
 
-        public IEnumerator<IValue> GetEnumerator() => _items.GetEnumerator();
+        public IEnumerator<IXSComponent> GetEnumerator() => _items.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         #endregion
 
     }
-
 }

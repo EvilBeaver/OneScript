@@ -13,11 +13,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     [ContextClass("ИмпортXS", "XSImport")]
     public class XSImport : AutoContext<XSImport>, IXSDirective
     {
-
         private readonly XmlSchemaImport _import;
-        private IXSComponent _container;
-        private IXSComponent _rootContainer;
-      
+
         private XSImport() => _import = new XmlSchemaImport();
 
         #region OneScript
@@ -31,13 +28,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSComponentFixedList Components => null;
 
         [ContextProperty("Контейнер", "Container")]
-        public IValue Container => _container;
+        public IXSComponent Container { get; private set; }
 
         [ContextProperty("КорневойКонтейнер", "RootContainer")]
-        public IValue RootContainer => _rootContainer;
+        public IXSComponent RootContainer { get; private set; }
 
         [ContextProperty("Схема", "Schema")]
-        public XMLSchema Schema => _rootContainer.Schema;
+        public XMLSchema Schema => RootContainer.Schema;
 
         [ContextProperty("ТипКомпоненты", "ComponentType")]
         public XSComponentType ComponentType => XSComponentType.Import;
@@ -71,19 +68,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IValue CloneComponent(IValue recursive = null)
-        {
-            throw new NotImplementedException();
-        }
+        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
-        public void UpdateDOMElement()
-        {
-            throw new NotImplementedException();
-        }
+        public void UpdateDOMElement() => throw new NotImplementedException();
 
         [ContextMethod("Содержит", "Contains")]
-        public bool Contains(IValue component) => false;
+        public bool Contains(IXSComponent component) => false;
 
         #endregion
 
@@ -102,8 +93,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
-            _rootContainer = rootContainer;
-            _container = container;
+            RootContainer = rootContainer;
+            Container = container;
         }
 
         #endregion

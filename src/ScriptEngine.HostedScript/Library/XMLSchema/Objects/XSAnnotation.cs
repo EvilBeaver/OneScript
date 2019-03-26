@@ -11,8 +11,6 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     {
 
         internal readonly XmlSchemaAnnotation InternalObject;
-        private IXSComponent _container;
-        private IXSComponent _rootContainer;
 
         private XSAnnotation()
         {
@@ -32,13 +30,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSComponentFixedList Components { get; }
 
         [ContextProperty("Контейнер", "Container")]
-        public IValue Container => _container;
+        public IXSComponent Container { get; private set; }
 
         [ContextProperty("КорневойКонтейнер", "RootContainer")]
-        public IValue RootContainer => _rootContainer;
+        public IXSComponent RootContainer { get; private set; }
 
         [ContextProperty("Схема", "Schema")]
-        public XMLSchema Schema => _rootContainer.Schema;
+        public XMLSchema Schema => RootContainer.Schema;
 
         [ContextProperty("ТипКомпоненты", "ComponentType")]
         public XSComponentType ComponentType => XSComponentType.Annotation;
@@ -51,19 +49,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IValue CloneComponent(IValue recursive = null)
-        {
-            throw new NotImplementedException();
-        }
+        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
-        public void UpdateDOMElement()
-        {
-            throw new NotImplementedException();
-        }
+        public void UpdateDOMElement() => throw new NotImplementedException();
 
         [ContextMethod("Содержит", "Contains")]
-        public bool Contains(IValue component) => Components.Contains(component);
+        public bool Contains(IXSComponent component) => Components.Contains(component);
 
         #region Constructors
 
@@ -82,8 +74,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
-            _rootContainer = rootContainer;
-            _container = container;
+            RootContainer = rootContainer;
+            Container = container;
         }
 
         #endregion
@@ -93,7 +85,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         void IXSListOwner.OnListInsert(XSComponentList List, IXSComponent component)
         {
             Contract.Requires(component is IXSAnnotationItem);
-            component.BindToContainer(_rootContainer, this);
+            component.BindToContainer(RootContainer, this);
             InternalObject.Items.Add(component.SchemaObject);
             Components.Add(component);
         }
