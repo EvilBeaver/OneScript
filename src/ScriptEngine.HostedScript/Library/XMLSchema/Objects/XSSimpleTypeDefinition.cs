@@ -13,12 +13,14 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private XSAnnotation _annotation;
         private XMLExpandedName _baseTypeName;
         private XMLExpandedName _itemTypeName;
+        private XSSimpleTypeVariety _variety;
 
         private XSSimpleTypeDefinition()
         {
             _type = new XmlSchemaSimpleType();
             Facets = new XSComponentList(this);
             Components = new XSComponentFixedList();
+            Variety = XSSimpleTypeVariety.Atomic;
         }
 
         #region OneScript
@@ -63,7 +65,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             get => _type.Name;
             set => _type.Name = value;
         }
-        
+
         [ContextProperty("БазовыйТип", "BaseType")]
         public XSSimpleTypeDefinition BaseType { get; }
 
@@ -74,7 +76,23 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSAnnotation VarietyAnnotation { get; set; }
 
         [ContextProperty("Вариант", "Variety")]
-        public XSSimpleTypeVariety Variety { get; set; }
+        public XSSimpleTypeVariety Variety
+        {
+            get => _variety;
+            set
+            {
+                _variety = value;
+
+                if (_variety == XSSimpleTypeVariety.List)
+                    _type.Content = new XmlSchemaSimpleTypeList();
+
+                else if (_variety == XSSimpleTypeVariety.Union)
+                    _type.Content = new XmlSchemaSimpleTypeUnion();
+
+                else
+                    _type.Content = new XmlSchemaSimpleTypeRestriction();
+            }
+        }
 
         [ContextProperty("Завершенность", "Final")]
         public XSSimpleFinalUnion Final { get; }
@@ -86,14 +104,32 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XMLExpandedName BaseTypeName
         {
             get => _baseTypeName;
-            set => _baseTypeName = value;
+            set
+            {
+                _baseTypeName = value;
+                if (Variety == XSSimpleTypeVariety.Atomic)
+                {
+                    XmlSchemaSimpleTypeRestriction __content = _type.Content as XmlSchemaSimpleTypeRestriction;
+                    __content.BaseTypeName = _baseTypeName.NativeValue;
+                }
+                else
+                    throw RuntimeException.InvalidArgumentValue();
+            }
         }
 
         [ContextProperty("ИмяТипаЭлемента", "ItemTypeName")]
         public XMLExpandedName ItemTypeName
         {
             get => _itemTypeName;
-            set => _itemTypeName = value;
+            set
+            {
+                _itemTypeName = value;
+                if (Variety == XSSimpleTypeVariety.List)
+                {
+                    XmlSchemaSimpleTypeList __content = _type.Content as XmlSchemaSimpleTypeList;
+                    __content.ItemTypeName = _itemTypeName.NativeValue;
+                }
+            }
         }
 
         [ContextProperty("ОпределениеБазовогоТипа", "BaseTypeDefinition")]
@@ -107,7 +143,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         [ContextProperty("ОпределенияТиповОбъединения", "MemberTypeDefinitions")]
         public XSComponentList MemberTypeDefinitions { get; }
-        
+
         [ContextProperty("Фасеты", "Facets")]
         public XSComponentList Facets { get; }
 
@@ -134,7 +170,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static XSSimpleTypeDefinition Constructor() => new XSSimpleTypeDefinition();
 
         #endregion
-        
+
         #endregion
 
         #region IXSComponent
