@@ -2,15 +2,16 @@
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.HostedScript.Library.Xml;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ОбъявлениеЭлементаXS", "XSElementDeclaration")]
     public class XSElementDeclaration : AutoContext<XSElementDeclaration>, IXSFragment, IXSNamedComponent
     {
-
         private readonly XmlSchemaElement _element;
         private XSAnnotation _annotation;
+        private XMLExpandedName _typeName;
 
         private XSElementDeclaration() => _element = new XmlSchemaElement();
 
@@ -54,10 +55,20 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set => _element.Name = value;
         }
 
-
         //АнонимноеОпределениеТипа(AnonymousTypeDefinition)
         //Значение(Value)
-        //ИмяТипа(TypeName)
+
+        [ContextProperty("ИмяТипа", "TypeName")]
+        public XMLExpandedName TypeName
+        {
+            get => _typeName;
+            set
+            {
+               _typeName = value;
+                _element.SchemaTypeName = _typeName.NativeValue;
+            }
+        }
+
         //ЛексическоеЗначение(LexicalValue)
         //ОбластьВидимости(Scope)
         //Ограничение(Constraint)
