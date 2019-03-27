@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
@@ -47,6 +45,5 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         #endregion
-
     }
 }

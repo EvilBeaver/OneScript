@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
@@ -58,21 +59,27 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public bool Contains(IXSComponent value) => _items.Contains(value);
 
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(int index)
+        public void Delete(IValue value)
         {
-            IXSComponent value = _items[index];
+            int index;
 
-            _owner.OnListDelete(this, value);
-            _items.RemoveAt(index);
-        }
+            switch (value.DataType)
+            {
+                case DataType.Number:
+                    index = (int)value.AsNumber();
+                    break;
 
-        public void Delete(IXSComponent value)
-        {
-            int index = _items.IndexOf(value);
-            if (index == -1)
-                return;
+                case DataType.Object:
+                    index = _items.IndexOf(value as IXSComponent);
+                    if (index == -1)
+                        return;
+                    break;
 
-            _owner.OnListDelete(this, value);
+                default:
+                    throw RuntimeException.InvalidArgumentType();
+            }
+
+            _owner.OnListDelete(this, value as IXSComponent);
             _items.RemoveAt(index);
         }
 
