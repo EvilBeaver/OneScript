@@ -25,6 +25,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         internal void Delete(IXSNamedComponent value) => _items.Remove(value);
 
+        internal void Clear() => _items.Clear();
+
         #region OneScript
 
         #region Methods

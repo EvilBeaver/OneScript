@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -10,12 +11,16 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     {
         private readonly IXSListOwner _owner;
         private readonly List<IXSComponent> _items;
-      
+
+        private void InvokeEventCleared() => Cleared?.Invoke(this, EventArgs.Empty);
+
         internal XSComponentList(IXSListOwner owner)
         {
             _items = new List<IXSComponent>();
             _owner = owner;
         }
+
+        public event EventHandler Cleared;
 
         #region OneScript
 
@@ -48,8 +53,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
-            _owner.OnListClear(this);
             _items.Clear();
+            InvokeEventCleared();
         }
 
         [ContextMethod("Получить", "Get")]

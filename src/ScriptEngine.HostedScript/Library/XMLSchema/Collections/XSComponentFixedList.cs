@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using ScriptEngine.Machine.Contexts;
 
@@ -13,7 +14,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSComponentFixedList() => _items = new List<IXSComponent>();
 
         public void Add(IXSComponent value) => _items.Add(value);
+        public void Remove(IXSComponent value) => _items.Remove(value);
         public void Clear() => _items.Clear();
+        public void RemoveAll(Predicate<IXSComponent> predicate) => _items.RemoveAll(predicate);
 
         #region OneScript
 

@@ -19,8 +19,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             _schema = new XmlSchema();
             Components = new XSComponentFixedList();
             Annotations = new XSComponentFixedList();
+
             Directives = new XSComponentList(this);
+            Directives.Cleared += DirectivesCleared;
+
             Content = new XSComponentList(this);
+            Content.Cleared += ContentCleared;
+
             BlockDefault = new XSDisallowedSubstitutionsUnion();
             FinalDefault = new XSSchemaFinalUnion();
             AttributeGroupDefinitions = new XSNamedComponentMap();
@@ -236,8 +241,6 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         void IXSListOwner.OnListDelete(XSComponentList List, IXSComponent component) { }
 
-        void IXSListOwner.OnListClear(XSComponentList List) { }
-
         private void AddNamedComponentToList(IXSNamedComponent value)
         {
            if (value is XSElementDeclaration)
@@ -246,6 +249,16 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (value is IXSType)
                 TypeDefinitions.Add(value);
         }
+
+        private void ContentCleared(object sender, EventArgs e)
+        {
+            Components.RemoveAll(x => (!(x is IXSDirective)));
+            ElementDeclarations.Clear();
+            TypeDefinitions.Clear();
+        }
+
+        private void DirectivesCleared(object sender, EventArgs e) 
+            => Components.RemoveAll(x => (x is IXSDirective));
 
         #endregion
     }
