@@ -9,9 +9,8 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("СхемаXML", "XMLSchema")]
-    public class XMLSchema : AutoContext<XMLSchema>, IXSComponent, IXSListOwner
+    public class XMLSchema : AutoContext<XMLSchema>, IXSComponent
     {
-
         private readonly XmlSchema _schema;
 
         private XMLSchema()
@@ -20,12 +19,14 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Components = new XSComponentFixedList();
             Annotations = new XSComponentFixedList();
 
-            Directives = new XSComponentList(this);
+            Directives = new XSComponentList();
+            Directives.Inserted += DirectivesInserted;
             Directives.Cleared += DirectivesCleared;
 
-            Content = new XSComponentList(this);
+            Content = new XSComponentList();
+            Content.Inserted += ContentInserted;
             Content.Cleared += ContentCleared;
-
+            
             BlockDefault = new XSDisallowedSubstitutionsUnion();
             FinalDefault = new XSSchemaFinalUnion();
             AttributeGroupDefinitions = new XSNamedComponentMap();
@@ -223,24 +224,44 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #endregion
 
-        #region IXSListOwner
+        #region  XSComponentListEvents
 
-        void IXSListOwner.OnListInsert(XSComponentList List, IXSComponent component)
+        private void ContentInserted(object sender, XSComponentListEventArgs e)
         {
+            var component = e.Component;
+
             component.BindToContainer(this, this);
             Components.Add(component);
-
-            if (component is IXSDirective)
-                _schema.Includes.Add(component.SchemaObject);
-            else
-                _schema.Items.Add(component.SchemaObject);
+            _schema.Items.Add(component.SchemaObject);
 
             if (component is IXSNamedComponent)
                 AddNamedComponentToList(component as IXSNamedComponent);
         }
 
-        void IXSListOwner.OnListDelete(XSComponentList List, IXSComponent component) { }
+        private void DirectivesInserted(object sender, XSComponentListEventArgs e)
+        {
+            var component = e.Component;
 
+            component.BindToContainer(this, this);
+            Components.Add(component);
+
+            _schema.Includes.Add(component.SchemaObject);
+        }
+
+        private void ContentCleared(object sender, EventArgs e)
+        {
+            Components.RemoveAll(x => (!(x is IXSDirective)));
+            ElementDeclarations.Clear();
+            TypeDefinitions.Clear();
+            _schema.Items.Clear();
+        }
+
+        private void DirectivesCleared(object sender, EventArgs e)
+        {
+            Components.RemoveAll(x => (x is IXSDirective));
+            _schema.Includes.Clear();
+        }
+            
         private void AddNamedComponentToList(IXSNamedComponent value)
         {
            if (value is XSElementDeclaration)
@@ -249,17 +270,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (value is IXSType)
                 TypeDefinitions.Add(value);
         }
-
-        private void ContentCleared(object sender, EventArgs e)
-        {
-            Components.RemoveAll(x => (!(x is IXSDirective)));
-            ElementDeclarations.Clear();
-            TypeDefinitions.Clear();
-        }
-
-        private void DirectivesCleared(object sender, EventArgs e) 
-            => Components.RemoveAll(x => (x is IXSDirective));
-
+        
         #endregion
     }
 }

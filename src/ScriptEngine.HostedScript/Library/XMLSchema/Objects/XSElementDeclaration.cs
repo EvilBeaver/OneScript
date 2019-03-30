@@ -97,7 +97,17 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         //ИсключенияГруппПодстановки(SubstitutionGroupExclusions)
         //НедопустимыеПодстановки(DisallowedSubstitutions)
         //ОграниченияИдентичности(IdentityConstraints)
-        //ПрисоединениеКГруппеПодстановки(SubstitutionGroupAffiliation)
+
+        [ContextProperty("ПрисоединениеКГруппеПодстановки", "SubstitutionGroupAffiliation")]
+        public XMLExpandedName SubstitutionGroupAffiliation
+        {
+            get => _typeName;
+            set
+            {
+                _typeName = value;
+                _element.SubstitutionGroup = _typeName.NativeValue;
+            }
+        }
 
         #endregion
 

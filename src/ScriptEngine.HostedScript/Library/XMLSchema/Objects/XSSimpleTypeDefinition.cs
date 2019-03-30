@@ -7,7 +7,7 @@ using ScriptEngine.HostedScript.Library.Xml;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ОпределениеПростогоТипаXS", "XSSimpleTypeDefinition")]
-    public class XSSimpleTypeDefinition : AutoContext<XSSimpleTypeDefinition>, IXSType, IXSNamedComponent, IXSListOwner
+    public class XSSimpleTypeDefinition : AutoContext<XSSimpleTypeDefinition>, IXSType, IXSNamedComponent
     {
         private readonly XmlSchemaSimpleType _type;
         private XSAnnotation _annotation;
@@ -18,8 +18,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private XSSimpleTypeDefinition()
         {
             _type = new XmlSchemaSimpleType();
-            Facets = new XSComponentList(this);
-            Facets.Cleared += FacetsCleared;
+            Facets = new XSComponentList();
+            Facets.Inserted += Facets_Inserted;
+            Facets.Cleared += Facets_Cleared;
+
             Components = new XSComponentFixedList();
             Variety = XSSimpleTypeVariety.Atomic;
         }
@@ -187,10 +189,12 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #endregion
 
-        #region IXSListOwner
+        #region XSComponentListEvents
 
-        void IXSListOwner.OnListInsert(XSComponentList List, IXSComponent component)
+        private void Facets_Inserted(object sender, XSComponentListEventArgs e)
         {
+            var component = e.Component;
+
             component.BindToContainer(RootContainer, this);
             Components.Add(component);
 
@@ -201,9 +205,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             }
         }
 
-        void IXSListOwner.OnListDelete(XSComponentList List, IXSComponent component) { }
-
-        private void FacetsCleared(object sender, EventArgs e)
+        private void Facets_Cleared(object sender, EventArgs e)
         {
             Components.Clear();
 

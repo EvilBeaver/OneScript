@@ -7,15 +7,18 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("АннотацияXS", "XSAnnotation")]
-    public class XSAnnotation : AutoContext<XSAnnotation>, IXSComponent, IXSListOwner
+    public class XSAnnotation : AutoContext<XSAnnotation>, IXSComponent
     {
-
         internal readonly XmlSchemaAnnotation InternalObject;
 
         private XSAnnotation()
         {
             InternalObject = new XmlSchemaAnnotation();
-            Content = new XSComponentList(this);
+
+            Content = new XSComponentList();
+            Content.Cleared += Content_Cleared;
+            Content.Inserted += Content_Inserted;
+
             Components = new XSComponentFixedList();
         }
 
@@ -80,18 +83,26 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #endregion
 
-        #region IXSListOwner
+        #region XSComponentListEvents
 
-        void IXSListOwner.OnListInsert(XSComponentList List, IXSComponent component)
+        private void Content_Inserted(object sender, XSComponentListEventArgs e)
         {
-            Contract.Requires(component is IXSAnnotationItem);
+            var component = e.Component;
+
+            if (!(component is IXSAnnotationItem))
+                throw RuntimeException.InvalidArgumentType();
+
             component.BindToContainer(RootContainer, this);
-            InternalObject.Items.Add(component.SchemaObject);
             Components.Add(component);
+            InternalObject.Items.Add(component.SchemaObject);
         }
 
-        void IXSListOwner.OnListDelete(XSComponentList List, IXSComponent component) { }
-      
+        private void Content_Cleared(object sender, EventArgs e)
+        {
+            Components.Clear();
+            InternalObject.Items.Clear();
+        }
+        
         #endregion
     }
 }

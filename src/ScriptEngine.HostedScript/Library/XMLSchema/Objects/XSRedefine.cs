@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Xml.Schema;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ПереопределениеXS", "XSRedefine")]
-    public class XSRedefine : AutoContext<XSRedefine>, IXSDirective, IXSListOwner
+    public class XSRedefine : AutoContext<XSRedefine>, IXSDirective
     {
 
         private readonly XmlSchemaRedefine _redefine;
@@ -15,7 +14,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         {
             _redefine = new XmlSchemaRedefine();
             Components = new XSComponentFixedList();
-            Content = new XSComponentList(this);
+
+            Content = new XSComponentList();
+            Content.Inserted += Content_Inserted;
+            Content.Cleared += Content_Cleared;
         }
 
         #region OneScript
@@ -93,18 +95,23 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #endregion
 
-        #region IXSListOwner
+        #region XSComponentListEvents
 
-        void IXSListOwner.OnListInsert(XSComponentList List, IXSComponent component)
+        private void Content_Inserted(object sender, XSComponentListEventArgs e)
         {
-            component.BindToContainer(this, this);
-            _redefine.Items.Add(component.SchemaObject);
+            var component = e.Component;
+
+            component.BindToContainer(RootContainer, this);
             Components.Add(component);
+            _redefine.Items.Add(component.SchemaObject);
         }
 
-        void IXSListOwner.OnListDelete(XSComponentList List, IXSComponent component) { }
+        private void Content_Cleared(object sender, EventArgs e)
+        {
+            Components.Clear();
+            _redefine.Items.Clear();
+        }
 
         #endregion
-
     }
 }

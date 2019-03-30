@@ -9,18 +9,21 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     [ContextClass("СписокКомпонентXS", "XSComponentList")]
     public class XSComponentList : AutoContext<XSComponentList>, ICollectionContext, IEnumerable<IXSComponent>
     {
-        private readonly IXSListOwner _owner;
         private readonly List<IXSComponent> _items;
 
         private void InvokeEventCleared() => Cleared?.Invoke(this, EventArgs.Empty);
 
-        internal XSComponentList(IXSListOwner owner)
-        {
-            _items = new List<IXSComponent>();
-            _owner = owner;
-        }
+        private void InvokeEventInserted(IXSComponent component)
+            => Inserted?.Invoke(this, new XSComponentListEventArgs(component));
 
+        private void InvokeEventDeleted(IXSComponent component)
+            => Deleted?.Invoke(this, new XSComponentListEventArgs(component));
+
+        public XSComponentList() => _items = new List<IXSComponent>();
+    
         public event EventHandler Cleared;
+        public event EventHandler<XSComponentListEventArgs> Inserted;
+        public event EventHandler<XSComponentListEventArgs> Deleted;
 
         #region OneScript
 
@@ -32,8 +35,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             if (_items.Contains(value))
                 return;
 
-            _owner.OnListInsert(this, value);
             _items.Insert(index, value);
+            InvokeEventInserted(value);
         }
 
         [ContextMethod("Добавить", "Add")]
@@ -43,8 +46,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             if (_items.Contains(value))
                 return;
 
-            _owner.OnListInsert(this, value);
             _items.Add(value);
+            InvokeEventInserted(value);
         }
 
         [ContextMethod("Количество", "Count")]
@@ -59,7 +62,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         [ContextMethod("Получить", "Get")]
         public IXSComponent Get(int index) => _items[index];
-     
+
         [ContextMethod("Содержит", "Contains")]
         public bool Contains(IXSComponent value) => _items.Contains(value);
 
@@ -84,8 +87,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                     throw RuntimeException.InvalidArgumentType();
             }
 
-            _owner.OnListDelete(this, value as IXSComponent);
             _items.RemoveAt(index);
+            InvokeEventDeleted(value as IXSComponent);
         }
 
         [ContextMethod("Установить", "Set")]
@@ -96,10 +99,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
             IXSComponent currentValue = _items[index];
 
-            _owner.OnListDelete(this, currentValue);
-            _owner.OnListInsert(this, value);
-
             _items[index] = value;
+
+            InvokeEventDeleted(currentValue);
+            InvokeEventInserted(value);
         }
 
         #endregion
@@ -119,5 +122,12 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         #endregion
+    }
+
+    public class XSComponentListEventArgs : EventArgs
+    {
+        public IXSComponent Component { get; }
+
+        public XSComponentListEventArgs(IXSComponent component) => Component = component;
     }
 }
