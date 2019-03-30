@@ -6,13 +6,13 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [ContextClass("ФасетДлиныXS", "XSLengthFacet")]
-    public class XSLengthFacet : AutoContext<XSLengthFacet>, IXSFacet
+    [ContextClass("ФасетМинимальногоВключающегоЗначенияXS", "XSMinInclusiveFacet")]
+    public class XSMinInclusiveFacet : AutoContext<XSMinInclusiveFacet>, IXSFacet
     {
-        private readonly XmlSchemaLengthFacet _facet;
+        private readonly XmlSchemaMinInclusiveFacet _facet;
         private XSAnnotation _annotation;
 
-        private XSLengthFacet() => _facet = new XmlSchemaLengthFacet();
+        private XSMinInclusiveFacet() => _facet = new XmlSchemaMinInclusiveFacet();
 
         #region OneScript
 
@@ -42,7 +42,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XMLSchema Schema => RootContainer.Schema;
 
         [ContextProperty("ТипКомпоненты", "ComponentType")]
-        public XSComponentType ComponentType => XSComponentType.LengthFacet;
+        public XSComponentType ComponentType => XSComponentType.MinInclusiveFacet;
 
         [ContextProperty("ЛексическоеЗначение", "LexicalValue")]
         public string LexicalValue
@@ -80,13 +80,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         [ContextMethod("Содержит", "Contains")]
         public bool Contains(IXSComponent component) => false;
-        
+
         #endregion
 
         #region Constructors
 
         [ScriptConstructor(Name = "По умолчанию")]
-        public static XSLengthFacet Constructor() => new XSLengthFacet();
+        public static XSMinInclusiveFacet Constructor() => new XSMinInclusiveFacet();
 
         #endregion
 
