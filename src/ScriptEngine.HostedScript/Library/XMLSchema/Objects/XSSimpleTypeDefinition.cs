@@ -19,6 +19,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         {
             _type = new XmlSchemaSimpleType();
             Facets = new XSComponentList(this);
+            Facets.Cleared += FacetsCleared;
             Components = new XSComponentFixedList();
             Variety = XSSimpleTypeVariety.Atomic;
         }
@@ -35,6 +36,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             {
                 _annotation = value;
                 _type.Annotation = value.InternalObject;
+                (_annotation as IXSComponent).BindToContainer(RootContainer, this); 
             }
         }
 
@@ -189,13 +191,25 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         void IXSListOwner.OnListInsert(XSComponentList List, IXSComponent component)
         {
-            component.BindToContainer(this, this);
+            component.BindToContainer(RootContainer, this);
             Components.Add(component);
+
+            if ((_type.Content is XmlSchemaSimpleTypeRestriction) && (component is IXSFacet))
+            {
+                var restriction = _type.Content as XmlSchemaSimpleTypeRestriction;
+                restriction.Facets.Add(component.SchemaObject);
+            }
         }
 
         void IXSListOwner.OnListDelete(XSComponentList List, IXSComponent component) { }
 
-        void IXSListOwner.OnListClear(XSComponentList List) { }
+        private void FacetsCleared(object sender, EventArgs e)
+        {
+            Components.Clear();
+
+            var restriction = _type.Content as XmlSchemaSimpleTypeRestriction;
+            restriction?.Facets.Clear();
+        }
 
         #endregion
     }

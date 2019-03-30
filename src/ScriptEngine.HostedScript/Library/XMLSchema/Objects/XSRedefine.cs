@@ -104,8 +104,6 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         void IXSListOwner.OnListDelete(XSComponentList List, IXSComponent component) { }
 
-        void IXSListOwner.OnListClear(XSComponentList List) { }
-
         #endregion
 
     }
