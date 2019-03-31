@@ -50,7 +50,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         public override bool Equals(IValue other)
         {
             if (other.AsObject() is XMLExpandedName _expandedName)
-                return _expandedName.AsString() == AsString();
+                return NativeValue.Equals(_expandedName.NativeValue);
             else
                 return base.Equals(other);
         }
