@@ -58,7 +58,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSComponentType ComponentType => XSComponentType.SimpleTypeDefinition;
 
         [ContextProperty("ЭлементDOM", "DOMElement")]
-        public IValue DOMElement => null;
+        public IValue DOMElement => ValueFactory.Create();
 
         [ContextProperty("URIПространстваИмен", "NamespaceURI")]
         public string URIПространстваИмен => _type.SourceUri;
@@ -166,6 +166,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         [ContextMethod("ЭтоОпределениеЗациклено", "IsCircular")]
         public bool IsCircular() => throw new NotImplementedException();
+       
         #endregion
 
         #region Constructors

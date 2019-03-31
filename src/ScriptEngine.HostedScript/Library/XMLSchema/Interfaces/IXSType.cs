@@ -1,7 +1,7 @@
 ﻿
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    interface IXSType : IXSAnnotated
+    public interface IXSType : IXSAnnotated
     {
     }
 }

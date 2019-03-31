@@ -12,12 +12,43 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private decimal _minOccurs;
         private decimal _maxOccurs;
 
+        /// <summary>
+        /// {max occurs}
+        ///     Either a non-negative integer or "unbounded".
+        /// https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#p-max_occurs
+        /// </summary>
+        const string XS_UNBOUNDED = "unbounded";
+
         private XSParticle()
         {
             _minOccurs = 1;
             _maxOccurs = 1;
 
             Components = new XSComponentFixedList();
+        }
+
+        private void SetMaxOccurs(XmlSchemaParticle particle, decimal maxOccurs)
+        {
+            if (maxOccurs == 1)
+                particle.MaxOccursString = null;
+
+            else if (maxOccurs >= 0)
+                particle.MaxOccurs = maxOccurs;
+
+            else
+                particle.MaxOccursString = XS_UNBOUNDED;
+        }
+
+        private void SetMinOccurs(XmlSchemaParticle particle, decimal minOccurs)
+        {
+            if (minOccurs == 1)
+                particle.MinOccursString = null;
+
+            else if (minOccurs >= 0)
+                particle.MinOccurs = minOccurs;
+
+            else
+                throw RuntimeException.InvalidArgumentValue();
         }
 
         #region OneScript
@@ -53,7 +84,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             {
                 _maxOccurs = value;
                 if (_term?.SchemaObject is XmlSchemaParticle _particle)
-                    _particle.MaxOccurs = _maxOccurs;
+                {
+                    SetMaxOccurs(_particle, _maxOccurs);
+                }
+                    
             }
         }
 
@@ -65,7 +99,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             {
                 _minOccurs = value;
                 if (_term?.SchemaObject is XmlSchemaParticle _particle)
-                    _particle.MinOccurs = _minOccurs;
+                    SetMinOccurs(_particle, _minOccurs);
             }
         }
 
@@ -83,8 +117,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                     Components.Add(_term);
                     if (_term.SchemaObject is XmlSchemaParticle _particle)
                     {
-                        _particle.MinOccurs = _minOccurs;
-                        _particle.MaxOccurs = _maxOccurs;
+                        SetMinOccurs(_particle, _minOccurs);
+                        SetMaxOccurs(_particle, _maxOccurs);
                     }
                 }
             }

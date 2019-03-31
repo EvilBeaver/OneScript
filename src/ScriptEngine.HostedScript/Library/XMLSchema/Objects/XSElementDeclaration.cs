@@ -12,6 +12,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private readonly XmlSchemaElement _element;
         private XSAnnotation _annotation;
         private XMLExpandedName _typeName;
+        private XMLExpandedName _refName;
+        private IXSType _schemaType;
 
         private XSElementDeclaration() => _element = new XmlSchemaElement();
 
@@ -55,7 +57,17 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set => _element.Name = value;
         }
 
-        //АнонимноеОпределениеТипа(AnonymousTypeDefinition)
+        [ContextProperty("АнонимноеОпределениеТипа", "AnonymousTypeDefinition")]
+        public IXSType AnonymousTypeDefinition
+        {
+            get => _schemaType;
+            set
+            {
+                _schemaType = value;
+                _element.SchemaType = _schemaType.SchemaObject as XmlSchemaType;
+            }
+        }
+        
         //Значение(Value)
 
         [ContextProperty("ИмяТипа", "TypeName")]
@@ -72,7 +84,18 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         //ЛексическоеЗначение(LexicalValue)
         //ОбластьВидимости(Scope)
         //Ограничение(Constraint)
-        //Ссылка(Reference)
+
+        [ContextProperty("Ссылка", "Reference")]
+        public XMLExpandedName Reference
+        {
+            get => _refName;
+            set
+            {
+                _refName = value;
+                _element.RefName = _refName.NativeValue;
+            }
+        }
+
         //Форма(Form)
         //ЭтоГлобальноеОбъявление(IsGlobal)
         //ЭтоСсылка(IsReference)
