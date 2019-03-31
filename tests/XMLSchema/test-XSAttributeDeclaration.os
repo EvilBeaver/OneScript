@@ -39,7 +39,7 @@ Procedure TestConstructor() Export
 	Attribute = New XSAttributeDeclaration;
 
 	ЮнитТест.ПроверитьРавенство(TypeOf(Attribute), Type("XSAttributeDeclaration"));
-	ЮнитТест.ПроверитьРавенство(TypeDefinition.ComponentType, XSComponentType.AttributeDeclaration);
+	ЮнитТест.ПроверитьРавенство(Attribute.ComponentType, XSComponentType.AttributeDeclaration);
 
 EndProcedure
 
@@ -57,7 +57,7 @@ EndProcedure
 	Атрибут = Новый ОбъявлениеАтрибутаXS;
 	ИмяТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string");
 	
-	ОпределениеТипа.ИмяТипа = ИмяТипа;
+	Атрибут.ИмяТипа = ИмяТипа;
 	
 	ЮнитТест.ПроверитьРавенство(Атрибут.ИмяТипа, ИмяТипа);
 

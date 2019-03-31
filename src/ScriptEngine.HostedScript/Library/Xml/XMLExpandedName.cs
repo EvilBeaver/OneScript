@@ -46,5 +46,15 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ScriptConstructor(Name = "По умолчанию")]
         public static XMLExpandedName Create(IValue namespaceURI, IValue localName) 
             => new XMLExpandedName(namespaceURI.AsString(), localName.AsString());
+
+        public override bool Equals(IValue other)
+        {
+            if (other.AsObject() is XMLExpandedName _expandedName)
+                return _expandedName.AsString() == AsString();
+            else
+                return base.Equals(other);
+        }
+
+        public override string AsString() => $"{{{NamespaceURI}}}{LocalName}";
     }
 }
