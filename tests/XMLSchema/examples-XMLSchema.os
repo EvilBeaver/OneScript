@@ -3,7 +3,7 @@
 #Область ОбработчикиСобытийМодуля
 
 Функция Версия() Экспорт
-	Возврат "2.0";
+	Возврат "3.0";
 КонецФункции
 
 Функция ПолучитьСписокТестов(МенеджерТестирования) Экспорт
@@ -17,7 +17,8 @@
 	СписокТестов.Добавить("ТестИнформацияДляПриложенияXS");
 	СписокТестов.Добавить("ТестОпределениеПростогоТипаXS");
 	СписокТестов.Добавить("ТестОпределениеПростогоТипаXS_Объединение");
-
+	СписокТестов.Добавить("ТестФасетДлиныXS");
+	
 	Возврат СписокТестов;
 
 КонецФункции
@@ -86,6 +87,16 @@
 
 КонецПроцедуры
 
+Процедура ТестФасетДлиныXS() Экспорт
+
+	Схема = ПримерФасетДлиныXS();
+	Schema = ExampleXSLengthFacet();
+
+	ЮнитТест.ПроверитьЗаполненность(Схема);
+	ЮнитТест.ПроверитьЗаполненность(Schema);
+
+КонецПроцедуры
+
 #КонецОбласти
 
 #Область ВыборПримера
@@ -108,11 +119,14 @@
 	//СхемаXML = ПримерИнформацияДляПриложенияXS();
 	//СхемаXML = ExampleXSAppInfo();
 
-	СхемаXML = ПримерОпределениеПростогоТипаXS();
+	//СхемаXML = ПримерОпределениеПростогоТипаXS();
 	//СхемаXML = ExampleXSSimpleTypeDefinition();
 
 	//СхемаXML = ПримерОпределениеПростогоТипаXS_Объединение();
 	//СхемаXML = ExampleXSSimpleTypeDefinition_Union();
+
+	СхемаXML = ПримерФасетДлиныXS();
+	//СхемаXML = ExampleXSLengthFacet();
 
 	//////////////////////////
 	
@@ -837,6 +851,111 @@ EndFunction
 КонецПроцедуры
 
 #КонецОбласти
+
+#Область ФасетДлиныXS 
+
+// Источник:
+//	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemalengthfacet
+//
+// Результат:
+//	см. РезультатФасетДлиныXS
+
+Функция ПримерФасетДлиныXS()
+
+	Схема = Новый СхемаXML;
+
+	// <xs:simpleType name="ZipCodeType">
+	ТипПочтовыйИндекс = Новый ОпределениеПростогоТипаXS;
+	ТипПочтовыйИндекс.Имя = "ZipCodeType";
+	
+	// <xs:restriction base="xs:string">
+	ТипПочтовыйИндекс.ИмяБазовогоТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string");
+	
+	// <xs:length value="5"/>
+	Длина = Новый ФасетДлиныXS;
+	Длина.Значение = 5;
+	ТипПочтовыйИндекс.Фасеты.Добавить(Длина);
+	
+	Схема.Содержимое.Добавить(ТипПочтовыйИндекс);
+	
+	// <xs:element name="Address">
+	Элемент = Новый ОбъявлениеЭлементаXS;
+	Элемент.Имя = "Address";
+	
+	// <xs:complexType>
+	СоставнойТип = Новый ОпределениеСоставногоТипаXS;
+	
+	// <xs:attribute name="ZipCode" type="ZipCodeType"/>
+	АтрибутПочтовыйИндекс = Новый ОбъявлениеАтрибутаXS;
+	АтрибутПочтовыйИндекс.Имя = "ZipCode";
+	АтрибутПочтовыйИндекс.ИмяТипа = Новый РасширенноеИмяXML("", "ZipCodeType");
+	СоставнойТип.Атрибуты.Добавить(АтрибутПочтовыйИндекс);
+	
+	Элемент.АнонимноеОпределениеТипа = СоставнойТип;
+    Схема.Содержимое.Добавить(Элемент);
+	
+	Возврат Схема;
+
+КонецФункции
+
+Function ExampleXSLengthFacet()
+
+	schema = New XMLSchema;
+
+	// <xs:simpleType name="ZipCodeType">
+	ZipCodeType = New XSSimpleTypeDefinition;
+	ZipCodeType.Name = "ZipCodeType";
+	
+	// <xs:restriction base="xs:string">
+	ZipCodeType.BaseTypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "string");
+	
+	// <xs:length value="5"/>
+	length = New XSLengthFacet;
+	length.Value = 5;
+	ZipCodeType.Facets.Add(length);
+	
+	schema.Content.Add(ZipCodeType);
+	
+	// <xs:element name="Address">
+	element = New XSElementDeclaration;
+	element.Name = "Address";
+	
+	// <xs:complexType>
+	complexType = New XSComplexTypeDefinition;
+	
+	// <xs:attribute name="ZipCode" type="ZipCodeType"/>
+	ZipCodeAttribute = New XSAttributeDeclaration;
+	ZipCodeAttribute.Name = "ZipCode";
+	ZipCodeAttribute.TypeName = New XMLExpandedName("", "ZipCodeType");
+	complexType.Attributes.Add(ZipCodeAttribute);
+	
+	element.AnonymousTypeDefinition = complexType;
+    schema.Content.Add(element);
+	
+	return schema;
+	
+EndFunction
+
+Процедура РезультатФасетДлиныXS()
+	//<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	//
+	//	<xs:simpleType name="ZipCodeType">
+	//		<xs:restriction base="xs:string">
+	//			<xs:length value="5"/>
+	//		</xs:restriction>
+	//	</xs:simpleType>
+	//
+	//	<xs:element name="Address">
+	//		<xs:complexType>
+	//			<xs:attribute name="ZipCode" type="ZipCodeType"/>
+	//		</xs:complexType>
+	//	</xs:element>
+	//
+	//</xs:schema>
+КонецПроцедуры
+
+#КонецОбласти
+
 
 #КонецОбласти
 

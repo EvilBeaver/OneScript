@@ -270,7 +270,31 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (value is IXSType)
                 TypeDefinitions.Add(value);
         }
-        
+
         #endregion
+
+        internal static string XMLStringIValue(IValue value)
+        {
+            switch (value.DataType)
+            {
+                case DataType.Undefined:
+                    return "";
+
+                case DataType.String:
+                    return value.AsString();
+
+                case DataType.Boolean:
+                    return XmlConvert.ToString(value.AsBoolean());
+
+                case DataType.Date:
+                    return XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
+
+                case DataType.Number:
+                    return XmlConvert.ToString(value.AsNumber());
+
+                default:
+                    throw RuntimeException.InvalidArgumentType();
+            }
+        }
     }
 }

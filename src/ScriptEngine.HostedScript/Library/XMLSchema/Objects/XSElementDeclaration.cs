@@ -13,7 +13,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private XSAnnotation _annotation;
         private XMLExpandedName _typeName;
         private XMLExpandedName _refName;
+        private XSConstraint _constraint;
         private IXSType _schemaType;
+        private IValue _value;
 
         private XSElementDeclaration() => _element = new XmlSchemaElement();
 
@@ -67,8 +69,20 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 _element.SchemaType = _schemaType.SchemaObject as XmlSchemaType;
             }
         }
-        
-        //Значение(Value)
+
+        [ContextProperty("Значение", "Value")]
+        public IValue Value
+        {
+            get => _value;
+            set
+            {
+                _value = value;
+                if (_constraint == XSConstraint.Fixed)
+                    _element.FixedValue = XMLSchema.XMLStringIValue(_value);
+                else
+                    _element.DefaultValue = XMLSchema.XMLStringIValue(_value);
+            }
+        }
 
         [ContextProperty("ИмяТипа", "TypeName")]
         public XMLExpandedName TypeName
@@ -81,9 +95,42 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             }
         }
 
-        //ЛексическоеЗначение(LexicalValue)
-        //ОбластьВидимости(Scope)
-        //Ограничение(Constraint)
+        [ContextProperty("ЛексическоеЗначение", "LexicalValue")]
+        public string LexicalValue
+        {
+            get => _constraint == XSConstraint.Fixed ? _element.FixedValue : _element.DefaultValue;
+            set
+            {
+                if (_constraint == XSConstraint.Fixed)
+                    _element.FixedValue = value;
+                else
+                    _element.DefaultValue = value;
+            }
+        }
+
+        [ContextProperty("ОбластьВидимости", "Scope")]
+        public XSElementDeclaration Scope { get; }
+
+        [ContextProperty("Ограничение", "Constraint")]
+        public XSConstraint Constraint
+        {
+            get => _constraint;
+            set
+            {
+                _constraint = value;
+                if (_constraint == XSConstraint.Default)
+                    _element.FixedValue = null;
+
+                else if (_constraint == XSConstraint.Fixed)
+                    _element.DefaultValue = null;
+
+                else
+                {
+                    _element.FixedValue = null;
+                    _element.DefaultValue = null;
+                }
+            }
+        }
 
         [ContextProperty("Ссылка", "Reference")]
         public XMLExpandedName Reference
@@ -96,7 +143,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             }
         }
 
-        //Форма(Form)
+        [ContextProperty("Форма", "Form")]
+        public XSForm Form
+        {
+            get => XSForm.FromNativeValue(_element.Form);
+            set => _element.Form = XSForm.ToNativeValue(value);
+        }
+
         //ЭтоГлобальноеОбъявление(IsGlobal)
         //ЭтоСсылка(IsReference)
 

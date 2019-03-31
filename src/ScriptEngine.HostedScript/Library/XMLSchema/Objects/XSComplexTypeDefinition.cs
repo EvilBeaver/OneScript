@@ -18,6 +18,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         {
             _type = new XmlSchemaComplexType();
             Components = new XSComponentFixedList();
+            Attributes = new XSComponentList();
+            Attributes.Inserted += Attributes_Inserted;
+            Attributes.Cleared += Attributes_Cleared;
         }
 
         #region OneScript
@@ -94,7 +97,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XMLExpandedName BaseTypeName
         {
             get => _baseTypeName;
-            set => _baseTypeName = value;
+            set
+            {
+                _baseTypeName = value;
+            }
         }
 
         //МаскаАтрибутов(AttributeWildcard)
@@ -155,6 +161,29 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         XmlSchemaObject IXSComponent.SchemaObject => _type;
+
+        #endregion
+
+        #region XSComponentListEvents
+
+        private void Attributes_Inserted(object sender, XSComponentListEventArgs e)
+        {
+            var component = e.Component;
+            if (!(component is IXSAttribute))
+                throw RuntimeException.InvalidArgumentType();
+
+            component.BindToContainer(RootContainer, this);
+            Components.Add(component);
+
+            _type.Attributes.Add(component.SchemaObject);
+        }
+
+        private void Attributes_Cleared(object sender, EventArgs e)
+        {
+            Components.RemoveAll(x => (x is IXSAttribute));
+
+            _type.Attributes.Clear();
+        }
 
         #endregion
     }

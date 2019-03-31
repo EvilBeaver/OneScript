@@ -72,28 +72,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             get => _value;
             set
             {
-                switch (value.DataType)
-                {
-                    case DataType.String:
-                        _facet.Value = value.AsString();
-                        break;
-
-                    case DataType.Boolean:
-                        _facet.Value = XmlConvert.ToString(value.AsBoolean());
-                        break;
-
-                    case DataType.Date:
-                        _facet.Value = XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
-                        break;
-
-                    case DataType.Number:
-                        _facet.Value = XmlConvert.ToString(value.AsNumber());
-                        break;
-
-                    default:
-                        throw RuntimeException.InvalidArgumentType();
-                }
                 _value = value;
+                _facet.Value = XMLSchema.XMLStringIValue(_value);
             }
         }
 
