@@ -3,7 +3,7 @@
 #Область ОбработчикиСобытийМодуля
 
 Функция Версия() Экспорт
-	Возврат "1.0";
+	Возврат "2.0";
 КонецФункции
 
 Функция ПолучитьСписокТестов(МенеджерТестирования) Экспорт
@@ -16,6 +16,7 @@
 	СписокТестов.Добавить("ТестДокументацияXS");
 	СписокТестов.Добавить("ТестИнформацияДляПриложенияXS");
 	СписокТестов.Добавить("ТестОпределениеПростогоТипаXS");
+	СписокТестов.Добавить("ТестОпределениеПростогоТипаXS_Объединение");
 
 	Возврат СписокТестов;
 
@@ -75,6 +76,16 @@
 
 КонецПроцедуры
 
+Процедура ТестОпределениеПростогоТипаXS_Объединение() Экспорт
+
+	Схема = ПримерОпределениеПростогоТипаXS_Объединение();
+	Schema = ExampleXSSimpleTypeDefinition_Union();
+
+	ЮнитТест.ПроверитьЗаполненность(Схема);
+	ЮнитТест.ПроверитьЗаполненность(Schema);
+
+КонецПроцедуры
+
 #КонецОбласти
 
 #Область ВыборПримера
@@ -97,8 +108,11 @@
 	//СхемаXML = ПримерИнформацияДляПриложенияXS();
 	//СхемаXML = ExampleXSAppInfo();
 
-	//СхемаXML = ПримерОпределениеПростогоТипаXS();
+	СхемаXML = ПримерОпределениеПростогоТипаXS();
 	//СхемаXML = ExampleXSSimpleTypeDefinition();
+
+	//СхемаXML = ПримерОпределениеПростогоТипаXS_Объединение();
+	//СхемаXML = ExampleXSSimpleTypeDefinition_Union();
 
 	//////////////////////////
 	
@@ -578,7 +592,7 @@ EndFunction
 //	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemasimpletype
 //
 // Результат:
-//	см. РезультатВключениеXS
+//	см. РезультатОпределениеПростогоТипаXS
 
 Функция ПримерОпределениеПростогоТипаXS()
 
@@ -719,6 +733,107 @@ EndFunction
 	// 	</xs:element>
 	//	
 	// </xs:schema>
+КонецПроцедуры
+
+#КонецОбласти
+
+#Область ОпределениеПростогоТипаXS_Объединение
+
+// Источник:
+//	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemasimpletypeunion
+//
+// Результат:
+//	см. РезультатОпределениеПростогоТипаXS_Объединение
+
+Функция ПримерОпределениеПростогоТипаXS_Объединение()
+
+	Схема = Новый СхемаXML;
+
+	//<xs:simpleType name="StringOrIntType">
+	ТипСтрокаИлиЧисло = Новый ОпределениеПростогоТипаXS;
+	ТипСтрокаИлиЧисло.Имя = "StringOrIntType";
+	
+	// <xs:union>
+	ТипСтрокаИлиЧисло.Вариант = ВариантПростогоТипаXS.Объединение;
+	Схема.Содержимое.Добавить(ТипСтрокаИлиЧисло);
+	
+	// <xs:simpleType>
+	ТипСтрока = Новый ОпределениеПростогоТипаXS;
+	
+	// <xs:restriction base="xs:string"/>
+	ТипСтрока.ИмяБазовогоТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string");
+	ТипСтрокаИлиЧисло.ОпределенияТиповОбъединения.Добавить(ТипСтрока);
+		
+	// <xs:simpleType>
+	ТипЧисло = Новый ОпределениеПростогоТипаXS;
+	
+	// <xs:restriction base="xs:int"/>
+	ТипЧисло.ИмяБазовогоТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "int");
+	ТипСтрокаИлиЧисло.ОпределенияТиповОбъединения.Добавить(ТипЧисло);
+	
+	// <xs:element name="size" type="StringOrIntType"/>
+	Элемент = Новый ОбъявлениеЭлементаXS;
+	Элемент.Имя = "size";
+	Элемент.ИмяТипа = Новый РасширенноеИмяXML("", "StringOrIntType");
+	Схема.Содержимое.Добавить(Элемент);
+	
+	Возврат Схема;
+
+КонецФункции
+
+Function ExampleXSSimpleTypeDefinition_Union()
+
+	schema = New XMLSchema;
+
+	//<xs:simpleType name="StringOrIntType">
+	StringOrIntType = New XSSimpleTypeDefinition;
+	StringOrIntType.Name = "StringOrIntType";
+	
+	// <xs:union>
+	StringOrIntType.Variety = XSSimpleTypeVariety.Union;
+	schema.Content.Add(StringOrIntType);
+	
+	// <xs:simpleType>
+	simpleType1 = New XSSimpleTypeDefinition;
+	
+	// <xs:restriction base="xs:string"/>
+	simpleType1.BaseTypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "string");
+	StringOrIntType.MemberTypeDefinitions.Add(simpleType1);
+		
+	// <xs:simpleType>
+	simpleType2 = New XSSimpleTypeDefinition;
+	
+	// <xs:restriction base="xs:int"/>
+	simpleType2.BaseTypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "int");
+	StringOrIntType.MemberTypeDefinitions.Add(simpleType2);
+	
+	// <xs:element name="size" type="StringOrIntType"/>
+	elementSize = New XSElementDeclaration;
+	elementSize.Name = "size";
+	elementSize.TypeName = New XMLExpandedName("", "StringOrIntType");
+	schema.Content.Add(elementSize);
+	 	
+	return schema;
+	
+EndFunction
+
+Процедура РезультатОпределениеПростогоТипаXS_Объединение()
+	//<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	//    <xs:simpleType name="StringOrIntType">
+	//        <xs:union>
+	//            <xs:simpleType>
+	//                <xs:restriction base="xs:string"/>
+	//            </xs:simpleType>
+	//    
+	//            <xs:simpleType>
+	//                <xs:restriction base="xs:int"/>
+	//            </xs:simpleType>
+	//        </xs:union>
+	//    </xs:simpleType>
+	//    
+	//    <xs:element name="size" type="StringOrIntType"/>
+	//</xs:schema>
 КонецПроцедуры
 
 #КонецОбласти

@@ -22,6 +22,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Facets.Inserted += Facets_Inserted;
             Facets.Cleared += Facets_Cleared;
 
+            MemberTypeDefinitions = new XSComponentList();
+            MemberTypeDefinitions.Inserted += MemberTypeDefinitions_Inserted;
+            MemberTypeDefinitions.Cleared += MemberTypeDefinitions_Cleared;
+
             Components = new XSComponentFixedList();
             Variety = XSSimpleTypeVariety.Atomic;
         }
@@ -196,22 +200,44 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         {
             var component = e.Component;
 
+            if (!(component is IXSFacet))
+                throw RuntimeException.InvalidArgumentType();
+
             component.BindToContainer(RootContainer, this);
             Components.Add(component);
 
-            if ((_type.Content is XmlSchemaSimpleTypeRestriction) && (component is IXSFacet))
-            {
-                var restriction = _type.Content as XmlSchemaSimpleTypeRestriction;
-                restriction.Facets.Add(component.SchemaObject);
-            }
+            if (_type.Content is XmlSchemaSimpleTypeRestriction content)
+                content.Facets.Add(component.SchemaObject);
         }
 
         private void Facets_Cleared(object sender, EventArgs e)
         {
             Components.Clear();
 
-            var restriction = _type.Content as XmlSchemaSimpleTypeRestriction;
-            restriction?.Facets.Clear();
+            if (_type.Content is XmlSchemaSimpleTypeRestriction content)
+                content.Facets.Clear();
+        }
+
+        private void MemberTypeDefinitions_Inserted(object sender, XSComponentListEventArgs e)
+        {
+            var component = e.Component;
+
+            if (!(component is XSSimpleTypeDefinition))
+                throw RuntimeException.InvalidArgumentType();
+
+            component.BindToContainer(RootContainer, this);
+            Components.Add(component);
+
+            if (_type.Content is XmlSchemaSimpleTypeUnion content)
+                content.BaseTypes.Add(component.SchemaObject);
+        }
+
+        private void MemberTypeDefinitions_Cleared(object sender, EventArgs e)
+        {
+            Components.Clear();
+
+            if (_type.Content is XmlSchemaSimpleTypeUnion content)
+                content.BaseTypes.Clear();
         }
 
         #endregion
