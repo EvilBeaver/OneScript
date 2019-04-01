@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Xml;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -11,6 +10,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     {
         private readonly XmlSchemaMinInclusiveFacet _facet;
         private XSAnnotation _annotation;
+        private IValue _value;
 
         private XSMinInclusiveFacet() => _facet = new XmlSchemaMinInclusiveFacet();
 
@@ -48,7 +48,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public string LexicalValue
         {
             get => _facet.Value;
-            set => _facet.Value = value;
+            set
+            {
+                _facet.Value = value;
+                _value = ValueFactory.Create(value);
+            }
         }
 
         [ContextProperty("ОпределениеПростогоТипа", "SimpleTypeDefinition")]
@@ -61,12 +65,22 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set => _facet.IsFixed = value;
         }
 
+        [ContextProperty("Включающий", "Inclusive")]
+        public bool Inclusive => true;
+
         [ContextProperty("Значение", "Value")]
-        public decimal Value
+        public IValue Value
         {
-            get => XmlConvert.ToDecimal(_facet.Value);
-            set => _facet.Value = XmlConvert.ToString(value);
+            get => _value;
+            set
+            {
+                _value = value;
+                _facet.Value = XMLSchema.XMLStringIValue(_value);
+            }
         }
+
+        [ContextProperty("Исключающий", "Exclusive")]
+        public bool Exclusive => false;
 
         #endregion
 

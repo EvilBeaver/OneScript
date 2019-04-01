@@ -5,14 +5,14 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [ContextClass("ФасетМаксимальногоВключающегоЗначенияXS", "XSMaxInclusiveFacet")]
-    public class XSMaxInclusiveFacet : AutoContext<XSMaxInclusiveFacet>, IXSFacet
+    [ContextClass("ФасетМинимальногоИсключающегоЗначенияXS", "XSMinExclusiveFacet")]
+    public class XSMinExclusiveFacet : AutoContext<XSMinExclusiveFacet>, IXSFacet
     {
-        private readonly XmlSchemaMaxInclusiveFacet _facet;
+        private readonly XmlSchemaMinExclusiveFacet _facet;
         private XSAnnotation _annotation;
         private IValue _value;
 
-        private XSMaxInclusiveFacet() => _facet = new XmlSchemaMaxInclusiveFacet();
+        private XSMinExclusiveFacet() => _facet = new XmlSchemaMinExclusiveFacet();
 
         #region OneScript
 
@@ -42,7 +42,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XMLSchema Schema => RootContainer.Schema;
 
         [ContextProperty("ТипКомпоненты", "ComponentType")]
-        public XSComponentType ComponentType => XSComponentType.MaxInclusiveFacet;
+        public XSComponentType ComponentType => XSComponentType.MinExclusiveFacet;
 
         [ContextProperty("ЛексическоеЗначение", "LexicalValue")]
         public string LexicalValue
@@ -66,7 +66,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         [ContextProperty("Включающий", "Inclusive")]
-        public bool Inclusive => true;
+        public bool Inclusive => false;
 
         [ContextProperty("Значение", "Value")]
         public IValue Value
@@ -80,7 +80,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         [ContextProperty("Исключающий", "Exclusive")]
-        public bool Exclusive => false;
+        public bool Exclusive => true;
 
         #endregion
 
@@ -93,14 +93,14 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public void UpdateDOMElement() => throw new NotImplementedException();
 
         [ContextMethod("Содержит", "Contains")]
-        public bool Contains(IXSComponent component) => false;
+        public bool Contains(IXSComponent component) => true;
 
         #endregion
 
         #region Constructors
 
         [ScriptConstructor(Name = "По умолчанию")]
-        public static XSMaxInclusiveFacet Constructor() => new XSMaxInclusiveFacet();
+        public static XSMinExclusiveFacet Constructor() => new XSMinExclusiveFacet();
 
         #endregion
 

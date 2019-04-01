@@ -5,14 +5,13 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [ContextClass("ФасетМаксимальногоВключающегоЗначенияXS", "XSMaxInclusiveFacet")]
-    public class XSMaxInclusiveFacet : AutoContext<XSMaxInclusiveFacet>, IXSFacet
+    [ContextClass("ФасетПробельныхСимволовXS", "XSWhitespaceFacet")]
+    public class XSWhitespaceFacet : AutoContext<XSWhitespaceFacet>, IXSFacet
     {
-        private readonly XmlSchemaMaxInclusiveFacet _facet;
+        private readonly XmlSchemaWhiteSpaceFacet _facet;
         private XSAnnotation _annotation;
-        private IValue _value;
 
-        private XSMaxInclusiveFacet() => _facet = new XmlSchemaMaxInclusiveFacet();
+        private XSWhitespaceFacet() => _facet = new XmlSchemaWhiteSpaceFacet();
 
         #region OneScript
 
@@ -42,17 +41,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XMLSchema Schema => RootContainer.Schema;
 
         [ContextProperty("ТипКомпоненты", "ComponentType")]
-        public XSComponentType ComponentType => XSComponentType.MaxInclusiveFacet;
+        public XSComponentType ComponentType => XSComponentType.WhitespaceFacet;
 
         [ContextProperty("ЛексическоеЗначение", "LexicalValue")]
         public string LexicalValue
         {
             get => _facet.Value;
-            set
-            {
-                _facet.Value = value;
-                _value = ValueFactory.Create(value);
-            }
+            set => _facet.Value = value;
         }
 
         [ContextProperty("ОпределениеПростогоТипа", "SimpleTypeDefinition")]
@@ -65,22 +60,48 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set => _facet.IsFixed = value;
         }
 
-        [ContextProperty("Включающий", "Inclusive")]
-        public bool Inclusive => true;
-
         [ContextProperty("Значение", "Value")]
-        public IValue Value
+        public XSWhitespaceHandling Value
         {
-            get => _value;
+            get
+            {
+                switch (_facet.Value)
+                {
+                    case "collapse":
+                        return XSWhitespaceHandling.Collapse;
+
+                    case "preserve":
+                        return XSWhitespaceHandling.Preserve;
+
+                    case "replace":
+                        return XSWhitespaceHandling.Replace;
+
+                    default:
+                        return XSWhitespaceHandling.Collapse;
+                }
+            }
             set
             {
-                _value = value;
-                _facet.Value = XMLSchema.XMLStringIValue(_value);
+                switch (value)
+                {
+                    case XSWhitespaceHandling.Collapse:
+                        _facet.Value = "collapse";
+                        break;
+
+                    case XSWhitespaceHandling.Preserve:
+                        _facet.Value = "preserve";
+                        break;
+
+                    case XSWhitespaceHandling.Replace:
+                        _facet.Value = "replace";
+                        break;
+
+                    default:
+                        _facet.Value = null;
+                        break;
+                }
             }
         }
-
-        [ContextProperty("Исключающий", "Exclusive")]
-        public bool Exclusive => false;
 
         #endregion
 
@@ -100,7 +121,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Constructors
 
         [ScriptConstructor(Name = "По умолчанию")]
-        public static XSMaxInclusiveFacet Constructor() => new XSMaxInclusiveFacet();
+        public static XSWhitespaceFacet Constructor() => new XSWhitespaceFacet();
 
         #endregion
 

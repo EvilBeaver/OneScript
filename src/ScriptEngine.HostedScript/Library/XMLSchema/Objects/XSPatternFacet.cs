@@ -5,14 +5,13 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [ContextClass("ФасетМаксимальногоВключающегоЗначенияXS", "XSMaxInclusiveFacet")]
-    public class XSMaxInclusiveFacet : AutoContext<XSMaxInclusiveFacet>, IXSFacet
+    [ContextClass("ФасетОбразцаXS", "XSPatternFacet")]
+    public class XSPatternFacet : AutoContext<XSPatternFacet>, IXSFacet
     {
-        private readonly XmlSchemaMaxInclusiveFacet _facet;
+        private readonly XmlSchemaPatternFacet _facet;
         private XSAnnotation _annotation;
-        private IValue _value;
 
-        private XSMaxInclusiveFacet() => _facet = new XmlSchemaMaxInclusiveFacet();
+        private XSPatternFacet() => _facet = new XmlSchemaPatternFacet();
 
         #region OneScript
 
@@ -42,17 +41,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XMLSchema Schema => RootContainer.Schema;
 
         [ContextProperty("ТипКомпоненты", "ComponentType")]
-        public XSComponentType ComponentType => XSComponentType.MaxInclusiveFacet;
+        public XSComponentType ComponentType => XSComponentType.PatternFacet;
 
         [ContextProperty("ЛексическоеЗначение", "LexicalValue")]
         public string LexicalValue
         {
             get => _facet.Value;
-            set
-            {
-                _facet.Value = value;
-                _value = ValueFactory.Create(value);
-            }
+            set => _facet.Value = value;
         }
 
         [ContextProperty("ОпределениеПростогоТипа", "SimpleTypeDefinition")]
@@ -65,22 +60,12 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set => _facet.IsFixed = value;
         }
 
-        [ContextProperty("Включающий", "Inclusive")]
-        public bool Inclusive => true;
-
         [ContextProperty("Значение", "Value")]
-        public IValue Value
+        public string Value
         {
-            get => _value;
-            set
-            {
-                _value = value;
-                _facet.Value = XMLSchema.XMLStringIValue(_value);
-            }
+            get => _facet.Value;
+            set => _facet.Value = value;
         }
-
-        [ContextProperty("Исключающий", "Exclusive")]
-        public bool Exclusive => false;
 
         #endregion
 
@@ -100,7 +85,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Constructors
 
         [ScriptConstructor(Name = "По умолчанию")]
-        public static XSMaxInclusiveFacet Constructor() => new XSMaxInclusiveFacet();
+        public static XSPatternFacet Constructor() => new XSPatternFacet();
 
         #endregion
 
