@@ -132,10 +132,6 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsObject();
             }
-            else if (typeof(IValue).IsAssignableFrom(type))
-            {
-                valueObj = value;
-            }
             else
             {
                 valueObj = CastToCLRObject(value);
