@@ -13,7 +13,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [ContextClass("ФасетПробельныхСимволовXS", "XSWhitespaceFacet")]
+    [ContextClass("ОпределениеОграниченияИдентичностиXS", "XSIdentityConstraintDefinition")]
     public class XSIdentityConstraintDefinition : AutoContext<XSIdentityConstraintDefinition>, IXSAnnotated, IXSNamedComponent
     {
         private XmlSchemaIdentityConstraint _constraint;

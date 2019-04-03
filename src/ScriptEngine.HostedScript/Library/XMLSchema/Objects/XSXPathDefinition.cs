@@ -11,7 +11,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [ContextClass("ФасетПробельныхСимволовXS", "XSWhitespaceFacet")]
+    [ContextClass("ОпределенияXPathXS", "XSXPathDefinition")]
     public class XSXPathDefinition : AutoContext<XSXPathDefinition>, IXSAnnotated, IXSNamedComponent
     {
         private readonly XmlSchemaXPath _xpath;
