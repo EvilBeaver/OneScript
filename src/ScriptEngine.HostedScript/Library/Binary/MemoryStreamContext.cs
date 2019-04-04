@@ -280,14 +280,14 @@ namespace ScriptEngine.HostedScript.Library.Binary
             byte[] bytes;
             if (_shouldBeCopiedOnClose)
             {
-                _underlyingStream.Position = 0;
-                bytes = new byte[_underlyingStream.Length];
-                _underlyingStream.Read(bytes, 0, bytes.Length);
-
+                bytes = _underlyingStream.ToArray();
             }
             else
             {
                 bytes = _underlyingStream.GetBuffer();
+
+                if (_underlyingStream.Length < bytes.Length)
+                  Array.Resize(ref bytes, (int)_underlyingStream.Length);
             }
 
             _underlyingStream.Close();

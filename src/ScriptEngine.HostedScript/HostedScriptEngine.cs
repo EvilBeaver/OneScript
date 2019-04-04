@@ -81,6 +81,14 @@ namespace ScriptEngine.HostedScript
                 _engine.Initialize();
                 _isInitialized = true;
             }
+
+            // System language
+            var SystemLanguageCfg = GetWorkingConfig()["SystemLanguage"];
+
+            if (SystemLanguageCfg != null)
+                Locale.SystemLanguageISOName = SystemLanguageCfg;
+            else
+                Locale.SystemLanguageISOName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
         }
 
         private void InitLibraries(KeyValueConfig config)

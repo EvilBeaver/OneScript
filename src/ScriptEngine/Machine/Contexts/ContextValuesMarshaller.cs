@@ -71,14 +71,14 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value;
             }
+            else if (type == typeof(string))
+            {
+                valueObj = value.AsString();
+            }
             else if (value == SimpleConstantValue.Undefined()) 
             {
                 // Если тип параметра не IValue и не IVariable && Неопределено -> null
                 valueObj = null;
-            }
-            else if (type == typeof(string))
-            {
-                valueObj = value.AsString();
             }
             else if (type == typeof(int))
             {
