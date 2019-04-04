@@ -55,6 +55,11 @@ namespace StandaloneRunner
             try
             {
                 ModuleImage module;
+                
+                var templateStorage = new TemplateStorage(new StandaloneTemplateFactory());
+                engine.EngineInstance.Environment.InjectObject(templateStorage);
+                GlobalsManager.RegisterInstance(templateStorage);
+                
                 engine.Initialize();
 
                 using (var binReader = new BinaryReader(_sourceStream))

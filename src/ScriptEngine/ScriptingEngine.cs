@@ -191,6 +191,7 @@ namespace ScriptEngine
         public void Dispose()
         {
             AttachedScriptsFactory.SetInstance(null);
+            GlobalsManager.Reset();
         }
 
         #endregion

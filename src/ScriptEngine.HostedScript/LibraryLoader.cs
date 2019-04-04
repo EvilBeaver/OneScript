@@ -122,6 +122,13 @@ namespace ScriptEngine.HostedScript
             _engine.AttachAssembly(assembly, _env);
         }
 
+        [ContextMethod("ДобавитьМакет", "AddTemplate")]
+        public void AddTemplate(string file, string name, TemplateKind kind = TemplateKind.File)
+        {
+            var manager = GlobalsManager.GetGlobalContext<TemplateStorage>();
+            manager.RegisterTemplate(file, name, kind);
+        }
+
         protected override int GetOwnVariableCount()
         {
             return 1;

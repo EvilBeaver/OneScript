@@ -34,6 +34,12 @@ namespace ScriptEngine.HostedScript
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
+
+            var templateFactory = new DefaultTemplatesFactory();
+            var storage = new TemplateStorage(templateFactory);
+            _env.InjectObject(storage);
+            GlobalsManager.RegisterInstance(storage);
+            
             _engine.Environment = _env;
         }
 
