@@ -35,6 +35,14 @@ namespace ScriptEngine.HostedScript
             _templates.Add(name, template);
         }
         
+        public void RegisterTemplate(string name, ITemplate template)
+        {
+            if (_templates.ContainsKey(name))
+                throw RuntimeException.InvalidArgumentValue(name);
+            
+            _templates.Add(name, template);
+        }
+        
         
         [ContextMethod("ПолучитьМакет")]
         public IValue GetTemplate(string templateName)
@@ -48,6 +56,12 @@ namespace ScriptEngine.HostedScript
 
         }
 
+        public IEnumerable<KeyValuePair<string, ITemplate>> GetTemplates()
+        {
+            return _templates;
+        }
+        
+        
         public void Dispose()
         {
             foreach (var template in _templates.Values)

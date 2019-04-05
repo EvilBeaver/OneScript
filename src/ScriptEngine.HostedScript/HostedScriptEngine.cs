@@ -35,11 +35,14 @@ namespace ScriptEngine.HostedScript
 
             _env.InjectObject(_globalCtx, false);
 
-            var templateFactory = new DefaultTemplatesFactory();
-            var storage = new TemplateStorage(templateFactory);
-            _env.InjectObject(storage);
-            GlobalsManager.RegisterInstance(storage);
-            
+            InitializationCallback = (eng, env) =>
+            {
+                var templateFactory = new DefaultTemplatesFactory();
+                var storage = new TemplateStorage(templateFactory);
+                env.InjectObject(storage);
+                GlobalsManager.RegisterInstance(storage);
+            };
+
             _engine.Environment = _env;
         }
 
@@ -80,10 +83,13 @@ namespace ScriptEngine.HostedScript
 
         public string CustomConfig { get; set; }
 
+        public Action<ScriptingEngine, RuntimeEnvironment> InitializationCallback { get; set; }
+        
         public void Initialize()
         {
             if (!_isInitialized)
             {
+                InitializationCallback?.Invoke(_engine, _engine.Environment);
                 _engine.Initialize();
                 _isInitialized = true;
             }
