@@ -23,6 +23,11 @@ namespace ScriptEngine.HostedScript.Library
 
         public CustomLineFeedStreamReader (TextReader underlyingReader, string eolDelimiter, bool analyzeDefaults)
         {
+            if(underlyingReader == null)
+                throw new ArgumentNullException(nameof(underlyingReader));
+            if(eolDelimiter == null)
+                throw new ArgumentNullException(nameof(eolDelimiter));
+            
             _reader = underlyingReader;
             _eolDelimiter = eolDelimiter;
             _analyzeDefaults = analyzeDefaults;
