@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.IO;
 using System.Text;
@@ -32,13 +33,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Content = new XSComponentList();
             Content.Inserted += ContentInserted;
             Content.Cleared += ContentCleared;
-            
+
             BlockDefault = new XSDisallowedSubstitutionsUnion();
             FinalDefault = new XSSchemaFinalUnion();
+
             AttributeGroupDefinitions = new XSNamedComponentMap();
             NotationDeclarations = new XSNamedComponentMap();
             ElementDeclarations = new XSNamedComponentMap();
-            AttributeGroupDefinitions = new XSNamedComponentMap();
             ModelGroupDefinitions = new XSNamedComponentMap();
             IdentityConstraintDefinitions = new XSNamedComponentMap();
             TypeDefinitions = new XSNamedComponentMap();
@@ -111,7 +112,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         [ContextProperty("ЭлементDOM", "DOMElement")]
         public IValue DOMElement => null;
-        
+
         [ContextProperty("URIПространстваИменСхемыДляСхемыXML", "SchemaForSchemaNamespaceURI")]
         public string Namespace => XmlSchema.Namespace;
 
@@ -169,7 +170,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         [ContextProperty("РасположениеСхемы", "SchemaLocation")]
-        public string SchemaLocation { get; set;  }
+        public string SchemaLocation { get; set; }
 
         [ContextProperty("Содержимое", "Content")]
         public XSComponentList Content { get; }
@@ -181,7 +182,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSForm AttributeFormDefault
         {
             get => XSForm.FromNativeValue(_schema.AttributeFormDefault);
-            set => _schema.AttributeFormDefault = XSForm.ToNativeValue(value); 
+            set => _schema.AttributeFormDefault = XSForm.ToNativeValue(value);
         }
 
         [ContextProperty("ФормаЭлементовПоУмолчанию", "ElementFormDefault")]
@@ -234,7 +235,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private void ContentInserted(object sender, XSComponentListEventArgs e)
         {
-            var component = e.Component;
+            IXSComponent component = e.Component;
 
             component.BindToContainer(this, this);
             Components.Add(component);
@@ -246,7 +247,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private void DirectivesInserted(object sender, XSComponentListEventArgs e)
         {
-            var component = e.Component;
+            IXSComponent component = e.Component;
 
             component.BindToContainer(this, this);
             Components.Add(component);
@@ -267,14 +268,26 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Components.RemoveAll(x => (x is IXSDirective));
             _schema.Includes.Clear();
         }
-            
+
         private void AddNamedComponentToList(IXSNamedComponent value)
         {
-           if (value is XSElementDeclaration)
+            if (value is XSElementDeclaration)
                 ElementDeclarations.Add(value);
 
             else if (value is IXSType)
                 TypeDefinitions.Add(value);
+
+            else if (value is IXSAttribute)
+                AttributeDeclarations.Add(value);
+
+            else if (value is XSAttributeGroupDefinition)
+                AttributeGroupDefinitions.Add(value);
+
+            else if (value is XSNotationDeclaration)
+                NotationDeclarations.Add(value);
+
+            else if (value is XSIdentityConstraintDefinition)
+                IdentityConstraintDefinitions.Add(value);
         }
 
         #endregion

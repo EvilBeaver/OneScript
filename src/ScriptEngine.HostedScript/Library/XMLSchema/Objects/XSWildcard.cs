@@ -13,9 +13,10 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("МаскаXS", "XSWildcard")]
-    class XSWildcard : AutoContext<XSWildcard>, IXSAnnotated, IXSFragment
+    public class XSWildcard : AutoContext<XSWildcard>, IXSAnnotated, IXSFragment
     {
         private XmlSchemaAnnotated _wildcard;
+        private XSAnnotation _annotation;
 
         private XSWildcard() { }
 
@@ -24,7 +25,15 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Properties
 
         [ContextProperty("Аннотация", "Annotation")]
-        public XSAnnotation Annotation { get; set; }
+        public XSAnnotation Annotation
+        {
+            get => _annotation;
+            set
+            {
+                _annotation = value;
+                _wildcard.Annotation = value.InternalObject;
+            }
+        }
 
         [ContextProperty("Компоненты", "Components")]
         public XSComponentFixedList Components => null;
@@ -118,7 +127,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                     Namespace = LexicalNamespaceConstraint
                 };
             }
-            else if (container is XSComplexTypeDefinition)
+            else if ((container is XSComplexTypeDefinition) || (container is XSAttributeGroupDefinition))
             {
                 _wildcard = new XmlSchemaAnyAttribute()
                 {
@@ -128,7 +137,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 };
             }
             else
+            {
                 throw RuntimeException.InvalidArgumentType();
+            }
         }
 
         public XmlSchemaObject SchemaObject => _wildcard;

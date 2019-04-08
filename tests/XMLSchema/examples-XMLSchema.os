@@ -19,6 +19,7 @@
 	СписокТестов.Добавить("ТестФасетКоличестваРазрядовДробнойЧастиXS");
 	СписокТестов.Добавить("ТестФасетМинимальногоИсключающегоЗначенияXS");
 	СписокТестов.Добавить("ТестМаскаXS");
+	СписокТестов.Добавить("ТестОпределениеГруппыАтрибутовXS");	
 	
 	Возврат СписокТестов;
 
@@ -182,8 +183,11 @@
 	//СхемаXML = ExampleXSMinExclusiveFacet();
 
 	//СхемаXML = ПримерМаскаXS();
-	СхемаXML = ExampleXSWildcard();
+	//СхемаXML = ExampleXSWildcard();
 
+	СхемаXML = ПримерОпределениеГруппыАтрибутовXS();
+	//СхемаXML = ExampleXSAttributeGroupDefinition();
+	 
 	//////////////////////////
 	
 	Возврат СхемаXML;
@@ -591,8 +595,8 @@ EndFunction
 
 	// <xs:element name="State">
 	Элемент = Новый ОбъявлениеЭлементаXS;
-	Схема.Содержимое.Добавить(Элемент);
 	Элемент.Имя = "State";
+	Схема.Содержимое.Добавить(Элемент);
 		
 	// <xs:annotation>
 	АннотацияNorthwestStates = Новый АннотацияXS;
@@ -620,8 +624,8 @@ Function ExampleXSAppInfo()
 	
 	// <xs:element name="State">
 	Element = New XSElementDeclaration;
-	Schema.Content.Add(Element);
 	Element.Name = "State";
+	Schema.Content.Add(Element);
 	
 	// <xs:annotation>
 	AnnotationNorthwestStates = New XSAnnotation;
@@ -1900,6 +1904,222 @@ EndFunction
 	ПроверитьМаскаXS(Схема);
 	ПроверитьМаскаXS(Schema)
 
+КонецПроцедуры
+
+#КонецОбласти
+
+#Область ОпределениеГруппыАтрибутовXS 
+
+// Источник:
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemaattributegroup
+//
+// Результат:
+//	см. РезультатОпределениеГруппыАтрибутовXS 
+
+Функция ПримерОпределениеГруппыАтрибутовXS()
+
+	Схема = Новый СхемаXML;
+
+	// <xs:attributeGroup name="myAttributeGroup">
+	ГруппаАтрибутов = Новый ОпределениеГруппыАтрибутовXS;
+	ГруппаАтрибутов.Имя = "myAttributeGroup";
+	
+	// <xs:attribute name="someattribute1" type="xs:integer"/>
+	АтрибутЧисло = Новый ОбъявлениеАтрибутаXS;
+	АтрибутЧисло.Имя = "someattribute1";
+	АтрибутЧисло.ИмяТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "integer");
+	ГруппаАтрибутов.Содержимое.Добавить(АтрибутЧисло);
+	
+	// <xs:attribute name="someattribute2" type="xs:string"/>
+	АтрибутСтрока = Новый ОбъявлениеАтрибутаXS;
+	АтрибутСтрока.Имя = "someattribute2";
+	АтрибутСтрока.ИмяТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string");
+	ГруппаАтрибутов.Содержимое.Добавить(АтрибутСтрока);
+	
+	Схема.Содержимое.Добавить(ГруппаАтрибутов);
+	
+	// <xs:attributeGroup name="myAttributeGroupB">
+	ГруппаАтрибутов = Новый ОпределениеГруппыАтрибутовXS;
+	ГруппаАтрибутов.Имя = "myAttributeGroupB";
+	
+	// <xs:attribute name="someattribute20" type="xs:date"/>
+	АтрибутДата = Новый ОбъявлениеАтрибутаXS;
+	АтрибутДата.Имя = "someattribute20";
+	АтрибутДата.ИмяТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "date");
+	ГруппаАтрибутов.Содержимое.Добавить(АтрибутДата);
+	
+	// <xs:attributeGroup ref="myAttributeGroupA"/>
+	АтрибутСсылка = Новый ОпределениеГруппыАтрибутовXS;
+	АтрибутСсылка.Ссылка = Новый РасширенноеИмяXML("", "myAttributeGroup");
+	ГруппаАтрибутов.Содержимое.Добавить(АтрибутСсылка);
+	
+	// <xs:anyAttribute namespace="##targetNamespace"/>	
+	ЛюбойАтрибут = Новый МаскаXS;
+	ЛюбойАтрибут.ЛексическоеЗначениеОграниченияПространствИмен	= "##targetNamespace";
+	ГруппаАтрибутов.Маска = ЛюбойАтрибут;
+	
+	Схема.Содержимое.Добавить(ГруппаАтрибутов);
+	
+	// <xs:complexType name="myElementType">
+	СоставнойТип = Новый ОпределениеСоставногоТипаXS;
+	СоставнойТип.Имя = "myElementType";
+	
+	// <xs:attributeGroup ref="myAttributeGroup"/>
+	АтрибутСсылка = Новый ОпределениеГруппыАтрибутовXS;
+	АтрибутСсылка.Ссылка = Новый РасширенноеИмяXML("", "myAttributeGroup");
+	СоставнойТип.Атрибуты.Добавить(АтрибутСсылка);
+	
+	Схема.Содержимое.Добавить(СоставнойТип);
+	
+	Возврат Схема;
+
+КонецФункции
+
+Function ExampleXSAttributeGroupDefinition()
+
+	schema = New XMLSchema;
+
+	// <xs:attributeGroup name="myAttributeGroup">
+	myAttributeGroup = New XSAttributeGroupDefinition;
+	myAttributeGroup.Name = "myAttributeGroup";
+	
+	// <xs:attribute name="someattribute1" type="xs:integer"/>
+	someattribute1 = New XSAttributeDeclaration;
+	someattribute1.Name = "someattribute1";
+	someattribute1.TypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "integer");
+	myAttributeGroup.Content.Add(someattribute1);
+	
+	// <xs:attribute name="someattribute2" type="xs:string"/>
+	someattribute2 = New XSAttributeDeclaration;
+	someattribute2.Name = "someattribute2";
+	someattribute2.TypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "string");
+	myAttributeGroup.Content.Add(someattribute2);
+	
+	schema.Content.Add(myAttributeGroup);
+	
+	// <xs:attributeGroup name="myAttributeGroupB">
+	myAttributeGroupB = New XSAttributeGroupDefinition;
+	myAttributeGroupB.Name = "myAttributeGroupB";
+	
+	// <xs:attribute name="someattribute20" type="xs:date"/>
+	someattribute20 = New XSAttributeDeclaration;
+	someattribute20.Name = "someattribute20";
+	someattribute20.TypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "date");
+	myAttributeGroupB.Content.Add(someattribute20);
+	
+	// <xs:attributeGroup ref="myAttributeGroupA"/>
+	myAttributeGroupRefA = New XSAttributeGroupDefinition;
+	myAttributeGroupRefA.Reference = New XMLExpandedName("", "myAttributeGroup");
+	myAttributeGroupB.Content.Add(myAttributeGroupRefA);
+	
+	// <xs:anyAttribute namespace="##targetNamespace"/>	
+	Wildcard = New XSWildcard;
+	Wildcard.LexicalNamespaceConstraint	= "##targetNamespace";
+	myAttributeGroupB.Wildcard = Wildcard;
+	
+	schema.Content.Add(myAttributeGroupB);
+	
+	// <xs:complexType name="myElementType">
+	myElementType = New XSComplexTypeDefinition;
+	myElementType.Name = "myElementType";
+	
+	// <xs:attributeGroup ref="myAttributeGroup"/>
+	myAttributeGroupRef = New XSAttributeGroupDefinition;
+	myAttributeGroupRef.Reference = New XMLExpandedName("", "myAttributeGroup");
+	myElementType.Attributes.Add(myAttributeGroupRef);
+	
+	schema.Content.Add(myElementType);
+	
+	return schema;
+	
+EndFunction
+
+Процедура РезультатОпределениеГруппыАтрибутовXS()
+	//<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	//	<xs:attributeGroup name="myAttributeGroup">
+	//		<xs:attribute name="someattribute1" type="xs:integer"/>
+	//		<xs:attribute name="someattribute2" type="xs:string"/>
+	//	</xs:attributeGroup>
+	//	<xs:attributeGroup name="myAttributeGroupB">
+	//		<xs:attribute name="someattribute20" type="xs:date"/>
+	//		<xs:attributeGroup ref="myAttributeGroup"/>
+	//		<xs:any namespace="##targetNamespace"/>
+	//	</xs:attributeGroup>
+	//	<xs:complexType name="myElementType">
+	//		<xs:attributeGroup ref="myAttributeGroup"/>
+	//	</xs:complexType>
+	//</xs:schema>
+КонецПроцедуры
+
+Процедура ПроверитьОпределениеГруппыАтрибутовXS(Схема)
+
+	ЮнитТест.ПроверитьЗаполненность(Схема);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Схема), Тип("СхемаXML"));
+	ЮнитТест.ПроверитьРавенство(Схема.Содержимое.Количество(), 3);
+	ЮнитТест.ПроверитьРавенство(Схема.ОпределенияГруппАтрибутов.Количество(), 2);
+	ЮнитТест.ПроверитьРавенство(Схема.ОпределенияТипов.Количество(), 1);
+
+	ГруппаАтрибутов = Схема.ОпределенияГруппАтрибутов.Получить("myAttributeGroup");
+	ЮнитТест.ПроверитьЗаполненность(ГруппаАтрибутов);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ГруппаАтрибутов), Тип("ОпределениеГруппыАтрибутовXS"));
+	ЮнитТест.ПроверитьРавенство(ГруппаАтрибутов.Имя, "myAttributeGroup");
+	ЮнитТест.ПроверитьРавенство(ГруппаАтрибутов.Компоненты.Количество(), 2);
+
+	АтрибутЧисло = ГруппаАтрибутов.Компоненты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(АтрибутЧисло);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(АтрибутЧисло), Тип("ОбъявлениеАтрибутаXS"));
+	ЮнитТест.ПроверитьРавенство(АтрибутЧисло.Имя, "someattribute1");
+	ЮнитТест.ПроверитьРавенство(АтрибутЧисло.ИмяТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "integer"));
+	
+	АтрибутСтрока = ГруппаАтрибутов.Компоненты.Получить(1);
+	ЮнитТест.ПроверитьЗаполненность(АтрибутСтрока);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(АтрибутСтрока), Тип("ОбъявлениеАтрибутаXS"));
+	ЮнитТест.ПроверитьРавенство(АтрибутСтрока.Имя, "someattribute2");
+	ЮнитТест.ПроверитьРавенство(АтрибутСтрока.ИмяТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string"));
+
+	ГруппаАтрибутов = Схема.ОпределенияГруппАтрибутов.Получить("myAttributeGroupB");
+	ЮнитТест.ПроверитьЗаполненность(ГруппаАтрибутов);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ГруппаАтрибутов), Тип("ОпределениеГруппыАтрибутовXS"));
+	ЮнитТест.ПроверитьРавенство(ГруппаАтрибутов.Имя, "myAttributeGroupB");
+	ЮнитТест.ПроверитьРавенство(ГруппаАтрибутов.Компоненты.Количество(), 2);
+
+	АтрибутДата = ГруппаАтрибутов.Компоненты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(АтрибутДата);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(АтрибутДата), Тип("ОбъявлениеАтрибутаXS"));
+	ЮнитТест.ПроверитьРавенство(АтрибутДата.Имя, "someattribute20");
+	ЮнитТест.ПроверитьРавенство(АтрибутДата.ИмяТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "date"));
+
+	АтрибутСсылка = ГруппаАтрибутов.Компоненты.Получить(1);
+	ЮнитТест.ПроверитьЗаполненность(АтрибутСсылка);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(АтрибутСсылка), Тип("ОпределениеГруппыАтрибутовXS"));
+	ЮнитТест.ПроверитьРавенство(АтрибутСсылка.Ссылка, Новый РасширенноеИмяXML("", "myAttributeGroup"));
+
+	ЛюбойАтрибут = ГруппаАтрибутов.Маска;
+	ЮнитТест.ПроверитьЗаполненность(ЛюбойАтрибут);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ЛюбойАтрибут), Тип("МаскаXS"));
+	ЮнитТест.ПроверитьРавенство(ЛюбойАтрибут.ЛексическоеЗначениеОграниченияПространствИмен, "##targetNamespace");
+	
+	СоставнойТип = Схема.ОпределенияТипов.Получить("myElementType");
+	ЮнитТест.ПроверитьЗаполненность(СоставнойТип);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(СоставнойТип), Тип("ОпределениеСоставногоТипаXS"));
+	ЮнитТест.ПроверитьРавенство(СоставнойТип.Имя, "myElementType");
+	ЮнитТест.ПроверитьРавенство(СоставнойТип.Атрибуты.Количество(), 1);
+
+	АтрибутСсылка = СоставнойТип.Атрибуты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(АтрибутСсылка);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(АтрибутСсылка), Тип("ОпределениеГруппыАтрибутовXS"));
+	ЮнитТест.ПроверитьРавенство(АтрибутСсылка.Ссылка, Новый РасширенноеИмяXML("", "myAttributeGroup"));
+
+КонецПроцедуры
+
+Процедура ТестОпределениеГруппыАтрибутовXS() Экспорт
+	
+	Схема = ПримерОпределениеГруппыАтрибутовXS();
+	Schema = ExampleXSAttributeGroupDefinition();
+
+	ПроверитьОпределениеГруппыАтрибутовXS(Схема);
+	ПроверитьОпределениеГруппыАтрибутовXS(Schema)
+	
 КонецПроцедуры
 
 #КонецОбласти

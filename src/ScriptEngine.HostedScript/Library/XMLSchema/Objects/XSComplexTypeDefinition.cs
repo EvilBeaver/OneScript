@@ -15,7 +15,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ОпределениеСоставногоТипаXS", "XSComplexTypeDefinition")]
-    class XSComplexTypeDefinition : AutoContext<XSComplexTypeDefinition>, IXSType, IXSNamedComponent
+    public class XSComplexTypeDefinition : AutoContext<XSComplexTypeDefinition>, IXSType, IXSNamedComponent
     {
         private readonly XmlSchemaComplexType _type;
         private XSAnnotation _annotation;
@@ -353,8 +353,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private void Attributes_Inserted(object sender, XSComponentListEventArgs e)
         {
-            var component = e.Component;
-            if (!(component is IXSAttribute))
+            IXSComponent component = e.Component;
+            if (!(component is IXSAttribute) && (!(component is XSAttributeGroupDefinition)))
                 throw RuntimeException.InvalidArgumentType();
 
             component.BindToContainer(RootContainer, this);
