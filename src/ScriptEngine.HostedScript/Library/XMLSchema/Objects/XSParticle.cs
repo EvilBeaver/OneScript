@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
@@ -15,8 +16,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     public class XSParticle : AutoContext<XSParticle>, IXSComponent
     {
         private IXSFragment _term;
-        private decimal _minOccurs;
-        private decimal _maxOccurs;
+        private IValue _minOccurs;
+        private IValue _maxOccurs;
 
         /// <summary>
         /// {max occurs}
@@ -27,34 +28,44 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private XSParticle()
         {
-            _minOccurs = 1;
-            _maxOccurs = 1;
+            _minOccurs = ValueFactory.Create();
+            _maxOccurs = ValueFactory.Create();
 
             Components = new XSComponentFixedList();
         }
 
-        private void SetMaxOccurs(XmlSchemaParticle particle, decimal maxOccurs)
+        private void SetMaxOccurs(XmlSchemaParticle particle, IValue maxOccurs)
         {
-            if (maxOccurs == 1)
+            if (maxOccurs.DataType == DataType.Undefined)
                 particle.MaxOccursString = null;
 
-            else if (maxOccurs >= 0)
-                particle.MaxOccurs = maxOccurs;
-
+            else if (maxOccurs.DataType == DataType.Number)
+            {
+                var number = maxOccurs.AsNumber();
+                if (number >= 0)
+                    particle.MaxOccurs = number;
+                else
+                    particle.MaxOccursString = XS_UNBOUNDED;
+            }
             else
-                particle.MaxOccursString = XS_UNBOUNDED;
+                throw RuntimeException.InvalidArgumentType();
         }
 
-        private void SetMinOccurs(XmlSchemaParticle particle, decimal minOccurs)
+        private void SetMinOccurs(XmlSchemaParticle particle, IValue minOccurs)
         {
-            if (minOccurs == 1)
+            if (minOccurs.DataType == DataType.Undefined)
                 particle.MinOccursString = null;
 
-            else if (minOccurs >= 0)
-                particle.MinOccurs = minOccurs;
-
+            else if (minOccurs.DataType == DataType.Number)
+            {
+                var number = minOccurs.AsNumber();
+                if (number >= 0)
+                    particle.MinOccurs = number;
+                else
+                    throw RuntimeException.InvalidArgumentValue();
+            }
             else
-                throw RuntimeException.InvalidArgumentValue();
+                throw RuntimeException.InvalidArgumentType();
         }
 
         #region OneScript
@@ -83,22 +94,19 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public IValue DOMElement => ValueFactory.Create();
 
         [ContextProperty("МаксимальноВходит", "MaxOccurs")]
-        public decimal MaxOccurs
+        public IValue MaxOccurs
         {
             get => _maxOccurs;
             set
             {
                 _maxOccurs = value;
                 if (_term?.SchemaObject is XmlSchemaParticle _particle)
-                {
                     SetMaxOccurs(_particle, _maxOccurs);
-                }
-                    
             }
         }
 
         [ContextProperty("МинимальноВходит", "MinOccurs")]
-        public decimal MinOccurs
+        public IValue MinOccurs
         {
             get => _minOccurs;
             set
@@ -117,7 +125,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             {
                 _term = value;
                 Components.Clear();
-                if(_term != null)
+                if (_term != null)
                 {
                     _term.BindToContainer(RootContainer, this);
                     Components.Add(_term);
@@ -161,8 +169,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #endregion
 
         #region IXSComponent
-
         XmlSchemaObject IXSComponent.SchemaObject => _term?.SchemaObject;
+        public XmlSchemaParticle SchemaObject => _term?.SchemaObject as XmlSchemaParticle;
 
         void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {

@@ -18,6 +18,7 @@
 	СписокТестов.Добавить("ТестФасетМаксимальнойДлиныXS");
 	СписокТестов.Добавить("ТестФасетКоличестваРазрядовДробнойЧастиXS");
 	СписокТестов.Добавить("ТестФасетМинимальногоИсключающегоЗначенияXS");
+	СписокТестов.Добавить("ТестМаскаXS");
 	
 	Возврат СписокТестов;
 
@@ -177,8 +178,11 @@
 	//СхемаXML = ПримерФасетКоличестваРазрядовДробнойЧастиXS();
 	//СхемаXML = ExampleXSFractionDigitsFacet();
 
-	СхемаXML = ПримерФасетМинимальногоИсключающегоЗначенияXS();
+	//СхемаXML = ПримерФасетМинимальногоИсключающегоЗначенияXS();
 	//СхемаXML = ExampleXSMinExclusiveFacet();
+
+	//СхемаXML = ПримерМаскаXS();
+	СхемаXML = ExampleXSWildcard();
 
 	//////////////////////////
 	
@@ -1678,6 +1682,223 @@ EndFunction
 	ЮнитТест.ПроверитьРавенство(ТипЗнч(АтрибутДлинаОчереди), Тип("ОбъявлениеАтрибутаXS"));
 	ЮнитТест.ПроверитьРавенство(АтрибутДлинаОчереди.Имя, "WaitQueueLength");
 	ЮнитТест.ПроверитьРавенство(АтрибутДлинаОчереди.ИмяТипа, Новый РасширенноеИмяXML("", "WaitQueueLengthType"));
+
+КонецПроцедуры
+
+#КонецОбласти
+
+#Область МаскаXS 
+
+// Источник:
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemaany
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemaanyattribute
+//
+// Результат:
+//	см. РезультатМаскаXS 
+
+Функция ПримерМаскаXS()
+
+	Схема = Новый СхемаXML;
+
+	// <element name='htmlText'>
+	ЭлементТекстHTML = Новый ОбъявлениеЭлементаXS;
+    ЭлементТекстHTML.Имя = "htmlText";
+	
+	// <xs:complexType>
+	СоставнойТип = Новый ОпределениеСоставногоТипаXS;
+	
+	// <xs:sequence>
+	ГруппаМодели = Новый ГруппаМоделиXS;
+	ГруппаМодели.ВидГруппы = ВидГруппыМоделиXS.Последовательность;
+	СоставнойТип.Содержимое = ГруппаМодели;
+	
+	// <any namespace='http://www.w3.org/1999/xhtml'
+    //    minOccurs='1' maxOccurs='unbounded'
+    //    processContents='lax'/>
+	Маска = Новый МаскаXS;
+	Маска.ВидОбработкиСодержимого = ОбработкаСодержимогоXS.Слабая;
+	Маска.ЛексическоеЗначениеОграниченияПространствИмен	= "http://www.w3.org/1999/xhtml";
+
+	Фрагмент = Новый ФрагментXS;
+	Фрагмент.МинимальноВходит = 1;
+	Фрагмент.МаксимальноВходит = -1;
+	Фрагмент.Часть = Маска;
+	ГруппаМодели.Фрагменты.Добавить(Фрагмент);
+	
+	ЭлементТекстHTML.АнонимноеОпределениеТипа = СоставнойТип;
+	Схема.Содержимое.Добавить(ЭлементТекстHTML);
+	
+	// <xs:element name="stringElementWithAnyAttribute">
+	ЭлементЛюбойАтрибут = Новый ОбъявлениеЭлементаXS;
+    ЭлементЛюбойАтрибут.Name = "stringElementWithAnyAttribute"; 
+
+	// <xs:complexType>
+	СоставнойТип = Новый ОпределениеСоставногоТипаXS;
+	
+	// <xs:simpleContent>
+	СоставнойТип.МодельСодержимого = МодельСодержимогоXS.Простая;
+	
+	// <xs:extension base="xs:string">
+	СоставнойТип.МетодНаследования = МетодНаследованияXS.Расширение;
+	СоставнойТип.ИмяБазовогоТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string");
+	
+	// <xs:anyAttribute namespace="##targetNamespace"/>	
+	Маска = Новый МаскаXS;
+	Маска.ЛексическоеЗначениеОграниченияПространствИмен	= "##targetNamespace";
+	СоставнойТип.МаскаАтрибутов = Маска;
+	
+	ЭлементЛюбойАтрибут.АнонимноеОпределениеТипа = СоставнойТип;
+	Схема.Содержимое.Добавить(ЭлементЛюбойАтрибут);
+	
+	Возврат Схема;
+
+КонецФункции
+
+Function ExampleXSWildcard()
+
+	schema = New XMLSchema;
+
+	// <element name='htmlText'>
+	elementHtmlText = New XSElementDeclaration;
+    elementHtmlText.Name = "htmlText";
+	
+	// <xs:complexType>
+	complexType = New XSComplexTypeDefinition;
+	
+	// <xs:sequence>
+	ModelGroup = New XSModelGroup;
+	ModelGroup.Compositor = XSCompositor.Sequence;
+	complexType.Content = ModelGroup;
+	
+	// <any namespace='http://www.w3.org/1999/xhtml'
+    //    minOccurs='1' maxOccurs='unbounded'
+    //    processContents='lax'/>
+	Wildcard = New XSWildcard;
+	Wildcard.ProcessContents = XSProcessContents.Lax;
+	Wildcard.LexicalNamespaceConstraint	= "http://www.w3.org/1999/xhtml";
+
+	Particle = new XSParticle;
+	Particle.MinOccurs = 1;
+	Particle.MaxOccurs = -1;
+	Particle.Term = Wildcard;
+	ModelGroup.Particles.Add(Particle);
+	
+	elementHtmlText.AnonymousTypeDefinition = complexType;
+	schema.Content.Add(elementHtmlText);
+	
+	// <xs:element name="stringElementWithAnyAttribute">
+	elementAnyAttribute = New XSElementDeclaration;
+    elementAnyAttribute.Name = "stringElementWithAnyAttribute"; 
+	
+	// <xs:complexType>
+	complexType = New XSComplexTypeDefinition;
+	
+	// <xs:simpleContent>
+	complexType.ContentModel = XSContentModel.Simple;
+	
+	// <xs:extension base="xs:string">
+	complexType.DerivationMethod = XSDerivationMethod.Extension;
+	complexType.BaseTypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "string");
+	
+	// <xs:anyAttribute namespace="##targetNamespace"/>	
+	Wildcard = New XSWildcard;
+	Wildcard.LexicalNamespaceConstraint	= "##targetNamespace";
+	complexType.AttributeWildcard = Wildcard;
+	
+	elementAnyAttribute.AnonymousTypeDefinition = complexType;
+	schema.Content.Add(elementAnyAttribute);
+	
+	return schema;
+	
+EndFunction
+
+Процедура РезультатМаскаXS()
+	//<xs:schema  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	//
+	//	<xs:element name="htmlText">
+	//		<xs:complexType>
+	//			<xs:sequence>
+	//				<xs:any 
+	//					namespace='http://www.w3.org/1999/xhtml'
+	//					processContents='lax'
+	//              	minOccurs='1' maxOccurs='unbounded'/>
+	//			</xs:sequence>
+	//		</xs:complexType>
+	//	</xs:element>
+	//	
+	//	<xs:element name="stringElementWithAnyAttribute">
+	//        <xs:complexType>
+	//            <xs:simpleContent>
+	//                <xs:extension base="xs:string">
+	//                    <xs:anyAttribute namespace="##targetNamespace"/>
+	//                </xs:extension>
+	//            </xs:simpleContent>
+	//        </xs:complexType>
+	//    </xs:element>
+	//	
+	//</xs:schema>
+КонецПроцедуры
+
+Процедура ПроверитьМаскаXS(Схема)
+
+	ЮнитТест.ПроверитьЗаполненность(Схема);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Схема), Тип("СхемаXML"));
+	ЮнитТест.ПроверитьРавенство(Схема.Содержимое.Количество(), 2);
+	ЮнитТест.ПроверитьРавенство(Схема.ОбъявленияЭлементов.Количество(), 2);
+
+	ЭлементТекстHTML = Схема.ОбъявленияЭлементов.Получить("htmlText"); 
+	ЮнитТест.ПроверитьЗаполненность(ЭлементТекстHTML);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ЭлементТекстHTML), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(ЭлементТекстHTML.Имя, "htmlText");
+
+	СоставнойТип = ЭлементТекстHTML.АнонимноеОпределениеТипа;
+	ЮнитТест.ПроверитьЗаполненность(СоставнойТип);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(СоставнойТип), Тип("ОпределениеСоставногоТипаXS"));
+
+	ГруппаМодели = СоставнойТип.Содержимое;
+	ЮнитТест.ПроверитьЗаполненность(ГруппаМодели);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ГруппаМодели), Тип("ГруппаМоделиXS"));
+	ЮнитТест.ПроверитьРавенство(ГруппаМодели.ВидГруппы, ВидГруппыМоделиXS.Последовательность);
+	ЮнитТест.ПроверитьРавенство(ГруппаМодели.Фрагменты.Количество(), 1);
+
+	Фрагмент = ГруппаМодели.Фрагменты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(Фрагмент);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Фрагмент), Тип("ФрагментXS"));
+	ЮнитТест.ПроверитьРавенство(Фрагмент.МинимальноВходит, 1);
+	ЮнитТест.ПроверитьРавенство(Фрагмент.МаксимальноВходит, -1);
+	
+	Маска = Фрагмент.Часть; 
+	ЮнитТест.ПроверитьЗаполненность(Маска);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Маска), Тип("МаскаXS"));
+	ЮнитТест.ПроверитьРавенство(Маска.ВидОбработкиСодержимого, ОбработкаСодержимогоXS.Слабая);
+	ЮнитТест.ПроверитьРавенство(Маска.ЛексическоеЗначениеОграниченияПространствИмен, "http://www.w3.org/1999/xhtml");
+
+	ЭлементЛюбойАтрибут = Схема.ОбъявленияЭлементов.Получить("stringElementWithAnyAttribute"); 
+	ЮнитТест.ПроверитьЗаполненность(ЭлементЛюбойАтрибут);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ЭлементЛюбойАтрибут), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(ЭлементЛюбойАтрибут.Имя, "stringElementWithAnyAttribute");
+
+	СоставнойТип = ЭлементЛюбойАтрибут.АнонимноеОпределениеТипа;
+	ЮнитТест.ПроверитьЗаполненность(СоставнойТип);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(СоставнойТип), Тип("ОпределениеСоставногоТипаXS"));
+	ЮнитТест.ПроверитьРавенство(СоставнойТип.МодельСодержимого, МодельСодержимогоXS.Простая);
+	ЮнитТест.ПроверитьРавенство(СоставнойТип.МетодНаследования, МетодНаследованияXS.Расширение);
+	ЮнитТест.ПроверитьРавенство(СоставнойТип.ИмяБазовогоТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string"));
+
+	Маска = СоставнойТип.МаскаАтрибутов; 
+	ЮнитТест.ПроверитьЗаполненность(Маска);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Маска), Тип("МаскаXS"));
+	ЮнитТест.ПроверитьРавенство(Маска.ЛексическоеЗначениеОграниченияПространствИмен, "##targetNamespace");
+
+КонецПроцедуры	
+
+Процедура ТестМаскаXS() Экспорт
+
+	Схема = ПримерМаскаXS();
+	Schema = ExampleXSWildcard();
+
+	ПроверитьМаскаXS(Схема);
+	ПроверитьМаскаXS(Schema)
 
 КонецПроцедуры
 

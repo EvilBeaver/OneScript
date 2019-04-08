@@ -119,6 +119,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region IXSComponent
 
         XmlSchemaObject IXSComponent.SchemaObject => _group;
+        public XmlSchemaGroupBase SchemaObject => _group;
 
         void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {

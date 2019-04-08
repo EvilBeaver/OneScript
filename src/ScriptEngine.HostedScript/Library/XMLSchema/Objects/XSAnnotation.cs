@@ -80,8 +80,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region IXSComponent
 
         XmlSchemaObject IXSComponent.SchemaObject => InternalObject;
+        public XmlSchemaAnnotation SchemaObject => InternalObject;
 
-        void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
+        public void BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
             RootContainer = rootContainer;
             Container = container;
