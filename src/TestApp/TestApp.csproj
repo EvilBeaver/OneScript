@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <!--Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" /-->
   
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
-    <LanguageTargets>$(MSBuildExtensionsPath)\$(VisualStudioVersion)\Bin\Microsoft.CSharp.targets</LanguageTargets>
+    <!--LanguageTargets>$(MSBuildExtensionsPath)\$(VisualStudioVersion)\Bin\Microsoft.CSharp.targets</LanguageTargets-->
     <ApplicationIcon>script_badge.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
     <StartupObject>TestApp.App</StartupObject>
