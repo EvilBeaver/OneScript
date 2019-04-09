@@ -236,7 +236,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSComponentList Attributes { get; }
 
         //Блокировка(Block)
-        //Завершенность(Final)
+
+        [ContextProperty("Завершенность", "Final")]
+        public XSComplexFinalUnion Final { get; }
+
         //ЗапрещенныеПодстановки(ProhibitedSubstitutions)
 
         [ContextProperty("ИмяБазовогоТипа", "BaseTypeName")]
