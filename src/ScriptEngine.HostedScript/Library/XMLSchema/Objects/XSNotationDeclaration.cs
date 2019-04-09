@@ -7,19 +7,17 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Xml.Schema;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ОбъявлениеНотацииXS", "XSNotationDeclaration")]
-    public class XSNotationDeclaration : AutoContext<XSNotationDeclaration>, IXSAnnotated
+    public class XSNotationDeclaration : AutoContext<XSNotationDeclaration>, IXSAnnotated, IXSNamedComponent
     {
-        private XmlSchemaNotation _notation;
+        private readonly XmlSchemaNotation _notation;
         private XSAnnotation _annotation;
 
         private XSNotationDeclaration() => _notation = new XmlSchemaNotation();
-
 
         #region OneScript
 
@@ -32,7 +30,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
-                _notation.Annotation = value.InternalObject;
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _notation);
             }
         }
 
@@ -90,7 +89,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Constructors
 
         [ScriptConstructor(Name = "По умолчанию")]
-        public static XSNotationDeclaration Constructor() 
+        public static XSNotationDeclaration Constructor()
             => new XSNotationDeclaration();
 
         #endregion

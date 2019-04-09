@@ -4,11 +4,12 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Xml.Schema;
+using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library.Xml;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
@@ -36,7 +37,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
-                _element.Annotation = value.InternalObject;
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _element);
             }
         }
 
@@ -72,7 +74,18 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _schemaType = value;
-                _element.SchemaType = _schemaType.SchemaObject as XmlSchemaType;
+                if (_schemaType is XSSimpleTypeDefinition simpleType)
+                {
+                    simpleType.BindToContainer(RootContainer, this);
+                    _element.SchemaType = simpleType.SchemaObject;
+                }
+                else if (_schemaType is XSComplexTypeDefinition complexType)
+                {
+                    complexType.BindToContainer(RootContainer, this);
+                    _element.SchemaType = complexType.SchemaObject;
+                }
+                else
+                    _element.SchemaType = null;
             }
         }
 
@@ -96,8 +109,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             get => _typeName;
             set
             {
-               _typeName = value;
-                _element.SchemaTypeName = _typeName.NativeValue;
+                _typeName = value;
+                _element.SchemaTypeName = _typeName?.NativeValue;
             }
         }
 
@@ -145,7 +158,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _refName = value;
-                _element.RefName = _refName.NativeValue;
+                _element.RefName = _refName?.NativeValue;
             }
         }
 
@@ -157,7 +170,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         //ЭтоГлобальноеОбъявление(IsGlobal)
-        //ЭтоСсылка(IsReference)
+
+        [ContextProperty("ЭтоСсылка", "IsReference")]
+        public bool IsReference => _refName is XMLExpandedName;
 
         [ContextProperty("Абстрактный", "Abstract")]
         public bool Abstract

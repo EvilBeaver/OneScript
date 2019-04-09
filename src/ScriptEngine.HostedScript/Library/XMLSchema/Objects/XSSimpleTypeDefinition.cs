@@ -4,11 +4,12 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Xml.Schema;
+using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library.Xml;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
@@ -47,8 +48,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
-                _type.Annotation = value.InternalObject;
-                (_annotation as IXSComponent).BindToContainer(RootContainer, this); 
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _type);
             }
         }
 
@@ -176,7 +177,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         [ContextMethod("ЭтоОпределениеЗациклено", "IsCircular")]
         public bool IsCircular() => throw new NotImplementedException();
-       
+
         #endregion
 
         #region Constructors
@@ -190,13 +191,14 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #region IXSComponent
 
-        void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
+        public void BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
             RootContainer = rootContainer;
             Container = container;
         }
 
         XmlSchemaObject IXSComponent.SchemaObject => _type;
+        public XmlSchemaSimpleType SchemaObject => _type;
 
         #endregion
 
@@ -204,7 +206,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private void Facets_Inserted(object sender, XSComponentListEventArgs e)
         {
-            var component = e.Component;
+            IXSComponent component = e.Component;
 
             if (!(component is IXSFacet))
                 throw RuntimeException.InvalidArgumentType();
@@ -226,7 +228,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private void MemberTypeDefinitions_Inserted(object sender, XSComponentListEventArgs e)
         {
-            var component = e.Component;
+            IXSComponent component = e.Component;
 
             if (!(component is XSSimpleTypeDefinition))
                 throw RuntimeException.InvalidArgumentType();

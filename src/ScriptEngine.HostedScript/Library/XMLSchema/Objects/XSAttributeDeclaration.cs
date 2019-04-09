@@ -4,11 +4,12 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Xml.Schema;
+using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library.Xml;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
@@ -21,6 +22,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private XMLExpandedName _refName;
         private XMLExpandedName _typeName;
         private IValue _value;
+        private XSSimpleTypeDefinition _schemaType;
 
         private XSAttributeDeclaration()
         {
@@ -41,8 +43,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
-                _attribute.Annotation = value.InternalObject;
-                (_annotation as IXSComponent).BindToContainer(RootContainer, this);
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _attribute);
             }
         }
 
@@ -72,7 +74,21 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         [ContextProperty("АнонимноеОпределениеТипа", "AnonymousTypeDefinition")]
-        public IXSType AnonymousTypeDefinition { get; set; }
+        public XSSimpleTypeDefinition AnonymousTypeDefinition
+        {
+            get => _schemaType;
+            set
+            {
+                _schemaType = value;
+                if (_schemaType is XSSimpleTypeDefinition simpleType)
+                {
+                    simpleType.BindToContainer(RootContainer, this);
+                    _attribute.SchemaType = simpleType.SchemaObject;
+                }
+                else
+                    _attribute.SchemaType = null;
+            }
+        }
 
         [ContextProperty("Значение", "Value")]
         public IValue Value
@@ -113,7 +129,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         [ContextProperty("ОбластьВидимости", "Scope")]
-        public XSAttributeDeclaration Scope { get;  }
+        public XSAttributeDeclaration Scope { get; }
 
         [ContextProperty("Ограничение", "Constraint")]
         public XSConstraint Constraint

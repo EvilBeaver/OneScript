@@ -19,7 +19,8 @@
 	СписокТестов.Добавить("ТестФасетКоличестваРазрядовДробнойЧастиXS");
 	СписокТестов.Добавить("ТестФасетМинимальногоИсключающегоЗначенияXS");
 	СписокТестов.Добавить("ТестМаскаXS");
-	СписокТестов.Добавить("ТестОпределениеГруппыАтрибутовXS");	
+	СписокТестов.Добавить("ТестОпределениеГруппыАтрибутовXS");
+	СписокТестов.Добавить("ТестОбъявлениеНотацииXS");
 	
 	Возврат СписокТестов;
 
@@ -185,9 +186,12 @@
 	//СхемаXML = ПримерМаскаXS();
 	//СхемаXML = ExampleXSWildcard();
 
-	СхемаXML = ПримерОпределениеГруппыАтрибутовXS();
+	//СхемаXML = ПримерОпределениеГруппыАтрибутовXS();
 	//СхемаXML = ExampleXSAttributeGroupDefinition();
-	 
+	
+	СхемаXML = ПримерОбъявлениеНотацииXS();
+	//СхемаXML = ExampleXSNotationDeclaration();
+
 	//////////////////////////
 	
 	Возврат СхемаXML;
@@ -217,33 +221,33 @@
 	Схема.Содержимое.Добавить(Элемент);
 
 	// <xs:element name="dog" type="xs:string"/>
-    Элемент = Новый ОбъявлениеЭлементаXS; 
+	Элемент = Новый ОбъявлениеЭлементаXS; 
 	Элемент.Имя = "dog";
 	Элемент.ИмяТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string");
 	Схема.Содержимое.Добавить(Элемент);
 	
 	 // <xs:element name="redDog" substitutionGroup="dog" />
-    Элемент = Новый ОбъявлениеЭлементаXS; 
+	Элемент = Новый ОбъявлениеЭлементаXS; 
 	Элемент.Имя = "redDog";
 	Элемент.ПрисоединениеКГруппеПодстановки = Новый РасширенноеИмяXML("", "dog");
 	Схема.Содержимое.Добавить(Элемент);
 
-    // <xs:element name="brownDog" substitutionGroup ="dog" />
-    Элемент = Новый ОбъявлениеЭлементаXS; 
+	// <xs:element name="brownDog" substitutionGroup ="dog" />
+	Элемент = Новый ОбъявлениеЭлементаXS; 
 	Элемент.Имя = "brownDog";
 	Элемент.ПрисоединениеКГруппеПодстановки = Новый РасширенноеИмяXML("", "dog");
 	Схема.Содержимое.Добавить(Элемент);
 
-    // <xs:element name="pets">
-    Элемент = Новый ОбъявлениеЭлементаXS; 
-    Элемент.Имя = "pets";
-    Схема.Содержимое.Добавить(Элемент);
+	// <xs:element name="pets">
+	Элемент = Новый ОбъявлениеЭлементаXS; 
+	Элемент.Имя = "pets";
+	Схема.Содержимое.Добавить(Элемент);
 	
 	// <xs:complexType>
-    СоставнойТип = Новый ОпределениеСоставногоТипаXS;
+	СоставнойТип = Новый ОпределениеСоставногоТипаXS;
 	Элемент.АнонимноеОпределениеТипа = СоставнойТип;
 	
-    // <xs:choice minOccurs="0" maxOccurs="unbounded">
+	// <xs:choice minOccurs="0" maxOccurs="unbounded">
 	ГруппаВыбор = Новый ГруппаМоделиXS;
 	ГруппаВыбор.ВидГруппы = ВидГруппыМоделиXS.Выбор;
 	Фрагмент = Новый ФрагментXS;
@@ -253,14 +257,14 @@
 	СоставнойТип.Содержимое = Фрагмент;
 
 	// <xs:element ref="cat"/>
-    Элемент = Новый ОбъявлениеЭлементаXS;
-    Элемент.Ссылка = Новый РасширенноеИмяXML("", "cat");
-    ГруппаВыбор.Фрагменты.Добавить(Элемент);
+	Элемент = Новый ОбъявлениеЭлементаXS;
+	Элемент.Ссылка = Новый РасширенноеИмяXML("", "cat");
+	ГруппаВыбор.Фрагменты.Добавить(Элемент);
 
-    // <xs:element ref="dog"/>
-    Элемент = Новый ОбъявлениеЭлементаXS;
-    Элемент.Ссылка = Новый РасширенноеИмяXML("", "dog");
-    ГруппаВыбор.Фрагменты.Добавить(Элемент);
+	// <xs:element ref="dog"/>
+	Элемент = Новый ОбъявлениеЭлементаXS;
+	Элемент.Ссылка = Новый РасширенноеИмяXML("", "dog");
+	ГруппаВыбор.Фрагменты.Добавить(Элемент);
 	
 	Возврат Схема;
 
@@ -269,41 +273,41 @@
 Function ExampleXMLSchema()
 	
 	Schema = New XMLSchema;
-
+	
 	// <xs:element name="cat" type="xs:string"/>
 	elementCat = New XSElementDeclaration;
 	elementCat.Name = "cat";
 	elementCat.TypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "string");
 	schema.Content.Add(elementCat);
-
+	
 	// <xs:element name="dog" type="xs:string"/>
-    elementDog = New XSElementDeclaration;
-   	elementDog.Name = "dog";
+	elementDog = New XSElementDeclaration;
+	elementDog.Name = "dog";
 	elementDog.TypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "string");
 	schema.Content.Add(elementDog);	
-
-    // <xs:element name="redDog" substitutionGroup="dog" />
+	
+	// <xs:element name="redDog" substitutionGroup="dog" />
 	elementRedDog = New XSElementDeclaration;
 	elementRedDog.Name = "redDog";
-    elementRedDog.SubstitutionGroupAffiliation = New XMLExpandedName("", "dog");
-    schema.Content.Add(elementRedDog);
-   
-    // <xs:element name="brownDog" substitutionGroup ="dog" />
-    elementBrownDog = New XSElementDeclaration;
-    elementBrownDog.Name = "brownDog";
-    elementBrownDog.SubstitutionGroupAffiliation = New XMLExpandedName("", "dog");
-    schema.Content.Add(elementBrownDog);
-
-    // <xs:element name="pets">
-    elementPets = New XSElementDeclaration;
-    elementPets.Name = "pets";
-    schema.Content.Add(elementPets);
-
-    // <xs:complexType>
-    complexType = new XSComplexTypeDefinition;
-    elementPets.AnonymousTypeDefinition = complexType;
+	elementRedDog.SubstitutionGroupAffiliation = New XMLExpandedName("", "dog");
+	schema.Content.Add(elementRedDog);
 	
-    // <xs:choice minOccurs="0" maxOccurs="unbounded">
+	// <xs:element name="brownDog" substitutionGroup ="dog" />
+	elementBrownDog = New XSElementDeclaration;
+	elementBrownDog.Name = "brownDog";
+	elementBrownDog.SubstitutionGroupAffiliation = New XMLExpandedName("", "dog");
+	schema.Content.Add(elementBrownDog);
+	
+	// <xs:element name="pets">
+	elementPets = New XSElementDeclaration;
+	elementPets.Name = "pets";
+	schema.Content.Add(elementPets);
+	
+	// <xs:complexType>
+	complexType = new XSComplexTypeDefinition;
+	elementPets.AnonymousTypeDefinition = complexType;
+	
+	// <xs:choice minOccurs="0" maxOccurs="unbounded">
 	choice = New XSModelGroup;
 	choice.Compositor = XSCompositor.Choice;
 	particle = New XSParticle;
@@ -313,15 +317,15 @@ Function ExampleXMLSchema()
 	complexType.Content = particle;
 	
 	// <xs:element ref="cat"/>
-    catRef = New XSElementDeclaration;
-    catRef.Reference = New XMLExpandedName("", "cat");
-    choice.Particles.Add(catRef);
-
-    // <xs:element ref="dog"/>
-    dogRef = New XSElementDeclaration;
-    dogRef.Reference = New XMLExpandedName("", "dog");
-    choice.Particles.Add(dogRef);
-
+	catRef = New XSElementDeclaration;
+	catRef.Reference = New XMLExpandedName("", "cat");
+	choice.Particles.Add(catRef);
+	
+	// <xs:element ref="dog"/>
+	dogRef = New XSElementDeclaration;
+	dogRef.Reference = New XMLExpandedName("", "dog");
+	choice.Particles.Add(dogRef);
+	
 	Return Schema;
 
 EndFunction
@@ -505,8 +509,8 @@ Function ExampleXSDocumentation()
 
 	// <xs:enumeration value="WA">
 	EnumerationWA = New XSEnumerationFacet;
-	SimpleType.Facets.Add(EnumerationWA);
 	EnumerationWA.Value = "WA";
+	SimpleType.Facets.Add(EnumerationWA);
 
 	// <xs:annotation>
 	AnnotationWA = New XSAnnotation;
@@ -590,30 +594,30 @@ EndFunction
 //	см. РезультатИнформацияДляПриложенияXS
 
 Функция ПримерИнформацияДляПриложенияXS()
-
+	
 	Схема = Новый СхемаXML;
-
+	
 	// <xs:element name="State">
 	Элемент = Новый ОбъявлениеЭлементаXS;
 	Элемент.Имя = "State";
 	Схема.Содержимое.Добавить(Элемент);
-		
+	
 	// <xs:annotation>
 	АннотацияNorthwestStates = Новый АннотацияXS;
 	Элемент.Аннотация = АннотацияNorthwestStates;
-		
+	
 	// <xs:documentation>State Name</xs:documentation>
 	ДокументацияNorthwestStates = Новый ДокументацияXS;
 	АннотацияNorthwestStates.Состав.Добавить(ДокументацияNorthwestStates);
 	ДокументацияNorthwestStates.Источник = "State Name";
 	//ДокументацияNorthwestStates.Markup = TextToNodeArray("State Name");
-		
+	
 	// <xs:appInfo>Application Information</xs:appInfo>
 	ИнформацияДляПриложения = Новый ИнформацияДляПриложенияXS;
 	АннотацияNorthwestStates.Состав.Добавить(ИнформацияДляПриложения);
 	ИнформацияДляПриложения.Источник = "Application Information";
 	// ИнформацияДляПриложения.Markup = TextToNodeArray("Application Information");
-
+	
 	Возврат Схема;
 	
 КонецФункции
@@ -886,7 +890,7 @@ Function ExampleXSSimpleTypeDefinition_Union()
 	elementSize.Name = "size";
 	elementSize.TypeName = New XMLExpandedName("", "StringOrIntType");
 	schema.Content.Add(elementSize);
-	 	
+	
 	return schema;
 	
 EndFunction
@@ -987,7 +991,7 @@ EndFunction
 	СоставнойТип.Атрибуты.Добавить(АтрибутПочтовыйИндекс);
 	
 	Элемент.АнонимноеОпределениеТипа = СоставнойТип;
-    Схема.Содержимое.Добавить(Элемент);
+	Схема.Содержимое.Добавить(Элемент);
 	
 	Возврат Схема;
 
@@ -1025,7 +1029,7 @@ Function ExampleXSLengthFacet()
 	complexType.Attributes.Add(ZipCodeAttribute);
 	
 	element.AnonymousTypeDefinition = complexType;
-    schema.Content.Add(element);
+	schema.Content.Add(element);
 	
 	return schema;
 	
@@ -1130,7 +1134,7 @@ EndFunction
 	СоставнойТип.Атрибуты.Добавить(АтрибутПочтовыйИндекс);
 	
 	Элемент.АнонимноеОпределениеТипа = СоставнойТип;
-    Схема.Содержимое.Добавить(Элемент);
+	Схема.Содержимое.Добавить(Элемент);
 	
 	Возврат Схема;
 
@@ -1168,7 +1172,7 @@ Function ExampleXSMinLengthFacet()
 	complexType.Attributes.Add(ZipCodeAttribute);
 	
 	element.AnonymousTypeDefinition = complexType;
-    schema.Content.Add(element);
+	schema.Content.Add(element);
 	
 	return schema;
 	
@@ -1272,7 +1276,7 @@ EndFunction
 	СоставнойТип.Атрибуты.Добавить(АтрибутПочтовыйИндекс);
 	
 	Элемент.АнонимноеОпределениеТипа = СоставнойТип;
-    Схема.Содержимое.Добавить(Элемент);
+	Схема.Содержимое.Добавить(Элемент);
 	
 	Возврат Схема;
 
@@ -1310,7 +1314,7 @@ Function ExampleXSMaxLengthFacet()
 	complexType.Attributes.Add(ZipCodeAttribute);
 	
 	element.AnonymousTypeDefinition = complexType;
-    schema.Content.Add(element);
+	schema.Content.Add(element);
 	
 	return schema;
 	
@@ -1554,10 +1558,10 @@ EndFunction
 	// <xs:restriction base="xs:int">
 	ТипДлинаОчереди.BaseTypeName = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "int");
 	
-    // <xs:minExclusive value="5"/>
-    МинимальноИсключая = Новый ФасетМинимальногоИсключающегоЗначенияXS;
-    МинимальноИсключая.Значение = 5;
-    ТипДлинаОчереди.Фасеты.Добавить(МинимальноИсключая);
+	// <xs:minExclusive value="5"/>
+	МинимальноИсключая = Новый ФасетМинимальногоИсключающегоЗначенияXS;
+	МинимальноИсключая.Значение = 5;
+	ТипДлинаОчереди.Фасеты.Добавить(МинимальноИсключая);
 	
 	// <xs:maxExclusive value="10"/>
 	МаксимальноИсключая = Новый ФасетМаксимальногоИсключающегоЗначенияXS ;
@@ -1597,10 +1601,10 @@ Function ExampleXSMinExclusiveFacet()
 	// <xs:restriction base="xs:int">
 	WaitQueueLengthType.BaseTypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "int");
 	
-    // <xs:minExclusive value="5"/>
-    MinExclusive = New XSMinExclusiveFacet;
-    MinExclusive.Value = 5;
-    WaitQueueLengthType.Facets.Add(MinExclusive);
+	// <xs:minExclusive value="5"/>
+	MinExclusive = New XSMinExclusiveFacet;
+	MinExclusive.Value = 5;
+	WaitQueueLengthType.Facets.Add(MinExclusive);
 	
 	// <xs:maxExclusive value="10"/>
 	MaxExclusive = New XSMaxExclusiveFacet;
@@ -1706,7 +1710,7 @@ EndFunction
 
 	// <element name='htmlText'>
 	ЭлементТекстHTML = Новый ОбъявлениеЭлементаXS;
-    ЭлементТекстHTML.Имя = "htmlText";
+	ЭлементТекстHTML.Имя = "htmlText";
 	
 	// <xs:complexType>
 	СоставнойТип = Новый ОпределениеСоставногоТипаXS;
@@ -1717,8 +1721,8 @@ EndFunction
 	СоставнойТип.Содержимое = ГруппаМодели;
 	
 	// <any namespace='http://www.w3.org/1999/xhtml'
-    //    minOccurs='1' maxOccurs='unbounded'
-    //    processContents='lax'/>
+	//    minOccurs='1' maxOccurs='unbounded'
+	//    processContents='lax'/>
 	Маска = Новый МаскаXS;
 	Маска.ВидОбработкиСодержимого = ОбработкаСодержимогоXS.Слабая;
 	Маска.ЛексическоеЗначениеОграниченияПространствИмен	= "http://www.w3.org/1999/xhtml";
@@ -1734,7 +1738,7 @@ EndFunction
 	
 	// <xs:element name="stringElementWithAnyAttribute">
 	ЭлементЛюбойАтрибут = Новый ОбъявлениеЭлементаXS;
-    ЭлементЛюбойАтрибут.Name = "stringElementWithAnyAttribute"; 
+	ЭлементЛюбойАтрибут.Name = "stringElementWithAnyAttribute"; 
 
 	// <xs:complexType>
 	СоставнойТип = Новый ОпределениеСоставногоТипаXS;
@@ -1764,7 +1768,7 @@ Function ExampleXSWildcard()
 
 	// <element name='htmlText'>
 	elementHtmlText = New XSElementDeclaration;
-    elementHtmlText.Name = "htmlText";
+	elementHtmlText.Name = "htmlText";
 	
 	// <xs:complexType>
 	complexType = New XSComplexTypeDefinition;
@@ -1775,8 +1779,8 @@ Function ExampleXSWildcard()
 	complexType.Content = ModelGroup;
 	
 	// <any namespace='http://www.w3.org/1999/xhtml'
-    //    minOccurs='1' maxOccurs='unbounded'
-    //    processContents='lax'/>
+	//    minOccurs='1' maxOccurs='unbounded'
+	//    processContents='lax'/>
 	Wildcard = New XSWildcard;
 	Wildcard.ProcessContents = XSProcessContents.Lax;
 	Wildcard.LexicalNamespaceConstraint	= "http://www.w3.org/1999/xhtml";
@@ -1792,7 +1796,7 @@ Function ExampleXSWildcard()
 	
 	// <xs:element name="stringElementWithAnyAttribute">
 	elementAnyAttribute = New XSElementDeclaration;
-    elementAnyAttribute.Name = "stringElementWithAnyAttribute"; 
+	elementAnyAttribute.Name = "stringElementWithAnyAttribute"; 
 	
 	// <xs:complexType>
 	complexType = New XSComplexTypeDefinition;
@@ -2124,6 +2128,213 @@ EndFunction
 
 #КонецОбласти
 
+#Область ОбъявлениеНотацииXS 
+
+// Источник:
+//	https://www.w3schools.com/xml/el_notation.asp
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemanotation
+//
+// Результат:
+//	см. РезультатОбъявлениеНотацииXS 
+
+Функция ПримерОбъявлениеНотацииXS()
+
+	Схема = Новый СхемаXML;
+
+	// <xs:notation name="gif" public="image/gif" system="view.exe"/>
+	НотацияGIF = Новый ОбъявлениеНотацииXS;
+	НотацияGIF.Имя = "gif";
+	НотацияGIF.ПубличныйИдентификатор = "image/gif";
+	НотацияGIF.СистемныйИдентификатор = "view.exe";
+
+	Схема.Содержимое.Добавить(НотацияGIF);
+
+	// <xs:notation name="jpeg" public="image/jpeg" system="view.exe"/>
+	НотацияJPEG = Новый ОбъявлениеНотацииXS;
+	НотацияJPEG.Имя = "jpeg";
+	НотацияJPEG.ПубличныйИдентификатор = "image/jpeg";
+	НотацияJPEG.СистемныйИдентификатор = "view.exe";
+
+	Схема.Содержимое.Добавить(НотацияJPEG);
+
+	// <xs:element name="image">
+	Элемент = Новый ОбъявлениеЭлементаXS; 
+	Элемент.Имя = "image";
+
+	// <xs:complexType>
+	СоставнойТип = Новый ОпределениеСоставногоТипаXS;
+
+	// <xs:attribute name="type">
+	АтрибутТип = Новый ОбъявлениеАтрибутаXS;
+	АтрибутТип.Имя = "type";
+	СоставнойТип.Атрибуты.Добавить(АтрибутТип);
+
+	// <xs:simpleType>
+	ПростойТип = Новый ОпределениеПростогоТипаXS;
+
+	// <xs:restriction base="xs:NOTATION">
+	ПростойТип.ИмяБазовогоТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "NOTATION"); 
+
+	// <xs:enumeration value="gif"/>
+	ПеречислениеGIF = Новый ФасетПеречисленияXS;
+	ПеречислениеGIF.Значение = "gif";
+	ПростойТип.Фасеты.Добавить(ПеречислениеGIF);
+
+	// <xs:enumeration value="jpeg"/>
+	ПеречислениеJPEG = Новый ФасетПеречисленияXS;
+	ПеречислениеJPEG.Значение = "jpeg";
+	ПростойТип.Фасеты.Добавить(ПеречислениеJPEG);
+
+	АтрибутТип.АнонимноеОпределениеТипа = ПростойТип;
+	Элемент.АнонимноеОпределениеТипа = СоставнойТип;
+	Схема.Содержимое.Добавить(Элемент);
+	
+	Возврат Схема;
+
+КонецФункции
+
+Function ExampleXSNotationDeclaration()
+
+	schema = New XMLSchema;
+
+	// <xs:notation name="gif" public="image/gif" system="view.exe"/>
+	NotationGIF = New XSNotationDeclaration;
+	NotationGIF.Name = "gif";
+	NotationGIF.PublicId = "image/gif";
+	NotationGIF.SystemId = "view.exe";
+
+	schema.Content.Add(NotationGIF);
+
+	// <xs:notation name="jpeg" public="image/jpeg" system="view.exe"/>
+	NotationJPEG = New XSNotationDeclaration;
+	NotationJPEG.Name = "jpeg";
+	NotationJPEG.PublicId = "image/jpeg";
+	NotationJPEG.SystemId = "view.exe";
+
+	schema.Content.Add(NotationJPEG);
+
+	// <xs:element name="image">
+	Element = New XSElementDeclaration; 
+	Element.Name = "image";
+
+	// <xs:complexType>
+	complexType = New XSComplexTypeDefinition;
+
+	// <xs:attribute name="type">
+	attributeType = New XSAttributeDeclaration;
+	attributeType.Name = "type";
+	complexType.Attributes.Add(attributeType);
+
+	// <xs:simpleType>
+	SimpleType = New XSSimpleTypeDefinition;
+
+	// <xs:restriction base="xs:NOTATION">
+	SimpleType.BaseTypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "NOTATION"); 
+
+	// <xs:enumeration value="gif"/>
+	EnumerationGIF = New XSEnumerationFacet;
+	EnumerationGIF.Value = "gif";
+	SimpleType.Facets.Add(EnumerationGIF);
+
+	// <xs:enumeration value="jpeg"/>
+	EnumerationJPEG = New XSEnumerationFacet;
+	EnumerationJPEG.Value = "jpeg";
+	SimpleType.Facets.Add(EnumerationJPEG);
+
+	attributeType.AnonymousTypeDefinition = SimpleType;
+	Element.AnonymousTypeDefinition = complexType;
+	schema.Content.Add(Element);
+	
+	return schema;
+	
+EndFunction
+
+Процедура РезультатОбъявлениеНотацииXS()
+	// <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	// 	<xs:notation name="gif" public="image/gif" system="view.exe"/>
+	// 	<xs:notation name="jpeg" public="image/jpeg" system="view.exe"/>
+	// 	<xs:element name="image">
+	// 		<xs:complexType>
+	// 			<xs:attribute name="type">
+	// 				<xs:simpleType>
+	// 					<xs:restriction base="xs:NOTATION">
+	// 						<xs:enumeration value="gif"/>
+	// 						<xs:enumeration value="jpeg"/>
+	// 					</xs:restriction>
+	// 				</xs:simpleType>
+	// 			</xs:attribute>
+	// 		</xs:complexType>
+	// 	</xs:element>
+	// </xs:schema>
+КонецПроцедуры
+
+Процедура ПроверитьОбъявлениеНотацииXS(Схема)
+
+	ЮнитТест.ПроверитьЗаполненность(Схема);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Схема), Тип("СхемаXML"));
+	ЮнитТест.ПроверитьРавенство(Схема.Содержимое.Количество(), 3);
+	ЮнитТест.ПроверитьРавенство(Схема.ОбъявленияНотаций.Количество(), 2);
+	ЮнитТест.ПроверитьРавенство(Схема.ОбъявленияЭлементов.Количество(), 1);
+
+	НотацияGIF = Схема.ОбъявленияНотаций.Получить("gif");
+	ЮнитТест.ПроверитьЗаполненность(НотацияGIF);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(НотацияGIF), Тип("ОбъявлениеНотацииXS"));
+	ЮнитТест.ПроверитьРавенство(НотацияGIF.Имя, "gif");
+	ЮнитТест.ПроверитьРавенство(НотацияGIF.ПубличныйИдентификатор, "image/gif");
+	ЮнитТест.ПроверитьРавенство(НотацияGIF.СистемныйИдентификатор, "view.exe");
+
+	НотацияJPEG = Схема.ОбъявленияНотаций.Получить("jpeg");
+	ЮнитТест.ПроверитьЗаполненность(НотацияJPEG);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(НотацияJPEG), Тип("ОбъявлениеНотацииXS"));
+	ЮнитТест.ПроверитьРавенство(НотацияJPEG.Имя, "jpeg");
+	ЮнитТест.ПроверитьРавенство(НотацияJPEG.ПубличныйИдентификатор, "image/jpeg");
+	ЮнитТест.ПроверитьРавенство(НотацияJPEG.СистемныйИдентификатор, "view.exe");
+
+	Элемент = Схема.ОбъявленияЭлементов.Получить("image");
+	ЮнитТест.ПроверитьЗаполненность(Элемент);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Элемент), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(Элемент.Имя, "image");
+
+	СоставнойТип = Элемент.АнонимноеОпределениеТипа;
+	ЮнитТест.ПроверитьЗаполненность(СоставнойТип);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(СоставнойТип), Тип("ОпределениеСоставногоТипаXS"));
+	ЮнитТест.ПроверитьРавенство(СоставнойТип.Атрибуты.Количество(), 1);
+
+	АтрибутТип = СоставнойТип.Атрибуты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(АтрибутТип);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(АтрибутТип), Тип("ОбъявлениеАтрибутаXS"));
+	ЮнитТест.ПроверитьРавенство(АтрибутТип.Имя, "type");
+
+	ПростойТип = АтрибутТип.АнонимноеОпределениеТипа;
+	ЮнитТест.ПроверитьЗаполненность(ПростойТип);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ПростойТип), Тип("ОпределениеПростогоТипаXS"));
+	ЮнитТест.ПроверитьРавенство(ПростойТип.ИмяБазовогоТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "NOTATION"));
+	ЮнитТест.ПроверитьРавенство(ПростойТип.Фасеты.Количество(), 2);
+	
+	ПеречислениеGIF = ПростойТип.Фасеты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(ПеречислениеGIF);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ПеречислениеGIF), Тип("ФасетПеречисленияXS"));
+	ЮнитТест.ПроверитьРавенство(ПеречислениеGIF.Значение, "gif");
+
+	ПеречислениеJPEG = ПростойТип.Фасеты.Получить(1);
+	ЮнитТест.ПроверитьЗаполненность(ПеречислениеJPEG);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ПеречислениеJPEG), Тип("ФасетПеречисленияXS"));
+	ЮнитТест.ПроверитьРавенство(ПеречислениеJPEG.Значение, "jpeg");
+
+КонецПроцедуры
+
+Процедура ТестОбъявлениеНотацииXS() Экспорт
+	
+	Схема = ПримерОбъявлениеНотацииXS();
+	Schema = ExampleXSNotationDeclaration();
+
+	ПроверитьОбъявлениеНотацииXS(Схема);
+	ПроверитьОбъявлениеНотацииXS(Schema);
+	
+КонецПроцедуры
+
+#КонецОбласти
+
 #КонецОбласти
 
 Если СтартовыйСценарий().Источник = ТекущийСценарий().Источник Тогда
@@ -2131,10 +2342,10 @@ EndFunction
 	СхемаXML = ПримерСхемыXML();
 
 	ТекстXML = СхемаXML.ТекстXML();
-		
+	
 	Сообщить(ТекущаяДата());
 	Сообщить("НачалоПримера");
 	Сообщить(ТекстXML);
-	Сообщить("КонецПримера");		
-		
+	Сообщить("КонецПримера");
+	
 КонецЕсли;

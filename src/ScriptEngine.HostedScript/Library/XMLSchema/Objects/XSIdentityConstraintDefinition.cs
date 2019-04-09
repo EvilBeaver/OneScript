@@ -23,8 +23,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private XSIdentityConstraintDefinition()
         {
-            _constraint = new XmlSchemaUnique();
-            _category = XSIdentityConstraintCategory.Unique;
+            _constraint = new XmlSchemaKey();
+            _category = XSIdentityConstraintCategory.Key;
 
             Components = new XSComponentFixedList();
             Fields = new XSComponentList();
@@ -43,7 +43,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
-                _constraint.Annotation = value.InternalObject;
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _constraint);
             }
         }
 
@@ -81,7 +82,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 _referencedKeyName = value;
 
                 if (_constraint is XmlSchemaKeyref keyref)
-                    keyref.Refer = _referencedKeyName.NativeValue;
+                    keyref.Refer = _referencedKeyName?.NativeValue;
                 else
                     throw RuntimeException.InvalidArgumentValue();
             }

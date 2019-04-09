@@ -120,34 +120,30 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private void OnSetContentModelAnnotation()
         {
-            XmlSchemaAnnotation annotation = _contentModelAnnotation?.SchemaObject;
-
             if (_type.ContentModel is XmlSchemaComplexContent complexModel)
-                complexModel.Annotation = annotation;
+                XSAnnotation.SetComponentAnnotation(_contentModelAnnotation, complexModel);
 
             else if (_type.ContentModel is XmlSchemaSimpleContent simpleModel)
-                simpleModel.Annotation = annotation;
+                XSAnnotation.SetComponentAnnotation(_contentModelAnnotation, simpleModel);
         }
 
         private void OnSetDerivationAnnotation()
         {
-            XmlSchemaAnnotation annotation = _derivationAnnotation?.SchemaObject;
-
             if (_type.ContentModel is XmlSchemaComplexContent complexModel)
             {
                 if (complexModel.Content is XmlSchemaComplexContentExtension contentExtension)
-                    contentExtension.Annotation = annotation;
+                    XSAnnotation.SetComponentAnnotation(_derivationAnnotation, contentExtension);
 
                 else if (complexModel.Content is XmlSchemaComplexContentRestriction contentRestriction)
-                    contentRestriction.Annotation = annotation;
+                    XSAnnotation.SetComponentAnnotation(_derivationAnnotation, contentRestriction);
             }
             else if (_type.ContentModel is XmlSchemaSimpleContent simpleModel)
             {
                 if (simpleModel.Content is XmlSchemaSimpleContentExtension contentExtension)
-                    contentExtension.Annotation = annotation;
+                    XSAnnotation.SetComponentAnnotation(_derivationAnnotation, contentExtension);
 
                 else if (simpleModel.Content is XmlSchemaSimpleContentRestriction contentRestriction)
-                    contentRestriction.Annotation = annotation;
+                    XSAnnotation.SetComponentAnnotation(_derivationAnnotation, contentRestriction);
             }
         }
 
@@ -163,7 +159,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             {
                 _annotation = value;
                 _annotation?.BindToContainer(RootContainer, this);
-                _type.Annotation = _annotation?.SchemaObject;
+                XSAnnotation.SetComponentAnnotation(_annotation, _type);
             }
         }
 
@@ -342,13 +338,14 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #region IXSComponent
 
-        void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
+        public void BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
             RootContainer = rootContainer;
             Container = container;
         }
 
         XmlSchemaObject IXSComponent.SchemaObject => _type;
+        public XmlSchemaComplexType SchemaObject => _type;
 
         #endregion
 

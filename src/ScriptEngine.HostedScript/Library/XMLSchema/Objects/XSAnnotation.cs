@@ -4,8 +4,8 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
-using System.Diagnostics.Contracts;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -27,6 +27,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
             Components = new XSComponentFixedList();
         }
+
+        internal static void SetComponentAnnotation(XSAnnotation annotation, XmlSchemaAnnotated annotatedObject)
+            => annotatedObject.Annotation = annotation is XSAnnotation ? annotation.SchemaObject : null;
 
         #region OneScript
 
@@ -94,7 +97,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private void Content_Inserted(object sender, XSComponentListEventArgs e)
         {
-            var component = e.Component;
+            IXSComponent component = e.Component;
 
             if (!(component is IXSAnnotationItem))
                 throw RuntimeException.InvalidArgumentType();
@@ -109,7 +112,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Components.Clear();
             InternalObject.Items.Clear();
         }
-        
+
         #endregion
     }
 }
