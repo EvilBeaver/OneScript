@@ -226,6 +226,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region IXSComponent
 
         XmlSchemaObject IXSComponent.SchemaObject => _schema;
+        public XmlSchema SchemaObject => _schema;
 
         void IXSComponent.BindToContainer(IXSComponent RootContainer, IXSComponent Container)
             => throw new NotImplementedException();
