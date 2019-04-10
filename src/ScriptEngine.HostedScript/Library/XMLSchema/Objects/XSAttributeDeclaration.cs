@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Xml;
 using System.Xml.Schema;
 using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
@@ -14,7 +15,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ОбъявлениеАтрибутаXS", "XSAttributeDeclaration")]
-    public class XSAttributeDeclaration : AutoContext<XSAttributeDeclaration>, IXSAnnotated, IXSAttribute
+    public class XSAttributeDeclaration : AutoContext<XSAttributeDeclaration>, IXSAnnotated, IXSAttribute, IXSNamedComponent
     {
         private readonly XmlSchemaAttribute _attribute;
         private XSAnnotation _annotation;
@@ -174,7 +175,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public bool IsGlobal => Container == Schema;
 
         [ContextProperty("ЭтоСсылка", "IsReference")]
-        public bool IsReference => false;
+        public bool IsReference => _refName != null;
 
         #endregion
 
@@ -208,13 +209,14 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #region IXSComponent
 
-        void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
+        public void BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
             RootContainer = rootContainer;
             Container = container;
         }
 
         XmlSchemaObject IXSComponent.SchemaObject => _attribute;
+        public XmlSchemaAttribute SchemaObject => _attribute;
 
         #endregion
     }

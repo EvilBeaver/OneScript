@@ -37,6 +37,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             BlockDefault = new XSDisallowedSubstitutionsUnion();
             FinalDefault = new XSSchemaFinalUnion();
 
+            AttributeDeclarations = new XSNamedComponentMap();
             AttributeGroupDefinitions = new XSNamedComponentMap();
             NotationDeclarations = new XSNamedComponentMap();
             ElementDeclarations = new XSNamedComponentMap();
@@ -258,8 +259,15 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private void ContentCleared(object sender, EventArgs e)
         {
             Components.RemoveAll(x => (!(x is IXSDirective)));
+
+            AttributeDeclarations.Clear();
+            AttributeGroupDefinitions.Clear();
+            NotationDeclarations.Clear();
             ElementDeclarations.Clear();
+            ModelGroupDefinitions.Clear();
+            IdentityConstraintDefinitions.Clear();
             TypeDefinitions.Clear();
+
             _schema.Items.Clear();
         }
 
@@ -277,7 +285,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (value is IXSType)
                 TypeDefinitions.Add(value);
 
-            else if (value is IXSAttribute)
+            else if (value is XSAttributeDeclaration)
                 AttributeDeclarations.Add(value);
 
             else if (value is XSAttributeGroupDefinition)
@@ -288,6 +296,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
             else if (value is XSIdentityConstraintDefinition)
                 IdentityConstraintDefinitions.Add(value);
+
+            else if (value is XSModelGroupDefinition)
+                ModelGroupDefinitions.Add(value);
         }
 
         #endregion

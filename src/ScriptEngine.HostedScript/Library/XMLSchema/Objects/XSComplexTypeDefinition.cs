@@ -301,6 +301,9 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
                 else if (_content is IXSFragment fragment)
                     _type.Particle = fragment.SchemaObject as XmlSchemaParticle;
+
+                else if (_content is XSModelGroupDefinition groupDefinition)
+                    _type.Particle = groupDefinition.SchemaObject as XmlSchemaGroupRef;
             }
         }
 

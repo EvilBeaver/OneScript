@@ -21,6 +21,7 @@
 	СписокТестов.Добавить("ТестМаскаXS");
 	СписокТестов.Добавить("ТестОпределениеГруппыАтрибутовXS");
 	СписокТестов.Добавить("ТестОбъявлениеНотацииXS");
+	СписокТестов.Добавить("ТестОпределениеГруппыМоделиXS");
 	
 	Возврат СписокТестов;
 
@@ -189,8 +190,11 @@
 	//СхемаXML = ПримерОпределениеГруппыАтрибутовXS();
 	//СхемаXML = ExampleXSAttributeGroupDefinition();
 	
-	СхемаXML = ПримерОбъявлениеНотацииXS();
+	//СхемаXML = ПримерОбъявлениеНотацииXS();
 	//СхемаXML = ExampleXSNotationDeclaration();
+
+	СхемаXML = ПримерОпределениеГруппыМоделиXS();
+	//СхемаXML = ExampleXSModelGroupDefinition();
 
 	//////////////////////////
 	
@@ -2331,6 +2335,281 @@ EndFunction
 	ПроверитьОбъявлениеНотацииXS(Схема);
 	ПроверитьОбъявлениеНотацииXS(Schema);
 	
+КонецПроцедуры
+
+#КонецОбласти
+
+#Область ОпределениеГруппыМоделиXS 
+
+// Источник:
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemagroup
+//
+// Результат:
+//	см. РезультатОпределениеГруппыМоделиXS 
+
+Функция ПримерОпределениеГруппыМоделиXS()
+
+	Схема = Новый СхемаXML;
+
+	// <xs:element name="thing1" type="xs:string"/>
+	Элемент = Новый ОбъявлениеЭлементаXS;
+	Элемент.Имя = "thing1";
+	Элемент.ИмяТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string");
+	Схема.Содержимое.Добавить(Элемент);
+	
+	// <xs:element name="thing2" type="xs:string"/>
+	Элемент = Новый ОбъявлениеЭлементаXS;
+	Элемент.Имя = "thing2";
+	Элемент.ИмяТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string");
+	Схема.Содержимое.Добавить(Элемент);
+	
+	// <xs:element name="thing3" type="xs:string"/>
+	Элемент = Новый ОбъявлениеЭлементаXS;
+	Элемент.Имя = "thing3";
+	Элемент.ИмяТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string");
+	Схема.Содержимое.Добавить(Элемент);
+	
+	// <xs:attribute name="myAttribute" type="xs:decimal"/>
+	Атрибут = Новый ОбъявлениеАтрибутаXS;
+	Атрибут.Имя = "myAttribute";
+	Атрибут.ИмяТипа = Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "decimal");
+	Схема.Содержимое.Добавить(Атрибут);
+	
+	// <xs:group name="myGroupOfThings">
+	Группа = Новый ОпределениеГруппыМоделиXS;
+	Группа.Имя = "myGroupOfThings";
+	Схема.Содержимое.Добавить(Группа);
+	
+	// <xs:sequence>
+	Последовательность = Новый ГруппаМоделиXS;
+	Последовательность.ВидГруппы =  ВидГруппыМоделиXS.Последовательность;
+	Фрагмент = Новый ФрагментXS;
+	Фрагмент.Часть = Последовательность;
+	Группа.ГруппаМодели = Фрагмент;
+	
+	// <xs:element ref="thing1"/>
+	ЭлементСсылка = Новый ОбъявлениеЭлементаXS;
+	ЭлементСсылка.Ссылка = Новый РасширенноеИмяXML("", "thing1");
+	Последовательность.Фрагменты.Добавить(ЭлементСсылка);
+	
+	// <xs:element ref="thing2"/>
+	ЭлементСсылка = Новый ОбъявлениеЭлементаXS;
+	ЭлементСсылка.Ссылка = Новый РасширенноеИмяXML("", "thing2");
+	Последовательность.Фрагменты.Добавить(ЭлементСсылка);
+	
+	// <xs:element ref="thing3"/>
+	ЭлементСсылка = Новый ОбъявлениеЭлементаXS;
+	ЭлементСсылка.Ссылка = Новый РасширенноеИмяXML("", "thing3");
+	Последовательность.Фрагменты.Добавить(ЭлементСсылка);
+	
+	// <xs:complexType name="myComplexType">
+	СоставнойТип = Новый ОпределениеСоставногоТипаXS;
+	СоставнойТип.Имя = "myComplexType";
+	Схема.Содержимое.Добавить(СоставнойТип);
+	
+	// <xs:group ref="myGroupOfThings"/>
+	ГруппаСсылка = Новый ОпределениеГруппыМоделиXS;
+	ГруппаСсылка.Ссылка = Новый РасширенноеИмяXML("", "myGroupOfThings");
+	СоставнойТип.Содержимое = ГруппаСсылка;
+	
+	// <xs:attribute ref="myAttribute"/>
+	АтрибутСсылка = Новый ОбъявлениеАтрибутаXS;
+	АтрибутСсылка.Ссылка = Новый РасширенноеИмяXML("", "myAttribute");
+	СоставнойТип.Атрибуты.Добавить(АтрибутСсылка);
+	
+	Возврат Схема;
+
+КонецФункции
+
+Function ExampleXSModelGroupDefinition()
+
+	schema = New XMLSchema;
+
+	// <xs:element name="thing1" type="xs:string"/>
+	elementThing1 = New XSElementDeclaration;
+	elementThing1.Name = "thing1";
+	elementThing1.TypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "string");
+	schema.Content.Add(elementThing1);
+	
+	// <xs:element name="thing2" type="xs:string"/>
+	elementThing2 = New XSElementDeclaration;
+	elementThing2.Name = "thing2";
+	elementThing2.TypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "string");
+	schema.Content.Add(elementThing2);
+	
+	// <xs:element name="thing3" type="xs:string"/>
+	elementThing3 = New XSElementDeclaration;
+	elementThing3.Name = "thing3";
+	elementThing3.TypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "string");
+	schema.Content.Add(elementThing3);
+	
+	// <xs:attribute name="myAttribute" type="xs:decimal"/>
+	myAttribute = New XSAttributeDeclaration;
+	myAttribute.Name = "myAttribute";
+	myAttribute.TypeName = New XMLExpandedName("http://www.w3.org/2001/XMLSchema", "decimal");
+	schema.Content.Add(myAttribute);
+	
+	// <xs:group name="myGroupOfThings">
+	myGroupOfThings = New XSModelGroupDefinition;
+	myGroupOfThings.Name = "myGroupOfThings";
+	schema.Content.Add(myGroupOfThings);
+	
+	// <xs:sequence>
+	sequence = New XSModelGroup;
+	sequence.Compositor = XSCompositor.Sequence;
+	particle = New XSParticle;
+	particle.Term = sequence;
+	myGroupOfThings.ModelGroup = particle;
+	
+	// <xs:element ref="thing1"/>
+	elementThing1Ref = New XSElementDeclaration;
+	elementThing1Ref.Reference = New XMLExpandedName("", "thing1");
+	sequence.Particles.Add(elementThing1Ref);
+	
+	// <xs:element ref="thing2"/>
+	elementThing2Ref = New XSElementDeclaration;
+	elementThing2Ref.Reference = New XMLExpandedName("", "thing2");
+	sequence.Particles.Add(elementThing2Ref);
+	
+	// <xs:element ref="thing3"/>
+	elementThing3Ref = New XSElementDeclaration;
+	elementThing3Ref.Reference = New XMLExpandedName("", "thing3");
+	sequence.Particles.Add(elementThing3Ref);
+	
+	// <xs:complexType name="myComplexType">
+	myComplexType = New XSComplexTypeDefinition;
+	myComplexType.Name = "myComplexType";
+	schema.Content.Add(myComplexType);
+	
+	// <xs:group ref="myGroupOfThings"/>
+	myGroupOfThingsRef = New XSModelGroupDefinition;
+	myGroupOfThingsRef.Reference = New XMLExpandedName("", "myGroupOfThings");
+	myComplexType.Content = myGroupOfThingsRef;
+	
+	// <xs:attribute ref="myAttribute"/>
+	myAttributeRef = New XSAttributeDeclaration;
+	myAttributeRef.Reference = New XMLExpandedName("", "myAttribute");
+	myComplexType.Attributes.Add(myAttributeRef);
+	
+	return schema;
+	
+EndFunction
+
+Процедура РезультатОпределениеГруппыМоделиXS()
+	//<xs:schema  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	//    <xs:element name="thing1" type="xs:string"/>
+	//    <xs:element name="thing2" type="xs:string"/>
+	//    <xs:element name="thing3" type="xs:string"/>
+	//    <xs:attribute name="myAttribute" type="xs:decimal"/>
+	//    <xs:group name="myGroupOfThings">
+	//     <xs:sequence>
+	//      <xs:element ref="thing1"/>
+	//      <xs:element ref="thing2"/>
+	//      <xs:element ref="thing3"/>
+	//     </xs:sequence>
+	//    </xs:group>
+	//    <xs:complexType name="myComplexType">
+	//        <xs:group ref="myGroupOfThings"/>
+	//        <xs:attribute ref="myAttribute"/>
+	//    </xs:complexType>
+	//</xs:schema>
+КонецПроцедуры
+
+Процедура ПроверитьОпределениеГруппыМоделиXS(Схема)
+
+	ЮнитТест.ПроверитьЗаполненность(Схема);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Схема), Тип("СхемаXML"));
+	ЮнитТест.ПроверитьРавенство(Схема.Содержимое.Количество(), 6);
+	ЮнитТест.ПроверитьРавенство(Схема.ОбъявленияЭлементов.Количество(), 3);
+	ЮнитТест.ПроверитьРавенство(Схема.ОбъявленияАтрибутов.Количество(), 1);
+	ЮнитТест.ПроверитьРавенство(Схема.ОпределенияТипов.Количество(), 1);
+	ЮнитТест.ПроверитьРавенство(Схема.ОпределенияГруппМоделей.Количество(), 1);
+
+	Элемент = Схема.ОбъявленияЭлементов.Получить("thing1");
+	ЮнитТест.ПроверитьЗаполненность(Элемент);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Элемент), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(Элемент.Имя, "thing1");
+	ЮнитТест.ПроверитьРавенство(Элемент.ИмяТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string"));
+
+	Элемент = Схема.ОбъявленияЭлементов.Получить("thing2");
+	ЮнитТест.ПроверитьЗаполненность(Элемент);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Элемент), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(Элемент.Имя, "thing2");
+	ЮнитТест.ПроверитьРавенство(Элемент.ИмяТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string"));
+
+	Элемент = Схема.ОбъявленияЭлементов.Получить("thing3");
+	ЮнитТест.ПроверитьЗаполненность(Элемент);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Элемент), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(Элемент.Имя, "thing3");
+	ЮнитТест.ПроверитьРавенство(Элемент.ИмяТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "string"));
+
+	Атрибут = Схема.ОбъявленияАтрибутов.Получить("myAttribute");
+	ЮнитТест.ПроверитьЗаполненность(Атрибут);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Атрибут), Тип("ОбъявлениеАтрибутаXS"));
+	ЮнитТест.ПроверитьРавенство(Атрибут.Имя, "myAttribute");
+	ЮнитТест.ПроверитьРавенство(Атрибут.ИмяТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "decimal"));
+
+	Группа = Схема.ОпределенияГруппМоделей.Получить("myGroupOfThings");
+	ЮнитТест.ПроверитьЗаполненность(Группа);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Группа), Тип("ОпределениеГруппыМоделиXS"));
+	ЮнитТест.ПроверитьРавенство(Группа.Имя, "myGroupOfThings");
+
+	Фрагмент = Группа.ГруппаМодели;
+	ЮнитТест.ПроверитьЗаполненность(Фрагмент);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Фрагмент), Тип("ФрагментXS"));
+
+	Последовательность = Фрагмент.Часть;
+	ЮнитТест.ПроверитьЗаполненность(Последовательность);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Последовательность), Тип("ГруппаМоделиXS"));
+	ЮнитТест.ПроверитьРавенство(Последовательность.ВидГруппы, ВидГруппыМоделиXS.Последовательность);
+	ЮнитТест.ПроверитьРавенство(Последовательность.Фрагменты.Количество(), 3);
+
+	ЭлементСсылка = Последовательность.Фрагменты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(ЭлементСсылка);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ЭлементСсылка), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(ЭлементСсылка.Ссылка, Новый РасширенноеИмяXML("", "thing1"));
+	ЮнитТест.ПроверитьИстину(ЭлементСсылка.ЭтоСсылка);
+
+	ЭлементСсылка = Последовательность.Фрагменты.Получить(1);
+	ЮнитТест.ПроверитьЗаполненность(ЭлементСсылка);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ЭлементСсылка), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(ЭлементСсылка.Ссылка, Новый РасширенноеИмяXML("", "thing2"));
+	ЮнитТест.ПроверитьИстину(ЭлементСсылка.ЭтоСсылка);
+
+	ЭлементСсылка = Последовательность.Фрагменты.Получить(2);
+	ЮнитТест.ПроверитьЗаполненность(ЭлементСсылка);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ЭлементСсылка), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(ЭлементСсылка.Ссылка, Новый РасширенноеИмяXML("", "thing3"));
+	ЮнитТест.ПроверитьИстину(ЭлементСсылка.ЭтоСсылка);
+
+	СоставнойТип = Схема.ОпределенияТипов.Получить("myComplexType");
+	ЮнитТест.ПроверитьЗаполненность(СоставнойТип);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(СоставнойТип), Тип("ОпределениеСоставногоТипаXS"));
+	ЮнитТест.ПроверитьРавенство(СоставнойТип.Имя, "myComplexType");
+	ЮнитТест.ПроверитьРавенство(СоставнойТип.Атрибуты.Количество(), 1);
+
+	ГруппаСсылка = СоставнойТип.Содержимое;
+	ЮнитТест.ПроверитьЗаполненность(ГруппаСсылка);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ГруппаСсылка), Тип("ОпределениеГруппыМоделиXS"));
+	ЮнитТест.ПроверитьРавенство(ГруппаСсылка.Ссылка, Новый РасширенноеИмяXML("", "myGroupOfThings"));
+	ЮнитТест.ПроверитьИстину(ГруппаСсылка.ЭтоСсылка);
+
+	АтрибутСсылка = СоставнойТип.Атрибуты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(АтрибутСсылка);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(АтрибутСсылка), Тип("ОбъявлениеАтрибутаXS"));
+	ЮнитТест.ПроверитьРавенство(АтрибутСсылка.Ссылка, Новый РасширенноеИмяXML("", "myAttribute"));
+	ЮнитТест.ПроверитьИстину(АтрибутСсылка.ЭтоСсылка);
+
+КонецПроцедуры
+
+Процедура ТестОпределениеГруппыМоделиXS() Экспорт
+	
+	Схема = ПримерОпределениеГруппыМоделиXS();
+	Schema = ExampleXSModelGroupDefinition();
+
+	ПроверитьОпределениеГруппыМоделиXS(Схема);
+	ПроверитьОпределениеГруппыМоделиXS(Schema);
+
 КонецПроцедуры
 
 #КонецОбласти
