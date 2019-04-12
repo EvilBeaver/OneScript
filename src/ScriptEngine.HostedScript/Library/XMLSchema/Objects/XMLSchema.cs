@@ -10,6 +10,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
+using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -44,6 +45,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             ModelGroupDefinitions = new XSNamedComponentMap();
             IdentityConstraintDefinitions = new XSNamedComponentMap();
             TypeDefinitions = new XSNamedComponentMap();
+        }
+
+        internal XMLSchema(XmlSchema schema) : this()
+        {
+            _schema = schema;
         }
 
         private static string XMLText(XmlSchema xmlSchema)
@@ -326,6 +332,21 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 default:
                     throw RuntimeException.InvalidArgumentType();
             }
+        }
+    }
+
+    public sealed class XMLSchemaImpl_Serialize
+    {
+        public static XMLSchema ReadXML(XmlReaderImpl xmlReader)
+        {
+            XmlSchema xmlSchema = XmlSchema.Read(xmlReader.GetNativeReader(), null);
+            return new XMLSchema(xmlSchema);
+        }
+
+        public static void WriteXML(XmlWriterImpl xmlWriter, XMLSchema schema)
+        {
+            XmlSchema xmlSchema = schema.SchemaObject;
+            xmlSchema.Write(xmlWriter.GetNativeWriter());
         }
     }
 }
