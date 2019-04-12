@@ -360,6 +360,11 @@ namespace ScriptEngine.Machine.Contexts
         {
             return VARIABLE_COUNT + _module.ExportedProperies.Length;
         }
+        
+        public override int GetMethodsCount()
+        {
+            return METHOD_COUNT + _module.ExportedMethods.Length;
+        }
 
         public override string GetPropName(int propNum)
         {
