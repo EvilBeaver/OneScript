@@ -169,7 +169,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set => _element.Form = XSForm.ToNativeValue(value);
         }
 
-        //ЭтоГлобальноеОбъявление(IsGlobal)
+        [ContextProperty("ЭтоГлобальноеОбъявление", "IsGlobal")]
+        public bool IsGlobal => Container is XMLSchema;
 
         [ContextProperty("ЭтоСсылка", "IsReference")]
         public bool IsReference => _refName is XMLExpandedName;
@@ -181,7 +182,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set => _element.IsAbstract = value;
         }
 
-        //Блокировка(Block)
+        [ContextProperty("Блокировка", "Block")]
+        public XSDisallowedSubstitutionsUnion Block { get; }
 
         [ContextProperty("ВозможноПустой", "Nillable")]
         public bool Nillable
@@ -190,10 +192,17 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set => _element.IsNillable = value;
         }
 
-        //Завершенность(Final)
-        //ИсключенияГруппПодстановки(SubstitutionGroupExclusions)
-        //НедопустимыеПодстановки(DisallowedSubstitutions)
-        //ОграниченияИдентичности(IdentityConstraints)
+        [ContextProperty("Завершенность", "Final")]
+        public XSSubstitutionGroupExclusionsUnion Final { get; }
+
+        [ContextProperty("ИсключенияГруппПодстановки", "SubstitutionGroupExclusions")]
+        public XSSubstitutionGroupExclusionsUnion SubstitutionGroupExclusions { get; }
+
+        [ContextProperty("НедопустимыеПодстановки", "DisallowedSubstitutions")]
+        public XSDisallowedSubstitutionsUnion DisallowedSubstitutions { get; }
+
+        [ContextProperty("ОграниченияИдентичности", "IdentityConstraints")]
+        public XSComponentList IdentityConstraints { get; }
 
         [ContextProperty("ПрисоединениеКГруппеПодстановки", "SubstitutionGroupAffiliation")]
         public XMLExpandedName SubstitutionGroupAffiliation
