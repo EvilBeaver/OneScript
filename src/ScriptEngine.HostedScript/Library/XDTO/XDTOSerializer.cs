@@ -5,10 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Xml;
+using System.Xml.Schema;
 using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library.XMLSchema;
 
 namespace ScriptEngine.HostedScript.Library.XDTO
 {
@@ -16,7 +17,72 @@ namespace ScriptEngine.HostedScript.Library.XDTO
     internal class XDTOSerializer : AutoContext<XDTOSerializer>
     {
         private static readonly XmlGlobalFunctions xmlGlobalFunctions = GlobalsManager.GetGlobalContext<XmlGlobalFunctions>();
+        private static readonly XmlNodeTypeEnum xmlNodeEnum = GlobalsManager.GetEnum<XmlNodeTypeEnum>();
+
+
         private XDTOSerializer() { }
+
+        private void WriteXMLSimpleData(XmlWriterImpl xmlWriter, string name, string value, XMLExpandedName type, XMLTypeAssignment typeAssigment, XMLForm form)
+        {
+            XmlNamespaceContext namespaceContext;
+            switch (form)
+            {
+                case XMLForm.Attribute:
+                    namespaceContext = xmlWriter.NamespaceContext;
+                    if (namespaceContext.LookupPrefix(XmlSchema.Namespace) == ValueFactory.Create())
+                        xmlWriter.WriteNamespaceMapping("", XmlSchema.Namespace);
+
+                    xmlWriter.WriteStartAttribute(name);
+                    xmlWriter.WriteText(value);
+                    xmlWriter.WriteEndAttribute();
+                    break;
+
+                case XMLForm.Text:
+                    xmlWriter.WriteText(value);
+                    break;
+
+                default:
+                    namespaceContext = xmlWriter.NamespaceContext;
+
+                    xmlWriter.WriteStartElement(name);
+                    if (namespaceContext.LookupPrefix(XmlSchema.Namespace) == ValueFactory.Create())
+                        xmlWriter.WriteNamespaceMapping("", XmlSchema.Namespace);
+
+                    if (namespaceContext.LookupPrefix(XmlSchema.InstanceNamespace) == ValueFactory.Create())
+                        xmlWriter.WriteNamespaceMapping("xsi", XmlSchema.InstanceNamespace);
+
+                    if (typeAssigment == XMLTypeAssignment.Explicit)
+                    {
+                        xmlWriter.WriteStartAttribute("type", type.NamespaceURI);
+                        xmlWriter.WriteText(type.LocalName);
+                        xmlWriter.WriteEndAttribute();
+                    }
+
+                    xmlWriter.WriteText(value);
+
+                    xmlWriter.WriteEndElement();
+                    break;
+            }
+        }
+
+        private void WriteXMLUndefined(XmlWriterImpl xmlWriter, string name, XMLForm form)
+        {
+            if (form == XMLForm.Element)
+            {
+                XmlNamespaceContext namespaceContext = xmlWriter.NamespaceContext;
+                if (namespaceContext.LookupPrefix(XmlSchema.Namespace) == ValueFactory.Create())
+                    xmlWriter.WriteNamespaceMapping("", XmlSchema.Namespace);
+
+                if (namespaceContext.LookupPrefix(XmlSchema.InstanceNamespace) == ValueFactory.Create())
+                    xmlWriter.WriteNamespaceMapping("xsi", XmlSchema.InstanceNamespace);
+
+                xmlWriter.WriteStartElement("Undefined");
+                xmlWriter.WriteStartAttribute("nil", XmlSchema.InstanceNamespace);
+                xmlWriter.WriteText("true");
+                xmlWriter.WriteEndAttribute();
+                xmlWriter.WriteEndElement();
+            }
+        }
 
         #region OneScript
 
@@ -42,21 +108,33 @@ namespace ScriptEngine.HostedScript.Library.XDTO
         //ЗаписатьXDTO(WriteXDTO)
 
         [ContextMethod("ЗаписатьXML", "WriteXML")]
-        public void WriteXML(XmlWriterImpl xmlWriter, IValue value, IValue typeAssigment, IValue Form)
+        public void WriteXML(XmlWriterImpl xmlWriter, IValue value, XMLTypeAssignment typeAssigment = XMLTypeAssignment.Explicit, XMLForm form = XMLForm.Element)
         {
+            XMLExpandedName xmlType;
             switch (value.DataType)
             {
+                case DataType.Undefined:
+
+                    WriteXMLUndefined(xmlWriter, "Undefined", form);
+                    break;
+
                 case DataType.String:
-                    xmlWriter.WriteStartElement("string", "http://www.w3.org/2001/XMLSchema");
-                    xmlWriter.WriteText(value.AsString());
-                    xmlWriter.WriteEndElement();
+
+                    xmlType = new XMLExpandedName(XmlSchema.InstanceNamespace, "string");
+                    WriteXMLSimpleData(xmlWriter, "string", value.AsString(), xmlType, typeAssigment, form);
+                    break;
+
+                case DataType.Number:
+
+                    xmlType = new XMLExpandedName(XmlSchema.InstanceNamespace, "decimal");
+                    WriteXMLSimpleData(xmlWriter, "decimal", XMLString(value), xmlType, typeAssigment, form);
                     break;
 
                 case DataType.Object:
 
                     IRuntimeContextInstance valueObject = value.AsObject();
-                    if (valueObject is XMLSchema.XMLSchema seriazable)
-                        seriazable.WriteXML(xmlWriter, valueObject);
+                    if (valueObject is IXDTOSerializableXML seriazable)
+                        seriazable.WriteXML(xmlWriter);
                     else
                         throw RuntimeException.InvalidArgumentType();
                     break;
@@ -72,20 +150,25 @@ namespace ScriptEngine.HostedScript.Library.XDTO
         //ПрочитатьXDTO(ReadXDTO)
 
         [ContextMethod("ПрочитатьXML", "ReadXML")]
-        public IValue ReadXML(XmlReaderImpl xmlReader, TypeTypeValue valueType)
+        public IValue ReadXML(XmlReaderImpl xmlReader, IValue valueType)
         {
-            System.Type typeValue = TypeManager.GetImplementingClass(valueType.Value.ID);
+            TypeDescriptor typeValue = TypeManager.GetTypeDescriptorFor(valueType.GetRawValue());
 
             if (typeValue.Equals(TypeDescriptor.FromDataType(DataType.String)))
             {
-                return null;
+                xmlReader.Read();
+                if (xmlReader.NodeType == xmlNodeEnum.FromNativeValue(XmlNodeType.Text))
+                    return ValueFactory.Create(xmlReader.Value);
+                else
+                    throw RuntimeException.InvalidArgumentValue();
             }
-            else if (typeValue.Equals(TypeDescriptor.FromDataType(DataType.Object)))
-            {
-                return XMLSchemaImpl_Serialize.ReadXML(xmlReader);
-            }
-            else
-                throw RuntimeException.InvalidArgumentType();
+            //else if (typeValue.Equals(TypeDescriptor.FromDataType(DataType.Object)))
+            //{
+            //    return new XMLSchema.XMLSchema(xmlReader);
+            //}
+            //else
+            //    throw RuntimeException.InvalidArgumentType();
+            return ValueFactory.Create();
         }
 
         #endregion

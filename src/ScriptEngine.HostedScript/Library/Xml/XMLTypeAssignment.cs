@@ -5,13 +5,15 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.HostedScript.Library.Xml;
-using ScriptEngine.Machine;
-
-namespace ScriptEngine.HostedScript.Library.XDTO
+namespace ScriptEngine.HostedScript.Library.Xml
 {
-    public interface IXDTOSerializableXML
+    [EnumerationType("XMLTypeAssignment", "НазначениеТипаXML")]
+    public enum XMLTypeAssignment
     {
-        void WriteXML(XmlWriterImpl xmlWriter);
+        [EnumItem("Implicit", "Неявное")]
+        Implicit,
+
+        [EnumItem("Explicit", "Явное")]
+        Explicit
     }
 }

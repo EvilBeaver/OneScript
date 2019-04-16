@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
     [ContextClass("РасширенноеИмяXML", "XMLExpandedName")]
     public class XMLExpandedName : AutoContext<XMLExpandedName>
     {
-        private XMLExpandedName(string namespaceURI, string localName) 
+        public XMLExpandedName(string namespaceURI, string localName) 
             => NativeValue = new XmlQualifiedName(localName, namespaceURI);
 
         public XmlQualifiedName NativeValue { get; }

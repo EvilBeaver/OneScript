@@ -5,13 +5,18 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.HostedScript.Library.Xml;
-using ScriptEngine.Machine;
-
 namespace ScriptEngine.HostedScript.Library.XDTO
 {
-    public interface IXDTOSerializableXML
+    [EnumerationType("XMLForm", "ФормаXML")]
+    public enum XMLForm
     {
-        void WriteXML(XmlWriterImpl xmlWriter);
+        [EnumItem("Element", "Элемент")]
+        Element,
+
+        [EnumItem("Text", "Текст")]
+        Text,
+
+        [EnumItem("Attribute", "Атрибут")]
+        Attribute
     }
 }

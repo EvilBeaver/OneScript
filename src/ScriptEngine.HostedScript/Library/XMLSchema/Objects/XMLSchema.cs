@@ -10,6 +10,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
+using ScriptEngine.HostedScript.Library.XDTO;
 using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -17,7 +18,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("СхемаXML", "XMLSchema")]
-    public class XMLSchema : AutoContext<XMLSchema>, IXSComponent
+    public class XMLSchema : AutoContext<XMLSchema>, IXSComponent, IXDTOSerializableXML
     {
         private readonly XmlSchema _schema;
 
@@ -94,6 +95,31 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                     break;
             }
         }
+
+        internal static string XMLStringIValue(IValue value)
+        {
+            switch (value.DataType)
+            {
+                case DataType.Undefined:
+                    return "";
+
+                case DataType.String:
+                    return value.AsString();
+
+                case DataType.Boolean:
+                    return XmlConvert.ToString(value.AsBoolean());
+
+                case DataType.Date:
+                    return XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
+
+                case DataType.Number:
+                    return XmlConvert.ToString(value.AsNumber());
+
+                default:
+                    throw RuntimeException.InvalidArgumentType();
+            }
+        }
+
 
         #region OneScript
 
@@ -310,43 +336,18 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #endregion
 
-        internal static string XMLStringIValue(IValue value)
+        #region  IXDTOSerializableXML
+
+        void IXDTOSerializableXML.WriteXML(XmlWriterImpl xmlWriter)
         {
-            switch (value.DataType)
-            {
-                case DataType.Undefined:
-                    return "";
-
-                case DataType.String:
-                    return value.AsString();
-
-                case DataType.Boolean:
-                    return XmlConvert.ToString(value.AsBoolean());
-
-                case DataType.Date:
-                    return XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
-
-                case DataType.Number:
-                    return XmlConvert.ToString(value.AsNumber());
-
-                default:
-                    throw RuntimeException.InvalidArgumentType();
-            }
-        }
-    }
-
-    public sealed class XMLSchemaImpl_Serialize
-    {
-        public static XMLSchema ReadXML(XmlReaderImpl xmlReader)
-        {
-            XmlSchema xmlSchema = XmlSchema.Read(xmlReader.GetNativeReader(), null);
-            return new XMLSchema(xmlSchema);
+            _schema.Write(xmlWriter.GetNativeWriter());
         }
 
-        public static void WriteXML(XmlWriterImpl xmlWriter, XMLSchema schema)
+        public XMLSchema(XmlReaderImpl xmlReader) : this()
         {
-            XmlSchema xmlSchema = schema.SchemaObject;
-            xmlSchema.Write(xmlWriter.GetNativeWriter());
+            _schema = XmlSchema.Read(xmlReader.GetNativeReader(), ValidationCallbackOne);
         }
+
+        #endregion
     }
 }

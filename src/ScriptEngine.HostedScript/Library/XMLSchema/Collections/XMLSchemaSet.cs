@@ -21,6 +21,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private readonly List<XMLSchema> _items;
         private XMLSchemaSet()
         {
+            _items = new List<XMLSchema>();
             _schemaSet = new XmlSchemaSet();
             _schemaSet.ValidationEventHandler += SchemaSet_ValidationError;
         }
