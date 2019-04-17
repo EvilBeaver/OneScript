@@ -231,12 +231,14 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         [ContextProperty("Атрибуты", "Attributes")]
         public XSComponentList Attributes { get; }
 
-        //Блокировка(Block)
+        [ContextProperty("Блокировка", "Block")]
+        public XSProhibitedSubstitutionsUnion Block { get; }
 
         [ContextProperty("Завершенность", "Final")]
         public XSComplexFinalUnion Final { get; }
 
-        //ЗапрещенныеПодстановки(ProhibitedSubstitutions)
+        [ContextProperty("ЗапрещенныеПодстановки", "ProhibitedSubstitutions")]
+        public XSProhibitedSubstitutionsUnion ProhibitedSubstitutions { get; }
 
         [ContextProperty("ИмяБазовогоТипа", "BaseTypeName")]
         public XMLExpandedName BaseTypeName
