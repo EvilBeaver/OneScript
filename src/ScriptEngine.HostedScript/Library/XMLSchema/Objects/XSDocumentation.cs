@@ -4,10 +4,10 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Diagnostics.Contracts;
 using System.Xml.Schema;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
@@ -19,6 +19,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private readonly XmlSchemaDocumentation _documentation;
 
         private XSDocumentation() => _documentation = new XmlSchemaDocumentation();
+
+        internal XSDocumentation(XmlSchemaDocumentation xmlDocumentation) => _documentation = xmlDocumentation;
 
         #region OneScript
 

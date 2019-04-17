@@ -270,8 +270,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Components.Add(component);
             _schema.Items.Add(component.SchemaObject);
 
-            if (component is IXSNamedComponent)
-                AddNamedComponentToList(component as IXSNamedComponent);
+            if (component is IXSNamedComponent namedComponent)
+                AddNamedComponentToList(namedComponent);
         }
 
         private void DirectivesInserted(object sender, XSComponentListEventArgs e)
@@ -343,7 +343,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             _schema = XmlSchema.Read(xmlReader.GetNativeReader(), ValidationCallbackOne);
 
             Directives.Inserted -= DirectivesInserted;
-            Directives.Cleared -= DirectivesCleared;
+            Content.Inserted -= ContentInserted;
 
             foreach (XmlSchemaObject directive in _schema.Includes)
             {
@@ -353,8 +353,19 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 Directives.Add(component);
             }
 
+            foreach (XmlSchemaObject item in _schema.Items)
+            {
+                IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
+                component.BindToContainer(this, this);
+                Components.Add(component);
+                Content.Add(component);
+
+                if (component is IXSNamedComponent namedComponent)
+                    AddNamedComponentToList(namedComponent);
+            }
+
             Directives.Inserted += DirectivesInserted;
-            Directives.Cleared += DirectivesCleared;
+            Content.Inserted += ContentInserted;
         }
 
         #endregion

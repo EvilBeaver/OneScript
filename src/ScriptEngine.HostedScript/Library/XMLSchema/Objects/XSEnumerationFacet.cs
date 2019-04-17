@@ -4,8 +4,8 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
-using System.Xml;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -20,6 +20,18 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private IValue _value;
 
         private XSEnumerationFacet() => _facet = new XmlSchemaEnumerationFacet();
+
+        internal XSEnumerationFacet(XmlSchemaEnumerationFacet enumerationFacet)
+        {
+            _facet = enumerationFacet;
+            _value = ValueFactory.Create(_facet.Value);
+
+            if (_facet.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+        }
 
         #region OneScript
 

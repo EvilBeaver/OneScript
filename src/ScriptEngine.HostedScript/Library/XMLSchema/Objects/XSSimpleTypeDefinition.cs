@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Xml;
 using System.Xml.Schema;
 using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
@@ -35,6 +36,48 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
             Components = new XSComponentFixedList();
             Variety = XSSimpleTypeVariety.Atomic;
+        }
+
+        internal XSSimpleTypeDefinition(XmlSchemaSimpleType simpleType)
+            : this()
+        {
+            _type = simpleType;
+
+            if (_type.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
+            if (_type.Content is XmlSchemaSimpleTypeList typeList)
+            {
+                _variety = XSSimpleTypeVariety.List;
+
+                if (typeList.ItemTypeName is XmlQualifiedName qualifiedName)
+                    _itemTypeName = new XMLExpandedName(qualifiedName);
+
+            }
+            else if (_type.Content is XmlSchemaSimpleTypeUnion typeUnion)
+            {
+                _variety = XSSimpleTypeVariety.Union;
+            }
+            else if (_type.Content is XmlSchemaSimpleTypeRestriction typeRestriction)
+            {
+                _variety = XSSimpleTypeVariety.Atomic;
+
+                if (typeRestriction.BaseTypeName is XmlQualifiedName qualifiedName)
+                    _baseTypeName = new XMLExpandedName(qualifiedName);
+
+                Facets.Inserted -= Facets_Inserted;
+                foreach (XmlSchemaObject item in typeRestriction.Facets)
+                {
+                    IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
+                    component.BindToContainer(RootContainer, this);
+                    Facets.Add(component);
+                    Components.Add(component);
+                }
+                Facets.Inserted += Facets_Inserted;
+            }
         }
 
         #region OneScript

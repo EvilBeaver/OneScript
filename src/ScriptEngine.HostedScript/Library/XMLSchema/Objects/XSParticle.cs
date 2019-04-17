@@ -24,7 +24,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         ///     Either a non-negative integer or "unbounded".
         /// https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/structures.html#p-max_occurs
         /// </summary>
-        const string XS_UNBOUNDED = "unbounded";
+        private const string XS_UNBOUNDED = "unbounded";
 
         private XSParticle()
         {
@@ -34,6 +34,21 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Components = new XSComponentFixedList();
         }
 
+        internal XSParticle(XmlSchemaParticle particle)
+            : this()
+        {
+            if (!string.IsNullOrEmpty(particle.MinOccursString))
+                _minOccurs = ValueFactory.Create(particle.MinOccurs);
+
+            if (particle.MaxOccursString == XS_UNBOUNDED)
+                _maxOccurs = ValueFactory.Create(decimal.MinusOne);
+
+            else if (!string.IsNullOrEmpty(particle.MaxOccursString))
+                _minOccurs = ValueFactory.Create(particle.MaxOccurs);
+
+            _term = XMLSchemaSerializer.CreateIXSFragment(particle);
+        }
+
         private void SetMaxOccurs(XmlSchemaParticle particle, IValue maxOccurs)
         {
             if (maxOccurs.DataType == DataType.Undefined)
@@ -41,7 +56,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
             else if (maxOccurs.DataType == DataType.Number)
             {
-                var number = maxOccurs.AsNumber();
+                decimal number = maxOccurs.AsNumber();
                 if (number >= 0)
                     particle.MaxOccurs = number;
                 else
@@ -58,7 +73,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
             else if (minOccurs.DataType == DataType.Number)
             {
-                var number = minOccurs.AsNumber();
+                decimal number = minOccurs.AsNumber();
                 if (number >= 0)
                     particle.MinOccurs = number;
                 else

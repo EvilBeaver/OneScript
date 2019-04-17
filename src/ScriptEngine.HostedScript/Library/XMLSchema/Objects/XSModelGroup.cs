@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
@@ -27,6 +28,33 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Particles = new XSComponentList();
             Particles.Inserted += Particles_Inserted;
             Particles.Cleared += Particles_Cleared;
+        }
+
+        internal XSModelGroup(XmlSchemaGroupBase groupBase)
+            : this()
+        {
+            _group = groupBase;
+
+            if (groupBase is XmlSchemaAll)
+                _compositor = XSCompositor.All;
+
+            else if (groupBase is XmlSchemaChoice)
+                _compositor = XSCompositor.Choice;
+
+            else if (groupBase is XmlSchemaSequence)
+                _compositor = XSCompositor.Sequence;
+
+            Particles.Inserted -= Particles_Inserted;
+
+            foreach (XmlSchemaObject item in _group.Items)
+            {
+                IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
+                component.BindToContainer(RootContainer, this);
+                Particles.Add(component);
+                Components.Add(component);
+            }
+
+            Particles.Inserted += Particles_Inserted;
         }
 
         #region OneScript
@@ -69,7 +97,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _compositor = value;
-                switch(_compositor)
+                switch (_compositor)
                 {
                     case XSCompositor.All:
                         _group = new XmlSchemaAll();
@@ -95,7 +123,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #endregion
 
         #region Methods
-        
+
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
         public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
 
@@ -104,7 +132,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         [ContextMethod("Содержит", "Contains")]
         public bool Contains(IXSComponent component) => Components.Contains(component);
-        
+
         #endregion
 
         #region Constructors
@@ -133,7 +161,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private void Particles_Inserted(object sender, XSComponentListEventArgs e)
         {
-            var component = e.Component;
+            IXSComponent component = e.Component;
 
             if (!(component is IXSFragment) && !(component is XSParticle))
                 throw RuntimeException.InvalidArgumentType();

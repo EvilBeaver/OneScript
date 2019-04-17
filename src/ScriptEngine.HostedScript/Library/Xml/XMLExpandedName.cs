@@ -18,8 +18,10 @@ namespace ScriptEngine.HostedScript.Library.Xml
     [ContextClass("РасширенноеИмяXML", "XMLExpandedName")]
     public class XMLExpandedName : AutoContext<XMLExpandedName>
     {
-        public XMLExpandedName(string namespaceURI, string localName) 
+        public XMLExpandedName(string namespaceURI, string localName)
             => NativeValue = new XmlQualifiedName(localName, namespaceURI);
+
+        public XMLExpandedName(XmlQualifiedName qualifiedName) => NativeValue = qualifiedName;
 
         public XmlQualifiedName NativeValue { get; }
 
@@ -44,7 +46,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         /// <param name="localName">Локальное имя.</param>
         /// <returns>Новое полное имя XML.</returns>
         [ScriptConstructor(Name = "По умолчанию")]
-        public static XMLExpandedName Create(IValue namespaceURI, IValue localName) 
+        public static XMLExpandedName Create(IValue namespaceURI, IValue localName)
             => new XMLExpandedName(namespaceURI.AsString(), localName.AsString());
 
         public override bool Equals(IValue other)

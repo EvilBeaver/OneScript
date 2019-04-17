@@ -36,6 +36,66 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Attributes.Cleared += Attributes_Cleared;
         }
 
+        internal XSComplexTypeDefinition(XmlSchemaComplexType complexType)
+            : this()
+        {
+            _type = complexType;
+
+            if (_type.ContentModel is XmlSchemaSimpleContent simpleContent)
+            {
+                _contentModel = XSContentModel.Simple;
+                if (simpleContent.Content is XmlSchemaSimpleContentExtension contentExtension)
+                {
+                    _derivationMethod = XSDerivationMethod.Extension;
+                    if (contentExtension.BaseTypeName is XmlQualifiedName qualifiedName)
+                        _baseTypeName = new XMLExpandedName(qualifiedName);
+                }
+                else if (simpleContent.Content is XmlSchemaSimpleContentRestriction contentRestriction)
+                {
+                    _derivationMethod = XSDerivationMethod.Restriction;
+                    if (contentRestriction.BaseTypeName is XmlQualifiedName qualifiedName)
+                        _baseTypeName = new XMLExpandedName(qualifiedName);
+                }
+                else
+                    _derivationMethod = XSDerivationMethod.EmptyRef;
+
+                if (_type.Particle is XmlSchemaParticle particle)
+                    _content = XMLSchemaSerializer.CreateInstance(particle);
+            }
+            else if (_type.ContentModel is XmlSchemaComplexContent complexContent)
+            {
+                _contentModel = XSContentModel.Complex;
+
+                if (complexContent.Content is XmlSchemaComplexContentExtension contentExtension)
+                {
+                    _derivationMethod = XSDerivationMethod.Extension;
+                    if (contentExtension.BaseTypeName is XmlQualifiedName qualifiedName)
+                        _baseTypeName = new XMLExpandedName(qualifiedName);
+
+                    if (contentExtension.Particle is XmlSchemaParticle particle)
+                        _content = XMLSchemaSerializer.CreateInstance(particle);
+                }
+                else if (complexContent.Content is XmlSchemaComplexContentRestriction contentRestriction)
+                {
+                    _derivationMethod = XSDerivationMethod.Restriction;
+                    if (contentRestriction.BaseTypeName is XmlQualifiedName qualifiedName)
+                        _baseTypeName = new XMLExpandedName(qualifiedName);
+
+                    if (contentRestriction.Particle is XmlSchemaParticle particle)
+                        _content = XMLSchemaSerializer.CreateInstance(particle);
+                }
+                else
+                    _derivationMethod = XSDerivationMethod.EmptyRef;
+            }
+            else
+            {
+                _contentModel = XSContentModel.EmptyRef;
+
+                if (_type.Particle is XmlSchemaParticle particle)
+                    _content = XMLSchemaSerializer.CreateInstance(particle);
+            }
+        }
+
         private void OnSetContentModelDerivation()
         {
             if (_contentModel == XSContentModel.Simple)
@@ -145,6 +205,37 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 else if (simpleModel.Content is XmlSchemaSimpleContentRestriction contentRestriction)
                     XSAnnotation.SetComponentAnnotation(_derivationAnnotation, contentRestriction);
             }
+        }
+
+        private void OnSetContent()
+        {
+            XmlSchemaParticle xmlParticle;
+
+            if (_content is XSParticle particle)
+                xmlParticle = particle.SchemaObject;
+
+            else if (_content is IXSFragment fragment)
+                xmlParticle = fragment.SchemaObject as XmlSchemaParticle;
+
+            else if (_content is XSModelGroupDefinition groupDefinition)
+                xmlParticle = groupDefinition.SchemaObject as XmlSchemaGroupRef;
+
+            else if (_content is XSModelGroup group)
+                xmlParticle = group.SchemaObject as XmlSchemaGroupBase;
+
+            else
+                xmlParticle = null;
+
+            if (_type.ContentModel is XmlSchemaComplexContent complexModel)
+            {
+                if (complexModel.Content is XmlSchemaComplexContentExtension contentExtension)
+                    contentExtension.Particle = xmlParticle;
+
+                else if (complexModel.Content is XmlSchemaComplexContentRestriction contentRestriction)
+                    contentRestriction.Particle = xmlParticle;
+            }
+            else
+                _type.Particle = xmlParticle;
         }
 
         #region OneScript
@@ -298,14 +389,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             {
                 _content = value;
                 _content.BindToContainer(RootContainer, this);
-                if (_content is XSParticle particle)
-                    _type.Particle = particle.SchemaObject;
-
-                else if (_content is IXSFragment fragment)
-                    _type.Particle = fragment.SchemaObject as XmlSchemaParticle;
-
-                else if (_content is XSModelGroupDefinition groupDefinition)
-                    _type.Particle = groupDefinition.SchemaObject as XmlSchemaGroupRef;
+                OnSetContent();
             }
         }
 

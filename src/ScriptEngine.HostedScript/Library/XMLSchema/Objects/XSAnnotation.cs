@@ -28,6 +28,22 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Components = new XSComponentFixedList();
         }
 
+        internal XSAnnotation(XmlSchemaAnnotation annotation)
+            : this()
+        {
+            InternalObject = annotation;
+
+            Content.Inserted -= Content_Inserted;
+            foreach (XmlSchemaObject item in InternalObject.Items)
+            {
+                IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
+                component.BindToContainer(RootContainer, this);
+                Content.Add(component);
+                Components.Add(component);
+            }
+            Content.Inserted += Content_Inserted;
+        }
+
         internal static void SetComponentAnnotation(XSAnnotation annotation, XmlSchemaAnnotated annotatedObject)
             => annotatedObject.Annotation = annotation is XSAnnotation ? annotation.SchemaObject : null;
 

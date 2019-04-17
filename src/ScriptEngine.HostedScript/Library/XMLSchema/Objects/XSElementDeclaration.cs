@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Xml;
 using System.Xml.Schema;
 using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
@@ -20,11 +21,29 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         private XSAnnotation _annotation;
         private XMLExpandedName _typeName;
         private XMLExpandedName _refName;
+        private XMLExpandedName _substitutionGroup;
         private XSConstraint _constraint;
         private IXSType _schemaType;
         private IValue _value;
 
         private XSElementDeclaration() => _element = new XmlSchemaElement();
+
+        internal XSElementDeclaration(XmlSchemaElement element)
+            : this()
+        {
+            _element = element;
+            if (element.SchemaTypeName is XmlQualifiedName schemaTypeName)
+                _typeName = new XMLExpandedName(schemaTypeName);
+
+            if (element.RefName is XmlQualifiedName refName)
+                _refName = new XMLExpandedName(refName);
+
+            if (element.SubstitutionGroup is XmlQualifiedName substitutionGroup)
+                _substitutionGroup = new XMLExpandedName(substitutionGroup);
+
+            if (_element.SchemaType is XmlSchemaType schemaType)
+                _schemaType = XMLSchemaSerializer.CreateIXSType(schemaType);
+        }
 
         #region OneScript
 
@@ -207,11 +226,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         [ContextProperty("ПрисоединениеКГруппеПодстановки", "SubstitutionGroupAffiliation")]
         public XMLExpandedName SubstitutionGroupAffiliation
         {
-            get => _typeName;
+            get => _substitutionGroup;
             set
             {
-                _typeName = value;
-                _element.SubstitutionGroup = _typeName.NativeValue;
+                _substitutionGroup = value;
+                _element.SubstitutionGroup = _substitutionGroup?.NativeValue;
             }
         }
 
