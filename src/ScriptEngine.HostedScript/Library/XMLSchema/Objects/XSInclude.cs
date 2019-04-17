@@ -19,6 +19,12 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private XSInclude() => _include = new XmlSchemaInclude();
 
+        internal XSInclude(XmlSchemaInclude include)
+            : this()
+        {
+            _include = include;
+        }
+
         #region OneScript
 
         #region Properties

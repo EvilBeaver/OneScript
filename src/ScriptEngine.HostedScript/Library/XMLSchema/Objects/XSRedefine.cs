@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Xml.Schema;
 using ScriptEngine.Machine.Contexts;
@@ -22,6 +23,27 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Components = new XSComponentFixedList();
 
             Content = new XSComponentList();
+            Content.Inserted += Content_Inserted;
+            Content.Cleared += Content_Cleared;
+        }
+
+        internal XSRedefine(XmlSchemaRedefine redefine)
+            : this()
+        {
+            _redefine = redefine;
+
+            Content.Inserted -= Content_Inserted;
+            Content.Cleared -= Content_Cleared;
+
+            foreach(XmlSchemaObject xmlObject in _redefine.Items)
+            {
+                IXSComponent component = XMLSchemaSerializer.CreateInstance(xmlObject);
+
+                component.BindToContainer(RootContainer, this);
+                Components.Add(component);
+                Content.Add(component);
+            }
+                       
             Content.Inserted += Content_Inserted;
             Content.Cleared += Content_Cleared;
         }

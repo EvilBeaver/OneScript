@@ -15,7 +15,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library.XDTO
 {
     [ContextClass("СериализаторXDTO", "XDTOSerializer")]
-    internal class XDTOSerializer : AutoContext<XDTOSerializer>
+    public class XDTOSerializer : AutoContext<XDTOSerializer>
     {
         private static readonly XmlGlobalFunctions xmlGlobalFunctions = GlobalsManager.GetGlobalContext<XmlGlobalFunctions>();
         private static readonly XmlNodeTypeEnum xmlNodeEnum = GlobalsManager.GetEnum<XmlNodeTypeEnum>();
@@ -151,7 +151,7 @@ namespace ScriptEngine.HostedScript.Library.XDTO
 
                     IRuntimeContextInstance valueObject = value.AsObject();
                     if (valueObject is IXDTOSerializableXML seriazable)
-                        seriazable.WriteXML(xmlWriter);
+                        seriazable.WriteXML(xmlWriter, this);
                     else
                         throw RuntimeException.InvalidArgumentType();
                     break;
@@ -203,7 +203,7 @@ namespace ScriptEngine.HostedScript.Library.XDTO
 
                     IRuntimeContextInstance valueObject = value.AsObject();
                     if (valueObject is IXDTOSerializableXML seriazable)
-                        seriazable.WriteXML(xmlWriter);
+                        seriazable.WriteXML(xmlWriter, this);
                     else
                         throw RuntimeException.InvalidArgumentType();
                     break;
@@ -255,7 +255,7 @@ namespace ScriptEngine.HostedScript.Library.XDTO
                             break;
                     }
                 }
-                else if(xsiNil.DataType == DataType.String)
+                else if (xsiNil.DataType == DataType.String)
                     typeValue = new TypeTypeValue("Undefined");
             };
 
@@ -283,7 +283,7 @@ namespace ScriptEngine.HostedScript.Library.XDTO
                     throw RuntimeException.InvalidArgumentValue();
             }
             else if (typeof(IXDTOSerializableXML).IsAssignableFrom(implType))
-                result = Activator.CreateInstance(implType, xmlReader) as IValue;
+                result = Activator.CreateInstance(implType, new object[] { xmlReader, this }) as IValue;
 
             xmlReader.Read();
             return result;

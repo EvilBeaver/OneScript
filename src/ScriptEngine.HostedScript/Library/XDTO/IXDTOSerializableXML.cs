@@ -6,12 +6,11 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using ScriptEngine.HostedScript.Library.Xml;
-using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.XDTO
 {
     public interface IXDTOSerializableXML
     {
-        void WriteXML(XmlWriterImpl xmlWriter);
+        void WriteXML(XmlWriterImpl xmlWriter, XDTOSerializer serializer);
     }
 }

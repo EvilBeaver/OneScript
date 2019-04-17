@@ -48,11 +48,6 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             TypeDefinitions = new XSNamedComponentMap();
         }
 
-        internal XMLSchema(XmlSchema schema) : this()
-        {
-            _schema = schema;
-        }
-
         private static string XMLText(XmlSchema xmlSchema)
         {
             if (!xmlSchema.IsCompiled)
@@ -338,14 +333,28 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         #region  IXDTOSerializableXML
 
-        void IXDTOSerializableXML.WriteXML(XmlWriterImpl xmlWriter)
+        void IXDTOSerializableXML.WriteXML(XmlWriterImpl xmlWriter, XDTOSerializer serializer)
         {
             _schema.Write(xmlWriter.GetNativeWriter());
         }
 
-        public XMLSchema(XmlReaderImpl xmlReader) : this()
+        public XMLSchema(XmlReaderImpl xmlReader, XDTOSerializer serializer) : this()
         {
             _schema = XmlSchema.Read(xmlReader.GetNativeReader(), ValidationCallbackOne);
+
+            Directives.Inserted -= DirectivesInserted;
+            Directives.Cleared -= DirectivesCleared;
+
+            foreach (XmlSchemaObject directive in _schema.Includes)
+            {
+                IXSComponent component = XMLSchemaSerializer.CreateInstance(directive);
+                component.BindToContainer(this, this);
+                Components.Add(component);
+                Directives.Add(component);
+            }
+
+            Directives.Inserted += DirectivesInserted;
+            Directives.Cleared += DirectivesCleared;
         }
 
         #endregion
