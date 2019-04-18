@@ -26,8 +26,10 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (xmlSchemaObject is XmlSchemaDocumentation xmlDocumentation)
                 return new XSDocumentation(xmlDocumentation);
 
-            else
-                return null;
+            else if (xmlSchemaObject is XmlSchemaAppInfo xmlAppInfo)
+                return new XSAppInfo(xmlAppInfo);
+
+            throw RuntimeException.InvalidArgumentType();
         }
 
         private static IXSDirective CreateIXSDirective(XmlSchemaExternal xmlSchemaExternal)
@@ -70,8 +72,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (xmlAnnotated is XmlSchemaFacet xmlFacet)
                 return CreateIXSFacet(xmlFacet);
 
-            else
-                throw RuntimeException.InvalidArgumentType();
+
+            throw RuntimeException.InvalidArgumentType();
         }
 
         internal static IXSFragment CreateIXSFragment(XmlSchemaParticle xmlParticle)
@@ -87,10 +89,53 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         internal static IXSFacet CreateIXSFacet(XmlSchemaFacet xmlFacet)
         {
-            if (xmlFacet is XmlSchemaEnumerationFacet enumerationFacet)
+            if (xmlFacet is XmlSchemaNumericFacet numericFacet)
+                return CreateIXSNumericFacet(numericFacet);
+
+            else if(xmlFacet is XmlSchemaEnumerationFacet enumerationFacet)
                 return new XSEnumerationFacet(enumerationFacet);
 
-            throw RuntimeException.InvalidArgumentType();
+            else if (xmlFacet is XmlSchemaMaxExclusiveFacet maxExclusiveFacet)
+                return new XSMaxExclusiveFacet(maxExclusiveFacet);
+
+            else if (xmlFacet is XmlSchemaMaxInclusiveFacet maxInclusiveFacet)
+                return new XSMaxInclusiveFacet(maxInclusiveFacet);
+
+            else if (xmlFacet is XmlSchemaMinExclusiveFacet minExclusiveFacet)
+                return new XSMinExclusiveFacet(minExclusiveFacet);
+
+            else if (xmlFacet is XmlSchemaMinInclusiveFacet minInclusiveFacet)
+                return new XSMinInclusiveFacet(minInclusiveFacet);
+
+            else if (xmlFacet is XmlSchemaPatternFacet patternFacet)
+                return new XSPatternFacet(patternFacet);
+
+            else if (xmlFacet is XmlSchemaWhiteSpaceFacet whitespaceFacet)
+                return new XSWhitespaceFacet(whitespaceFacet);
+
+            else  
+                throw RuntimeException.InvalidArgumentType();
+        }
+
+        private static IXSFacet CreateIXSNumericFacet(XmlSchemaNumericFacet numericFacet)
+        {
+            if (numericFacet is XmlSchemaFractionDigitsFacet fractionDigitsFacet)
+                return new XSFractionDigitsFacet(fractionDigitsFacet);
+
+            else if (numericFacet is XmlSchemaLengthFacet lengthFacet)
+                return new XSLengthFacet(lengthFacet);
+
+            else if (numericFacet is XmlSchemaMaxLengthFacet maxLengthFacet)
+                return new XSMaxLengthFacet(maxLengthFacet);
+
+            else if (numericFacet is XmlSchemaMinLengthFacet minLengthFacet)
+                return new XSMinLengthFacet(minLengthFacet);
+
+            else if (numericFacet is XmlSchemaTotalDigitsFacet totalDigitsFacet)
+                return new XSTotalDigitsFacet(totalDigitsFacet);
+
+            else 
+                throw RuntimeException.InvalidArgumentType();
         }
 
         internal static XSAnnotation CreateXSAnnotation(XmlSchemaAnnotation annotation)

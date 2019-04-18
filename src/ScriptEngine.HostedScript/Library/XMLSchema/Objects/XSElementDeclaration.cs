@@ -32,6 +32,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             : this()
         {
             _element = element;
+
+            if (_element.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
             if (element.SchemaTypeName is XmlQualifiedName schemaTypeName)
                 _typeName = new XMLExpandedName(schemaTypeName);
 

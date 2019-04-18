@@ -65,16 +65,6 @@
 
 КонецФункции
 
-Процедура ТестОпределениеПростогоТипаXS() Экспорт
-
-	Схема = ПримерОпределениеПростогоТипаXS();
-	Schema = ExampleXSSimpleTypeDefinition();
-
-	ЮнитТест.ПроверитьЗаполненность(Схема);
-	ЮнитТест.ПроверитьЗаполненность(Schema);
-
-КонецПроцедуры
-
 Процедура ТестОпределениеПростогоТипаXS_Объединение() Экспорт
 
 	Схема = ПримерОпределениеПростогоТипаXS_Объединение();
@@ -145,7 +135,7 @@
 	
 	//////////////////////////
 
-	СхемаXML = ПримерСхемаXML();
+	//СхемаXML = ПримерСхемаXML();
 	//СхемаXML = ExampleXMLSchema();
 
 	//СхемаXML = ПримерВключениеXS();
@@ -160,7 +150,7 @@
 	//СхемаXML = ПримерИнформацияДляПриложенияXS();
 	//СхемаXML = ExampleXSAppInfo();
 
-	//СхемаXML = ПримерОпределениеПростогоТипаXS();
+	СхемаXML = ПримерОпределениеПростогоТипаXS();
 	//СхемаXML = ExampleXSSimpleTypeDefinition();
 
 	//СхемаXML = ПримерОпределениеПростогоТипаXS_Объединение();
@@ -1034,24 +1024,63 @@ Function ExampleXSAppInfo()
 
 EndFunction
 
-Процедура РезультатИнформацияДляПриложенияXS()
-	// <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	// 	<xs:element name="State">
-	// 		<xs:annotation>
-	// 			<xs:documentation source="State Name"/>
-	// 			<xs:appinfo source="Application Information"/>
-	// 		</xs:annotation>
-	// 	</xs:element>
-	// </xs:schema>
+Функция РезультатИнформацияДляПриложенияXS()
+	
+	Возврат
+	"<xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"">
+	|	<xs:element name=""State"">
+	|		<xs:annotation>
+	|			<xs:documentation>State Name</xs:documentation>
+	|			<xs:appinfo>Application Information</xs:appinfo>
+	|		</xs:annotation>
+	|	</xs:element>
+	|</xs:schema>";
+
+КонецФункции
+
+Процедура ПроверитьИнформацияДляПриложенияXS(Схема)
+	
+	ЮнитТест.ПроверитьЗаполненность(Схема);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Схема), Тип("СхемаXML"));
+	ЮнитТест.ПроверитьРавенство(Схема.ОбъявленияЭлементов.Количество(), 1);
+
+	Элемент = Схема.ОбъявленияЭлементов.Получить("State");
+	ЮнитТест.ПроверитьЗаполненность(Элемент);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Элемент), Тип("ОбъявлениеЭлементаXS"));
+	ЮнитТест.ПроверитьРавенство(Элемент.Имя, "State");
+
+	АннотацияNorthwestStates = Элемент.Аннотация;
+	ЮнитТест.ПроверитьЗаполненность(АннотацияNorthwestStates);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(АннотацияNorthwestStates), Тип("АннотацияXS"));
+	ЮнитТест.ПроверитьРавенство(АннотацияNorthwestStates.Состав.Количество(), 2);
+
+	ДокументацияNorthwestStates = АннотацияNorthwestStates.Состав.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(ДокументацияNorthwestStates);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ДокументацияNorthwestStates), Тип("ДокументацияXS"));
+	// ЮнитТест.ПроверитьРавенство(ДокументацияNorthwestStates.Источник, "State Name");
+	// //ЮнитТест.ПроверитьРавенство(ДокументацияNorthwestStates.Markup, "State Name");
+
+	ИнформацияДляПриложения = АннотацияNorthwestStates.Состав.Получить(1);
+	ЮнитТест.ПроверитьЗаполненность(ИнформацияДляПриложения);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ИнформацияДляПриложения), Тип("ИнформацияДляПриложенияXS"));
+	// ЮнитТест.ПроверитьРавенство(ИнформацияДляПриложения.Источник, "Application Information");
+	// //ЮнитТест.ПроверитьРавенство(ИнформацияДляПриложения.Markup, "Application Information");
+
 КонецПроцедуры
 
 Процедура ТестИнформацияДляПриложенияXS() Экспорт
 
 	Схема = ПримерИнформацияДляПриложенияXS();
-	ЮнитТест.ПроверитьЗаполненность(Схема);
+	ПроверитьИнформацияДляПриложенияXS(Схема);
 
 	Schema = ExampleXSAppInfo();
-	ЮнитТест.ПроверитьЗаполненность(Schema);
+	ПроверитьИнформацияДляПриложенияXS(Schema);
+
+	СхемаТекст = СхемаXMLИзТекста(РезультатИнформацияДляПриложенияXS());
+	ПроверитьИнформацияДляПриложенияXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьИнформацияДляПриложенияXS(СхемаСериализатор);
 
 КонецПроцедуры
 
@@ -1181,29 +1210,56 @@ Function ExampleXSSimpleTypeDefinition()
 	
 EndFunction
 
-Процедура РезультатОпределениеПростогоТипаXS()
-	// <xs:schema  xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	// 	<xs:simpleType name="LotteryNumber">
-	// 		<xs:restriction base="xs:int">
-	// 			<xs:minInclusive value="1"/>
-	// 			<xs:maxInclusive value="99"/>
-	// 		</xs:restriction>
-	// 	</xs:simpleType>
-	//
-	// 	<xs:simpleType name="LotteryNumberList">
-	// 		<xs:list itemType="LotteryNumber"/>
-	// 	</xs:simpleType>
-	//	
-	// 	<xs:simpleType name="LotteryNumbers">
-	// 		<xs:restriction base="LotteryNumberList">
-	// 			<xs:length value="5"/>
-	// 		</xs:restriction>
-	// 	</xs:simpleType>
-	//	
-	// 	<xs:element name="TodaysLottery" type="LotteryNumbers">
-	// 	</xs:element>
-	//	
-	// </xs:schema>
+Функция РезультатОпределениеПростогоТипаXS()
+
+	Возврат
+	"<xs:schema  xmlns:xs=""http://www.w3.org/2001/XMLSchema"">
+	|	<xs:simpleType name=""LotteryNumber"">
+	|		<xs:restriction base=""xs:int"">
+	|			<xs:minInclusive value=""1""/>
+	|			<xs:maxInclusive value=""99""/>
+	|		</xs:restriction>
+	|	</xs:simpleType>
+	|
+	|	<xs:simpleType name=""LotteryNumberList"">
+	|		<xs:list itemType=""LotteryNumber""/>
+	|	</xs:simpleType>
+	|	
+	|	<xs:simpleType name=""LotteryNumbers"">
+	|		<xs:restriction base=""LotteryNumberList"">
+	|			<xs:length value=""5""/>
+	|		</xs:restriction>
+	|	</xs:simpleType>
+	|	
+	|	<xs:element name=""TodaysLottery"" type=""LotteryNumbers""/>
+	|	
+	|</xs:schema>";
+
+КонецФункции
+
+Процедура ПроверитьОпределениеПростогоТипаXS(Схема)
+
+	ЮнитТест.ПроверитьЗаполненность(Схема);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Схема), Тип("СхемаXML"));
+	ЮнитТест.ПроверитьРавенство(Схема.ОпределенияТипов.Количество(), 3);
+	ЮнитТест.ПроверитьРавенство(Схема.ОбъявленияЭлементов.Количество(), 1);
+
+КонецПроцедуры
+
+Процедура ТестОпределениеПростогоТипаXS() Экспорт
+
+	Схема = ПримерОпределениеПростогоТипаXS();
+	ПроверитьОпределениеПростогоТипаXS(Схема);
+
+	Schema = ExampleXSSimpleTypeDefinition();
+	ПроверитьОпределениеПростогоТипаXS(Schema);
+
+	СхемаТекст = СхемаXMLИзТекста(РезультатОпределениеПростогоТипаXS());
+	ПроверитьОпределениеПростогоТипаXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьОпределениеПростогоТипаXS(СхемаСериализатор);
+
 КонецПроцедуры
 
 #КонецОбласти

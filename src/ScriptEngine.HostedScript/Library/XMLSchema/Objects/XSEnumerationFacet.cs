@@ -44,7 +44,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
-                _facet.Annotation = value.InternalObject;
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _facet);
             }
         }
 

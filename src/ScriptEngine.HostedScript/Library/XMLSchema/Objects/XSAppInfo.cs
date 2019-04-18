@@ -20,6 +20,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private XSAppInfo() => _appInfo = new XmlSchemaAppInfo();
 
+        internal XSAppInfo(XmlSchemaAppInfo xmlAppInfo) => _appInfo = xmlAppInfo;
+
         #region OneScript
 
         #region Properties

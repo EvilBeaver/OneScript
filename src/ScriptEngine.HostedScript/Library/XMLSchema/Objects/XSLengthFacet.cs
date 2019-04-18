@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Xml;
 using System.Xml.Schema;
@@ -20,6 +21,17 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private XSLengthFacet() => _facet = new XmlSchemaLengthFacet();
 
+        internal XSLengthFacet(XmlSchemaLengthFacet lengthFacet)
+        {
+            _facet = lengthFacet;
+
+            if (_facet.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+        }
+
         #region OneScript
 
         #region Properties
@@ -31,7 +43,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
-                _facet.Annotation = value.InternalObject;
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _facet);
             }
         }
 
@@ -86,7 +99,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         [ContextMethod("Содержит", "Contains")]
         public bool Contains(IXSComponent component) => false;
-        
+
         #endregion
 
         #region Constructors
