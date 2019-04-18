@@ -19,6 +19,17 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         private XSNotationDeclaration() => _notation = new XmlSchemaNotation();
 
+        internal XSNotationDeclaration(XmlSchemaNotation xmlNotation)
+        {
+            _notation = xmlNotation;
+
+            if (_notation.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+        }
+
         #region OneScript
 
         #region Properties

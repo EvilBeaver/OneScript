@@ -60,6 +60,16 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (_type.Content is XmlSchemaSimpleTypeUnion typeUnion)
             {
                 _variety = XSSimpleTypeVariety.Union;
+
+                MemberTypeDefinitions.Inserted -= MemberTypeDefinitions_Inserted;
+                foreach (XmlSchemaObject item in typeUnion.BaseTypes)
+                {
+                    IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
+                    component.BindToContainer(RootContainer, this);
+                    MemberTypeDefinitions.Add(component);
+                    Components.Add(component);
+                }
+                MemberTypeDefinitions.Inserted += MemberTypeDefinitions_Inserted;
             }
             else if (_type.Content is XmlSchemaSimpleTypeRestriction typeRestriction)
             {

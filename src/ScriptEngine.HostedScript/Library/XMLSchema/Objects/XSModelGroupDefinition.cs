@@ -6,23 +6,60 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Xml;
 using System.Xml.Schema;
 using ScriptEngine.HostedScript.Library.Xml;
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
     [ContextClass("ОпределениеГруппыМоделиXS", "XSModelGroupDefinition")]
-    public class XSModelGroupDefinition : AutoContext<XSModelGroupDefinition>, IXSComponent, IXSNamedComponent
+    public class XSModelGroupDefinition : AutoContext<XSModelGroupDefinition>, IXSFragment, IXSNamedComponent
     {
         private XmlSchemaAnnotated _group;
         private string _name;
-        private XSParticle _modelGroup;
+        private IXSComponent _modelGroup;
         private XMLExpandedName _reference;
+        private XSAnnotation _annotation;
 
-        private XSModelGroupDefinition()
+        private XSModelGroupDefinition() => _group = new XmlSchemaGroup();
+
+        internal XSModelGroupDefinition(XmlSchemaGroup xmlGroup)
         {
-            _group = new XmlSchemaGroup();
+            _group = xmlGroup;
+            _name = xmlGroup.Name;
+
+            if (_group.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
+            if (xmlGroup.Particle is XmlSchemaGroupBase xmlGroupBase)
+            {
+                IXSComponent component = XMLSchemaSerializer.CreateInstance(xmlGroupBase);
+
+                if (component is XSParticle particle)
+                    _modelGroup = particle;
+
+                else if (component is XSModelGroup modelGroup)
+                    _modelGroup = modelGroup;
+            }
+        }
+
+        internal XSModelGroupDefinition(XmlSchemaGroupRef xmlGroupRef)
+        {
+            _group = xmlGroupRef;
+
+            if (_group.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
+            if (xmlGroupRef.RefName is XmlQualifiedName qualifiedName)
+                _reference = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
         }
 
         #region OneScript
@@ -30,7 +67,16 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         #region Properties
 
         [ContextProperty("Аннотация", "Annotation")]
-        public XSAnnotation Annotation => null;
+        public XSAnnotation Annotation
+        {
+            get => _annotation;
+            set
+            {
+                _annotation = value;
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _group);
+            }
+        }
 
         [ContextProperty("Компоненты", "Components")]
         public XSComponentFixedList Components => null;
@@ -63,12 +109,23 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         [ContextProperty("ГруппаМодели", "ModelGroup")]
-        public XSParticle ModelGroup
+        public IXSComponent ModelGroup
         {
             get => _modelGroup;
             set
             {
-                _modelGroup = value;
+                if (value is XSParticle particle)
+                    _modelGroup = particle;
+
+                else if (value is XSModelGroup modelGroup)
+                    _modelGroup = modelGroup;
+
+                else if (value == null)
+                    _modelGroup = null;
+
+                else
+                    throw RuntimeException.InvalidArgumentType();
+
                 if (_group is XmlSchemaGroup group)
                     group.Particle = _modelGroup?.SchemaObject as XmlSchemaGroupBase;
             }

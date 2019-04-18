@@ -40,13 +40,13 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             }
 
             if (element.SchemaTypeName is XmlQualifiedName schemaTypeName)
-                _typeName = new XMLExpandedName(schemaTypeName);
+                _typeName = XMLSchemaSerializer.CreateXMLExpandedName(schemaTypeName);
 
             if (element.RefName is XmlQualifiedName refName)
-                _refName = new XMLExpandedName(refName);
+                _refName = XMLSchemaSerializer.CreateXMLExpandedName(refName);
 
             if (element.SubstitutionGroup is XmlQualifiedName substitutionGroup)
-                _substitutionGroup = new XMLExpandedName(substitutionGroup);
+                _substitutionGroup = XMLSchemaSerializer.CreateXMLExpandedName(substitutionGroup);
 
             if (_element.SchemaType is XmlSchemaType schemaType)
                 _schemaType = XMLSchemaSerializer.CreateIXSType(schemaType);

@@ -33,6 +33,27 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Components = new XSComponentFixedList();
         }
 
+        internal XSAttributeDeclaration(XmlSchemaAttribute xmlAttribute)
+            : this()
+        {
+            _attribute = xmlAttribute;
+
+            if (_attribute.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
+            if (_attribute.SchemaTypeName is XmlQualifiedName schemaTypeName)
+                _typeName = XMLSchemaSerializer.CreateXMLExpandedName(schemaTypeName);
+
+            if (_attribute.RefName is XmlQualifiedName refName)
+                _refName = XMLSchemaSerializer.CreateXMLExpandedName(refName);
+
+            if (_attribute.SchemaType is XmlSchemaSimpleType schemaType)
+                _schemaType = XMLSchemaSerializer.CreateXSSimpleTypeDefinition(schemaType);
+        }
+
         #region OneScript
 
         #region Properties

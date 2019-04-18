@@ -35,6 +35,12 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         {
             _group = groupBase;
 
+            if (_group.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
             if (groupBase is XmlSchemaAll)
                 _compositor = XSCompositor.All;
 
@@ -68,7 +74,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
-                _group.Annotation = value.InternalObject;
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _group);
             }
         }
 

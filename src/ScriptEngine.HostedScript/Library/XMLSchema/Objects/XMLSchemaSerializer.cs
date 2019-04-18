@@ -5,7 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Xml;
 using System.Xml.Schema;
+using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
@@ -52,7 +54,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 return new XSComplexTypeDefinition(complexType);
 
             else if (xmlType is XmlSchemaSimpleType simpleType)
-                return new XSSimpleTypeDefinition(simpleType);
+                return CreateXSSimpleTypeDefinition(simpleType);
 
             throw RuntimeException.InvalidArgumentType();
         }
@@ -72,8 +74,28 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (xmlAnnotated is XmlSchemaFacet xmlFacet)
                 return CreateIXSFacet(xmlFacet);
 
+            else if (xmlAnnotated is XmlSchemaAttribute xmlAttribute)
+                return new XSAttributeDeclaration(xmlAttribute);
 
-            throw RuntimeException.InvalidArgumentType();
+            else if (xmlAnnotated is XmlSchemaAnyAttribute xmlAnyAttribute)
+                return CreateXSWildcard(xmlAnyAttribute);
+
+            else if (xmlAnnotated is XmlSchemaAttributeGroup xmlAttributeGroup)
+                return new XSAttributeGroupDefinition(xmlAttributeGroup);
+
+            else if (xmlAnnotated is XmlSchemaAttributeGroupRef xmlAttributeGroupRef)
+                return new XSAttributeGroupDefinition(xmlAttributeGroupRef);
+
+            else if (xmlAnnotated is XmlSchemaNotation xmlNotation)
+                return new XSNotationDeclaration(xmlNotation);
+
+            else if (xmlAnnotated is XmlSchemaGroup xmlGroup)
+                return new XSModelGroupDefinition(xmlGroup);
+
+          
+
+            else
+                throw RuntimeException.InvalidArgumentType();
         }
 
         internal static IXSFragment CreateIXSFragment(XmlSchemaParticle xmlParticle)
@@ -84,7 +106,14 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (xmlParticle is XmlSchemaGroupBase groupBase)
                 return new XSModelGroup(groupBase);
 
-            throw RuntimeException.InvalidArgumentType();
+            else if (xmlParticle is XmlSchemaAny xmlAny)
+                return new XSWildcard(xmlAny);
+
+            else if (xmlParticle is XmlSchemaGroupRef xmlGroupRef)
+                return new XSModelGroupDefinition(xmlGroupRef);
+
+            else
+                throw RuntimeException.InvalidArgumentType();
         }
 
         internal static IXSFacet CreateIXSFacet(XmlSchemaFacet xmlFacet)
@@ -92,7 +121,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             if (xmlFacet is XmlSchemaNumericFacet numericFacet)
                 return CreateIXSNumericFacet(numericFacet);
 
-            else if(xmlFacet is XmlSchemaEnumerationFacet enumerationFacet)
+            else if (xmlFacet is XmlSchemaEnumerationFacet enumerationFacet)
                 return new XSEnumerationFacet(enumerationFacet);
 
             else if (xmlFacet is XmlSchemaMaxExclusiveFacet maxExclusiveFacet)
@@ -113,7 +142,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (xmlFacet is XmlSchemaWhiteSpaceFacet whitespaceFacet)
                 return new XSWhitespaceFacet(whitespaceFacet);
 
-            else  
+            else
                 throw RuntimeException.InvalidArgumentType();
         }
 
@@ -134,11 +163,20 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             else if (numericFacet is XmlSchemaTotalDigitsFacet totalDigitsFacet)
                 return new XSTotalDigitsFacet(totalDigitsFacet);
 
-            else 
+            else
                 throw RuntimeException.InvalidArgumentType();
         }
 
         internal static XSAnnotation CreateXSAnnotation(XmlSchemaAnnotation annotation)
             => new XSAnnotation(annotation);
+
+        internal static XMLExpandedName CreateXMLExpandedName(XmlQualifiedName qualifiedName)
+            => new XMLExpandedName(qualifiedName);
+
+        internal static XSWildcard CreateXSWildcard(XmlSchemaAnyAttribute xmlAnyAttribute)
+            => new XSWildcard(xmlAnyAttribute);
+
+        internal static XSSimpleTypeDefinition CreateXSSimpleTypeDefinition(XmlSchemaSimpleType schemaType)
+            => new XSSimpleTypeDefinition(schemaType);
     }
 }

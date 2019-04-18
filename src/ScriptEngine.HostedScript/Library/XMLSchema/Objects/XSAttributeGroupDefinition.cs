@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Xml;
 using System.Xml.Schema;
 using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine.Contexts;
@@ -31,7 +32,48 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             Content.Cleared += Content_Cleared;
         }
 
-        private void OnSetAnnotation() => _attributeGroup.Annotation = _annotation?.InternalObject;
+        internal XSAttributeGroupDefinition(XmlSchemaAttributeGroup xmlAttributeGroup)
+            : this()
+        {
+            _attributeGroup = xmlAttributeGroup;
+            _name = xmlAttributeGroup.Name;
+
+            if (_attributeGroup.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
+            if (xmlAttributeGroup.AnyAttribute is XmlSchemaAnyAttribute xmlAnyAttribute)
+                _wildcard = XMLSchemaSerializer.CreateXSWildcard(xmlAnyAttribute);
+
+            Content.Inserted -= Content_Inserted;
+            foreach (XmlSchemaObject item in xmlAttributeGroup.Attributes)
+            {
+                IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
+                component.BindToContainer(RootContainer, this);
+                Content.Add(component);
+                Components.Add(component);
+            }
+            Content.Inserted += Content_Inserted;
+        }
+
+        internal XSAttributeGroupDefinition(XmlSchemaAttributeGroupRef xmlAttributeGroupRef)
+            : this()
+        {
+            _attributeGroup = xmlAttributeGroupRef;
+
+            if (_attributeGroup.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
+            if (xmlAttributeGroupRef.RefName is XmlQualifiedName qualifiedName)
+                _reference = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
+        }
+
+        private void OnSetAnnotation() => XSAnnotation.SetComponentAnnotation(_annotation, _attributeGroup);
 
         private void OnSetWildcard()
         {
@@ -57,6 +99,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
+                _annotation?.BindToContainer(RootContainer, this);
                 OnSetAnnotation();
             }
         }

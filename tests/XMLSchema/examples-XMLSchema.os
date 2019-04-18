@@ -33,7 +33,7 @@
 
 #КонецОбласти
 
-#Область ОбработчикиТестирования
+#Область СлужебныеПроцедурыИФункции
 
 Функция ТекстСхемыXML(СхемаXML)
 
@@ -65,66 +65,6 @@
 
 КонецФункции
 
-Процедура ТестОпределениеПростогоТипаXS_Объединение() Экспорт
-
-	Схема = ПримерОпределениеПростогоТипаXS_Объединение();
-	Schema = ExampleXSSimpleTypeDefinition_Union();
-
-	ПроверитьОпределениеПростогоТипаXS_Объединение(Схема);
-	ПроверитьОпределениеПростогоТипаXS_Объединение(Schema);
-
-КонецПроцедуры
-
-Процедура ТестФасетДлиныXS() Экспорт
-
-	Схема = ПримерФасетДлиныXS();
-	Schema = ExampleXSLengthFacet();
-
-	ПроверитьФасетДлиныXS(Схема);
-	ПроверитьФасетДлиныXS(Schema)
-
-КонецПроцедуры
-
-Процедура ТестФасетМинимальнойДлиныXS() Экспорт
-
-	Схема = ПримерФасетМинимальнойДлиныXS();
-	Schema = ExampleXSMinLengthFacet();
-
-	ПроверитьФасетМинимальнойДлиныXS(Схема);
-	ПроверитьФасетМинимальнойДлиныXS(Schema)
-
-КонецПроцедуры
-
-Процедура ТестФасетМаксимальнойДлиныXS() Экспорт
-
-	Схема = ПримерФасетМаксимальнойДлиныXS();
-	Schema = ExampleXSMaxLengthFacet();
-
-	ПроверитьФасетМаксимальнойДлиныXS(Схема);
-	ПроверитьФасетМаксимальнойДлиныXS(Schema)
-
-КонецПроцедуры
-
-Процедура ТестФасетКоличестваРазрядовДробнойЧастиXS() Экспорт
-
-	Схема = ПримерФасетКоличестваРазрядовДробнойЧастиXS();
-	Schema = ExampleXSFractionDigitsFacet();
-
-	ПроверитьФасетКоличестваРазрядовДробнойЧастиXS(Схема);
-	ПроверитьФасетКоличестваРазрядовДробнойЧастиXS(Schema)
-
-КонецПроцедуры
-
-Процедура ТестФасетМинимальногоИсключающегоЗначенияXS() Экспорт
-
-	Схема = ПримерФасетМинимальногоИсключающегоЗначенияXS();
-	Schema = ExampleXSMinExclusiveFacet();
-
-	ПроверитьФасетМинимальногоИсключающегоЗначенияXS(Схема);
-	ПроверитьФасетМинимальногоИсключающегоЗначенияXS(Schema)
-
-КонецПроцедуры
-
 #КонецОбласти
 
 #Область ВыборПримера
@@ -150,7 +90,7 @@
 	//СхемаXML = ПримерИнформацияДляПриложенияXS();
 	//СхемаXML = ExampleXSAppInfo();
 
-	СхемаXML = ПримерОпределениеПростогоТипаXS();
+	//СхемаXML = ПримерОпределениеПростогоТипаXS();
 	//СхемаXML = ExampleXSSimpleTypeDefinition();
 
 	//СхемаXML = ПримерОпределениеПростогоТипаXS_Объединение();
@@ -174,7 +114,7 @@
 	//СхемаXML = ПримерМаскаXS();
 	//СхемаXML = ExampleXSWildcard();
 
-	//СхемаXML = ПримерОпределениеГруппыАтрибутовXS();
+	СхемаXML = ПримерОпределениеГруппыАтрибутовXS();
 	//СхемаXML = ExampleXSAttributeGroupDefinition();
 	
 	//СхемаXML = ПримерОбъявлениеНотацииXS();
@@ -324,16 +264,16 @@ EndFunction
 Функция РезультатСхемаXML()
 	
 	Возврат
-	"<xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"">
-	|	<xs:element name=""cat"" type=""xs:string""/>
-	|	<xs:element name=""dog"" type=""xs:string""/>
-	|	<xs:element name=""redDog"" type=""xs:string"" substitutionGroup=""dog""/>
-	|	<xs:element name=""brownDog"" type=""xs:string"" substitutionGroup =""dog"" />
-	|	<xs:element name=""pets"">
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|	<xs:element name='cat' type='xs:string'/>
+	|	<xs:element name='dog' type='xs:string'/>
+	|	<xs:element name='redDog' type='xs:string' substitutionGroup='dog'/>
+	|	<xs:element name='brownDog' type='xs:string' substitutionGroup='dog' />
+	|	<xs:element name='pets'>
 	|		<xs:complexType>
-	|			<xs:choice minOccurs=""0"" maxOccurs=""unbounded"">
-	|				<xs:element ref=""cat""/>
-	|				<xs:element ref=""dog""/>
+	|			<xs:choice minOccurs='0' maxOccurs='unbounded'>
+	|				<xs:element ref='cat'/>
+	|				<xs:element ref='dog'/>
 	|			</xs:choice>
 	|		</xs:complexType>
 	|	</xs:element>
@@ -475,9 +415,9 @@ EndFunction
 
 Функция РезультатВключениеXS()
 	Возврат
-	"<schema elementFormDefault=""qualified"" targetNamespace=""http://www.w3.org/2001/05/XMLInfoset"" xmlns=""http://www.w3.org/2001/XMLSchema"">
-	| 	<import namespace=""http://www.example.com/IPO"" />
-	| 	<include schemaLocation=""example.xsd"" />
+	"<schema elementFormDefault='qualified' targetNamespace='http://www.w3.org/2001/05/XMLInfoset' xmlns='http://www.w3.org/2001/XMLSchema'>
+	| 	<import namespace='http://www.example.com/IPO' />
+	| 	<include schemaLocation='example.xsd' />
 	|</schema>";
 КонецФункции
 
@@ -611,19 +551,19 @@ EndFunction
 Функция РезультатПереопределениеXS()
 
 	Возврат
-	"<xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"">
-	|	<xs:redefine schemaLocation=""Myschema1.xsd"">
-	|		<xs:complexType name=""pname"">
-	|			<xs:complexContent mixed=""false"">
-	|				<xs:extension base=""pname"">
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|	<xs:redefine schemaLocation='Myschema1.xsd'>
+	|		<xs:complexType name='pname'>
+	|			<xs:complexContent mixed='false'>
+	|				<xs:extension base='pname'>
 	|					<xs:sequence>
-	|						<xs:element name=""country"" />
+	|						<xs:element name='country' />
 	|					</xs:sequence>
 	|				</xs:extension>
 	|			</xs:complexContent>
 	|		</xs:complexType>
 	|	</xs:redefine>
-	|	<xs:element name=""author"" type=""pname"" />
+	|	<xs:element name='author' type='pname' />
 	|</xs:schema>";
 
 КонецФункции
@@ -839,23 +779,23 @@ EndFunction
 Функция РезультатДокументацияXS()
 	
 	Возврат
-	"<xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"">
-	|	<xs:simpleType name=""northwestStates"">
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|	<xs:simpleType name='northwestStates'>
 	|		<xs:annotation>
 	|			<xs:documentation>States in the Pacific Northwest of US</xs:documentation>
 	|		</xs:annotation>
-	|		<xs:restriction base=""xs:string"">
-	|			<xs:enumeration value=""WA"">
+	|		<xs:restriction base='xs:string'>
+	|			<xs:enumeration value='WA'>
 	|				<xs:annotation>
 	|					<xs:documentation>Washington</xs:documentation>
 	|				</xs:annotation>
 	|			</xs:enumeration>
-	|			<xs:enumeration value=""OR"">
+	|			<xs:enumeration value='OR'>
 	|				<xs:annotation>
 	|					<xs:documentation>Oregon</xs:documentation>
 	|				</xs:annotation>
 	|			</xs:enumeration>
-	|			<xs:enumeration value=""ID"">
+	|			<xs:enumeration value='ID'>
 	|				<xs:annotation>
 	|					<xs:documentation>Idaho</xs:documentation>
 	|				</xs:annotation>
@@ -1027,8 +967,8 @@ EndFunction
 Функция РезультатИнформацияДляПриложенияXS()
 	
 	Возврат
-	"<xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"">
-	|	<xs:element name=""State"">
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|	<xs:element name='State'>
 	|		<xs:annotation>
 	|			<xs:documentation>State Name</xs:documentation>
 	|			<xs:appinfo>Application Information</xs:appinfo>
@@ -1213,25 +1153,25 @@ EndFunction
 Функция РезультатОпределениеПростогоТипаXS()
 
 	Возврат
-	"<xs:schema  xmlns:xs=""http://www.w3.org/2001/XMLSchema"">
-	|	<xs:simpleType name=""LotteryNumber"">
-	|		<xs:restriction base=""xs:int"">
-	|			<xs:minInclusive value=""1""/>
-	|			<xs:maxInclusive value=""99""/>
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|	<xs:simpleType name='LotteryNumber'>
+	|		<xs:restriction base='xs:int'>
+	|			<xs:minInclusive value='1'/>
+	|			<xs:maxInclusive value='99'/>
 	|		</xs:restriction>
 	|	</xs:simpleType>
 	|
-	|	<xs:simpleType name=""LotteryNumberList"">
-	|		<xs:list itemType=""LotteryNumber""/>
+	|	<xs:simpleType name='LotteryNumberList'>
+	|		<xs:list itemType='LotteryNumber'/>
 	|	</xs:simpleType>
 	|	
-	|	<xs:simpleType name=""LotteryNumbers"">
-	|		<xs:restriction base=""LotteryNumberList"">
-	|			<xs:length value=""5""/>
+	|	<xs:simpleType name='LotteryNumbers'>
+	|		<xs:restriction base='LotteryNumberList'>
+	|			<xs:length value='5'/>
 	|		</xs:restriction>
 	|	</xs:simpleType>
 	|	
-	|	<xs:element name=""TodaysLottery"" type=""LotteryNumbers""/>
+	|	<xs:element name='TodaysLottery' type='LotteryNumbers'/>
 	|	
 	|</xs:schema>";
 
@@ -1243,6 +1183,44 @@ EndFunction
 	ЮнитТест.ПроверитьРавенство(ТипЗнч(Схема), Тип("СхемаXML"));
 	ЮнитТест.ПроверитьРавенство(Схема.ОпределенияТипов.Количество(), 3);
 	ЮнитТест.ПроверитьРавенство(Схема.ОбъявленияЭлементов.Количество(), 1);
+
+	ТипLotteryNumber = Схема.ОпределенияТипов.Получить("LotteryNumber");
+	ЮнитТест.ПроверитьЗаполненность(ТипLotteryNumber);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ТипLotteryNumber), Тип("ОпределениеПростогоТипаXS"));
+	ЮнитТест.ПроверитьРавенство(ТипLotteryNumber.Имя, "LotteryNumber");
+	ЮнитТест.ПроверитьРавенство(ТипLotteryNumber.Вариант, ВариантПростогоТипаXS.Атомарная);
+	ЮнитТест.ПроверитьРавенство(ТипLotteryNumber.ИмяБазовогоТипа, Новый РасширенноеИмяXML("http://www.w3.org/2001/XMLSchema", "int"));
+	ЮнитТест.ПроверитьРавенство(ТипLotteryNumber.Фасеты.Количество(), 2);
+
+	МинимальноеВключающееЗначения = ТипLotteryNumber.Фасеты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(МинимальноеВключающееЗначения);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(МинимальноеВключающееЗначения), Тип("ФасетМинимальногоВключающегоЗначенияXS"));
+	ЮнитТест.ПроверитьРавенство(МинимальноеВключающееЗначения.ЛексическоеЗначение, "1");
+
+	МаксимальноеВключающееЗначения = ТипLotteryNumber.Фасеты.Получить(1);
+	ЮнитТест.ПроверитьЗаполненность(МаксимальноеВключающееЗначения);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(МаксимальноеВключающееЗначения), Тип("ФасетМаксимальногоВключающегоЗначенияXS"));
+	ЮнитТест.ПроверитьРавенство(МаксимальноеВключающееЗначения.ЛексическоеЗначение, "99");
+
+	ТипСписокLotteryNumber = Схема.ОпределенияТипов.Получить("LotteryNumberList");
+	ЮнитТест.ПроверитьЗаполненность(ТипСписокLotteryNumber);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ТипСписокLotteryNumber), Тип("ОпределениеПростогоТипаXS"));
+	ЮнитТест.ПроверитьРавенство(ТипСписокLotteryNumber.Имя, "LotteryNumberList");
+	ЮнитТест.ПроверитьРавенство(ТипСписокLotteryNumber.Вариант, ВариантПростогоТипаXS.Список);
+	ЮнитТест.ПроверитьРавенство(ТипСписокLotteryNumber.ИмяТипаЭлемента, Новый РасширенноеИмяXML("", "LotteryNumber"));
+
+	ТипLotteryNumbers = Схема.ОпределенияТипов.Получить("LotteryNumbers");
+	ЮнитТест.ПроверитьЗаполненность(ТипLotteryNumbers);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(ТипLotteryNumbers), Тип("ОпределениеПростогоТипаXS"));
+	ЮнитТест.ПроверитьРавенство(ТипLotteryNumbers.Имя, "LotteryNumbers");
+	ЮнитТест.ПроверитьРавенство(ТипLotteryNumbers.Вариант, ВариантПростогоТипаXS.Атомарная);
+	ЮнитТест.ПроверитьРавенство(ТипLotteryNumbers.ИмяБазовогоТипа, Новый РасширенноеИмяXML("", "LotteryNumberList"));
+	ЮнитТест.ПроверитьРавенство(ТипLotteryNumbers.Фасеты.Количество(), 1);
+
+	Длина = ТипLotteryNumbers.Фасеты.Получить(0);
+	ЮнитТест.ПроверитьЗаполненность(Длина);
+	ЮнитТест.ПроверитьРавенство(ТипЗнч(Длина), Тип("ФасетДлиныXS"));
+	ЮнитТест.ПроверитьРавенство(Длина.Значение, 5);
 
 КонецПроцедуры
 
@@ -1267,7 +1245,7 @@ EndFunction
 #Область ОпределениеПростогоТипаXS_Объединение
 
 // Источник:
-//	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemasimpletypeunion
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemasimpletypeunion
 //
 // Результат:
 //	см. РезультатОпределениеПростогоТипаXS_Объединение
@@ -1344,24 +1322,27 @@ Function ExampleXSSimpleTypeDefinition_Union()
 	
 EndFunction
 
-Процедура РезультатОпределениеПростогоТипаXS_Объединение()
-	//<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+Функция РезультатОпределениеПростогоТипаXS_Объединение()
 
-	//    <xs:simpleType name="StringOrIntType">
-	//        <xs:union>
-	//            <xs:simpleType>
-	//                <xs:restriction base="xs:string"/>
-	//            </xs:simpleType>
-	//    
-	//            <xs:simpleType>
-	//                <xs:restriction base="xs:int"/>
-	//            </xs:simpleType>
-	//        </xs:union>
-	//    </xs:simpleType>
-	//    
-	//    <xs:element name="size" type="StringOrIntType"/>
-	//</xs:schema>
-КонецПроцедуры
+	Возврат
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|
+	|	<xs:simpleType name='StringOrIntType'>
+	|		<xs:union>
+	|			<xs:simpleType>
+	|				<xs:restriction base='xs:string'/>
+	|			</xs:simpleType>
+	|
+	|			<xs:simpleType>
+	|				<xs:restriction base='xs:int'/>
+	|			</xs:simpleType>
+	|		</xs:union>
+	|	</xs:simpleType>
+	|
+	|	<xs:element name='size' type='StringOrIntType'/>
+	|</xs:schema>";
+
+КонецФункции
 
 Процедура ПроверитьОпределениеПростогоТипаXS_Объединение(Схема)
 
@@ -1396,14 +1377,30 @@ EndFunction
 	ЮнитТест.ПроверитьРавенство(Элемент.Имя, "size");
 	ЮнитТест.ПроверитьРавенство(Элемент.ИмяТипа, Новый РасширенноеИмяXML("", "StringOrIntType"));
 
-КонецПроцедуры	
+КонецПроцедуры
+
+Процедура ТестОпределениеПростогоТипаXS_Объединение() Экспорт
+
+	Схема = ПримерОпределениеПростогоТипаXS_Объединение();
+	ПроверитьОпределениеПростогоТипаXS_Объединение(Схема);
+
+	Schema = ExampleXSSimpleTypeDefinition_Union();
+	ПроверитьОпределениеПростогоТипаXS_Объединение(Schema);
+	
+	СхемаТекст = СхемаXMLИзТекста(РезультатОпределениеПростогоТипаXS_Объединение());
+	ПроверитьОпределениеПростогоТипаXS_Объединение(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьОпределениеПростогоТипаXS_Объединение(СхемаСериализатор);
+
+КонецПроцедуры
 
 #КонецОбласти
 
 #Область ФасетДлиныXS 
 
 // Источник:
-//	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemalengthfacet
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemalengthfacet
 //
 // Результат:
 //	см. РезультатФасетДлиныXS
@@ -1484,23 +1481,26 @@ Function ExampleXSLengthFacet()
 	
 EndFunction
 
-Процедура РезультатФасетДлиныXS()
-	//<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	//
-	//	<xs:simpleType name="ZipCodeType">
-	//		<xs:restriction base="xs:string">
-	//			<xs:length value="5"/>
-	//		</xs:restriction>
-	//	</xs:simpleType>
-	//
-	//	<xs:element name="Address">
-	//		<xs:complexType>
-	//			<xs:attribute name="ZipCode" type="ZipCodeType"/>
-	//		</xs:complexType>
-	//	</xs:element>
-	//
-	//</xs:schema>
-КонецПроцедуры
+Функция РезультатФасетДлиныXS()
+
+	Возврат
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|
+	|	<xs:simpleType name='ZipCodeType'>
+	|		<xs:restriction base='xs:string'>
+	|			<xs:length value='5'/>
+	|		</xs:restriction>
+	|	</xs:simpleType>
+	|
+	|	<xs:element name='Address'>
+	|		<xs:complexType>
+	|			<xs:attribute name='ZipCode' type='ZipCodeType'/>
+	|		</xs:complexType>
+	|	</xs:element>
+	|
+	|</xs:schema>";
+
+КонецФункции
 
 Процедура ПроверитьФасетДлиныXS(Схема)
 
@@ -1541,12 +1541,28 @@ EndFunction
 
 КонецПроцедуры
 
+Процедура ТестФасетДлиныXS() Экспорт
+
+	Схема = ПримерФасетДлиныXS();
+	ПроверитьФасетДлиныXS(Схема);
+
+	Schema = ExampleXSLengthFacet();
+	ПроверитьФасетДлиныXS(Schema);
+	
+	СхемаТекст = СхемаXMLИзТекста(РезультатФасетДлиныXS());
+	ПроверитьФасетДлиныXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьФасетДлиныXS(СхемаСериализатор);
+
+КонецПроцедуры
+
 #КонецОбласти
 
 #Область ФасетМинимальнойДлиныXS 
 
 // Источник:
-//	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemaminlengthfacet
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemaminlengthfacet
 //
 // Результат:
 //	см. РезультатФасетМинимальнойДлиныXS
@@ -1627,22 +1643,25 @@ Function ExampleXSMinLengthFacet()
 	
 EndFunction
 
-Процедура РезультатФасетМинимальнойДлиныXS()
-	//<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	//
-	//	<xs:simpleType name="ZipCodeType">
-	//		<xs:restriction base="xs:string">
-	//			<xs:minLength value="5"/>
-	//		</xs:restriction>
-	//	</xs:simpleType>
-	//
-	//	<xs:element name="Address">
-	//		<xs:complexType>
-	//			<xs:attribute name="ZipCode" type="ZipCodeType"/>
-	//		</xs:complexType>
-	//	</xs:element>
-	//</xs:schema>
-КонецПроцедуры
+Функция РезультатФасетМинимальнойДлиныXS()
+
+	Возврат
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|
+	|	<xs:simpleType name='ZipCodeType'>
+	|		<xs:restriction base='xs:string'>
+	|			<xs:minLength value='5'/>
+	|		</xs:restriction>
+	|	</xs:simpleType>
+	|
+	|	<xs:element name='Address'>
+	|		<xs:complexType>
+	|			<xs:attribute name='ZipCode' type='ZipCodeType'/>
+	|		</xs:complexType>
+	|	</xs:element>
+	|</xs:schema>";
+
+КонецФункции
 
 Процедура ПроверитьФасетМинимальнойДлиныXS(Схема)
 
@@ -1683,12 +1702,28 @@ EndFunction
 
 КонецПроцедуры
 
+Процедура ТестФасетМинимальнойДлиныXS() Экспорт
+
+	Схема = ПримерФасетМинимальнойДлиныXS();
+	ПроверитьФасетМинимальнойДлиныXS(Схема);
+
+	Schema = ExampleXSMinLengthFacet();
+	ПроверитьФасетМинимальнойДлиныXS(Schema);
+
+	СхемаТекст = СхемаXMLИзТекста(РезультатФасетМинимальнойДлиныXS());
+	ПроверитьФасетМинимальнойДлиныXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьФасетМинимальнойДлиныXS(СхемаСериализатор);
+
+КонецПроцедуры
+
 #КонецОбласти
 
 #Область ФасетМаксимальнойДлиныXS 
 
 // Источник:
-//	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemamaxlengthfacet
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemamaxlengthfacet
 //
 // Результат:
 //	см. РезультатФасетМаксимальнойДлиныXS
@@ -1769,23 +1804,26 @@ Function ExampleXSMaxLengthFacet()
 	
 EndFunction
 
-Процедура РезультатФасетМаксимальнойДлиныXS()
-	//<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	//
-	//	<xs:simpleType name="ZipCodeType">
-	//		<xs:restriction base="xs:string">
-	//			<xs:maxLength value="10"/>
-	//		</xs:restriction>
-	//	</xs:simpleType>
-	//
-	//	<xs:element name="Address">
-	//		<xs:complexType>
-	//			<xs:attribute name="ZipCode" type="ZipCodeType"/>
-	//		</xs:complexType>
-	//	</xs:element>
-	//
-	//</xs:schema>
-КонецПроцедуры
+Функция РезультатФасетМаксимальнойДлиныXS()
+
+	Возврат
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|
+	|	<xs:simpleType name='ZipCodeType'>
+	|		<xs:restriction base='xs:string'>
+	|			<xs:maxLength value='10'/>
+	|		</xs:restriction>
+	|	</xs:simpleType>
+	|
+	|	<xs:element name='Address'>
+	|		<xs:complexType>
+	|			<xs:attribute name='ZipCode' type='ZipCodeType'/>
+	|		</xs:complexType>
+	|	</xs:element>
+	|	
+	|</xs:schema>";
+
+КонецФункции
 
 Процедура ПроверитьФасетМаксимальнойДлиныXS(Схема)
 
@@ -1826,12 +1864,28 @@ EndFunction
 
 КонецПроцедуры
 
+Процедура ТестФасетМаксимальнойДлиныXS() Экспорт
+
+	Схема = ПримерФасетМаксимальнойДлиныXS();
+	ПроверитьФасетМаксимальнойДлиныXS(Схема);
+
+	Schema = ExampleXSMaxLengthFacet();
+	ПроверитьФасетМаксимальнойДлиныXS(Schema);
+	
+	СхемаТекст = СхемаXMLИзТекста(РезультатФасетМаксимальнойДлиныXS());
+	ПроверитьФасетМаксимальнойДлиныXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьФасетМаксимальнойДлиныXS(СхемаСериализатор);
+
+КонецПроцедуры
+
 #КонецОбласти
 
 #Область ФасетКоличестваРазрядовДробнойЧастиXS 
 
 // Источник:
-//	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemafractiondigitsfacet
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemafractiondigitsfacet
 //
 // Результат:
 //	см. РезультатФасетКоличестваРазрядовДробнойЧастиXS
@@ -1922,24 +1976,27 @@ Function ExampleXSFractionDigitsFacet()
 	
 EndFunction
 
-Процедура РезультатФасетКоличестваРазрядовДробнойЧастиXS()
-	//<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	//
-	//	<xs:simpleType name="RatingType">
-	//		<xs:restriction base="xs:decimal">
-	//		    <xs:totalDigits value="2"/>
-	//			<xs:fractionDigits value="1"/>
-	//		</xs:restriction>
-	//	</xs:simpleType>
-	//
-	//	<xs:element name="movie">
-	//		<xs:complexType>
-	//			<xs:attribute name="rating" type="RatingType"/>
-	//		</xs:complexType>
-	//	</xs:element>
-	//
-	//</xs:schema>
-КонецПроцедуры
+Функция РезультатФасетКоличестваРазрядовДробнойЧастиXS()
+
+	Возврат
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|
+	|	<xs:simpleType name='RatingType'>
+	|		<xs:restriction base='xs:decimal'>
+	|			<xs:totalDigits value='2'/>
+	|			<xs:fractionDigits value='1'/>
+	|		</xs:restriction>
+	|	</xs:simpleType>
+	|
+	|	<xs:element name='movie'>
+	|		<xs:complexType>
+	|			<xs:attribute name='rating' type='RatingType'/>
+	|		</xs:complexType>
+	|	</xs:element>
+	|
+	|</xs:schema>";
+
+КонецФункции
 
 Процедура ПроверитьФасетКоличестваРазрядовДробнойЧастиXS(Схема)
 
@@ -1985,13 +2042,29 @@ EndFunction
 
 КонецПроцедуры
 
+Процедура ТестФасетКоличестваРазрядовДробнойЧастиXS() Экспорт
+
+	Схема = ПримерФасетКоличестваРазрядовДробнойЧастиXS();
+	ПроверитьФасетКоличестваРазрядовДробнойЧастиXS(Схема);
+
+	Schema = ExampleXSFractionDigitsFacet();
+	ПроверитьФасетКоличестваРазрядовДробнойЧастиXS(Schema);
+
+	СхемаТекст = СхемаXMLИзТекста(РезультатФасетКоличестваРазрядовДробнойЧастиXS());
+	ПроверитьФасетКоличестваРазрядовДробнойЧастиXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьФасетКоличестваРазрядовДробнойЧастиXS(СхемаСериализатор);
+
+КонецПроцедуры
+
 #КонецОбласти
 
 #Область ФасетМинимальногоИсключающегоЗначенияXS 
 
 // Источник:
-//	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemaminexclusivefacet
-//	https://docs.microsoft.com/ru-ru/dotnet/api/system.xml.schema.xmlschemamaxexclusivefacet
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemaminexclusivefacet
+//	https://docs.microsoft.com/dotnet/api/system.xml.schema.xmlschemamaxexclusivefacet
 //
 // Результат:
 //	см. РезультатФасетМаксимальногоИсключающегоЗначенияXS 
@@ -2082,21 +2155,24 @@ Function ExampleXSMinExclusiveFacet()
 	
 EndFunction
 
-Процедура РезультатФасетМинимальногоИсключающегоЗначенияXS()
-	// 	<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	// 	<xs:simpleType name="WaitQueueLengthType">
-	// 	  <xs:restriction base="xs:int">
-	// 		<xs:minExclusive value="5" />
-	// 		<xs:maxExclusive value="10" />
-	// 	  </xs:restriction>
-	// 	</xs:simpleType>
-	// 	<xs:element name="Lobby">
-	// 	  <xs:complexType>
-	// 		<xs:attribute name="WaitQueueLength" type="WaitQueueLengthType" />
-	// 	  </xs:complexType>
-	// 	</xs:element>
-	//   </xs:schema>
-КонецПроцедуры
+Функция РезультатФасетМинимальногоИсключающегоЗначенияXS()
+
+	Возврат
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|	<xs:simpleType name='WaitQueueLengthType'>
+	|		<xs:restriction base='xs:int'>
+	|			<xs:minExclusive value='5' />
+	|			<xs:maxExclusive value='10' />
+	|		</xs:restriction>
+	|	</xs:simpleType>
+	|	<xs:element name='Lobby'>
+	|		<xs:complexType>
+	|			<xs:attribute name='WaitQueueLength' type='WaitQueueLengthType' />
+	|		</xs:complexType>
+	|	</xs:element>
+	|</xs:schema>";
+
+КонецФункции
 
 Процедура ПроверитьФасетМинимальногоИсключающегоЗначенияXS(Схема)
 
@@ -2117,12 +2193,14 @@ EndFunction
 	МинимальноИсключая = ТипДлинаОчереди.Фасеты.Получить(0);
 	ЮнитТест.ПроверитьЗаполненность(МинимальноИсключая);
 	ЮнитТест.ПроверитьРавенство(ТипЗнч(МинимальноИсключая), Тип("ФасетМинимальногоИсключающегоЗначенияXS"));
-	ЮнитТест.ПроверитьРавенство(МинимальноИсключая.Значение, 5);
+	ЮнитТест.ПроверитьРавенство(МинимальноИсключая.ЛексическоеЗначение, "5");
+	// ЮнитТест.ПроверитьРавенство(МинимальноИсключая.Значение, 5);
 	
 	МаксимальноИсключая = ТипДлинаОчереди.Фасеты.Получить(1);
 	ЮнитТест.ПроверитьЗаполненность(МаксимальноИсключая);
 	ЮнитТест.ПроверитьРавенство(ТипЗнч(МаксимальноИсключая), Тип("ФасетМаксимальногоИсключающегоЗначенияXS"));
-	ЮнитТест.ПроверитьРавенство(МаксимальноИсключая.Значение, 10);
+	ЮнитТест.ПроверитьРавенство(МаксимальноИсключая.ЛексическоеЗначение, "10");
+	// ЮнитТест.ПроверитьРавенство(МаксимальноИсключая.Значение, 10);
 	
 	Элемент = Схема.ОбъявленияЭлементов.Получить("Lobby"); 
 	ЮнитТест.ПроверитьЗаполненность(Элемент);
@@ -2139,6 +2217,22 @@ EndFunction
 	ЮнитТест.ПроверитьРавенство(ТипЗнч(АтрибутДлинаОчереди), Тип("ОбъявлениеАтрибутаXS"));
 	ЮнитТест.ПроверитьРавенство(АтрибутДлинаОчереди.Имя, "WaitQueueLength");
 	ЮнитТест.ПроверитьРавенство(АтрибутДлинаОчереди.ИмяТипа, Новый РасширенноеИмяXML("", "WaitQueueLengthType"));
+
+КонецПроцедуры
+
+Процедура ТестФасетМинимальногоИсключающегоЗначенияXS() Экспорт
+
+	Схема = ПримерФасетМинимальногоИсключающегоЗначенияXS();
+	ПроверитьФасетМинимальногоИсключающегоЗначенияXS(Схема);
+
+	Schema = ExampleXSMinExclusiveFacet();
+	ПроверитьФасетМинимальногоИсключающегоЗначенияXS(Schema);
+	
+	СхемаТекст = СхемаXMLИзТекста(РезультатФасетМинимальногоИсключающегоЗначенияXS());
+	ПроверитьФасетМинимальногоИсключающегоЗначенияXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьФасетМинимальногоИсключающегоЗначенияXS(СхемаСериализатор);
 
 КонецПроцедуры
 
@@ -2269,32 +2363,35 @@ Function ExampleXSWildcard()
 	
 EndFunction
 
-Процедура РезультатМаскаXS()
-	//<xs:schema  xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	//
-	//	<xs:element name="htmlText">
-	//		<xs:complexType>
-	//			<xs:sequence>
-	//				<xs:any 
-	//					namespace='http://www.w3.org/1999/xhtml'
-	//					processContents='lax'
-	//              	minOccurs='1' maxOccurs='unbounded'/>
-	//			</xs:sequence>
-	//		</xs:complexType>
-	//	</xs:element>
-	//	
-	//	<xs:element name="stringElementWithAnyAttribute">
-	//        <xs:complexType>
-	//            <xs:simpleContent>
-	//                <xs:extension base="xs:string">
-	//                    <xs:anyAttribute namespace="##targetNamespace"/>
-	//                </xs:extension>
-	//            </xs:simpleContent>
-	//        </xs:complexType>
-	//    </xs:element>
-	//	
-	//</xs:schema>
-КонецПроцедуры
+Функция РезультатМаскаXS()
+
+	Возврат
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|
+	|	<xs:element name='htmlText'>
+	|		<xs:complexType>
+	|			<xs:sequence>
+	|				<xs:any 
+	|					namespace='http://www.w3.org/1999/xhtml'
+	|					processContents='lax'
+	|					minOccurs='1' maxOccurs='unbounded'/>
+	|			</xs:sequence>
+	|		</xs:complexType>
+	|	</xs:element>
+	|
+	|	<xs:element name='stringElementWithAnyAttribute'>
+	|		<xs:complexType>
+	|			<xs:simpleContent>
+	|				<xs:extension base='xs:string'>
+	|					<xs:anyAttribute namespace='##targetNamespace'/>
+	|				</xs:extension>
+	|			</xs:simpleContent>
+	|		</xs:complexType>
+	|	</xs:element>
+	|
+	|</xs:schema>";
+
+КонецФункции
 
 Процедура ПроверитьМаскаXS(Схема)
 
@@ -2347,15 +2444,21 @@ EndFunction
 	ЮнитТест.ПроверитьРавенство(ТипЗнч(Маска), Тип("МаскаXS"));
 	ЮнитТест.ПроверитьРавенство(Маска.ЛексическоеЗначениеОграниченияПространствИмен, "##targetNamespace");
 
-КонецПроцедуры	
+КонецПроцедуры
 
 Процедура ТестМаскаXS() Экспорт
 
 	Схема = ПримерМаскаXS();
-	Schema = ExampleXSWildcard();
-
 	ПроверитьМаскаXS(Схема);
-	ПроверитьМаскаXS(Schema)
+
+	Schema = ExampleXSWildcard();
+	ПроверитьМаскаXS(Schema);
+	
+	СхемаТекст = СхемаXMLИзТекста(РезультатМаскаXS());
+	ПроверитьМаскаXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьМаскаXS(СхемаСериализатор);
 
 КонецПроцедуры
 
@@ -2487,22 +2590,25 @@ Function ExampleXSAttributeGroupDefinition()
 	
 EndFunction
 
-Процедура РезультатОпределениеГруппыАтрибутовXS()
-	//<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	//	<xs:attributeGroup name="myAttributeGroup">
-	//		<xs:attribute name="someattribute1" type="xs:integer"/>
-	//		<xs:attribute name="someattribute2" type="xs:string"/>
-	//	</xs:attributeGroup>
-	//	<xs:attributeGroup name="myAttributeGroupB">
-	//		<xs:attribute name="someattribute20" type="xs:date"/>
-	//		<xs:attributeGroup ref="myAttributeGroup"/>
-	//		<xs:any namespace="##targetNamespace"/>
-	//	</xs:attributeGroup>
-	//	<xs:complexType name="myElementType">
-	//		<xs:attributeGroup ref="myAttributeGroup"/>
-	//	</xs:complexType>
-	//</xs:schema>
-КонецПроцедуры
+Функция РезультатОпределениеГруппыАтрибутовXS()
+
+	Возврат
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|	<xs:attributeGroup name='myAttributeGroup'>
+	|		<xs:attribute name='someattribute1' type='xs:integer'/>
+	|		<xs:attribute name='someattribute2' type='xs:string'/>
+	|	</xs:attributeGroup>
+	|	<xs:attributeGroup name='myAttributeGroupB'>
+	|		<xs:attribute name='someattribute20' type='xs:date'/>
+	|		<xs:attributeGroup ref='myAttributeGroup'/>
+	|		<xs:anyAttribute namespace='##targetNamespace'/>
+	|	</xs:attributeGroup>
+	|	<xs:complexType name='myElementType'>
+	|		<xs:attributeGroup ref='myAttributeGroup'/>
+	|	</xs:complexType>
+	|</xs:schema>";
+
+КонецФункции
 
 Процедура ПроверитьОпределениеГруппыАтрибутовXS(Схема)
 
@@ -2568,11 +2674,17 @@ EndFunction
 Процедура ТестОпределениеГруппыАтрибутовXS() Экспорт
 	
 	Схема = ПримерОпределениеГруппыАтрибутовXS();
-	Schema = ExampleXSAttributeGroupDefinition();
-
 	ПроверитьОпределениеГруппыАтрибутовXS(Схема);
-	ПроверитьОпределениеГруппыАтрибутовXS(Schema)
+
+	Schema = ExampleXSAttributeGroupDefinition();
+	ПроверитьОпределениеГруппыАтрибутовXS(Schema);
 	
+	СхемаТекст = СхемаXMLИзТекста(РезультатОпределениеГруппыАтрибутовXS());
+	ПроверитьОпределениеГруппыАтрибутовXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьОпределениеГруппыАтрибутовXS(СхемаСериализатор);
+
 КонецПроцедуры
 
 #КонецОбласти
@@ -2698,24 +2810,27 @@ Function ExampleXSNotationDeclaration()
 	
 EndFunction
 
-Процедура РезультатОбъявлениеНотацииXS()
-	// <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	// 	<xs:notation name="gif" public="image/gif" system="view.exe"/>
-	// 	<xs:notation name="jpeg" public="image/jpeg" system="view.exe"/>
-	// 	<xs:element name="image">
-	// 		<xs:complexType>
-	// 			<xs:attribute name="type">
-	// 				<xs:simpleType>
-	// 					<xs:restriction base="xs:NOTATION">
-	// 						<xs:enumeration value="gif"/>
-	// 						<xs:enumeration value="jpeg"/>
-	// 					</xs:restriction>
-	// 				</xs:simpleType>
-	// 			</xs:attribute>
-	// 		</xs:complexType>
-	// 	</xs:element>
-	// </xs:schema>
-КонецПроцедуры
+Функция РезультатОбъявлениеНотацииXS()
+
+	Возврат
+	"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|	<xs:notation name='gif' public='image/gif' system='view.exe'/>
+	|	<xs:notation name='jpeg' public='image/jpeg' system='view.exe'/>
+	|	<xs:element name='image'>
+	|		<xs:complexType>
+	|			<xs:attribute name='type'>
+	|				<xs:simpleType>
+	|					<xs:restriction base='xs:NOTATION'>
+	|						<xs:enumeration value='gif'/>
+	|						<xs:enumeration value='jpeg'/>
+	|					</xs:restriction>
+	|				</xs:simpleType>
+	|			</xs:attribute>
+	|		</xs:complexType>
+	|	</xs:element>
+	|</xs:schema>";
+	
+КонецФункции
 
 Процедура ПроверитьОбъявлениеНотацииXS(Схема)
 
@@ -2775,11 +2890,17 @@ EndFunction
 Процедура ТестОбъявлениеНотацииXS() Экспорт
 	
 	Схема = ПримерОбъявлениеНотацииXS();
-	Schema = ExampleXSNotationDeclaration();
-
 	ПроверитьОбъявлениеНотацииXS(Схема);
+
+	Schema = ExampleXSNotationDeclaration();
 	ПроверитьОбъявлениеНотацииXS(Schema);
 	
+	СхемаТекст = СхемаXMLИзТекста(РезультатОбъявлениеНотацииXS());
+	ПроверитьОбъявлениеНотацииXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьОбъявлениеНотацииXS(СхемаСериализатор);
+
 КонецПроцедуры
 
 #КонецОбласти
@@ -2828,9 +2949,7 @@ EndFunction
 	// <xs:sequence>
 	Последовательность = Новый ГруппаМоделиXS;
 	Последовательность.ВидГруппы =  ВидГруппыМоделиXS.Последовательность;
-	Фрагмент = Новый ФрагментXS;
-	Фрагмент.Часть = Последовательность;
-	Группа.ГруппаМодели = Фрагмент;
+	Группа.ГруппаМодели = Последовательность;
 	
 	// <xs:element ref="thing1"/>
 	ЭлементСсылка = Новый ОбъявлениеЭлементаXS;
@@ -2902,9 +3021,7 @@ Function ExampleXSModelGroupDefinition()
 	// <xs:sequence>
 	sequence = New XSModelGroup;
 	sequence.Compositor = XSCompositor.Sequence;
-	particle = New XSParticle;
-	particle.Term = sequence;
-	myGroupOfThings.ModelGroup = particle;
+	myGroupOfThings.ModelGroup = sequence;
 	
 	// <xs:element ref="thing1"/>
 	elementThing1Ref = New XSElementDeclaration;
@@ -2940,25 +3057,28 @@ Function ExampleXSModelGroupDefinition()
 	
 EndFunction
 
-Процедура РезультатОпределениеГруппыМоделиXS()
-	//<xs:schema  xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	//    <xs:element name="thing1" type="xs:string"/>
-	//    <xs:element name="thing2" type="xs:string"/>
-	//    <xs:element name="thing3" type="xs:string"/>
-	//    <xs:attribute name="myAttribute" type="xs:decimal"/>
-	//    <xs:group name="myGroupOfThings">
-	//     <xs:sequence>
-	//      <xs:element ref="thing1"/>
-	//      <xs:element ref="thing2"/>
-	//      <xs:element ref="thing3"/>
-	//     </xs:sequence>
-	//    </xs:group>
-	//    <xs:complexType name="myComplexType">
-	//        <xs:group ref="myGroupOfThings"/>
-	//        <xs:attribute ref="myAttribute"/>
-	//    </xs:complexType>
-	//</xs:schema>
-КонецПроцедуры
+Функция РезультатОпределениеГруппыМоделиXS()
+
+	Возврат
+	"<xs:schema  xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+	|	<xs:element name='thing1' type='xs:string'/>
+	|	<xs:element name='thing2' type='xs:string'/>
+	|	<xs:element name='thing3' type='xs:string'/>
+	|	<xs:attribute name='myAttribute' type='xs:decimal'/>
+	|	<xs:group name='myGroupOfThings'>
+	|		<xs:sequence>
+	|			<xs:element ref='thing1'/>
+	|			<xs:element ref='thing2'/>
+	|			<xs:element ref='thing3'/>
+	|		</xs:sequence>
+	|	</xs:group>
+	|	<xs:complexType name='myComplexType'>
+	|		<xs:group ref='myGroupOfThings'/>
+	|		<xs:attribute ref='myAttribute'/>
+	|	</xs:complexType>
+	|</xs:schema>";
+
+КонецФункции
 
 Процедура ПроверитьОпределениеГруппыМоделиXS(Схема)
 
@@ -2999,11 +3119,7 @@ EndFunction
 	ЮнитТест.ПроверитьРавенство(ТипЗнч(Группа), Тип("ОпределениеГруппыМоделиXS"));
 	ЮнитТест.ПроверитьРавенство(Группа.Имя, "myGroupOfThings");
 
-	Фрагмент = Группа.ГруппаМодели;
-	ЮнитТест.ПроверитьЗаполненность(Фрагмент);
-	ЮнитТест.ПроверитьРавенство(ТипЗнч(Фрагмент), Тип("ФрагментXS"));
-
-	Последовательность = Фрагмент.Часть;
+	Последовательность = Группа.ГруппаМодели;
 	ЮнитТест.ПроверитьЗаполненность(Последовательность);
 	ЮнитТест.ПроверитьРавенство(ТипЗнч(Последовательность), Тип("ГруппаМоделиXS"));
 	ЮнитТест.ПроверитьРавенство(Последовательность.ВидГруппы, ВидГруппыМоделиXS.Последовательность);
@@ -3050,10 +3166,16 @@ EndFunction
 Процедура ТестОпределениеГруппыМоделиXS() Экспорт
 	
 	Схема = ПримерОпределениеГруппыМоделиXS();
-	Schema = ExampleXSModelGroupDefinition();
-
 	ПроверитьОпределениеГруппыМоделиXS(Схема);
+
+	Schema = ExampleXSModelGroupDefinition();
 	ПроверитьОпределениеГруппыМоделиXS(Schema);
+	
+	СхемаТекст = СхемаXMLИзТекста(РезультатОпределениеГруппыМоделиXS());
+	ПроверитьОпределениеГруппыМоделиXS(СхемаТекст);
+
+	СхемаСериализатор = СериализоватьДесериализоватьСхемуXML(Схема);
+	ПроверитьОпределениеГруппыМоделиXS(СхемаСериализатор);
 
 КонецПроцедуры
 

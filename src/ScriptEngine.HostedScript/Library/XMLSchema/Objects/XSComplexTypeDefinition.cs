@@ -41,6 +41,12 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         {
             _type = complexType;
 
+            if (_type.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
             if (_type.ContentModel is XmlSchemaSimpleContent simpleContent)
             {
                 _contentModel = XSContentModel.Simple;
@@ -48,13 +54,19 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 {
                     _derivationMethod = XSDerivationMethod.Extension;
                     if (contentExtension.BaseTypeName is XmlQualifiedName qualifiedName)
-                        _baseTypeName = new XMLExpandedName(qualifiedName);
+                        _baseTypeName = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
+
+                    if (contentExtension.AnyAttribute is XmlSchemaAnyAttribute anyAttribute)
+                        _attributeWildcard = XMLSchemaSerializer.CreateXSWildcard(anyAttribute);
                 }
                 else if (simpleContent.Content is XmlSchemaSimpleContentRestriction contentRestriction)
                 {
                     _derivationMethod = XSDerivationMethod.Restriction;
                     if (contentRestriction.BaseTypeName is XmlQualifiedName qualifiedName)
-                        _baseTypeName = new XMLExpandedName(qualifiedName);
+                        _baseTypeName = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
+
+                    if (contentRestriction.AnyAttribute is XmlSchemaAnyAttribute anyAttribute)
+                        _attributeWildcard = XMLSchemaSerializer.CreateXSWildcard(anyAttribute);
                 }
                 else
                     _derivationMethod = XSDerivationMethod.EmptyRef;
@@ -70,30 +82,51 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
                 {
                     _derivationMethod = XSDerivationMethod.Extension;
                     if (contentExtension.BaseTypeName is XmlQualifiedName qualifiedName)
-                        _baseTypeName = new XMLExpandedName(qualifiedName);
+                        _baseTypeName = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
 
                     if (contentExtension.Particle is XmlSchemaParticle particle)
                         _content = XMLSchemaSerializer.CreateInstance(particle);
+
+                    if (contentExtension.AnyAttribute is XmlSchemaAnyAttribute anyAttribute)
+                        _attributeWildcard = XMLSchemaSerializer.CreateXSWildcard(anyAttribute);
                 }
                 else if (complexContent.Content is XmlSchemaComplexContentRestriction contentRestriction)
                 {
                     _derivationMethod = XSDerivationMethod.Restriction;
                     if (contentRestriction.BaseTypeName is XmlQualifiedName qualifiedName)
-                        _baseTypeName = new XMLExpandedName(qualifiedName);
+                        _baseTypeName = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
 
                     if (contentRestriction.Particle is XmlSchemaParticle particle)
                         _content = XMLSchemaSerializer.CreateInstance(particle);
+
+                    if (contentRestriction.AnyAttribute is XmlSchemaAnyAttribute anyAttribute)
+                        _attributeWildcard = XMLSchemaSerializer.CreateXSWildcard(anyAttribute);
                 }
                 else
+                {
                     _derivationMethod = XSDerivationMethod.EmptyRef;
+
+                    if (_type.Particle is XmlSchemaParticle particle)
+                        _content = XMLSchemaSerializer.CreateInstance(particle);
+                }
             }
             else
             {
                 _contentModel = XSContentModel.EmptyRef;
-
+                
                 if (_type.Particle is XmlSchemaParticle particle)
                     _content = XMLSchemaSerializer.CreateInstance(particle);
             }
+            
+            Attributes.Inserted -= Attributes_Inserted;
+            foreach (XmlSchemaObject item in _type.Attributes)
+            {
+                IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
+                component.BindToContainer(RootContainer, this);
+                Attributes.Add(component);
+                Components.Add(component);
+            }
+            Attributes.Inserted += Attributes_Inserted;
         }
 
         private void OnSetContentModelDerivation()

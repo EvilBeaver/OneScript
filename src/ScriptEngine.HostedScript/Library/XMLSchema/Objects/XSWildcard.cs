@@ -17,8 +17,86 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     {
         private XmlSchemaAnnotated _wildcard;
         private XSAnnotation _annotation;
+        private XSProcessContents _processContents;
+        private string _namespace;
+        private XSNamespaceConstraintCategory _namespaceConstraint;
 
         private XSWildcard() { }
+
+        internal XSWildcard(XmlSchemaAny xmlAny)
+        {
+            _wildcard = xmlAny;
+
+            if (_wildcard.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
+            _processContents = (XSProcessContents)xmlAny.ProcessContents;
+            _namespace = xmlAny.Namespace;
+
+            SetNamespaceConstraint();
+        }
+        internal XSWildcard(XmlSchemaAnyAttribute xmlAnyAttribute)
+        {
+            _wildcard = xmlAnyAttribute;
+
+            if (_wildcard.Annotation is XmlSchemaAnnotation annotation)
+            {
+                _annotation = XMLSchemaSerializer.CreateXSAnnotation(annotation);
+                _annotation.BindToContainer(RootContainer, this);
+            }
+
+            _processContents = (XSProcessContents)xmlAnyAttribute.ProcessContents;
+            _namespace = xmlAnyAttribute.Namespace;
+
+            SetNamespaceConstraint();
+        }
+
+        private void OnSetProcessContents()
+        {
+            XmlSchemaContentProcessing processContents = (XmlSchemaContentProcessing)_processContents;
+
+            if (_wildcard is XmlSchemaAny xmlAny)
+                xmlAny.ProcessContents = processContents;
+
+            else if (_wildcard is XmlSchemaAnyAttribute xmlAnyAttribute)
+                xmlAnyAttribute.ProcessContents = processContents;
+        }
+
+        private void OnSetNamespace()
+        {
+            SetNamespaceConstraint();
+
+            if (_wildcard is XmlSchemaAny xmlAny)
+                xmlAny.Namespace = _namespace;
+
+            else if (_wildcard is XmlSchemaAnyAttribute xmlAnyAttribute)
+                xmlAnyAttribute.Namespace = _namespace;
+        }
+
+        private void SetNamespaceConstraint()
+        {
+            switch (_namespace)
+            {
+                case "##targetNamespace":
+                    _namespaceConstraint = XSNamespaceConstraintCategory.Set;
+                    break;
+
+                case "##any":
+                    _namespaceConstraint = XSNamespaceConstraintCategory.Any;
+                    break;
+
+                case "##other":
+                    _namespaceConstraint = XSNamespaceConstraintCategory.Not;
+                    break;
+
+                default:
+                    _namespaceConstraint = XSNamespaceConstraintCategory.EmptyRef;
+                    break;
+            }
+        }
 
         #region OneScript
 
@@ -31,7 +109,8 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _annotation = value;
-                _wildcard.Annotation = value.InternalObject;
+                _annotation?.BindToContainer(RootContainer, this);
+                XSAnnotation.SetComponentAnnotation(_annotation, _wildcard);
             }
         }
 
@@ -51,32 +130,29 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public XSComponentType ComponentType => XSComponentType.Wildcard;
 
         [ContextProperty("ВидОбработкиСодержимого", "ProcessContents")]
-        public XSProcessContents ProcessContents { get; set; }
-
-        [ContextProperty("КатегорияОграниченияПространствИмен", "NamespaceConstraintCategory")]
-        public XSNamespaceConstraintCategory NamespaceConstraintCategory
+        public XSProcessContents ProcessContents
         {
-            get
+            get => _processContents;
+            set
             {
-                switch (LexicalNamespaceConstraint)
-                {
-                    case "##targetNamespace":
-                        return XSNamespaceConstraintCategory.Set;
-
-                    case "##any":
-                        return XSNamespaceConstraintCategory.Any;
-
-                    case "##other":
-                        return XSNamespaceConstraintCategory.Not;
-
-                    default:
-                        return XSNamespaceConstraintCategory.EmptyRef;
-                }
+                _processContents = value;
+                OnSetProcessContents();
             }
         }
 
+        [ContextProperty("КатегорияОграниченияПространствИмен", "NamespaceConstraintCategory")]
+        public XSNamespaceConstraintCategory NamespaceConstraintCategory => _namespaceConstraint;
+
         [ContextProperty("ЛексическоеЗначениеОграниченияПространствИмен", "LexicalNamespaceConstraint")]
-        public string LexicalNamespaceConstraint { get; set; }
+        public string LexicalNamespaceConstraint
+        {
+            get => _namespace;
+            set
+            {
+                _namespace = value;
+                OnSetNamespace();
+            }
+        }
 
         #endregion
 
@@ -120,21 +196,27 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
             if (container is XSParticle)
             {
-                _wildcard = new XmlSchemaAny()
+                if (!(_wildcard is XmlSchemaAny))
                 {
-                    Annotation = Annotation?.InternalObject,
-                    ProcessContents = (XmlSchemaContentProcessing)ProcessContents,
-                    Namespace = LexicalNamespaceConstraint
-                };
+                    _wildcard = new XmlSchemaAny()
+                    {
+                        Annotation = _annotation?.InternalObject
+                    };
+                    OnSetProcessContents();
+                    OnSetNamespace();
+                }
             }
             else if ((container is XSComplexTypeDefinition) || (container is XSAttributeGroupDefinition))
             {
-                _wildcard = new XmlSchemaAnyAttribute()
+                if (!(_wildcard is XmlSchemaAnyAttribute))
                 {
-                    Annotation = Annotation?.InternalObject,
-                    ProcessContents = (XmlSchemaContentProcessing)ProcessContents,
-                    Namespace = LexicalNamespaceConstraint
-                };
+                    _wildcard = new XmlSchemaAnyAttribute()
+                    {
+                        Annotation = _annotation?.InternalObject
+                    };
+                    OnSetProcessContents();
+                    OnSetNamespace();
+                }
             }
             else
             {
