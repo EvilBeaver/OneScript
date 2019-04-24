@@ -15,6 +15,9 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript
 {
+    /// <summary>
+    /// Контекст позволяет обращаться к макетам приложения
+    /// </summary>
     [GlobalContext(Category = "Работа с макетами", ManualRegistration = true)]
     public class TemplateStorage : GlobalContextBase<TemplateStorage>, IDisposable
     {
@@ -44,6 +47,11 @@ namespace ScriptEngine.HostedScript
         }
         
         
+        /// <summary>
+        /// Получает ранее зарегистрированный макет.
+        /// </summary>
+        /// <param name="templateName">Имя макета</param>
+        /// <returns>Строка или ДвоичныеДанные, в зависимости от типа макета.</returns>
         [ContextMethod("ПолучитьМакет")]
         public IValue GetTemplate(string templateName)
         {
