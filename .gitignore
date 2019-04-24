@@ -64,3 +64,5 @@ TestResult.xml
 tests/component/Component.dll
 
 src/oscript/Properties/launchSettings\.json
+
+*.DotSettings
