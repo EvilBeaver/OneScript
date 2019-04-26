@@ -387,16 +387,19 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("ПрочитатьСимволы", "ReadChars")]
         public string ReadChars(int count = 0, IValue encoding = null)
         {
+            if (count == 0)
+                count = (int)(_reader.BaseStream.Length - _reader.BaseStream.Position) * sizeof(char);
+
             char[] chars;
-            if (encoding == null)
+            if(encoding == null)
                 chars = _reader.ReadChars(count);
             else
             {
-                var bytes = _reader.ReadBytes(count * sizeof(char));
                 var enc = TextEncodingEnum.GetEncoding(encoding);
-                chars = enc.GetChars(bytes);
+                _reader = new BinaryReader(_reader.BaseStream, _workingEncoding);
+                chars = _reader.ReadChars(count);
             }
-
+            
             return new String(chars);
         }
 
