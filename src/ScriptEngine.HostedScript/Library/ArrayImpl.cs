@@ -187,6 +187,11 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name = "По количеству элементов")]
         public static ArrayImpl Constructor(IValue[] dimensions)
         {
+            if (dimensions.Length == 1 && dimensions[0].GetRawValue() is FixedArrayImpl)
+            {
+                return Constructor(dimensions[0]);
+            }
+            
             ArrayImpl cloneable = null;
             for (int dim = dimensions.Length - 1; dim >= 0; dim--)
             {
@@ -206,6 +211,15 @@ namespace ScriptEngine.HostedScript.Library
 
             return cloneable;
 
+        }
+
+        [ScriptConstructor(Name = "На основании фиксированного массива")]
+        public static ArrayImpl Constructor(IValue fixedArray)
+        {
+            if (!(fixedArray.GetRawValue() is FixedArrayImpl val))
+                throw RuntimeException.InvalidArgumentType();
+            
+            return new ArrayImpl(val);
         }
 
     }

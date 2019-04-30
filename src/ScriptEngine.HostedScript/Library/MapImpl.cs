@@ -15,6 +15,18 @@ namespace ScriptEngine.HostedScript.Library
     {
         private readonly Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>(new GenericIValueComparer());
 
+        public MapImpl()
+        {
+        }
+
+        public MapImpl(IEnumerable<KeyAndValueImpl> source)
+        {
+            foreach (var kv in source)
+            {
+                _content.Add(kv.Key.GetRawValue(), kv.Value.GetRawValue());
+            }
+        }
+        
         public override bool IsIndexed
         {
             get
@@ -121,6 +133,15 @@ namespace ScriptEngine.HostedScript.Library
         public static MapImpl Constructor()
         {
             return new MapImpl();
+        }
+        
+        [ScriptConstructor(Name = "Из фиксированного соответствия")]
+        public static MapImpl Constructor(IValue source)
+        {
+            if (!(source.GetRawValue() is FixedMapImpl fix))
+                throw RuntimeException.InvalidArgumentType();
+            
+            return new MapImpl(fix);
         }
     }
 }
