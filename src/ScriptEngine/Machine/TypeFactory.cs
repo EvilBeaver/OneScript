@@ -67,8 +67,8 @@ namespace ScriptEngine.Machine
                 ++paramIndex;
             }
 
-            //var typeCast = typeof(ContextValuesMarshaller).GetMethod("ConvertParam", new[]{typeof(IValue),typeof(Type)});
-            //System.Diagnostics.Debug.Assert(typeCast != null);
+            var typeCast = typeof(ContextValuesMarshaller).GetMethod("ConvertParam", new[]{typeof(IValue),typeof(Type)});
+            System.Diagnostics.Debug.Assert(typeCast != null);
 
             for (int i = 0; i < arguments.Length; i++)
             {
@@ -89,11 +89,12 @@ namespace ScriptEngine.Machine
                     argsToPass.Add(Expression.ArrayIndex(argsParam, Expression.Constant(i)));
                 else
                 {
-                    argsToPass.Add(
-                        Expression.Convert(Expression.ArrayIndex(argsParam, 
+                    var conversionArg = Expression.ArrayIndex(argsParam,
                                                               Expression.Constant(i)
-                                                              )
-                                        ,parameters[paramIndex].ParameterType)
+                                                              );
+                    var marshalledArg = Expression.Call(typeCast, conversionArg, Expression.Constant(parameters[paramIndex].ParameterType));
+                    argsToPass.Add(
+                        Expression.Convert(marshalledArg, parameters[paramIndex].ParameterType)
                         );
                 }
 
