@@ -44,7 +44,6 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         protected ScriptDrivenObject(LoadedModule module)
-            : base(TypeManager.GetTypeByName("Object"))
         {
             _module = module;
             InitOwnData();
