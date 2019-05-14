@@ -436,7 +436,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ТекущаяУниверсальнаяДатаВМиллисекундах", "CurrentUniversalDateInMilliseconds")]
         public decimal CurrentUniversalDateInMilliseconds()
         {
-            return (decimal)DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
+            return Math.Round((decimal)DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond, 0);
         }
 
         /// <summary>
