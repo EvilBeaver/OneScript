@@ -160,22 +160,22 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             List<ValueTableColumn> processing_list = new List<ValueTableColumn>();
             if (ColumnNames != null)
             {
-
                 if (ColumnNames.Trim().Length == 0)
                 {
                     // Передали пустую строку вместо списка колонок
                     return processing_list;
                 }
 
-                string[] column_names = ColumnNames.Split(',');
-                foreach (string name in column_names)
+                foreach (string column_name in ColumnNames.Split(','))
                 {
-                    ValueTableColumn Column = Columns.FindColumnByName(name.Trim());
+                    string name = column_name.Trim();
+                    ValueTableColumn Column = Columns.FindColumnByName(name);
 
                     if (Column == null)
-                        throw RuntimeException.PropNotFoundException(name.Trim());
+                        throw RuntimeException.PropNotFoundException(name);
 
-                    processing_list.Add(Column);
+                    if (processing_list.Find( x=> x.Name==name ) == null)
+                        processing_list.Add(Column);
                 }
             }
             else if (!EmptyListInCaseOfNull)
