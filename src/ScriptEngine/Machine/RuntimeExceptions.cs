@@ -152,7 +152,7 @@ namespace ScriptEngine.Machine
 
         public static RuntimeException WrongColumnNameException()
         {
-            return new RuntimeException(string.Format("Неверное имя колонки"));
+            return new RuntimeException("Неверное имя колонки");
         }
 
         public static RuntimeException WrongColumnNameException(string columnName)
