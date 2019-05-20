@@ -150,7 +150,6 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Деление на ноль");
         }
 
-
     }
 
     public class WrongStackConditionException : ApplicationException

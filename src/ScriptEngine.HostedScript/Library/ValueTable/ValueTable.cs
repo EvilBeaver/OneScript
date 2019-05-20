@@ -160,22 +160,22 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             List<ValueTableColumn> processing_list = new List<ValueTableColumn>();
             if (ColumnNames != null)
             {
-
                 if (ColumnNames.Trim().Length == 0)
                 {
                     // Передали пустую строку вместо списка колонок
                     return processing_list;
                 }
 
-                string[] column_names = ColumnNames.Split(',');
-                foreach (string name in column_names)
+                foreach (string column_name in ColumnNames.Split(','))
                 {
-                    ValueTableColumn Column = Columns.FindColumnByName(name.Trim());
+                    string name = column_name.Trim();
+                    ValueTableColumn Column = Columns.FindColumnByName(name);
 
                     if (Column == null)
-                        throw RuntimeException.PropNotFoundException(name.Trim());
+                        throw WrongColumnNameException(name);
 
-                    processing_list.Add(Column);
+                    if (processing_list.Find( x=> x.Name==name ) == null)
+                        processing_list.Add(Column);
                 }
             }
             else if (!EmptyListInCaseOfNull)
@@ -281,7 +281,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             {
                 ValueTableColumn Column = Columns.FindColumnByName(kv.Key.AsString());
                 if (Column == null)
-                    throw RuntimeException.PropNotFoundException(kv.Key.AsString());
+                    throw WrongColumnNameException(kv.Key.AsString());
 
                 IValue current = Row.Get(Column);
                 if (!current.Equals(kv.Value))
@@ -350,6 +350,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             List<ValueTableColumn> GroupColumns = GetProcessingColumnList(groupColumnNames, true);
             List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(aggregateColumnNames, true);
+
+            foreach (ValueTableColumn group_column in GroupColumns )
+                if ( AggregateColumns.Find(x => x.Name==group_column.Name)!=null )
+                    throw ColumnsMixedException(group_column.Name);
 
             List<ValueTableRow> new_rows = new List<ValueTableRow>();
 
@@ -569,7 +573,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             {
                 string[] description = column.Trim().Split(' ');
                 if (description.Count() == 0)
-                    throw RuntimeException.PropNotFoundException(""); // TODO: WrongColumnNameException
+                    throw WrongColumnNameException();
 
                 ValueTableSortRule Desc = new ValueTableSortRule();
                 Desc.Column = this.Columns.FindColumnByName(description[0]);
@@ -677,6 +681,22 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         public static ValueTable Constructor()
         {
             return new ValueTable();
+        }
+
+
+        private static RuntimeException WrongColumnNameException()
+        {
+            return new RuntimeException("Неверное имя колонки");
+        }
+
+        private static RuntimeException WrongColumnNameException(string columnName)
+        {
+            return new RuntimeException(string.Format("Неверное имя колонки '{0}'", columnName));
+        }
+
+        private static RuntimeException ColumnsMixedException(string columnName)
+        {
+            return new RuntimeException(string.Format("Колонка '{0}' не может одновременно быть колонкой группировки и колонкой суммирования", columnName));
         }
     }
 }
