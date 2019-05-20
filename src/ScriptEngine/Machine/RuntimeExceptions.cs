@@ -150,21 +150,6 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Деление на ноль");
         }
 
-        public static RuntimeException WrongColumnNameException()
-        {
-            return new RuntimeException("Неверное имя колонки");
-        }
-
-        public static RuntimeException WrongColumnNameException(string columnName)
-        {
-            return new RuntimeException(string.Format("Неверное имя колонки '{0}'", columnName));
-        }
-
-        public static RuntimeException ColumnsMixedException(string columnName)
-        {
-            return new RuntimeException(string.Format("Колонка '{0}' не может одновременно быть колонкой группировки и колонкой суммирования", columnName));
-        }
-
     }
 
     public class WrongStackConditionException : ApplicationException

@@ -172,7 +172,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                     ValueTableColumn Column = Columns.FindColumnByName(name);
 
                     if (Column == null)
-                        throw RuntimeException.WrongColumnNameException(name);
+                        throw WrongColumnNameException(name);
 
                     if (processing_list.Find( x=> x.Name==name ) == null)
                         processing_list.Add(Column);
@@ -281,7 +281,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             {
                 ValueTableColumn Column = Columns.FindColumnByName(kv.Key.AsString());
                 if (Column == null)
-                    throw RuntimeException.WrongColumnNameException(kv.Key.AsString());
+                    throw WrongColumnNameException(kv.Key.AsString());
 
                 IValue current = Row.Get(Column);
                 if (!current.Equals(kv.Value))
@@ -353,7 +353,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
             foreach (ValueTableColumn group_column in GroupColumns )
                 if ( AggregateColumns.Find(x => x.Name==group_column.Name)!=null )
-                    throw RuntimeException.ColumnsMixedException(group_column.Name);
+                    throw ColumnsMixedException(group_column.Name);
 
             List<ValueTableRow> new_rows = new List<ValueTableRow>();
 
@@ -573,7 +573,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             {
                 string[] description = column.Trim().Split(' ');
                 if (description.Count() == 0)
-                    throw RuntimeException.WrongColumnNameException();
+                    throw WrongColumnNameException();
 
                 ValueTableSortRule Desc = new ValueTableSortRule();
                 Desc.Column = this.Columns.FindColumnByName(description[0]);
@@ -681,6 +681,22 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         public static ValueTable Constructor()
         {
             return new ValueTable();
+        }
+
+
+        private static RuntimeException WrongColumnNameException()
+        {
+            return new RuntimeException("Неверное имя колонки");
+        }
+
+        private static RuntimeException WrongColumnNameException(string columnName)
+        {
+            return new RuntimeException(string.Format("Неверное имя колонки '{0}'", columnName));
+        }
+
+        private static RuntimeException ColumnsMixedException(string columnName)
+        {
+            return new RuntimeException(string.Format("Колонка '{0}' не может одновременно быть колонкой группировки и колонкой суммирования", columnName));
         }
     }
 }
