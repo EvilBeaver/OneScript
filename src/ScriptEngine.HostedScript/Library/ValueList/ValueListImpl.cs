@@ -213,9 +213,9 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         }
 
         [ContextMethod("СортироватьПоПредставлению", "SortByPresentation")]
-        public void SortByPresentation(SortDirectionEnum direction)
+        public void SortByPresentation(SortDirectionEnum? direction = null)
         {
-            if (direction == SortDirectionEnum.Asc)
+            if (direction == null || direction == SortDirectionEnum.Asc)
             {
                 _items.Sort((x, y) => x.Presentation.CompareTo(y.Presentation));
             }
