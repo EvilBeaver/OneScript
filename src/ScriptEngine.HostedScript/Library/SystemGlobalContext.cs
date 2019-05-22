@@ -423,16 +423,6 @@ namespace ScriptEngine.HostedScript.Library
             return errInfo.DetailedDescription;
         }
 
-        /// <summary>
-        /// Текущая дата машины
-        /// </summary>
-        /// <returns>Дата</returns>
-        [ContextMethod("ТекущаяДата", "CurrentDate")]
-        public DateTime CurrentDate()
-        {
-            return DateTime.Now;
-        }
-
         [ContextMethod("ТекущаяУниверсальнаяДатаВМиллисекундах", "CurrentUniversalDateInMilliseconds")]
         public long CurrentUniversalDateInMilliseconds()
         {

@@ -2071,7 +2071,9 @@ namespace ScriptEngine.Machine
 
         private void CurrentDate(int arg)
         {
-            _operationStack.Push(ValueFactory.Create(DateTime.Now));
+            var date = DateTime.Now;
+            date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+            _operationStack.Push(ValueFactory.Create(date));
             NextInstruction();
         }
 

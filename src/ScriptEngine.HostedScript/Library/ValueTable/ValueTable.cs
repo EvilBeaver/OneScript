@@ -345,9 +345,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Свернуть", "GroupBy")]
         public void GroupBy(string groupColumnNames, string aggregateColumnNames = null)
         {
-
-            // TODO: Сворачиваем за N^2. Переделать на N*log(N)
-
             List<ValueTableColumn> GroupColumns = GetProcessingColumnList(groupColumnNames, true);
             List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(aggregateColumnNames, true);
 
@@ -355,72 +352,78 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 if ( AggregateColumns.Find(x => x.Name==group_column.Name)!=null )
                     throw ColumnsMixedException(group_column.Name);
 
-            List<ValueTableRow> new_rows = new List<ValueTableRow>();
+            var uniqueRows = new Dictionary<ValueTableRow, ValueTableRow>(new RowsByColumnsEqComparer(GroupColumns) );
+            int new_idx = 0;
 
             foreach (ValueTableRow row in _rows)
             {
-
-                StructureImpl search = new StructureImpl();
-
-                foreach (ValueTableColumn Column in GroupColumns)
-                    search.Insert(Column.Name, row.Get(Column));
-
-                ValueTableRow new_row = null;
-
-                foreach (ValueTableRow nrow in new_rows)
+                if (uniqueRows.ContainsKey(row))
                 {
-                    if (CheckFilterCriteria(nrow, search))
+                    ValueTableRow old_row = uniqueRows[row];
+
+                    foreach (var Column in AggregateColumns)
                     {
-                        new_row = nrow;
-                        break;
+                        IValue current = row.Get(Column);
+                        if (current.DataType == DataType.Number)
+                        {
+                            decimal sum = old_row.Get(Column).AsNumber() + current.AsNumber();
+                            old_row.Set(Column, ValueFactory.Create(sum));
+                        }
                     }
                 }
-
-                if (new_row == null)
+                else
                 {
-                    new_row = new ValueTableRow(this);
-                    foreach (ValueTableColumn Column in GroupColumns)
+                    uniqueRows.Add(row, row);
+
+                    ValueTableRow new_row = _rows[new_idx++];
+
+                    foreach (var Column in GroupColumns)
                         new_row.Set(Column, row.Get(Column));
 
-                    new_rows.Add(new_row);
+                    foreach (var Column in AggregateColumns)
+                        if (new_row.Get(Column).DataType != DataType.Number)
+                            new_row.Set(Column, ValueFactory.Create(0));
                 }
-
-                foreach (ValueTableColumn Column in AggregateColumns)
-                {
-                    IValue old = new_row.Get(Column);
-                    decimal d_old;
-
-                    if (old.DataType != Machine.DataType.Number)
-                        d_old = 0;
-                    else
-                        d_old = old.AsNumber();
-
-                    IValue current = row.Get(Column);
-                    decimal d_current;
-
-                    if (current.DataType != Machine.DataType.Number)
-                        d_current = 0;
-                    else
-                        d_current = current.AsNumber();
-
-                    new_row.Set(Column, ValueFactory.Create(d_old + d_current));
-                }
-
             }
 
-            _rows.Clear();
-            _rows.AddRange(new_rows);
+            _rows.RemoveRange(new_idx, _rows.Count()-new_idx);
 
+            int i = 0;
+            while (i < _columns.Count())
             {
-                int i = 0;
-                while (i < _columns.Count())
+                ValueTableColumn Column = _columns.FindColumnByIndex(i);
+                if (GroupColumns.IndexOf(Column) == -1 && AggregateColumns.IndexOf(Column) == -1)
+                    _columns.Delete(Column);
+                else
+                    ++i;
+            }
+        }
+
+        private class RowsByColumnsEqComparer : IEqualityComparer<ValueTableRow>
+        {
+            private List<ValueTableColumn> _columns;
+
+            public RowsByColumnsEqComparer(List<ValueTableColumn> columns)
+            {
+                _columns = columns;
+            }
+
+            public bool Equals(ValueTableRow row1, ValueTableRow row2)
+            {
+                foreach (var column in _columns)
                 {
-                    ValueTableColumn Column = _columns.FindColumnByIndex(i);
-                    if (GroupColumns.IndexOf(Column) == -1 && AggregateColumns.IndexOf(Column) == -1)
-                        _columns.Delete(Column);
-                    else
-                        ++i;
+                    if (!row1.Get(column).Equals(row2.Get(column)))
+                        return false;
                 }
+                return true;
+            }
+
+            public int GetHashCode(ValueTableRow row)
+            {
+                int hash = 0;
+                foreach (var column in _columns)
+                    hash ^= row.Get(column).AsString().GetHashCode();
+                return hash;
             }
         }
 
