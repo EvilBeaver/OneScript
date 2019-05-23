@@ -111,6 +111,12 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Вставить", "Insert")]
         public void Insert(int index, IValue value)
         {
+            if (index < 0)
+                throw IndexOutOfBoundsException();
+
+            if (index > _values.Count)
+                Extend(index - _values.Count);
+
             _values.Insert(index, value);
         }
 
@@ -150,6 +156,14 @@ namespace ScriptEngine.HostedScript.Library
         public void Set(int index, IValue value)
         {
             _values[index] = value;
+        }
+
+        private void Extend(int count)
+        {
+            for (int i = 0; i < count; ++i)
+            {
+                _values.Add(ValueFactory.Create());
+            }
         }
 
         private static void FillArray(ArrayImpl currentArray, int bound)
@@ -222,5 +236,9 @@ namespace ScriptEngine.HostedScript.Library
             return new ArrayImpl(val);
         }
 
+        private static RuntimeException IndexOutOfBoundsException()
+        {
+            return new RuntimeException("Значение индекса выходит за пределы диапазона");
+        }
     }
 }
