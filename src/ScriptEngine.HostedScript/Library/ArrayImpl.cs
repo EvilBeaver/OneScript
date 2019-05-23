@@ -45,7 +45,7 @@ namespace ScriptEngine.HostedScript.Library
         public override void SetIndexedValue(IValue index, IValue val)
         {
             if (index.DataType == DataType.Number)
-                _values[(int)index.AsNumber()] = val;
+                Set((int)index.AsNumber(), val);
             else
                 base.SetIndexedValue(index, val);
         }
@@ -137,6 +137,9 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Удалить", "Delete")]
         public void Remove(int index)
         {
+            if (index < 0 || index >= _values.Count)
+                throw IndexOutOfBoundsException();
+
             _values.RemoveAt(index);
         }
 
@@ -149,12 +152,18 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Получить", "Get")]
         public IValue Get(int index)
         {
+            if (index < 0 || index >= _values.Count)
+                throw IndexOutOfBoundsException();
+
             return _values[index];
         }
 
         [ContextMethod("Установить", "Set")]
         public void Set(int index, IValue value)
         {
+            if (index < 0 || index >= _values.Count)
+                throw IndexOutOfBoundsException();
+
             _values[index] = value;
         }
 
