@@ -45,7 +45,7 @@ namespace ScriptEngine.HostedScript.Library
         public override void SetIndexedValue(IValue index, IValue val)
         {
             if (index.DataType == DataType.Number)
-                _values[(int)index.AsNumber()] = val;
+                Set((int)index.AsNumber(), val);
             else
                 base.SetIndexedValue(index, val);
         }
@@ -111,6 +111,12 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Вставить", "Insert")]
         public void Insert(int index, IValue value)
         {
+            if (index < 0)
+                throw IndexOutOfBoundsException();
+
+            if (index > _values.Count)
+                Extend(index - _values.Count);
+
             _values.Insert(index, value);
         }
 
@@ -131,6 +137,9 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Удалить", "Delete")]
         public void Remove(int index)
         {
+            if (index < 0 || index >= _values.Count)
+                throw IndexOutOfBoundsException();
+
             _values.RemoveAt(index);
         }
 
@@ -143,13 +152,27 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Получить", "Get")]
         public IValue Get(int index)
         {
+            if (index < 0 || index >= _values.Count)
+                throw IndexOutOfBoundsException();
+
             return _values[index];
         }
 
         [ContextMethod("Установить", "Set")]
         public void Set(int index, IValue value)
         {
+            if (index < 0 || index >= _values.Count)
+                throw IndexOutOfBoundsException();
+
             _values[index] = value;
+        }
+
+        private void Extend(int count)
+        {
+            for (int i = 0; i < count; ++i)
+            {
+                _values.Add(ValueFactory.Create());
+            }
         }
 
         private static void FillArray(ArrayImpl currentArray, int bound)
@@ -222,5 +245,9 @@ namespace ScriptEngine.HostedScript.Library
             return new ArrayImpl(val);
         }
 
+        private static RuntimeException IndexOutOfBoundsException()
+        {
+            return new RuntimeException("Значение индекса выходит за пределы диапазона");
+        }
     }
 }
