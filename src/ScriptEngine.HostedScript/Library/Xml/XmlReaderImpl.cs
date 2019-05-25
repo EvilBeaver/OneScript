@@ -517,7 +517,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Create()
+        public static XmlReaderImpl Create()
         {
             return new XmlReaderImpl();
         }

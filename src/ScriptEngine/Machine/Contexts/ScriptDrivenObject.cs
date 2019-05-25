@@ -44,7 +44,6 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         protected ScriptDrivenObject(LoadedModule module)
-            : base(TypeManager.GetTypeByName("Object"))
         {
             _module = module;
             InitOwnData();
@@ -359,6 +358,11 @@ namespace ScriptEngine.Machine.Contexts
         public override int GetPropCount()
         {
             return VARIABLE_COUNT + _module.ExportedProperies.Length;
+        }
+        
+        public override int GetMethodsCount()
+        {
+            return METHOD_COUNT + _module.ExportedMethods.Length;
         }
 
         public override string GetPropName(int propNum)

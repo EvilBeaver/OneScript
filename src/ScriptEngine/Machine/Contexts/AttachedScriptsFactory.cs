@@ -199,7 +199,7 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         [ScriptConstructor(ParametrizeWithClassName = true)]
-        public static IRuntimeContextInstance ScriptFactory(string typeName, IValue[] arguments)
+        public static UserScriptContextInstance ScriptFactory(string typeName, IValue[] arguments)
         {
             var module = _instance._loadedModules[typeName];
 

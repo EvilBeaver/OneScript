@@ -18,7 +18,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTableColumn>
     {
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
-        private int _internal_counter = 0; // Нарастающий счётчик определителей колонок
+ 
+        private StringComparer NamesComparer = StringComparer.OrdinalIgnoreCase;
 
         private readonly ValueTable _owner;
 
@@ -41,7 +42,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);
 
-            var column = new ValueTableColumn(this, ++_internal_counter, name, title, type, width);
+            var column = new ValueTableColumn(this, name, title, type, width);
             _columns.Add(column);
 
             return column;
@@ -62,7 +63,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);
 
-            ValueTableColumn column = new ValueTableColumn(this, ++_internal_counter, name, title, type, width);
+            ValueTableColumn column = new ValueTableColumn(this, name, title, type, width);
             _columns.Insert(index, column);
 
             return column;
@@ -122,12 +123,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public ValueTableColumn FindColumnByName(string name)
         {
-            var Comparer = StringComparer.OrdinalIgnoreCase;
-            return _columns.Find(column => Comparer.Equals(name, column.Name));
-        }
-        public ValueTableColumn FindColumnById(int id)
-        {
-            return _columns.Find(column => column.ID == id);
+            return _columns.Find(column => NamesComparer.Equals(name, column.Name));
         }
 
         public ValueTableColumn FindColumnByIndex(int index)
@@ -155,10 +151,10 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public override int FindProperty(string name)
         {
-            ValueTableColumn Column = FindColumnByName(name);
-            if (Column == null)
+            int idx = _columns.FindIndex(column => NamesComparer.Equals(name, column.Name));
+            if (idx == -1)
                 throw RuntimeException.PropNotFoundException(name);
-            return Column.ID;
+            return idx;
         }
 
         public override string GetPropName(int propNum)
@@ -168,7 +164,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public override IValue GetPropValue(int propNum)
         {
-            return FindColumnById(propNum);
+            return FindColumnByIndex(propNum);
         }
 
         public override bool IsPropWritable(int propNum)
@@ -208,10 +204,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         {
             if (index.DataType == DataType.String)
             {
-                ValueTableColumn Column = FindColumnByName(index.AsString());
-                if (Column == null)
-                    throw RuntimeException.PropNotFoundException(index.AsString());
-                return Column.ID;
+                return FindProperty(index.AsString());
             }
 
             if (index.DataType == DataType.Number)
@@ -226,7 +219,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             var column = index.GetRawValue() as ValueTableColumn;
             if (column != null)
             {
-                return column.ID;
+                return IndexOf(column);
             }
 
             throw RuntimeException.InvalidArgumentType();

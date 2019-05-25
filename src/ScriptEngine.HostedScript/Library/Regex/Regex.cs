@@ -102,7 +102,7 @@ namespace ScriptEngine.HostedScript.Library.Regex
         /// </summary>
         /// <param name="pattern">Строка-шаблон регулярного выражения.</param>
         [ScriptConstructor(Name = "По регулярному выражению")]
-        public static IRuntimeContextInstance Constructor(IValue pattern)
+        public static RegExpImpl Constructor(IValue pattern)
         {
             var regex = new RegExpImpl(pattern.AsString());
             return regex;

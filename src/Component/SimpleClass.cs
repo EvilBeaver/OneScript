@@ -25,13 +25,13 @@ namespace Component
 		public IValue AnyValueProperty { get; set; }
 
 		[ScriptConstructor]
-		public static IRuntimeContextInstance Constructor()
+		public static SimpleClass Constructor()
 		{
 			return new SimpleClass();
 		}
 
 		[ScriptConstructor]
-		public static IRuntimeContextInstance Constructor(IValue initialProperty)
+		public static SimpleClass Constructor(IValue initialProperty)
 		{
 			var result = new SimpleClass();
 			result.IntProperty = ContextValuesMarshaller.ConvertParam<int>(initialProperty);

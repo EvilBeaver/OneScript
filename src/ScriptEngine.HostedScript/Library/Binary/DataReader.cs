@@ -64,7 +64,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
         /// Значение по умолчанию: ВК + ПС. </param>
         [ScriptConstructor(Name = "На основании двоичных данных или имени файла")]
-        public static IRuntimeContextInstance Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null)
+        public static DataReader Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = "\n", string convertibleSplitterOfLines = null)
         {
             if (dataSource.DataType == DataType.String)
             {
@@ -302,7 +302,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         {
             return _reader.ReadByte();
         }
-        
+
         /// <summary>
         /// 
         /// Прочитать байты из потока в БуферДвоичныхДанных.
@@ -314,7 +314,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// </remarks>
         ///
         /// <param name="buffer">
-        /// Буфер двоичных данных, в который требуется поместить прочитанные байты. </param>
+        /// Буфер двоичных данных, в который требуется поместить прочитанные байты. 
+        /// или Количество байтов, которые требуется прочитать (остальные параметры игнорируются).
+        /// Если не задано, то выполняется чтение всех данных до конца потока. </param>
         /// <param name="positionInBuffer">
         /// Позиция в буфере, начиная с которой требуется записать прочитанные данные. </param>
         /// <param name="number">
@@ -323,11 +325,15 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// <returns name="BinaryDataBuffer"/>
         ///
         [ContextMethod("ПрочитатьВБуферДвоичныхДанных", "ReadIntoBinaryDataBuffer")]
-        public IValue ReadIntoBinaryDataBuffer(IValue buffer, int positionInBuffer = 0, int number = 0)
+        public IValue ReadIntoBinaryDataBuffer(IValue buffer=null, int positionInBuffer = 0, int number = 0)
         {
-            if (buffer.DataType == DataType.Number && positionInBuffer == 0 && number == 0)
+            if (buffer==null)
             {
-                var stream = ReadSomeBytes(number);
+                return new BinaryDataBuffer(ReadSomeBytes(0).ToArray());
+            }
+            else if (buffer.DataType == DataType.Number)
+            {
+                var stream = ReadSomeBytes((int)buffer.AsNumber());
                 return new BinaryDataBuffer(stream.ToArray());
             }
             else
@@ -381,16 +387,19 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("ПрочитатьСимволы", "ReadChars")]
         public string ReadChars(int count = 0, IValue encoding = null)
         {
+            if (count == 0)
+                count = (int)(_reader.BaseStream.Length - _reader.BaseStream.Position) * sizeof(char);
+
             char[] chars;
-            if (encoding == null)
+            if(encoding == null)
                 chars = _reader.ReadChars(count);
             else
             {
-                var bytes = _reader.ReadBytes(count * sizeof(char));
                 var enc = TextEncodingEnum.GetEncoding(encoding);
-                chars = enc.GetChars(bytes);
+                _reader = new BinaryReader(_reader.BaseStream, _workingEncoding);
+                chars = _reader.ReadChars(count);
             }
-
+            
             return new String(chars);
         }
 
@@ -410,7 +419,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// <returns name="String"/>
         ///
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
-        public string ReadLine(IValue encoding = null, string lineSplitter = null)
+        public string ReadLine(IValue encoding = null, string lineSplitter = "\n")
         {
             var sr = new StreamReader(_reader.BaseStream);
             var textRdr = new CustomLineFeedStreamReader(sr, lineSplitter, false);

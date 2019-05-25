@@ -55,7 +55,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override System.Reflection.MethodInfo GetBaseDefinition()
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public override Type ReturnType
@@ -100,7 +100,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override MethodImplAttributes GetMethodImplementationFlags()
         {
-            throw new NotImplementedException();
+            return MethodImplAttributes.Managed;
         }
 
         public override ParameterInfo[] GetParameters()

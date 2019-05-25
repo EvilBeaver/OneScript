@@ -167,6 +167,7 @@ namespace ScriptEngine
         }
     }
 
+    [Serializable]
     public struct UserAddedScript
     {
         public UserAddedScriptType Type;

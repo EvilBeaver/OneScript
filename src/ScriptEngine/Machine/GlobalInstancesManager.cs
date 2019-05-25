@@ -17,10 +17,17 @@ namespace ScriptEngine.Machine
 
         internal static void Reset()
         {
+            foreach (var disposable in _instances
+                .Select(x=>x.Value)                   
+                .Where(x => x is IDisposable))
+            {
+                ((IDisposable)disposable).Dispose();
+            }
+            
             _instances.Clear();
         }
 
-        internal static void RegisterInstance(object instance)
+        public static void RegisterInstance(object instance)
         {
             _instances.Add(instance.GetType(), instance);
         }

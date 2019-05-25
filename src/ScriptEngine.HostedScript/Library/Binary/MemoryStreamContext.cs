@@ -52,7 +52,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Буфер, на основании которого будет создан поток или начальная емкость будущего потока. </param>
         ///
         [ScriptConstructor(Name = "По буферу или начальной емкости")]
-        public static IRuntimeContextInstance Constructor(IValue bufferOrCapacity)
+        public static MemoryStreamContext Constructor(IValue bufferOrCapacity)
         {
             if (bufferOrCapacity.DataType == DataType.Number)
             {
@@ -70,7 +70,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         ///
         ///
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static MemoryStreamContext Constructor()
         {
             return new MemoryStreamContext();
         }
@@ -280,14 +280,14 @@ namespace ScriptEngine.HostedScript.Library.Binary
             byte[] bytes;
             if (_shouldBeCopiedOnClose)
             {
-                _underlyingStream.Position = 0;
-                bytes = new byte[_underlyingStream.Length];
-                _underlyingStream.Read(bytes, 0, bytes.Length);
-
+                bytes = _underlyingStream.ToArray();
             }
             else
             {
                 bytes = _underlyingStream.GetBuffer();
+
+                if (_underlyingStream.Length < bytes.Length)
+                  Array.Resize(ref bytes, (int)_underlyingStream.Length);
             }
 
             _underlyingStream.Close();

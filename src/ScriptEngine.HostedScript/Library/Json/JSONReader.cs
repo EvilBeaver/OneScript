@@ -36,7 +36,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         }
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static JSONReader Constructor()
         {
             return new JSONReader();
         }

@@ -211,7 +211,7 @@ namespace ScriptEngine.HostedScript.Library
         private static readonly ContextMethodsMapper<StructureImpl> _methods = new ContextMethodsMapper<StructureImpl>();
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static StructureImpl Constructor()
         {
             return new StructureImpl();
         }
@@ -222,7 +222,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="strProperties">Строка с именами свойств, указанными через запятую.</param>
         /// <param name="args">Значения свойств. Каждое значение передается, как отдельный параметр.</param>
         [ScriptConstructor(Name = "По ключам и значениям")]
-        public static IRuntimeContextInstance Constructor(IValue strProperties, IValue[] args)
+        public static StructureImpl Constructor(IValue strProperties, IValue[] args)
         {
             var rawArgument = strProperties.GetRawValue();
             if (rawArgument is IEnumerable<KeyAndValueImpl>)

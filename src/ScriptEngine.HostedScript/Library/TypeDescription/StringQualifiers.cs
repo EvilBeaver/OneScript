@@ -76,7 +76,7 @@ namespace ScriptEngine.HostedScript.Library
 		}
 
 		[ScriptConstructor(Name = "На основании описания строки")]
-		public static IRuntimeContextInstance Constructor(IValue length = null,
+		public static StringQualifiers Constructor(IValue length = null,
 		                                                  IValue allowedLength = null)
 		{
 			var paramLength        = ContextValuesMarshaller.ConvertParam<int>(length);

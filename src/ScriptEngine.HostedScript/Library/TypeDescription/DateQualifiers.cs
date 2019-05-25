@@ -65,7 +65,7 @@ namespace ScriptEngine.HostedScript.Library
 		}
 
 		[ScriptConstructor(Name = "На основании описания даты")]
-		public static IRuntimeContextInstance Constructor(IValue dateFractions = null)
+		public static DateQualifiers Constructor(IValue dateFractions = null)
 		{
 			var paramDateFractions = ContextValuesMarshaller.ConvertParam<DateFractionsEnum>(dateFractions);
 			return new DateQualifiers(paramDateFractions);

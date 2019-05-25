@@ -85,7 +85,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// Определяет, будет ли экранироваться слеш (косая черта) при записи значения.
         /// Значение по умолчанию: Ложь. </param>
         [ScriptConstructor(Name = "По описанию параметров записи")]
-        public static IRuntimeContextInstance Constructor(IValue newLines = null, IValue paddingSymbols = null, IValue useDoubleQuotes = null, IValue escapeCharacters = null, IValue escapeAngleBrackets = null, IValue escapeLineTerminators = null, IValue escapeAmpersand = null, IValue escapeSingleQuotes = null, IValue escapeSlash = null)
+        public static JSONWriterSettings Constructor(IValue newLines = null, IValue paddingSymbols = null, IValue useDoubleQuotes = null, IValue escapeCharacters = null, IValue escapeAngleBrackets = null, IValue escapeLineTerminators = null, IValue escapeAmpersand = null, IValue escapeSingleQuotes = null, IValue escapeSlash = null)
         {
             return new JSONWriterSettings(newLines,
                                           (paddingSymbols == null ? null : paddingSymbols.AsString()),
@@ -104,7 +104,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// </summary>
         ///
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static JSONWriterSettings Constructor()
         {
             return new JSONWriterSettings();
         }
