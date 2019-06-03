@@ -218,7 +218,13 @@ namespace ScriptEngine.HostedScript.Library
             ArrayImpl cloneable = null;
             for (int dim = dimensions.Length - 1; dim >= 0; dim--)
             {
+                if (dimensions[dim] == null)
+                    throw RuntimeException.InvalidNthArgumentType(dim + 1);
+
                 int bound = (int)dimensions[dim].AsNumber();
+                if (bound <= 0)
+                    throw RuntimeException.InvalidNthArgumentValue(dim + 1);
+
                 var newInst = new ArrayImpl();
                 FillArray(newInst, bound);
                 if(cloneable != null)
