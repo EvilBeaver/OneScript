@@ -23,8 +23,6 @@ namespace ScriptEngine.HostedScript.Library
         public StructureImpl(string strProperties, params IValue[] values)
         {
             var props = strProperties.Split(',');
-            if (props.Length < values.Length)
-                throw RuntimeException.InvalidArgumentValue();
 
             for (int i = 0; i < props.Length; i++)
             {
