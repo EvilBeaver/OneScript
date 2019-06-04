@@ -24,17 +24,14 @@ namespace ScriptEngine.HostedScript.Library
         {
             var props = strProperties.Split(',');
 
-            for (int i = 0; i < props.Length; i++)
+            for (int i = 0, nprop = 0; i < props.Length; i++)
             {
-                props[i] = props[i].Trim();
-                if (i < values.Length)
-                {
-                    Insert(props[i], values[i]);
-                }
-                else
-                {
-                    Insert(props[i], null);
-                }
+                var prop = props[i].Trim();
+                if (prop.Equals(string.Empty))
+                    continue;
+
+                Insert(prop, nprop < values.Length ? values[nprop] : null);
+                ++nprop;
             }
         }
 
