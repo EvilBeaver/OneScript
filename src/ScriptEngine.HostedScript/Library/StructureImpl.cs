@@ -46,6 +46,9 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Вставить")]
         public void Insert(string name, IValue val = null)
         {
+            if (!Utils.IsValidIdentifier(name))
+                throw InvalidPropertyNameException(name);
+
             var num = RegisterProperty(name);
             if (num == _values.Count)
             {
@@ -63,8 +66,20 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Удалить", "Delete")]
         public void Remove(string name)
         {
-            var id = FindProperty(name);
-            _values.RemoveAt(id);
+            if (!Utils.IsValidIdentifier(name))
+                throw InvalidPropertyNameException(name);
+
+            int propIndex;
+            try
+            {
+                propIndex = FindProperty(name);
+            }
+            catch (PropertyAccessException)
+            {
+                return;
+            }
+
+            _values.RemoveAt(propIndex);
             RemoveProperty(name);
             ReorderPropertyNumbers();
         }
@@ -73,7 +88,7 @@ namespace ScriptEngine.HostedScript.Library
         public bool HasProperty(string name, [ByRef] IVariable value = null)
         {
             if (!Utils.IsValidIdentifier(name))
-                throw new RuntimeException("Задано неправильное имя атрибута структуры");
+                throw InvalidPropertyNameException(name);
 
             int propIndex;
             try
@@ -227,5 +242,9 @@ namespace ScriptEngine.HostedScript.Library
             return new StructureImpl(rawArgument.AsString(), args);
         }
 
+        private static RuntimeException InvalidPropertyNameException( string name )
+        {
+            return new RuntimeException($"Задано неправильное имя атрибута структуры '{name}'");
+        }
     }
 }
