@@ -149,7 +149,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
-              throw new RuntimeException("В качестве параметра для конструктора можно передавать только ФиксированнаяСтруктура или Ключи и Значения");
+              throw new RuntimeException("В качестве параметра для конструктора можно передавать только Структура или Ключи и Значения");
             }
         }
 
