@@ -44,11 +44,20 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="filename">Имя ZIP файла, который требуется открыть для чтения.</param>
         /// <param name="password">Пароль к файлу, если он зашифрован.</param>
         [ContextMethod("Открыть","Open")]
-        public void Open(string filename, string password = null)
+        public void Open(string filename, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
+            ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
             // fuck non-russian encodings on non-ascii files
-            _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = Encoding.GetEncoding(866) });
+            _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = ChooseEncoding(encoding) });
             _zip.Password = password;
+        }
+
+        private Encoding ChooseEncoding(FileNamesEncodingInZipFile encoding)
+        {
+            if(encoding != FileNamesEncodingInZipFile.OsEncodingWithUtf8)
+                return Encoding.UTF8;
+
+            return null;
         }
 
 

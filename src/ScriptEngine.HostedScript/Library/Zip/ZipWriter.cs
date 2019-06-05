@@ -46,19 +46,30 @@ namespace ScriptEngine.HostedScript.Library.Zip
             string comment = null, 
             SelfAwareEnumValue<ZipCompressionMethodEnum> compressionMethod = null, 
             SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel = null,
-            SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod = null)
+            SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod = null,
+            FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
+            ZipFile.DefaultEncoding = Encoding.GetEncoding(866); // fuck non-russian encodings on non-ascii files
             _filename = filename;
             _zip = new ZipFile();
-            _zip.AlternateEncoding = Encoding.GetEncoding(866); // fuck non-russian encodings on non-ascii files
-            _zip.AlternateEncodingUsage = ZipOption.Always;
+            _zip.AlternateEncoding = Encoding.UTF8;
+            _zip.AlternateEncodingUsage = ChooseEncodingMode(encoding);
             _zip.Password = password;
             _zip.Comment = comment;
             _zip.CompressionMethod = MakeZipCompressionMethod(compressionMethod);
             _zip.CompressionLevel = MakeZipCompressionLevel(compressionLevel);
             _zip.UseZip64WhenSaving = Zip64Option.AsNecessary;
+            
             // Zlib падает с NullReferenceException, если задать шифрование
             //_zip.Encryption = MakeZipEncryption(encryptionMethod);
+        }
+
+        private ZipOption ChooseEncodingMode(FileNamesEncodingInZipFile encoding)
+        {
+            if (encoding == FileNamesEncodingInZipFile.OsEncodingWithUtf8)
+                return ZipOption.AsNecessary;
+            
+            return ZipOption.Always;
         }
 
         /// <summary>
