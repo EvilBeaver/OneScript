@@ -35,7 +35,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        public StructureImpl(IEnumerable<KeyAndValueImpl> structure)
+        public StructureImpl(FixedStructureImpl structure)
         {
             foreach (KeyAndValueImpl keyValue in structure)
             {
@@ -227,20 +227,36 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
+        /// Создает структуру по фиксированной структуре
+        /// </summary>
+        /// <param name="fixedStruct">Исходная структура</param>
+        //[ScriptConstructor(Name = "Из фиксированной структуры")]
+        private static StructureImpl Constructor(FixedStructureImpl fixedStruct)
+        {
+            return new StructureImpl(fixedStruct);
+        }
+
+        /// <summary>
         /// Создает структуру по заданному перечню свойств и значений
         /// </summary>
         /// <param name="strProperties">Строка с именами свойств, указанными через запятую.</param>
         /// <param name="args">Значения свойств. Каждое значение передается, как отдельный параметр.</param>
         [ScriptConstructor(Name = "По ключам и значениям")]
-        public static StructureImpl Constructor(IValue strProperties, IValue[] args)
+        public static StructureImpl Constructor(IValue param1, IValue[] args)
         {
-            var rawArgument = strProperties.GetRawValue();
-            if (rawArgument is IEnumerable<KeyAndValueImpl>)
+            var rawArgument = param1.GetRawValue();
+            if (rawArgument.DataType == DataType.String)
             {
-                return new StructureImpl(rawArgument as IEnumerable<KeyAndValueImpl>);
+                return new StructureImpl(rawArgument.AsString(), args);
             }
-            return new StructureImpl(rawArgument.AsString(), args);
+            else if (rawArgument is FixedStructureImpl)
+            {
+                return new StructureImpl(rawArgument as FixedStructureImpl);
+            }
+
+            throw new RuntimeException("В качестве параметра для конструктора можно передавать только ФиксированнаяСтруктура или Ключи и Значения");
         }
+
 
         private static RuntimeException InvalidPropertyNameException( string name )
         {
