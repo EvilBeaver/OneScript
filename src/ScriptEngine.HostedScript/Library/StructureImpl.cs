@@ -23,24 +23,19 @@ namespace ScriptEngine.HostedScript.Library
         public StructureImpl(string strProperties, params IValue[] values)
         {
             var props = strProperties.Split(',');
-            if (props.Length < values.Length)
-                throw RuntimeException.InvalidArgumentValue();
 
-            for (int i = 0; i < props.Length; i++)
+            for (int i = 0, nprop = 0; i < props.Length; i++)
             {
-                props[i] = props[i].Trim();
-                if (i < values.Length)
-                {
-                    Insert(props[i], values[i]);
-                }
-                else
-                {
-                    Insert(props[i], null);
-                }
+                var prop = props[i].Trim();
+                if (prop.Equals(string.Empty))
+                    continue;
+
+                Insert(prop, nprop < values.Length ? values[nprop] : null);
+                ++nprop;
             }
         }
 
-        public StructureImpl(IEnumerable<KeyAndValueImpl> structure)
+        public StructureImpl(FixedStructureImpl structure)
         {
             foreach (KeyAndValueImpl keyValue in structure)
             {
@@ -51,6 +46,9 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Вставить")]
         public void Insert(string name, IValue val = null)
         {
+            if (!Utils.IsValidIdentifier(name))
+                throw InvalidPropertyNameException(name);
+
             var num = RegisterProperty(name);
             if (num == _values.Count)
             {
@@ -68,8 +66,20 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("Удалить", "Delete")]
         public void Remove(string name)
         {
-            var id = FindProperty(name);
-            _values.RemoveAt(id);
+            if (!Utils.IsValidIdentifier(name))
+                throw InvalidPropertyNameException(name);
+
+            int propIndex;
+            try
+            {
+                propIndex = FindProperty(name);
+            }
+            catch (PropertyAccessException)
+            {
+                return;
+            }
+
+            _values.RemoveAt(propIndex);
             RemoveProperty(name);
             ReorderPropertyNumbers();
         }
@@ -78,7 +88,7 @@ namespace ScriptEngine.HostedScript.Library
         public bool HasProperty(string name, [ByRef] IVariable value = null)
         {
             if (!Utils.IsValidIdentifier(name))
-                throw new RuntimeException("Задано неправильное имя атрибута структуры");
+                throw InvalidPropertyNameException(name);
 
             int propIndex;
             try
@@ -211,9 +221,19 @@ namespace ScriptEngine.HostedScript.Library
         private static readonly ContextMethodsMapper<StructureImpl> _methods = new ContextMethodsMapper<StructureImpl>();
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static StructureImpl Constructor()
         {
             return new StructureImpl();
+        }
+
+        /// <summary>
+        /// Создает структуру по фиксированной структуре
+        /// </summary>
+        /// <param name="fixedStruct">Исходная структура</param>
+        //[ScriptConstructor(Name = "Из фиксированной структуры")]
+        private static StructureImpl Constructor(FixedStructureImpl fixedStruct)
+        {
+            return new StructureImpl(fixedStruct);
         }
 
         /// <summary>
@@ -222,15 +242,25 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="strProperties">Строка с именами свойств, указанными через запятую.</param>
         /// <param name="args">Значения свойств. Каждое значение передается, как отдельный параметр.</param>
         [ScriptConstructor(Name = "По ключам и значениям")]
-        public static IRuntimeContextInstance Constructor(IValue strProperties, IValue[] args)
+        public static StructureImpl Constructor(IValue param1, IValue[] args)
         {
-            var rawArgument = strProperties.GetRawValue();
-            if (rawArgument is IEnumerable<KeyAndValueImpl>)
+            var rawArgument = param1.GetRawValue();
+            if (rawArgument.DataType == DataType.String)
             {
-                return new StructureImpl(rawArgument as IEnumerable<KeyAndValueImpl>);
+                return new StructureImpl(rawArgument.AsString(), args);
             }
-            return new StructureImpl(rawArgument.AsString(), args);
+            else if (rawArgument is FixedStructureImpl)
+            {
+                return new StructureImpl(rawArgument as FixedStructureImpl);
+            }
+
+            throw new RuntimeException("В качестве параметра для конструктора можно передавать только ФиксированнаяСтруктура или Ключи и Значения");
         }
 
+
+        private static RuntimeException InvalidPropertyNameException( string name )
+        {
+            return new RuntimeException($"Задано неправильное имя атрибута структуры '{name}'");
+        }
     }
 }

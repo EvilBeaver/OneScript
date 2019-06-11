@@ -110,7 +110,12 @@ namespace ScriptEngine.Machine
             return new RuntimeException(String.Format("Неверный тип аргумента '{0}'", argName));
         }
 
-        public static RuntimeException InvalidArgumentType(int argNum, string argName="" )
+        public static RuntimeException InvalidNthArgumentType(int argNum)
+        {
+            return new RuntimeException(String.Format("Неверный тип аргумента номер {0}", argNum));
+        }
+
+        public static RuntimeException InvalidArgumentType(int argNum, string argName )
         {
             return new RuntimeException(String.Format("Неверный тип аргумента номер {0} '{1}'", argNum, argName ));
         }
@@ -118,6 +123,11 @@ namespace ScriptEngine.Machine
         public static RuntimeException InvalidArgumentValue()
         {
             return new RuntimeException("Неверное значение аргумента");
+        }
+
+        public static RuntimeException InvalidNthArgumentValue(int argNum)
+        {
+            return new RuntimeException(String.Format("Неверное значение аргумента номер {0}", argNum));
         }
 
         public static RuntimeException InvalidArgumentValue(object value)
@@ -149,7 +159,6 @@ namespace ScriptEngine.Machine
         {
             return new RuntimeException("Деление на ноль");
         }
-
 
     }
 

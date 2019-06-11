@@ -8,6 +8,9 @@
     <OutputType>Exe</OutputType>
     <StartupObject>StandaloneRunner.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType></DebugType>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\oscript\ConsoleHostImpl.cs">
       <Link>ConsoleHostImpl.cs</Link>
@@ -24,7 +27,7 @@
   <ItemGroup>
     <EmbeddedResource Include="ScriptEngine.dll" />
     <EmbeddedResource Include="ScriptEngine.HostedScript.dll" />
-    <EmbeddedResource Include="Ionic.Zip.dll" />
+    <EmbeddedResource Include="DotNetZip.dll" />
     <EmbeddedResource Include="Newtonsoft.Json.dll" />
   </ItemGroup>
 

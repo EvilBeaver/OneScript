@@ -32,7 +32,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         }
 
         [ScriptConstructor(Name = "Без параметров")]
-        public static IRuntimeContextInstance Constructor()
+        public static HttpMeansImpl Constructor()
         {
             return new HttpMeansImpl();
         }

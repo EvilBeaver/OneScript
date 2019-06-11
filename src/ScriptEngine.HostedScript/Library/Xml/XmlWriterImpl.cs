@@ -356,5 +356,6 @@ namespace ScriptEngine.HostedScript.Library.Xml
             return new XmlWriterImpl();
         }
 
+        public XmlWriter GetNativeWriter() => _writer;
     }
 }

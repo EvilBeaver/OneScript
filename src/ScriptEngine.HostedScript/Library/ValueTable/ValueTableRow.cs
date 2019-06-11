@@ -130,12 +130,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public override int FindProperty(string name)
         {
-            ValueTableColumn C = Owner().Columns.FindColumnByName(name);
-            
-            if (C == null)
-                throw RuntimeException.PropNotFoundException(name);
-
-            return C.ID;
+            return Owner().Columns.FindProperty(name);
         }
 
         public override bool IsPropReadable(int propNum)
@@ -150,13 +145,13 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
 
         public override IValue GetPropValue(int propNum)
         {
-            ValueTableColumn C = Owner().Columns.FindColumnById(propNum);
+            ValueTableColumn C = Owner().Columns.FindColumnByIndex(propNum);
             return TryValue(C);
         }
 
 		public override void SetPropValue(int propNum, IValue newVal)
 		{
-			ValueTableColumn C = Owner().Columns.FindColumnById(propNum);
+			ValueTableColumn C = Owner().Columns.FindColumnByIndex(propNum);
 			_data[C] = C.ValueType.AdjustValue(newVal);
 		}
 

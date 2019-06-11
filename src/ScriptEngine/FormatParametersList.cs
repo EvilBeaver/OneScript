@@ -237,7 +237,7 @@ namespace ScriptEngine
 
         private string FindParamValue(Predicate<FormatParameter> criteria)
         {
-            var param = _paramList.Find(criteria);
+            var param = _paramList.FindLast(criteria);
             if (param.Name == null)
                 return null;
 

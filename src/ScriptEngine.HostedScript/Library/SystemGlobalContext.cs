@@ -423,20 +423,10 @@ namespace ScriptEngine.HostedScript.Library
             return errInfo.DetailedDescription;
         }
 
-        /// <summary>
-        /// Текущая дата машины
-        /// </summary>
-        /// <returns>Дата</returns>
-        [ContextMethod("ТекущаяДата", "CurrentDate")]
-        public DateTime CurrentDate()
-        {
-            return DateTime.Now;
-        }
-
         [ContextMethod("ТекущаяУниверсальнаяДатаВМиллисекундах", "CurrentUniversalDateInMilliseconds")]
-        public decimal CurrentUniversalDateInMilliseconds()
+        public long CurrentUniversalDateInMilliseconds()
         {
-            return (decimal)DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
+            return DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
         }
 
         /// <summary>

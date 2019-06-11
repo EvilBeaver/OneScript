@@ -1,5 +1,8 @@
 .vs/
 .idea/
+.DS_Store
+.vscode/
+tmp/
 
 *.vssscc
 *.vspscc
@@ -61,3 +64,5 @@ TestResult.xml
 tests/component/Component.dll
 
 src/oscript/Properties/launchSettings\.json
+
+*.DotSettings

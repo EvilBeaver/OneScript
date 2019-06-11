@@ -61,7 +61,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor()
+        public static ValueTree Constructor()
         {
             return new ValueTree();
         }

@@ -33,7 +33,7 @@ namespace NUnitTests
         }
 
         [ScriptConstructor(Name = "Без параметров")]
-        public static IRuntimeContextInstance Constructor()
+        public static TestNullConversion Constructor()
         {
             return new TestNullConversion();
         }
@@ -287,7 +287,7 @@ namespace NUnitTests
         }
 
         [ScriptConstructor(Name = "Без параметров")]
-        public static IRuntimeContextInstance Constructor()
+        public static TestNullClass Constructor()
         {
             return new TestNullClass();
         }

@@ -77,7 +77,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ScriptConstructor]
-        public static IRuntimeContextInstance Constructor(IValue encoding = null,
+        public static XmlWriterSettingsImpl Constructor(IValue encoding = null,
             IValue version = null, IValue indent = null, IValue indentAttributes = null,
             IValue indentChars = null)
         {

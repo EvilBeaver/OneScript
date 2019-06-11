@@ -72,7 +72,11 @@ namespace ScriptEngine.Machine.Contexts
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
             var attribs = GetCustomAttributesInternal(inherit);
-            return attribs.Where(x => x.GetType() == attributeType).ToArray();
+            if (attributeType == null)
+                return attribs.ToArray();
+            
+            return attribs.Where(x => attributeType.IsAssignableFrom(x.GetType()))
+                .ToArray();
         }
 
         public override bool IsDefined(Type attributeType, bool inherit)
