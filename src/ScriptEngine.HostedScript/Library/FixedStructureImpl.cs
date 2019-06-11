@@ -20,7 +20,6 @@ namespace ScriptEngine.HostedScript.Library
         {
         	foreach (KeyAndValueImpl keyValue in structure)
         		_structure.Insert(keyValue.Key.AsString(), keyValue.Value);
-
         }
 
         public FixedStructureImpl(string strProperties, params IValue[] values)
@@ -139,18 +138,10 @@ namespace ScriptEngine.HostedScript.Library
         /// Создает фиксированную структуру по исходной структуре
         /// </summary>
         /// <param name="structure">Исходная структура</param>
-        [ScriptConstructor(Name = "Из структуры")]
-        public static FixedStructureImpl Constructor(IValue structure)
+        //[ScriptConstructor(Name = "Из структуры")]
+        private static FixedStructureImpl Constructor(StructureImpl structObject)
         {
-            var structObject = structure.GetRawValue() as StructureImpl;
-            if (structObject != null)
-            {
-                return new FixedStructureImpl(structObject);
-            }
-            else
-            {
-              throw new RuntimeException("В качестве параметра для конструктора можно передавать только Структура или Ключи и Значения");
-            }
+            return new FixedStructureImpl(structObject);
         }
 
         /// <summary>
@@ -159,10 +150,20 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="strProperties">Строка с именами свойств, указанными через запятую.</param>
         /// <param name="args">Значения свойств. Каждое значение передается, как отдельный параметр.</param>
         [ScriptConstructor(Name = "По ключам и значениям")]
-        public static FixedStructureImpl Constructor(IValue strProperties, IValue[] args)
+        public static FixedStructureImpl Constructor(IValue param1, IValue[] args)
         {
-            return new FixedStructureImpl(strProperties.AsString(), args);
-        }
+            var rawArgument = param1.GetRawValue();
+            if (rawArgument.DataType == DataType.String)
+            {
+                return new FixedStructureImpl(param1.AsString(), args);
+            }
+            else if (rawArgument is StructureImpl)
+            {
+                return new FixedStructureImpl(rawArgument as StructureImpl);
+            }
 
+            throw new RuntimeException("В качестве параметра для конструктора можно передавать только Структура или Ключи и Значения");
     }
+
+}
 }
