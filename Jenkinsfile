@@ -273,7 +273,7 @@ pipeline {
                 TARGET="/var/www/oscript.io/download/versions/latest/"
                 sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
                 
-                TARGET="/var/www/oscript.io/download/versions/$ReleaseNumber/"
+                TARGET="/var/www/oscript.io/download/versions/" + ReleaseNumber.replace('.', '_') + "/"
                 sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
 
                 """.stripIndent()
