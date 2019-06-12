@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <!--Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" /-->
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
