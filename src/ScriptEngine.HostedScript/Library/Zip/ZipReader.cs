@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -54,10 +54,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         private Encoding ChooseEncoding(FileNamesEncodingInZipFile encoding)
         {
-            if(encoding != FileNamesEncodingInZipFile.OsEncodingWithUtf8)
-                return Encoding.UTF8;
+            if (encoding == FileNamesEncodingInZipFile.Auto || encoding == FileNamesEncodingInZipFile.OsEncodingWithUtf8) 
+                return null;
+            
+            return Encoding.UTF8;
 
-            return null;
         }
 
 
