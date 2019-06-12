@@ -324,7 +324,14 @@ namespace ScriptEngine.HostedScript.Library.Zip
         }
 
         [ScriptConstructor(Name = "На основании имени файла")]
-        public static ZipWriter ConstructByFileOptions(IValue filename, IValue password = null, IValue comment = null, IValue compressionMethod = null, IValue compressionLevel = null, IValue encryptionMethod = null)
+        public static ZipWriter ConstructByFileOptions(
+            IValue filename, 
+            IValue password = null,
+            IValue comment = null,
+            IValue compressionMethod = null,
+            IValue compressionLevel = null,
+            IValue encryptionMethod = null,
+            FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
             var zip = new ZipWriter();
             zip.Open(filename.AsString(),
@@ -332,8 +339,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 ConvertParam<string>(comment),
                 ConvertParam<SelfAwareEnumValue<ZipCompressionMethodEnum>>(compressionMethod),
                 ConvertParam<SelfAwareEnumValue<ZipCompressionLevelEnum>>(compressionLevel),
-                ConvertParam<SelfAwareEnumValue<ZipEncryptionMethodEnum>>(encryptionMethod)
-                    );
+                ConvertParam<SelfAwareEnumValue<ZipEncryptionMethodEnum>>(encryptionMethod),
+                    encoding);
             return zip;
         }
 
