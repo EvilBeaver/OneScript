@@ -606,7 +606,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else if (pathName == null)
             {
-#if NETSTANDARD2_0
+#if !NET452 
                 throw new NotSupportedException("Getting object by classname not supported on netstandard2");
 #else
                 return Marshal.GetActiveObject(className);
@@ -618,7 +618,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
-#if NETSTANDARD2_0
+#if !NET452 
                 throw new NotSupportedException("Getting object by classname not supported on netstandard2");
 #else
                 var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
