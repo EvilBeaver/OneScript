@@ -198,12 +198,21 @@ namespace ScriptEngine.HostedScript.Library.Http
         }
 
         private HttpWebRequest CreateRequest(string resource)
-        {
+        {http://qaru.site/questions/45913/the-request-was-aborted-could-not-create-ssltls-secure-channel
+
             var uriBuilder = new UriBuilder(_hostUri);
             if(Port != 0)
                 uriBuilder.Port = Port;
             
             var resourceUri = new Uri(uriBuilder.Uri, resource);
+
+            // http://qaru.site/questions/45913/the-request-was-aborted-could-not-create-ssltls-secure-channel
+            // Убедитесь, что настройки ServicePointManager заданы до создания HttpWebRequest, 
+            // иначе он не будет работать
+            if (uriBuilder.Scheme == HTTPS_SCHEME)
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            }
 
             var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
             request.AutomaticDecompression = DecompressionMethods.GZip;
@@ -239,7 +248,6 @@ namespace ScriptEngine.HostedScript.Library.Http
             if (uriBuilder.Scheme == HTTPS_SCHEME)
             {
                 request.ServerCertificateValidationCallback = delegate { return true; };
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             }
 
             return request;
