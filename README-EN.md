@@ -1,6 +1,6 @@
 # README #
 
-### The project is an independent cross-platform optn-source implementation of a virtual machine that executes scripts written in BSL (1C:Enterprise scripting language).
+### The project is an independent cross-platform open-source implementation of a virtual machine that executes scripts written in BSL (1C:Enterprise scripting language).
 
 Script execution doesn't use any 1C:Enterprise system libraries and doesn't require installation of 1C:Enterprise system on the target machine.
 
