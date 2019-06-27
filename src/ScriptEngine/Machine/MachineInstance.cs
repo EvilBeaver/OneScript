@@ -110,7 +110,7 @@ namespace ScriptEngine.Machine
                     _currentFrame.Locals[i] =
                         Variable.CreateReference((IVariable)arguments[i], method.Variables[i].Identifier);
                 }
-                else if (arguments[i] == null)
+                else if (arguments[i] == null || arguments[i].DataType == DataType.NotAValidValue)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
                 else
                     _currentFrame.Locals[i] = Variable.Create(arguments[i], method.Variables[i]);
