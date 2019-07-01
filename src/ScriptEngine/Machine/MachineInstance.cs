@@ -857,6 +857,8 @@ namespace ScriptEngine.Machine
             var scope = _scopes[methodRef.ContextIndex];
             var methInfo = scope.Methods[methodRef.CodeIndex];
 
+            var isLocalCall = scope.Instance == this.TopScope.Instance;
+            
             int argCount = (int)_operationStack.Pop().AsNumber();
             IValue[] argValues = new IValue[argCount];
 
@@ -868,7 +870,7 @@ namespace ScriptEngine.Machine
                 {
                     if (i < methInfo.Params.Length)
                     {
-                        if (!methInfo.Params[i].IsDefaultValueDefined())
+                        if (!methInfo.Params[i].IsDefaultValueDefined() || !isLocalCall)
                             argValue = null;
                         else
                         {
@@ -888,7 +890,7 @@ namespace ScriptEngine.Machine
 
             bool needsDiscarding;
 
-            if (scope.Instance == this.TopScope.Instance)
+            if (isLocalCall)
             {
                 var sdo = scope.Instance as ScriptDrivenObject;
                 System.Diagnostics.Debug.Assert(sdo != null);
