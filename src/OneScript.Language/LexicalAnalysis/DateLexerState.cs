@@ -14,23 +14,26 @@ namespace OneScript.Language.LexicalAnalysis
     {
         private string FullDateTimeString( StringBuilder numbers )
         {
+            string formatString = "yyyyMMddHHmmss";
             if (numbers.Length == 12) // yyyyMMddHHmm
             {
-                numbers.Append("00");
+                formatString = "yyyyMMddHHmm";
             }
             if (numbers.Length == 8) // yyyyMMdd
             {
-                numbers.Append("000000");
+                formatString = "yyyyMMdd";
             }
             else if (numbers.Length != 14) // yyyyMMddHHmmss
             {
                 throw new FormatException();
             }
-
+            
             string date = numbers.ToString();
 
             if (date != "00000000000000")
-                DateTime.ParseExact(date, "yyyyMMddHHmmss", System.Globalization.CultureInfo.InvariantCulture);
+                DateTime.ParseExact(date, formatString, System.Globalization.CultureInfo.InvariantCulture);
+
+            return date;
 
             return date;
         }

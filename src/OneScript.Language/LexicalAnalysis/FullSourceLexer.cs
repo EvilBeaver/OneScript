@@ -43,7 +43,7 @@ namespace OneScript.Language.LexicalAnalysis
 
         public FullSourceLexer()
         {
-            _iterator = new SourceCodeIterator(null);
+            _iterator = new SourceCodeIterator();
         }
 
         protected SourceCodeIterator Iterator => _iterator;

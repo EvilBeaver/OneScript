@@ -15,8 +15,15 @@ namespace OneScript.Language.LexicalAnalysis
 
         private const int OUT_OF_TEXT = -1;
 
+        public SourceCodeIterator() : this(string.Empty)
+        {
+        }
+        
         public SourceCodeIterator(string code)
         {
+            if(code == null)
+                throw new ArgumentNullException(nameof(code));
+            
             _code = code;
             int cap = code.Length < 512 ? 32 : 512;
             _lineBounds = new List<int>(cap);
@@ -96,9 +103,9 @@ namespace OneScript.Language.LexicalAnalysis
         public char PeekNext()
         {
             char result = '\0';
-            if(_index < _code.Length)
+            if(_index+1 < _code.Length)
             {
-                result = _currentSymbol;
+                result = _code[_index+1];
             }
 
             return result;

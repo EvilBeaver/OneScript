@@ -3,7 +3,7 @@ using Xunit;
 
 namespace OneScript.Language.Tests
 {
-    public class LexerFacts
+    public class LexerTests
     {
         [Fact]
         public void Empty_Lexer_Position_Is_Negative()
@@ -194,7 +194,7 @@ namespace OneScript.Language.Tests
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.StringLiteral);
-            Assert.True(lex.Content == "-just string ");
+            Assert.Equal("-just string ", lex.Content);
 
             code = @" ""-just
             |string """;
@@ -202,14 +202,14 @@ namespace OneScript.Language.Tests
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.StringLiteral);
-            Assert.True(lex.Content == "-just\r\nstring ");
+            Assert.Equal("-just\nstring ", lex.Content);
 
             code = @" ""-just "" ""string"" ""123""";
             iterator = new SourceCodeIterator(code);
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.StringLiteral);
-            Assert.True(lex.Content == "-just \nstring\n123");
+            Assert.Equal("-just \nstring\n123", lex.Content);
 
             code = @"""first line
             |second line
@@ -219,7 +219,7 @@ namespace OneScript.Language.Tests
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.StringLiteral);
-            Assert.True(lex.Content == "first line\r\nsecond line\r\nthird line");
+            Assert.Equal("first line\nsecond line\nthird line", lex.Content);
         }
 
         [Fact]
@@ -235,37 +235,37 @@ namespace OneScript.Language.Tests
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.BooleanLiteral);
-            Assert.True(lex.Content == "Истина");
+            Assert.Equal("Истина", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.BooleanLiteral);
-            Assert.True(lex.Content == "Ложь");
+            Assert.Equal("Ложь", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.UndefinedLiteral);
-            Assert.True(lex.Content == "Неопределено");
+            Assert.Equal("Неопределено", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.NullLiteral);
-            Assert.True(lex.Content == "Null");
+            Assert.Equal("Null", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.BooleanLiteral);
-            Assert.True(lex.Content == "True");
+            Assert.Equal("True", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.BooleanLiteral);
-            Assert.True(lex.Content == "False");
+            Assert.Equal("False", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.UndefinedLiteral);
-            Assert.True(lex.Content == "Undefined");
+            Assert.Equal("Undefined", lex.Content);
 
         }
 
@@ -328,7 +328,7 @@ namespace OneScript.Language.Tests
             var state = new NumberLexerState();
             var lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.NumberLiteral);
-            Assert.True(lex.Content == "123.45");
+            Assert.Equal("123.45", lex.Content);
         }
 
         [Fact]
@@ -349,7 +349,7 @@ namespace OneScript.Language.Tests
         }
 
         [Fact]
-        public void Date_LexerState_Works_Fine()
+        public void Date_LexerState_Works_With_8_Numbers()
         {
             string code = " '12341212' ";
             var iterator = new SourceCodeIterator(code);
@@ -357,7 +357,19 @@ namespace OneScript.Language.Tests
             var state = new DateLexerState();
             var lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.DateLiteral);
-            Assert.True(lex.Content == "12341212");
+            Assert.Equal("12341212", lex.Content);
+        }
+        
+        [Fact]
+        public void Date_LexerState_Works_With_14_Numbers()
+        {
+            string code = " '12341212020202' ";
+            var iterator = new SourceCodeIterator(code);
+            iterator.MoveToContent();
+            var state = new DateLexerState();
+            var lex = state.ReadNextLexem(iterator);
+            Assert.True(lex.Type == LexemType.DateLiteral);
+            Assert.Equal("12341212020202", lex.Content);
         }
 
         [Fact]
@@ -371,82 +383,82 @@ namespace OneScript.Language.Tests
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "+");
+            Assert.Equal("+", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "-");
+            Assert.Equal("-", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "*");
+            Assert.Equal("*", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "/");
+            Assert.Equal("/", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "<");
+            Assert.Equal("<", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == ">");
+            Assert.Equal(">", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "<=");
+            Assert.Equal("<=", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == ">=");
+            Assert.Equal(">=", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "<>");
+            Assert.Equal("<>", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "%");
+            Assert.Equal("%", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == ",");
+            Assert.Equal(",", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == ".");
+            Assert.Equal(".", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "(");
+            Assert.Equal("(", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == ")");
+            Assert.Equal(")", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "[");
+            Assert.Equal("[", lex.Content);
 
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "]");
+            Assert.Equal("]", lex.Content);
         }
 
         [Fact]
@@ -454,7 +466,7 @@ namespace OneScript.Language.Tests
         {
             string code = @"
             А = Б+11.2 <> 
-            '44444444' - ""ffff""";
+            '20100207' - ""ffff""";
 
             var lexer = new Lexer();
             lexer.Code = code;
@@ -462,31 +474,31 @@ namespace OneScript.Language.Tests
             Lexem lex;
             lex = lexer.NextLexem();
             Assert.True(lex.Type == LexemType.Identifier);
-            Assert.True(lex.Content == "А");
+            Assert.Equal("А", lex.Content);
             lex = lexer.NextLexem();
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "=");
+            Assert.Equal("=", lex.Content);
             lex = lexer.NextLexem();
             Assert.True(lex.Type == LexemType.Identifier);
-            Assert.True(lex.Content == "Б");
+            Assert.Equal("Б", lex.Content);
             lex = lexer.NextLexem();
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "+");
+            Assert.Equal("+", lex.Content);
             lex = lexer.NextLexem();
             Assert.True(lex.Type == LexemType.NumberLiteral);
-            Assert.True(lex.Content == "11.2");
+            Assert.Equal("11.2", lex.Content);
             lex = lexer.NextLexem();
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "<>");
+            Assert.Equal("<>", lex.Content);
             lex = lexer.NextLexem();
             Assert.True(lex.Type == LexemType.DateLiteral);
-            Assert.True(lex.Content == "44444444");
+            Assert.Equal("20100207", lex.Content);
             lex = lexer.NextLexem();
             Assert.True(lex.Type == LexemType.Operator);
-            Assert.True(lex.Content == "-");
+            Assert.Equal("-", lex.Content);
             lex = lexer.NextLexem();
             Assert.True(lex.Type == LexemType.StringLiteral);
-            Assert.True(lex.Content == "ffff");
+            Assert.Equal("ffff", lex.Content);
         }
 
         [Fact]
@@ -504,9 +516,9 @@ namespace OneScript.Language.Tests
                 };
                 
             Lexem lex = lexer.NextLexem();
-            Assert.True(lex.Content == "А");
+            Assert.Equal("А", lex.Content);
             lex = lexer.NextLexem();
-            Assert.True(lex.Content == "Б");
+            Assert.Equal("Б", lex.Content);
         }
 
         [Fact]
