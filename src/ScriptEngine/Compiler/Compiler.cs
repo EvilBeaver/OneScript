@@ -279,7 +279,12 @@ namespace ScriptEngine.Compiler
                         BuildModuleBody();
                     }
                 }
-                else if(_lastExtractedLexem.Type == LexemType.Directive)
+                else if (_lastExtractedLexem.Type == LexemType.EndOperator)
+                {
+                    isCodeEntered = true;
+                    BuildModuleBody();
+                }
+                else if (_lastExtractedLexem.Type == LexemType.Directive)
                 {
                     HandleDirective(isCodeEntered);
                     UpdateCompositeContext(); // костыль для #330
