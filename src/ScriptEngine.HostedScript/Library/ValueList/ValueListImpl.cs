@@ -136,30 +136,47 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             return item;
         }
 
-        [ContextMethod("Сдвинуть", "Move")]
-        public void Move(IValue item, int direction)
+        private int IndexByValue(IValue item)
         {
-            ValueListItem itemObject;
-            if(item.DataType == Machine.DataType.Number)
+            item = item.GetRawValue();
+
+            int index;
+
+            if (item is ValueListItem)
             {
-                itemObject = GetValue(item);
+                index = IndexOf(item as ValueListItem);
+                if (index == -1)
+                    throw new RuntimeException("Элемент не принадлежит списку значений");
             }
             else
             {
-                var tmpObject = item.GetRawValue().AsObject() as ValueListItem;
-                if (tmpObject == null)
+                try
+                {
+                    index = decimal.ToInt32(item.AsNumber());
+                }
+                catch (RuntimeException)
+                {
                     throw RuntimeException.InvalidArgumentType();
+                }
 
-                itemObject = tmpObject;
+                if (index < 0 || index >= _items.Count())
+                    throw new RuntimeException("Значение индекса выходит за пределы диапазона");
             }
 
-            var index_source = this.IndexOf(itemObject);
-            if (index_source < 0)
-                throw new RuntimeException("Элемент не принадлежит списку значений");
+            return index;
+        }
 
-            int index_dest = (index_source + direction) % _items.Count();
-            while (index_dest < 0)
-                index_dest += _items.Count();
+        [ContextMethod("Сдвинуть", "Move")]
+        public void Move(IValue item, int direction)
+        {
+            int index_source = IndexByValue(item);
+
+            int index_dest = index_source + direction;
+
+            if (index_dest < 0 || index_dest >= _items.Count())
+                throw RuntimeException.InvalidNthArgumentValue(2);
+
+            ValueListItem itemObject = _items[index_source];
 
             if (index_source < index_dest)
             {
@@ -171,7 +188,6 @@ namespace ScriptEngine.HostedScript.Library.ValueList
                 _items.RemoveAt(index_source);
                 _items.Insert(index_dest, itemObject);
             }
-            // TODO: надо проверить все это дело
         }
 
         [ContextMethod("Скопировать", "Copy")]
@@ -228,23 +244,7 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue item)
         {
-            ValueListItem itemObject;
-            if (item.DataType == Machine.DataType.Number)
-            {
-                itemObject = GetValue(item);
-            }
-            else
-            {
-                var tmpObject = item.GetRawValue().AsObject() as ValueListItem;
-                if (tmpObject == null)
-                    throw RuntimeException.InvalidArgumentType();
-
-                itemObject = tmpObject;
-            }
-
-            var indexSource = IndexOf(itemObject);
-            if (indexSource < 0)
-                throw new RuntimeException("Элемент не принадлежит списку значений");
+            int indexSource = IndexByValue(item);
 
             _items.RemoveAt(indexSource);
         }
@@ -278,6 +278,7 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         public static ValueListImpl Constructor()
         {
             return new ValueListImpl();
-        } 
+        }
+
     }
 }
