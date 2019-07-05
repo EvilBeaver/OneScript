@@ -57,6 +57,11 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             }
         }
 
+        /// <summary>
+        /// Получить элемент по индексу
+        /// </summary>
+        /// <param name="index">Число - Индекс элемента</param>
+        /// <returns>ЭлементСпискаЗначений</returns>
         [ContextMethod("Получить", "Get")]
         public ValueListItem GetValue(IValue index)
         {
@@ -64,6 +69,14 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             return _items[numericIndex];
         }
 
+        /// <summary>
+        /// Добавляет значение к списку
+        /// </summary>
+        /// <param name="value">Произвольный - Добавляемое значение</param>
+        /// <param name="presentation">Строка (необязательный) - Строковое представление добавляемого значения</param>
+        /// <param name="check">Булево (необязательный) - Определяет наличие пометки у добавляемого элемента</param>
+        /// <param name="picture">Картинка (необязательный) - Визуальное  представление добавляемого значения</param>
+        /// <returns>ЭлементСпискаЗначений</returns>
         [ContextMethod("Добавить", "Add")]
         public ValueListItem Add(IValue value, string presentation = null, bool check = false, IValue picture = null)
         {
@@ -73,6 +86,15 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             return newItem;
         }
 
+        /// <summary>
+        /// Вставляет значение в список в указанную позицию
+        /// </summary>
+        /// <param name="index">Число - Индекс позиции, куда будет произведена вставка</param>
+        /// <param name="value">Произвольный - Добавляемое значение</param>
+        /// <param name="presentation">Строка (необязательный) - Строковое представление добавляемого значения</param>
+        /// <param name="check">Булево (необязательный) - Определяет наличие пометки у добавляемого элемента</param>
+        /// <param name="picture">Картинка (необязательный) - Визуальное  представление добавляемого значения</param>
+        /// <returns>ЭлементСпискаЗначений</returns>
         [ContextMethod("Вставить", "Insert")]
         public ValueListItem Insert(int index, IValue value, string presentation = null, bool check = false, IValue picture = null)
         {
@@ -92,12 +114,20 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             return newItem;
         }
 
+        /// <summary>
+        /// Выгружает значения в новый массив
+        /// </summary>
+        /// <returns>Массив</returns>
         [ContextMethod("ВыгрузитьЗначения", "UnloadValues")]
         public ArrayImpl UnloadValues()
         {
             return new ArrayImpl(_items.Select(x=>x.Value));
         }
 
+        /// <summary>
+        /// Загружает значения из массива
+        /// </summary>
+        /// <param name="source">Массив - Значения для загрузки в список</param>
         [ContextMethod("ЗагрузитьЗначения", "LoadValues")]
         public void LoadValues(ArrayImpl source)
         {
@@ -105,12 +135,19 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             _items.AddRange(source.Select(x => new ValueListItem() { Value = x }));
         }
 
+        /// <summary>
+        /// Удаляет все элементы из списка.
+        /// </summary>
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
             _items.Clear();
         }
 
+        /// <summary>
+        /// Устанавливает значение пометки у всех элементов списка значений
+        /// </summary>
+        /// <param name="check">Булево - Значение пометки</param>
         [ContextMethod("ЗаполнитьПометки", "FillChecks")]
         public void FillChecks(bool check)
         {
@@ -120,12 +157,22 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             }
         }
 
+        /// <summary>
+        /// Получить индекс указанного элемента
+        /// </summary>
+        /// <param name="item">ЭлементСпискаЗначений - Элемент списка значений, для которого необходимо определить индекс</param>
+        /// <returns>Число - Индекс в списке, если не найдено возвращает -1</returns>
         [ContextMethod("Индекс", "IndexOf")]
         public int IndexOf(ValueListItem item)
         {
             return _items.IndexOf(item);
         }
 
+        /// <summary>
+        /// Осуществляет поиск значения в списке
+        /// </summary>
+        /// <param name="val">Произвольный - Искомое значение</param>
+        /// <returns>ЭлементСпискаЗначений - если элемент найден, иначе Неопределено</returns>
         [ContextMethod("НайтиПоЗначению", "FindByValue")]
         public IValue FindByValue(IValue val)
         {
@@ -166,12 +213,20 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             return index;
         }
 
+        /// <summary>
+        /// Сдвигает элемент на указанное количество позиций.
+        /// </summary>
+        /// <param name="item">
+        /// ЭлементСпискаЗначений - Элемент, который сдвигаем
+        /// Число - Индекс сдвигаемого элемента
+        /// </param>
+        /// <param name="offset">Количество позиций, на которое сдвигается элемент. Если значение положительное - сдвиг вниз, иначе вверх</param>
         [ContextMethod("Сдвинуть", "Move")]
-        public void Move(IValue item, int direction)
+        public void Move(IValue item, int offset)
         {
             int index_source = IndexByValue(item);
 
-            int index_dest = index_source + direction;
+            int index_dest = index_source + offset;
 
             if (index_dest < 0 || index_dest >= _items.Count())
                 throw RuntimeException.InvalidNthArgumentValue(2);
@@ -190,6 +245,10 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             }
         }
 
+        /// <summary>
+        /// Создает копию списка значений
+        /// </summary>
+        /// <returns>СписокЗначений</returns>
         [ContextMethod("Скопировать", "Copy")]
         public ValueListImpl Copy()
         {
@@ -202,6 +261,10 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             return newList;
         }
 
+        /// <summary>
+        /// Сортирует элементы в списке по порядку значений.
+        /// </summary>
+        /// <param name="direction">НаправлениеСортировки (необязательный) - Направление сортировки элементов. По умолчанию - по возрастанию.</param>
         [ContextMethod("СортироватьПоЗначению", "SortByValue")]
         public void SortByValue(SortDirectionEnum? direction = null)
         {
@@ -228,6 +291,10 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             }
         }
 
+        /// <summary>
+        /// Сортирует элементы в списке по порядку строкового представления.
+        /// </summary>
+        /// <param name="direction">НаправлениеСортировки (необязательный) - Направление сортировки элементов. По умолчанию - по возрастанию.</param>
         [ContextMethod("СортироватьПоПредставлению", "SortByPresentation")]
         public void SortByPresentation(SortDirectionEnum? direction = null)
         {
@@ -241,6 +308,13 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             }
         }
 
+        /// <summary>
+        /// Удаляет элемент из списка
+        /// </summary>
+        /// <param name="item">
+        /// ЭлементСпискаЗначений - Удаляемый элемент
+        /// Число - Индекс удаляемого элемента
+        /// </param>
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue item)
         {
