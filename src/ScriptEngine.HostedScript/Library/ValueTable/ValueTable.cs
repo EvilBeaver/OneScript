@@ -96,18 +96,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue row)
         {
-            row = row.GetRawValue();
-            int index;
-            if (row is ValueTableRow)
-            {
-                index = _rows.IndexOf(row as ValueTableRow);
-                if (index == -1)
-                    throw RuntimeException.InvalidArgumentValue();
-            }
-            else
-            {
-                index = Decimal.ToInt32(row.AsNumber());
-            }
+            int index = IndexByValue(row);
+
             _rows.RemoveAt(index);
         }
 
@@ -427,6 +417,36 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             }
         }
 
+        private int IndexByValue(IValue item)
+        {
+            item = item.GetRawValue();
+
+            int index;
+
+            if (item is ValueTableRow)
+            {
+                index = IndexOf(item as ValueTableRow);
+                if (index == -1)
+                    throw new RuntimeException("Строка не принадлежит таблице значений");
+            }
+            else
+            {
+                try
+                {
+                    index = decimal.ToInt32(item.AsNumber());
+                }
+                catch (RuntimeException)
+                {
+                    throw RuntimeException.InvalidArgumentType();
+                }
+
+                if (index < 0 || index >= _rows.Count())
+                    throw new RuntimeException("Значение индекса выходит за пределы диапазона");
+            }
+
+            return index;
+        }
+
         /// <summary>
         /// Сдвигает строку на указанное количество позиций.
         /// </summary>
@@ -438,22 +458,12 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(IValue row, int offset)
         {
-            row = row.GetRawValue();
+            int index_source = IndexByValue(row);
 
-            int index_source;
-            if (row is ValueTableRow)
-                index_source = _rows.IndexOf(row as ValueTableRow);
-            else if (row.DataType == Machine.DataType.Number)
-                index_source = decimal.ToInt32(row.AsNumber());
-            else
-                throw RuntimeException.InvalidArgumentType();
+            int index_dest = index_source + offset;
 
-            if (index_source < 0 || index_source >= _rows.Count())
-                throw RuntimeException.InvalidArgumentValue();
-
-            int index_dest = (index_source + offset) % _rows.Count();
-            while (index_dest < 0)
-                index_dest += _rows.Count();
+            if (index_dest < 0 || index_dest >= _rows.Count())
+                throw RuntimeException.InvalidNthArgumentValue(2);
 
             ValueTableRow tmp = _rows[index_source];
 
@@ -467,7 +477,6 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 _rows.RemoveAt(index_source);
                 _rows.Insert(index_dest, tmp);
             }
-
         }
 
         /// <summary>
