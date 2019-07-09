@@ -34,8 +34,6 @@ namespace OneScript.Language.LexicalAnalysis
                 DateTime.ParseExact(date, formatString, System.Globalization.CultureInfo.InvariantCulture);
 
             return date;
-
-            return date;
         }
         
         public override Lexem ReadNextLexem(SourceCodeIterator iterator)
