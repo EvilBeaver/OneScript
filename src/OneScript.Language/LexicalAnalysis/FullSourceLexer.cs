@@ -1,7 +1,7 @@
 ﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
@@ -14,7 +14,7 @@ namespace OneScript.Language.LexicalAnalysis
         private string _code;
         private SourceCodeIterator _iterator;
         private LexerState _state;
-        
+
         private LexerState _emptyState = new EmptyLexerState();
         private LexerState _wordState = new WordLexerState();
         private LexerState _numberState = new NumberLexerState();
@@ -46,13 +46,13 @@ namespace OneScript.Language.LexicalAnalysis
             _iterator = new SourceCodeIterator();
         }
 
-        protected SourceCodeIterator Iterator => _iterator;
+        public SourceCodeIterator Iterator => _iterator;
 
         public int CurrentColumn => _iterator.CurrentColumn;
 
         public int CurrentLine => _iterator.CurrentLine;
 
-        public string Code 
+        public virtual string Code
         {
             get
             {
@@ -79,7 +79,7 @@ namespace OneScript.Language.LexicalAnalysis
                     try
                     {
                         lex = _state.ReadNextLexem(_iterator);
-                        
+
                         if (lex.Type == LexemType.NotALexem) // обработанные синтакс-ошибки
                         {
                             _state = _emptyState;
@@ -183,11 +183,6 @@ namespace OneScript.Language.LexicalAnalysis
 
             _state = _fixedState;
 
-        }
-
-        public SourceCodeIterator GetIterator()
-        {
-            return _iterator;
         }
 
         public CodePositionInfo GetCodePosition()

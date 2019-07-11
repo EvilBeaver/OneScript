@@ -18,12 +18,12 @@ namespace OneScript.Language.LexicalAnalysis
         public SourceCodeIterator() : this(string.Empty)
         {
         }
-        
+
         public SourceCodeIterator(string code)
         {
             if(code == null)
                 throw new ArgumentNullException(nameof(code));
-            
+
             _code = code;
             int cap = code.Length < 512 ? 32 : 512;
             _lineBounds = new List<int>(cap);
@@ -43,20 +43,11 @@ namespace OneScript.Language.LexicalAnalysis
 
         }
 
-        public int Position
-        {
-            get { return _index; }
-        }
+        public int Position => _index;
 
-        public int CurrentLine 
-        { 
-            get
-            {
-                return _lineCounter;
-            }
-        }
-        
-        public int CurrentColumn 
+        public int CurrentLine => _lineCounter;
+
+        public int CurrentColumn
         {
             get
             {
@@ -70,13 +61,8 @@ namespace OneScript.Language.LexicalAnalysis
             }
         }
 
-        public char CurrentSymbol 
-        { 
-            get
-            {
-                return _currentSymbol;
-            }
-        }
+        public char CurrentSymbol => _currentSymbol;
+
 
         public bool MoveNext()
         {
@@ -111,7 +97,7 @@ namespace OneScript.Language.LexicalAnalysis
             return result;
 
         }
-        
+
         public bool MoveToContent()
         {
             if (SkipSpaces())
@@ -190,7 +176,7 @@ namespace OneScript.Language.LexicalAnalysis
             }
 
             var contents = _code.Substring(_startPosition + padLeft, len - padRight);
-            
+
             _startPosition = _index + 1;
 
             return contents;
