@@ -115,146 +115,75 @@ namespace OneScript.Language.LexicalAnalysis
             return new SyntaxErrorException(_lexer.GetCodePosition(), message);
         }
 
-        private bool SolveExpression(SourceCodeIterator iterator)
+        private bool SolveExpression()
         {
-            var priority = new Dictionary<Token, int>();
-            priority.Add(Token.Or, 1);
-            priority.Add(Token.And, 2);
-            priority.Add(Token.Not, 3);
+            NextLexem();
+            if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+                throw PreprocessorError("Ожидается выражение");
 
-            List<bool?> expressionResult = new List<bool?>();
-            List<Token> orderedOperators = new List<Token>();
-            Stack<Token> operators = new Stack<Token>();
-
-            Lexem lex;
-            while (true)
-            {
-                if (!iterator.MoveToContent())
-                {
-                    throw PreprocessorError("Непредусмотренное завершение текста модуля");
-                }
-
-                lex = _lexer.NextLexem();
-                if (lex.Token == Token.Then)
-                {
-                    iterator.MoveToContent();
-                    break;
-                }
-
-                if (lex.Type == LexemType.Operator)
-                {
-                    ProcessOperator(priority, expressionResult, orderedOperators, operators, lex);
-                }
-                else if (lex.Type == LexemType.Identifier)
-                {
-                    expressionResult.Add(IsDefined(lex.Content));
-                }
-                else
-                {
-                    throw PreprocessorError("Ошибка в выражении препроцессора");
-                }
-            }
-
-            while (operators.Count > 0)
-            {
-                var oper = operators.Pop();
-                if (oper == Token.OpenPar)
-                    throw PreprocessorError("Ошибка в выражении препроцессора");
-
-                orderedOperators.Add(oper);
-                expressionResult.Add(null);
-            }
-
-            Stack<bool> calculator = new Stack<bool>();
-
-            for (int i = 0, j = 0; i < expressionResult.Count; i++)
-            {
-                if (expressionResult[i] != null)
-                {
-                    calculator.Push((bool) expressionResult[i]);
-                }
-                else
-                {
-                    var opCode = orderedOperators[j++];
-
-                    switch (opCode)
-                    {
-                        case Token.Not:
-                            var op = calculator.Pop();
-                            calculator.Push(!op);
-                            break;
-                        case Token.And:
-                        {
-                            var op1 = calculator.Pop();
-                            var op2 = calculator.Pop();
-                            calculator.Push(op1 && op2);
-                            break;
-                        }
-
-                        case Token.Or:
-                        {
-                            var op1 = calculator.Pop();
-                            var op2 = calculator.Pop();
-                            calculator.Push(op1 || op2);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return calculator.Pop();
-
+            return SolveOrExpression();
         }
 
-        private static void ProcessOperator(Dictionary<Token, int> priority, List<bool?> expressionResult,
-            List<Token> orderedOperators, Stack<Token> operators, Lexem lex)
+        private bool SolveOrExpression()
         {
-            if (operators.Count == 0)
+            var argument = SolveAndExpression();
+            if (_lastExtractedLexem.Token == Token.Then)
             {
-                operators.Push(lex.Token);
-                return;
+                return argument;
             }
 
-            var opOnStack = operators.Peek();
-            if (opOnStack != Token.OpenPar)
+            if (_lastExtractedLexem.Token == Token.Or)
             {
-                var currentPriority = priority[lex.Token];
-                var stackPriority = priority[opOnStack];
+                NextLexem();
+                var secondArgument = SolveOrExpression();
+                return argument || secondArgument; // здесь нужны НЕ-сокращенные вычисления
+            }
 
-                while (currentPriority <= stackPriority)
+            return argument;
+        }
+
+        private bool SolveAndExpression()
+        {
+            var argument = SolveNotExpression();
+
+            if (_lastExtractedLexem.Token == Token.And)
+            {
+                NextLexem();
+                var secondArgument = SolveAndExpression();
+                return argument && secondArgument; // здесь нужны НЕ-сокращенные вычисления
+            }
+
+            return argument;
+        }
+
+        private bool SolveNotExpression()
+        {
+            if (_lastExtractedLexem.Token == Token.Not)
+            {
+                NextLexem();
+                return !GetArgument();
+            }
+
+            return GetArgument();
+        }
+
+        private bool GetArgument()
+        {
+            if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                NextLexem();
+                var result = SolveOrExpression();
+                if (_lastExtractedLexem.Token == Token.ClosePar)
                 {
-                    var stackOp = operators.Peek();
-                    if (stackOp != Token.OpenPar)
-                    {
-                        operators.Pop();
-                        orderedOperators.Add(stackOp);
-                        expressionResult.Add(null);
-                        if (operators.Count > 0)
-                        {
-                            stackOp = operators.Peek();
-
-                            if (stackOp == Token.OpenPar)
-                                break;
-
-                            stackPriority = priority[stackOp];
-                        }
-                        else
-                            break;
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    NextLexem();
+                    return result;
                 }
-
-                operators.Push(lex.Token);
-
-            }
-            else
-            {
-                operators.Push(lex.Token);
+                throw PreprocessorError("Ожидается закрывающая скобка");
             }
 
+            var expression = IsDefined(_lastExtractedLexem.Content);
+            NextLexem();
+            return expression;
         }
 
         public string Code
@@ -295,6 +224,8 @@ namespace OneScript.Language.LexicalAnalysis
             return _lastExtractedLexem;
         }
 
+        public SourceCodeIterator Iterator => _lexer.Iterator;
+
         private void MoveNext()
         {
             _lastExtractedLexem = _lexer.NextLexem();
@@ -304,8 +235,11 @@ namespace OneScript.Language.LexicalAnalysis
         {
             if(directive.Token == Token.If)
             {
-                var enterBlock = SolveExpression(_lexer.GetIterator());
+                var enterBlock = SolveExpression();
                 PushBlock(enterBlock);
+
+                if (_lastExtractedLexem.Token != Token.Then)
+                    throw PreprocessorError("Ошибка в выражении препроцессора");
 
                 if (enterBlock)
                     return NextLexem();
@@ -324,7 +258,10 @@ namespace OneScript.Language.LexicalAnalysis
                 }
                 else
                 {
-                    var enterBlock = SolveExpression(_lexer.GetIterator());
+                    var enterBlock = SolveExpression();
+                    if (_lastExtractedLexem.Token != Token.Then)
+                        throw PreprocessorError("Ошибка в выражении препроцессора");
+
                     if (enterBlock)
                     {
                         MarkAsSolved();
@@ -360,7 +297,7 @@ namespace OneScript.Language.LexicalAnalysis
             }
 
             HandleUnknownDirective(_lastExtractedLexem);
-            
+
             return _lastExtractedLexem;
         }
 
@@ -390,7 +327,7 @@ namespace OneScript.Language.LexicalAnalysis
 
             }
         }
-        
+
         public class PreprocessorUnknownTokenEventArgs : EventArgs
         {
             public bool IsHandled { get; set; }

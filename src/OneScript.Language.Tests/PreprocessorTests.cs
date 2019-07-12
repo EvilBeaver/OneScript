@@ -50,7 +50,7 @@ namespace OneScript.Language.Tests
         {
             var pp = new PreprocessingLexer();
             pp.Define("Сервер");
-            
+
             var code = @"
             #Если Сервер и Клиент Тогда
                 F;
@@ -90,7 +90,7 @@ namespace OneScript.Language.Tests
             lex = pp.NextLexem();
             Assert.True(lex.Content == "Б");
             lex = pp.NextLexem();
-            
+
             Assert.Equal(Token.EndOfText, lex.Token);
             Assert.Equal(LexemType.EndOfText, lex.Type);
         }
@@ -99,7 +99,7 @@ namespace OneScript.Language.Tests
         public void PreprocessingLexer_CompositeTest()
         {
             var pp = new PreprocessingLexer();
-            
+
             string code = @"
             #Если Клиент Тогда
                 К
@@ -112,7 +112,7 @@ namespace OneScript.Language.Tests
             #КонецЕсли";
 
             pp.Define("Сервер");
-            Assert.True(GetPreprocessedContent(pp, code) == "СВ");
+            Assert.Equal("СВ", GetPreprocessedContent(pp, code));
             pp.Define("Клиент");
             Assert.True(GetPreprocessedContent(pp, code) == "К");
             pp.Undef("Сервер");
@@ -120,7 +120,7 @@ namespace OneScript.Language.Tests
             pp.Define("ВебКлиент");
             Assert.True(GetPreprocessedContent(pp, code) == "СВ");
             pp.Define("ТолстыйКлиент");
-            pp.Undef("ВебКлиент");            
+            pp.Undef("ВебКлиент");
             Assert.True(GetPreprocessedContent(pp, code) == "ТнВ");
             pp.Undef("ТолстыйКлиент");
             Assert.True(GetPreprocessedContent(pp, code) == "И");
@@ -181,7 +181,7 @@ namespace OneScript.Language.Tests
             #КонецЕсли";
 
             var pp = new PreprocessingLexer();
-            
+
             var preprocessed = GetPreprocessedContent(pp, code);
             Assert.Equal("Привет,тутничегонет", preprocessed);
 
@@ -240,6 +240,42 @@ namespace OneScript.Language.Tests
             pp.Code = code;
 
             Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+
+        [Fact]
+        public void PriorityOperators()
+        {
+            var pp = new PreprocessingLexer();
+            pp.Define("Да");
+
+            var code = @"
+            #Если Нет и СовсемНет ИЛИ Да Тогда
+                F;
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            var lex = pp.NextLexem();
+
+            Assert.Equal("F", lex.Content);
+        }
+
+        [Fact]
+        public void PriorityOperators_WithParenthesis()
+        {
+            var pp = new PreprocessingLexer();
+            pp.Define("Да");
+
+            var code = @"
+            #Если Нет и (Да или Да) Тогда
+                F;
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            var lex = pp.NextLexem();
+
+            Assert.Equal(Token.EndOfText, lex.Token);
         }
 
         private string GetPreprocessedContent(PreprocessingLexer pp, string code)
