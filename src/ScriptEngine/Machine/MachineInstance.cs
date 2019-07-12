@@ -100,15 +100,24 @@ namespace ScriptEngine.Machine
         {
             PrepareReentrantMethodExecution(sdo, methodIndex);
             var method = _module.Methods[methodIndex];
-            for (int i = 0; i < method.Signature.Params.Length; i++)
+            var parameters = method.Signature.Params;
+            for (int i = 0; i < parameters.Length; i++)
             {
                 if (i >= arguments.Length)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
                 else if (arguments[i] is IVariable)
                 {
-                    // TODO: Alias ?
-                    _currentFrame.Locals[i] =
+                    if (parameters[i].IsByValue)
+                    {
+                        var value = ((IVariable)arguments[i]).Value;
+                        _currentFrame.Locals[i] = Variable.Create(value, method.Variables[i]);
+                    }
+                    else
+                    {
+                        // TODO: Alias ?
+                        _currentFrame.Locals[i] =
                         Variable.CreateReference((IVariable)arguments[i], method.Variables[i].Identifier);
+                    }
                 }
                 else if (arguments[i] == null || arguments[i].DataType == DataType.NotAValidValue)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
