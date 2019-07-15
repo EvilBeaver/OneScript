@@ -1,6 +1,13 @@
-﻿namespace OneScript.Language.LexicalAnalysis
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+namespace OneScript.Language.LexicalAnalysis
 {
-    abstract public class LexerState
+    public abstract class LexerState
     {
         abstract public Lexem ReadNextLexem(SourceCodeIterator iterator);
         
@@ -11,7 +18,7 @@
         }
     }
 
-    class EmptyLexerState : LexerState
+    internal class EmptyLexerState : LexerState
     {
         public override Lexem ReadNextLexem(SourceCodeIterator iterator)
         {

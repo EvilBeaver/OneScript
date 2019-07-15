@@ -5,13 +5,14 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace OneScript.Language
-{
-    public class SyntaxErrorException : ScriptException
-    {
-        internal SyntaxErrorException(CodePositionInfo codeInfo, string message):base(codeInfo, message)
-        {
+using System;
 
-        }
+namespace OneScript.Language.LexicalAnalysis
+{
+    public class PreprocessorUnknownTokenEventArgs : EventArgs
+    {
+        public bool IsHandled { get; set; }
+        public ILexemGenerator Lexer { get; set; }
+        public Lexem Lexem { get; set; }
     }
 }
