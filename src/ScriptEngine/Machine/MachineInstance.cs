@@ -482,7 +482,7 @@ namespace ScriptEngine.Machine
                     _commands[(int)command.Code](command.Argument);
                 }
             }
-            catch (ScriptException)
+            catch (RuntimeException)
             {
                 throw;
             }
