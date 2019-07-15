@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
@@ -66,15 +68,6 @@ namespace ScriptEngine
             }
         }
 
-        [Obsolete]
-        public ScriptModuleHandle CreateModule(ICodeSource source)
-        {
-            return new ScriptModuleHandle()
-                {
-                    Module = Compile(source)
-                };
-        }
-
         public ModuleImage Compile(ICodeSource source)
         {
             try
@@ -92,7 +85,7 @@ namespace ScriptEngine
         {
             RegisterScopeIfNeeded();
 
-            var parser = new Parser();
+            var parser = new PreprocessingLexer();
             parser.Code = source.Code;
 
             var compiler = new Compiler.Compiler();
@@ -125,7 +118,7 @@ namespace ScriptEngine
             }
 
             var mi = new ModuleInformation();
-            mi.CodeIndexer = parser.GetCodeIndexer();
+            mi.CodeIndexer = parser.Iterator;
             // пока у модулей нет собственных имен, будет совпадать с источником модуля
             mi.ModuleName = source.SourceDescription;
             mi.Origin = source.SourceDescription;

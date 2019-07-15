@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.Language.LexicalAnalysis
 {
-    interface ISourceCodeIndexer
+    public interface ISourceCodeIndexer
     {
         string GetCodeLine(int index);
     }

@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using OneScript.DebugProtocol;
-
+using OneScript.Language;
 using ScriptEngine;
 using ScriptEngine.Machine;
 

@@ -44,7 +44,7 @@ namespace OneScript.Language
             {
                 return _codePosition.LineNumber;
             }
-            internal set
+            set
             {
                 _codePosition.LineNumber = value;
             }
@@ -68,7 +68,7 @@ namespace OneScript.Language
             {
                 return _codePosition.Code;
             }
-            internal set
+            set
             {
                 _codePosition.Code = value;
             }
@@ -80,7 +80,7 @@ namespace OneScript.Language
             {
                 return _codePosition.ModuleName;
             }
-            internal set
+            set
             {
                 _codePosition.ModuleName = value;
             }
@@ -98,11 +98,10 @@ namespace OneScript.Language
         {
             get
             {
-                return String.Format("{{Модуль {0} / Ошибка в строке: {1},{2} / {3}}}",
-                    this.ModuleName,
-                    this.LineNumber,
-                    this.ColumnNumber,
-                    base.Message);
+                if (ColumnNumber != CodePositionInfo.OUT_OF_TEXT)
+                    return $"Модуль {ModuleName} / Ошибка в строке: {LineNumber},{ColumnNumber} / {Message}";
+                
+                return $"Модуль {ModuleName} / Ошибка в строке: {LineNumber} / {Message}";
             }
         }
 
@@ -115,22 +114,6 @@ namespace OneScript.Language
                 sb.Append(Code);
 
                 return sb.ToString();
-            }
-        }
-
-        public static void AppendCodeInfo(ScriptException exc, int line, string codeString, int column = -1)
-        {
-            const int UNKNOWN_POSITION = -1;
-
-            if (exc.LineNumber == UNKNOWN_POSITION)
-            {
-                exc.LineNumber = line;
-                exc.Code = codeString;
-            }
-
-            if (column != UNKNOWN_POSITION && exc.ColumnNumber == UNKNOWN_POSITION)
-            {
-                exc.ColumnNumber = column;
             }
         }
     }
