@@ -434,20 +434,24 @@ namespace ScriptEngine.Compiler
         private void HandleDirective(bool codeEntered)
         {
             var directive = _lastExtractedLexem.Content;
-            if (_lexer.Iterator.MoveToContent())
-            {
-                char cs;
-                do
-                {
-                    cs = _lexer.Iterator.CurrentSymbol;
-                } while (cs != '\n' && _lexer.Iterator.MoveNext());
-            }
+            
+            ReadToLineEnd();
+
             var value = _lexer.Iterator.GetContents().Trim();
             NextToken();
 
             if (DirectiveHandler == null || !DirectiveHandler(directive, value, codeEntered))
                 throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
 
+        }
+
+        private void ReadToLineEnd()
+        {
+            char cs;
+            do
+            {
+                cs = _lexer.Iterator.CurrentSymbol;
+            } while (cs != '\n' && _lexer.Iterator.MoveNext());
         }
 
         private void BuildSingleMethod()

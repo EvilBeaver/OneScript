@@ -12,16 +12,23 @@ namespace OneScript.Language.LexicalAnalysis
 {
     public class DateLexerState : LexerState
     {
+        private const string fullZeroes = "00000000000000";
+        private const string minutesZeroes = "000000000000";
+        private const string dateZeroes = "00000000";
+        
         private string FullDateTimeString( StringBuilder numbers )
         {
             string formatString = "yyyyMMddHHmmss";
+            string compare = fullZeroes;
             if (numbers.Length == 12) // yyyyMMddHHmm
             {
                 formatString = "yyyyMMddHHmm";
+                compare = minutesZeroes;
             }
-            if (numbers.Length == 8) // yyyyMMdd
+            else if (numbers.Length == 8) // yyyyMMdd
             {
                 formatString = "yyyyMMdd";
+                compare = dateZeroes;
             }
             else if (numbers.Length != 14) // yyyyMMddHHmmss
             {
@@ -30,7 +37,7 @@ namespace OneScript.Language.LexicalAnalysis
             
             string date = numbers.ToString();
 
-            if (date != "00000000000000")
+            if (date != compare)
                 DateTime.ParseExact(date, formatString, System.Globalization.CultureInfo.InvariantCulture);
 
             return date;

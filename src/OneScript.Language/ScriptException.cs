@@ -99,9 +99,9 @@ namespace OneScript.Language
             get
             {
                 if (ColumnNumber != CodePositionInfo.OUT_OF_TEXT)
-                    return $"Модуль {ModuleName} / Ошибка в строке: {LineNumber},{ColumnNumber} / {base.Message}";
+                    return $"{{Модуль {ModuleName} / Ошибка в строке: {LineNumber},{ColumnNumber} / {base.Message}}}";
                 
-                return $"Модуль {ModuleName} / Ошибка в строке: {LineNumber} / {base.Message}";
+                return $"{{Модуль {ModuleName} / Ошибка в строке: {LineNumber} / {base.Message}}}";
             }
         }
 
