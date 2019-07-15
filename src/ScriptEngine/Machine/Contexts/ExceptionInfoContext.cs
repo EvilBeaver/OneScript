@@ -165,7 +165,7 @@ namespace ScriptEngine.Machine.Contexts
                     return ValueFactory.Create();
 
                 var inner = new ExternalSystemException(_exc.InnerException.InnerException);
-                if (inner.LineNumber == 0)
+                if (inner.LineNumber == CodePositionInfo.OUT_OF_TEXT)
                 {
                     inner.ModuleName = this.ModuleName;
                     inner.Code = this.SourceLine;

@@ -86,6 +86,11 @@ namespace ScriptEngine
             RegisterScopeIfNeeded();
 
             var parser = new PreprocessingLexer();
+            parser.UnknownDirective += (sender, args) =>
+            {
+                // все неизвестные директивы возвращать назад и обрабатывать старым кодом
+                args.IsHandled = true;
+            };
             parser.Code = source.Code;
 
             var compiler = new Compiler.Compiler();

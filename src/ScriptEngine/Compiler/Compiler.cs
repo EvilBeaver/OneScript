@@ -192,7 +192,7 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException exc)
             {
-                if(exc.LineNumber == 0)
+                if(exc.LineNumber == CodePositionInfo.OUT_OF_TEXT)
                     AppendCodeInfo(_lexer.GetCodePosition(), exc);
                 throw;
             }

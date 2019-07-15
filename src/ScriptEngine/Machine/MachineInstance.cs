@@ -10,6 +10,7 @@ using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
@@ -399,7 +400,7 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
-                    if(exc.LineNumber == 0)
+                    if(exc.LineNumber == CodePositionInfo.OUT_OF_TEXT)
                         SetScriptExceptionSource(exc);
 
                     if (_exceptionsStack.Count == 0)
