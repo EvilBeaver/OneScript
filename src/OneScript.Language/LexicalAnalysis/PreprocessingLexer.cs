@@ -181,6 +181,9 @@ namespace OneScript.Language.LexicalAnalysis
                 throw PreprocessorError("Ожидается закрывающая скобка");
             }
 
+            if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+                throw PreprocessorError("Ожидается объявление препроцессора");
+            
             var expression = IsDefined(_lastExtractedLexem.Content);
             NextLexem();
             return expression;

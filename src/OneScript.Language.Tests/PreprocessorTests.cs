@@ -227,6 +227,38 @@ namespace OneScript.Language.Tests
         }
 
         [Fact]
+        public void PreprocessingLexer_ExpressionInterrupted()
+        {
+            var pp = new PreprocessingLexer();
+            pp.Define("Сервер");
+
+            var code = @"
+            #Если Сервер ИЛИ Тогда
+                F;
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+        
+        [Fact]
+        public void PreprocessingLexer_ExpressionUnexpected()
+        {
+            var pp = new PreprocessingLexer();
+            pp.Define("Сервер");
+
+            var code = @"
+            #Если Сервер ИЛИ + Тогда
+                F;
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+
+        [Fact]
         public void PreprocessingLexer_Else_Without_If()
         {
             var pp = new PreprocessingLexer();
