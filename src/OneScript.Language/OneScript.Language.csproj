@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
@@ -17,7 +17,7 @@
     <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
     <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Title>OneScript Parser</Title>
+    <Title>OneScript BSL Parse Tools</Title>
     <PackageDescription>Parser components for 1Script and/or BSL</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2019</PackageCopyright>
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
