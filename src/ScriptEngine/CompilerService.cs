@@ -18,9 +18,10 @@ namespace ScriptEngine
     {
         SymbolScope _scope;
 
-        readonly ModuleCompilerContext _currentContext;
-
-        readonly List<int> _predefinedVariables = new List<int>();
+        private readonly ModuleCompilerContext _currentContext;
+        private readonly List<int> _predefinedVariables = new List<int>();
+        private readonly List<string> _preprocessorVariables = new List<string>();
+        
 
         internal CompilerService(CompilerContext outerContext)
         {
@@ -59,6 +60,11 @@ namespace ScriptEngine
             return _currentContext.DefineMethod(methodInfo).CodeIndex;
         }
 
+        public void DefinePreprocessorValue(string name)
+        {
+            _preprocessorVariables.Add(name);
+        }
+        
         private void RegisterScopeIfNeeded()
         {
             if (_scope == null)
@@ -86,6 +92,10 @@ namespace ScriptEngine
             RegisterScopeIfNeeded();
 
             var parser = new PreprocessingLexer();
+            foreach (var variable in _preprocessorVariables)
+            {
+                parser.Define(variable);
+            }
             parser.UnknownDirective += (sender, args) =>
             {
                 // все неизвестные директивы возвращать назад и обрабатывать старым кодом
