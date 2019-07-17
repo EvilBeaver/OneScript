@@ -49,6 +49,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HTTPServices", "ASPNETHandl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebApp", "TestWebApp\TestWebApp.csproj", "{6DE97986-8304-45AE-BD47-63A5563F9C3A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Language", "OneScript.Language\OneScript.Language.csproj", "{0B30DF8B-BD15-4C63-9CC4-1E123566B5B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Language.Tests", "OneScript.Language.Tests\OneScript.Language.Tests.csproj", "{872BFF20-7AD9-4741-B163-CD648AD3418F}"
+EndProject
 Global
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
@@ -118,6 +122,18 @@ Global
 		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.Release|x86.ActiveCfg = Release|Any CPU
 		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.ReleaseNetStandard|x86.ActiveCfg = Release|Any CPU
 		{6DE97986-8304-45AE-BD47-63A5563F9C3A}.ReleaseNetStandard|x86.Build.0 = Release|Any CPU
+		{0B30DF8B-BD15-4C63-9CC4-1E123566B5B3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0B30DF8B-BD15-4C63-9CC4-1E123566B5B3}.Debug|x86.Build.0 = Debug|Any CPU
+		{0B30DF8B-BD15-4C63-9CC4-1E123566B5B3}.Release|x86.ActiveCfg = Release|Any CPU
+		{0B30DF8B-BD15-4C63-9CC4-1E123566B5B3}.Release|x86.Build.0 = Release|Any CPU
+		{0B30DF8B-BD15-4C63-9CC4-1E123566B5B3}.ReleaseNetStandard|x86.ActiveCfg = Debug|Any CPU
+		{0B30DF8B-BD15-4C63-9CC4-1E123566B5B3}.ReleaseNetStandard|x86.Build.0 = Debug|Any CPU
+		{872BFF20-7AD9-4741-B163-CD648AD3418F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{872BFF20-7AD9-4741-B163-CD648AD3418F}.Debug|x86.Build.0 = Debug|Any CPU
+		{872BFF20-7AD9-4741-B163-CD648AD3418F}.Release|x86.ActiveCfg = Release|Any CPU
+		{872BFF20-7AD9-4741-B163-CD648AD3418F}.Release|x86.Build.0 = Release|Any CPU
+		{872BFF20-7AD9-4741-B163-CD648AD3418F}.ReleaseNetStandard|x86.ActiveCfg = Debug|Any CPU
+		{872BFF20-7AD9-4741-B163-CD648AD3418F}.ReleaseNetStandard|x86.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

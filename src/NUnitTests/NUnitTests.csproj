@@ -78,6 +78,10 @@
     <Compile Include="TypeReflectionTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj">
+      <Project>{0b30df8b-bd15-4c63-9cc4-1e123566b5b3}</Project>
+      <Name>OneScript.Language</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
       <Project>{f09a46bd-5737-45e7-ba60-a47c9f7821a9}</Project>
       <Name>ScriptEngine.HostedScript</Name>

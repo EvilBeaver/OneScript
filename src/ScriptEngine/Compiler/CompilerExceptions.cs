@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
 
 namespace ScriptEngine.Compiler
 {
@@ -20,16 +22,13 @@ namespace ScriptEngine.Compiler
 
         }
 
-        internal static CompilerException AppendCodeInfo(CompilerException exc, int line, string codeString)
-        {
-            exc.LineNumber = line;
-            exc.Code = codeString;
-            return exc;
-        }
-
         internal static CompilerException AppendCodeInfo(CompilerException exc, CodePositionInfo codePosInfo)
         {
-            AppendCodeInfo(exc, codePosInfo.LineNumber, codePosInfo.Code);
+            exc.LineNumber = codePosInfo.LineNumber;
+            exc.ColumnNumber = codePosInfo.LineNumber;
+            exc.Code = codePosInfo.Code;
+            exc.ModuleName = codePosInfo.ModuleName;
+            
             return exc;
         }
 

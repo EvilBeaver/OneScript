@@ -82,6 +82,19 @@ namespace ScriptEngine
         public CompilerService GetCompilerService()
         {
             var cs = new CompilerService(Environment.SymbolsContext);
+            switch (System.Environment.OSVersion.Platform)
+            {
+                case PlatformID.Unix:
+                    cs.DefinePreprocessorValue("Linux");
+                    break;
+                case PlatformID.MacOSX:
+                    cs.DefinePreprocessorValue("MacOS");
+                    break;
+                case PlatformID.Win32NT:
+                    cs.DefinePreprocessorValue("Windows");
+                    break;
+            }
+            
             cs.ProduceExtraCode = ProduceExtraCode;
             cs.DirectiveResolver = DirectiveResolver;
             return cs;

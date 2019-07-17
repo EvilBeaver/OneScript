@@ -224,8 +224,18 @@ namespace ScriptEngine.HostedScript
             }
 
             var compilerSvc = GetCompilerService();
+            DefineConstants(compilerSvc);
             var module = _engine.LoadModuleImage(compilerSvc.Compile(src));
             return InitProcess(host, module);
+        }
+
+        private void DefineConstants(CompilerService compilerSvc)
+        {
+            var definitions = GetWorkingConfig()["preprocessor.define"]?.Split(',') ?? new string[0];
+            foreach (var val in definitions)
+            {
+                compilerSvc.DefinePreprocessorValue(val);
+            }
         }
 
         [Obsolete]
