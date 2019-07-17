@@ -198,8 +198,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         }
 
         private HttpWebRequest CreateRequest(string resource)
-        {http://qaru.site/questions/45913/the-request-was-aborted-could-not-create-ssltls-secure-channel
-
+        {
             var uriBuilder = new UriBuilder(_hostUri);
             if(Port != 0)
                 uriBuilder.Port = Port;
