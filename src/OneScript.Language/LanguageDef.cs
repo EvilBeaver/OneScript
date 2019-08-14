@@ -18,7 +18,7 @@ namespace OneScript.Language
         static readonly Dictionary<Token, int> _priority = new Dictionary<Token, int>();
 
         static readonly Dictionary<string, Token> _stringToToken =
-            new Dictionary<string, Token>(StringComparer.InvariantCultureIgnoreCase);
+            new Dictionary<string, Token>(StringComparer.OrdinalIgnoreCase);
 
         const int BUILTINS_INDEX = (int)Token.ByValParam;
 
