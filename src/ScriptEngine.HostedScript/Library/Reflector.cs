@@ -173,20 +173,6 @@ namespace ScriptEngine.HostedScript.Library
             return clrType.GetMethod(methodName) != null;
         }
 
-        private static object CreateMethodsMapper(Type clrType)
-        {
-            var mapperType = typeof(ContextMethodsMapper<>).MakeGenericType(clrType);
-            var instance = Activator.CreateInstance(mapperType);
-            return instance;
-        }
-
-        private static object CreatePropertiesMapper(Type clrType)
-        {
-            var mapperType = typeof(ContextPropertyMapper<>).MakeGenericType(clrType);
-            var instance = Activator.CreateInstance(mapperType);
-            return instance;
-        }
-
         private static Type GetReflectableClrType(TypeTypeValue type)
         {
             Type clrType;
