@@ -34,13 +34,4 @@
     <DocumentationFile>bin\Release\net452\ScriptEngine.HostedScript.xml</DocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
-  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
-    <Message Text="Copying StandaloneRunner resources" />
-    <ItemGroup>
-      <CopyToStandalone Include="$(TargetPath)" />
-      <CopyToStandalone Include="$(TargetDir)DotNetZip.dll" />
-      <CopyToStandalone Include="$(TargetDir)Newtonsoft.Json.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(CopyToStandalone)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
-  </Target>
 </Project>

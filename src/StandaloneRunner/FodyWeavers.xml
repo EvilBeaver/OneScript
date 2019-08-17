@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
+  <Costura DisableCompression="true" IncludeDebugSymbols="false">
+    <IncludeAssemblies>
+      ScriptEngine
+      ScriptEngine.HostedScript
+      DotNetZip
+      Newtonsoft.Json
+      OneScript.DebugProtocol
+    </IncludeAssemblies>
+  </Costura>
+</Weavers>
