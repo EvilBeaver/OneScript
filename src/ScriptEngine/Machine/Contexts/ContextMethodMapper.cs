@@ -13,6 +13,69 @@ using System.Runtime.CompilerServices;
 
 namespace ScriptEngine.Machine.Contexts
 {
+    public class IdentifiersTrie
+    {
+        private class TrieNode
+        {
+            public char charL;
+            public char charU;
+            public int value;
+            public TrieNode sibl;
+            public TrieNode next;
+
+            public TrieNode Find(char ch)
+            {
+                var node = sibl;
+                while (node != null)
+                {
+                    if (node.charL == ch || node.charU == ch)
+                        return node;
+                    node = node.sibl;
+                }
+                return null;
+            }
+        }
+
+        TrieNode root;
+
+        public IdentifiersTrie() { root = new TrieNode(); }
+
+        public void Add(string str, int val)
+        {
+            TrieNode node = root;
+            foreach (char ch in str)
+            {
+                TrieNode key = node.Find(ch);
+                if (key == null)
+                {
+                    key = new TrieNode() { charL = Char.ToLower(ch), charU = Char.ToUpper(ch), value = -1 };
+                    key.sibl = node.sibl;
+                    node.sibl = key;
+                    key.next = new TrieNode();
+                }
+                node = key.next;
+            }
+
+            node.value = val;
+        }
+
+        public int Find(string str)
+        {
+            TrieNode node = root;
+            foreach (char ch in str)
+            {
+                TrieNode key = node.Find(ch);
+                if (key == null)
+                    return -1;
+
+                node = key.next;
+            }
+
+            return node.value;
+        }
+    }
+
+
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class ContextMethodAttribute : Attribute
     {
@@ -21,10 +84,10 @@ namespace ScriptEngine.Machine.Contexts
 
         public ContextMethodAttribute(string name, string alias = null)
         {
-            if(!Utils.IsValidIdentifier(name))
+            if (!Utils.IsValidIdentifier(name))
                 throw new ArgumentException("Name must be a valid identifier");
 
-            if(!string.IsNullOrEmpty(alias) && !Utils.IsValidIdentifier(alias))
+            if (!string.IsNullOrEmpty(alias) && !Utils.IsValidIdentifier(alias))
                 throw new ArgumentException("Alias must be a valid identifier");
 
             _name = name;
@@ -40,7 +103,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _alias;
         }
-        
+
         public string GetAlias(string nativeMethodName)
         {
             if (!string.IsNullOrEmpty(_alias))
@@ -53,7 +116,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             return null;
         }
-        
+
         public bool IsDeprecated { get; set; }
 
         public bool ThrowOnUse { get; set; }
@@ -71,7 +134,8 @@ namespace ScriptEngine.Machine.Contexts
     public class ContextMethodsMapper<TInstance>
     {
         private List<InternalMethInfo> _methodPtrs;
-        
+        private IdentifiersTrie _methodNumbers;
+
         private void Init()
         {
             if (_methodPtrs == null)
@@ -83,6 +147,23 @@ namespace ScriptEngine.Machine.Contexts
                         _methodPtrs = new List<InternalMethInfo>();
                         MapType(typeof(TInstance));
                     }
+                }
+            }
+        }
+
+        private void InitSearch()
+        {
+            if (_methodNumbers == null)
+            {
+                Init();
+                _methodNumbers = new IdentifiersTrie();
+                for (int idx = 0; idx < _methodPtrs.Count; ++idx)
+                {
+                    var methinfo = _methodPtrs[idx].MethodInfo;
+
+                    _methodNumbers.Add(methinfo.Name, idx);
+                    if (methinfo.Alias != null)
+                        _methodNumbers.Add(methinfo.Alias, idx);
                 }
             }
         }
@@ -107,20 +188,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public int FindMethod(string name)
         {
-            Init();
+            InitSearch();
 
-            // поскольку этот метод вызывается довольно часто, то тут
-            // возможна некоторая просадка по производительности 
-            // за счет сравнения IgnoreCase вместо обычного "числового" сравнения
-            // Надо будет понаблюдать или вообще замерить
-            //
-            var idx = _methodPtrs.FindIndex(x => 
-                String.Compare(x.MethodInfo.Name, name, StringComparison.OrdinalIgnoreCase) == 0 
-                || String.Compare(x.MethodInfo.Alias, name, StringComparison.OrdinalIgnoreCase) == 0 );
+            var idx = _methodNumbers.Find(name);
+
             if (idx < 0)
-            {
                 throw RuntimeException.MethodNotFoundException(name);
-            }
 
             return idx;
         }
@@ -133,23 +206,15 @@ namespace ScriptEngine.Machine.Contexts
                 return _methodPtrs.Count;
             }
         }
-        
+
         private void MapType(Type type)
         {
-            var methods = type.GetMethods()
+            _methodPtrs = type.GetMethods()
                 .SelectMany(method => method.GetCustomAttributes(typeof(ContextMethodAttribute), false)
-                    .Select(attr => new {
-                        Method = method,
-                        Binding = (ContextMethodAttribute)attr
-                    })
-                );
-
-            foreach (var item in methods)
-            {
-                _methodPtrs.Add(new InternalMethInfo(item.Method, item.Binding));
-            }
+                    .Select(attr => new InternalMethInfo(method, (ContextMethodAttribute)attr)) )
+                .ToList();
         }
-        
+
         private class InternalMethInfo
         {
             private readonly Lazy<ContextCallableDelegate<TInstance>> _method;
@@ -157,7 +222,7 @@ namespace ScriptEngine.Machine.Contexts
 
             public InternalMethInfo(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
             {
-                _method = new Lazy<ContextCallableDelegate<TInstance>>(()=>
+                _method = new Lazy<ContextCallableDelegate<TInstance>>(() =>
                 {
                     var isFunc = target.ReturnType != typeof(void);
                     return isFunc ? CreateFunction(target) : CreateProcedure(target);
@@ -240,7 +305,7 @@ namespace ScriptEngine.Machine.Contexts
                 );
 
                 var body = Expression.Block(
-                    methodCall, 
+                    methodCall,
                     returnExpr,
                     Expression.Label(returnLabel, defaultValue)
                     );
@@ -295,7 +360,7 @@ namespace ScriptEngine.Machine.Contexts
                     var defaultArg = Expression.ArrayIndex(defaultsClojure, Expression.Constant(i));
                     var conversionCall = Expression.Call(convertMethod, indexedArg, defaultArg);
                     argsPass.Add(conversionCall);
-                    
+
                 }
 
                 var methodCall = Expression.Invoke(methodClojure, argsPass);
@@ -317,7 +382,7 @@ namespace ScriptEngine.Machine.Contexts
                     types.Add(target.ReturnType);
                     delegateType = Expression.GetFuncType(types.ToArray());
                 }
-                
+
                 var deleg = target.CreateDelegate(delegateType);
 
                 var delegateExpr = Expression.Constant(deleg);
