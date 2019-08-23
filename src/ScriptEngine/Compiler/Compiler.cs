@@ -1827,7 +1827,7 @@ namespace ScriptEngine.Compiler
 
             if (parameters.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
-                throw CompilerException.TooLittleArgumentsPassed();
+                throw CompilerException.TooFewArgumentsPassed();
             }
         }
 
@@ -1920,7 +1920,7 @@ namespace ScriptEngine.Compiler
             if (funcId == OperationCode.Min || funcId == OperationCode.Max)
             {
                 if (passedArgs.Length == 0)
-                    throw CompilerException.TooLittleArgumentsPassed();
+                    throw CompilerException.TooFewArgumentsPassed();
             }
             else
             {

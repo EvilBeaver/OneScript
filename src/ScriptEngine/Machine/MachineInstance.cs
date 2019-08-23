@@ -1163,7 +1163,7 @@ namespace ScriptEngine.Machine
 
             if (methInfo.Params.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
-                throw RuntimeException.TooLittleArgumentsPassed();
+                throw RuntimeException.TooFewArgumentsPassed();
             }
         }
 
