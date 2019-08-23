@@ -133,11 +133,11 @@ namespace ScriptEngine.HostedScript.Library
         #endregion
 
         private static readonly ContextMethodsMapper<FixedStructureImpl> _methods = new ContextMethodsMapper<FixedStructureImpl>();
-        
+
         /// <summary>
         /// Создает фиксированную структуру по исходной структуре
         /// </summary>
-        /// <param name="structure">Исходная структура</param>
+        /// <param name="structObject">Исходная структура</param>
         //[ScriptConstructor(Name = "Из структуры")]
         private static FixedStructureImpl Constructor(StructureImpl structObject)
         {
@@ -145,10 +145,11 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
-        /// Создает фиксированную структуру по заданному перечню свойств и значений
+        /// Создает фиксированную структуру по структуре либо заданному перечню свойств и значений
         /// </summary>
-        /// <param name="strProperties">Строка с именами свойств, указанными через запятую.</param>
-        /// <param name="args">Значения свойств. Каждое значение передается, как отдельный параметр.</param>
+        /// <param name="param1">Структура либо строка с именами свойств, указанными через запятую.</param>
+        /// <param name="args">Только для перечня свойств:
+        /// Значения свойств. Каждое значение передается, как отдельный параметр.</param>
         [ScriptConstructor(Name = "По ключам и значениям")]
         public static FixedStructureImpl Constructor(IValue param1, IValue[] args)
         {

@@ -84,7 +84,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="str">Строка, которую требуется преобразовать в ДвоичныеДанные.</param>
         /// <param name="encoding">Кодировка текста</param>
-        /// <param name="useBOM">Определяет, будет ли добавлена метка порядка байт (BOM) кодировки текста в начало данных.</param>
+        /// <param name="addBOM">Определяет, будет ли добавлена метка порядка байт (BOM) кодировки текста в начало данных.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
         [ContextMethod("ПолучитьДвоичныеДанныеИзСтроки")]
         public BinaryDataContext GetBinaryDataFromString(string str, IValue encoding = null, bool addBOM = false)

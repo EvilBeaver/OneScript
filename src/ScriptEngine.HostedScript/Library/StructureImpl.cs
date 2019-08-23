@@ -239,8 +239,9 @@ namespace ScriptEngine.HostedScript.Library
         /// <summary>
         /// Создает структуру по заданному перечню свойств и значений
         /// </summary>
-        /// <param name="strProperties">Строка с именами свойств, указанными через запятую.</param>
-        /// <param name="args">Значения свойств. Каждое значение передается, как отдельный параметр.</param>
+        /// <param name="param1">Фиксированная структура либо строка с именами свойств, указанными через запятую.</param>
+        /// <param name="args">Только для перечня свойств:
+        /// Значения свойств. Каждое значение передается, как отдельный параметр.</param>
         [ScriptConstructor(Name = "По ключам и значениям")]
         public static StructureImpl Constructor(IValue param1, IValue[] args)
         {

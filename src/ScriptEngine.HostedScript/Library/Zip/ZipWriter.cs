@@ -39,6 +39,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="compressionMethod">МетодСжатияZIP (Сжатие/Копирование)</param>
         /// <param name="compressionLevel">УровеньСжатияZIP (Минимальный/Оптимальный/Максимальный)</param>
         /// <param name="encryptionMethod">МетодШифрованияZIP (в текущей реализации не поддерживается)</param>
+        /// <param name="encoding">Кодировка имен файлов в архиве.</param>
         [ContextMethod("Открыть", "Open")]
         public void Open(
             string filename, 
