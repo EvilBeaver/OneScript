@@ -74,7 +74,7 @@ namespace ScriptEngine.Compiler
             return new CompilerException(Locale.NStr("ru='Использование процедуры, как функции';en='Procedure called as function'"));            
         }
 
-        internal static CompilerException TooLittleArgumentsPassed()
+        internal static CompilerException TooFewArgumentsPassed()
         {
             return new CompilerException(Locale.NStr("ru='Недостаточно фактических параметров';en='Not enough actual parameters'"));
         }

@@ -96,7 +96,7 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Слишком много фактических параметров");
         }
 
-        public static RuntimeException TooLittleArgumentsPassed()
+        public static RuntimeException TooFewArgumentsPassed()
         {
             return new RuntimeException("Недостаточно фактических параметров");
         }

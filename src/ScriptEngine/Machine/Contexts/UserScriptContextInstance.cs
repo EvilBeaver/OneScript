@@ -67,7 +67,7 @@ namespace ScriptEngine.Machine.Contexts
                         + ", передано параметров " + constructorParamsCount.ToString()
                         );
                 else if (procInfo.Params.Skip(constructorParamsCount).Any(param => !param.HasDefaultValue))
-                    throw RuntimeException.TooLittleArgumentsPassed();
+                    throw RuntimeException.TooFewArgumentsPassed();
 
                 CallAsProcedure(methId, ConstructorParams);
             }
