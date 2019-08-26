@@ -43,6 +43,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// </summary>
         /// <param name="filename">Имя ZIP файла, который требуется открыть для чтения.</param>
         /// <param name="password">Пароль к файлу, если он зашифрован.</param>
+        /// <param name="encoding">Кодировка имен файлов в архиве.</param>
         [ContextMethod("Открыть","Open")]
         public void Open(string filename, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
