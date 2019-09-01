@@ -34,6 +34,7 @@ namespace ScriptEngine.HostedScript
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
+            GlobalsManager.RegisterInstance(_globalCtx);
 
             InitializationCallback = (eng, env) =>
             {
