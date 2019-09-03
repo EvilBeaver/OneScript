@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ScriptEngine.HostedScript
+namespace ScriptEngine.HostedScript.Library.Timezones
 {
     public class TimeZoneConverter
     {
