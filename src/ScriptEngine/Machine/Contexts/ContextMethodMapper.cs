@@ -1,7 +1,7 @@
 ﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
@@ -70,7 +70,7 @@ namespace ScriptEngine.Machine.Contexts
     public class ContextMethodsMapper<TInstance>
     {
         private List<InternalMethInfo> _methodPtrs;
-        private IdentifiersTrie _methodNumbers;
+        private IdentifiersTrie<int> _methodNumbers;
 
         private void Init()
         {
@@ -92,7 +92,7 @@ namespace ScriptEngine.Machine.Contexts
             if (_methodNumbers == null)
             {
                 Init();
-                _methodNumbers = new IdentifiersTrie();
+                _methodNumbers = new IdentifiersTrie<int>();
                 for (int idx = 0; idx < _methodPtrs.Count; ++idx)
                 {
                     var methinfo = _methodPtrs[idx].MethodInfo;
@@ -126,9 +126,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             InitSearch();
 
-            var idx = _methodNumbers.Find(name);
-
-            if (idx < 0)
+            if (!_methodNumbers.TryFind(name, out var idx))
                 throw RuntimeException.MethodNotFoundException(name);
 
             return idx;
@@ -254,7 +252,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 // For those who dare:
                 // Код ниже формирует следующую лямбду с 2-мя замыканиями realMethodDelegate и defaults:
-                // (inst, args) => 
+                // (inst, args) =>
                 // {
                 //    realMethodDelegate(inst,
                 //        ConvertParam<TypeOfArg1>(args[i], defaults[i]),
