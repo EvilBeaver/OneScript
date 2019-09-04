@@ -396,7 +396,24 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
-        /// Вызывает метод по его имени.
+        /// Получает свойство по его имени.
+        /// </summary>
+        /// <param name="target">Объект, свойство которого необходимо установить.</param>
+        /// <param name="prop">Имя свойства</param>
+        /// <returns>Значение свойства</returns>
+        [ContextMethod("ПолучитьСвойство", "GetProperty")]
+        public IValue GetProperty(IRuntimeContextInstance target, string prop)
+        {
+            int propIdx;
+            if (target is ScriptDrivenObject script)
+                propIdx = script.FindAnyProperty(prop);
+            else
+                propIdx = target.FindProperty(prop);
+            return target.GetPropValue(propIdx);
+        }
+
+        /// <summary>
+        /// Устанавливает свойство по его имени.
         /// </summary>
         /// <param name="target">Объект, свойство которого необходимо установить.</param>
         /// <param name="prop">Имя свойства</param>
