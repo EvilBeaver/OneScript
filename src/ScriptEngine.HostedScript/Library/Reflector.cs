@@ -395,6 +395,23 @@ namespace ScriptEngine.HostedScript.Library
             return result;
         }
 
+        /// <summary>
+        /// Вызывает метод по его имени.
+        /// </summary>
+        /// <param name="target">Объект, свойство которого необходимо установить.</param>
+        /// <param name="prop">Имя свойства</param>
+        /// <param name="value">Значение свойства.</param>
+        [ContextMethod("УстановитьСвойство", "SetProperty")]
+        public void SetProperty(IRuntimeContextInstance target, string prop, IValue value)
+        {
+            int propIdx;
+            if (target is ScriptDrivenObject script)
+                propIdx = script.FindAnyProperty(prop);
+            else
+                propIdx = target.FindProperty(prop);
+            target.SetPropValue(propIdx, value);
+        }
+
         private static void FillPropertiesTable(ValueTable.ValueTable result, IEnumerable<VariableInfo> properties)
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
