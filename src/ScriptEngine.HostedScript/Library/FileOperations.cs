@@ -31,9 +31,11 @@ namespace ScriptEngine.HostedScript.Library
             var scheme = new Uri(source).Scheme;
 
             if(scheme == Uri.UriSchemeHttp || scheme == Uri.UriSchemeHttps)
-                DownloadFileViaHttp(source, destination);
+                DownloadFromRemote<HttpWebRequest>(source, 
+                    destination, WebRequestMethods.Http.Get);
             else if(scheme == Uri.UriSchemeFtp)
-                DownloadFileViaFtp(source, destination);
+                DownloadFromRemote<FtpWebRequest>(source, 
+                    destination, WebRequestMethods.Ftp.DownloadFile);
             else
                 File.Copy(source, destination, true);
 
@@ -50,34 +52,38 @@ namespace ScriptEngine.HostedScript.Library
             var scheme = new Uri(source).Scheme;
 
             if (scheme == Uri.UriSchemeHttp || scheme == Uri.UriSchemeHttps)
-                DownloadFileViaHttp(source, destination, true);
+            {
+                DownloadFromRemote<HttpWebRequest>(source,
+                    destination, WebRequestMethods.Http.Get);
+                DeleteFromRemote<HttpWebRequest>(source, WebRequestMethods.Http.Get);
+            }
             else if (scheme == Uri.UriSchemeFtp)
-                DownloadFileViaFtp(source, destination, true);
+            {
+                DownloadFromRemote<FtpWebRequest>(source,
+                    destination, WebRequestMethods.Ftp.DownloadFile);
+                DeleteFromRemote<FtpWebRequest>(source, WebRequestMethods.Ftp.DeleteFile);
+            }
             else
                 File.Move(source, destination);
         }
 
-        private void DownloadFileViaHttp(string source, string destination, bool delete = false)
+        private void DownloadFromRemote<T>(string source,
+            string destination, string method) where T: WebRequest
         {
-            var req = WebRequest.CreateHttp(source);
-            req.Method = "GET";
+            var req = (T)WebRequest.Create(source);
+            req.Method = method;
 
             using (var respStream = req.GetResponse().GetResponseStream())
                 using (var fs = File.Create(destination))
                     respStream.CopyTo(fs);
-
-            if (delete)
-            {
-                //При смене метода у req, фактически метод остается прежним
-                var reqDelete = WebRequest.CreateHttp(source);
-                reqDelete.Method = "DELETE";
-                using (var resp = reqDelete.GetResponse()) { };
-            }
         }
 
-        private void DownloadFileViaFtp(string source, string destination, bool delete = false)
+        private void DeleteFromRemote<T>(string source, string method) where T : WebRequest
         {
-            throw new NotImplementedException();
+            var req = (T)WebRequest.Create(source);
+            req.Method = method;
+
+            using (var resp = req.GetResponse()) { };
         }
 
         /// <summary>
