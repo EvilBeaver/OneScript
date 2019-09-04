@@ -12,6 +12,9 @@ namespace ScriptEngine.HostedScript.Library.Timezones
 {
     public class TimeZoneConverter
     {
+        private const int MAX_HOURS = 23;
+        private const int MAX_MINUTES = 59;
+
         public static TimeSpan GetTimespan(string timezone)
         {
             TimeSpan span;
@@ -72,11 +75,17 @@ namespace ScriptEngine.HostedScript.Library.Timezones
             return TimeZoneInfo.Local.Id;
         }
 
-        public static string TimeZonePresentation(string id)
+        public static string TimeZonePresentation(string timeZone)
         {
-            var dt = TimeZoneById(id);
-            var oprt = dt.BaseUtcOffset.Hours >= 0 ? "+" : "-";
-            var result = $"GMT{oprt}{dt.BaseUtcOffset.ToString(@"hh\:mm")}";
+            TimeSpan offset;
+            
+            if(IsGmtString(timeZone))
+                offset = TimeSpanByGMTString(timeZone);
+            else
+                offset = TimeZoneById(timeZone).BaseUtcOffset;
+            
+            var oprt = offset.Hours >= 0 ? "+" : "-";
+            var result = $"GMT{oprt}{offset.ToString(@"hh\:mm")}";
             return result;
         }
 
@@ -101,12 +110,20 @@ namespace ScriptEngine.HostedScript.Library.Timezones
 
             hours = int.Parse(arr_id[1]);
 
+            if (hours > MAX_HOURS || minutes > MAX_MINUTES)
+                throw new TimeZoneNotFoundException();
+
             if (!positiveOffset)
                 hours = -hours;
 
             var span = new TimeSpan(hours, minutes, 0);
 
             return span;
+        }
+
+        private static bool IsGmtString(string zone)
+        {
+            return zone.StartsWith("GMT", StringComparison.InvariantCultureIgnoreCase);
         }
 
     }
