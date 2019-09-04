@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security;
 using System.Text;
 
@@ -27,7 +28,15 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("КопироватьФайл", "CopyFile")]
         public void CopyFile(string source, string destination)
         {
-            System.IO.File.Copy(source, destination, true);
+            var scheme = new Uri(source).Scheme;
+
+            if(scheme == Uri.UriSchemeHttp || scheme == Uri.UriSchemeHttps)
+                DownloadFileViaHttp(source, destination);
+            else if(scheme == Uri.UriSchemeFtp)
+                DownloadFileViaFtp(source, destination);
+            else
+                File.Copy(source, destination, true);
+
         }
 
         /// <summary>
@@ -38,7 +47,37 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПереместитьФайл", "MoveFile")]
         public void MoveFile(string source, string destination)
         {
-            System.IO.File.Move(source, destination);
+            var scheme = new Uri(source).Scheme;
+
+            if (scheme == Uri.UriSchemeHttp || scheme == Uri.UriSchemeHttps)
+                DownloadFileViaHttp(source, destination, true);
+            else if (scheme == Uri.UriSchemeFtp)
+                DownloadFileViaFtp(source, destination, true);
+            else
+                File.Move(source, destination);
+        }
+
+        private void DownloadFileViaHttp(string source, string destination, bool delete = false)
+        {
+            var req = WebRequest.CreateHttp(source);
+            req.Method = "GET";
+
+            using (var respStream = req.GetResponse().GetResponseStream())
+                using (var fs = File.Create(destination))
+                    respStream.CopyTo(fs);
+
+            if (delete)
+            {
+                //При смене метода у req, фактически метод остается прежним
+                var reqDelete = WebRequest.CreateHttp(source);
+                reqDelete.Method = "DELETE";
+                using (var resp = reqDelete.GetResponse()) { };
+            }
+        }
+
+        private void DownloadFileViaFtp(string source, string destination, bool delete = false)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
