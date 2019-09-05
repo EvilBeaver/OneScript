@@ -28,7 +28,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("КопироватьФайл", "CopyFile")]
         public void CopyFile(string source, string destination)
         {
-            var scheme = new Uri(source).Scheme;
+            var scheme = PathScheme(source);
 
             if(scheme == Uri.UriSchemeHttp || scheme == Uri.UriSchemeHttps)
                 DownloadFromRemote<HttpWebRequest>(source, 
@@ -49,7 +49,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПереместитьФайл", "MoveFile")]
         public void MoveFile(string source, string destination)
         {
-            var scheme = new Uri(source).Scheme;
+            var scheme = PathScheme(source);
 
             if (scheme == Uri.UriSchemeHttp || scheme == Uri.UriSchemeHttps)
             {
@@ -65,6 +65,15 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
                 File.Move(source, destination);
+        }
+
+        public string PathScheme(string path)
+        {
+            if(Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out Uri uri))
+            {
+                return uri.Scheme;
+            }
+            return Uri.UriSchemeFile;
         }
 
         private void DownloadFromRemote<T>(string source,
