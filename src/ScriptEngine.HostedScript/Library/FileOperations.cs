@@ -55,7 +55,7 @@ namespace ScriptEngine.HostedScript.Library
             {
                 DownloadFromRemote<HttpWebRequest>(source,
                     destination, WebRequestMethods.Http.Get);
-                DeleteFromRemote<HttpWebRequest>(source, WebRequestMethods.Http.Get);
+                DeleteFromRemote<HttpWebRequest>(source, "DELETE");
             }
             else if (scheme == Uri.UriSchemeFtp)
             {
