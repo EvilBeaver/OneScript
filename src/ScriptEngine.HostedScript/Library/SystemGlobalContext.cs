@@ -628,7 +628,7 @@ namespace ScriptEngine.HostedScript.Library
 #endif
             }
         }
-
+        
 #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
