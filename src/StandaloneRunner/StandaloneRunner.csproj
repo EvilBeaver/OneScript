@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net452</TargetFrameworks>
     <Platforms>AnyCPU;x86</Platforms>
-    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>StandaloneRunner.Program</StartupObject>

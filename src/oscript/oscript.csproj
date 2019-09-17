@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <StartupObject>oscript.Program</StartupObject>
     <Platforms>x86</Platforms>
-    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
