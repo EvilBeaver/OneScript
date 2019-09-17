@@ -7,7 +7,7 @@
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>oscript.Program</StartupObject>
-    <Platforms>x86</Platforms>
+    <Platforms>x86;AnyCPU</Platforms>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
