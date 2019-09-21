@@ -40,7 +40,8 @@
     <Target Name="PrepareArtifactsRoot">
         <PropertyGroup>
             <TempFolder>$(ArtifactsRoot)/tmp</TempFolder>
-            <BinFolder>$(TempFolder)/bin</BinFolder>
+            <BinFolder Condition="'$(Platform)' == 'Any CPU'">$(TempFolder)/bin64</BinFolder>
+            <BinFolder Condition="'$(Platform)' == 'x86'">$(TempFolder)/bin</BinFolder>
             <LibFolder>$(TempFolder)/lib</LibFolder>
             <ExamplesFolder>$(TempFolder)/examples</ExamplesFolder>
             <DocFolder>$(TempFolder)/doc</DocFolder>
@@ -64,10 +65,14 @@
     <Target Name="GatherBinaries" DependsOnTargets="Make;PrepareArtifactsRoot">
         <MakeDir Directories="$(BinFolder)" />
         
+        <PropertyGroup>
+            <PlatformToken Condition="'$(Platform)' == 'x86'">x86/</PlatformToken>
+        </PropertyGroup>
+
         <ItemGroup>
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**"/>
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(PlatformToken)$(Configuration)/net452/**"/>
             <BinaryFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/ASPNETHandler.dll"/>
         </ItemGroup>
         
