@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = '1.1.0'
+        ReleaseNumber = '1.2.0'
         outputEnc = '65001'
     }
 
@@ -273,7 +273,7 @@ pipeline {
                 TARGET="/var/www/oscript.io/download/versions/latest/"
                 sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
                 
-                TARGET="/var/www/oscript.io/download/versions/$ReleaseNumber/"
+                TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
                 sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
 
                 """.stripIndent()

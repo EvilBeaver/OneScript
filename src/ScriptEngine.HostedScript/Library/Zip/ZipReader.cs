@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -43,12 +43,23 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// </summary>
         /// <param name="filename">Имя ZIP файла, который требуется открыть для чтения.</param>
         /// <param name="password">Пароль к файлу, если он зашифрован.</param>
+        /// <param name="encoding">Кодировка имен файлов в архиве.</param>
         [ContextMethod("Открыть","Open")]
-        public void Open(string filename, string password = null)
+        public void Open(string filename, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
+            ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
             // fuck non-russian encodings on non-ascii files
-            _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = Encoding.GetEncoding(866) });
+            _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = ChooseEncoding(encoding) });
             _zip.Password = password;
+        }
+
+        private Encoding ChooseEncoding(FileNamesEncodingInZipFile encoding)
+        {
+            if (encoding == FileNamesEncodingInZipFile.Auto || encoding == FileNamesEncodingInZipFile.OsEncodingWithUtf8) 
+                return null;
+            
+            return Encoding.UTF8;
+
         }
 
 

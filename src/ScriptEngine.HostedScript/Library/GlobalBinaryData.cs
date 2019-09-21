@@ -84,7 +84,7 @@ namespace ScriptEngine.HostedScript.Library
         /// </summary>
         /// <param name="str">Строка, которую требуется преобразовать в ДвоичныеДанные.</param>
         /// <param name="encoding">Кодировка текста</param>
-        /// <param name="useBOM">Определяет, будет ли добавлена метка порядка байт (BOM) кодировки текста в начало данных.</param>
+        /// <param name="addBOM">Определяет, будет ли добавлена метка порядка байт (BOM) кодировки текста в начало данных.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
         [ContextMethod("ПолучитьДвоичныеДанныеИзСтроки")]
         public BinaryDataContext GetBinaryDataFromString(string str, IValue encoding = null, bool addBOM = false)
@@ -146,7 +146,20 @@ namespace ScriptEngine.HostedScript.Library
 
         // ToDo: ПолучитьBase64БуферДвоичныхДанныхИзБуфераДвоичныхДанных
 
-        // ToDo: ПолучитьДвоичныеДанныеИзHexСтроки
+        /// <summary>
+        /// Преобразует строку формата Base 16 (Hex) в двоичные данные.
+        /// </summary>
+        /// <param name="str">Строка в формате Base 16 (Hex).</param>
+        /// <returns>Тип: ДвоичныеДанные.</returns>
+        [ContextMethod("ПолучитьДвоичныеДанныеИзHexСтроки")]
+        public BinaryDataContext GetBinaryDataFromHexString(string str)
+        {
+            int NumberChars = str.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(str.Substring(i, 2), 16);
+            return new BinaryDataContext(bytes);
+        }
 
         // ToDo: ПолучитьБуферДвоичныхДанныхИзHexСтроки
 

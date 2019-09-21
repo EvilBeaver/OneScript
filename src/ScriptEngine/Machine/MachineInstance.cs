@@ -10,7 +10,8 @@ using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 
@@ -100,17 +101,26 @@ namespace ScriptEngine.Machine
         {
             PrepareReentrantMethodExecution(sdo, methodIndex);
             var method = _module.Methods[methodIndex];
-            for (int i = 0; i < method.Signature.Params.Length; i++)
+            var parameters = method.Signature.Params;
+            for (int i = 0; i < parameters.Length; i++)
             {
                 if (i >= arguments.Length)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
                 else if (arguments[i] is IVariable)
                 {
-                    // TODO: Alias ?
-                    _currentFrame.Locals[i] =
+                    if (parameters[i].IsByValue)
+                    {
+                        var value = ((IVariable)arguments[i]).Value;
+                        _currentFrame.Locals[i] = Variable.Create(value, method.Variables[i]);
+                    }
+                    else
+                    {
+                        // TODO: Alias ?
+                        _currentFrame.Locals[i] =
                         Variable.CreateReference((IVariable)arguments[i], method.Variables[i].Identifier);
+                    }
                 }
-                else if (arguments[i] == null)
+                else if (arguments[i] == null || arguments[i].DataType == DataType.NotAValidValue)
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
                 else
                     _currentFrame.Locals[i] = Variable.Create(arguments[i], method.Variables[i]);
@@ -399,7 +409,7 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
-                    if(exc.LineNumber == 0)
+                    if(exc.LineNumber == CodePositionInfo.OUT_OF_TEXT)
                         SetScriptExceptionSource(exc);
 
                     if (_exceptionsStack.Count == 0)
@@ -857,6 +867,8 @@ namespace ScriptEngine.Machine
             var scope = _scopes[methodRef.ContextIndex];
             var methInfo = scope.Methods[methodRef.CodeIndex];
 
+            var isLocalCall = scope.Instance == this.TopScope.Instance;
+            
             int argCount = (int)_operationStack.Pop().AsNumber();
             IValue[] argValues = new IValue[argCount];
 
@@ -868,7 +880,7 @@ namespace ScriptEngine.Machine
                 {
                     if (i < methInfo.Params.Length)
                     {
-                        if (!methInfo.Params[i].IsDefaultValueDefined())
+                        if (!methInfo.Params[i].IsDefaultValueDefined() || !isLocalCall)
                             argValue = null;
                         else
                         {
@@ -888,7 +900,7 @@ namespace ScriptEngine.Machine
 
             bool needsDiscarding;
 
-            if (scope.Instance == this.TopScope.Instance)
+            if (isLocalCall)
             {
                 var sdo = scope.Instance as ScriptDrivenObject;
                 System.Diagnostics.Debug.Assert(sdo != null);
@@ -1151,7 +1163,7 @@ namespace ScriptEngine.Machine
 
             if (methInfo.Params.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
-                throw RuntimeException.TooLittleArgumentsPassed();
+                throw RuntimeException.TooFewArgumentsPassed();
             }
         }
 
@@ -2337,7 +2349,7 @@ namespace ScriptEngine.Machine
             var ctx = ExtractCompilerContext();
 
             ICodeSource stringSource = new StringBasedSource(expression);
-            var parser = new Parser();
+            var parser = new Lexer();
             parser.Code = stringSource.Code;
             var compiler = new Compiler.Compiler();
             ctx.PushScope(new SymbolScope()); // скоуп выражения
@@ -2355,7 +2367,7 @@ namespace ScriptEngine.Machine
             var entryId = CurrentCodeEntry().ToString();
 
             ICodeSource stringSource = new StringBasedSource(execBatch);
-            var parser = new Parser();
+            var parser = new Lexer();
             parser.Code = stringSource.Code;
             var compiler = new Compiler.Compiler();
             ctx.PushScope(new SymbolScope()); // скоуп выражения
@@ -2363,7 +2375,7 @@ namespace ScriptEngine.Machine
             modImg.ModuleInfo = new ModuleInformation();
             modImg.ModuleInfo.Origin = $"{entryId}:<exec>";
             modImg.ModuleInfo.ModuleName = $"{entryId}:<exec>";
-            modImg.ModuleInfo.CodeIndexer = parser.GetCodeIndexer();
+            modImg.ModuleInfo.CodeIndexer = parser.Iterator;
             var code = new LoadedModule(modImg);
             return code;
         }
