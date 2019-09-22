@@ -190,6 +190,7 @@ namespace ScriptEngine.Machine.Contexts
                 var wrapperType = typeof(CLREnumValueWrapper<>).MakeGenericType(new Type[] { type });
                 var constructor = wrapperType.GetConstructor(new Type[] { typeof(EnumerationContext), type, typeof(DataType) });
                 var osValue = (EnumerationValue)constructor.Invoke(new object[] { null, objParam, DataType.Enumeration });
+                osValue.ValuePresentation = objParam.ToString();
                 return osValue;
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
