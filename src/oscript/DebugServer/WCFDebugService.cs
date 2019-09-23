@@ -15,8 +15,9 @@ using System.Threading.Tasks;
 using OneScript.DebugProtocol;
 using OneScript.Language;
 using ScriptEngine;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
-
+using ScriptEngine.Machine.Contexts;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 using Variable = OneScript.DebugProtocol.Variable;
 
@@ -117,44 +118,114 @@ namespace oscript.DebugServer
         {
             var machine = Controller.GetTokenForThread(threadId).Machine;
             var locals = machine.GetFrameLocals(frameId);
+
             foreach (var step in path)
             {
                 var variable = locals[step];
-                if (HasProperties(variable))
-                {
-                    var obj = variable.AsObject();
-                    locals = new List<IVariable>();
-                    var propsCount = obj.GetPropCount();
-                    for (int i = 0; i < propsCount; i++)
-                    {
-                        string propName = obj.GetPropName(i);
-
-                        try
-                        {
-                            locals.Add(ScriptEngine.Machine.Variable.Create(obj.GetPropValue(i), propName));
-                        }
-                        catch (Exception e)
-                        {
-                            locals.Add(ScriptEngine.Machine.Variable.Create(ValueFactory.Create(e.Message), propName));
-                        }
-
-                    }
-                }
+                locals = GetChildVariables(variable);
             }
 
-            var result = new OneScript.DebugProtocol.Variable[locals.Count];
-            for (int i = 0; i < locals.Count; i++)
+            return GetDebugVariables(locals);
+        }
+
+        private Variable[] GetDebugVariables(IList<IVariable> machineVariables)
+        {
+            var result = new Variable[machineVariables.Count];
+
+            for (int i = 0; i < machineVariables.Count; i++)
             {
-                result[i] = new OneScript.DebugProtocol.Variable()
+                string presentation;
+                string typeName;
+
+                var currentVar = machineVariables[i];
+
+                //На случай проблем, подобных:
+                //https://github.com/EvilBeaver/OneScript/issues/918
+
+                try
                 {
-                    Name = locals[i].Name,
-                    IsStructured = HasProperties(locals[i]),
-                    Presentation = locals[i].AsString(),
-                    TypeName = locals[i].SystemType.Name
+                    presentation = currentVar.AsString();
+                }
+                catch (Exception e)
+                {
+                    presentation = e.Message;
+                }
+
+                try
+                {
+                    typeName = currentVar.SystemType.Name;
+                }
+                catch (Exception e)
+                {
+                    typeName = e.Message;
+                }
+
+                result[i] = new Variable()
+                {
+                    Name = currentVar.Name,
+                    IsStructured = IsStructured(currentVar),
+                    Presentation = presentation,
+                    TypeName = typeName
                 };
             }
 
             return result;
+        }
+
+        private List<IVariable> GetChildVariables(IVariable src)
+        {
+            var variables = new List<IVariable>();
+
+            if (HasProperties(src))
+            {
+                var obj = src.AsObject();
+                var propsCount = obj.GetPropCount();
+                for (int i = 0; i < propsCount; i++)
+                {
+                    string propName = obj.GetPropName(i);
+
+                    IVariable value;
+
+                    try
+                    {
+                        value = ScriptEngine.Machine.Variable.Create(obj.GetPropValue(i), propName);
+                    }
+                    catch (Exception e)
+                    {
+                        value = ScriptEngine.Machine.Variable.Create(ValueFactory.Create(e.Message), propName);
+                    }
+
+                    variables.Add(value);
+
+                }
+            }
+
+            if (HasIndexes(src))
+            {
+                var obj = src.AsObject();
+
+                if(obj is ICollectionContext cntx)
+                {
+                    var itemsCount = cntx.Count();
+                    for (int i = 0; i < itemsCount; i++)
+                    {
+                        IValue value;
+
+                        try
+                        {
+                            value = obj.GetIndexedValue(ValueFactory.Create(i));
+                        }
+                        catch (Exception e)
+                        {
+                            value = ValueFactory.Create(e.Message);
+                        }
+
+                        variables.Add(ScriptEngine.Machine.Variable.Create(value, i.ToString()));
+                    }
+                }
+            }
+
+            return variables;
         }
 
         public Variable Evaluate(int threadId, int contextFrame, string expression)
@@ -211,6 +282,29 @@ namespace oscript.DebugServer
         private MachineInstance GetMachine(int threadId)
         {
             return Controller.GetTokenForThread(threadId).Machine;
+        }
+
+        private bool IsStructured(IVariable variable)
+        {
+            return HasProperties(variable) || HasIndexes(variable);
+        }
+
+        private bool HasIndexes(IValue variable)
+        {
+            if (variable.DataType == DataType.Object)
+            {
+                var obj = variable.AsObject();
+                if (!(variable is IEnumerable<KeyAndValueImpl>)
+                    && obj is IRuntimeContextInstance cntx && cntx.IsIndexed)
+                {
+                    if (obj is ICollectionContext collection)
+                    {
+                        return collection.Count() > 0;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static bool HasProperties(IValue variable)
