@@ -20,6 +20,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 using Variable = OneScript.DebugProtocol.Variable;
+using MachineVariable = ScriptEngine.Machine.Variable;
 
 namespace oscript.DebugServer
 {
@@ -114,7 +115,7 @@ namespace oscript.DebugServer
             return result;
         }
 
-        public OneScript.DebugProtocol.Variable[] GetVariables(int threadId, int frameId, int[] path)
+        public Variable[] GetVariables(int threadId, int frameId, int[] path)
         {
             var machine = Controller.GetTokenForThread(threadId).Machine;
             var locals = machine.GetFrameLocals(frameId);
@@ -128,7 +129,34 @@ namespace oscript.DebugServer
             return GetDebugVariables(locals);
         }
 
-        private Variable[] GetDebugVariables(IList<IVariable> machineVariables)
+		public Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
+		{
+			var machine = Controller.GetTokenForThread(threadId).Machine;
+			var srcVariable = Evaluate(threadId, frameIndex, expression);
+
+			IValue value;
+
+			try
+			{
+				value = GetMachine(threadId).Evaluate(expression, true);
+			}
+			catch (Exception e)
+			{
+				value = ValueFactory.Create(e.Message);
+			}
+
+			var locals = GetChildVariables(MachineVariable.Create(value, "$eval"));
+
+			foreach (var step in path)
+			{
+				var variable = locals[step];
+				locals = GetChildVariables(variable);
+			}
+
+			return GetDebugVariables(locals);
+		}
+		
+		private Variable[] GetDebugVariables(IList<IVariable> machineVariables)
         {
             var result = new Variable[machineVariables.Count];
 
@@ -182,23 +210,42 @@ namespace oscript.DebugServer
                 var propsCount = obj.GetPropCount();
                 for (int i = 0; i < propsCount; i++)
                 {
-                    string propName = obj.GetPropName(i);
+					string propName = obj.GetPropName(i);
 
                     IVariable value;
 
                     try
                     {
-                        value = ScriptEngine.Machine.Variable.Create(obj.GetPropValue(i), propName);
+                        value = MachineVariable.Create(obj.GetPropValue(i), propName);
                     }
                     catch (Exception e)
                     {
-                        value = ScriptEngine.Machine.Variable.Create(ValueFactory.Create(e.Message), propName);
+                        value = MachineVariable.Create(ValueFactory.Create(e.Message), propName);
                     }
 
                     variables.Add(value);
 
                 }
             }
+			else if(src.AsObject() is IEnumerable<KeyAndValueImpl> collection)
+			{
+				var propsCount = collection.Count();
+				foreach (var kv in collection)
+				{
+					IVariable value;
+
+					try
+					{
+						value = MachineVariable.Create(kv.Value, kv.Key.AsString());
+					}
+					catch (Exception e)
+					{
+						value = MachineVariable.Create(ValueFactory.Create(e.Message), kv.Key.AsString());
+					}
+
+					variables.Add(value);
+				}
+			}
 
             if (HasIndexes(src))
             {
@@ -215,12 +262,12 @@ namespace oscript.DebugServer
                         {
                             value = obj.GetIndexedValue(ValueFactory.Create(i));
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            value = ValueFactory.Create(e.Message);
+							continue;
                         }
 
-                        variables.Add(ScriptEngine.Machine.Variable.Create(value, i.ToString()));
+                        variables.Add(MachineVariable.Create(value, i.ToString()));
                     }
                 }
             }
@@ -233,12 +280,12 @@ namespace oscript.DebugServer
             try
             {
                 var value = GetMachine(threadId).Evaluate(expression, true);
-                return new Variable()
-                {
-                    Name = "$evalResult",
-                    Presentation = value.AsString(),
-                    TypeName = value.SystemType.Name,
-                    IsStructured = HasProperties(value)
+				return new Variable()
+				{
+					Name = "$evalResult",
+					Presentation = value.AsString(),
+					TypeName = value.SystemType.Name,
+					IsStructured = IsStructured(MachineVariable.Create(value, "$eval"))
                 };
             }
             catch (ScriptException e)
@@ -286,7 +333,16 @@ namespace oscript.DebugServer
 
         private bool IsStructured(IVariable variable)
         {
-            return HasProperties(variable) || HasIndexes(variable);
+            var result = HasProperties(variable) || HasIndexes(variable);
+			if(!result)
+			{
+				if (variable.DataType == DataType.Object)
+				{
+					var obj = variable.AsObject();
+					result = obj is IEnumerable<KeyAndValueImpl>;
+				}
+			}
+			return result;
         }
 
         private bool HasIndexes(IValue variable)
@@ -294,7 +350,7 @@ namespace oscript.DebugServer
             if (variable.DataType == DataType.Object)
             {
                 var obj = variable.AsObject();
-                if (!(variable is IEnumerable<KeyAndValueImpl>)
+                if (!(obj is IEnumerable<KeyAndValueImpl>)
                     && obj is IRuntimeContextInstance cntx && cntx.IsIndexed)
                 {
                     if (obj is ICollectionContext collection)

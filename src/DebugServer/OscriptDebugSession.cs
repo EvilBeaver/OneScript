@@ -420,18 +420,25 @@ namespace DebugServer
                 SendResponse(response);
                 return;
             }
-
-            OneScript.DebugProtocol.Variable evalResult;
+			int id = -1;
+			OneScript.DebugProtocol.Variable evalResult;
             try
             {
                 evalResult = _process.Evaluate(frame, expression);
-            }
+				if (evalResult.IsStructured)
+				{
+					var loc = new EvaluatedVariableLocator(expression, frameId);
+					id = _variableHandles.Create(loc);
+				}
+			}
             catch (Exception e)
             {
                 evalResult = new OneScript.DebugProtocol.Variable() { Presentation = e.Message };
             }
 
-            var protResult = new EvaluateResponseBody(evalResult.Presentation) {type = evalResult.TypeName};
+
+
+            var protResult = new EvaluateResponseBody(evalResult.Presentation, id) {type = evalResult.TypeName};
             SendResponse(response, protResult);
         }
 
