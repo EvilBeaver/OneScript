@@ -187,11 +187,8 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (type.IsEnum)
             {
-                var wrapperType = typeof(CLREnumValueWrapper<>).MakeGenericType(new Type[] { type });
-                var constructor = wrapperType.GetConstructor(new Type[] { typeof(EnumerationContext), type, typeof(DataType) });
-                var osValue = (EnumerationValue)constructor.Invoke(new object[] { null, objParam, DataType.Enumeration });
-                osValue.ValuePresentation = objParam.ToString();
-                return osValue;
+                var enumImpl = GlobalsManager.GetSimpleEnum(type);
+                return enumImpl.GetPropValue(objParam.ToString());
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
