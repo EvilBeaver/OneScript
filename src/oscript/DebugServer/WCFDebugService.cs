@@ -129,34 +129,34 @@ namespace oscript.DebugServer
             return GetDebugVariables(locals);
         }
 
-		public Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
-		{
-			var machine = Controller.GetTokenForThread(threadId).Machine;
-			var srcVariable = Evaluate(threadId, frameIndex, expression);
+        public Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
+        {
+            var machine = Controller.GetTokenForThread(threadId).Machine;
+            var srcVariable = Evaluate(threadId, frameIndex, expression);
 
-			IValue value;
+            IValue value;
 
-			try
-			{
-				value = GetMachine(threadId).Evaluate(expression, true);
-			}
-			catch (Exception e)
-			{
-				value = ValueFactory.Create(e.Message);
-			}
+            try
+            {
+                value = GetMachine(threadId).Evaluate(expression, true);
+            }
+            catch (Exception e)
+            {
+                value = ValueFactory.Create(e.Message);
+            }
 
-			var locals = GetChildVariables(MachineVariable.Create(value, "$eval"));
+            var locals = GetChildVariables(MachineVariable.Create(value, "$eval"));
 
-			foreach (var step in path)
-			{
-				var variable = locals[step];
-				locals = GetChildVariables(variable);
-			}
+            foreach (var step in path)
+            {
+                var variable = locals[step];
+                locals = GetChildVariables(variable);
+            }
 
-			return GetDebugVariables(locals);
-		}
-		
-		private Variable[] GetDebugVariables(IList<IVariable> machineVariables)
+            return GetDebugVariables(locals);
+        }
+        
+        private Variable[] GetDebugVariables(IList<IVariable> machineVariables)
         {
             var result = new Variable[machineVariables.Count];
 
@@ -210,7 +210,7 @@ namespace oscript.DebugServer
                 var propsCount = obj.GetPropCount();
                 for (int i = 0; i < propsCount; i++)
                 {
-					string propName = obj.GetPropName(i);
+                    string propName = obj.GetPropName(i);
 
                     IVariable value;
 
@@ -227,25 +227,25 @@ namespace oscript.DebugServer
 
                 }
             }
-			else if(src.AsObject() is IEnumerable<KeyAndValueImpl> collection)
-			{
-				var propsCount = collection.Count();
-				foreach (var kv in collection)
-				{
-					IVariable value;
+            else if(src.AsObject() is IEnumerable<KeyAndValueImpl> collection)
+            {
+                var propsCount = collection.Count();
+                foreach (var kv in collection)
+                {
+                    IVariable value;
 
-					try
-					{
-						value = MachineVariable.Create(kv.Value, kv.Key.AsString());
-					}
-					catch (Exception e)
-					{
-						value = MachineVariable.Create(ValueFactory.Create(e.Message), kv.Key.AsString());
-					}
+                    try
+                    {
+                        value = MachineVariable.Create(kv.Value, kv.Key.AsString());
+                    }
+                    catch (Exception e)
+                    {
+                        value = MachineVariable.Create(ValueFactory.Create(e.Message), kv.Key.AsString());
+                    }
 
-					variables.Add(value);
-				}
-			}
+                    variables.Add(value);
+                }
+            }
 
             if (HasIndexes(src))
             {
@@ -264,7 +264,7 @@ namespace oscript.DebugServer
                         }
                         catch (Exception)
                         {
-							continue;
+                            continue;
                         }
 
                         variables.Add(MachineVariable.Create(value, i.ToString()));
@@ -280,12 +280,12 @@ namespace oscript.DebugServer
             try
             {
                 var value = GetMachine(threadId).Evaluate(expression, true);
-				return new Variable()
-				{
-					Name = "$evalResult",
-					Presentation = value.AsString(),
-					TypeName = value.SystemType.Name,
-					IsStructured = IsStructured(MachineVariable.Create(value, "$eval"))
+                return new Variable()
+                {
+                    Name = "$evalResult",
+                    Presentation = value.AsString(),
+                    TypeName = value.SystemType.Name,
+                    IsStructured = IsStructured(MachineVariable.Create(value, "$eval"))
                 };
             }
             catch (ScriptException e)
@@ -334,15 +334,15 @@ namespace oscript.DebugServer
         private bool IsStructured(IVariable variable)
         {
             var result = HasProperties(variable) || HasIndexes(variable);
-			if(!result)
-			{
-				if (variable.DataType == DataType.Object)
-				{
-					var obj = variable.AsObject();
-					result = obj is IEnumerable<KeyAndValueImpl>;
-				}
-			}
-			return result;
+            if(!result)
+            {
+                if (variable.DataType == DataType.Object)
+                {
+                    var obj = variable.AsObject();
+                    result = obj is IEnumerable<KeyAndValueImpl>;
+                }
+            }
+            return result;
         }
 
         private bool HasIndexes(IValue variable)
