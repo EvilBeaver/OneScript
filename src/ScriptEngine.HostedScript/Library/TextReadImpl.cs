@@ -51,7 +51,7 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        public void OpenStream(IStreamWrapper streamObj, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null)
+        private void OpenStream(IStreamWrapper streamObj, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null)
         {
             TextReader imReader;
             if (encoding == null)
@@ -66,7 +66,7 @@ namespace ScriptEngine.HostedScript.Library
             _reader = GetCustomLineFeedReader(imReader, lineDelimiter, eolDelimiter, AnalyzeDefaultLineFeed);
         }
 
-        public void OpenFile(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null,
+        private void OpenFile(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null,
             bool? monopoly = null)
         {
             TextReader imReader;
