@@ -52,7 +52,7 @@ namespace OneScript.Language
                     {
                         charL = char.ToLower(ch),
                         charU = char.ToUpper(ch),
-                        value = default,
+                        value = default(T),
                         sibl = node.sibl
                     };
                     node.sibl = key;
@@ -106,7 +106,7 @@ namespace OneScript.Language
                 var key = node.Find(ch);
                 if (key == null)
                 {
-                    value = default;
+                    value = default(T);
                     return false;
                 }
 

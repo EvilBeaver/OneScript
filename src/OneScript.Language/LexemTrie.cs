@@ -185,7 +185,7 @@ namespace OneScript.Language
             var node = FindNode(key);
             if (node == null)
             {
-                value = default;
+                value = default(T);
                 return false;
             }
 
