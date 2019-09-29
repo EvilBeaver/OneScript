@@ -1,11 +1,11 @@
-using System;
-using System.Collections;
+
+
 using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace OneScript.Language
 {
-    public class LexemTrie<T> : IDictionary<string, T>
+    public class LexemTrie<T>
     {
         private class TrieNode
         {
@@ -180,16 +180,6 @@ namespace OneScript.Language
             return node;
         }
 
-        public bool ContainsKey(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Remove(string key)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool TryGetValue(string key, out T value)
         {
             var node = FindNode(key);
@@ -208,46 +198,5 @@ namespace OneScript.Language
             get => Get(key);
             set => Add(key, value);
         }
-
-        public ICollection<string> Keys { get; }
-        public ICollection<T> Values { get; }
-
-        public IEnumerator<KeyValuePair<string, T>> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public void Add(KeyValuePair<string, T> item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Contains(KeyValuePair<string, T> item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void CopyTo(KeyValuePair<string, T>[] array, int arrayIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Remove(KeyValuePair<string, T> item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int Count { get; }
-        public bool IsReadOnly { get; }
     }
 }

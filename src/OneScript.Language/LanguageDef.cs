@@ -4,6 +4,12 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
 
 using System;
 using System.Collections.Generic;
@@ -17,21 +23,12 @@ namespace OneScript.Language
     {
         static readonly Dictionary<Token, int> _priority = new Dictionary<Token, int>();
 
-        public static IDictionary<string, Token> _stringToToken = new Dictionary<string, Token>();
+        private static LexemTrie<Token> _stringToToken = new LexemTrie<Token>();
 
         const int BUILTINS_INDEX = (int)Token.ByValParam;
 
         static LanguageDef()
         {
-            //init();
-        }
-
-        // structure
-        public static void init()
-        {
-            if(_stringToToken.Count > 0)
-                return;
-
             _priority.Add(Token.Plus, 5);
             _priority.Add(Token.Minus, 5);
             _priority.Add(Token.Multiply, 6);
