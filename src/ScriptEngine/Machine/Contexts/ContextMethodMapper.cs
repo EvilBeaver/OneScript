@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using OneScript.Language;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -126,7 +127,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             InitSearch();
 
-            if (!_methodNumbers.TryFind(name, out var idx))
+            if (!_methodNumbers.TryGetValue(name, out var idx))
                 throw RuntimeException.MethodNotFoundException(name);
 
             return idx;

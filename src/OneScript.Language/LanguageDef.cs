@@ -1,7 +1,7 @@
 ﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
@@ -17,14 +17,21 @@ namespace OneScript.Language
     {
         static readonly Dictionary<Token, int> _priority = new Dictionary<Token, int>();
 
-        static readonly Dictionary<string, Token> _stringToToken =
-            new Dictionary<string, Token>(StringComparer.OrdinalIgnoreCase);
+        public static IDictionary<string, Token> _stringToToken = new Dictionary<string, Token>();
 
         const int BUILTINS_INDEX = (int)Token.ByValParam;
 
-        // structure
         static LanguageDef()
         {
+            //init();
+        }
+
+        // structure
+        public static void init()
+        {
+            if(_stringToToken.Count > 0)
+                return;
+
             _priority.Add(Token.Plus, 5);
             _priority.Add(Token.Minus, 5);
             _priority.Add(Token.Multiply, 6);
