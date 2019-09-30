@@ -206,73 +206,86 @@ namespace oscript.DebugServer
 
             if (HasProperties(src))
             {
-                var obj = src.AsObject();
-                var propsCount = obj.GetPropCount();
-                for (int i = 0; i < propsCount; i++)
-                {
-                    string propName = obj.GetPropName(i);
-
-                    IVariable value;
-
-                    try
-                    {
-                        value = MachineVariable.Create(obj.GetPropValue(i), propName);
-                    }
-                    catch (Exception e)
-                    {
-                        value = MachineVariable.Create(ValueFactory.Create(e.Message), propName);
-                    }
-
-                    variables.Add(value);
-
-                }
+                FillProperties(src, variables);
             }
             else if(src.AsObject() is IEnumerable<KeyAndValueImpl> collection)
             {
-                var propsCount = collection.Count();
-                foreach (var kv in collection)
-                {
-                    IVariable value;
-
-                    try
-                    {
-                        value = MachineVariable.Create(kv.Value, kv.Key.AsString());
-                    }
-                    catch (Exception e)
-                    {
-                        value = MachineVariable.Create(ValueFactory.Create(e.Message), kv.Key.AsString());
-                    }
-
-                    variables.Add(value);
-                }
+                FillKeyValueProperties(collection, variables);
             }
 
             if (HasIndexes(src))
             {
-                var obj = src.AsObject();
-
-                if(obj is ICollectionContext cntx)
-                {
-                    var itemsCount = cntx.Count();
-                    for (int i = 0; i < itemsCount; i++)
-                    {
-                        IValue value;
-
-                        try
-                        {
-                            value = obj.GetIndexedValue(ValueFactory.Create(i));
-                        }
-                        catch (Exception)
-                        {
-                            continue;
-                        }
-
-                        variables.Add(MachineVariable.Create(value, i.ToString()));
-                    }
-                }
+                FillIndexedProperties(src, variables);
             }
 
             return variables;
+        }
+
+        private void FillKeyValueProperties(IEnumerable<KeyAndValueImpl> collection, List<IVariable> variables)
+        {
+            var propsCount = collection.Count();
+
+            int i = 0;
+
+            foreach (var kv in collection)
+            {
+                IVariable value;
+
+                value = MachineVariable.Create(kv, i.ToString());
+
+                variables.Add(value);
+
+                i++;
+            }
+        }
+
+        private void FillIndexedProperties(IVariable src, List<IVariable> variables)
+        {
+            var obj = src.AsObject();
+
+            if (obj is ICollectionContext cntx)
+            {
+                var itemsCount = cntx.Count();
+                for (int i = 0; i < itemsCount; i++)
+                {
+                    IValue value;
+
+                    try
+                    {
+                        value = obj.GetIndexedValue(ValueFactory.Create(i));
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+
+                    variables.Add(MachineVariable.Create(value, i.ToString()));
+                }
+            }
+        }
+
+        private void FillProperties(IVariable src, List<IVariable> variables)
+        {
+            var obj = src.AsObject();
+            var propsCount = obj.GetPropCount();
+            for (int i = 0; i < propsCount; i++)
+            {
+                string propName = obj.GetPropName(i);
+
+                IVariable value;
+
+                try
+                {
+                    value = MachineVariable.Create(obj.GetPropValue(i), propName);
+                }
+                catch (Exception e)
+                {
+                    value = MachineVariable.Create(ValueFactory.Create(e.Message), propName);
+                }
+
+                variables.Add(value);
+
+            }
         }
 
         public Variable Evaluate(int threadId, int contextFrame, string expression)
