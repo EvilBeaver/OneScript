@@ -1,4 +1,10 @@
-using System;
+/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
 using Xunit;
 
 namespace OneScript.Language.Tests
@@ -6,7 +12,7 @@ namespace OneScript.Language.Tests
     public class TrieTests
     {
         [Fact]
-        public void IdentifiersTrieAdd()
+        public void LexemTrieAdd()
         {
             var t = new LexemTrie<int>();
             t.Add("Иван", 0);

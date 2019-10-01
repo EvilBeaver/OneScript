@@ -45,7 +45,7 @@ namespace OneScript.Language
 
             if (code >= 1040 && code <= 1103)
             {
-                return code - 962;
+                return code - 960;
             }
 
             if (code >= 40 && code <= 57)
@@ -60,12 +60,12 @@ namespace OneScript.Language
 
             if (code >= 65 && code <= 93)
             {
-                return code - 43;
+                return code - 41;
             }
 
             if (code >= 97 && code <= 122)
             {
-                return code - 51;
+                return code - 44;
             }
 
             switch (c)

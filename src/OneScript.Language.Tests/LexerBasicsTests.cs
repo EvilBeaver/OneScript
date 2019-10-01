@@ -1,7 +1,7 @@
 ﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
@@ -146,8 +146,20 @@ namespace OneScript.Language.Tests
             Assert.True(LanguageDef.IsBuiltInFunction(Token.CurrentDate));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.Integer));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.Round));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.Log));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.Log10));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.Sin));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.Cos));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.Tan));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.ASin));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.ACos));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.ATan));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.Exp));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.Pow));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.Sqrt));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.Min));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.Max));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.Format));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.ExceptionInfo));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.ExceptionDescr));
         }
@@ -279,8 +291,21 @@ namespace OneScript.Language.Tests
             Assert.Equal(Token.CurrentDate, LanguageDef.GetToken("текущаядата"));
             Assert.Equal(Token.Integer, LanguageDef.GetToken("цел"));
             Assert.Equal(Token.Round, LanguageDef.GetToken("окр"));
-            Assert.Equal(Token.Pow, LanguageDef.GetToken("pow"));
+            Assert.Equal(Token.Log, LanguageDef.GetToken("log"));
+            Assert.Equal(Token.Log10, LanguageDef.GetToken("log10"));
+            Assert.Equal(Token.Sin, LanguageDef.GetToken("sin"));
+            Assert.Equal(Token.Cos, LanguageDef.GetToken("cos"));
+            Assert.Equal(Token.Tan, LanguageDef.GetToken("tan"));
+            Assert.Equal(Token.ASin, LanguageDef.GetToken("aSin"));
+            Assert.Equal(Token.ACos, LanguageDef.GetToken("acos"));
+            Assert.Equal(Token.ATan, LanguageDef.GetToken("atan"));
+            Assert.Equal(Token.Exp, LanguageDef.GetToken("exp"));
+            Assert.Equal(Token.Pow, LanguageDef.GetToken("Pow"));
             Assert.Equal(Token.Sqrt, LanguageDef.GetToken("sqrt"));
+            Assert.Equal(Token.Min, LanguageDef.GetToken("min"));
+            Assert.Equal(Token.Max, LanguageDef.GetToken("max"));
+            Assert.Equal(Token.Format, LanguageDef.GetToken("format"));
+
             Assert.Equal(Token.ExceptionInfo, LanguageDef.GetToken("информацияобошибке"));
             Assert.Equal(Token.ExceptionDescr, LanguageDef.GetToken("описаниеошибки"));
         }
