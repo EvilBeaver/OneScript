@@ -72,6 +72,9 @@ namespace StandaloneRunner
                     templateStorage.RegisterTemplate(resource.ResourceName, DeserializeTemplate(resource.Data));
                 }
                 var module = appDump.Scripts[0].Image;
+
+                module.ModuleInfo = new ModuleInformation { ModuleName = "<исходный код недоступен>", Origin = "<исходный код недоступен>" };
+
                 for (int i = 1; i < appDump.Scripts.Length; i++)
                 {
                     engine.LoadUserScript(appDump.Scripts[i]);
