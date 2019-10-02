@@ -488,7 +488,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         public uint ReadInt32(IValue byteOrder = null)
         {
             var bytes = _reader.ReadBytes(sizeof(uint));
-            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToUInt16, BitConversionFacility.BigEndian.ToUInt16, byteOrder);
+            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToUInt32, BitConversionFacility.BigEndian.ToUInt32, byteOrder);
         }
 
 

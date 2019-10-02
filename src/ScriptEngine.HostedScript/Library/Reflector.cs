@@ -381,6 +381,40 @@ namespace ScriptEngine.HostedScript.Library
             return result;
         }
 
+        /// <summary>
+        /// Получает свойство по его имени.
+        /// </summary>
+        /// <param name="target">Объект, свойство которого необходимо установить.</param>
+        /// <param name="prop">Имя свойства</param>
+        /// <returns>Значение свойства</returns>
+        [ContextMethod("ПолучитьСвойство", "GetProperty")]
+        public IValue GetProperty(IRuntimeContextInstance target, string prop)
+        {
+            int propIdx;
+            if (target is ScriptDrivenObject script)
+                propIdx = script.FindAnyProperty(prop);
+            else
+                propIdx = target.FindProperty(prop);
+            return target.GetPropValue(propIdx);
+        }
+
+        /// <summary>
+        /// Устанавливает свойство по его имени.
+        /// </summary>
+        /// <param name="target">Объект, свойство которого необходимо установить.</param>
+        /// <param name="prop">Имя свойства</param>
+        /// <param name="value">Значение свойства.</param>
+        [ContextMethod("УстановитьСвойство", "SetProperty")]
+        public void SetProperty(IRuntimeContextInstance target, string prop, IValue value)
+        {
+            int propIdx;
+            if (target is ScriptDrivenObject script)
+                propIdx = script.FindAnyProperty(prop);
+            else
+                propIdx = target.FindProperty(prop);
+            target.SetPropValue(propIdx, value);
+        }
+
         private static void FillPropertiesTable(ValueTable.ValueTable result, IEnumerable<VariableInfo> properties)
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");

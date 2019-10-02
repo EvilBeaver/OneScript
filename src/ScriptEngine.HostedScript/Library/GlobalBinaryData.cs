@@ -146,7 +146,20 @@ namespace ScriptEngine.HostedScript.Library
 
         // ToDo: ПолучитьBase64БуферДвоичныхДанныхИзБуфераДвоичныхДанных
 
-        // ToDo: ПолучитьДвоичныеДанныеИзHexСтроки
+        /// <summary>
+        /// Преобразует строку формата Base 16 (Hex) в двоичные данные.
+        /// </summary>
+        /// <param name="str">Строка в формате Base 16 (Hex).</param>
+        /// <returns>Тип: ДвоичныеДанные.</returns>
+        [ContextMethod("ПолучитьДвоичныеДанныеИзHexСтроки")]
+        public BinaryDataContext GetBinaryDataFromHexString(string str)
+        {
+            int NumberChars = str.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(str.Substring(i, 2), 16);
+            return new BinaryDataContext(bytes);
+        }
 
         // ToDo: ПолучитьБуферДвоичныхДанныхИзHexСтроки
 
