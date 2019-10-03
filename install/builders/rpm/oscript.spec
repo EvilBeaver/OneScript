@@ -36,7 +36,10 @@ mkdir -p %{buildroot}%{_datadir}/oscript/
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_sysconfdir}
 install -p oscript -m 755 %{buildroot}%{_bindir}/oscript
+install -p oscript-opm -m 755 %{buildroot}%{_bindir}/oscript-opm
+install -p oscript-opm -m 755 %{buildroot}%{_bindir}/opm
 rm oscript
+rm oscript-opm
 %{__cp} -fpr ./ %{buildroot}%{_datadir}/oscript/
 popd
 
