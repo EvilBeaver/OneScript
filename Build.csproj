@@ -172,7 +172,9 @@
             <InstallerStandardPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandardPath>
             <DistPath>$(ArtifactsRoot)</DistPath>
         </PropertyGroup>
-        <Exec Command="$(InstallerStandardPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot;" />
+        
+        <Exec Command="$(InstallerStandardPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot; /Binaries=%(PlatformItem.BinFolder) /Prefix=%(PlatformItem.Identity)"/>
+        
     </Target>
 
     <!-- Nuget -->

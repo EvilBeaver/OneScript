@@ -8,8 +8,12 @@
 #define VerMinor
 #define VerRelease
 #define Build
+
+#define Binaries "bin"
+#define Suffix "x86"
+
 ; duplicates ArtifactsRoot because ISPP can't resolve directives
-#expr ParseVersion(ArtifactRoot + "\bin\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
+#expr ParseVersion(ArtifactRoot + "\" + Binaries + "\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
 
 [Setup]
 AppName={#AppName}
@@ -17,7 +21,7 @@ AppVersion={#VerMajor}.{#VerMinor}.{#VerRelease}
 AppPublisher=1Script Team (Open Source)
 DefaultDirName="{pf}\{#FSFriendlyName}"
 DefaultGroupName="{#FSFriendlyName}"
-OutputBaseFilename="OneScript-{#VerMajor}.{#VerMinor}.{#VerRelease}-setup"
+OutputBaseFilename="OneScript-{#VerMajor}.{#VerMinor}.{#VerRelease}-{#Suffix}"
 DisableProgramGroupPage=yes
 UninstallDisplayIcon="{app}\bin\{#MainExe}"
 Compression=lzma2
@@ -27,6 +31,8 @@ VersionInfoVersion={#VerMajor}.{#VerMinor}.{#VerRelease}.{#Build}
 [InstallDelete]
 Type: files; Name: {app}\*.dll
 Type: files; Name: {app}\*.exe
+Type: files; Name: {app}\*.bat
+Type: files; Name: {app}\*.cmd
 
 [Types]
 Name: "normal"; Description: "Стандартная установка"
@@ -40,25 +46,26 @@ Name: "testapp"; Description: "Тестовая консоль (TestApp)";
 Name: "docs"; Description: "Документация по свойствам и методам (синтакс-помощник)";
 
 [Files]              
-Source: "{#ArtifactRoot}\bin\oscript.exe"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\DotNetZip.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
+Source: "{#ArtifactRoot}\{#Binaries}\oscript.exe"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\DotNetZip.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
 
 Source: "{#ArtifactRoot}\examples\*"; DestDir: "{app}\examples"; Components: main
 
 ;isapi
-Source: "{#ArtifactRoot}\bin\ASPNETHandler.dll"; DestDir: "{app}\bin"; Components: isapi;
+Source: "{#ArtifactRoot}\{#Binaries}\ASPNETHandler.dll"; DestDir: "{app}\bin"; Components: isapi;
 
 ; testapp
-Source: "{#ArtifactRoot}\bin\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
-Source: "{#ArtifactRoot}\bin\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
+Source: "{#ArtifactRoot}\{#Binaries}\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
+Source: "{#ArtifactRoot}\{#Binaries}\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
+
 ; библиотека
 Source: "{#ArtifactRoot}\lib\*"; DestDir: "{app}\lib"; Components: stdlib; Flags: recursesubdirs
-Source: "{#ArtifactRoot}\bin\*.bat"; DestDir: "{app}\bin"; Components: stdlib
+Source: "{#ArtifactRoot}\{#Binaries}\*.bat"; DestDir: "{app}\bin"; Components: stdlib
 
 ; документация
 Source: "{#ArtifactRoot}\doc\*"; DestDir: "{app}\doc"; Components: docs; Flags: recursesubdirs
