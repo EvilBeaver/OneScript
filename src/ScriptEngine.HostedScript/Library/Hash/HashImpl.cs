@@ -115,7 +115,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             if (!File.Exists(path))
                 throw RuntimeException.InvalidArgumentType();
-            AddStream(new FileStream(path, FileMode.Open));
+            AddStream(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
         }
 
         [ContextMethod("Очистить", "Clear")]

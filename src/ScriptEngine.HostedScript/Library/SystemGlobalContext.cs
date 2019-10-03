@@ -423,6 +423,12 @@ namespace ScriptEngine.HostedScript.Library
             return errInfo.DetailedDescription;
         }
 
+        [ContextMethod("ТекущаяУниверсальнаяДата", "CurrentUniversalDate")]
+        public IValue CurrentUniversalDate()
+        {
+            return ValueFactory.Create(DateTime.UtcNow);
+        }
+
         [ContextMethod("ТекущаяУниверсальнаяДатаВМиллисекундах", "CurrentUniversalDateInMilliseconds")]
         public long CurrentUniversalDateInMilliseconds()
         {

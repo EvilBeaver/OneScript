@@ -513,7 +513,7 @@ namespace ScriptEngine.Machine
             if (_module.ModuleInfo != null)
             {
                 exc.ModuleName = _module.ModuleInfo.ModuleName;
-                exc.Code = _module.ModuleInfo.CodeIndexer.GetCodeLine(exc.LineNumber);
+                exc.Code = _module.ModuleInfo.CodeIndexer?.GetCodeLine(exc.LineNumber) ?? "<исходный код недоступен>";
             }
             else
             {
