@@ -13,9 +13,11 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace ScriptEngine.Environment
 {
+   [Serializable]
     public class ModuleInformation
     {
         public string ModuleName { get; set; }
+	[NonSerialized]
         internal ISourceCodeIndexer CodeIndexer { get; set; }
         public string Origin { get; set; }
 

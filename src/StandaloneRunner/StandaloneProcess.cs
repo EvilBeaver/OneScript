@@ -73,10 +73,11 @@ namespace StandaloneRunner
                 }
                 var module = appDump.Scripts[0].Image;
 
-                module.ModuleInfo = new ModuleInformation { ModuleName = "<исходный код недоступен>", Origin = "<исходный код недоступен>" };
+                //module.ModuleInfo = new ModuleInformation { ModuleName = "<исходный код недоступен>", Origin = "<исходный код недоступен>" };
 
                 for (int i = 1; i < appDump.Scripts.Length; i++)
                 {
+		    //appDump.Scripts[i].Image.ModuleInfo = new ModuleInformation { ModuleName = "<исходный код недоступен1>", Origin = "<исходный код недоступен1>" };
                     engine.LoadUserScript(appDump.Scripts[i]);
                 }
                 
