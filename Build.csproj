@@ -173,7 +173,7 @@
             <DistPath>$(ArtifactsRoot)</DistPath>
         </PropertyGroup>
         
-        <Exec Command="$(InstallerStandardPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot; /Binaries=%(PlatformItem.BinFolder) /Prefix=%(PlatformItem.Identity)"/>
+        <Exec Command="$(InstallerStandardPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot; /DBinaries=%(PlatformItem.BinFolder) /DPrefix=%(PlatformItem.Identity)"/>
         
     </Target>
 
