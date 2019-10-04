@@ -48,6 +48,7 @@ popd
 %defattr(-,root,root)
 %{_bindir}/*
 %{_datadir}/oscript/*
+%{_sysconfdir}/oscript-*
 %doc
 
 
