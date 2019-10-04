@@ -48,7 +48,7 @@ popd
 %defattr(-,root,root)
 %{_bindir}/*
 %{_datadir}/oscript/*
-%{_sysconfdir}/oscript-*
+%{_sysconfdir}/bash-completion.d/oscript-*
 %doc
 
 
