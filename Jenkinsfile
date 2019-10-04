@@ -38,46 +38,8 @@ pipeline {
                     step([$class: 'WsCleanup'])
 					checkout scm
 
-                    bat 'set'
-                    withSonarQubeEnv('silverbulleters') {
-                        script {
-                            def sqScannerMsBuildHome = tool 'sonar-scanner for msbuild';
-                            sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarScanner.MSBuild.exe";
-                            def sonarcommandStart = "@" + sqScannerMsBuildHome + " begin /k:1script /n:OneScript /v:\"${env.ReleaseNumber}\" /d:sonar.verbose=true /d:sonar.exclusions=src/ASPNETHandler/**/*,tests/**/*";
-                            def makeAnalyzis = false
-                            if (env.BRANCH_NAME == "develop") {
-                                echo 'Analysing develop branch'
-                            } else if (env.BRANCH_NAME.startsWith("PR-")) {
-                                // Report PR issues           
-                                def PRNumber = env.BRANCH_NAME.tokenize("PR-")[0]
-                                def gitURLcommand = 'git config --local remote.origin.url'
-                                def gitURL = ""
-                                
-                                if (isUnix()) {
-                                    gitURL = sh(returnStdout: true, script: gitURLcommand).trim() 
-                                } else {
-                                    gitURL = bat(returnStdout: true, script: gitURLcommand).trim() 
-                                }
-                                
-                                def repository = gitURL.tokenize("/")[2] + "/" + gitURL.tokenize("/")[3]
-                                repository = repository.tokenize(".")[0]
-                                withCredentials([string(credentialsId: 'GithubOAUTHToken_ForSonar', variable: 'githubOAuth')]) {
-                                    sonarcommandStart = sonarcommandStart + " /d:sonar.analysis.mode=issues /d:sonar.github.pullRequest=${PRNumber} /d:sonar.github.repository=${repository} /d:sonar.github.oauth=${githubOAuth}"
-                                }
-                            } else {
-                                makeAnalyzis = false
-                            }
-
-                            if (makeAnalyzis) {
-                                bat "${sonarcommandStart}"
-                            }
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore"
-							bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent"
-                            if (makeAnalyzis) {
-                                bat "${sqScannerMsBuildHome} end"
-                            }
-                        }
-                    }
+                    bat "chcp $outputEnc > nul\r\ndotnet msbuild src/1Script.sln /t:restore"
+					bat "chcp $outputEnc > nul\r\ndotnet msbuild Build.csproj /t:CleanAll;PrepareDistributionContent"
 
                     stash includes: 'tests, built/**', name: 'buildResults'
                 }
@@ -115,7 +77,7 @@ pipeline {
                         deleteDir()
                     }
                     unstash 'buildResults'
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:xUnitTest"
+                    bat "chcp $outputEnc > nul\r\ndotnet msbuild Build.csproj /t:xUnitTest"
 
                     junit 'tests/tests.xml'
                 }
