@@ -124,7 +124,12 @@ pipeline {
 
         stage('Linux testing') {
 
-            agent { label 'master' }
+            agent{
+                docker{
+                    image 'evilbeaver/mono-ru:5.4'
+                    label 'master'
+                }
+            }
 
             steps {
                 
