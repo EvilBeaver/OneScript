@@ -15,6 +15,7 @@ RUN sed -i.bak -n -e '/^Defaults.*requiretty/ { s/^/# /;};/^%wheel.*ALL$/ { s/^/
 ADD oscript.spec /tmp/
 ADD oscript /tmp/
 ADD oscript-opm /tmp/
+ADD oscript-opm-completion /tmp/
 
 RUN dnf builddep -y --spec /tmp/oscript.spec
 

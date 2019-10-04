@@ -16,6 +16,7 @@ echo "Copying sources to tmpdir"
 cp -r -v $DISTPATH/* $TMPDIR
 cp -r -v ${BLDTMP}/oscript $TMPDIR/oscript
 cp -r -v ${BLDTMP}/oscript-opm $TMPDIR/oscript-opm
+cp -r -v ${BLDTMP}/oscript-opm-completion $TMPDIR/oscript-opm-completion
 
 pushd ${BLDTMP}
 echo "Compressing OneScript-$VERSION to tar"
