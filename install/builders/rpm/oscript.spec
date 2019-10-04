@@ -37,6 +37,7 @@ mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_sysconfdir}/bash-completion.d
 install -p oscript -m 755 %{buildroot}%{_bindir}/oscript
 install -p oscript-opm -m 755 %{buildroot}%{_bindir}/oscript-opm
+install -p oscript-opm -m 755 %{buildroot}%{_bindir}/opm
 install -p oscript-opm-completion -m 755 %{buildroot}%{_sysconfdir}/bash-completion.d/oscript-opm-completion
 rm oscript
 rm oscript-opm
