@@ -34,11 +34,11 @@ pwd
 pushd %{_subdir}
 mkdir -p %{buildroot}%{_datadir}/oscript/
 mkdir -p %{buildroot}%{_bindir}
-mkdir -p %{buildroot}%{_sysconfdir}/bash-completion.d
+mkdir -p %{buildroot}%{_sysconfdir}/bash_completion.d
 install -p oscript -m 755 %{buildroot}%{_bindir}/oscript
 install -p oscript-opm -m 755 %{buildroot}%{_bindir}/oscript-opm
 install -p oscript-opm -m 755 %{buildroot}%{_bindir}/opm
-install -p oscript-opm-completion -m 755 %{buildroot}%{_sysconfdir}/bash-completion.d/oscript-opm-completion
+install -p oscript-opm-completion -m 755 %{buildroot}%{_sysconfdir}/bash_completion.d/oscript-opm-completion
 rm oscript
 rm oscript-opm
 rm oscript-opm-completion
@@ -49,7 +49,7 @@ popd
 %defattr(-,root,root)
 %{_bindir}/*
 %{_datadir}/oscript/*
-%{_sysconfdir}/bash-completion.d/oscript-*
+%{_sysconfdir}/bash_completion.d/oscript-*
 %doc
 
 
