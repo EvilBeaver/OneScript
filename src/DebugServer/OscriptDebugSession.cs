@@ -422,11 +422,7 @@ namespace DebugServer
             {
                 evalResult = _process.Evaluate(frame, expression);
 
-                if (evalResult.Name.Equals("$evalFault") && context.Equals("hover"))
-                {
-                    evalResult.Presentation = "";
-                }
-                else if(evalResult.IsStructured)
+                if (evalResult.IsStructured)
                 {
                     var loc = new EvaluatedVariableLocator(expression, frameId);
                     id = _variableHandles.Create(loc);
@@ -434,10 +430,13 @@ namespace DebugServer
             }
             catch (Exception e)
             {
-                evalResult = new OneScript.DebugProtocol.Variable() { Presentation = e.Message };
+                evalResult = new OneScript.DebugProtocol.Variable() { Presentation = e.Message, Name = "$evalFault" };
             }
 
-
+            if (evalResult.Name.Equals("$evalFault") && context.Equals("hover"))
+            {
+                evalResult.Presentation = "";
+            }
 
             var protResult = new EvaluateResponseBody(evalResult.Presentation, id) {type = evalResult.TypeName};
             SendResponse(response, protResult);
