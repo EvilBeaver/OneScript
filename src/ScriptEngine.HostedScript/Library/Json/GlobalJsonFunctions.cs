@@ -207,7 +207,7 @@ namespace ScriptEngine.HostedScript.Library.Json
             else if (format == JSONDateFormatEnum.Microsoft)
                 dateFormatHandling = DateFormatHandling.MicrosoftDateFormat;
             else
-                throw new RuntimeException("Формат даты JavaScript не поддерживается.");
+                throw new RuntimeException(Locale.NStr("ru='Формат даты JavaScript не поддерживается.'; en='JavaScript date format is not supported'"));
 
             string json = @"{""Date"":""" + String +  @"""}";
 
