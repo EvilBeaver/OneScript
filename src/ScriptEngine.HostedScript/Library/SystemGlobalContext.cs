@@ -641,6 +641,9 @@ namespace ScriptEngine.HostedScript.Library
             out IVariable[] variables, 
             out MethodInfo[] methods)
         {
+            if (_state == null)
+                InitContextVariables();
+
             variables = _state;
             methods = new MethodInfo[_methods.Count];
             for (int i = 0; i < _methods.Count; i++)
