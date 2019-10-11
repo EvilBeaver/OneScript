@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = '1.1.1'
+        ReleaseNumber = '1.2.0'
         outputEnc = '65001'
     }
 
@@ -138,7 +138,6 @@ pipeline {
                 if [ ! -d lintests ]; then
                     mkdir lintests
                 fi
-
                 rm lintests/*.xml -f
                 cd tests
                 mono ../built/tmp/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
@@ -200,7 +199,6 @@ pipeline {
                 chmod +x prepare-build.sh
                 chmod +x deb-build.sh
                 chmod +x rpm-build.sh
-
                 sh ./prepare-build.sh
                 
                 DISTPATH=`pwd`/built/tmp
@@ -239,9 +237,7 @@ pipeline {
                 mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
                 mv output/*.rpm targetContent/
                 mv output/*.deb targetContent/
-
                 TARGET="/var/www/oscript.io/download/versions/night-build/"
-
                 cd targetContent
                 sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
                 rm -rf targetContent
@@ -268,14 +264,12 @@ pipeline {
                 mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
                 mv output/*.rpm targetContent/
                 mv output/*.deb targetContent/
-
                 cd targetContent
                 TARGET="/var/www/oscript.io/download/versions/latest/"
                 sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
                 
                 TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
                 sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
-
                 """.stripIndent()
             }
         }
