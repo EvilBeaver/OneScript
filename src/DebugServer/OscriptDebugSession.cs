@@ -415,16 +415,13 @@ namespace DebugServer
 
             var expression = (string) arguments.expression;
             var context = (string) arguments.context;
-            if (context != "watch")
-            {
-                SendResponse(response);
-                return;
-            }
+             
             int id = -1;
             OneScript.DebugProtocol.Variable evalResult;
             try
             {
                 evalResult = _process.Evaluate(frame, expression);
+
                 if (evalResult.IsStructured)
                 {
                     var loc = new EvaluatedVariableLocator(expression, frameId);
@@ -433,10 +430,13 @@ namespace DebugServer
             }
             catch (Exception e)
             {
-                evalResult = new OneScript.DebugProtocol.Variable() { Presentation = e.Message };
+                evalResult = new OneScript.DebugProtocol.Variable() { Presentation = e.Message, Name = "$evalFault" };
             }
 
-
+            if (evalResult.Name.Equals("$evalFault") && context.Equals("hover"))
+            {
+                evalResult.Presentation = "";
+            }
 
             var protResult = new EvaluateResponseBody(evalResult.Presentation, id) {type = evalResult.TypeName};
             SendResponse(response, protResult);
