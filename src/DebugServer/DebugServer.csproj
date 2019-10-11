@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+
+  <PropertyGroup>
+    <TargetFramework>net452</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <StartupObject>DebugServer.Program</StartupObject>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <AssemblyTitle>VSC debug adapter for 1Script</AssemblyTitle>
+    
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.ServiceModel" />
+	<PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="package.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="images\mono-debug-icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="README.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+</Project>

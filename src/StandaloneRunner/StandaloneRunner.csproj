@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net452</TargetFrameworks>
+    <Platforms>AnyCPU;x86</Platforms>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject>StandaloneRunner.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType></DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\oscript\ConsoleHostImpl.cs">
+      <Link>ConsoleHostImpl.cs</Link>
+    </Compile>
+    <Compile Include="..\oscript\Output.cs">
+      <Link>Output.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
+    <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
+    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="3.3.3" />
+    <PackageReference Include="Fody" Version="4.2.1" />
+  </ItemGroup>
+
+  <Target Name="CleanExternals" AfterTargets="Clean">
+    <Delete Files="@(EmbeddedResource)" />
+  </Target>
+  
+  <Target Name="CopyToOscript" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+    <Message Text="Copying StandaloneRunner output" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)oscript\" />
+  </Target>
+  
+</Project>

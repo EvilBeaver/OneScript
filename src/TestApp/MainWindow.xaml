@@ -1,0 +1,113 @@
+﻿<Window x:Class="TestApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="579" Width="807"
+        xmlns:v8r="clr-namespace:V8Reader.Core"
+        xmlns:ctrl="clr-namespace:V8Reader.Controls" Closing="Window_Closing" Icon="pack://application:,,,/script_badge.ico"
+        Loaded="Window_Loaded" >
+    
+    <Window.Resources>
+        <RoutedUICommand x:Key="TestApp_Run" />
+        <RoutedUICommand x:Key="TestApp_FocusParams" />
+        <RoutedUICommand x:Key="TestApp_FocusCode" />
+        <RoutedUICommand x:Key="TestApp_ToggleCmdLine" Text="Показать аргументы командной строки" />
+    </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.New" Executed="NewScript_Execute"/>
+        <CommandBinding Command="ApplicationCommands.Open" CanExecute="CommandBinding_CanExecute" Executed="Open_Execute"/>
+        <CommandBinding Command="ApplicationCommands.Save" CanExecute="CommandBinding_CanExecute" Executed="Save_Execute"/>
+        <CommandBinding Command="ApplicationCommands.SaveAs" CanExecute="CommandBinding_CanExecute" Executed="SaveAs_Execute"/>
+        <CommandBinding Command="{StaticResource ResourceKey=TestApp_Run}" CanExecute="CommandBinding_CanExecute" Executed="Run_Execute"/>
+        <CommandBinding Command="{StaticResource ResourceKey=TestApp_FocusParams}" CanExecute="CommandBinding_CanExecute" Executed="FocusParamsWindow"/>
+        <CommandBinding Command="{StaticResource ResourceKey=TestApp_FocusCode}" CanExecute="CommandBinding_CanExecute" Executed="FocusCodeWindow"/>
+        <CommandBinding Command="{StaticResource ResourceKey=TestApp_ToggleCmdLine}" CanExecute="CommandBinding_CanExecute" Executed="ToggleCmdLine_Executed"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="{StaticResource ResourceKey=TestApp_Run}" />
+        <KeyBinding Key="A" Modifiers="Alt" Command="{StaticResource ResourceKey=TestApp_FocusParams}" />
+        <KeyBinding Key="R" Modifiers="Alt" Command="{StaticResource ResourceKey=TestApp_FocusCode}" />
+    </Window.InputBindings>
+    
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="297*"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="100*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel>
+
+            <ToolBar DockPanel.Dock="Right">
+                <ToggleButton Command="{StaticResource TestApp_ToggleCmdLine}" Content="args" ToolTip="{Binding Command.Text}" x:Name="toggleArgs"/>
+            </ToolBar>
+
+            <ToolBar Name="tbMain">
+            <ToolBar.Resources>
+                <Geometry x:Key="DownArrow">M1,4 L5,4 L3,8 Z</Geometry>
+                <Style x:Key="arrowStyle" x:Shared="True" TargetType="Path">
+                    <Setter Property="Fill" Value="#FF989898"/>
+                    <Setter Property="Stroke" Value="#FF989898"/>
+                    <Setter Property="Data" Value="{StaticResource DownArrow}"/>
+                    <Setter Property="Margin" Value="3,3.5,0,0"/>
+                </Style>
+            </ToolBar.Resources>
+            <!--Файл-->
+            <Menu Background="{Binding Background, ElementName=tbMain}">
+                <MenuItem>
+                    <MenuItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock>Файл</TextBlock>
+                            <Path Style="{StaticResource arrowStyle}"/>
+                        </StackPanel>
+                    </MenuItem.Header>
+                    <MenuItem Command="ApplicationCommands.New"/>
+                    <MenuItem Command="ApplicationCommands.Open"/>
+                    <MenuItem Command="ApplicationCommands.Save"/>
+                    <MenuItem Command="ApplicationCommands.SaveAs"/>
+                </MenuItem>
+            </Menu>
+            <Button Click="Button_Click" Content="Компилировать"/>
+            <Menu Background="{Binding Background, ElementName=tbMain}">
+              <MenuItem Padding="0,1.5,0,1">
+               <MenuItem.Header>
+                 <StackPanel Orientation="Horizontal">
+                   <!--TextBlock Padding="0">Опции</TextBlock-->
+                   <Path Style="{StaticResource arrowStyle}"/>
+                 </StackPanel>
+               </MenuItem.Header>
+               <MenuItem IsCheckable="True" Name="GenerateExtraCode" Header="Статистический код"></MenuItem>
+               <MenuItem IsCheckable="True" Name="GenerateDebugCode" Header="Отладочный код"></MenuItem>
+              </MenuItem>
+            </Menu>
+            <Button Content="Выполнить" Margin="5,0,0,0" Click="Button_Click_1"/>
+            </ToolBar>
+            
+        </DockPanel>
+        <Grid Grid.Row="1" x:Name="contentGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            
+            <!--Содержимое окна-->
+
+            <ctrl:CodeControl Grid.Column="0" x:Name="txtCode" TextChanged="txtCode_TextChanged"/>
+            
+            <GridSplitter Grid.Column="1" ResizeDirection="Columns" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="5" x:Name="verticalSplitter" Visibility="Collapsed"/>
+            <TextBox x:Name="args" Grid.Column="2" FontFamily="Courier New" FontSize="12" Visibility="Collapsed"
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Auto" AcceptsReturn="True"
+                     Text="#Аргументы командной строки (по одному на строку)"/>
+
+        </Grid>
+
+        <GridSplitter Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+        <TextBox x:Name="result" Grid.Row="3" FontFamily="Courier New" FontSize="12" 
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Auto"/>
+
+
+    </Grid>
+</Window>

@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+  
+  <PropertyGroup>
+    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+	  <AssemblyTitle>1C (BSL) language runtime</AssemblyTitle>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <PackageId>OneScript</PackageId>
+    <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
+    <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
+    <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
+    <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
+    <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Title>OneScript Core Runtime</Title>
+    <PackageDescription>Core Runtime Engine for 1Script</PackageDescription>
+    <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
+    <PackageTags>BSL 1C 1Script OneScript</PackageTags>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net452|AnyCPU'">
+    <DocumentationFile>bin\Release\net452\ScriptEngine.xml</DocumentationFile>
+    <NoWarn>1701;1702;1705;1591</NoWarn>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="3.3.3" />
+    <PackageReference Include="Fody" Version="4.2.1" />
+  </ItemGroup>
+  
+</Project>

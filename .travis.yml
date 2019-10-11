@@ -1,0 +1,15 @@
+language: csharp
+sudo: required
+dotnet: 2.0.0
+solution: src/1Script_Mono.sln
+install:
+    - wget oscript.io/Downloads/latest/deb && sudo dpkg -i deb
+    - sudo opm install oscript-config
+    - sudo opm install logos
+    - sudo opm install asserts
+    - dotnet restore ${TRAVIS_SOLUTION} /p:Configuration=Release /p:Platform=x86
+    - nuget restore ${TRAVIS_SOLUTION}
+script:
+    - msbuild ${TRAVIS_SOLUTION} /p:Configuration="Release" /p:Platform="x86"
+    - echo "lib.system=`oscript-config get lib.system`" > src/oscript/bin/x86/Release/net452/oscript.cfg
+    - ./travis-runtests.sh src/oscript/bin/x86/Release/net452

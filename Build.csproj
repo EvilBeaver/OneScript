@@ -1,0 +1,199 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
+    
+    <PropertyGroup>
+        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">1.1.0</ReleaseNumber>
+        <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
+        <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
+
+        <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
+        <Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
+        <Configuration>Release</Configuration>
+        <Platform>x86</Platform>
+    </PropertyGroup>
+    
+    <Target Name="CleanAll">
+    
+        <ItemGroup>
+            <TestsResults Include="$(MSBuildProjectDirectory)/tests/*.os.xml" />
+        </ItemGroup>
+    
+        <Delete Files="@(TestsResults)" />
+        <DeleteTree Directories="$(ArtifactsRoot)" Condition="Exists($(ArtifactsRoot))" />
+        
+        <MSBuild Projects="$(Solution)" Targets="Clean" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=$(Platform)"/>
+        
+    </Target>
+    
+    <Target Name="Make">
+        <MSBuild Projects="$(Solution)" Targets="restore;Build" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=$(Platform)"/>
+    </Target>
+
+    <Target Name="CreateDistributions" DependsOnTargets="CreateInstaller;CreateNuget;CreateZip">
+        <ItemGroup>
+            <TempContent Include="$(ArtifactsRoot)/tmp"/>
+            <TempContent Include="$(MDDocFolder)"/>
+        </ItemGroup>
+        <DeleteTree Directories="@(TempContent)"/>
+    </Target>
+
+    <Target Name="PrepareArtifactsRoot">
+        <PropertyGroup>
+            <TempFolder>$(ArtifactsRoot)/tmp</TempFolder>
+            <BinFolder>$(TempFolder)/bin</BinFolder>
+            <LibFolder>$(TempFolder)/lib</LibFolder>
+            <ExamplesFolder>$(TempFolder)/examples</ExamplesFolder>
+            <DocFolder>$(TempFolder)/doc</DocFolder>
+            <DebugDest>$(ArtifactsRoot)\vscode\</DebugDest>
+            <MDDocFolder>$(ArtifactsRoot)/mddoc</MDDocFolder>
+        </PropertyGroup>
+        <MakeDir Directories="$(ArtifactsRoot)" />
+        <MakeDir Directories="$(TempFolder)" />
+    </Target>
+    
+    <Target Name="PrepareDistributionContent">
+        
+        <CallTarget Targets="GatherBinaries" />
+        <CallTarget Targets="GatherLibrary" />
+        <CallTarget Targets="GatherExamples" />
+        <CallTarget Targets="GatherDocuments"  Condition=" '$(OneScriptDocumenter)' != '' "/>
+        
+    </Target>
+    
+    <!-- Собирает отовсюду содержимое папки bin -->
+    <Target Name="GatherBinaries" DependsOnTargets="Make;PrepareArtifactsRoot">
+        <MakeDir Directories="$(BinFolder)" />
+        
+        <ItemGroup>
+            <BuiltProjects Include="oscript" />
+            <BuiltProjects Include="TestApp" />
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**"/>
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/ASPNETHandler.dll"/>
+        </ItemGroup>
+        
+        <Copy SourceFiles="@(BinaryFiles)" DestinationFolder="$(BinFolder)" />
+        <!-- Копирование скрипта запуска для opm -->
+        <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="$(BinFolder)"/>
+
+        <PropertyGroup>
+            <DebugSrc>$(MSBuildProjectDirectory)/src/DebugServer/bin/$(Configuration)/net452</DebugSrc>
+        </PropertyGroup>
+        <ItemGroup>
+            <DbgBinFiles Include="$(DebugSrc)/*.dll"/>
+            <DbgBinFiles Include="$(DebugSrc)/*.exe"/>
+            <DbgBinFiles Include="$(DebugSrc)/*.config"/>
+            <DbgPackageFiles Include="$(DebugSrc)/README.md"/>
+            <DbgPackageFiles Include="$(DebugSrc)/package.json"/>
+            <DbgImageFiles Include="$(DebugSrc)/images/**"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(DbgBinFiles)" DestinationFolder="$(DebugDest)/bin"/>
+        <Copy SourceFiles="@(DbgPackageFiles)" DestinationFolder="$(DebugDest)"/>
+        <Copy SourceFiles="@(DbgImageFiles)" DestinationFolder="$(DebugDest)/images"/>
+
+    </Target>
+    
+    <!-- Собирает в целевой папке содержимое папки lib -->
+    <Target Name="GatherLibrary" DependsOnTargets="Make;PrepareArtifactsRoot">
+        
+        <MakeDir Directories="$(LibFolder)" />
+        <Exec Command="&quot;$(BinFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.14.4.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
+        <Exec Command="&quot;$(BinFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
+        <Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
+        <DeleteTree Directories="$(LibFolder)\tmp"/>
+
+        <CallTarget Targets="InstallStdLib" Condition="'$(StandardLibraryPacks)' != ''"/>
+
+    </Target>
+
+    <!-- Копирует поставляемые файлы stdlib, если они есть на машине сборки -->
+    <Target Name="InstallStdLib">
+        <ItemGroup>
+            <LibraryFiles Include="$(StandardLibraryPacks)\**\*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/>
+    </Target>
+    
+    <!-- Собирает в целевой папке содержимое папки examples -->
+    <Target Name="GatherExamples" DependsOnTargets="PrepareArtifactsRoot">
+        <ItemGroup>
+            <ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
+        </ItemGroup>
+        <MakeDir Directories="$(ExamplesFolder)" />
+        <Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
+    </Target>
+    
+    <!-- Собирает в целевой папке содержимое папки doc -->
+    <Target Name="GatherDocuments" DependsOnTargets="PrepareArtifactsRoot;GenerateDocs">
+        <MakeDir Directories="$(DocFolder)"/>
+        <Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)&quot;"/>
+    </Target>
+    
+    <!-- Генерирует необходимую документацию -->
+    <Target Name="GenerateDocs">
+    
+        <Exec Command="$(OneScriptDocumenter) $(TMP)\tempdoc.xml &quot;$(BinFolder)\ScriptEngine.dll&quot; &quot;$(BinFolder)\ScriptEngine.HostedScript.dll&quot; &quot;$(BinFolder)\oscript.exe&quot;"/>
+        <MakeDir Directories="$(MDDocFolder)"/>
+        <Exec Command="$(OneScriptDocumenter) markdown $(TMP)\tempdoc.xml &quot;$(MDDocFolder)&quot; /syntax/page"/>
+    
+    </Target>
+    
+    <!-- Чистка промежуточных файлов -->
+    <Target Name="CleanIntermediates" AfterTargets="PrepareDistributionContent">
+        <ItemGroup>
+            <ExcludedArtifacts Include="$(BinFolder)/*.pdb" />
+            <ExcludedArtifacts Include="$(BinFolder)/*.xml" />
+            <!-- остается от документера. Надо починить его чтобы писал куда-то в другое место -->
+            <ExcludedArtifacts Include="$(MSBuildProjectDirectory)/map.json"/>
+        </ItemGroup>
+        <Delete Files="@(ExcludedArtifacts)"/>
+    </Target>
+
+    <!-- Инсталлятор -->
+    <Target Name="CreateInstaller" DependsOnTargets="PrepareArtifactsRoot">
+        <Error Text="No installer path is specified" Condition="'$(InnoSetupPath)' == ''"/>
+        <PropertyGroup>
+            <InstallerStandardPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandardPath>
+            <DistPath>$(ArtifactsRoot)</DistPath>
+        </PropertyGroup>
+        <Exec Command="$(InstallerStandardPath) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot; /o&quot;$(DistPath)&quot;" />
+    </Target>
+
+    <!-- Nuget -->
+    <Target Name="CreateNuget" DependsOnTargets="PrepareArtifactsRoot">
+        <ItemGroup>
+            <NugetAbleProject Include="ScriptEngine"/>
+            <NugetAbleProject Include="ScriptEngine.HostedScript"/>
+            <NugetAbleProject Include="OneScript.Language"/>
+        </ItemGroup>
+        
+        <MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot);ReleaseNumber=$(ReleaseNumber)"/>
+    
+    </Target>
+
+    <!-- ZIP -->
+    <Target Name="CreateZip" DependsOnTargets="PrepareArtifactsRoot">		
+        <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(TempFolder)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber).zip&quot;"/>
+        <Exec Command="&quot;$(BinFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(MDDocFolder)/*&quot; &quot;$(ArtifactsRoot)/mddoc-$(ReleaseNumber).zip&quot;"/>
+    </Target>
+
+    <!-- MSI -->
+    <Target Name="CreateMSI">
+        <MSBuild Projects="$(MSBuildProjectDirectory)\src\Installer\Installer.wixproj"
+                    Properties="Configuration=$(Configuration);OutputPath=$(ArtifactsRoot);OutputPathForBuild=$(ArtifactsRoot);Version=$(ReleaseNumber).$(BuildNumber)" />
+    </Target>
+
+
+    <Target Name="xUnitTest" DependsOnTargets="PrepareArtifactsRoot">
+
+        <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
+            <Output TaskParameter="Include" ItemName="RemoveXMLTestResult" />
+        </CreateItem>
+
+        <Delete Files="@(RemoveXMLTestResult)" />
+
+        <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="&quot;$(BinFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." IgnoreExitCode="true"/>
+
+    </Target>
+    
+</Project>

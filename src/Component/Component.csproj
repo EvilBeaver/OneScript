@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net452</TargetFrameworks>
+    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyTitle>1Script component example</AssemblyTitle>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+    <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <StandardHeader IncludeInNewFiles="True" Text="This Source Code Form is subject to the terms of the &#xA;Mozilla Public License, v.2.0. If a copy of the MPL &#xA;was not distributed with this file, You can obtain one &#xA;at http://mozilla.org/MPL/2.0/." />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent Condition="  '$(OS)' == 'Windows_NT' ">xcopy "$(TargetDir)Component.dll" "$(SolutionDir)..\tests\component" /Y /E /D</PostBuildEvent>
+    <PostBuildEvent Condition="  '$(OS)' == 'Unix' ">cp -f "$(TargetDir)Component.dll" "$(SolutionDir)../tests/component"</PostBuildEvent>
+  </PropertyGroup>
+</Project>
