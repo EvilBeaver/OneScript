@@ -221,27 +221,45 @@ namespace ScriptEngine.Machine
             var code = CompileExpressionModule(expression);
 
             MachineInstance runner;
+            MachineInstance currentMachine;
             if (separate)
             {
                 runner = new MachineInstance();
                 runner._scopes = new List<Scope>(_scopes);
+                currentMachine = Current;
+                SetCurrentMachineInstance(runner);
             }
             else
+            {
+                currentMachine = null;
                 runner = this;
+            }
 
-            var frame = new ExecutionFrame();
-            frame.MethodName = code.ModuleInfo.ModuleName;
-            frame.Locals = new IVariable[0];
-            frame.InstructionPointer = 0;
-            frame.Module = code;
-            
-            var mlocals = new Scope();
-            mlocals.Instance = new UserScriptContextInstance(code);
-            mlocals.Methods = TopScope.Methods;
-            mlocals.Variables = _currentFrame.Locals;
-            runner._scopes.Add(mlocals);
-            frame.ModuleScope = mlocals;
-            frame.ModuleLoadIndex = runner._scopes.Count - 1;
+            ExecutionFrame frame;
+
+            try
+            {
+                frame = new ExecutionFrame();
+                frame.MethodName = code.ModuleInfo.ModuleName;
+                frame.Locals = new IVariable[0];
+                frame.InstructionPointer = 0;
+                frame.Module = code;
+
+                var mlocals = new Scope();
+                mlocals.Instance = new UserScriptContextInstance(code);
+                mlocals.Methods = TopScope.Methods;
+                mlocals.Variables = _currentFrame.Locals;
+                runner._scopes.Add(mlocals);
+                frame.ModuleScope = mlocals;
+                frame.ModuleLoadIndex = runner._scopes.Count - 1;
+            }
+            finally
+            {
+                if (separate)
+                {
+                    SetCurrentMachineInstance(currentMachine);
+                }
+            }
 
             try
             {
@@ -254,6 +272,10 @@ namespace ScriptEngine.Machine
                 {
                     PopFrame();
                     _scopes.RemoveAt(_scopes.Count - 1);
+                }
+                else
+                {
+                    SetCurrentMachineInstance(currentMachine);
                 }
             }
 
@@ -2447,6 +2469,11 @@ namespace ScriptEngine.Machine
         // multithreaded instance
         [ThreadStatic]
         private static MachineInstance _currentThreadWorker;
+
+        private static void SetCurrentMachineInstance(MachineInstance inst)
+        {
+            _currentThreadWorker = inst;
+        }
 
         public static MachineInstance Current
         {
