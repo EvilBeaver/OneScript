@@ -14,6 +14,8 @@ RUN sed -i.bak -n -e '/^Defaults.*requiretty/ { s/^/# /;};/^%wheel.*ALL$/ { s/^/
 # make docker always run the builddep steps since new file
 ADD oscript.spec /tmp/
 ADD oscript /tmp/
+ADD oscript-opm /tmp/
+ADD oscript-opm-completion /tmp/
 
 RUN dnf builddep -y --spec /tmp/oscript.spec
 
