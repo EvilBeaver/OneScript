@@ -214,7 +214,6 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
 
             var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
-            request.AutomaticDecompression = DecompressionMethods.GZip;
             if (User != "" || Password != "")
             {
                 request.Credentials = new NetworkCredential(User, Password);
