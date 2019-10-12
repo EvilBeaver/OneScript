@@ -50,6 +50,11 @@ namespace ScriptEngine.HostedScript.Library.Http
 
                 ProcessHeaders(response.Headers);
                 ProcessResponseBody(response, dumpToFile);
+                if (_body.AutoDecompress)
+                {
+                    _headers.Delete(ValueFactory.Create("Content-Encoding"));
+                    _headers.SetIndexedValue(ValueFactory.Create("Content-Length"), ValueFactory.Create(_body.ContentSize));
+                }
             }
         }
 
