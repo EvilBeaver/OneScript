@@ -279,6 +279,7 @@ namespace OneScript.ASPNETHandler
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CallScriptHandler(HttpContext context)
         {
+            _hostedScript.EngineInstance.Environment.LoadMemory(MachineInstance.Current);
             #region Загружаем скрипт (файл .os)
             // Кэшируем исходный файл, если файл изменился (изменили скрипт .os) загружаем заново
             // В Linux под Mono не работает подписка на изменение файла.
