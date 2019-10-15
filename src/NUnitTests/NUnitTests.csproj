@@ -71,6 +71,7 @@
     <Compile Include="ContextTests.cs" />
     <Compile Include="DynamicObjectTest.cs" />
     <Compile Include="EngineWrapperNUnit.cs" />
+    <Compile Include="ModuleSerializationTest.cs" />
     <Compile Include="TestContextClass.cs" />
     <Compile Include="TestNullConversion.cs" />
     <Compile Include="TestRunnerTest.cs" />

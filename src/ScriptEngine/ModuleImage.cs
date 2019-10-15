@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -40,41 +40,7 @@ namespace ScriptEngine
         public IList<ExportedSymbol> ExportedProperties { get; set; }
         public IList<ExportedSymbol> ExportedMethods { get; set; }
         public int LoadAddress { get; set; }
-
-        // Привязка к исходному коду для отладочной информации в RuntimeException
-        [NonSerialized]
-        private ModuleInformation _source;
-
-        public ModuleInformation ModuleInfo 
-        {
-            get
-            {
-                return _source;
-            }
-            set
-            {
-                _source = value;
-            }
-        }
-
-        private static ModuleImage _emptyInstance;
-
-        static ModuleImage()
-        {
-        }
-
-        public static ModuleImage EmptyModule
-        {
-            get
-            {
-                if (_emptyInstance == null)
-                {
-                    _emptyInstance = new ModuleImage();
-                }
-
-                return _emptyInstance;
-            }
-        }
+        public ModuleInformation ModuleInfo { get; set; }
     }
 
     [Serializable]
