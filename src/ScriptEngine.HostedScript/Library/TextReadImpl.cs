@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -29,9 +29,9 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
-        /// Открывает текстовый файл для чтения. Ранее открытый файл закрывается. 
+        /// Открывает текстовый файл для чтения. Ранее открытый файл закрывается.
         /// </summary>
-        /// <param name="path">Путь к файлу</param>
+        /// <param name="input">Путь к файлу или поток</param>
         /// <param name="encoding">Кодировка</param>
         /// <param name="lineDelimiter">Раздедитель строк</param>
         /// <param name="eolDelimiter">Разделитель строк в файле</param>
@@ -112,14 +112,14 @@ namespace ScriptEngine.HostedScript.Library
 
             if (sb.Length == 0)
                 return ValueFactory.Create ();
-            
+
             return ValueFactory.Create(sb.ToString());
         }
 
         /// <summary>
         /// Считывает очередную строку текстового файла.
         /// </summary>
-        /// <param name="overridenLineDelimiter">Подстрока, считающаяся концом строки. Переопределяет РазделительСтрок, 
+        /// <param name="overridenLineDelimiter">Подстрока, считающаяся концом строки. Переопределяет РазделительСтрок,
         /// переданный в конструктор или в метод Открыть</param>
         /// <returns>Строка - в случае успешного чтения, Неопределено - больше нет данных</returns>
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
@@ -157,11 +157,11 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="input">Путь к файлу или поток</param>
         /// <returns>ЧтениеТекста</returns>
         [ScriptConstructor(Name = "На основании файла или потока без кодировки")]
-        public static TextReadImpl Constructor (IValue path)
+        public static TextReadImpl Constructor (IValue input)
         {
             var reader = new TextReadImpl ();
             reader.AnalyzeDefaultLineFeed = false;
-            reader.Open (path, null, "\n", "\r\n");
+            reader.Open (input, null, "\n", "\r\n");
             return reader;
         }
 
