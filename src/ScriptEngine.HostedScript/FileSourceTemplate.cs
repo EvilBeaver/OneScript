@@ -11,9 +11,9 @@ using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript
 {
-    internal class Template : ITemplate
+    public class FileSourceTemplate : ITemplate
     {
-        public Template(string file, TemplateKind kind)
+        public FileSourceTemplate(string file, TemplateKind kind)
         {
             Kind = kind;
             Filename = file;
