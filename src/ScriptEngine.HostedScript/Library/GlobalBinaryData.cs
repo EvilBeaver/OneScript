@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library
                     bytes[i / 2] = Convert.ToByte(newHex.Substring(i, 2), 16);
                 return bytes;
             }
-            catch (FormatException error)
+            catch (FormatException)
             {
                 throw new FormatException("Неверный формат шестнадцатеричной строки");
             }
