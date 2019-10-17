@@ -304,7 +304,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         public void WriteBitwiseAndNot(int position, BinaryDataBuffer bytes, int number = 0)
         {
             ThrowIfReadonly();
-            WriteBitwiseOp(position, bytes, number, ((i, j) => (byte)(~i & j)));
+            WriteBitwiseOp(position, bytes, number, ((i, j) => (byte)(i & ~j)));
         }
         
         /// <summary>
