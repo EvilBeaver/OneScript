@@ -4,56 +4,32 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Security.Cryptography;
 using System.Text;
+using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Security.Cryptography;
-using System.IO;
-using ScriptEngine.HostedScript.Library;
-using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library.Hash
 {
     [ContextClass("ХешированиеДанных", "DataHashing")]
-    public class HashImpl : AutoContext<HashImpl>, IDisposable
+    public class HashImpl : AutoContext<HashImpl>
     {
-        protected HashAlgorithm _provider;
-        protected IValue _enumValue;
-        protected CombinedStream _toCalculate=new CombinedStream();
-        protected bool _calculated;
-        protected byte[] _hash;
+        private readonly HashAlgorithm _provider;
+        private readonly IValue _hashFunction;
+        private byte[] _hash;
 
-        public HashImpl(HashAlgorithm provider, IValue enumValue)
+        public HashImpl(HashAlgorithm provider, IValue hashFunction)
         {
             _provider = provider;
-            _enumValue = enumValue;
-            _calculated = false;
-        }
-
-        public byte[] InternalHash
-        {
-            get
-            {
-                if (!_calculated)
-                {
-                    _hash = _provider.ComputeHash(_toCalculate);
-                    _calculated = true;
-                }
-                return _hash;
-            }
+            _hashFunction = hashFunction;
         }
 
         [ContextProperty("ХешФункция", "HashFunction")]
-        public IValue Extension
-        {
-            get
-            {
-                return _enumValue;
-            }
-        }
+        public IValue HashFunction => _hashFunction;
 
         [ContextProperty("ХешСумма", "HashSum")]
         public IValue Hash
@@ -63,51 +39,63 @@ namespace ScriptEngine.HostedScript.Library.Hash
                 if (_provider is Crc32)
                 {
                     var buffer = new byte[4];
-                    Array.Copy(InternalHash, buffer, 4);
+                    Array.Copy(_hash, buffer, 4);
                     if (BitConverter.IsLittleEndian)
                         Array.Reverse(buffer);
                     var ret = BitConverter.ToUInt32(buffer, 0);
-                    return ValueFactory.Create((decimal)ret);
+                    return ValueFactory.Create(ret);
                 }
-                return new BinaryDataContext(InternalHash);
+
+                return new BinaryDataContext(_hash);
             }
         }
 
         [ContextProperty("ХешСуммаСтрокой", "HashSumOfString")]
-        public string HashString
-        {
-            get
-            {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < InternalHash.Length; i++)
-                    sb.Append(InternalHash[i].ToString("X2"));
-                return sb.ToString();
-            }
-        }
+        public string HashString => BitConverter.ToString(_hash).Replace("-", "");
 
 
         [ContextMethod("Добавить", "Append")]
-        public void Append(IValue toAdd)
+        public void Append(IValue data, uint count = 0)
         {
-            byte[] buffer = null;
-            if (toAdd.DataType==DataType.String)
+            switch (data.DataType)
             {
-                buffer = Encoding.UTF8.GetBytes(toAdd.AsString());
+                case DataType.String:
+                    _hash = _provider.ComputeHash(Encoding.UTF8.GetBytes(data.AsString()));
+                    break;
+                case DataType.Object:
+                    switch (data)
+                    {
+                        case GenericStream stream:
+                        {
+                            var underlyingStream = stream.GetUnderlyingStream();
+                            if (count == 0) // Читать все до конца потока
+                                _hash = _provider.ComputeHash(underlyingStream);
+                            else
+                            {
+                                const int bufferSize = 4096;
+                                var buffer = new byte[bufferSize];
+                                var remain = Convert.ToInt32(count);
+                                var readBytes = 0;
+                                do
+                                {
+                                    readBytes = underlyingStream.Read(buffer, 0, Math.Min(bufferSize, remain));
+                                    if (readBytes > 0)
+                                        _hash = _provider.ComputeHash(buffer, 0, readBytes);
+                                    remain -= readBytes;
+                                } while (readBytes > 0);
+                            }
+
+                            break;
+                        }
+                        case BinaryDataContext binaryData:
+                            _hash = _provider.ComputeHash(binaryData.Buffer);
+                            break;
+                    }
+
+                    break;
+                default:
+                    throw RuntimeException.InvalidArgumentType();
             }
-            else if(toAdd.DataType==DataType.Object)
-            {
-                try
-                {
-                    var binaryData = toAdd as BinaryDataContext;
-                    buffer = binaryData.Buffer;
-                }
-                catch
-                {
-                     throw RuntimeException.InvalidArgumentType();
-                }
-            }
-            AddStream(new MemoryStream(buffer));
-            
         }
 
         [ContextMethod("ДобавитьФайл", "AppendFile")]
@@ -115,38 +103,17 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             if (!File.Exists(path))
                 throw RuntimeException.InvalidArgumentType();
-            AddStream(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                _hash = _provider.ComputeHash(stream);
+            }
         }
-
-        [ContextMethod("Очистить", "Clear")]
-        public void Clear()
-        {
-            _toCalculate.Close();
-            _toCalculate.Dispose();
-            _toCalculate = new CombinedStream();
-            _calculated = false;
-        }
-
 
         [ScriptConstructor(Name = "По указанной хеш-функции")]
-        public static HashImpl Constructor(IValue providerEnum)
+        public static HashImpl Constructor(IValue hashFunction)
         {
-            var objectProvider = HashFunctionEnum.GetProvider(providerEnum);
-            return new HashImpl(objectProvider, providerEnum);
-        }
-
-        public void Dispose()
-        {
-            _toCalculate.Close();
-            _toCalculate.Dispose();
-        }
-
-        private void AddStream(Stream stream)
-        {
-            _toCalculate.AddStream(stream);
-            _toCalculate.Seek(0, SeekOrigin.Begin);
-            _calculated = false;
-            
+            var objectProvider = HashFunctionEnum.GetProvider(hashFunction);
+            return new HashImpl(objectProvider, hashFunction);
         }
     }
 }
