@@ -105,7 +105,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         public GenericStream OpenStreamForRead()
         {
             var stream = new MemoryStream(_buffer);
-            return new GenericStream(stream);
+            return new GenericStream(stream, true);
         }
 
         [ScriptConstructor(Name = "На основании файла")]
