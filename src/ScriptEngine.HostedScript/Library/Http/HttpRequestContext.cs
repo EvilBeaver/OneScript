@@ -44,13 +44,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             _body = newBody;
         }
 
-        public Stream Body
-        {
-            get
-            {
-                return _body.GetDataStream();
-            }
-        }
+        public Stream Body => _body.GetDataStream();
 
         /// <summary>
         /// Относительный путь к ресурсу на сервере (не включает имя сервера)
@@ -105,7 +99,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
         public void SetBodyFromString(string data, IValue encoding = null, ByteOrderMarkUsageEnum bomUsage = ByteOrderMarkUsageEnum.Auto)
         {
-            SetBody(new HttpRequestBodyString(data, encoding, bomUsage));
+            SetBody(new HttpRequestBodyBinary(data, encoding, bomUsage));
         }
 
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
@@ -117,6 +111,10 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
         public GenericStream GetBodyAsStream()
         {
+            if (_body is HttpRequestBodyUnknown)
+            {
+                _body = new HttpRequestBodyBinary();
+            }
             return new GenericStream(_body.GetDataStream());
         }
 
@@ -129,16 +127,12 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ScriptConstructor(Name = "По адресу ресурса и заголовкам")]
         public static HttpRequestContext Constructor(IValue resource, IValue headers = null)
         {
-            var ctx = new HttpRequestContext();
-            ctx.ResourceAddress = resource.AsString();
-            if (headers != null)
-            {
-                var headersMap = headers.GetRawValue() as MapImpl;
-                if (headersMap == null)
-                    throw RuntimeException.InvalidArgumentType();
+            var ctx = new HttpRequestContext {ResourceAddress = resource.AsString()};
+            if (headers == null) return ctx;
+            if (!(headers.GetRawValue() is MapImpl headersMap))
+                throw RuntimeException.InvalidArgumentType();
 
-                ctx.Headers = headersMap;
-            }
+            ctx.Headers = headersMap;
 
             return ctx;
         }
