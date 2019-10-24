@@ -9,8 +9,15 @@
 #define VerRelease
 #define Build
 
-#define Binaries "bin"
-#define Suffix "x86"
+#ifndef Suffix
+  #define Suffix "x86"
+#endif
+
+#if Suffix == "x64"
+  #define Binaries="bin64"
+#else
+  #define Binaries="bin"
+#endif
 
 ; duplicates ArtifactsRoot because ISPP can't resolve directives
 #expr ParseVersion(ArtifactRoot + "\" + Binaries + "\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
