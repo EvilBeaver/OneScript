@@ -78,7 +78,6 @@ Source: "{#ArtifactRoot}\{#Binaries}\*.bat"; DestDir: "{app}\bin"; Components: s
 Source: "{#ArtifactRoot}\doc\*"; DestDir: "{app}\doc"; Components: docs; Flags: recursesubdirs
 
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
-Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: VCRedistNeedsInstall
 
 [Icons]
 Name: "{group}\{#FSFriendlyName}"; Filename: "{app}\bin\{#MainExe}"
@@ -196,23 +195,4 @@ begin
     end;
     
     result := true;
-end;
-
-function MsiQueryProductState(szProduct: string): INSTALLSTATE; 
-  external 'MsiQueryProductState{#AW}@msi.dll stdcall';
-
-function VCVersionInstalled(const ProductID: string): Boolean;
-begin
-  Result := MsiQueryProductState(ProductID) = INSTALLSTATE_DEFAULT;
-end;
-
-function VCRedistNeedsInstall: Boolean;
-begin
-  // here the Result must be True when you need to install your VCRedist
-  // or False when you don't need to, so now it's upon you how you build
-  // this statement, the following won't install your VC redist only when
-  // the Visual C++ 2010 Redist (x86) and Visual C++ 2010 SP1 Redist(x86)
-  // are installed for the current user
-  Result := not (VCVersionInstalled(VC_2012_REDIST_MIN_UPD4_X86) and 
-    VCVersionInstalled(VC_2012_REDIST_ADD_UPD4_X86));
 end;
