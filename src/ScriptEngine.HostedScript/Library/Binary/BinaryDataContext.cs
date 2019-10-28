@@ -104,7 +104,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("ОткрытьПотокДляЧтения", "OpenStreamForRead")]
         public GenericStream OpenStreamForRead()
         {
-            var stream = new MemoryStream(_buffer);
+            var stream = new MemoryStream(_buffer, 0, _buffer.Length, false, true);
             return new GenericStream(stream, true);
         }
 
