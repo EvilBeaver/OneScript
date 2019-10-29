@@ -77,7 +77,7 @@ pipeline {
                         deleteDir()
                     }
                     unstash 'buildResults'
-                    bat "chcp $outputEnc > nul\r\ndotnet msbuild Build.csproj /t:xUnitTest"
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:xUnitTest"
 
                     junit 'tests/tests.xml'
                 }
