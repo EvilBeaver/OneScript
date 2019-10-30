@@ -34,6 +34,9 @@ UninstallDisplayIcon="{app}\bin\{#MainExe}"
 Compression=lzma2
 SolidCompression=yes
 VersionInfoVersion={#VerMajor}.{#VerMinor}.{#VerRelease}.{#Build}
+#if Suffix == "x64"
+  ArchitecturesInstallIn64BitMode="x64"
+#endif
 
 [InstallDelete]
 Type: files; Name: {app}\*.dll
