@@ -119,7 +119,8 @@ namespace ScriptEngine.HostedScript
         public void LoadLibrary(string dllPath)
         {
             var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
-            _engine.AttachAssembly(assembly, _env);
+            _engine.AttachExternalAssembly(assembly, _env);
+
         }
 
         [ContextMethod("ДобавитьМакет", "AddTemplate")]

@@ -179,7 +179,7 @@ namespace ScriptEngine.HostedScript.Library
         public void AttachAddIn(string dllPath)
         {
             var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
-            EngineInstance.AttachAssembly(assembly, EngineInstance.Environment);
+            EngineInstance.AttachExternalAssembly(assembly, EngineInstance.Environment);
         }
 
         /// <summary>
