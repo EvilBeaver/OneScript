@@ -14,9 +14,9 @@
 #endif
 
 #if Suffix == "x64"
-  #define Binaries="bin64"
-#else
   #define Binaries="bin"
+#else
+  #define Binaries="bin32"
 #endif
 
 ; duplicates ArtifactsRoot because ISPP can't resolve directives

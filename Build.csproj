@@ -14,11 +14,11 @@
     <ItemGroup>
         <PlatformItem Include="x86">
             <MSBuildName>x86</MSBuildName>
-            <BinFolder>bin</BinFolder>
+            <BinFolder>bin32</BinFolder>
         </PlatformItem>
         <PlatformItem Include="x64">
             <MSBuildName>Any CPU</MSBuildName>
-            <BinFolder>bin64</BinFolder>
+            <BinFolder>bin</BinFolder>
         </PlatformItem>
     </ItemGroup>
 
@@ -76,10 +76,10 @@
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
             <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/**">
-                <Dest>$(TempFolder)/bin64</Dest>
+                <Dest>$(TempFolder)/bin</Dest>
             </BinaryFiles>
             <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**">
-                <Dest>$(TempFolder)/bin</Dest>
+                <Dest>$(TempFolder)/bin32</Dest>
             </BinaryFiles>
             <AspFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/ASPNETHandler.dll"/>
         </ItemGroup>
