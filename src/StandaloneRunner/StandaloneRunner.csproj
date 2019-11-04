@@ -25,10 +25,8 @@
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ScriptEngine.dll" />
-    <EmbeddedResource Include="ScriptEngine.HostedScript.dll" />
-    <EmbeddedResource Include="ICSharpCode.SharpZipLib.dll" />
-    <EmbeddedResource Include="Newtonsoft.Json.dll" />
+    <PackageReference Include="Costura.Fody" Version="3.3.3" />
+    <PackageReference Include="Fody" Version="4.2.1" />
   </ItemGroup>
 
   <Target Name="CleanExternals" AfterTargets="Clean">

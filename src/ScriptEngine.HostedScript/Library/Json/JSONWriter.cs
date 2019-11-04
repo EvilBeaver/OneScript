@@ -98,7 +98,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                     _writer.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
                 }
                 else if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.SymbolsNotInBMP)
-                    throw new NotImplementedException("Свойство \"СимволыВнеBMP\" не поддерживается");
+                    throw new NotImplementedException();
             }
         }
 
@@ -127,9 +127,9 @@ namespace ScriptEngine.HostedScript.Library.Json
             for (var i = 0; i < Length; i++)
             {
                 char c = sb[i];
-                if (EscapeSlash && c == '\\')
+                if (EscapeSlash && c == '/')
                 {
-                    sb.Replace("\\", "\\\\", i, 1);
+                    sb.Replace("/", "\\/", i, 1);
                     Length++;
                     i++;
                 }
@@ -193,9 +193,9 @@ namespace ScriptEngine.HostedScript.Library.Json
                     Length++;
                     i++;
                 }
-                else if (c == '/')
+                else if (c == '\\')
                 {
-                    sb.Replace("/", "\\/", i, 1);
+                    sb.Replace("\\", "\\\\", i, 1);
                     Length++;
                     i++;
                 }
@@ -215,9 +215,9 @@ namespace ScriptEngine.HostedScript.Library.Json
             return sb.ToString();
         }
 
-        void NotOpenException()
+        RuntimeException NotOpenException()
         {
-            throw new RuntimeException("Приемник данных JSON не открыт");
+            return new RuntimeException(Locale.NStr("ru='Приемник данных JSON не открыт';en='JSON data target is not opened'"));
         }
 
         void SetNewLineChars(TextWriter textWriter)
@@ -322,7 +322,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         public void WriteRaw(string stringValue)
         {
             if (!IsOpen())
-                NotOpenException();
+                throw NotOpenException();
 
             _writer.WriteRaw(stringValue);
         }
@@ -342,7 +342,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         public void WriteValue(IValue value, bool useFormatWithExponent = false)
         {
             if (!IsOpen())
-                NotOpenException();
+                throw NotOpenException();
 
             if (value.SystemType.Name == "Null")
             {

@@ -4,13 +4,7 @@
 echo "Building RPM"
 
 PROJECT=oscript
-echo "$0"
-echo "$1"
-DISTPATH=$(cd $1; pwd)
-BINPATH=$DISTPATH/bin
-cd `dirname $0`
 
-echo "Assets folder: $DISTPATH"
 echo "Current dir: {$PWD}"
 	
 docker build -t onescript:rpm ${PWD}/builders/rpm/

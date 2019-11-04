@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 
 using oscript;
 
@@ -40,8 +41,8 @@ namespace StandaloneRunner
                     {
                         _sourceStream = GetCodeStream(dumpStream);
                     }
-                    
-                    Run(); //ну да, говнокод и лапша, время жмет
+
+                    return Run(); //ну да, говнокод и лапша, время жмет
                 }
             }
 
@@ -54,25 +55,32 @@ namespace StandaloneRunner
 
             try
             {
-                ModuleImage module;
+
+                var templateStorage = new TemplateStorage(new StandaloneTemplateFactory());
+                engine.InitializationCallback = (e, env) =>
+                {
+                    e.Environment.InjectObject(templateStorage);
+                    GlobalsManager.RegisterInstance(templateStorage);
+                };
+
                 engine.Initialize();
 
-                using (var binReader = new BinaryReader(_sourceStream))
+                var serializer = new BinaryFormatter();
+                var appDump = (ApplicationDump)serializer.Deserialize(_sourceStream);
+                foreach (var resource in appDump.Resources)
                 {
-                    var modulesCount = binReader.ReadInt32();
+                    templateStorage.RegisterTemplate(resource.ResourceName, DeserializeTemplate(resource.Data));
+                }
 
-                    var reader = new ModulePersistor();
+                var module = appDump.Scripts[0].Image;
 
-                    var entry = reader.Read(_sourceStream);
-                    --modulesCount;
+                var binaryIndexer = new CompiledCodeIndexer();
+                module.ModuleInfo.CodeIndexer = binaryIndexer;
 
-                    while (modulesCount-- > 0)
-                    {
-                        var userScript = reader.Read(_sourceStream);
-                        engine.LoadUserScript(userScript);
-                    }
-
-                    module = entry.Image;
+                for (int i = 1; i < appDump.Scripts.Length; i++)
+                {
+                    appDump.Scripts[i].Image.ModuleInfo.CodeIndexer = binaryIndexer;
+                    engine.LoadUserScript(appDump.Scripts[i]);
                 }
 
                 var process = engine.CreateProcess(this, module, src);
@@ -88,6 +96,33 @@ namespace StandaloneRunner
                 ShowExceptionInfo(e);
                 return 1;
             }
+        }
+
+        private ITemplate DeserializeTemplate(byte[] resourceData)
+        {
+            byte[] templateBytes;
+            TemplateKind kind;
+            using (var ms = new MemoryStream(resourceData))
+            {
+                var br = new BinaryReader(ms);
+                var tKind = br.ReadString();
+                switch (tKind)
+                {
+                    case "File":
+                        kind = TemplateKind.File;
+                        break;
+                    case "BinaryData":
+                        kind = TemplateKind.BinaryData;
+                        break;
+                    default:
+                        throw new Exception($"Unknown template kind {tKind}");
+                }
+
+                var len = br.ReadInt32();
+                templateBytes = br.ReadBytes(len);
+            }
+
+            return new InternalTemplate(templateBytes, kind);
         }
 
         private Stream GetCodeStream(Stream sourceStream)

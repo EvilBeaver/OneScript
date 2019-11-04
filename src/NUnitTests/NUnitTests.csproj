@@ -47,6 +47,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="nunit.framework, Version=3.5.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
       <Private>True</Private>
@@ -68,7 +69,9 @@
   <ItemGroup>
     <Compile Include="CompilerTests.cs" />
     <Compile Include="ContextTests.cs" />
+    <Compile Include="DynamicObjectTest.cs" />
     <Compile Include="EngineWrapperNUnit.cs" />
+    <Compile Include="ModuleSerializationTest.cs" />
     <Compile Include="TestContextClass.cs" />
     <Compile Include="TestNullConversion.cs" />
     <Compile Include="TestRunnerTest.cs" />
@@ -76,6 +79,10 @@
     <Compile Include="TypeReflectionTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj">
+      <Project>{0b30df8b-bd15-4c63-9cc4-1e123566b5b3}</Project>
+      <Name>OneScript.Language</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj">
       <Project>{f09a46bd-5737-45e7-ba60-a47c9f7821a9}</Project>
       <Name>ScriptEngine.HostedScript</Name>

@@ -247,7 +247,107 @@ namespace ScriptEngine.HostedScript.Library.Binary
             var bytes = GetBytes( number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             CopyBytes(position, bytes);
         }
+        
+        private void WriteBitwiseOp(int position, BinaryDataBuffer buffer, int number, Func<byte, byte, byte> op)
+        {
+            if(position < 0)
+                throw new IndexOutOfRangeException("Значение индекса выходит за границы диапазона");
 
+            try
+            {
+                var bytesToCopy = (number == 0 ? buffer._buffer.Length : number);
+                for (int i = 0; i < bytesToCopy; i++)
+                    _buffer[i + position] = op(_buffer[i + position], buffer._buffer[i]);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                throw new IndexOutOfRangeException("Переполнение при работе с буфером");
+            }
+        }
+        
+        /// <summary>
+        /// 
+        /// Объединить заданное количество байтов, начиная с указанной позиции с байтами из заданного буфера
+        /// с использованием побитового И.
+        /// Если количество байтов не указано, то объединяются все байты до конца буфера.
+        /// </summary>
+        ///
+        /// <param name="position">
+        /// Начальная позиция в буфере. </param>
+        /// <param name="bytes">
+        /// Буфер, с которым выполняется объединение. </param>
+        /// <param name="number">
+        /// Количество байт, которые требуется объединить. </param>
+        ///
+        [ContextMethod("ЗаписатьПобитовоеИ", "WriteBitwiseAnd")]
+        public void WriteBitwiseAnd(int position, BinaryDataBuffer bytes, int number = 0)
+        {
+            ThrowIfReadonly();
+            WriteBitwiseOp(position, bytes, number, ((i, j) => (byte)(i & j)));
+        }
+        
+        /// <summary>
+        /// 
+        /// Объединить заданное количество байтов, начиная с указанной позиции с байтами из заданного буфера
+        /// с использованием побитового И НЕ.
+        /// Если количество байтов не указано, то объединяются все байты до конца буфера.
+        /// </summary>
+        ///
+        /// <param name="position">
+        /// Начальная позиция в буфере. </param>
+        /// <param name="bytes">
+        /// Буфер, с которым выполняется объединение. </param>
+        /// <param name="number">
+        /// Количество байт, которые требуется объединить. </param>
+        ///
+        [ContextMethod("ЗаписатьПобитовоеИНе", "WriteBitwiseAndNot")]
+        public void WriteBitwiseAndNot(int position, BinaryDataBuffer bytes, int number = 0)
+        {
+            ThrowIfReadonly();
+            WriteBitwiseOp(position, bytes, number, ((i, j) => (byte)(i & ~j)));
+        }
+        
+        /// <summary>
+        /// 
+        /// Объединить заданное количество байтов, начиная с указанной позиции с байтами из заданного буфера
+        /// с использованием побитового ИЛИ.
+        /// Если количество байтов не указано, то объединяются все байты до конца буфера.
+        /// </summary>
+        ///
+        /// <param name="position">
+        /// Начальная позиция в буфере. </param>
+        /// <param name="bytes">
+        /// Буфер, с которым выполняется объединение. </param>
+        /// <param name="number">
+        /// Количество байт, которые требуется объединить. </param>
+        ///
+        [ContextMethod("ЗаписатьПобитовоеИли", "WriteBitwiseOr")]
+        public void WriteBitwiseOr(int position, BinaryDataBuffer bytes, int number = 0)
+        {
+            ThrowIfReadonly();
+            WriteBitwiseOp(position, bytes, number, ((i, j) => (byte)(i | j)));
+        }
+        
+        /// <summary>
+        /// 
+        /// Объединить заданное количество байтов, начиная с указанной позиции с байтами из заданного буфера
+        /// с использованием побитового ИСКЛЮЧИТЕЛЬНОГО ИЛИ (XOR).
+        /// Если количество байтов не указано, то объединяются все байты до конца буфера.
+        /// </summary>
+        ///
+        /// <param name="position">
+        /// Начальная позиция в буфере. </param>
+        /// <param name="bytes">
+        /// Буфер, с которым выполняется объединение. </param>
+        /// <param name="number">
+        /// Количество байт, которые требуется объединить. </param>
+        ///
+        [ContextMethod("ЗаписатьПобитовоеИсключительноеИли", "WriteBitwiseXor")]
+        public void WriteBitwiseXor(int position, BinaryDataBuffer bytes, int number = 0)
+        {
+            ThrowIfReadonly();
+            WriteBitwiseOp(position, bytes, number, ((i, j) => (byte)(i ^ j)));
+        }
 
         /// <summary>
         /// 

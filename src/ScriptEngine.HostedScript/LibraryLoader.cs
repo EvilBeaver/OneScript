@@ -119,7 +119,15 @@ namespace ScriptEngine.HostedScript
         public void LoadLibrary(string dllPath)
         {
             var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
-            _engine.AttachAssembly(assembly, _env);
+            _engine.AttachExternalAssembly(assembly, _env);
+
+        }
+
+        [ContextMethod("ДобавитьМакет", "AddTemplate")]
+        public void AddTemplate(string file, string name, TemplateKind kind = TemplateKind.File)
+        {
+            var manager = GlobalsManager.GetGlobalContext<TemplateStorage>();
+            manager.RegisterTemplate(file, name, kind);
         }
 
         protected override int GetOwnVariableCount()

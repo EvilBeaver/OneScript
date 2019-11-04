@@ -1,7 +1,7 @@
 ﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using OneScript.Language;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -21,10 +21,10 @@ namespace ScriptEngine.Machine.Contexts
 
         public ContextMethodAttribute(string name, string alias = null)
         {
-            if(!Utils.IsValidIdentifier(name))
+            if (!Utils.IsValidIdentifier(name))
                 throw new ArgumentException("Name must be a valid identifier");
 
-            if(!string.IsNullOrEmpty(alias) && !Utils.IsValidIdentifier(alias))
+            if (!string.IsNullOrEmpty(alias) && !Utils.IsValidIdentifier(alias))
                 throw new ArgumentException("Alias must be a valid identifier");
 
             _name = name;
@@ -40,7 +40,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _alias;
         }
-        
+
         public string GetAlias(string nativeMethodName)
         {
             if (!string.IsNullOrEmpty(_alias))
@@ -53,7 +53,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             return null;
         }
-        
+
         public bool IsDeprecated { get; set; }
 
         public bool ThrowOnUse { get; set; }
@@ -71,7 +71,8 @@ namespace ScriptEngine.Machine.Contexts
     public class ContextMethodsMapper<TInstance>
     {
         private List<InternalMethInfo> _methodPtrs;
-        
+        private IdentifiersTrie<int> _methodNumbers;
+
         private void Init()
         {
             if (_methodPtrs == null)
@@ -83,6 +84,23 @@ namespace ScriptEngine.Machine.Contexts
                         _methodPtrs = new List<InternalMethInfo>();
                         MapType(typeof(TInstance));
                     }
+                }
+            }
+        }
+
+        private void InitSearch()
+        {
+            if (_methodNumbers == null)
+            {
+                Init();
+                _methodNumbers = new IdentifiersTrie<int>();
+                for (int idx = 0; idx < _methodPtrs.Count; ++idx)
+                {
+                    var methinfo = _methodPtrs[idx].MethodInfo;
+
+                    _methodNumbers.Add(methinfo.Name, idx);
+                    if (methinfo.Alias != null)
+                        _methodNumbers.Add(methinfo.Alias, idx);
                 }
             }
         }
@@ -107,20 +125,10 @@ namespace ScriptEngine.Machine.Contexts
 
         public int FindMethod(string name)
         {
-            Init();
+            InitSearch();
 
-            // поскольку этот метод вызывается довольно часто, то тут
-            // возможна некоторая просадка по производительности 
-            // за счет сравнения IgnoreCase вместо обычного "числового" сравнения
-            // Надо будет понаблюдать или вообще замерить
-            //
-            var idx = _methodPtrs.FindIndex(x => 
-                String.Compare(x.MethodInfo.Name, name, StringComparison.OrdinalIgnoreCase) == 0 
-                || String.Compare(x.MethodInfo.Alias, name, StringComparison.OrdinalIgnoreCase) == 0 );
-            if (idx < 0)
-            {
+            if (!_methodNumbers.TryGetValue(name, out var idx))
                 throw RuntimeException.MethodNotFoundException(name);
-            }
 
             return idx;
         }
@@ -133,23 +141,15 @@ namespace ScriptEngine.Machine.Contexts
                 return _methodPtrs.Count;
             }
         }
-        
+
         private void MapType(Type type)
         {
-            var methods = type.GetMethods()
+            _methodPtrs = type.GetMethods()
                 .SelectMany(method => method.GetCustomAttributes(typeof(ContextMethodAttribute), false)
-                    .Select(attr => new {
-                        Method = method,
-                        Binding = (ContextMethodAttribute)attr
-                    })
-                );
-
-            foreach (var item in methods)
-            {
-                _methodPtrs.Add(new InternalMethInfo(item.Method, item.Binding));
-            }
+                    .Select(attr => new InternalMethInfo(method, (ContextMethodAttribute)attr)) )
+                .ToList();
         }
-        
+
         private class InternalMethInfo
         {
             private readonly Lazy<ContextCallableDelegate<TInstance>> _method;
@@ -157,7 +157,7 @@ namespace ScriptEngine.Machine.Contexts
 
             public InternalMethInfo(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
             {
-                _method = new Lazy<ContextCallableDelegate<TInstance>>(()=>
+                _method = new Lazy<ContextCallableDelegate<TInstance>>(() =>
                 {
                     var isFunc = target.ReturnType != typeof(void);
                     return isFunc ? CreateFunction(target) : CreateProcedure(target);
@@ -240,7 +240,7 @@ namespace ScriptEngine.Machine.Contexts
                 );
 
                 var body = Expression.Block(
-                    methodCall, 
+                    methodCall,
                     returnExpr,
                     Expression.Label(returnLabel, defaultValue)
                     );
@@ -253,7 +253,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 // For those who dare:
                 // Код ниже формирует следующую лямбду с 2-мя замыканиями realMethodDelegate и defaults:
-                // (inst, args) => 
+                // (inst, args) =>
                 // {
                 //    realMethodDelegate(inst,
                 //        ConvertParam<TypeOfArg1>(args[i], defaults[i]),
@@ -295,7 +295,7 @@ namespace ScriptEngine.Machine.Contexts
                     var defaultArg = Expression.ArrayIndex(defaultsClojure, Expression.Constant(i));
                     var conversionCall = Expression.Call(convertMethod, indexedArg, defaultArg);
                     argsPass.Add(conversionCall);
-                    
+
                 }
 
                 var methodCall = Expression.Invoke(methodClojure, argsPass);
@@ -317,7 +317,7 @@ namespace ScriptEngine.Machine.Contexts
                     types.Add(target.ReturnType);
                     delegateType = Expression.GetFuncType(types.ToArray());
                 }
-                
+
                 var deleg = target.CreateDelegate(delegateType);
 
                 var delegateExpr = Expression.Constant(deleg);

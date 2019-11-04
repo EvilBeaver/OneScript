@@ -55,32 +55,19 @@ namespace ScriptEngine.Machine.Contexts
 
             if (methId > -1)
             {
-                bool hasParamsError = false;
                 var procInfo = GetMethodInfo(methId);
 
                 int procParamsCount = procInfo.Params.Count();
 
-                if (procParamsCount < constructorParamsCount)
-                {
-                    hasParamsError = true;
-                }
+                int reqParamsCount = procInfo.Params.Count(x => !x.HasDefaultValue);
 
-                int reqParams = 0;
-                foreach (var itm in procInfo.Params)
-                {
-                    if (!itm.HasDefaultValue) reqParams++;
-                }
-                if (reqParams > constructorParamsCount)
-                {
-                    hasParamsError = true;
-                }
-                if (hasParamsError)
-                {
+                if (constructorParamsCount < reqParamsCount || constructorParamsCount > procParamsCount)
                     throw new RuntimeException("Параметры конструктора: "
-                        + "необходимых параметров: " + Math.Min(procParamsCount, reqParams).ToString()
+                        + "необходимых параметров: " + Math.Min(procParamsCount, reqParamsCount).ToString()
                         + ", передано параметров " + constructorParamsCount.ToString()
                         );
-                }
+                else if (procInfo.Params.Skip(constructorParamsCount).Any(param => !param.HasDefaultValue))
+                    throw RuntimeException.TooFewArgumentsPassed();
 
                 CallAsProcedure(methId, ConstructorParams);
             }

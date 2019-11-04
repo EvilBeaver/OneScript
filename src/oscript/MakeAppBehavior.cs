@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -16,6 +16,7 @@ using System.Text;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
+using ScriptEngine.Machine;
 
 namespace oscript
 {
@@ -32,7 +33,7 @@ namespace oscript
 		}
 
 	    public bool CreateDumpOnly { get; set; }
-	    
+
 	    public override int Execute()
 		{
 			Output.WriteLine("Make started...");
@@ -69,36 +70,73 @@ namespace oscript
 	        var entry = compiler.Compile(source);
 
 	        var embeddedContext = engine.GetUserAddedScripts();
+	        var templates = GlobalsManager.GetGlobalContext<TemplateStorage>();
+
+	        var dump = new ApplicationDump();
+	        dump.Scripts = new UserAddedScript[]
+	        {
+		        new UserAddedScript()
+		        {
+			        Image = entry,
+			        Symbol = "$entry",
+			        Type = UserAddedScriptType.Module
+		        }
+	        }.Concat(embeddedContext)
+	         .ToArray();
+	        dump.Resources = templates.GetTemplates()
+	                                  .Select(SerializeTemplate)
+	                                  .ToArray();
+
+	        // не пишем абсолютных путей в дамп
+	        foreach (var script in dump.Scripts)
+	        {
+		        script.Image.ModuleInfo.Origin = "oscript://" + Path.GetFileName(script.Image.ModuleInfo.Origin);
+		        script.Image.ModuleInfo.ModuleName = script.Image.ModuleInfo.Origin;
+	        }
 
 	        using (var bw = new BinaryWriter(output))
 	        {
-	            var userAddedScripts = embeddedContext as IList<UserAddedScript> ?? embeddedContext.ToList();
-	            bw.Write(userAddedScripts.Count + 1);
+		        var serializer = new BinaryFormatter();
+		        serializer.Serialize(output, dump);
 
-	            var persistor = new ModulePersistor();
-	            persistor.Save(new UserAddedScript
-	            {
-	                Type = UserAddedScriptType.Module,
-	                Symbol = "$entry",
-	                Image = entry
-	            }, output);
+		        var signature = new byte[]
+		        {
+			        0x4f,
+			        0x53,
+			        0x4d,
+			        0x44
+		        };
+		        output.Write(signature, 0, signature.Length);
 
-	            foreach (var item in userAddedScripts)
-	                persistor.Save(item, output);
+		        bw.Write(offset);
 
-	            var signature = new byte[]
-	            {
-	                0x4f,
-	                0x53,
-	                0x4d,
-	                0x44
-	            };
-	            output.Write(signature, 0, signature.Length);
-
-	            bw.Write(offset);
-	            OutputToFile(output);
+		        OutputToFile(output);
 	        }
         }
+
+	    private ApplicationResource SerializeTemplate(KeyValuePair<string, ITemplate> keyValuePair)
+	    {
+		    byte[] data;
+		    using (var stream = new MemoryStream())
+		    {
+			    using (var bw = new BinaryWriter(stream))
+			    {
+				    var buf = keyValuePair.Value.GetBinaryData().Buffer;
+				    bw.Write(keyValuePair.Value.Kind.ToString());
+				    bw.Write(buf.Length);
+				    bw.Write(buf);
+				    data = stream.ToArray();
+			    }
+		    }
+
+		    var appResource = new ApplicationResource
+		    {
+			    ResourceName = keyValuePair.Key,
+			    Data = data
+		    };
+
+		    return appResource;
+	    }
 
 	    private void CreateExe()
 		{

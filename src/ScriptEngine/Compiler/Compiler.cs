@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
@@ -25,7 +27,7 @@ namespace ScriptEngine.Compiler
 
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
-        private Parser _parser;
+        private ILexemGenerator _lexer;
         private ICompilerContext _ctx;
         private ModuleImage _module;
         private Lexem _lastExtractedLexem;
@@ -68,44 +70,41 @@ namespace ScriptEngine.Compiler
     
         public CodeGenerationFlags ProduceExtraCode { get; set; }
 
-        public ModuleImage Compile(Parser parser, ICompilerContext context)
+        public ModuleImage Compile(ILexemGenerator lexer, ICompilerContext context)
         {
             _module = new ModuleImage();
-            _module.LoadAddress = context.TopIndex();
             _ctx = context;
-            _parser = parser;
-            _parser.Start();
-
+            _lexer = lexer;
+            
             BuildModule();
             CheckForwardedDeclarations();
 
+            _module.LoadAddress = _ctx.TopIndex();
             return _module;
         }
 
-        public ModuleImage CompileExpression(Parser parser, ICompilerContext context)
+        public ModuleImage CompileExpression(ILexemGenerator lexer, ICompilerContext context)
         {
             _module = new ModuleImage();
-            _module.LoadAddress = context.TopIndex();
             _ctx = context;
-            _parser = parser;
-            _parser.Start();
+            _lexer = lexer;
             NextToken();
             BuildExpression(Token.EndOfText);
 
+            _module.LoadAddress = _ctx.TopIndex();
             return _module;
         }
 
-        public ModuleImage CompileExecBatch(Parser parser, ICompilerContext context)
+        public ModuleImage CompileExecBatch(ILexemGenerator lexer, ICompilerContext context)
         {
             _module = new ModuleImage();
-            _module.LoadAddress = context.TopIndex();
             _ctx = context;
-            _parser = parser;
-            _parser.Start();
+            _lexer = lexer;
             NextToken();
             PushStructureToken(Token.EndOfText);
             BuildModuleBody();
 
+            _module.LoadAddress = _ctx.TopIndex();
             return _module;
         }
 
@@ -193,8 +192,8 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException exc)
             {
-                if(exc.LineNumber == 0)
-                    AppendCodeInfo(_parser.CurrentLine, exc);
+                if(exc.LineNumber == CodePositionInfo.OUT_OF_TEXT)
+                    AppendCodeInfo(_lexer.GetCodePosition(), exc);
                 throw;
             }
 
@@ -214,7 +213,7 @@ namespace ScriptEngine.Compiler
                     }
                     catch (CompilerException exc)
                     {
-                        AppendCodeInfo(item.codeLine, exc);
+                        AppendCodeInfo(exc, item.codeLine, CodePositionInfo.OUT_OF_TEXT);
                         throw;
                     }
 
@@ -225,7 +224,7 @@ namespace ScriptEngine.Compiler
                     if (item.asFunction && !methInfo.IsFunction)
                     {
                         var exc = CompilerException.UseProcAsFunction();
-                        AppendCodeInfo(item.codeLine, exc);
+                        AppendCodeInfo(exc, item.codeLine, CodePositionInfo.OUT_OF_TEXT);
                         throw exc;
                     }
 
@@ -235,7 +234,7 @@ namespace ScriptEngine.Compiler
                     }
                     catch (CompilerException exc)
                     {
-                        AppendCodeInfo(item.codeLine, exc);
+                        AppendCodeInfo(exc, item.codeLine, CodePositionInfo.OUT_OF_TEXT);
                         throw;
                     }
 
@@ -246,12 +245,19 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void AppendCodeInfo(int line, CompilerException exc)
+        private void AppendCodeInfo(CodePositionInfo info, CompilerException exc)
         {
-            var cp = new CodePositionInfo();
-            cp.LineNumber = line;
-            cp.Code = _parser.GetCodeLine(line);
-            CompilerException.AppendCodeInfo(exc, cp);
+            CompilerException.AppendCodeInfo(exc, info);
+        }
+        
+        private void AppendCodeInfo(CompilerException exc, int line, int column)
+        {
+            var info = _lexer.GetCodePosition();
+            info.LineNumber = line;
+            info.ColumnNumber = column;
+            info.Code = _lexer.Iterator.GetCodeLine(line);
+            
+            CompilerException.AppendCodeInfo(exc, info);
         }
 
         private void DispatchModuleBuild()
@@ -279,7 +285,12 @@ namespace ScriptEngine.Compiler
                         BuildModuleBody();
                     }
                 }
-                else if(_lastExtractedLexem.Type == LexemType.Directive)
+                else if (_lastExtractedLexem.Type == LexemType.EndOperator)
+                {
+                    isCodeEntered = true;
+                    BuildModuleBody();
+                }
+                else if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
                 {
                     HandleDirective(isCodeEntered);
                     UpdateCompositeContext(); // костыль для #330
@@ -428,12 +439,24 @@ namespace ScriptEngine.Compiler
         private void HandleDirective(bool codeEntered)
         {
             var directive = _lastExtractedLexem.Content;
-            var value = _parser.ReadLineToEnd().Trim();
+            
+            ReadToLineEnd();
+
+            var value = _lexer.Iterator.GetContents().Trim();
             NextToken();
 
             if (DirectiveHandler == null || !DirectiveHandler(directive, value, codeEntered))
                 throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
 
+        }
+
+        private void ReadToLineEnd()
+        {
+            char cs;
+            do
+            {
+                cs = _lexer.Iterator.CurrentSymbol;
+            } while (cs != '\n' && _lexer.Iterator.MoveNext());
         }
 
         private void BuildSingleMethod()
@@ -465,7 +488,8 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.IdentifierExpected();
             }
 
-            int definitionLine = _parser.CurrentLine;
+            int definitionLine = _lexer.CurrentLine;
+            int definitionColumn = _lexer.CurrentColumn;
             MethodInfo method = new MethodInfo();
             method.Name = _lastExtractedLexem.Content;
             method.IsFunction = _isFunctionProcessed;
@@ -525,8 +549,7 @@ namespace ScriptEngine.Compiler
             catch (CompilerException)
             {
                 var exc = new CompilerException("Метод с таким именем уже определен: " + method.Name);
-                exc.LineNumber = definitionLine;
-                exc.Code = _parser.GetCodeLine(exc.LineNumber);
+                AppendCodeInfo(exc, definitionLine, definitionColumn);
                 throw exc;
             }
             _module.MethodRefs.Add(binding);
@@ -786,7 +809,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildIfStatement()
         {
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
 
             var exitIndices = new List<int>();
             NextToken();
@@ -872,7 +895,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildForStatement()
         {
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
 
             NextToken();
             if (_lastExtractedLexem.Token == Token.Each)
@@ -1008,7 +1031,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildWhileStatement()
         {
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
 
             NextToken();
             var conditionIndex = _module.Code.Count;
@@ -1050,7 +1073,7 @@ namespace ScriptEngine.Compiler
             {
                 throw CompilerException.BreakOutsideOfLoop();
             }
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
 
             var loopInfo = _nestedLoops.Peek();
             if(_isInTryBlock)
@@ -1067,7 +1090,7 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.ContinueOutsideOfLoop();
             }
 
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
 
             var loopInfo = _nestedLoops.Peek();
             if(_isInTryBlock)
@@ -1078,7 +1101,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildReturnStatement()
         {
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
 
             if (_isFunctionProcessed)
             {
@@ -1110,7 +1133,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildTryExceptStatement()
         {
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine, CodeGenerationFlags.CodeStatistics);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine, CodeGenerationFlags.CodeStatistics);
 
             var beginTryIndex = AddCommand(OperationCode.BeginTry, -1);
             bool savedTryFlag = SetTryBlockFlag(true);
@@ -1141,7 +1164,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildRaiseExceptionStatement()
         {
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
 
             NextToken();
             if (_lastExtractedLexem.Token == Token.Semicolon)
@@ -1165,7 +1188,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildExecuteStatement()
         {
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
             NextToken();
 
             BuildExpression(Token.Semicolon);
@@ -1200,7 +1223,7 @@ namespace ScriptEngine.Compiler
             var identifier = _lastExtractedLexem.Content;
 
             NextToken();
-            AddCommand(OperationCode.LineNum, _parser.CurrentLine);
+            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
             switch (_lastExtractedLexem.Token)
             {
                 case Token.Equal:
@@ -1304,7 +1327,7 @@ namespace ScriptEngine.Compiler
             var opPriority = GetBinaryPriority(currentOp);
             while (LanguageDef.IsBinaryOperator(currentOp) && opPriority >= acceptablePriority)
             {
-                bool isLogical = LanguageDef.IsLogicalOperator(currentOp);
+                bool isLogical = LanguageDef.IsLogicalBinaryOperator(currentOp);
                 int logicalCmdIndex = -1;
 
                 if (isLogical)
@@ -1781,7 +1804,7 @@ namespace ScriptEngine.Compiler
                 var forwarded = new ForwardedMethodDecl();
                 forwarded.identifier = identifier;
                 forwarded.asFunction = asFunction;
-                forwarded.codeLine = _parser.CurrentLine;
+                forwarded.codeLine = _lexer.CurrentLine;
                 forwarded.factArguments = argsPassed;
 
                 var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
@@ -1804,7 +1827,7 @@ namespace ScriptEngine.Compiler
 
             if (parameters.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
-                throw CompilerException.TooLittleArgumentsPassed();
+                throw CompilerException.TooFewArgumentsPassed();
             }
         }
 
@@ -1897,7 +1920,7 @@ namespace ScriptEngine.Compiler
             if (funcId == OperationCode.Min || funcId == OperationCode.Max)
             {
                 if (passedArgs.Length == 0)
-                    throw CompilerException.TooLittleArgumentsPassed();
+                    throw CompilerException.TooFewArgumentsPassed();
             }
             else
             {
@@ -1994,7 +2017,7 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
-                _lastExtractedLexem = _parser.NextLexem();
+                _lastExtractedLexem = _lexer.NextLexem();
             }
             else
             {

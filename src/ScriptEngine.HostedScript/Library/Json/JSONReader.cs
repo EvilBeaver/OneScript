@@ -22,6 +22,11 @@ namespace ScriptEngine.HostedScript.Library.Json
 
         private JsonTextReader _reader; // Объект из библиотеки Newtonsoft для работы с форматом JSON 
 
+        RuntimeException NotOpenException()
+        {
+            return new RuntimeException(Locale.NStr("ru='Источник данных JSON не открыт'; en='JSON data source is not opened'"));
+        }
+
         /// <summary>
         /// 
         /// Возвращает true если для объекта чтения json был задан текст для парсинга.
@@ -115,7 +120,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                 {
                     var type = _reader.TokenType;
 
-                    if (type == JsonToken.String || type == JsonToken.Comment || type == JsonToken.PropertyName) 
+                    if (type == JsonToken.String || type == JsonToken.Comment || type == JsonToken.PropertyName)
                         return ValueFactory.Create((string)_reader.Value);
                     else if (type == JsonToken.Boolean)
                         return ValueFactory.Create((bool)_reader.Value);
@@ -137,10 +142,13 @@ namespace ScriptEngine.HostedScript.Library.Json
                         return ValueFactory.Create();
                     }
                     else
-                        throw new RuntimeException("Ошибка при получении значения атрибута контекста (ТекущееЗначение): Текущее значение JSON не может быть получено");
+                        throw new RuntimeException(Locale.NStr("ru='Текущее значение JSON не может быть получено';en='Cannot get current JSON value'"));
                 }
                 else
-                    throw new RuntimeException("Источник данных JSON не открыт");
+                {
+                    throw NotOpenException();
+                }
+                    
             }
         }
 
@@ -159,7 +167,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                     return _reader.TokenType;
                 }
                 else
-                    throw new RuntimeException("Источник данных JSON не открыт");
+                    throw NotOpenException();
             }
         }
 
@@ -222,7 +230,7 @@ namespace ScriptEngine.HostedScript.Library.Json
 
                 }
                 else
-                    throw new RuntimeException("Источник данных JSON не открыт");
+                    throw NotOpenException();
             }
 
         }
@@ -313,7 +321,7 @@ namespace ScriptEngine.HostedScript.Library.Json
 
             }
             else
-                throw new RuntimeException("Источник данных JSON не открыт");
+                throw NotOpenException();
 
         }
 

@@ -34,6 +34,16 @@ namespace ScriptEngine.HostedScript
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
+            GlobalsManager.RegisterInstance(_globalCtx);
+
+            InitializationCallback = (eng, env) =>
+            {
+                var templateFactory = new DefaultTemplatesFactory();
+                var storage = new TemplateStorage(templateFactory);
+                env.InjectObject(storage);
+                GlobalsManager.RegisterInstance(storage);
+            };
+
             _engine.Environment = _env;
         }
 
@@ -74,13 +84,24 @@ namespace ScriptEngine.HostedScript
 
         public string CustomConfig { get; set; }
 
+        public Action<ScriptingEngine, RuntimeEnvironment> InitializationCallback { get; set; }
+        
         public void Initialize()
         {
             if (!_isInitialized)
             {
+                InitializationCallback?.Invoke(_engine, _engine.Environment);
                 _engine.Initialize();
                 _isInitialized = true;
             }
+
+            // System language
+            var SystemLanguageCfg = GetWorkingConfig()["SystemLanguage"];
+
+            if (SystemLanguageCfg != null)
+                Locale.SystemLanguageISOName = SystemLanguageCfg;
+            else
+                Locale.SystemLanguageISOName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
         }
 
         private void InitLibraries(KeyValueConfig config)
@@ -194,21 +215,28 @@ namespace ScriptEngine.HostedScript
 
         public Process CreateProcess(IHostApplication host, ICodeSource src)
         {
-            return CreateProcess(host, src, GetCompilerService());
-        }
-
-        public Process CreateProcess(IHostApplication host, ICodeSource src, CompilerService compilerSvc)
-        {
-            SetGlobalEnvironment(host, src);
             Initialize();
+            SetGlobalEnvironment(host, src);
             if (_engine.DebugController != null)
             {
                 _engine.DebugController.Init();
                 _engine.DebugController.AttachToThread(_engine.Machine);
                 _engine.DebugController.Wait();
             }
+
+            var compilerSvc = GetCompilerService();
+            DefineConstants(compilerSvc);
             var module = _engine.LoadModuleImage(compilerSvc.Compile(src));
             return InitProcess(host, module);
+        }
+
+        private void DefineConstants(CompilerService compilerSvc)
+        {
+            var definitions = GetWorkingConfig()["preprocessor.define"]?.Split(',') ?? new string[0];
+            foreach (var val in definitions)
+            {
+                compilerSvc.DefinePreprocessorValue(val);
+            }
         }
 
         [Obsolete]

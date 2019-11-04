@@ -121,7 +121,9 @@ namespace ScriptEngine.Machine.Contexts
 
                     if (contextField.Alias == null)
                     {
-                        if(field.Name != contextField.Name)
+                        if(StringComparer
+                             .InvariantCultureIgnoreCase
+                             .Compare(field.Name, contextField.Name) != 0)
                             instance.AddValue(contextField.Name, field.Name, osValue);
                         else
                             instance.AddValue(contextField.Name, osValue);
@@ -133,6 +135,7 @@ namespace ScriptEngine.Machine.Contexts
 
 			if (enumTypeAttribute.CreateGlobalProperty)
 			{
+				GlobalsManager.RegisterInstance(enumType, instance);
 				environment.InjectGlobalProperty(instance, enumTypeAttribute.Name, true);
 				if (enumTypeAttribute.Alias != null)
 					environment.InjectGlobalProperty(instance, enumTypeAttribute.Alias, true);
