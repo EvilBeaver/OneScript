@@ -46,6 +46,21 @@ namespace ScriptEngine
             ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm);
         }
 
+        public void AttachExternalAssembly(System.Reflection.Assembly asm, RuntimeEnvironment globalEnvironment)
+        {
+            ContextDiscoverer.DiscoverClasses(asm);
+
+            var lastCount = globalEnvironment.AttachedContexts.Count();
+            ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm);
+
+            var newCount = globalEnvironment.AttachedContexts.Count();
+            while (lastCount < newCount)
+            {
+                _machine.AttachContext(globalEnvironment.AttachedContexts[lastCount]);
+                ++lastCount;
+            }
+        }
+
         public RuntimeEnvironment Environment { get; set; }
 
         public void Initialize()

@@ -73,38 +73,38 @@ namespace ScriptEngine.Compiler
         public ModuleImage Compile(ILexemGenerator lexer, ICompilerContext context)
         {
             _module = new ModuleImage();
-            _module.LoadAddress = context.TopIndex();
             _ctx = context;
             _lexer = lexer;
             
             BuildModule();
             CheckForwardedDeclarations();
 
+            _module.LoadAddress = _ctx.TopIndex();
             return _module;
         }
 
         public ModuleImage CompileExpression(ILexemGenerator lexer, ICompilerContext context)
         {
             _module = new ModuleImage();
-            _module.LoadAddress = context.TopIndex();
             _ctx = context;
             _lexer = lexer;
             NextToken();
             BuildExpression(Token.EndOfText);
 
+            _module.LoadAddress = _ctx.TopIndex();
             return _module;
         }
 
         public ModuleImage CompileExecBatch(ILexemGenerator lexer, ICompilerContext context)
         {
             _module = new ModuleImage();
-            _module.LoadAddress = context.TopIndex();
             _ctx = context;
             _lexer = lexer;
             NextToken();
             PushStructureToken(Token.EndOfText);
             BuildModuleBody();
 
+            _module.LoadAddress = _ctx.TopIndex();
             return _module;
         }
 
