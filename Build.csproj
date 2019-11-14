@@ -106,6 +106,8 @@
         <Copy SourceFiles="@(DbgImageFiles)" DestinationFolder="$(DebugDest)/images"/>
 
         <CallTarget Targets="CleanIntermediates"/>
+
+        <Exec WorkingDirectory="$(TempFolder)" Command="&quot;$(ToolFolder)/oscript.exe&quot; -version > VERSION"/>
     </Target>
 
     <!-- Собирает в целевой папке содержимое папки lib -->
