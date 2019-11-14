@@ -3,7 +3,7 @@
 DATAROOT=$(pwd)/${ARTIFACTS_ROOT}
 SRCPATH=${DATAROOT}
 BINPATH=${SRCPATH}/bin/
-DEBBUILDROOT=${DATAROOT}/deb/
+DEBBUILDROOT=/tmp/deb/
 BUILDERROOT=/opt/deb/
 
 if [ -d "$DEBBUILDROOT" ]; then
@@ -11,7 +11,7 @@ if [ -d "$DEBBUILDROOT" ]; then
     mkdir $DEBBUILDROOT
 fi
 
-VERSION=$(cat ${DATAROOT}/VERSION)
+VERSION=$(cat ${DATAROOT}/VERSION | grep -oE '([[:digit:]]+\.){2}[[:digit:]]+')
 PAKNAME=onescript-engine
 DSTPATH=${DEBBUILDROOT}${PAKNAME}
 
@@ -44,4 +44,7 @@ fakeroot dpkg-deb --build $DSTPATH
 rm -rf $DSTPATH
 chmod 777 $DSTPATH.deb
 dpkg-name -o $DSTPATH.deb
+
+#copy results
+cp $DSTPATH.deb $(pwd)/output
 

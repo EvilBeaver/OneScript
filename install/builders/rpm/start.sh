@@ -1,19 +1,20 @@
 #!/bin/bash
 # script run inside the container
 
+DATAROOT=$(pwd)/${ARTIFACTS_ROOT}
 
-#/media/src/bin;lib;examples;etc
-#/media/VERSIONFILE
 VERSIONFILE=/media/VERSION
-DISTPATH=/media/src
 
-VERSION=$(cat ${VERSIONFILE})
+VERSION=$(cat ${DATAROOT}/VERSION | grep -oE '([[:digit:]]+\.){2}[[:digit:]]+')
 BLDTMP=/tmp
 TMPDIR=${BLDTMP}/OneScript-$VERSION
 mkdir -p $TMPDIR
 
 echo "Copying sources to tmpdir"
-cp -r -v $DISTPATH/* $TMPDIR
+cp -r -v $DISTPATH/bin $TMPDIR
+cp -r -v $DISTPATH/lib $TMPDIR
+cp -r -v $DISTPATH/doc $TMPDIR
+cp -r -v $DISTPATH/examples $TMPDIR
 cp -r -v ${BLDTMP}/oscript $TMPDIR/oscript
 cp -r -v ${BLDTMP}/oscript-opm $TMPDIR/oscript-opm
 cp -r -v ${BLDTMP}/oscript-opm-completion $TMPDIR/oscript-opm-completion
@@ -25,9 +26,6 @@ popd
 
 BUILDDIR=/media/rpm
 sudo mkdir -p ${BUILDDIR}
-
-#cp -ra $BLDTMP/OneScript-$VERSION.tar.gz $BUILDDIR/
-#cp -rf $BLDTMP/oscript.spec $BUILDDIR/
 
 rpmdev-setuptree
 define=""
@@ -57,3 +55,8 @@ sudo mkdir -p $BUILDDIR/SRPMS
 
 sudo cp -ar rpmbuild/RPMS/ $BUILDDIR/
 sudo cp -ar rpmbuild/SRPMS/ $BUILDDIR/
+
+#copy results
+OUTPUT=$(pwd)/output
+mv $BUILDDIR/RPMS/noarch/*.rpm $OUTPUT
+mv $BUILDDIR/SRPMS/*.rpm $OUTPUT
