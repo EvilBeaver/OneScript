@@ -46,5 +46,8 @@ chmod 777 $DSTPATH.deb
 dpkg-name -o $DSTPATH.deb
 
 #copy results
-cp $DSTPATH.deb $(pwd)/output
+OUTPUT=/bld/out
+mkdir $OUTPUT
+
+cp $DSTPATH.deb $OUTPUT
 

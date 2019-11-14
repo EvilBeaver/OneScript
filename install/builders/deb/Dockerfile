@@ -17,6 +17,6 @@ ENV LANG ru_RU.UTF-8
 ENV ARTIFACTS_ROOT built/tmp
 
 COPY ./ /opt/deb/
+RUN cp /opt/deb/build.sh /bld/build.sh && chmod +x /bld/build.sh
 
-ENTRYPOINT /opt/deb/build.sh
 

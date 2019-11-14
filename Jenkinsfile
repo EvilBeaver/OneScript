@@ -67,118 +67,123 @@ pipeline {
             }
         }
 
-        stage('Windows testing') {
-            agent { label 'windows' }
+        stage('Testing'){
+            parallel{
+                stage('Windows testing') {
+                    agent { label 'windows' }
 
-            steps {
-                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
-                {
-                    dir('install/build'){
-                        deleteDir()
+                    steps {
+                        ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
+                        {
+                            dir('install/build'){
+                                deleteDir()
+                            }
+                            unstash 'buildResults'
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:xUnitTest"
+
+                            junit 'tests/tests.xml'
+                        }
                     }
-                    unstash 'buildResults'
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:xUnitTest"
+                }
 
-                    junit 'tests/tests.xml'
+                stage('Linux testing') {
+                    agent{
+                        docker{
+                            image 'evilbeaver/mono-ru:5.4'
+                            label 'master'
+                        }
+                    }
+
+                    steps {
+                        
+                        dir('install/build'){
+                            deleteDir()
+                        }
+                        
+                        unstash 'buildResults'
+
+                        sh '''\
+                        if [ ! -d lintests ]; then
+                            mkdir lintests
+                        fi
+                        rm lintests/*.xml -f
+                        cd tests
+                        mono ../built/tmp/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
+                        exit 0
+                        '''.stripIndent()
+
+                        junit 'lintests/*.xml'
+                        archiveArtifacts artifacts: 'lintests/*.xml', fingerprint: true
+                    }
                 }
             }
-        }
-
-        stage('Linux testing') {
-
-            agent{
-                docker{
-                    image 'evilbeaver/mono-ru:5.4'
-                    label 'master'
-                }
-            }
-
-            steps {
-                
-                dir('install/build'){
-                    deleteDir()
-                }
-                
-                unstash 'buildResults'
-
-                sh '''\
-                if [ ! -d lintests ]; then
-                    mkdir lintests
-                fi
-                rm lintests/*.xml -f
-                cd tests
-                mono ../built/tmp/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
-                exit 0
-                '''.stripIndent()
-
-                junit 'lintests/*.xml'
-                archiveArtifacts artifacts: 'lintests/*.xml', fingerprint: true
-            }
-
-
-
         }
         
         stage('Packaging') {
-            agent { label 'windows' }
+            parallel {
+                stage('Windows distribution'){
+                    agent { label 'windows' }
 
-            environment {
-                InnoSetupPath = "${tool 'InnoSetup'}"
-            }
-            
-            steps {
-                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
-                {
-                    dir('built'){
-                        deleteDir()
+                    environment {
+                        InnoSetupPath = "${tool 'InnoSetup'}"
                     }
                     
-                    unstash 'buildResults'
-                    script
-                    {
-                        if (env.BRANCH_NAME == "preview") {
-                            echo 'Building preview'
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions /p:Suffix=-pre%BUILD_NUMBER%"
-                        }
-                        else{
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions"
+                    steps {
+                        ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
+                        {
+                            dir('built'){
+                                deleteDir()
+                            }
+                            
+                            unstash 'buildResults'
+                            script
+                            {
+                                if (env.BRANCH_NAME == "preview") {
+                                    echo 'Building preview'
+                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions /p:Suffix=-pre%BUILD_NUMBER%"
+                                }
+                                else{
+                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions"
+                                }
+                            }
+                            archiveArtifacts artifacts: 'built/**', fingerprint: true
+                            stash includes: 'built/**', name: 'winDist'
                         }
                     }
-                    archiveArtifacts artifacts: 'built/**', fingerprint: true
-                    stash includes: 'built/**', name: 'winDist'
+                }
+
+                stage('DEB distribution') {
+                    agent { 
+                        docker {
+                            image 'evilbeaver/oscript-builder:rpm'
+                            label 'my-defined-label' 
+                        }
+                    }
+
+                    steps {
+                        unstash 'buildResults'
+                        sh '/bld/build.sh'
+                        archiveArtifacts artifacts: 'bld/out/*', fingerprint: true
+                        stash includes: '/bld/out/*', name: 'debian'
+                    }
+                }
+
+                stage('RPM distribution') {
+                    agent { 
+                        docker {
+                            image 'evilbeaver/oscript-builder:rpm'
+                            label 'master' 
+                        }
+                    }
+
+                    steps {
+                        unstash 'buildResults'
+                        sh '/bld/build.sh'
+                        archiveArtifacts artifacts: 'bld/out/*', fingerprint: true
+                        stash includes: '/bld/out/*', name: 'redhat'
+                    }
                 }
             }
-        }
-
-        stage ('Packaging DEB and RPM') {
-            agent { label 'master' }
-
-            steps {
-
-                dir('built'){
-                    deleteDir()
-                }
-                checkout scm
-                unstash 'buildResults'
-
-                sh '''
-                cd install
-                chmod +x prepare-build.sh
-                chmod +x deb-build.sh
-                chmod +x rpm-build.sh
-                sh ./prepare-build.sh
-                
-                DISTPATH=`pwd`/built/tmp
-                
-                sh ./deb-build.sh $DISTPATH
-                sh ./rpm-build.sh $DISTPATH
-                '''.stripIndent()
-                
-                archiveArtifacts artifacts: 'output/*', fingerprint: true
-                stash includes: 'output/*', name: 'linDist'
-                
-            }
-
         }
 
         stage ('Publishing night-build') {
@@ -192,23 +197,20 @@ pipeline {
 
             steps {
                 
-                unstash 'winDist'
-                unstash 'linDist'
-                unstash 'vsix'
-                
-                sh '''
-                if [ -d "targetContent" ]; then
-                    rm -rf targetContent
-                fi
-                mkdir targetContent
-                mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
-                mv output/*.rpm targetContent/
-                mv output/*.deb targetContent/
-                TARGET="/var/www/oscript.io/download/versions/night-build/"
-                cd targetContent
-                sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
-                rm -rf targetContent
-                '''.stripIndent()
+                dir('targetContent') {
+                    unstash 'winDist'
+                    unstash 'debian'
+                    unstash 'redhat'
+                    unstash 'vsix'
+
+                    sh '''
+                    mkdir x64
+                    mv OneScript*-x64*.exe x64/
+                    mv OneScript*-x64*.zip x64/
+                    TARGET="/var/www/oscript.io/download/versions/night-build/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
+                    '''.stripIndent()
+                }
             }
         }
                 

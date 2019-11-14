@@ -57,6 +57,8 @@ sudo cp -ar rpmbuild/RPMS/ $BUILDDIR/
 sudo cp -ar rpmbuild/SRPMS/ $BUILDDIR/
 
 #copy results
-OUTPUT=$(pwd)/output
+OUTPUT=/bld/out
+mkdir $OUTPUT
+
 mv $BUILDDIR/RPMS/noarch/*.rpm $OUTPUT
 mv $BUILDDIR/SRPMS/*.rpm $OUTPUT
