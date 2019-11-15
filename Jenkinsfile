@@ -156,7 +156,7 @@ pipeline {
                     agent { 
                         docker {
                             image 'evilbeaver/oscript-builder:rpm'
-                            label 'my-defined-label' 
+                            label 'master' 
                         }
                     }
 
