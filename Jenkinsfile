@@ -155,7 +155,7 @@ pipeline {
                 stage('DEB distribution') {
                     agent { 
                         docker {
-                            image 'evilbeaver/oscript-builder:rpm'
+                            image 'oscript/onescript-builder:rpm'
                             label 'master' 
                         }
                     }
@@ -171,7 +171,7 @@ pipeline {
                 stage('RPM distribution') {
                     agent { 
                         docker {
-                            image 'evilbeaver/oscript-builder:rpm'
+                            image 'oscript/onescript-builder:rpm'
                             label 'master' 
                         }
                     }

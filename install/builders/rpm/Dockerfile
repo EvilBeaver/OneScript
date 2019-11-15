@@ -24,4 +24,4 @@ ENV VERSION ""
 ENV RELEASE ""
 ENV ARTIFACTS_ROOT built/tmp
 
-RUN cp /tmp/start.sh /bld/build.sh && chmod +x /bld/build.sh
+RUN mkdir /bld && cp /tmp/start.sh /bld/build.sh && chmod +x /bld/build.sh
