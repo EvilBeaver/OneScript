@@ -8,14 +8,14 @@ BUILDERROOT=/opt/deb/
 
 if [ -d "$DEBBUILDROOT" ]; then
     rm -rf $DEBBUILDROOT
-    mkdir $DEBBUILDROOT
+    mkdir -p $DEBBUILDROOT
 fi
 
 VERSION=$(cat ${DATAROOT}/VERSION | grep -oE '([[:digit:]]+\.){2}[[:digit:]]+')
 PAKNAME=onescript-engine
 DSTPATH=${DEBBUILDROOT}${PAKNAME}
 
-mkdir $DSTPATH
+mkdir -p $DSTPATH
 mkdir -p $DSTPATH/DEBIAN
 mkdir -p $DSTPATH/usr/bin
 mkdir -p $DSTPATH/usr/share/oscript/lib
@@ -49,5 +49,5 @@ dpkg-name -o $DSTPATH.deb
 OUTPUT=/bld/out
 mkdir $OUTPUT
 
-cp $DSTPATH.deb $OUTPUT
+cp $DEBBUILDROOT/*.deb $OUTPUT
 
