@@ -12,11 +12,9 @@ RUN sed -i.bak -n -e '/^Defaults.*requiretty/ { s/^/# /;};/^%wheel.*ALL$/ { s/^/
 
 # This is an optimisation for caching, since using the auto generated one will
 # make docker always run the builddep steps since new file
-COPY ./ /tmp
+COPY ./ /opt/rpm
 
-RUN dnf builddep -y --spec /tmp/oscript.spec
-
-ADD start.sh /start.sh
+RUN dnf builddep -y --spec /opt/rpm/oscript.spec
 
 RUN useradd -s /bin/bash -G adm,wheel,systemd-journal -m rpm
 
@@ -24,4 +22,4 @@ ENV VERSION ""
 ENV RELEASE ""
 ENV ARTIFACTS_ROOT built/tmp
 
-RUN mkdir /bld && cp /tmp/start.sh /bld/build.sh && chmod +x /bld/build.sh
+RUN mkdir /bld && cp /opt/rpm/start.sh /bld/build.sh && chmod +x /bld/build.sh

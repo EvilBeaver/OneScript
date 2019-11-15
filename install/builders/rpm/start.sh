@@ -6,7 +6,7 @@ DATAROOT=$(pwd)/${ARTIFACTS_ROOT}
 VERSIONFILE=/media/VERSION
 
 VERSION=$(cat ${DATAROOT}/VERSION | grep -oE '([[:digit:]]+\.){2}[[:digit:]]+')
-BLDTMP=/tmp
+BLDTMP=/opt/rpm
 TMPDIR=${BLDTMP}/OneScript-$VERSION
 mkdir -p $TMPDIR
 
@@ -42,19 +42,19 @@ else
 fi
 
 echo $define
-sudo cp -arv $BLDTMP/* rpmbuild/SOURCES/
-sudo cp -arv $BLDTMP/*.spec rpmbuild/SPECS/ 
+sudo cp -arv $BLDTMP/* ~/rpmbuild/SOURCES/
+sudo cp -arv $BLDTMP/*.spec ~/rpmbuild/SPECS/ 
 rpmbuild -ba \
 	--define "_version ${VERSION:-1.0.13}" \
-	rpmbuild/SPECS/oscript.spec || exit 1
+	~/rpmbuild/SPECS/oscript.spec || exit 1
 
 [[ -d $BUILDDIR ]] || exit 0
 
 sudo mkdir -p $BUILDDIR/RPMS
 sudo mkdir -p $BUILDDIR/SRPMS
 
-sudo cp -ar rpmbuild/RPMS/ $BUILDDIR/
-sudo cp -ar rpmbuild/SRPMS/ $BUILDDIR/
+sudo cp -ar ~/rpmbuild/RPMS/ $BUILDDIR/
+sudo cp -ar ~/rpmbuild/SRPMS/ $BUILDDIR/
 
 #copy results
 OUTPUT=/bld/out
