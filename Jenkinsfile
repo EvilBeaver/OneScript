@@ -163,8 +163,8 @@ pipeline {
                     steps {
                         unstash 'buildResults'
                         sh '/bld/build.sh'
-                        archiveArtifacts artifacts: 'bld/out/*', fingerprint: true
-                        stash includes: '/bld/out/*', name: 'debian'
+                        archiveArtifacts artifacts: 'out/deb/*', fingerprint: true
+                        stash includes: 'out/deb/*', name: 'debian'
                     }
                 }
 
@@ -179,8 +179,8 @@ pipeline {
                     steps {
                         unstash 'buildResults'
                         sh '/bld/build.sh'
-                        archiveArtifacts artifacts: 'bld/out/*', fingerprint: true
-                        stash includes: '/bld/out/*', name: 'redhat'
+                        archiveArtifacts artifacts: 'out/rpm/*', fingerprint: true
+                        stash includes: 'out/rpm/*', name: 'redhat'
                     }
                 }
             }
@@ -222,7 +222,8 @@ pipeline {
             steps {
                 
                 unstash 'winDist'
-                unstash 'linDist'
+                unstash 'debian'
+                unstash 'redhat'
                 unstash 'vsix'
                 
                 sh """
