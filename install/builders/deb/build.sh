@@ -46,8 +46,8 @@ chmod 777 $DSTPATH.deb
 dpkg-name -o $DSTPATH.deb
 
 #copy results
-OUTPUT=/bld/out
-mkdir $OUTPUT
+OUTPUT=out/deb
+mkdir -p $OUTPUT
 
 cp $DEBBUILDROOT/*.deb $OUTPUT
 
