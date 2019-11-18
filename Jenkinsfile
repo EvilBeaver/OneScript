@@ -207,6 +207,8 @@ pipeline {
                     mkdir x64
                     mv OneScript*-x64*.exe x64/
                     mv OneScript*-x64*.zip x64/
+                    mv *.rpm x64/
+                    mv *.deb x64/
                     TARGET="/var/www/oscript.io/download/versions/night-build/"
                     sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
                     '''.stripIndent()
@@ -221,26 +223,25 @@ pipeline {
 
             steps {
                 
-                unstash 'winDist'
-                unstash 'debian'
-                unstash 'redhat'
-                unstash 'vsix'
-                
-                sh """
-                if [ -d "targetContent" ]; then
-                    rm -rf targetContent
-                fi
-                mkdir targetContent
-                mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
-                mv output/*.rpm targetContent/
-                mv output/*.deb targetContent/
-                cd targetContent
-                TARGET="/var/www/oscript.io/download/versions/latest/"
-                sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
-                
-                TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
-                sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
-                """.stripIndent()
+                dir('targetContent') {
+                    unstash 'winDist'
+                    unstash 'debian'
+                    unstash 'redhat'
+                    unstash 'vsix'
+
+                    sh """
+                    mkdir x64
+                    mv OneScript*-x64*.exe x64/
+                    mv OneScript*-x64*.zip x64/
+                    mv *.rpm x64/
+                    mv *.deb x64/
+                    TARGET="/var/www/oscript.io/download/versions/latest/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
+
+                    TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
+                    """.stripIndent()
+                }
             }
         }
 
