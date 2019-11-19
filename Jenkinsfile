@@ -235,7 +235,7 @@ pipeline {
                     unstash 'redhat'
                     unstash 'vsix'
 
-                    sh """
+                    sh '''
                     WIN=../built
                     DEB=../out/deb
                     RPM=../out/rpm
@@ -249,7 +249,9 @@ pipeline {
                     mv $DEB/*.deb x64/
                     TARGET="/var/www/oscript.io/download/versions/latest/"
                     sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
+                    '''.stripIndent()
 
+                    sh """
                     TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
                     sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
                     """.stripIndent()
