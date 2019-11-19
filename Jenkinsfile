@@ -197,18 +197,24 @@ pipeline {
 
             steps {
                 
-                dir('targetContent') {
-                    unstash 'winDist'
-                    unstash 'debian'
-                    unstash 'redhat'
-                    unstash 'vsix'
+                unstash 'winDist'
+                unstash 'debian'
+                unstash 'redhat'
+                unstash 'vsix'
 
+                dir('targetContent') {
                     sh '''
+                    WIN=../built
+                    DEB=../out/deb
+                    RPM=../out/rpm
                     mkdir x64
-                    mv OneScript*-x64*.exe x64/
-                    mv OneScript*-x64*.zip x64/
-                    mv *.rpm x64/
-                    mv *.deb x64/
+                    mv $WIN/OneScript*-x64*.exe x64/
+                    mv $WIN/OneScript*-x64*.zip x64/
+                    mv $WIN/vscode/*.vsix x64/
+                    mv $WIN/OneScript*-x86*.exe ./
+                    mv $WIN/OneScript*-x86*.zip ./
+                    mv $RPM/*.rpm x64/
+                    mv $DEB/*.deb x64/
                     TARGET="/var/www/oscript.io/download/versions/night-build/"
                     sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
                     '''.stripIndent()
@@ -230,11 +236,17 @@ pipeline {
                     unstash 'vsix'
 
                     sh """
+                    WIN=../built
+                    DEB=../out/deb
+                    RPM=../out/rpm
                     mkdir x64
-                    mv OneScript*-x64*.exe x64/
-                    mv OneScript*-x64*.zip x64/
-                    mv *.rpm x64/
-                    mv *.deb x64/
+                    mv $WIN/OneScript*-x64*.exe x64/
+                    mv $WIN/OneScript*-x64*.zip x64/
+                    mv $WIN/vscode/*.vsix x64/
+                    mv $WIN/OneScript*-x86*.exe ./
+                    mv $WIN/OneScript*-x86*.zip ./
+                    mv $RPM/*.rpm x64/
+                    mv $DEB/*.deb x64/
                     TARGET="/var/www/oscript.io/download/versions/latest/"
                     sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
 
