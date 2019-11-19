@@ -12,25 +12,16 @@ RUN sed -i.bak -n -e '/^Defaults.*requiretty/ { s/^/# /;};/^%wheel.*ALL$/ { s/^/
 
 # This is an optimisation for caching, since using the auto generated one will
 # make docker always run the builddep steps since new file
-ADD oscript.spec /tmp/
-ADD oscript /tmp/
-ADD oscript-opm /tmp/
-ADD oscript-opm-completion /tmp/
+ENV RPMSOURCE /opt/rpm
+COPY ./ ${RPMSOURCE}
 
-RUN dnf builddep -y --spec /tmp/oscript.spec
+RUN dnf builddep -y --spec ${RPMSOURCE}/oscript.spec
 
-ADD start.sh /start.sh
+#uid 1000 is used by jenkins agent
+RUN useradd -s /bin/bash -u 1000 -G adm,wheel,systemd-journal -m rpm
 
-RUN useradd -s /bin/bash -G adm,wheel,systemd-journal -m rpm
-
-WORKDIR /home/rpm
-CMD /start.sh
-VOLUME /media
 ENV VERSION ""
 ENV RELEASE ""
+ENV ARTIFACTS_ROOT built/tmp
 
-
-#ADD .build/rpm/ /home/rpm/rpmbuild/
-RUN chown -R rpm: /home/rpm
-
-USER rpm
+RUN mkdir /bld && cp /opt/rpm/start.sh /bld/build.sh && chmod +x /bld/build.sh

@@ -6,8 +6,9 @@
     <TargetFramework>net452</TargetFramework>
     <OutputType>Exe</OutputType>
     <StartupObject>DebugServer.Program</StartupObject>
-    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <AssemblyTitle>VSC debug adapter for 1Script</AssemblyTitle>
+    <Platforms>AnyCPU</Platforms>
     
   </PropertyGroup>
   <ItemGroup>
