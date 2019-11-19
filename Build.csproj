@@ -192,7 +192,7 @@
     </Target>
 
     <!-- ZIP -->
-    <Target Name="CreateZip" DependsOnTargets="PrepareArtifactsRoot">		
+    <Target Name="CreateZip" DependsOnTargets="PrepareArtifactsRoot">
         <Exec Command="&quot;$(ToolFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(TempFolder)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber).zip&quot;"/>
         <Exec Command="&quot;$(ToolFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(MDDocFolder)/*&quot; &quot;$(ArtifactsRoot)/mddoc-$(ReleaseNumber).zip&quot;"/>
     </Target>
