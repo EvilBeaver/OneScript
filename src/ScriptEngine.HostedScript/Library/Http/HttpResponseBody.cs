@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.IO.Compression;
 
 namespace ScriptEngine.HostedScript.Library.Http
 {
@@ -23,8 +24,14 @@ namespace ScriptEngine.HostedScript.Library.Http
         bool _backFileIsTemp = false;
         byte[] _inMemBody;
 
+        private readonly bool _autoDecompress; 
+        private long _contentSize = 0;
+
         public HttpResponseBody(HttpWebResponse response, string dumpToFile)
         {
+            _autoDecompress = string.Equals(response.ContentEncoding, "gzip", StringComparison.OrdinalIgnoreCase);
+            _contentSize = _autoDecompress ? -1 : response.ContentLength;
+
             if (String.IsNullOrEmpty(dumpToFile))
             {
                 InitInMemoryResponse(response);
@@ -37,7 +44,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         private void InitInMemoryResponse(HttpWebResponse response)
         {
-            if(response.ContentLength > INMEMORY_BODY_LIMIT)
+            if(_contentSize > INMEMORY_BODY_LIMIT)
             {
                 var filename = Path.GetTempFileName();
                 _backFileIsTemp = true;
@@ -45,7 +52,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
             else
             {
-                if(response.ContentLength == UNDEFINED_LENGTH)
+                if(_contentSize == UNDEFINED_LENGTH)
                 {
                     ReadToStream(response);
                 }
@@ -55,6 +62,10 @@ namespace ScriptEngine.HostedScript.Library.Http
                 }
             }
         }
+
+        public bool AutoDecompress => _autoDecompress;
+
+        public long ContentSize => _contentSize < 0 ? 0 : _contentSize;
 
         public Stream OpenReadStream()
         {
@@ -70,9 +81,16 @@ namespace ScriptEngine.HostedScript.Library.Http
                 throw new InvalidOperationException("No response body");
         }
 
+        private Stream GetResponseStream(HttpWebResponse response)
+        {
+            if (_autoDecompress)
+                return new GZipStream(response.GetResponseStream(), CompressionMode.Decompress);
+            return response.GetResponseStream();
+        }
+        
         private void ReadToStream(HttpWebResponse response)
         {
-            using (var responseStream = response.GetResponseStream())
+            using (var responseStream = GetResponseStream(response))
             using(var ms = new MemoryStream())
             {
                 bool memStreamIsAlive = true;
@@ -115,16 +133,19 @@ namespace ScriptEngine.HostedScript.Library.Http
                     ms.Position = 0;
                     ms.Read(_inMemBody, 0, _inMemBody.Length);
                 }
+
+                if (_autoDecompress)
+                    _contentSize = readTotal;
             }
         }
 
         private void ReadToArray(HttpWebResponse response)
         {
-            System.Diagnostics.Debug.Assert(response.ContentLength <= INMEMORY_BODY_LIMIT);
+            System.Diagnostics.Debug.Assert(_contentSize <= INMEMORY_BODY_LIMIT);
 
-            using (var stream = response.GetResponseStream())
+            using (var stream = GetResponseStream(response))
             {
-                var mustRead = (int)response.ContentLength;
+                var mustRead = (int)_contentSize;
                 _inMemBody = new byte[mustRead];
                 int offset = 0;
 
@@ -145,7 +166,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         private void InitFileBackedResponse(HttpWebResponse response, string backingFileName)
         {
             _backingFileName = backingFileName;
-            using(var responseStream = response.GetResponseStream())
+            using(var responseStream = GetResponseStream(response))
             {
                 using(var file = new FileStream(backingFileName, FileMode.Create))
                 {

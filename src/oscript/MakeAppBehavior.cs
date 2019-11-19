@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -33,7 +33,7 @@ namespace oscript
 		}
 
 	    public bool CreateDumpOnly { get; set; }
-	    
+
 	    public override int Execute()
 		{
 			Output.WriteLine("Make started...");
@@ -71,7 +71,7 @@ namespace oscript
 
 	        var embeddedContext = engine.GetUserAddedScripts();
 	        var templates = GlobalsManager.GetGlobalContext<TemplateStorage>();
-	        
+
 	        var dump = new ApplicationDump();
 	        dump.Scripts = new UserAddedScript[]
 	        {
@@ -87,11 +87,18 @@ namespace oscript
 	                                  .Select(SerializeTemplate)
 	                                  .ToArray();
 
+	        // не пишем абсолютных путей в дамп
+	        foreach (var script in dump.Scripts)
+	        {
+		        script.Image.ModuleInfo.Origin = "oscript://" + Path.GetFileName(script.Image.ModuleInfo.Origin);
+		        script.Image.ModuleInfo.ModuleName = script.Image.ModuleInfo.Origin;
+	        }
+
 	        using (var bw = new BinaryWriter(output))
 	        {
 		        var serializer = new BinaryFormatter();
 		        serializer.Serialize(output, dump);
-		        
+
 		        var signature = new byte[]
 		        {
 			        0x4f,
@@ -102,7 +109,7 @@ namespace oscript
 		        output.Write(signature, 0, signature.Length);
 
 		        bw.Write(offset);
-		        
+
 		        OutputToFile(output);
 	        }
         }

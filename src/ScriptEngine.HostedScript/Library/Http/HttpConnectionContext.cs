@@ -205,8 +205,15 @@ namespace ScriptEngine.HostedScript.Library.Http
             
             var resourceUri = new Uri(uriBuilder.Uri, resource);
 
+            // http://qaru.site/questions/45913/the-request-was-aborted-could-not-create-ssltls-secure-channel
+            // Убедитесь, что настройки ServicePointManager заданы до создания HttpWebRequest, 
+            // иначе он не будет работать
+            if (uriBuilder.Scheme == HTTPS_SCHEME)
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            }
+
             var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
-            request.AutomaticDecompression = DecompressionMethods.GZip;
             if (User != "" || Password != "")
             {
                 request.Credentials = new NetworkCredential(User, Password);
@@ -239,20 +246,27 @@ namespace ScriptEngine.HostedScript.Library.Http
             if (uriBuilder.Scheme == HTTPS_SCHEME)
             {
                 request.ServerCertificateValidationCallback = delegate { return true; };
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
             }
 
             return request;
             
         }
 
+        private static bool ContentBodyAllowed(string method)
+        {
+            var methods = new List<string> {"GET", "CONNECT", "HEAD"};
+            return !methods.Contains(method, StringComparer.OrdinalIgnoreCase);
+        }
+        
         private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null)
         {
             var webRequest = CreateRequest(request.ResourceAddress);
             webRequest.AllowAutoRedirect = AllowAutoRedirect;
             webRequest.Method = method;
             SetRequestHeaders(request, webRequest);
-            SetRequestBody(request, webRequest);
+            
+            if (ContentBodyAllowed(method)) 
+                SetRequestBody(request, webRequest);
 
             HttpWebResponse response;
 

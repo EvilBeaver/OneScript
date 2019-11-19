@@ -135,6 +135,7 @@ namespace ScriptEngine.Machine.Contexts
 
 			if (enumTypeAttribute.CreateGlobalProperty)
 			{
+				GlobalsManager.RegisterInstance(enumType, instance);
 				environment.InjectGlobalProperty(instance, enumTypeAttribute.Name, true);
 				if (enumTypeAttribute.Alias != null)
 					environment.InjectGlobalProperty(instance, enumTypeAttribute.Alias, true);

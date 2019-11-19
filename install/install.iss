@@ -8,8 +8,19 @@
 #define VerMinor
 #define VerRelease
 #define Build
+
+#ifndef Suffix
+  #define Suffix "x86"
+#endif
+
+#if Suffix == "x64"
+  #define Binaries="bin"
+#else
+  #define Binaries="bin32"
+#endif
+
 ; duplicates ArtifactsRoot because ISPP can't resolve directives
-#expr ParseVersion(ArtifactRoot + "\bin\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
+#expr ParseVersion(ArtifactRoot + "\" + Binaries + "\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
 
 [Setup]
 AppName={#AppName}
@@ -17,16 +28,21 @@ AppVersion={#VerMajor}.{#VerMinor}.{#VerRelease}
 AppPublisher=1Script Team (Open Source)
 DefaultDirName="{pf}\{#FSFriendlyName}"
 DefaultGroupName="{#FSFriendlyName}"
-OutputBaseFilename="OneScript-{#VerMajor}.{#VerMinor}.{#VerRelease}-setup"
+OutputBaseFilename="OneScript-{#VerMajor}.{#VerMinor}.{#VerRelease}-{#Suffix}"
 DisableProgramGroupPage=yes
 UninstallDisplayIcon="{app}\bin\{#MainExe}"
 Compression=lzma2
 SolidCompression=yes
 VersionInfoVersion={#VerMajor}.{#VerMinor}.{#VerRelease}.{#Build}
+#if Suffix == "x64"
+  ArchitecturesInstallIn64BitMode="x64"
+#endif
 
 [InstallDelete]
 Type: files; Name: {app}\*.dll
 Type: files; Name: {app}\*.exe
+Type: files; Name: {app}\*.bat
+Type: files; Name: {app}\*.cmd
 
 [Types]
 Name: "normal"; Description: "Стандартная установка"
@@ -40,31 +56,31 @@ Name: "testapp"; Description: "Тестовая консоль (TestApp)";
 Name: "docs"; Description: "Документация по свойствам и методам (синтакс-помощник)";
 
 [Files]              
-Source: "{#ArtifactRoot}\bin\oscript.exe"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\DotNetZip.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\bin\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
+Source: "{#ArtifactRoot}\{#Binaries}\oscript.exe"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\DotNetZip.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
 
 Source: "{#ArtifactRoot}\examples\*"; DestDir: "{app}\examples"; Components: main
 
 ;isapi
-Source: "{#ArtifactRoot}\bin\ASPNETHandler.dll"; DestDir: "{app}\bin"; Components: isapi;
+Source: "{#ArtifactRoot}\{#Binaries}\ASPNETHandler.dll"; DestDir: "{app}\bin"; Components: isapi;
 
 ; testapp
-Source: "{#ArtifactRoot}\bin\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
-Source: "{#ArtifactRoot}\bin\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
+Source: "{#ArtifactRoot}\{#Binaries}\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
+Source: "{#ArtifactRoot}\{#Binaries}\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
+
 ; библиотека
 Source: "{#ArtifactRoot}\lib\*"; DestDir: "{app}\lib"; Components: stdlib; Flags: recursesubdirs
-Source: "{#ArtifactRoot}\bin\*.bat"; DestDir: "{app}\bin"; Components: stdlib
+Source: "{#ArtifactRoot}\{#Binaries}\*.bat"; DestDir: "{app}\bin"; Components: stdlib
 
 ; документация
 Source: "{#ArtifactRoot}\doc\*"; DestDir: "{app}\doc"; Components: docs; Flags: recursesubdirs
 
 Source: "dotNetFx40_Full_setup.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: not IsRequiredDotNetDetected
-Source: "vcredist_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; Check: VCRedistNeedsInstall
 
 [Icons]
 Name: "{group}\{#FSFriendlyName}"; Filename: "{app}\bin\{#MainExe}"
@@ -182,23 +198,4 @@ begin
     end;
     
     result := true;
-end;
-
-function MsiQueryProductState(szProduct: string): INSTALLSTATE; 
-  external 'MsiQueryProductState{#AW}@msi.dll stdcall';
-
-function VCVersionInstalled(const ProductID: string): Boolean;
-begin
-  Result := MsiQueryProductState(ProductID) = INSTALLSTATE_DEFAULT;
-end;
-
-function VCRedistNeedsInstall: Boolean;
-begin
-  // here the Result must be True when you need to install your VCRedist
-  // or False when you don't need to, so now it's upon you how you build
-  // this statement, the following won't install your VC redist only when
-  // the Visual C++ 2010 Redist (x86) and Visual C++ 2010 SP1 Redist(x86)
-  // are installed for the current user
-  Result := not (VCVersionInstalled(VC_2012_REDIST_MIN_UPD4_X86) and 
-    VCVersionInstalled(VC_2012_REDIST_ADD_UPD4_X86));
 end;

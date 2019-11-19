@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -41,7 +41,7 @@ namespace StandaloneRunner
                     {
                         _sourceStream = GetCodeStream(dumpStream);
                     }
-                    
+
                     return Run(); //ну да, говнокод и лапша, время жмет
                 }
             }
@@ -55,14 +55,14 @@ namespace StandaloneRunner
 
             try
             {
-                
+
                 var templateStorage = new TemplateStorage(new StandaloneTemplateFactory());
                 engine.InitializationCallback = (e, env) =>
                 {
                     e.Environment.InjectObject(templateStorage);
                     GlobalsManager.RegisterInstance(templateStorage);
                 };
-                
+
                 engine.Initialize();
 
                 var serializer = new BinaryFormatter();
@@ -71,12 +71,18 @@ namespace StandaloneRunner
                 {
                     templateStorage.RegisterTemplate(resource.ResourceName, DeserializeTemplate(resource.Data));
                 }
+
                 var module = appDump.Scripts[0].Image;
+
+                var binaryIndexer = new CompiledCodeIndexer();
+                module.ModuleInfo.CodeIndexer = binaryIndexer;
+
                 for (int i = 1; i < appDump.Scripts.Length; i++)
                 {
+                    appDump.Scripts[i].Image.ModuleInfo.CodeIndexer = binaryIndexer;
                     engine.LoadUserScript(appDump.Scripts[i]);
                 }
-                
+
                 var process = engine.CreateProcess(this, module, src);
 
                 return process.Start();

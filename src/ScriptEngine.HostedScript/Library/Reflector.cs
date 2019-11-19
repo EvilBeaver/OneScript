@@ -173,20 +173,6 @@ namespace ScriptEngine.HostedScript.Library
             return clrType.GetMethod(methodName) != null;
         }
 
-        private static object CreateMethodsMapper(Type clrType)
-        {
-            var mapperType = typeof(ContextMethodsMapper<>).MakeGenericType(clrType);
-            var instance = Activator.CreateInstance(mapperType);
-            return instance;
-        }
-
-        private static object CreatePropertiesMapper(Type clrType)
-        {
-            var mapperType = typeof(ContextPropertyMapper<>).MakeGenericType(clrType);
-            var instance = Activator.CreateInstance(mapperType);
-            return instance;
-        }
-
         private static Type GetReflectableClrType(TypeTypeValue type)
         {
             Type clrType;
@@ -393,6 +379,40 @@ namespace ScriptEngine.HostedScript.Library
                 throw RuntimeException.InvalidArgumentType();
 
             return result;
+        }
+
+        /// <summary>
+        /// Получает свойство по его имени.
+        /// </summary>
+        /// <param name="target">Объект, свойство которого необходимо установить.</param>
+        /// <param name="prop">Имя свойства</param>
+        /// <returns>Значение свойства</returns>
+        [ContextMethod("ПолучитьСвойство", "GetProperty")]
+        public IValue GetProperty(IRuntimeContextInstance target, string prop)
+        {
+            int propIdx;
+            if (target is ScriptDrivenObject script)
+                propIdx = script.FindAnyProperty(prop);
+            else
+                propIdx = target.FindProperty(prop);
+            return target.GetPropValue(propIdx);
+        }
+
+        /// <summary>
+        /// Устанавливает свойство по его имени.
+        /// </summary>
+        /// <param name="target">Объект, свойство которого необходимо установить.</param>
+        /// <param name="prop">Имя свойства</param>
+        /// <param name="value">Значение свойства.</param>
+        [ContextMethod("УстановитьСвойство", "SetProperty")]
+        public void SetProperty(IRuntimeContextInstance target, string prop, IValue value)
+        {
+            int propIdx;
+            if (target is ScriptDrivenObject script)
+                propIdx = script.FindAnyProperty(prop);
+            else
+                propIdx = target.FindProperty(prop);
+            target.SetPropValue(propIdx, value);
         }
 
         private static void FillPropertiesTable(ValueTable.ValueTable result, IEnumerable<VariableInfo> properties)

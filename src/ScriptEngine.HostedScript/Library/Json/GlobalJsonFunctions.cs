@@ -207,7 +207,7 @@ namespace ScriptEngine.HostedScript.Library.Json
             else if (format == JSONDateFormatEnum.Microsoft)
                 dateFormatHandling = DateFormatHandling.MicrosoftDateFormat;
             else
-                throw new RuntimeException("Формат даты JavaScript не поддерживается.");
+                throw new RuntimeException(Locale.NStr("ru='Формат даты JavaScript не поддерживается.'; en='JavaScript date format is not supported'"));
 
             string json = @"{""Date"":""" + String +  @"""}";
 
@@ -225,17 +225,17 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// Если методу требуется передать значение недопустимого типа, то можно использовать функцию преобразования значения (параметры ИмяФункцииПреобразования и МодульФункцииПреобразования).
         /// </summary>
         ///
-        /// <param name="JSONWriter">
+        /// <param name="Writer">
         /// Объект, через который осуществляется запись JSON. Поток JSON должен быть подготовлен для записи значения. </param>
         /// <param name="Value">
-        /// Объект записи JSON. Меняет состояние потока записи. 
+        /// Объект записи JSON. Меняет состояние потока записи. </param>
         /// <param name="SerializationSettings">
         /// В текущий версии не обрабатывается. Настройки сериализации в JSON. </param>
         /// <param name="ConversionFunctionName">
         /// В текущий версии не обрабатывается. Значение по умолчанию: Неопределено. </param>
         /// <param name="ConversionFunctionModule">
         /// Указывает контекст, в котором реализована функция преобразования значения в значение формата JSON.
-        ///В текущий версии не обрабатывается.  Значение по умолчанию: Неопределено. </param>
+        /// В текущий версии не обрабатывается.  Значение по умолчанию: Неопределено. </param>
         /// <param name="ConversionFunctionAdditionalParameters">
         /// В текущий версии не обрабатывается. Значение по умолчанию: Неопределено. </param>
         ///

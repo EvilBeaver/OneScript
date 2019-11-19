@@ -179,7 +179,7 @@ namespace ScriptEngine.HostedScript.Library
         public void AttachAddIn(string dllPath)
         {
             var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
-            EngineInstance.AttachAssembly(assembly, EngineInstance.Environment);
+            EngineInstance.AttachExternalAssembly(assembly, EngineInstance.Environment);
         }
 
         /// <summary>
@@ -423,6 +423,12 @@ namespace ScriptEngine.HostedScript.Library
             return errInfo.DetailedDescription;
         }
 
+        [ContextMethod("ТекущаяУниверсальнаяДата", "CurrentUniversalDate")]
+        public IValue CurrentUniversalDate()
+        {
+            return ValueFactory.Create(DateTime.UtcNow);
+        }
+
         [ContextMethod("ТекущаяУниверсальнаяДатаВМиллисекундах", "CurrentUniversalDateInMilliseconds")]
         public long CurrentUniversalDateInMilliseconds()
         {
@@ -628,13 +634,16 @@ namespace ScriptEngine.HostedScript.Library
 #endif
             }
         }
-
+        
 #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, 
             out IVariable[] variables, 
             out MethodInfo[] methods)
         {
+            if (_state == null)
+                InitContextVariables();
+
             variables = _state;
             methods = new MethodInfo[_methods.Count];
             for (int i = 0; i < _methods.Count; i++)

@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.IO;
 using System.Text;
+using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -28,18 +29,46 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
-        /// Открывает текстовый файл для чтения. Ранее открытый файл закрывается. 
+        /// Открывает текстовый файл для чтения. Ранее открытый файл закрывается.
         /// </summary>
-        /// <param name="path">Путь к файлу</param>
+        /// <param name="input">Путь к файлу или поток</param>
         /// <param name="encoding">Кодировка</param>
         /// <param name="lineDelimiter">Раздедитель строк</param>
         /// <param name="eolDelimiter">Разделитель строк в файле</param>
         /// <param name="monopoly">Открывать монопольно</param>
         [ContextMethod("Открыть", "Open")]
-        public void Open(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null,
+        public void Open(IValue input, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null,
             bool? monopoly = null)
         {
             Close();
+            if(IsStream(input, out var wrapper))
+            {
+                OpenStream(wrapper, encoding, lineDelimiter, eolDelimiter);
+            }
+            else
+            {
+                OpenFile(input.AsString(), encoding, lineDelimiter, eolDelimiter, monopoly);
+            }
+        }
+
+        private void OpenStream(IStreamWrapper streamObj, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null)
+        {
+            TextReader imReader;
+            if (encoding == null)
+            {
+                imReader = Environment.FileOpener.OpenReader(streamObj.GetUnderlyingStream());
+            }
+            else
+            {
+                var enc = TextEncodingEnum.GetEncoding(encoding);
+                imReader = Environment.FileOpener.OpenReader(streamObj.GetUnderlyingStream(), enc);
+            }
+            _reader = GetCustomLineFeedReader(imReader, lineDelimiter, eolDelimiter, AnalyzeDefaultLineFeed);
+        }
+
+        private void OpenFile(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null,
+            bool? monopoly = null)
+        {
             TextReader imReader;
             var shareMode = (monopoly ?? true) ? FileShare.None : FileShare.ReadWrite;
             if (encoding == null)
@@ -51,12 +80,7 @@ namespace ScriptEngine.HostedScript.Library
                 var enc = TextEncodingEnum.GetEncoding(encoding);
                 imReader = Environment.FileOpener.OpenReader(path, shareMode, enc);
             }
-            _lineDelimiter = lineDelimiter ?? "\n";
-            if (eolDelimiter != null)
-                _reader = new CustomLineFeedStreamReader(imReader, eolDelimiter, AnalyzeDefaultLineFeed);
-            else
-                _reader = new CustomLineFeedStreamReader(imReader, "\r\n", AnalyzeDefaultLineFeed);
-
+            _reader = GetCustomLineFeedReader(imReader, lineDelimiter, eolDelimiter, AnalyzeDefaultLineFeed);
         }
 
         private bool AnalyzeDefaultLineFeed { get; set; }
@@ -88,14 +112,14 @@ namespace ScriptEngine.HostedScript.Library
 
             if (sb.Length == 0)
                 return ValueFactory.Create ();
-            
+
             return ValueFactory.Create(sb.ToString());
         }
 
         /// <summary>
         /// Считывает очередную строку текстового файла.
         /// </summary>
-        /// <param name="overridenLineDelimiter">Подстрока, считающаяся концом строки. Переопределяет РазделительСтрок, 
+        /// <param name="overridenLineDelimiter">Подстрока, считающаяся концом строки. Переопределяет РазделительСтрок,
         /// переданный в конструктор или в метод Открыть</param>
         /// <returns>Строка - в случае успешного чтения, Неопределено - больше нет данных</returns>
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
@@ -130,39 +154,48 @@ namespace ScriptEngine.HostedScript.Library
         /// <summary>
         /// Открывает текстовый файл для чтения.
         /// </summary>
-        /// <param name="path">Строка. Путь к файлу</param>
+        /// <param name="input">Путь к файлу или поток</param>
         /// <returns>ЧтениеТекста</returns>
-        [ScriptConstructor(Name = "По имени файла без кодировки")]
-        public static TextReadImpl Constructor (IValue path)
+        [ScriptConstructor(Name = "На основании файла или потока без кодировки")]
+        public static TextReadImpl Constructor (IValue input)
         {
             var reader = new TextReadImpl ();
             reader.AnalyzeDefaultLineFeed = false;
-            reader.Open (path.AsString (), null, "\n", "\r\n");
+            reader.Open (input, null, "\n", "\r\n");
             return reader;
         }
 
         /// <summary>
-        /// Открывает текстовый файл для чтения. Работает аналогично методу Открыть.
+        /// Открывает текстовый файл или поток для чтения. Работает аналогично методу Открыть.
         /// </summary>
-        /// <param name="path">Путь к файлу</param>
-        /// <param name="encoding">Кодировка файла</param>
+        /// <param name="input">Путь к файлу или поток</param>
+        /// <param name="encoding">Кодировка</param>
         /// <param name="lineDelimiter">Разделитель строк</param>
         /// <param name="eolDelimiter">Разделитель строк в файле</param>
         /// <param name="monopoly">Открывать файл монопольно</param>
         /// <returns>ЧтениеТекста</returns>
-        [ScriptConstructor(Name = "По имени файла")]
-        public static TextReadImpl Constructor(IValue path, IValue encoding = null,
+        [ScriptConstructor(Name = "На основании потока или файла")]
+        public static TextReadImpl Constructor(IValue input, IValue encoding = null,
             IValue lineDelimiter = null, IValue eolDelimiter = null, IValue monopoly = null)
         {
             var reader = new TextReadImpl();
             if (lineDelimiter != null)
                 reader.AnalyzeDefaultLineFeed = false;
-            
-            reader.Open(path.AsString(), encoding,
-                lineDelimiter?.GetRawValue().AsString() ?? "\n",
-                eolDelimiter?.GetRawValue().AsString(),
-                monopoly?.AsBoolean() ?? true);
-            
+
+            if(IsStream(input, out var wrapper))
+            {
+                reader.OpenStream(wrapper, encoding,
+                        lineDelimiter?.GetRawValue().AsString() ?? "\n",
+                        eolDelimiter?.GetRawValue().AsString());
+            }
+            else
+            {
+                reader.OpenFile(input.AsString(), encoding,
+                    lineDelimiter?.GetRawValue().AsString() ?? "\n",
+                    eolDelimiter?.GetRawValue().AsString(),
+                    monopoly?.AsBoolean() ?? true);
+            }
+
             return reader;
         }
 
@@ -177,6 +210,32 @@ namespace ScriptEngine.HostedScript.Library
             reader.AnalyzeDefaultLineFeed = false;
             return reader;
         }
+
+        private static bool IsStream(IValue input, out IStreamWrapper wrapper)
+        {
+            wrapper = null;
+            if (input.DataType == DataType.Object)
+            {
+                var obj = input.AsObject();
+                if (obj is IStreamWrapper wrap)
+                {
+                    wrapper = wrap;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private CustomLineFeedStreamReader GetCustomLineFeedReader(TextReader imReader, string lineDelimiter,
+            string eolDelimiter, bool AnalyzeDefaultLineFeed)
+        {
+            _lineDelimiter = lineDelimiter ?? "\n";
+            if (eolDelimiter != null)
+                return new CustomLineFeedStreamReader(imReader, eolDelimiter, AnalyzeDefaultLineFeed);
+            else
+                return new CustomLineFeedStreamReader(imReader, "\r\n", AnalyzeDefaultLineFeed);
+        }
+
 
         #region IDisposable Members
 

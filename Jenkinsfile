@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = '1.1.1'
+        ReleaseNumber = '1.2.0'
         outputEnc = '65001'
     }
 
@@ -38,47 +38,9 @@ pipeline {
                     step([$class: 'WsCleanup'])
 					checkout scm
 
-                    bat 'set'
-                    withSonarQubeEnv('silverbulleters') {
-                        script {
-                            def sqScannerMsBuildHome = tool 'sonar-scanner for msbuild';
-                            sqScannerMsBuildHome = sqScannerMsBuildHome + "\\SonarScanner.MSBuild.exe";
-                            def sonarcommandStart = "@" + sqScannerMsBuildHome + " begin /k:1script /n:OneScript /v:\"${env.ReleaseNumber}\" /d:sonar.verbose=true /d:sonar.exclusions=src/ASPNETHandler/**/*,tests/**/*";
-                            def makeAnalyzis = false
-                            if (env.BRANCH_NAME == "develop") {
-                                echo 'Analysing develop branch'
-                            } else if (env.BRANCH_NAME.startsWith("PR-")) {
-                                // Report PR issues           
-                                def PRNumber = env.BRANCH_NAME.tokenize("PR-")[0]
-                                def gitURLcommand = 'git config --local remote.origin.url'
-                                def gitURL = ""
-                                
-                                if (isUnix()) {
-                                    gitURL = sh(returnStdout: true, script: gitURLcommand).trim() 
-                                } else {
-                                    gitURL = bat(returnStdout: true, script: gitURLcommand).trim() 
-                                }
-                                
-                                def repository = gitURL.tokenize("/")[2] + "/" + gitURL.tokenize("/")[3]
-                                repository = repository.tokenize(".")[0]
-                                withCredentials([string(credentialsId: 'GithubOAUTHToken_ForSonar', variable: 'githubOAuth')]) {
-                                    sonarcommandStart = sonarcommandStart + " /d:sonar.analysis.mode=issues /d:sonar.github.pullRequest=${PRNumber} /d:sonar.github.repository=${repository} /d:sonar.github.oauth=${githubOAuth}"
-                                }
-                            } else {
-                                makeAnalyzis = false
-                            }
-
-                            if (makeAnalyzis) {
-                                bat "${sonarcommandStart}"
-                            }
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore"
-							bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent"
-                            if (makeAnalyzis) {
-                                bat "${sqScannerMsBuildHome} end"
-                            }
-                        }
-                    }
-
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore"
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent"
+                    
                     stash includes: 'tests, built/**', name: 'buildResults'
                 }
            }
@@ -105,115 +67,123 @@ pipeline {
             }
         }
 
-        stage('Windows testing') {
-            agent { label 'windows' }
+        stage('Testing'){
+            parallel{
+                stage('Windows testing') {
+                    agent { label 'windows' }
 
-            steps {
-                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
-                {
-                    dir('install/build'){
-                        deleteDir()
+                    steps {
+                        ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
+                        {
+                            dir('install/build'){
+                                deleteDir()
+                            }
+                            unstash 'buildResults'
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:xUnitTest"
+
+                            junit 'tests/tests.xml'
+                        }
                     }
-                    unstash 'buildResults'
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:xUnitTest"
+                }
 
-                    junit 'tests/tests.xml'
+                stage('Linux testing') {
+                    agent{
+                        docker{
+                            image 'evilbeaver/mono-ru:5.4'
+                            label 'master'
+                        }
+                    }
+
+                    steps {
+                        
+                        dir('install/build'){
+                            deleteDir()
+                        }
+                        
+                        unstash 'buildResults'
+
+                        sh '''\
+                        if [ ! -d lintests ]; then
+                            mkdir lintests
+                        fi
+                        rm lintests/*.xml -f
+                        cd tests
+                        mono ../built/tmp/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
+                        exit 0
+                        '''.stripIndent()
+
+                        junit 'lintests/*.xml'
+                        archiveArtifacts artifacts: 'lintests/*.xml', fingerprint: true
+                    }
                 }
             }
-        }
-
-        stage('Linux testing') {
-
-            agent { label 'master' }
-
-            steps {
-                
-                dir('install/build'){
-                    deleteDir()
-                }
-                
-                unstash 'buildResults'
-
-                sh '''\
-                if [ ! -d lintests ]; then
-                    mkdir lintests
-                fi
-
-                rm lintests/*.xml -f
-                cd tests
-                mono ../built/tmp/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
-                exit 0
-                '''.stripIndent()
-
-                junit 'lintests/*.xml'
-                archiveArtifacts artifacts: 'lintests/*.xml', fingerprint: true
-            }
-
-
-
         }
         
         stage('Packaging') {
-            agent { label 'windows' }
+            parallel {
+                stage('Windows distribution'){
+                    agent { label 'windows' }
 
-            environment {
-                InnoSetupPath = "${tool 'InnoSetup'}"
-            }
-            
-            steps {
-                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
-                {
-                    dir('built'){
-                        deleteDir()
+                    environment {
+                        InnoSetupPath = "${tool 'InnoSetup'}"
                     }
                     
-                    unstash 'buildResults'
-                    script
-                    {
-                        if (env.BRANCH_NAME == "preview") {
-                            echo 'Building preview'
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions /p:Suffix=-pre%BUILD_NUMBER%"
-                        }
-                        else{
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions"
+                    steps {
+                        ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
+                        {
+                            dir('built'){
+                                deleteDir()
+                            }
+                            
+                            unstash 'buildResults'
+                            script
+                            {
+                                if (env.BRANCH_NAME == "preview") {
+                                    echo 'Building preview'
+                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions /p:Suffix=-pre%BUILD_NUMBER%"
+                                }
+                                else{
+                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions"
+                                }
+                            }
+                            archiveArtifacts artifacts: 'built/**', fingerprint: true
+                            stash includes: 'built/**', name: 'winDist'
                         }
                     }
-                    archiveArtifacts artifacts: 'built/**', fingerprint: true
-                    stash includes: 'built/**', name: 'winDist'
+                }
+
+                stage('DEB distribution') {
+                    agent { 
+                        docker {
+                            image 'oscript/onescript-builder:deb'
+                            label 'master' 
+                        }
+                    }
+
+                    steps {
+                        unstash 'buildResults'
+                        sh '/bld/build.sh'
+                        archiveArtifacts artifacts: 'out/deb/*', fingerprint: true
+                        stash includes: 'out/deb/*', name: 'debian'
+                    }
+                }
+
+                stage('RPM distribution') {
+                    agent { 
+                        docker {
+                            image 'oscript/onescript-builder:rpm'
+                            label 'master' 
+                        }
+                    }
+
+                    steps {
+                        unstash 'buildResults'
+                        sh '/bld/build.sh'
+                        archiveArtifacts artifacts: 'out/rpm/*', fingerprint: true
+                        stash includes: 'out/rpm/*', name: 'redhat'
+                    }
                 }
             }
-        }
-
-        stage ('Packaging DEB and RPM') {
-            agent { label 'master' }
-
-            steps {
-
-                dir('built'){
-                    deleteDir()
-                }
-                checkout scm
-                unstash 'buildResults'
-
-                sh '''
-                cd install
-                chmod +x prepare-build.sh
-                chmod +x deb-build.sh
-                chmod +x rpm-build.sh
-
-                sh ./prepare-build.sh
-                
-                DISTPATH=`pwd`/built/tmp
-                
-                sh ./deb-build.sh $DISTPATH
-                sh ./rpm-build.sh $DISTPATH
-                '''.stripIndent()
-                
-                archiveArtifacts artifacts: 'output/*', fingerprint: true
-                stash includes: 'output/*', name: 'linDist'
-                
-            }
-
         }
 
         stage ('Publishing night-build') {
@@ -228,24 +198,27 @@ pipeline {
             steps {
                 
                 unstash 'winDist'
-                unstash 'linDist'
+                unstash 'debian'
+                unstash 'redhat'
                 unstash 'vsix'
-                
-                sh '''
-                if [ -d "targetContent" ]; then
-                    rm -rf targetContent
-                fi
-                mkdir targetContent
-                mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
-                mv output/*.rpm targetContent/
-                mv output/*.deb targetContent/
 
-                TARGET="/var/www/oscript.io/download/versions/night-build/"
-
-                cd targetContent
-                sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
-                rm -rf targetContent
-                '''.stripIndent()
+                dir('targetContent') {
+                    sh '''
+                    WIN=../built
+                    DEB=../out/deb
+                    RPM=../out/rpm
+                    mkdir x64
+                    mv $WIN/OneScript*-x64*.exe x64/
+                    mv $WIN/OneScript*-x64*.zip x64/
+                    mv $WIN/vscode/*.vsix x64/
+                    mv $WIN/OneScript*-x86*.exe ./
+                    mv $WIN/OneScript*-x86*.zip ./
+                    mv $RPM/*.rpm x64/
+                    mv $DEB/*.deb x64/
+                    TARGET="/var/www/oscript.io/download/versions/night-build/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
+                    '''.stripIndent()
+                }
             }
         }
                 
@@ -256,27 +229,31 @@ pipeline {
 
             steps {
                 
-                unstash 'winDist'
-                unstash 'linDist'
-                unstash 'vsix'
-                
-                sh """
-                if [ -d "targetContent" ]; then
-                    rm -rf targetContent
-                fi
-                mkdir targetContent
-                mv -t targetContent built/*.exe built/*.zip built/vscode/*.vsix
-                mv output/*.rpm targetContent/
-                mv output/*.deb targetContent/
+                dir('targetContent') {
+                    unstash 'winDist'
+                    unstash 'debian'
+                    unstash 'redhat'
+                    unstash 'vsix'
 
-                cd targetContent
-                TARGET="/var/www/oscript.io/download/versions/latest/"
-                sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
-                
-                TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
-                sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
+                    sh """
+                    WIN=../built
+                    DEB=../out/deb
+                    RPM=../out/rpm
+                    mkdir x64
+                    mv $WIN/OneScript*-x64*.exe x64/
+                    mv $WIN/OneScript*-x64*.zip x64/
+                    mv $WIN/vscode/*.vsix x64/
+                    mv $WIN/OneScript*-x86*.exe ./
+                    mv $WIN/OneScript*-x86*.zip ./
+                    mv $RPM/*.rpm x64/
+                    mv $DEB/*.deb x64/
+                    TARGET="/var/www/oscript.io/download/versions/latest/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
 
-                """.stripIndent()
+                    TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
+                    """.stripIndent()
+                }
             }
         }
 

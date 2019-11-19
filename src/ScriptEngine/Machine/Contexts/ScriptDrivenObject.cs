@@ -20,6 +20,7 @@ namespace ScriptEngine.Machine.Contexts
         private MethodInfo[] _attachableMethods;
         private readonly Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, int> _allPropertiesSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         [Obsolete]
         public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
@@ -76,6 +77,17 @@ namespace ScriptEngine.Machine.Contexts
 
             ReadExportedSymbols(_module.ExportedMethods, _methodSearchCache);
             ReadExportedSymbols(_module.ExportedProperies, _propertySearchCache);
+            ReadVariables(_module.Variables, _allPropertiesSearchCache);
+
+        }
+
+        private void ReadVariables(VariablesFrame vars, Dictionary<string, int> searchCache)
+        {
+            for (int i = 0; i < vars.Count; i++)
+            {
+                var variable = vars[i];
+                searchCache[variable.Identifier] = variable.Index;
+            }
         }
 
         private void ReadExportedSymbols(ExportedSymbol[] exportedSymbols, Dictionary<string, int> searchCache)
@@ -378,6 +390,15 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         #endregion
+
+        public int FindAnyProperty(string name)
+        {
+            int index;
+            if (_allPropertiesSearchCache.TryGetValue(name, out index))
+                return index;
+            else
+                throw RuntimeException.PropNotFoundException(name);
+        }
 
         public string[] GetExportedProperties()
         {
