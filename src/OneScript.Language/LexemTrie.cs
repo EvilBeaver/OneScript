@@ -22,7 +22,8 @@ namespace OneScript.Language
             public T value;
         }
 
-        private static TrieNode[] _alphabet;
+        private static int _alphabetLength;
+        private TrieNode[] _alphabet;
 
         static LexemTrie()
         {
@@ -36,7 +37,12 @@ namespace OneScript.Language
                       en +
                       en.ToUpper();
 
-            _alphabet = new TrieNode[all.Length];
+            _alphabetLength = all.Length;
+        }
+
+        public LexemTrie()
+        {
+            _alphabet = new TrieNode[_alphabetLength];
         }
 
         private static int GetIndex(char c)

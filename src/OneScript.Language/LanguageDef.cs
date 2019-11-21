@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -17,7 +17,11 @@ namespace OneScript.Language
     {
         static readonly Dictionary<Token, int> _priority = new Dictionary<Token, int>();
 
-        private static LexemTrie<Token> _stringToToken = new LexemTrie<Token>();
+        private static readonly LexemTrie<Token> _stringToToken = new LexemTrie<Token>();
+
+        private static readonly LexemTrie<bool> _undefined = new LexemTrie<bool>();
+        private static readonly LexemTrie<bool> _booleans = new LexemTrie<bool>();
+        private static readonly LexemTrie<bool> _logicalOp = new LexemTrie<bool>();
 
         const int BUILTINS_INDEX = (int)Token.ByValParam;
 
@@ -41,6 +45,26 @@ namespace OneScript.Language
             _priority.Add(Token.MoreOrEqual, 4);
             _priority.Add(Token.LessOrEqual, 4);
             _priority.Add(Token.NotEqual, 4);
+
+            #region constants
+
+            _undefined.Add("Undefined", true);
+            _undefined.Add("Неопределено", true);
+
+            _booleans.Add("True", true);
+            _booleans.Add("False", true);
+            _booleans.Add("Истина", true);
+            _booleans.Add("Ложь", true);
+
+            _logicalOp.Add("And", true);
+            _logicalOp.Add("Or", true);
+            _logicalOp.Add("Not", true);
+
+            _logicalOp.Add("И", true);
+            _logicalOp.Add("ИЛИ", true);
+            _logicalOp.Add("НЕ", true);
+
+            #endregion
 
             // tokens
 
@@ -326,17 +350,13 @@ namespace OneScript.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsBooleanLiteralString(string value)
         {
-            return string.Compare(value, "истина", StringComparison.OrdinalIgnoreCase) == 0
-                    || string.Compare(value, "true", StringComparison.OrdinalIgnoreCase) == 0
-                    || string.Compare(value, "ложь", StringComparison.OrdinalIgnoreCase) == 0
-                    || string.Compare(value, "false", StringComparison.OrdinalIgnoreCase) == 0;
+            return _booleans.TryGetValue(value, out var nodeIsFilled) && nodeIsFilled;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsUndefinedString(string value)
         {
-            return string.Compare(value, "неопределено", StringComparison.OrdinalIgnoreCase) == 0
-                   || string.Compare(value, "undefined", StringComparison.OrdinalIgnoreCase) == 0;
+            return _undefined.TryGetValue(value, out var nodeIsFilled) && nodeIsFilled;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -348,12 +368,7 @@ namespace OneScript.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLogicalOperatorString(string content)
         {
-            return string.Compare(content, "и", StringComparison.OrdinalIgnoreCase) == 0
-                   || string.Compare(content, "или", StringComparison.OrdinalIgnoreCase) == 0
-                   || string.Compare(content, "не", StringComparison.OrdinalIgnoreCase) == 0
-                   || string.Compare(content, "and", StringComparison.OrdinalIgnoreCase) == 0
-                   || string.Compare(content, "or", StringComparison.OrdinalIgnoreCase) == 0
-                   || string.Compare(content, "not", StringComparison.OrdinalIgnoreCase) == 0;
+            return _logicalOp.TryGetValue(content, out var nodeIsFilled) && nodeIsFilled;
         }
     }
 }
