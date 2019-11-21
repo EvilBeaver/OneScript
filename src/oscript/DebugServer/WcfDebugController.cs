@@ -46,7 +46,10 @@ namespace oscript.DebugServer
         {
             var serviceInstance = new WcfDebugService(this);
             var host = new ServiceHost(serviceInstance);
-            var binding = Binder.GetBinding();
+            var binding = (NetTcpBinding)Binder.GetBinding();
+            binding.MaxBufferPoolSize = 5000000;
+            binding.MaxBufferSize = 5000000;
+            binding.MaxReceivedMessageSize = 5000000;
             host.AddServiceEndpoint(typeof(IDebuggerService), binding, Binder.GetDebuggerUri(_port));
             _serviceHost = host;
             host.Open();
