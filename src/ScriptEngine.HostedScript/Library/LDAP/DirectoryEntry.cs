@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.DirectoryServices;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using AD = System.DirectoryServices;
 
 namespace ScriptEngine.HostedScript.Library.LDAP
 {
     [ContextClass("ЗаписьКаталога", "DirectoryEntry")]
     class DirectoryEntryImpl : AutoContext<DirectoryEntryImpl>
     {
-        private AD.DirectoryEntry _directoryEntry;
+        private DirectoryEntry _directoryEntry;
 
         [ContextProperty("Имя", "Name")]
         public string Name => _directoryEntry.Name;
@@ -20,17 +20,17 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         #region Constructors
         public DirectoryEntryImpl()
         {
-            _directoryEntry = new AD.DirectoryEntry();
+            _directoryEntry = new DirectoryEntry();
         }
 
         public DirectoryEntryImpl(string path)
         {
-            _directoryEntry = new AD.DirectoryEntry(path);
+            _directoryEntry = new DirectoryEntry(path);
         }
 
         public DirectoryEntryImpl(string path, string username, string password)
         {
-            _directoryEntry = new AD.DirectoryEntry(path, username, password);
+            _directoryEntry = new DirectoryEntry(path, username, password);
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         [ContextMethod("Существует", "Exists")]
         public static bool Exists(IValue path)
         {
-            return AD.DirectoryEntry.Exists(path.AsString());
+            return DirectoryEntry.Exists(path.AsString());
         }
     }
 }
