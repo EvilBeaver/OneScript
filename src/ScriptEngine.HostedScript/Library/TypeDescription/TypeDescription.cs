@@ -8,6 +8,7 @@ using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.HostedScript.Library
 {

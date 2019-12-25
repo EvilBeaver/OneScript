@@ -12,7 +12,19 @@ namespace ScriptEngine.Machine
 
     public static class Locale
     {
-        public static string SystemLanguageISOName;
+        private static string _actualLocaleName;
+
+        public static string SystemLanguageISOName
+        {
+            get => _actualLocaleName;
+            set
+            {
+                _actualLocaleName = value;
+                SystemLocaleChanged?.Invoke();
+            }
+        }
+
+        public static event Action SystemLocaleChanged;
 
         /// <summary>
         ///

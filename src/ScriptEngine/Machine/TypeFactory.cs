@@ -138,6 +138,7 @@ namespace ScriptEngine.Machine
             };
         }
 
+        // ReSharper disable once UnusedMember.Global
         internal static IValue[] CaptureVariantArgs(IValue[] sourceArgs, int startingFrom)
         {
             var newArray = new IValue[sourceArgs.Length - startingFrom];

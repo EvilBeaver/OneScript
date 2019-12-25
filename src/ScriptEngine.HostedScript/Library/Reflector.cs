@@ -15,7 +15,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.HostedScript.Library.ValueTable;
 using ScriptEngine.Machine.Reflection;
-
+using ScriptEngine.Machine.Values;
 using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
 namespace ScriptEngine.HostedScript.Library

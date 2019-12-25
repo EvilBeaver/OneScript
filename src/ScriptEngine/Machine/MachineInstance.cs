@@ -14,6 +14,7 @@ using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine
 {
