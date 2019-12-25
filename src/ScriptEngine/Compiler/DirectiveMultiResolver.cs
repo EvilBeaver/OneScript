@@ -10,7 +10,7 @@ using ScriptEngine.Environment;
 
 namespace ScriptEngine.Compiler
 {
-    public class DirectiveMultiResolver : List<IDirectiveResolver>, IDirectiveResolver
+    internal class DirectiveMultiResolver : List<IDirectiveResolver>, IDirectiveResolver
     {
 
         public ICodeSource Source
@@ -35,15 +35,6 @@ namespace ScriptEngine.Compiler
                     resolver.Source = value;
                 }
             }
-        }
-
-        public DirectiveMultiResolver ()
-        {
-        }
-
-        public DirectiveMultiResolver(IEnumerable<IDirectiveResolver> resolvers)
-        {
-            this.AddRange(resolvers);
         }
 
         public bool Resolve(string directive, string value, bool codeEntered)
