@@ -479,13 +479,6 @@ namespace ScriptEngine.HostedScript.Library
             
         }
 
-        [ContextMethod("IsValueFilled", IsDeprecated = true, ThrowOnUse = false)]
-        [Obsolete]
-        public bool IsValueFilled(IValue value)
-        {
-            return ValueIsFilled(value);
-        }
-
         /// <summary>
         /// Заполняет одноименные значения свойств одного объекта из другого
         /// </summary>

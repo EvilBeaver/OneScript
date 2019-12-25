@@ -22,16 +22,6 @@ namespace ScriptEngine.Machine.Contexts
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _allPropertiesSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        [Obsolete]
-        public ScriptDrivenObject(LoadedModuleHandle module) : this(module.Module)
-        {
-        }
-
-        [Obsolete]
-        public ScriptDrivenObject(LoadedModuleHandle module, bool deffered) : this(module.Module, deffered)
-        {
-        }
-        
         public LoadedModule Module => _module;
 
         protected ScriptDrivenObject(LoadedModule module, bool deffered)

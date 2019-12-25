@@ -212,12 +212,6 @@ namespace ScriptEngine.HostedScript
             }
         }
 
-        [Obsolete]
-        public Process CreateProcess(IHostApplication host, ScriptModuleHandle moduleHandle, ICodeSource src)
-        {
-            return CreateProcess(host, moduleHandle.Module, src);
-        }
-
         public Process CreateProcess(IHostApplication host, ModuleImage moduleImage, ICodeSource src)
         {
             SetGlobalEnvironment(host, src);

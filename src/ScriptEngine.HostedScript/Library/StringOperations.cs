@@ -61,13 +61,6 @@ namespace ScriptEngine.HostedScript.Library
             return result;
         }
 
-        [ContextMethod("StrStartWith", IsDeprecated = true, ThrowOnUse = false)]
-        [Obsolete]
-        public bool StrStartWith(string inputString, string searchString)
-        {
-            return StrStartsWith(inputString, searchString);
-        }
-
         /// <summary>
         /// Определяет, заканчивается ли строка указанной подстрокой.
         /// </summary>
