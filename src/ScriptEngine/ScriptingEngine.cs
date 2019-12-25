@@ -31,6 +31,20 @@ namespace ScriptEngine
             ContextDiscoverer.DiscoverClasses(System.Reflection.Assembly.GetExecutingAssembly());
             
             _scriptFactory = new ScriptSourceFactory();
+            DirectiveResolvers = new DirectiveMultiResolver();
+
+            SetupDirectiveResolution();
+        }
+
+        private void SetupDirectiveResolution()
+        {
+            var ignoreDirectiveResolver = new DirectiveIgnorer
+            {
+                {"Region", "Область"},
+                {"EndRegion", "КонецОбласти"}
+            };
+
+            DirectiveResolvers.Add(new DirectiveIgnorer());
         }
 
         public CodeGenerationFlags ProduceExtraCode { get; set; }
@@ -92,7 +106,7 @@ namespace ScriptEngine
             }
         }
 
-        public IDirectiveResolver DirectiveResolver { get; set; }
+        public IList<IDirectiveResolver> DirectiveResolvers { get; }
 
         public CompilerService GetCompilerService()
         {
@@ -111,7 +125,7 @@ namespace ScriptEngine
             }
             
             cs.ProduceExtraCode = ProduceExtraCode;
-            cs.DirectiveResolver = DirectiveResolver;
+            cs.DirectiveResolver = (IDirectiveResolver)DirectiveResolvers;
             return cs;
         }
         

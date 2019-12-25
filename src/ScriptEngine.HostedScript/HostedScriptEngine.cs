@@ -8,7 +8,6 @@ using System;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
 
 
@@ -21,6 +20,7 @@ namespace ScriptEngine.HostedScript
         private readonly RuntimeEnvironment _env;
         private bool _isInitialized;
         private bool _configInitialized;
+        private bool _librariesInitialized;
 
         private CodeStatProcessor _codeStat;
 
@@ -52,7 +52,7 @@ namespace ScriptEngine.HostedScript
         public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
         {
             var libLoader = new LibraryResolver(_engine, _env);
-            _engine.DirectiveResolver = libLoader;
+            _engine.DirectiveResolvers.Add(libLoader);
 
             libLoader.LibraryRoot = systemLibrary;
             libLoader.SearchDirectories.Clear();
@@ -60,15 +60,11 @@ namespace ScriptEngine.HostedScript
             {
                 libLoader.SearchDirectories.AddRange(searchDirs);
             }
+
+            _librariesInitialized = true;
         }
 
-        public static string ConfigFileName
-        {
-            get
-            {
-                return EngineConfigProvider.CONFIG_FILE_NAME;
-            }
-        }
+        public static string ConfigFileName => EngineConfigProvider.CONFIG_FILE_NAME;
 
         public KeyValueConfig GetWorkingConfig()
         {
@@ -106,7 +102,7 @@ namespace ScriptEngine.HostedScript
 
         private void InitLibraries(KeyValueConfig config)
         {
-            if (_engine.DirectiveResolver != null)
+            if (_librariesInitialized)
                 return;
 
             if(config != null)
@@ -154,40 +150,17 @@ namespace ScriptEngine.HostedScript
             _env.InjectObject(obj, asDynamicScope);
         }
 
-        public ICodeSourceFactory Loader
-        {
-            get
-            {
-                return _engine.Loader;
-            }
-        }
+        public ICodeSourceFactory Loader => _engine.Loader;
 
         public IDebugController DebugController
         {
-            get { return _engine.DebugController; }
-            set { _engine.DebugController = value; }
-        }
-
-        private void InitializeDirectiveResolver()
-        {
-            var ignoreDirectiveResolver = new DirectiveIgnorer();
-
-            ignoreDirectiveResolver.Add("Region", "Область");
-            ignoreDirectiveResolver.Add("EndRegion", "КонецОбласти");
-
-            var resolversCollection = new DirectiveMultiResolver();
-            resolversCollection.Add(ignoreDirectiveResolver);
-
-            if (_engine.DirectiveResolver != null)
-                resolversCollection.Add(_engine.DirectiveResolver);
-
-            _engine.DirectiveResolver = resolversCollection;
+            get => _engine.DebugController;
+            set => _engine.DebugController = value;
         }
 
         public CompilerService GetCompilerService()
         {
             InitLibraries(GetWorkingConfig());
-            InitializeDirectiveResolver();
 
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);

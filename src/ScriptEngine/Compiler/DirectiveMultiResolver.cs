@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using ScriptEngine.Environment;
 
-namespace ScriptEngine.HostedScript
+namespace ScriptEngine.Compiler
 {
     public class DirectiveMultiResolver : List<IDirectiveResolver>, IDirectiveResolver
     {
