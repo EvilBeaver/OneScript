@@ -35,9 +35,9 @@
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
-    <PackageReference Include="Costura.Fody" Version="3.3.3" />
-    <PackageReference Include="Fody" Version="4.2.1" />
-  </ItemGroup>
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+    <Message Text="Copying StandaloneRunner resources" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
+  </Target>
   
 </Project>
