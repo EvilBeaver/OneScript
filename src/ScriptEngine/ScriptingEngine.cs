@@ -44,7 +44,7 @@ namespace ScriptEngine
                 {"EndRegion", "КонецОбласти"}
             };
 
-            DirectiveResolvers.Add(new DirectiveIgnorer());
+            DirectiveResolvers.Add(ignoreDirectiveResolver);
         }
 
         public CodeGenerationFlags ProduceExtraCode { get; set; }
@@ -139,7 +139,7 @@ namespace ScriptEngine
 
         private ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
+            var scriptContext = new UserScriptContextInstance(module);
             scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
             if (externalContext != null)
             {
@@ -165,29 +165,17 @@ namespace ScriptEngine
 
         public void ExecuteModule(LoadedModule module)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
+            var scriptContext = new UserScriptContextInstance(module);
             InitializeSDO(scriptContext);
         }
 
-        public MachineInstance Machine
-        {
-            get { return _machine; }
-        }
+        public MachineInstance Machine => _machine;
 
-        public AttachedScriptsFactory AttachedScriptsFactory
-        {
-            get
-            {
-                return _attachedScriptsFactory;
-            }
-        }
+        public AttachedScriptsFactory AttachedScriptsFactory => _attachedScriptsFactory;
 
         public IDebugController DebugController
         {
-            get
-            {
-                return _debugController;
-            }
+            get => _debugController;
             set
             {
                 _debugController = value;
