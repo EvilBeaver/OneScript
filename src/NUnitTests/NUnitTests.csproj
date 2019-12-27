@@ -62,12 +62,10 @@
     <Compile Include="ContextTests.cs" />
     <Compile Include="DynamicObjectTest.cs" />
     <Compile Include="EngineWrapperNUnit.cs" />
-    <Compile Include="ModuleSerializationTest.cs" />
     <Compile Include="TestContextClass.cs" />
     <Compile Include="TestNullConversion.cs" />
     <Compile Include="TestRunnerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TypeReflectionTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj">
