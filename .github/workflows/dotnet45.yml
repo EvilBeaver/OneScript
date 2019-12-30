@@ -21,3 +21,4 @@ jobs:
 
       - name: Build
         run: msbuild Build.csproj /t:CleanAll;CreateDistributions /p:ReleaseNumber=%ReleaseNumber%
+        shell: cmd
