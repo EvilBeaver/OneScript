@@ -1,0 +1,17 @@
+name: Build and Deploy
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup MSBuild.exe
+      uses: warrenbuckley/Setup-MSBuild@v1
+
+    - name: MSBuild
+      working-directory: src
+      run: msbuild Build.csproj /t:CreateDistributions /p:ReleaseNumber=1.3.0
