@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Language.LexicalAnalysis;
+using ScriptEngine;
 using ScriptEngine.Machine;
 
 namespace StandaloneRunner

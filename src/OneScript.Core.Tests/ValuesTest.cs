@@ -1,4 +1,5 @@
 using System;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Values;
 using Xunit;
