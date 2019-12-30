@@ -9,9 +9,15 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Setup MSBuild.exe
-      uses: warrenbuckley/Setup-MSBuild@v1
+      - name: Chocolatey Action
+        uses: crazy-max/ghaction-chocolatey@v1.0.2
+        with:
+          args: install msbuild.communitytasks
+      
+      - uses: actions/checkout@v1
+      
+      - name: Setup MSBuild.exe
+        uses: warrenbuckley/Setup-MSBuild@v1
 
-    - name: Build
-      run: msbuild Build.csproj /t:CleanAll;CreateDistributions /p:ReleaseNumber=%ReleaseNumber%
+      - name: Build
+        run: msbuild Build.csproj /t:CleanAll;CreateDistributions /p:ReleaseNumber=%ReleaseNumber%
