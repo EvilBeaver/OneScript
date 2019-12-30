@@ -1,23 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.DirectoryServices;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System.DirectoryServices;
 
 namespace ScriptEngine.HostedScript.Library.LDAP
 {
     [ContextClass("ЗаписьКаталога", "DirectoryEntry")]
     class DirectoryEntryImpl : AutoContext<DirectoryEntryImpl>
     {
-        private DirectoryEntry _directoryEntry;
+        public readonly DirectoryEntry _directoryEntry;
 
         [ContextProperty("Имя", "Name")]
         public string Name => _directoryEntry.Name;
 
+        [ContextProperty("Свойства", "Properties")]
+        public PropertyCollectionImpl Properties => new PropertyCollectionImpl(_directoryEntry.Properties);
+
         #region Constructors
+
+        #region Impl
+
         public DirectoryEntryImpl()
         {
             _directoryEntry = new DirectoryEntry();
@@ -33,6 +39,18 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             _directoryEntry = new DirectoryEntry(path, username, password);
         }
 
+        #endregion
+
+        /// <summary>
+        /// Конструктор создания записи каталога без привязки.
+        /// </summary>
+        [ScriptConstructor(Name = "Без привязки")]
+        public static DirectoryEntryImpl Constructor()
+        {
+            var direntry = new DirectoryEntryImpl();
+            return direntry;
+        }
+
         /// <summary>
         /// Конструктор создания записи каталога по заданному пути.
         /// </summary>
@@ -44,8 +62,21 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             return direntry;
         }
 
+        /// <summary>
+        /// Конструктор создания записи каталога по заданному пути с указанием имени пользователя и пароля.
+        /// </summary>
+        /// <param name="name">Путь к объекту в дереве каталога.</param>
+        /// <param name="username">Путь к объекту в дереве каталога.</param>
+        /// <param name="password">Путь к объекту в дереве каталога.</param>
+        [ScriptConstructor(Name = "По пути объекта, имени пользователя и паролю")]
+        public static DirectoryEntryImpl Constructor(IValue name, IValue username, IValue password)
+        {
+            var direntry = new DirectoryEntryImpl(name.AsString(), username.AsString(), password.AsString());
+            return direntry;
+        }
+
         #endregion
-        
+
         /// <summary>
         /// Проверяет существование записи каталога по заданному пути.
         /// </summary>
