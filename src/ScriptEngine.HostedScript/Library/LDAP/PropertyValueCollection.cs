@@ -14,20 +14,13 @@ namespace ScriptEngine.HostedScript.Library.LDAP
     {
         private readonly PropertyValueCollection _values;
 
-        [ContextProperty("Вместимость", "Capacity")]
-        public int Capacity => _values.Capacity;
+        [ContextMethod("Вместимость", "Capacity")]
+        public int Capacity() => _values.Capacity;
 
-        public int Add(IValue value)
-        {
-            return _values.Add(value);
-        }
-
-        [ContextProperty("Значение", "Value")]
-        public IValue Value { 
-            get {
-                return ValueFactory.Create(_values.Value.ToString());
-            }
-            set { }
+        [ContextMethod("ЗначениеСтрокой", "ValueAsString")]
+        public IValue GetValue()
+        { 
+            return ValueFactory.Create(_values.Value.ToString());
         }
 
         public PropertyValueCollectionImpl(PropertyValueCollection values)

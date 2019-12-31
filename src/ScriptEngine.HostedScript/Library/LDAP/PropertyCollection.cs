@@ -51,10 +51,8 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             return _values.PropertyNames.Cast<string>().ToArray()[propNum];
         }
 
-        [ContextProperty("ИменаСвойств", "PropertyNames")]
-        public ArrayImpl PropertyNames => GetPropertyNames();
-
-        private ArrayImpl GetPropertyNames()
+        [ContextMethod("ИменаСвойств", "PropertyNames")]
+        public ArrayImpl PropertyNames() 
         {
             return new ArrayImpl(_values.PropertyNames.Cast<string>().Select(i => ValueFactory.Create(i)).ToArray());
         }
