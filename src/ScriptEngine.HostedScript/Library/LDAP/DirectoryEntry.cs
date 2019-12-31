@@ -66,8 +66,8 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         /// Конструктор создания записи каталога по заданному пути с указанием имени пользователя и пароля.
         /// </summary>
         /// <param name="name">Путь к объекту в дереве каталога.</param>
-        /// <param name="username">Путь к объекту в дереве каталога.</param>
-        /// <param name="password">Путь к объекту в дереве каталога.</param>
+        /// <param name="username">Имя пользователя.</param>
+        /// <param name="password">Пароль.</param>
         [ScriptConstructor(Name = "По пути объекта, имени пользователя и паролю")]
         public static DirectoryEntryImpl Constructor(IValue name, IValue username, IValue password)
         {
