@@ -108,7 +108,7 @@ namespace OneScript.Language.LexicalAnalysis
             }
         }
 
-        private LexerState SelectState()
+        private void SelectState()
         {
             char cs = _iterator.CurrentSymbol;
             if (Char.IsLetter(cs) || cs == SpecialChars.Underscore)
@@ -158,8 +158,6 @@ namespace OneScript.Language.LexicalAnalysis
                     throw exc;
                 }
             }
-
-            return _state;
         }
 
         private LexerState CommentOrOperatorState(char cs)
