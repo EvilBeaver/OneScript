@@ -6,10 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Machine.Contexts;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;

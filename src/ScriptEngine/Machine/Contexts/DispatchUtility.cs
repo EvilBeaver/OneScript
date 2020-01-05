@@ -8,8 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 #region Using Directives
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Security.Permissions;
