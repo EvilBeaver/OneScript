@@ -148,15 +148,9 @@ namespace ScriptEngine.Machine
 
             #region IValue Members
 
-            public DataType DataType
-            {
-                get { return Machine.DataType.NotAValidValue; }
-            }
+            public DataType DataType => DataType.NotAValidValue;
 
-            public TypeDescriptor SystemType
-            {
-                get { throw new NotImplementedException(); }
-            }
+            public TypeDescriptor SystemType => throw new NotImplementedException();
 
             public decimal AsNumber()
             {
@@ -203,7 +197,7 @@ namespace ScriptEngine.Machine
 
             public bool Equals(IValue other)
             {
-                return other.GetRawValue().DataType == DataType;
+                return ReferenceEquals(other, this);
             }
 
             #endregion

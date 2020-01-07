@@ -133,8 +133,6 @@ namespace ScriptEngine
                 valueEnd = SPACE;
             }
 
-            int start = index;
-
             while (index < format.Length)
             {
                 if (format[index] == valueEnd)
@@ -187,13 +185,13 @@ namespace ScriptEngine
 
         public string GetParamValue(string paramName)
         {
-            return FindParamValue(x => String.Compare(x.Name, paramName, true) == 0);
+            return FindParamValue(x => String.Compare(x.Name, paramName, StringComparison.OrdinalIgnoreCase) == 0);
         }
 
         public string GetParamValue(string paramNameRus, string paramNameEng)
         {
-            return FindParamValue(x => String.Compare(x.Name, paramNameRus, true) == 0
-                || String.Compare(x.Name, paramNameEng, true) == 0);
+            return FindParamValue(x => String.Compare(x.Name, paramNameRus, StringComparison.OrdinalIgnoreCase) == 0
+                || String.Compare(x.Name, paramNameEng, StringComparison.OrdinalIgnoreCase) == 0);
 
         }
 

@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Language;
-using ScriptEngine;
 using ScriptEngine.HostedScript.Library;
 
 namespace oscript

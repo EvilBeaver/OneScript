@@ -6,8 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.IO;
-using System.Net;
-
 using ScriptEngine.HostedScript;
 using ScriptEngine.HostedScript.Library.Binary;
 
