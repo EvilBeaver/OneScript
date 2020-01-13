@@ -23,4 +23,9 @@
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
   </PropertyGroup>
   
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+    <Message Text="Copying StandaloneRunner resources" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
+  </Target>
+
 </Project>
