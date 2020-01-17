@@ -7,17 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using NUnit.Framework;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine;
 using ScriptEngine.Environment;
+using Xunit;
 
-namespace NUnitTests
+namespace OneScript.Core.Tests
 {
-    [TestFixture]
     public class ModuleSerializationTest
     {
-        [Test]
+        [Fact]
         public void TestThatModuleInfoIsSerialized()
         {
             var mi = new ModuleImage
@@ -37,9 +36,9 @@ namespace NUnitTests
                 ms.Position = 0;
 
                 var obj = (ModuleImage)formatter.Deserialize(ms);
-                Assert.That(obj.ModuleInfo.Origin, Is.EqualTo("AAA"));
-                Assert.That(obj.ModuleInfo.ModuleName, Is.EqualTo("BBB"));
-                Assert.That(obj.ModuleInfo.CodeIndexer, Is.Null);
+                Assert.Equal("AAA", obj.ModuleInfo.Origin);
+                Assert.Equal("BBB", obj.ModuleInfo.ModuleName);
+                Assert.Null(obj.ModuleInfo.CodeIndexer);
             }
         }
     }

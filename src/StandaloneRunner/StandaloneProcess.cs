@@ -12,8 +12,6 @@ using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 
 using oscript;
-
-using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;

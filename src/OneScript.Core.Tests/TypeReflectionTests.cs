@@ -5,32 +5,25 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using NUnit.Framework;
 using ScriptEngine;
-using ScriptEngine.Environment;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Reflection;
+using Xunit;
 
-namespace NUnitTests
+namespace OneScript.Core.Tests
 {
-    [TestFixture]
     public class TypeReflectionTests
     {
         private ScriptingEngine host;
 
-        [OneTimeSetUp]
-        public void Init()
+        public TypeReflectionTests()
         {
             host = new ScriptingEngine();
             host.Environment = new RuntimeEnvironment();
         }
-  
+        
         private LoadedModule LoadFromString(string code)
         {
             var codeSrc = host.Loader.FromString(code);
@@ -41,14 +34,14 @@ namespace NUnitTests
             return module;
         }
 
-        [Test]
+        [Fact]
         public void CheckIfTypeHasReflectedWithName()
         {
             string script = "Перем А;";
 
             var reflected = CreateDummyType(script);
-            Assert.AreEqual("Dummy", reflected.Name);
-            Assert.AreEqual("ScriptEngine.Machine.Reflection.dyn.Dummy", reflected.FullName);
+            Assert.Equal("Dummy", reflected.Name);
+            Assert.Equal("ScriptEngine.Machine.Reflection.dyn.Dummy", reflected.FullName);
 
         }
 
@@ -64,7 +57,7 @@ namespace NUnitTests
             return reflected;
         }
 
-        [Test]
+        [Fact]
         public void CheckNonExportVarsArePrivateFields()
         {
             string script = "Перем А; Перем Б Экспорт;";
@@ -72,12 +65,12 @@ namespace NUnitTests
             var reflected = CreateDummyType(script);
 
             var props = reflected.GetFields(BindingFlags.NonPublic);
-            Assert.AreEqual(1, props.Length);
-            Assert.AreEqual("А", props[0].Name);
-            Assert.AreEqual(props[0].FieldType, typeof(IValue));
+            Assert.Single(props);
+            Assert.Equal("А", props[0].Name);
+            Assert.Equal(typeof(IValue), props[0].FieldType);
         }
 
-        [Test]
+        [Fact]
         public void CheckExportVarsArePublicFields()
         {
             string script = "Перем А; Перем Б Экспорт;";
@@ -85,13 +78,13 @@ namespace NUnitTests
             var reflected = CreateDummyType(script);
 
             var props = reflected.GetFields(BindingFlags.Public);
-            Assert.AreEqual(1, props.Length);
-            Assert.AreEqual("Б", props[0].Name);
-            Assert.AreEqual(props[0].FieldType, typeof(IValue));
+            Assert.Single(props);
+            Assert.Equal("Б", props[0].Name);
+            Assert.Equal(typeof(IValue), props[0].FieldType);
 
         }
 
-        [Test]
+        [Fact]
         public void CheckDefaultGetMethodsArePublic()
         {
             string script = "Процедура Внутренняя()\n" +
@@ -102,11 +95,11 @@ namespace NUnitTests
             var reflected = CreateDummyType(script);
 
             var defaultGet = reflected.GetMethods();
-            Assert.AreEqual(1, defaultGet.Length);
-            Assert.AreEqual("Внешняя", defaultGet[0].Name);
+            Assert.Single(defaultGet);
+            Assert.Equal("Внешняя", defaultGet[0].Name);
         }
 
-        [Test]
+        [Fact]
         public void CheckExplicitPublicMethodsCanBeRetrieved()
         {
             string script = "Процедура Внутренняя()\n" +
@@ -117,11 +110,11 @@ namespace NUnitTests
             var reflected = CreateDummyType(script);
 
             var defaultGet = reflected.GetMethods(BindingFlags.Public);
-            Assert.AreEqual(1, defaultGet.Length);
-            Assert.AreEqual("Внешняя", defaultGet[0].Name);
+            Assert.Single(defaultGet);
+            Assert.Equal("Внешняя", defaultGet[0].Name);
         }
 
-        [Test]
+        [Fact]
         public void CheckPrivateMethodsCanBeRetrieved()
         {
             string script = "Процедура Внутренняя()\n" +
@@ -132,11 +125,11 @@ namespace NUnitTests
             var reflected = CreateDummyType(script);
 
             var defaultGet = reflected.GetMethods(BindingFlags.NonPublic);
-            Assert.AreEqual(1, defaultGet.Length);
-            Assert.AreEqual("Внутренняя", defaultGet[0].Name);
+            Assert.Single(defaultGet);
+            Assert.Equal("Внутренняя", defaultGet[0].Name);
         }
 
-        [Test]
+        [Fact]
         public void CheckAllMethodsCanBeRetrieved()
         {
             string script = "Процедура Внутренняя()\n" +
@@ -147,10 +140,10 @@ namespace NUnitTests
             var reflected = CreateDummyType(script);
 
             var defaultGet = reflected.GetMethods(BindingFlags.Public|BindingFlags.NonPublic);
-            Assert.AreEqual(2, defaultGet.Length);
+            Assert.Equal(2, defaultGet.Length);
         }
 
-        [Test]
+        [Fact]
         public void ClassCanBeCreatedViaConstructor()
         {
             var cb = new ClassBuilder<UserScriptContextInstance>();
@@ -162,10 +155,10 @@ namespace NUnitTests
             var type = cb.Build();
 
             var instance = type.GetConstructors()[0].Invoke(new object[0]);
-            Assert.IsInstanceOf<UserScriptContextInstance>(instance);
+            Assert.IsAssignableFrom<UserScriptContextInstance>(instance);
         }
 
-        [Test]
+        [Fact]
         public void ClassCanExposeNativeMethodByName()
         {
             var cb = new ClassBuilder<UserScriptContextInstance>();
@@ -176,10 +169,10 @@ namespace NUnitTests
               .ExportConstructor((parameters => new UserScriptContextInstance(module)));
             var type = cb.Build();
 
-            Assert.IsNotNull(type.GetMethod("GetMethodsCount"));
+            Assert.NotNull(type.GetMethod("GetMethodsCount"));
         }
 
-        [Test]
+        [Fact]
         public void ClassCanExposeNativeMethodDirectly()
         {
             var cb = new ClassBuilder<UserScriptContextInstance>();
@@ -198,10 +191,10 @@ namespace NUnitTests
               .ExportConstructor((parameters => new UserScriptContextInstance(module)));
             var type = cb.Build();
 
-            Assert.IsNotNull(type.GetMethod("AddProperty"));
+            Assert.NotNull(type.GetMethod("AddProperty"));
         }
 
-        [Test]
+        [Fact]
         public void CheckMethodBodyIsNotReflected()
         {
             string script = "Процедура Внутренняя()\n" +
@@ -213,10 +206,10 @@ namespace NUnitTests
             var reflected = CreateDummyType(script);
 
             var defaultGet = reflected.GetMethods(BindingFlags.Public | BindingFlags.NonPublic);
-            Assert.AreEqual(2, defaultGet.Length);
+            Assert.Equal(2, defaultGet.Length);
         }
 
-        [Test]
+        [Fact]
         public void CheckMethodAnnotationsReflected()
         {
             string script = "&Аннотация\n" +
@@ -227,14 +220,14 @@ namespace NUnitTests
             var reflected = CreateDummyType(script);
             var method = reflected.GetMethod("Внешняя");
             Assert.NotNull(method);
-            Assert.AreEqual(3, method.GetCustomAttributes(false).Length);
-            Assert.AreEqual(2, method.GetCustomAttributes(typeof(UserAnnotationAttribute), false).Length);
+            Assert.Equal(3, method.GetCustomAttributes(false).Length);
+            Assert.Equal(2, method.GetCustomAttributes(typeof(UserAnnotationAttribute), false).Length);
 
             var first = (UserAnnotationAttribute)method.GetCustomAttributes(typeof(UserAnnotationAttribute), false)[0];
-            Assert.AreEqual("Аннотация", first.Annotation.Name);
+            Assert.Equal("Аннотация", first.Annotation.Name);
         }
 
-        [Test]
+        [Fact]
         public void CheckParametersAnnotationsReflected()
         {
             string script = "Процедура Внешняя(&Аннотация Параметр, ПараметрБезАннотации) Экспорт\n" +
@@ -246,7 +239,7 @@ namespace NUnitTests
             var param = method.GetParameters()[0];
 
             var first = (UserAnnotationAttribute)param.GetCustomAttributes(typeof(UserAnnotationAttribute), false)[0];
-            Assert.AreEqual("Аннотация", first.Annotation.Name);
+            Assert.Equal("Аннотация", first.Annotation.Name);
         }
     }
 }

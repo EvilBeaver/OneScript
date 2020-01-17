@@ -28,7 +28,7 @@ namespace ScriptEngine
 
             TypeManager.Initialize(new StandartTypeManager());
             GlobalsManager.Reset();
-            ContextDiscoverer.DiscoverClasses(System.Reflection.Assembly.GetExecutingAssembly());
+            AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
             
             _scriptFactory = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();

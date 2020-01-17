@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Linq;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -76,7 +77,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsString();
             }
-            else if (value == SimpleConstantValue.Undefined()) 
+            else if (value == UndefinedValue.Instance)
             {
                 // Если тип параметра не IValue и не IVariable && Неопределено -> null
                 valueObj = null;
