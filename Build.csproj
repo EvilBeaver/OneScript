@@ -126,7 +126,7 @@
     <!-- Копирует поставляемые файлы stdlib, если они есть на машине сборки -->
     <Target Name="InstallStdLib">
         <ItemGroup>
-            <LibraryFiles Include="$(StandardLibraryPacks)\**\*" />
+            <LibraryFiles Include="$(StandardLibraryPacks)\**\*" Exclude="package-loader.os"/>
         </ItemGroup>
         <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/>
     </Target>
