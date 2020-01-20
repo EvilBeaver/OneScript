@@ -25,8 +25,8 @@ build_script:
     
 test_script:
 - cmd: |
-    set oscript=built/tmp/bin/oscript.exe
-    set opm=built/tmp/lib/opm/src/cmd/opm.os
+    set oscript=built\tmp\bin\oscript.exe
+    set opm=built\tmp\lib\opm\src\cmd\opm.os
     %oscript% %opm% install asserts
     %oscript% %opm% install logos
     msbuild Build.csproj /t:xUnitTest
