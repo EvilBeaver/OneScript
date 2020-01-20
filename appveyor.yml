@@ -17,7 +17,9 @@ build_script:
     msbuild src/1Script.sln /t:restore
     dotnet publish src\OneScriptDocumenter\OneScriptDocumenter.csproj -o doctool
     set OneScriptDocumenter="doctool\OneScriptDocumenter.exe"
+    
     msbuild Build.csproj /t:CleanAll;PrepareDistributionContent;xUnitTest;CreateDistributions /p:ReleaseNumber=1.3.0 /p:InnoSetupPath=%InnoSetupPath% /p:OneScriptDocumenter=%OneScriptDocumenter%
+
 test: off
 artifacts:
 - path: built/OneScript-*.exe
