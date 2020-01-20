@@ -90,51 +90,6 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             return dirseacrh;
         }
 
-        /// <summary>
-        /// Конструктор создания поиска по каталогу с указанием фильтра.
-        /// <param name="filter">Путь к объекту в дереве каталога.</param>
-        /// </summary>
-        [ScriptConstructor(Name = "По фильтру")]
-        public static DirectorySearcherImpl Constructor(IValue filter)
-        {
-            var dirseacrh = new DirectorySearcherImpl(filter.AsString());
-            return dirseacrh;
-        }
-
-        /// <summary>
-        /// Конструктор создания поиска по каталогу с указанием корня поиска и фильтра.
-        /// </summary>
-        [ScriptConstructor(Name = "По записи каталога и фильтру")]
-        public static DirectorySearcherImpl Constructor(IValue directoryEntry, IValue filter)
-        {
-            if (!(directoryEntry.GetRawValue() is DirectoryEntryImpl val))
-            {
-                throw RuntimeException.InvalidArgumentType();
-            }
-            var dirseacrh = new DirectorySearcherImpl(val, filter.AsString());
-            return dirseacrh;
-        }
-
-        /// <summary>
-        /// Конструктор создания поиска по каталогу с указанием фильтра и набора полей для получения.
-        /// </summary>
-        [ScriptConstructor(Name = "по фильтру и набору полей")]
-        public static DirectorySearcherImpl Constructor(IValue filter, IValue propertiesToLoad)
-        {
-            string[] props = ;
-            var dirseacrh = new DirectorySearcherImpl(filter.AsString(), props);
-            return dirseacrh;
-        }
-
-        /// <summary>
-        /// Конструктор создания поиска по каталогу с указанием .
-        /// </summary>
-        [ScriptConstructor(Name = "Без привязки")]
-        public static DirectorySearcherImpl Constructor()
-        {
-            var dirseacrh = new DirectorySearcherImpl();
-            return dirseacrh;
-        }
 
         #endregion
 
