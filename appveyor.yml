@@ -12,7 +12,7 @@ environment:
   StandardLibraryPacks: C:/Program Files (x86)/OneScript/lib
 
 install:
-- cmd: choco install onescript.cli -Source http://myget.org/F/onescript -y
+- cmd: choco install onescript-cli -y
 
 before_build:
 - dotnet restore src/1Script.sln
