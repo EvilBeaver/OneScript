@@ -24,6 +24,11 @@ namespace ScriptEngine.HostedScript.Library.LDAP
 
         #region Impl
 
+        public DirectoryEntryImpl(DirectoryEntry directoryEntry)
+        {
+            _directoryEntry = directoryEntry;
+        }
+
         public DirectoryEntryImpl()
         {
             _directoryEntry = new DirectoryEntry();

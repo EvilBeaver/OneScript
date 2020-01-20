@@ -18,7 +18,11 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         public DirectoryEntryImpl SearchRoot { get; set; }
 
         [ContextProperty("Фильтр", "Filter")]
-        public string Filter => _directorySearcher.Filter;
+        public string Filter
+        {
+            get { return _directorySearcher.Filter; }
+            set {  _directorySearcher.Filter = value; }
+        }
 
         [ContextProperty("СвойстваДляПолучения", "PropertiesToLoad")]
         public ArrayImpl PropertiestoLoad { get; }
@@ -26,7 +30,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
 
         #region Constructors
 
-        #region inner constructors
+        #region Impl
         public DirectorySearcherImpl()
         {
             _directorySearcher = new DirectorySearcher();
@@ -94,5 +98,13 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         #endregion
 
         #endregion
+
+        [ContextMethod("НайтиОдин", "FindOne")]
+        public SearchResultImpl FindOne()
+        {
+            //return new DirectoryEntryImpl(_directorySearcher.FindOne().GetDirectoryEntry());
+             return new SearchResultImpl(_directorySearcher.FindOne());
+        }
+
     }
 }
