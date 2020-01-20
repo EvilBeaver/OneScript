@@ -13,7 +13,7 @@ environment:
 before_build:
 - dotnet restore src/1Script.sln
 build_script:
-- cmd: >-
+- cmd: |-
     msbuild src/1Script.sln /t:restore
     dotnet publish src\OneScriptDocumenter\OneScriptDocumenter.csproj -o doctool
     set OneScriptDocumenter="doctool\OneScriptDocumenter.exe"
