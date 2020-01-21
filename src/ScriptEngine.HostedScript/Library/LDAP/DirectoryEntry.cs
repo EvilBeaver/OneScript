@@ -20,6 +20,20 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         [ContextProperty("Свойства", "Properties")]
         public PropertyCollectionImpl Properties => new PropertyCollectionImpl(_directoryEntry.Properties);
 
+        [ContextProperty("ИмяПользователя", "Username")]
+        public string Username
+        {
+            get { return _directoryEntry.Username; }
+            set { _directoryEntry.Username = value; }
+        }
+
+        [ContextProperty("Пароль", "Password")]
+        public string Password
+        {
+            get { return "********"; }
+            set { _directoryEntry.Password = value; }
+        }
+
         #region Constructors
 
         #region Impl
