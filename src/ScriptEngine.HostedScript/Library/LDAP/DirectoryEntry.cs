@@ -30,7 +30,6 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         [ContextProperty("Пароль", "Password")]
         public string Password
         {
-            get { return "********"; }
             set { _directoryEntry.Password = value; }
         }
 
