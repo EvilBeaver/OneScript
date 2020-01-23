@@ -25,8 +25,14 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         }
 
         [ContextProperty("СвойстваДляПолучения", "PropertiesToLoad")]
-        public ArrayImpl PropertiestoLoad { get; }
-        
+        public ArrayImpl PropertiesToLoad { get; }
+
+
+        [ContextProperty("ОбластьПоиска", "SearchScope")]
+        public SearchScopeImpl SearchScope {
+            get { return SearchScopeConverter.ToSearchScopeImpl(_directorySearcher.SearchScope); } 
+            set { _directorySearcher.SearchScope = SearchScopeConverter.ToSearchScope(value); }
+        }
 
         #region Constructors
 
@@ -57,14 +63,22 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         public DirectorySearcherImpl(string filter, ArrayImpl propsToLoad)
         {
             _directorySearcher = new DirectorySearcher(filter, propsToLoad.Select(p => p.AsString()).ToArray());
-            PropertiestoLoad = propsToLoad;
+            PropertiesToLoad = propsToLoad;
         }
 
         public DirectorySearcherImpl(DirectoryEntryImpl directoryEntry, string filter, ArrayImpl propsToLoad)
         {
             _directorySearcher = new DirectorySearcher(directoryEntry._directoryEntry, filter, propsToLoad.Select(p => p.AsString()).ToArray());
             SearchRoot = directoryEntry;
-            PropertiestoLoad = propsToLoad;
+            PropertiesToLoad = propsToLoad;
+        }
+
+        public DirectorySearcherImpl(DirectoryEntryImpl directoryEntry, string filter, ArrayImpl propsToLoad, SearchScopeImpl searchScope)
+        {
+            _directorySearcher = new DirectorySearcher(directoryEntry._directoryEntry, filter, propsToLoad.Select(p => p.AsString()).ToArray(), SearchScopeConverter.ToSearchScope(searchScope));
+            SearchRoot = directoryEntry;
+            PropertiesToLoad = propsToLoad;
+            SearchScope = searchScope;
         }
 
         #endregion
@@ -76,9 +90,10 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         /// <param name="searchRoot">Путь к корневому объекту поиска в дереве каталога.</param>
         /// <param name="filter">Строка, содержащая фильтр.</param>
         /// <param name="propertiesToLoad">Массив имён свойств, которые нужно получать при поиске.</param>
+        /// <param name="searchScope">Значение перечисления ОбластьПоиска, по-умолчанию Дерево.</param>
         /// </summary>
         [ScriptConstructor(Name = "По записи каталога")]
-        public static DirectorySearcherImpl Constructor(IValue searchRoot = null, string filter = null, IValue propertiesToLoad = null)
+        public static DirectorySearcherImpl Constructor(IValue searchRoot = null, string filter = "(objectClass=*)", IValue propertiesToLoad = null, SearchScopeImpl searchScope = SearchScopeImpl.Subtree)
         {
             DirectoryEntryImpl dirEntry = null;
             ArrayImpl propsToLoad = new ArrayImpl();
@@ -99,7 +114,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
                 throw RuntimeException.InvalidArgumentType();
             }
 
-            var dirseacrh = new DirectorySearcherImpl(dirEntry, filter ?? "(objectClass=*)", propsToLoad);
+            var dirseacrh = new DirectorySearcherImpl(dirEntry, filter, propsToLoad, searchScope);
             return dirseacrh;
         }
 
@@ -109,10 +124,29 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         #endregion
 
         [ContextMethod("НайтиОдин", "FindOne")]
-        public SearchResultImpl FindOne()
+        public IValue FindOne()
         {
-            //return new DirectoryEntryImpl(_directorySearcher.FindOne().GetDirectoryEntry());
-             return new SearchResultImpl(_directorySearcher.FindOne());
+            SearchResult searchResult = _directorySearcher.FindOne();
+            if (searchResult == null)
+            {
+                return ValueFactory.Create();
+            }
+            else
+            {
+                return new SearchResultImpl(searchResult);
+            }
+        }
+
+        [ContextMethod("НайтиВсе", "FindAll")]
+        public ArrayImpl FindAll()
+        {
+            SearchResultCollection searchResultCollection = _directorySearcher.FindAll();
+            ArrayImpl result = new ArrayImpl();
+            foreach (SearchResult searchResult in searchResultCollection)
+            {
+                result.Add(new SearchResultImpl(searchResult));
+            }
+            return result;
         }
 
     }
