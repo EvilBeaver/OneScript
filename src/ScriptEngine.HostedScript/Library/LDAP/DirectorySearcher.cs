@@ -37,41 +37,6 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         #region Constructors
 
         #region Impl
-        public DirectorySearcherImpl()
-        {
-            _directorySearcher = new DirectorySearcher();
-        }
-
-        public DirectorySearcherImpl(DirectoryEntryImpl directoryEntry)
-        {
-            _directorySearcher = new DirectorySearcher(directoryEntry._directoryEntry);
-            SearchRoot = directoryEntry;
-        }
-
-        public DirectorySearcherImpl(string filter)
-        {
-            _directorySearcher = new DirectorySearcher(filter);
-
-        }
-
-        public DirectorySearcherImpl(DirectoryEntryImpl directoryEntry, string filter)
-        {
-            _directorySearcher = new DirectorySearcher(directoryEntry._directoryEntry, filter);
-            SearchRoot = directoryEntry;
-        }
-
-        public DirectorySearcherImpl(string filter, ArrayImpl propsToLoad)
-        {
-            _directorySearcher = new DirectorySearcher(filter, propsToLoad.Select(p => p.AsString()).ToArray());
-            PropertiesToLoad = propsToLoad;
-        }
-
-        public DirectorySearcherImpl(DirectoryEntryImpl directoryEntry, string filter, ArrayImpl propsToLoad)
-        {
-            _directorySearcher = new DirectorySearcher(directoryEntry._directoryEntry, filter, propsToLoad.Select(p => p.AsString()).ToArray());
-            SearchRoot = directoryEntry;
-            PropertiesToLoad = propsToLoad;
-        }
 
         public DirectorySearcherImpl(DirectoryEntryImpl directoryEntry, string filter, ArrayImpl propsToLoad, SearchScopeImpl searchScope)
         {
@@ -86,13 +51,13 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         #region script constructors
 
         /// <summary>
-        /// Конструктор создания поиска по каталогу с указанием корня поиска.
+        /// Конструктор создания поиска по каталогу.
         /// <param name="searchRoot">Путь к корневому объекту поиска в дереве каталога.</param>
         /// <param name="filter">Строка, содержащая фильтр.</param>
         /// <param name="propertiesToLoad">Массив имён свойств, которые нужно получать при поиске.</param>
         /// <param name="searchScope">Значение перечисления ОбластьПоиска, по-умолчанию Дерево.</param>
         /// </summary>
-        [ScriptConstructor(Name = "По записи каталога")]
+        [ScriptConstructor]
         public static DirectorySearcherImpl Constructor(IValue searchRoot = null, string filter = "(objectClass=*)", IValue propertiesToLoad = null, SearchScopeImpl searchScope = SearchScopeImpl.Subtree)
         {
             DirectoryEntryImpl dirEntry = null;
