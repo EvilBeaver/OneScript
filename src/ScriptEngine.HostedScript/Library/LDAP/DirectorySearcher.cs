@@ -54,15 +54,17 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             SearchRoot = directoryEntry;
         }
 
-        public DirectorySearcherImpl(string filter, string[] PropertiesToLoad)
+        public DirectorySearcherImpl(string filter, ArrayImpl propsToLoad)
         {
-            _directorySearcher = new DirectorySearcher(filter, PropertiesToLoad);
+            _directorySearcher = new DirectorySearcher(filter, propsToLoad.Select(p => p.AsString()).ToArray());
+            PropertiestoLoad = propsToLoad;
         }
 
-        public DirectorySearcherImpl(DirectoryEntryImpl directoryEntry, string filter, string[] propertiesToLoad)
+        public DirectorySearcherImpl(DirectoryEntryImpl directoryEntry, string filter, ArrayImpl propsToLoad)
         {
-            _directorySearcher = new DirectorySearcher(directoryEntry._directoryEntry, filter, propertiesToLoad);
+            _directorySearcher = new DirectorySearcher(directoryEntry._directoryEntry, filter, propsToLoad.Select(p => p.AsString()).ToArray());
             SearchRoot = directoryEntry;
+            PropertiestoLoad = propsToLoad;
         }
 
         #endregion
@@ -70,27 +72,34 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         #region script constructors
 
         /// <summary>
-        /// Конструктор создания поиска по каталогу без привязок.
-        /// </summary>
-        [ScriptConstructor(Name = "Без привязок")]
-        public static DirectorySearcherImpl Constructor()
-        {
-            var direntry = new DirectorySearcherImpl();
-            return direntry;
-        }
-
-        /// <summary>
         /// Конструктор создания поиска по каталогу с указанием корня поиска.
-        /// <param name="directoryEntry">Путь к объекту в дереве каталога.</param>
+        /// <param name="searchRoot">Путь к корневому объекту поиска в дереве каталога.</param>
+        /// <param name="filter">Строка, содержащая фильтр.</param>
+        /// <param name="propertiesToLoad">Массив имён свойств, которые нужно получать при поиске.</param>
         /// </summary>
         [ScriptConstructor(Name = "По записи каталога")]
-        public static DirectorySearcherImpl Constructor(IValue directoryEntry)
+        public static DirectorySearcherImpl Constructor(IValue searchRoot = null, string filter = null, IValue propertiesToLoad = null)
         {
-            if (!(directoryEntry.GetRawValue() is DirectoryEntryImpl val))
+            DirectoryEntryImpl dirEntry = null;
+            ArrayImpl propsToLoad = new ArrayImpl();
+            if ((searchRoot ?? ValueFactory.Create()).GetRawValue() is DirectoryEntryImpl val_de)
+            {
+                dirEntry = val_de;
+            } else if (searchRoot != null)
             {
                 throw RuntimeException.InvalidArgumentType();
             }
-            var dirseacrh = new DirectorySearcherImpl(val);
+
+            if ((propertiesToLoad ?? ValueFactory.Create()).GetRawValue() is ArrayImpl val_ptl)
+            {
+                propsToLoad = val_ptl;
+            }
+            else if (propertiesToLoad != null)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+
+            var dirseacrh = new DirectorySearcherImpl(dirEntry, filter ?? "(objectClass=*)", propsToLoad);
             return dirseacrh;
         }
 
