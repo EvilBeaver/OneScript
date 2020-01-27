@@ -9,13 +9,13 @@ using System.DirectoryServices;
 
 namespace ScriptEngine.HostedScript.Library.LDAP
 {
-    [ContextClass("ПоискВКаталоге", "DirectorySearcher")]
-    class DirectorySearcherImpl : AutoContext<DirectorySearcherImpl>
+    [ContextClass("ПоискВКаталогеLDAP", "LDAPDirectorySearcher")]
+    class LDAPDirectorySearcherImpl : AutoContext<LDAPDirectorySearcherImpl>
     {
         private readonly DirectorySearcher _directorySearcher;
 
         [ContextProperty("КореньПоиска", "SearchRoot")]
-        public DirectoryEntryImpl SearchRoot { get; set; }
+        public LDAPDirectoryEntryImpl SearchRoot { get; set; }
 
         [ContextProperty("Фильтр", "Filter")]
         public string Filter
@@ -29,7 +29,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
 
 
         [ContextProperty("ОбластьПоиска", "SearchScope")]
-        public SearchScopeImpl SearchScope {
+        public LDAPSearchScopeImpl SearchScope {
             get { return SearchScopeConverter.ToSearchScopeImpl(_directorySearcher.SearchScope); } 
             set { _directorySearcher.SearchScope = SearchScopeConverter.ToSearchScope(value); }
         }
@@ -38,7 +38,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
 
         #region Impl
 
-        public DirectorySearcherImpl(DirectoryEntryImpl directoryEntry, string filter, ArrayImpl propsToLoad, SearchScopeImpl searchScope)
+        public LDAPDirectorySearcherImpl(LDAPDirectoryEntryImpl directoryEntry, string filter, ArrayImpl propsToLoad, LDAPSearchScopeImpl searchScope)
         {
             _directorySearcher = new DirectorySearcher(directoryEntry._directoryEntry, filter, propsToLoad.Select(p => p.AsString()).ToArray(), SearchScopeConverter.ToSearchScope(searchScope));
             SearchRoot = directoryEntry;
@@ -58,11 +58,11 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         /// <param name="searchScope">Значение перечисления ОбластьПоиска, по-умолчанию Дерево.</param>
         /// </summary>
         [ScriptConstructor]
-        public static DirectorySearcherImpl Constructor(IValue searchRoot = null, string filter = "(objectClass=*)", IValue propertiesToLoad = null, SearchScopeImpl searchScope = SearchScopeImpl.Subtree)
+        public static LDAPDirectorySearcherImpl Constructor(IValue searchRoot = null, string filter = "(objectClass=*)", IValue propertiesToLoad = null, LDAPSearchScopeImpl searchScope = LDAPSearchScopeImpl.Subtree)
         {
-            DirectoryEntryImpl dirEntry = null;
+            LDAPDirectoryEntryImpl dirEntry = null;
             ArrayImpl propsToLoad = new ArrayImpl();
-            if (searchRoot?.GetRawValue() is DirectoryEntryImpl val_de)
+            if (searchRoot?.GetRawValue() is LDAPDirectoryEntryImpl val_de)
             {
                 dirEntry = val_de;
             } else if (searchRoot != null)
@@ -79,7 +79,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
                 throw RuntimeException.InvalidArgumentType();
             }
 
-            var dirseacrh = new DirectorySearcherImpl(dirEntry, filter, propsToLoad, searchScope);
+            var dirseacrh = new LDAPDirectorySearcherImpl(dirEntry, filter, propsToLoad, searchScope);
             return dirseacrh;
         }
 
@@ -98,7 +98,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             }
             else
             {
-                return new SearchResultImpl(searchResult);
+                return new LDAPSearchResultImpl(searchResult);
             }
         }
 
@@ -109,7 +109,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             ArrayImpl result = new ArrayImpl();
             foreach (SearchResult searchResult in searchResultCollection)
             {
-                result.Add(new SearchResultImpl(searchResult));
+                result.Add(new LDAPSearchResultImpl(searchResult));
             }
             return result;
         }

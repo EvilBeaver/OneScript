@@ -9,8 +9,8 @@ using System.DirectoryServices;
 
 namespace ScriptEngine.HostedScript.Library.LDAP
 {
-    [ContextClass("РезультатПоиска", "SearchResult")]
-    class SearchResultImpl : AutoContext<SearchResultImpl>
+    [ContextClass("РезультатПоискаLDAP", "LDAPSearchResult")]
+    class LDAPSearchResultImpl : AutoContext<LDAPSearchResultImpl>
     {
         private readonly SearchResult _searchResult;
 
@@ -48,14 +48,14 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         }
 
         [ContextMethod("ПолучитьЗаписьКаталога", "GetDirectoryEntry")]
-        public DirectoryEntryImpl GetDirectoryEntry()
+        public LDAPDirectoryEntryImpl GetDirectoryEntry()
         {
-            return new DirectoryEntryImpl(_searchResult.GetDirectoryEntry());
+            return new LDAPDirectoryEntryImpl(_searchResult.GetDirectoryEntry());
         }
 
         #region Constructors
         #region Impl
-        public SearchResultImpl(SearchResult searchResult)
+        public LDAPSearchResultImpl(SearchResult searchResult)
         {
             _searchResult = searchResult;
         }

@@ -9,8 +9,8 @@ using System.DirectoryServices;
 
 namespace ScriptEngine.HostedScript.Library.LDAP
 {
-    [ContextClass("КоллекцияЗначенийСвойства", "PropertyValueCollection")]
-    class PropertyValueCollectionImpl: AutoContext<PropertyValueCollectionImpl>, ICollectionContext, IEnumerable<IValue>
+    [ContextClass("КоллекцияЗначенийСвойстваLDAP", "LDAPPropertyValueCollection")]
+    class LDAPPropertyValueCollectionImpl : AutoContext<LDAPPropertyValueCollectionImpl>, ICollectionContext, IEnumerable<IValue>
     {
         private readonly PropertyValueCollection _values;
 
@@ -23,15 +23,15 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             return ValueFactory.Create(_values.Value.ToString());
         }
 
-        public PropertyValueCollectionImpl(PropertyValueCollection values)
+        public LDAPPropertyValueCollectionImpl(PropertyValueCollection values)
         {
             _values = values;
         }
  
         [ScriptConstructor]
-        public static PropertyCollectionImpl Constructor(PropertyCollection values)
+        public static LDAPPropertyCollectionImpl Constructor(PropertyCollection values)
         {
-            return new PropertyCollectionImpl(values);
+            return new LDAPPropertyCollectionImpl(values);
         }
 
         public override bool IsIndexed

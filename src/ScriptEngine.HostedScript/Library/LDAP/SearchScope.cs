@@ -8,8 +8,8 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library.LDAP
 {
-    [EnumerationType("ОбластьПоиска", "SearchScope")]
-    public enum SearchScopeImpl
+    [EnumerationType("ОбластьПоискаLDAP", "LDAPSearchScope")]
+    public enum LDAPSearchScopeImpl
     {
         [EnumItem("БазовыйОбъект", "Base")]
         Base,
@@ -22,15 +22,15 @@ namespace ScriptEngine.HostedScript.Library.LDAP
     public static class SearchScopeConverter
     {
 
-        public static SearchScope ToSearchScope(SearchScopeImpl searchScope)
+        public static SearchScope ToSearchScope(LDAPSearchScopeImpl searchScope)
         {
             switch (searchScope)
             {
-                case SearchScopeImpl.Base:
+                case LDAPSearchScopeImpl.Base:
                     return SearchScope.Base;
-                case SearchScopeImpl.OneLevel:
+                case LDAPSearchScopeImpl.OneLevel:
                     return SearchScope.OneLevel;
-                case SearchScopeImpl.Subtree:
+                case LDAPSearchScopeImpl.Subtree:
                     return SearchScope.Subtree;
                 default:
                     throw RuntimeException.InvalidArgumentType();
@@ -38,16 +38,16 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             }
         }
 
-        public static SearchScopeImpl ToSearchScopeImpl(SearchScope searchScope)
+        public static LDAPSearchScopeImpl ToSearchScopeImpl(SearchScope searchScope)
         {
             switch (searchScope)
             {
                 case SearchScope.Base:
-                    return SearchScopeImpl.Base;
+                    return LDAPSearchScopeImpl.Base;
                 case SearchScope.OneLevel:
-                    return SearchScopeImpl.OneLevel;
+                    return LDAPSearchScopeImpl.OneLevel;
                 case SearchScope.Subtree:
-                    return SearchScopeImpl.Subtree;
+                    return LDAPSearchScopeImpl.Subtree;
                 default:
                     throw RuntimeException.InvalidArgumentType();
 

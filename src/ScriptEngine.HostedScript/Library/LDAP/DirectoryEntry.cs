@@ -9,8 +9,8 @@ using System.DirectoryServices;
 
 namespace ScriptEngine.HostedScript.Library.LDAP
 {
-    [ContextClass("ЗаписьКаталога", "DirectoryEntry")]
-    class DirectoryEntryImpl : AutoContext<DirectoryEntryImpl>
+    [ContextClass("ЗаписьКаталогаLDAP", "LDAPDirectoryEntry")]
+    class LDAPDirectoryEntryImpl : AutoContext<LDAPDirectoryEntryImpl>
     {
         public readonly DirectoryEntry _directoryEntry;
 
@@ -18,7 +18,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         public string Name => _directoryEntry.Name;
 
         [ContextProperty("Свойства", "Properties")]
-        public PropertyCollectionImpl Properties => new PropertyCollectionImpl(_directoryEntry.Properties);
+        public LDAPPropertyCollectionImpl Properties => new LDAPPropertyCollectionImpl(_directoryEntry.Properties);
 
         [ContextProperty("ИмяПользователя", "Username")]
         public string Username
@@ -37,22 +37,22 @@ namespace ScriptEngine.HostedScript.Library.LDAP
 
         #region Impl
 
-        public DirectoryEntryImpl(DirectoryEntry directoryEntry)
+        public LDAPDirectoryEntryImpl(DirectoryEntry directoryEntry)
         {
             _directoryEntry = directoryEntry;
         }
 
-        public DirectoryEntryImpl()
+        public LDAPDirectoryEntryImpl()
         {
             _directoryEntry = new DirectoryEntry();
         }
 
-        public DirectoryEntryImpl(string path)
+        public LDAPDirectoryEntryImpl(string path)
         {
             _directoryEntry = new DirectoryEntry(path);
         }
 
-        public DirectoryEntryImpl(string path, string username, string password)
+        public LDAPDirectoryEntryImpl(string path, string username, string password)
         {
             _directoryEntry = new DirectoryEntry(path, username, password);
         }
@@ -63,9 +63,9 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         /// Конструктор создания записи каталога без привязки.
         /// </summary>
         [ScriptConstructor(Name = "Без привязки")]
-        public static DirectoryEntryImpl Constructor()
+        public static LDAPDirectoryEntryImpl Constructor()
         {
-            var direntry = new DirectoryEntryImpl();
+            var direntry = new LDAPDirectoryEntryImpl();
             return direntry;
         }
 
@@ -74,9 +74,9 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         /// </summary>
         /// <param name="name">Путь к объекту в дереве каталога.</param>
         [ScriptConstructor(Name = "По пути объекта")]
-        public static DirectoryEntryImpl Constructor(IValue name)
+        public static LDAPDirectoryEntryImpl Constructor(IValue name)
         {
-            var direntry = new DirectoryEntryImpl(name.AsString());
+            var direntry = new LDAPDirectoryEntryImpl(name.AsString());
             return direntry;
         }
 
@@ -87,9 +87,9 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         /// <param name="username">Имя пользователя.</param>
         /// <param name="password">Пароль.</param>
         [ScriptConstructor(Name = "По пути объекта, имени пользователя и паролю")]
-        public static DirectoryEntryImpl Constructor(IValue name, IValue username, IValue password)
+        public static LDAPDirectoryEntryImpl Constructor(IValue name, IValue username, IValue password)
         {
-            var direntry = new DirectoryEntryImpl(name.AsString(), username.AsString(), password.AsString());
+            var direntry = new LDAPDirectoryEntryImpl(name.AsString(), username.AsString(), password.AsString());
             return direntry;
         }
 
