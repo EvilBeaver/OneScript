@@ -62,7 +62,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
         {
             DirectoryEntryImpl dirEntry = null;
             ArrayImpl propsToLoad = new ArrayImpl();
-            if ((searchRoot ?? ValueFactory.Create()).GetRawValue() is DirectoryEntryImpl val_de)
+            if (searchRoot?.GetRawValue() is DirectoryEntryImpl val_de)
             {
                 dirEntry = val_de;
             } else if (searchRoot != null)
@@ -70,7 +70,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
                 throw RuntimeException.InvalidArgumentType();
             }
 
-            if ((propertiesToLoad ?? ValueFactory.Create()).GetRawValue() is ArrayImpl val_ptl)
+            if (propertiesToLoad?.GetRawValue() is ArrayImpl val_ptl)
             {
                 propsToLoad = val_ptl;
             }
@@ -94,7 +94,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             SearchResult searchResult = _directorySearcher.FindOne();
             if (searchResult == null)
             {
-                return ValueFactory.Create();
+                return null;
             }
             else
             {

@@ -41,10 +41,7 @@ namespace ScriptEngine.HostedScript.Library.LDAP
             return Get(index.AsString());
         }
 
-        public override int GetPropCount()
-        {
-            return _values.Count;
-        }
+        public override int GetPropCount() => _values.Count;
 
         public override string GetPropName(int propNum)
         {
