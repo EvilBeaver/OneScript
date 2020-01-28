@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
 
   <PropertyGroup>
-    <TargetFrameworks>net452</TargetFrameworks>
+    <TargetFramework>net452</TargetFramework>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>oscript.Program</StartupObject>
@@ -16,20 +16,15 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <DebugType></DebugType>
     <DocumentationFile>bin\x86\Debug\net452\oscript.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>false</DebugSymbols>
-    <DebugType></DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants></DefineConstants>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile></DocumentationFile>
     <PlatformTarget>x86</PlatformTarget>
     <IntermediateOutputPath>obj\x86\Debug</IntermediateOutputPath>
-    <NoWarn></NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
@@ -40,6 +35,7 @@
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
+    <ProjectReference Include="..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="StandaloneRunner.exe" />

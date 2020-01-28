@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+    
+    <PropertyGroup>
+        <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>OneScript.StandardLibrary</PackageId>
+        <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
+        <Title>OneScript Main Client Libraries</Title>
+        <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
+        <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
+        <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
+        <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
+        <PackageDescription>Clases for 1Script processes hosting</PackageDescription>
+        <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
+        <PackageTags>BSL 1C 1Script OneScript</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DotNetZip" Version="1.13.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+    </ItemGroup>
+    
+</Project>
