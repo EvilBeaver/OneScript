@@ -16,7 +16,7 @@ namespace ScriptEngine.Machine.Contexts
     {
         private const string INSTANCE_RETRIEVER_NAME = "CreateInstance";
         
-        public static void DiscoverClasses(System.Reflection.Assembly assembly)
+        public static void DiscoverClasses(Assembly assembly, Predicate<Type> filter = null)
         {
             IEnumerable<Type> types;
             try
@@ -35,7 +35,12 @@ namespace ScriptEngine.Machine.Contexts
                 throw new Exception("Error loading assemblies:\n" + sb.ToString());
             }
 
-            var collection = GetMarkedTypes(types, typeof(ContextClassAttribute));
+            if (filter == null)
+            {
+                filter = t => true;
+            }
+            
+            var collection = GetMarkedTypes(types, typeof(ContextClassAttribute), filter);
 
             foreach (var type in collection)
             {
@@ -43,31 +48,40 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public static void DiscoverGlobalContexts(RuntimeEnvironment environment, System.Reflection.Assembly assembly)
+        public static void DiscoverGlobalContexts(
+            RuntimeEnvironment environment, 
+            Assembly assembly,
+            Predicate<Type> filter = null)
         {
+            if (filter == null)
+            {
+                filter = t => true;
+            }
+            
             var allTypes = assembly.GetTypes();
-            var enums = GetMarkedTypes(allTypes.AsParallel(), typeof(SystemEnumAttribute));
+            var enums = GetMarkedTypes(allTypes.AsParallel(), typeof(SystemEnumAttribute), filter);
             foreach (var item in enums)
             {
                 RegisterSystemEnum(item, environment);
             }
 
-            var simpleEnums = GetMarkedTypes(allTypes.AsParallel(), typeof(EnumerationTypeAttribute));
+            var simpleEnums = GetMarkedTypes(allTypes.AsParallel(), typeof(EnumerationTypeAttribute), filter);
             foreach (var item in simpleEnums)
             {
                 RegisterSimpleEnum(item, environment);
             }
 
-            var contexts = GetMarkedTypes(allTypes.AsParallel(), typeof(GlobalContextAttribute));
+            var contexts = GetMarkedTypes(allTypes.AsParallel(), typeof(GlobalContextAttribute), filter);
             foreach (var item in contexts)
             {
                 RegisterGlobalContext(item, environment);
             }
         }
 
-        private static IEnumerable<Type> GetMarkedTypes(IEnumerable<Type> allTypes, Type attribute)
+        private static IEnumerable<Type> GetMarkedTypes(IEnumerable<Type> allTypes, Type attribute, Predicate<Type> filter)
         {
-            return allTypes.Where(t => t.IsDefined(attribute, false));
+            return allTypes
+                .Where(t => t.IsDefined(attribute, false) && filter(t));
         }
 
         private static void RegisterSystemType(Type stdClass)

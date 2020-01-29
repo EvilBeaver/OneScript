@@ -54,10 +54,10 @@ namespace ScriptEngine
             ContextDiscoverer.DiscoverClasses(asm);
         }
 
-        public void AttachAssembly(System.Reflection.Assembly asm, RuntimeEnvironment globalEnvironment)
+        public void AttachAssembly(System.Reflection.Assembly asm, RuntimeEnvironment globalEnvironment, Predicate<Type> filter = null)
         {
-            ContextDiscoverer.DiscoverClasses(asm);
-            ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm);
+            ContextDiscoverer.DiscoverClasses(asm, filter);
+            ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm, filter);
         }
 
         public void AttachExternalAssembly(System.Reflection.Assembly asm, RuntimeEnvironment globalEnvironment)
