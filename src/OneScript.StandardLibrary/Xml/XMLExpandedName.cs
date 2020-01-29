@@ -9,7 +9,7 @@ using System.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Xml
+namespace OneScript.StandardLibrary.Xml
 {
     /// <summary>
     /// Представляет полное имя XML.

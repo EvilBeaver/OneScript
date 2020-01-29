@@ -5,12 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections.Generic;
+using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Collections.Generic;
 using ScriptEngine.Machine.Values;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary.TypeDescription
 {
 	[ContextClass("ОписаниеТипов", "TypeDescription")]
 	public class TypeDescription : AutoContext<TypeDescription>

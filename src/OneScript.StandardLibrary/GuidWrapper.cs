@@ -4,11 +4,12 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
+using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
     [ContextClass("УникальныйИдентификатор","UUID")]
     public class GuidWrapper : IValue, IObjectWrapper
@@ -39,7 +40,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public DataType DataType
         {
-            get { return Machine.DataType.GenericValue; }
+            get { return ScriptEngine.Machine.DataType.GenericValue; }
         }
 
         public TypeDescriptor SystemType

@@ -4,14 +4,15 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using ScriptEngine.Machine.Contexts;
+
 using System;
 using System.Text;
-
-using ScriptEngine.HostedScript.Library.Binary;
+using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
     [GlobalContext(Category="Прочие функции")]
     public class MiscGlobalFunctions : GlobalContextBase<MiscGlobalFunctions>

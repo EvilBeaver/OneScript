@@ -6,8 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Xml.Schema;
+using OneScript.StandardLibrary.XMLSchema.Objects;
+using ScriptEngine;
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     /// <summary>
     /// Типы ограничения идентичности.

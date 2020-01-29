@@ -9,11 +9,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Binary
+namespace OneScript.StandardLibrary.Binary
 {
     [ContextClass("ДвоичныеДанные", "BinaryData")]
     public class BinaryDataContext : AutoContext<BinaryDataContext>, IDisposable

@@ -4,16 +4,16 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using OneScript.StandardLibrary.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.IO;
 
-using ScriptEngine.HostedScript.Library.Binary;
-
-namespace ScriptEngine.HostedScript.Library.Net
+namespace OneScript.StandardLibrary.Net
 {
     /// <summary>
     /// Соединение по протоколу TCP. Позволяет отправлять и принимать данные с использованием TCP сокета.

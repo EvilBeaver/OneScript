@@ -4,10 +4,11 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Zip
+namespace OneScript.StandardLibrary.Zip
 {
     [SystemEnum("РежимОбработкиПодкаталоговZIP", "ZIPSubDirProcessingMode")]
     public class ZIPSubDirProcessingModeEnum : EnumerationContext

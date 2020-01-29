@@ -5,9 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.HostedScript.Library.Xml;
+using OneScript.StandardLibrary.Xml;
 
-namespace ScriptEngine.HostedScript.Library.XDTO
+namespace OneScript.StandardLibrary.XDTO
 {
     public interface IXDTOSerializableXML
     {

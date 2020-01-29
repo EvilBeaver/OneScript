@@ -8,11 +8,11 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.IO;
 using System.Text;
-
+using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Binary
+namespace OneScript.StandardLibrary.Binary
 {
     /// <summary>
     /// 

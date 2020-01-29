@@ -4,12 +4,12 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
+using System.Security.Cryptography;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Security.Cryptography;
 
-
-namespace ScriptEngine.HostedScript.Library.Hash
+namespace OneScript.StandardLibrary.Hash
 {
     [SystemEnum("ХешФункция", "HashFunction")]
     public class HashFunctionEnum : EnumerationContext
@@ -106,7 +106,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
 
             var algName = neededProvider.AsString();
             if (algName == "CRC32")
-                return new ScriptEngine.HostedScript.Library.Hash.Crc32();
+                return new Crc32();
 
             var ret = HashAlgorithm.Create(algName);
             if (ret == null)

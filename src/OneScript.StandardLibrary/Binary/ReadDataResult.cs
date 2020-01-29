@@ -6,11 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.IO;
-
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Binary
+namespace OneScript.StandardLibrary.Binary
 {
     /// <summary>
     /// 

@@ -8,10 +8,13 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Xml;
 using System.Xml.Schema;
-using ScriptEngine.HostedScript.Library.Xml;
+using OneScript.StandardLibrary.Xml;
+using OneScript.StandardLibrary.XMLSchema.Collections;
+using OneScript.StandardLibrary.XMLSchema.Enumerations;
+using OneScript.StandardLibrary.XMLSchema.Interfaces;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеГруппыАтрибутовXS", "XSAttributeGroupDefinition")]
     public class XSAttributeGroupDefinition : AutoContext<XSAttributeGroupDefinition>, IXSAnnotated, IXSNamedComponent

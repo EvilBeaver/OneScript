@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.HostedScript.Library;
-using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library.HTTPService
 {

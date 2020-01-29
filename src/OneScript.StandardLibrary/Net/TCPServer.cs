@@ -10,7 +10,7 @@ using System.Net.Sockets;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Net
+namespace OneScript.StandardLibrary.Net
 {
     /// <summary>
     /// Простой однопоточный tcp-сокет. Слушает входящие соединения на определенном порту

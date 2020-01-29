@@ -9,15 +9,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
+using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Collections.ValueTable;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library.ValueTable;
 using ScriptEngine.Machine.Reflection;
 using ScriptEngine.Machine.Values;
 using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
     /// <summary>
     /// Рефлектор предназначен для получения метаданных объектов во время выполнения.
@@ -121,16 +121,16 @@ namespace ScriptEngine.HostedScript.Library
             }
         }
 
-        private static ValueTable.ValueTable EmptyAnnotationsTable()
+        private static ValueTable EmptyAnnotationsTable()
         {
-            var annotationsTable = new ValueTable.ValueTable();
+            var annotationsTable = new ValueTable();
             annotationsTable.Columns.Add("Имя");
             annotationsTable.Columns.Add("Параметры");
 
             return annotationsTable;
         }
 
-        private static ValueTable.ValueTable CreateAnnotationTable(AnnotationDefinition[] annotations)
+        private static ValueTable CreateAnnotationTable(AnnotationDefinition[] annotations)
         {
             var annotationsTable = EmptyAnnotationsTable();
             var annotationNameColumn = annotationsTable.Columns.FindColumnByName("Имя");
@@ -145,7 +145,7 @@ namespace ScriptEngine.HostedScript.Library
                 }
                 if (annotation.ParamCount != 0)
                 {
-                    var parametersTable = new ValueTable.ValueTable();
+                    var parametersTable = new ValueTable();
                     var parameterNameColumn = parametersTable.Columns.Add("Имя");
                     var parameterValueColumn = parametersTable.Columns.Add("Значение");
 
@@ -204,9 +204,9 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
         /// <returns>Таблица значений колонками: Имя, Количество, ЭтоФункция, Аннотации</returns>
         [ContextMethod("ПолучитьТаблицуМетодов", "GetMethodsTable")]
-        public ValueTable.ValueTable GetMethodsTable(IValue target)
+        public ValueTable GetMethodsTable(IValue target)
         {
-            var result = new ValueTable.ValueTable();
+            var result = new ValueTable();
             if(target.DataType == DataType.Object)
                 FillMethodsTableForObject(target.AsObject(), result);
             else if (target.DataType == DataType.Type)
@@ -217,12 +217,12 @@ namespace ScriptEngine.HostedScript.Library
             return result;
         }
 
-        private static void FillMethodsTableForObject(IRuntimeContextInstance target, ValueTable.ValueTable result)
+        private static void FillMethodsTableForObject(IRuntimeContextInstance target, ValueTable result)
         {
             FillMethodsTable(result, target.GetMethods());
         }
 
-        private static void FillMethodsTableForType(TypeTypeValue type, ValueTable.ValueTable result)
+        private static void FillMethodsTableForType(TypeTypeValue type, ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
             var clrMethods = clrType.GetMethods(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);
@@ -272,7 +272,7 @@ namespace ScriptEngine.HostedScript.Library
             return attributes.Select(x => x.Annotation).ToArray();
         }
 
-        private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable.ValueTable result)
+        private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
             var nativeProps = clrType.GetProperties()
@@ -313,14 +313,14 @@ namespace ScriptEngine.HostedScript.Library
 
         }
 
-        private static void FillMethodsTable(ValueTable.ValueTable result, IEnumerable<MethodInfo> methods)
+        private static void FillMethodsTable(ValueTable result, IEnumerable<MethodInfo> methods)
         {
-            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
-            var countColumn = result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
-            var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
-            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
-            var paramsColumn = result.Columns.Add("Параметры", new TypeDescription(), "Параметры");
-            var isExportlColumn = result.Columns.Add("Экспорт", new TypeDescription(), "Экспорт");
+            var nameColumn = result.Columns.Add("Имя", TypeDescription.TypeDescription.StringType(), "Имя");
+            var countColumn = result.Columns.Add("КоличествоПараметров", TypeDescription.TypeDescription.IntegerType(), "Количество параметров");
+            var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.TypeDescription.BooleanType(), "Это функция");
+            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription.TypeDescription(), "Аннотации");
+            var paramsColumn = result.Columns.Add("Параметры", new TypeDescription.TypeDescription(), "Параметры");
+            var isExportlColumn = result.Columns.Add("Экспорт", new TypeDescription.TypeDescription(), "Экспорт");
 
             foreach (var methInfo in methods)
             {
@@ -333,11 +333,11 @@ namespace ScriptEngine.HostedScript.Library
 
                 new_row.Set(annotationsColumn, methInfo.AnnotationsCount != 0 ? CreateAnnotationTable(methInfo.Annotations) : EmptyAnnotationsTable());
 
-                var paramTable = new ValueTable.ValueTable();
-                var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
-                var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
-                var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.BooleanType(), "Есть значение по-умолчанию");
-                var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
+                var paramTable = new ValueTable();
+                var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.TypeDescription.StringType(), "Имя");
+                var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.TypeDescription.BooleanType(), "По значению");
+                var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.TypeDescription.BooleanType(), "Есть значение по-умолчанию");
+                var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription.TypeDescription(), "Аннотации");
                 
                 new_row.Set(paramsColumn, paramTable);
 
@@ -363,9 +363,9 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="target">Объект, из которого получаем таблицу свойств.</param>
         /// <returns>Таблица значений с колонками - Имя, Аннотации</returns>
         [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
-        public ValueTable.ValueTable GetPropertiesTable(IValue target)
+        public ValueTable GetPropertiesTable(IValue target)
         {
-            ValueTable.ValueTable result = new ValueTable.ValueTable();
+            var result = new ValueTable();
 
             if(target.DataType == DataType.Object)
                 FillPropertiesTable(result, target.AsObject().GetProperties());
@@ -414,10 +414,10 @@ namespace ScriptEngine.HostedScript.Library
             target.SetPropValue(propIdx, value);
         }
 
-        private static void FillPropertiesTable(ValueTable.ValueTable result, IEnumerable<VariableInfo> properties)
+        private static void FillPropertiesTable(ValueTable result, IEnumerable<VariableInfo> properties)
         {
-            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
-            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
+            var nameColumn = result.Columns.Add("Имя", TypeDescription.TypeDescription.StringType(), "Имя");
+            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription.TypeDescription(), "Аннотации");
             var systemVarNames = new string[] { "этотобъект", "thisobject" };
 
             foreach (var propInfo in properties)

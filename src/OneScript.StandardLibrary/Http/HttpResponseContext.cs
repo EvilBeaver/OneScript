@@ -4,16 +4,18 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
+
 using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Text;
+using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
-using ScriptEngine.HostedScript.Library.Binary;
-
-namespace ScriptEngine.HostedScript.Library.Http
+namespace OneScript.StandardLibrary.Http
 {
     /// <summary>
     /// Ответ от HTTP-сервера

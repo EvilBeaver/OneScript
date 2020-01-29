@@ -5,17 +5,17 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.Machine.Contexts;
 using System.Collections;
 using System.Collections.Generic;
+using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Xml
+namespace OneScript.StandardLibrary.Xml
 {
     /// <summary>
     /// Список расширенных имен XML.
     /// </summary>
     /// <see cref="XMLExpandedName"/>
-    /// <seealso cref="XMLSchema.XSSimpleTypeDefinition"/>
+    /// <seealso cref="XMLSchema.Objects.XSSimpleTypeDefinition"/>
     public class XMLExpandedNameList: AutoContext<XMLExpandedNameList>, ICollectionContext, IEnumerable<XMLExpandedName>
     {
         private readonly List<XMLExpandedName> _items;

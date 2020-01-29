@@ -4,12 +4,14 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Linq;
+using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Timezones
+namespace OneScript.StandardLibrary.Timezones
 {
     /// <summary>
     /// Глобальный контекст. Операции с временными зонами и часовыми поясами.

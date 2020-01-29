@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;

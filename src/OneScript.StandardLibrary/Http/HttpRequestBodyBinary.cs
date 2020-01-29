@@ -5,15 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.Machine;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using ScriptEngine.HostedScript.Library.Binary;
+using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.Text;
+using ScriptEngine.Machine;
 
-namespace ScriptEngine.HostedScript.Library.Http
+namespace OneScript.StandardLibrary.Http
 {
     class HttpRequestBodyBinary : IHttpRequestBody
     {

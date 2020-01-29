@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
 	[ContextClass("Символы", "Chars")]
 	public sealed class SymbolsContext : AutoContext<SymbolsContext>

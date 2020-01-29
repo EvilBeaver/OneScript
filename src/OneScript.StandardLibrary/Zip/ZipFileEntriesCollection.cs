@@ -4,13 +4,14 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
+using System.Collections.Generic;
+using System.Linq;
 using Ionic.Zip;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace ScriptEngine.HostedScript.Library.Zip
+namespace OneScript.StandardLibrary.Zip
 {
     [ContextClass("ЭлементыZipФайла", "ZipFileEntries")]
     public class ZipFileEntriesCollection : AutoContext<ZipFileEntriesCollection>, ICollectionContext, IEnumerable<ZipFileEntryContext>

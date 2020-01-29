@@ -5,7 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+using ScriptEngine;
+
+namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [EnumerationType("XSSimpleTypeVariety", "ВариантПростогоТипаXS")]
     public enum XSSimpleTypeVariety

@@ -7,6 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Dynamic;
 using NUnit.Framework;
+using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Collections;
 using ScriptEngine.HostedScript.Library;
 
 namespace NUnitTests

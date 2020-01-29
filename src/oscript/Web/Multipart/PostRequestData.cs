@@ -11,8 +11,9 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.IO;
 using System.Text;
-
-using ScriptEngine.HostedScript.Library.Binary;
+using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.Collections;
 
 namespace oscript.Web.Multipart
 {

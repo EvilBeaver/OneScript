@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 
 using OneScript.DebugProtocol;
 using OneScript.Language;
+using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;

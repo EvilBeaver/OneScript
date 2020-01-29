@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
 	/// <summary>
 	/// Глобальный контекст. Побитовые операции с целыми числами.

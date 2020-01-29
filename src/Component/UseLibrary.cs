@@ -5,15 +5,19 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Collections.ValueList;
+using OneScript.StandardLibrary.Collections.ValueTable;
+using OneScript.StandardLibrary.Collections.ValueTree;
+using OneScript.StandardLibrary.Http;
+using OneScript.StandardLibrary.Net;
+using OneScript.StandardLibrary.Text;
+using OneScript.StandardLibrary.TypeDescription;
+using OneScript.StandardLibrary.Xml;
+using OneScript.StandardLibrary.Zip;
 using ScriptEngine.HostedScript.Library;
-using ScriptEngine.HostedScript.Library.Binary;
-using ScriptEngine.HostedScript.Library.Http;
-using ScriptEngine.HostedScript.Library.Net;
-using ScriptEngine.HostedScript.Library.ValueList;
-using ScriptEngine.HostedScript.Library.ValueTable;
-using ScriptEngine.HostedScript.Library.ValueTree;
-using ScriptEngine.HostedScript.Library.Xml;
-using ScriptEngine.HostedScript.Library.Zip;
 using ScriptEngine.Machine;
 
 namespace Component

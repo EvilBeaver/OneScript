@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
-
+using OneScript.StandardLibrary;
 using oscript;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;

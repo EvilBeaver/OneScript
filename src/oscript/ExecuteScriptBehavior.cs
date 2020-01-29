@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 
 using OneScript.DebugProtocol;
-
+using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;

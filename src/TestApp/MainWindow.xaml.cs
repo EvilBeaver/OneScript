@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using ScriptEngine.HostedScript;
 using System.Collections.Generic;
+using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;

@@ -6,13 +6,12 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Linq;
-
+using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-
 using RegExp = System.Text.RegularExpressions;
 
-namespace ScriptEngine.HostedScript.Library.Regex
+namespace OneScript.StandardLibrary.Regex
 {
     [ContextClass("РегулярноеВыражение", "Regex")]
     public class RegExpImpl : AutoContext<RegExpImpl>

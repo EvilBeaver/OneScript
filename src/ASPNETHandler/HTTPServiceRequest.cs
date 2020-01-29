@@ -10,11 +10,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.HostedScript.Library;
-using ScriptEngine.HostedScript.Library.Binary;
 
 /// <summary>
 /// 

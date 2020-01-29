@@ -10,7 +10,7 @@ using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     public class XSSubstitutionGroupExclusions : CLREnumValueWrapper<XmlSchemaDerivationMethod>
     {

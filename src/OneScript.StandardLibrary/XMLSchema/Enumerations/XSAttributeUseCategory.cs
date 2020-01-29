@@ -6,8 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Xml.Schema;
+using ScriptEngine;
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [EnumerationType("XSAttributeUseCategory", "КатегорияИспользованияАтрибутаXS")]
     public enum XSAttributeUseCategory

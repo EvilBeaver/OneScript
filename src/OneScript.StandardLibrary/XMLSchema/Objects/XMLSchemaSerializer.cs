@@ -7,10 +7,11 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Xml;
 using System.Xml.Schema;
-using ScriptEngine.HostedScript.Library.Xml;
+using OneScript.StandardLibrary.Xml;
+using OneScript.StandardLibrary.XMLSchema.Interfaces;
 using ScriptEngine.Machine;
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     internal class XMLSchemaSerializer
     {

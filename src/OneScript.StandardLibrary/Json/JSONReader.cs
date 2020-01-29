@@ -4,13 +4,16 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using System.IO;
 using Newtonsoft.Json;
+using OneScript.StandardLibrary.Text;
+using ScriptEngine;
+using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Json
+namespace OneScript.StandardLibrary.Json
 {
     /// <summary>
     /// 
@@ -275,9 +278,9 @@ namespace ScriptEngine.HostedScript.Library.Json
             try
             {
                 if (encoding != null)
-                    _fileReader = Environment.FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(encoding));
+                    _fileReader = ScriptEngine.Environment.FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(encoding));
                 else
-                    _fileReader = Environment.FileOpener.OpenReader(JSONFileName);
+                    _fileReader = ScriptEngine.Environment.FileOpener.OpenReader(JSONFileName);
             }
             catch (Exception e)
             {

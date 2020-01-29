@@ -8,12 +8,12 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Xml;
 using System.Xml.Schema;
-using ScriptEngine.HostedScript.Library.Xml;
+using OneScript.StandardLibrary.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
 
-namespace ScriptEngine.HostedScript.Library.XDTO
+namespace OneScript.StandardLibrary.XDTO
 {
     [ContextClass("СериализаторXDTO", "XDTOSerializer")]
     public class XDTOSerializer : AutoContext<XDTOSerializer>

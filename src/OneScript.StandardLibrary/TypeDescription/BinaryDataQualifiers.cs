@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary.TypeDescription
 {
 	[ContextClass("КвалификаторыДвоичныхДанных", "BinaryDataQualifiers")]
 	public sealed class BinaryDataQualifiers : AutoContext<BinaryDataQualifiers>

@@ -10,12 +10,16 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
-using ScriptEngine.HostedScript.Library.XDTO;
-using ScriptEngine.HostedScript.Library.Xml;
+using OneScript.StandardLibrary.XDTO;
+using OneScript.StandardLibrary.Xml;
+using OneScript.StandardLibrary.XMLSchema.Collections;
+using OneScript.StandardLibrary.XMLSchema.Enumerations;
+using OneScript.StandardLibrary.XMLSchema.Interfaces;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("СхемаXML", "XMLSchema")]
     public class XMLSchema : AutoContext<XMLSchema>, IXSComponent, IXDTOSerializableXML

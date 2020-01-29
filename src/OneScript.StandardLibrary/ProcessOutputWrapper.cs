@@ -4,14 +4,14 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.IO;
 using System.Text;
 using System.Threading;
-
 using sys = System.Diagnostics;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
     class ProcessOutputWrapper : TextReader
     {

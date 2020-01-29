@@ -10,11 +10,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.HostedScript.Library;
-using ScriptEngine.HostedScript.Library.Binary;
 
 /// <summary>
 /// 
@@ -55,7 +57,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
     [ContextClass("HTTPСервисОтвет", "HTTPServiceResponse")]
     public class HTTPServiceResponseImpl : AutoContext<HTTPServiceResponseImpl>
     {
-        ScriptEngine.HostedScript.Library.MapImpl _headers = new HostedScript.Library.MapImpl();
+        MapImpl _headers = new MapImpl();
         string _reason = "";
         int _statusCode = 200;
         string _contentCharset = Encoding.UTF8.WebName;

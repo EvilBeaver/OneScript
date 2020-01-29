@@ -5,11 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.Machine.Contexts;
 using System;
 using System.IO;
+using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
     /// <summary>
     /// Стандартный поток ввода текста. Используется для взаимодействия с работающими процессами.

@@ -8,9 +8,12 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics.Contracts;
 using System.Xml.Schema;
+using OneScript.StandardLibrary.XMLSchema.Collections;
+using OneScript.StandardLibrary.XMLSchema.Enumerations;
+using OneScript.StandardLibrary.XMLSchema.Interfaces;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ДокументацияXS", "XSDocumentation")]
     public class XSDocumentation : AutoContext<XSDocumentation>, IXSAnnotationItem

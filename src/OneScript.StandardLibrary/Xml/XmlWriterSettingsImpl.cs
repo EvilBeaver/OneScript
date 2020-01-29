@@ -4,11 +4,13 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
+using System.Xml;
+using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Xml;
 
-namespace ScriptEngine.HostedScript.Library.Xml
+namespace OneScript.StandardLibrary.Xml
 {
     /// <summary>
     /// Параметры, используемые для формирования XML

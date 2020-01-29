@@ -4,15 +4,16 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
+using System.IO;
+using System.Security.Cryptography;
 using System.Text;
+using OneScript.StandardLibrary.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Security.Cryptography;
-using System.IO;
-using ScriptEngine.HostedScript.Library.Binary;
 
-namespace ScriptEngine.HostedScript.Library.Hash
+namespace OneScript.StandardLibrary.Hash
 {
     [ContextClass("ХешированиеДанных", "DataHashing")]
     public class HashImpl : AutoContext<HashImpl>, IDisposable

@@ -9,6 +9,8 @@ using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using System.Collections.Generic;
+using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Collections;
 
 
 namespace ScriptEngine.HostedScript
@@ -28,6 +30,7 @@ namespace ScriptEngine.HostedScript
         {
             _engine = new ScriptingEngine();
             _env = new RuntimeEnvironment();
+            _engine.AttachAssembly(typeof(ArrayImpl).Assembly, _env);
             _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly(), _env);
 
             _globalCtx = new SystemGlobalContext();

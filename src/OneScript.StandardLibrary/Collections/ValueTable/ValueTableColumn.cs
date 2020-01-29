@@ -1,0 +1,89 @@
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using System;
+using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
+
+namespace OneScript.StandardLibrary.Collections.ValueTable
+{
+    /// <summary>
+    /// Колонка таблицы значений. 
+    /// </summary>
+    [ContextClass("КолонкаТаблицыЗначений", "ValueTableColumn")]
+    public class ValueTableColumn : AutoContext<ValueTableColumn>
+    {
+        private string _title;
+        private string _name;
+        private TypeDescription.TypeDescription _valueType;
+        private int _width;
+        private readonly WeakReference _owner;
+
+        public ValueTableColumn(ValueTableColumnCollection Owner, string Name, string Title, TypeDescription.TypeDescription Type, int Width)
+        {
+            _name = Name;
+            _title = Title;
+            _valueType = Type ?? new TypeDescription.TypeDescription();
+            _width = Width;
+
+            _owner = new WeakReference(Owner);
+        }
+
+        /// <summary>
+        /// Заголовок колонки
+        /// </summary>
+        /// <value>Строка</value>
+        [ContextProperty("Заголовок", "Title")]
+        public string Title
+        {
+            get { return _title ?? _name; }
+            set { _title = value; }
+        }
+
+        /// <summary>
+        /// Имя колонки
+        /// </summary>
+        /// <value>Строка</value>
+        [ContextProperty("Имя", "Name")]
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                ValueTableColumnCollection Owner = _owner.Target as ValueTableColumnCollection;
+                if (Owner.FindColumnByName(value) != null)
+                    throw new RuntimeException("Неверное имя колонки!");
+
+                if (_title == _name)
+                    _title = value;
+
+                _name = value;
+
+            }
+        }
+        /// <summary>
+        /// Тип значения колонки
+        /// </summary>
+        /// <value>ОписаниеТипа</value>
+        [ContextProperty("ТипЗначения", "ValueType")]
+        public TypeDescription.TypeDescription ValueType
+        {
+            get { return _valueType; }
+        }
+
+        /// <summary>
+        /// Ширина колонки
+        /// </summary>
+        /// <value>Число</value>
+        [ContextProperty("Ширина", "Width")]
+        public int Width
+        {
+            get { return _width; }
+            set { _width = value; }
+        }
+    }
+}

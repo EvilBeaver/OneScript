@@ -5,11 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System;
 
-namespace ScriptEngine.HostedScript.Library.DriveInfo
+namespace OneScript.StandardLibrary.DriveInfo
 {
     [ContextClass("ИнформацияОДиске", "DriveInfo")]
     public class DriveInfo : AutoContext<DriveInfo>

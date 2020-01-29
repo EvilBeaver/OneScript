@@ -4,12 +4,15 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
+using System.Diagnostics;
+using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System.Diagnostics;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
     /// <summary>
     /// Позволяет управлять процессом операционной системы. Получать текст из стандартных потоков,

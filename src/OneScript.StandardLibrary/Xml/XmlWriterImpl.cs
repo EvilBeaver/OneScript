@@ -4,16 +4,17 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Xml
+namespace OneScript.StandardLibrary.Xml
 {
     [ContextClass("ЗаписьXML", "XMLWriter")]
     public class XmlWriterImpl : AutoContext<XmlWriterImpl>, IDisposable

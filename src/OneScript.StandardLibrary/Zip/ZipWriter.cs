@@ -4,16 +4,17 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using Ionic.Zip;
-using Ionic.Zlib;
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Ionic.Zip;
+using Ionic.Zlib;
+using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.Zip
+namespace OneScript.StandardLibrary.Zip
 {
     /// <summary>
     /// Объект записи ZIP-архивов.

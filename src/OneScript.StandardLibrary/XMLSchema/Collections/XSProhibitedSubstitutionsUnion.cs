@@ -6,10 +6,12 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Xml.Schema;
+using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ОбъединениеЗапрещенныхПодстановокXS", "XSProhibitedSubstitutionsUnion")]
     public class XSProhibitedSubstitutionsUnion : AutoContext<XSProhibitedSubstitutionsUnion>

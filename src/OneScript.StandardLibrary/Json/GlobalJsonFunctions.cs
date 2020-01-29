@@ -5,12 +5,14 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using Newtonsoft.Json;
+using OneScript.StandardLibrary.Collections;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using Newtonsoft.Json;
-using System;
 
-namespace ScriptEngine.HostedScript.Library.Json
+namespace OneScript.StandardLibrary.Json
 {
 
     /// <summary>

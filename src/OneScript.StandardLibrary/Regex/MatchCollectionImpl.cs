@@ -8,10 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-
 using RegExp = System.Text.RegularExpressions;
 
-namespace ScriptEngine.HostedScript.Library.Regex
+namespace OneScript.StandardLibrary.Regex
 {
     [ContextClass("КоллекцияСовпаденийРегулярногоВыражения", "RegExMatchCollection")]
     public class MatchCollection : AutoContext<MatchCollection>, ICollectionContext, IEnumerable<MatchImpl>

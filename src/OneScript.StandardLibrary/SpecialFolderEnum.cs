@@ -7,10 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-
 using sysFolder = System.Environment.SpecialFolder;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
     /// <summary>
     /// Системное перечисление для специальных папок.

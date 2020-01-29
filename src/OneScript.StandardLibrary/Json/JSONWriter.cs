@@ -6,14 +6,16 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.IO;
+using System.Text;
+using System.Threading;
+using Newtonsoft.Json;
+using OneScript.StandardLibrary.Text;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using Newtonsoft.Json;
-using System.IO;
-using System.Threading;
-using System.Text;
 
-namespace ScriptEngine.HostedScript.Library.Json
+namespace OneScript.StandardLibrary.Json
 {
     /// <summary>
     /// 
@@ -485,9 +487,9 @@ namespace ScriptEngine.HostedScript.Library.Json
             try
             {
                 if (encoding != null)
-                    streamWriter = Environment.FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName(encoding, bAddBOM));
+                    streamWriter = ScriptEngine.Environment.FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName(encoding, bAddBOM));
                 else
-                    streamWriter = Environment.FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName("UTF-8", bAddBOM));
+                    streamWriter = ScriptEngine.Environment.FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName("UTF-8", bAddBOM));
             }
             catch (Exception e)
             {

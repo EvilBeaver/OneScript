@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine.Contexts;
 using RegExp = System.Text.RegularExpressions;
 
-namespace ScriptEngine.HostedScript.Library.Regex
+namespace OneScript.StandardLibrary.Regex
 {
     [ContextClass("СовпадениеРегулярногоВыражения", "RegExMatch")]
     public class MatchImpl : AutoContext<MatchImpl>

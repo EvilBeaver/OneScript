@@ -9,8 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Environment;
-using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -24,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library
     {
         private IVariable[] _state;
         private FixedArrayImpl  _args;
-		private SymbolsContext _symbols;
+		
         private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
         private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
 
@@ -32,13 +33,6 @@ namespace ScriptEngine.HostedScript.Library
         {
             RegisterProperty("АргументыКоманднойСтроки", ()=>(IValue)CommandLineArguments);
             RegisterProperty("CommandLineArguments", () => (IValue)CommandLineArguments);
-
-            FileStreams = new FileStreamsManager();
-            RegisterProperty("ФайловыеПотоки", () => FileStreams);
-            RegisterProperty("FileStreams", () => FileStreams);
-
-			RegisterProperty("Символы", () => (IValue)Chars);
-			RegisterProperty("Chars", () => (IValue)Chars);
         }
 
         private void RegisterProperty(string name, Func<IValue> getter)
@@ -67,13 +61,6 @@ namespace ScriptEngine.HostedScript.Library
 
         public IHostApplication ApplicationHost { get; set; }
         public ICodeSource CodeSource { get; set; }
-
-
-        /// <summary>
-        /// Менеджер файловых потоков.
-        /// </summary>
-        [ContextProperty("ФайловыеПотоки","FileStreams")]
-        public FileStreamsManager FileStreams { get; }
 
         /// <summary>
         /// Выдает сообщение в консоль.
@@ -166,7 +153,7 @@ namespace ScriptEngine.HostedScript.Library
         /// Подключает внешнюю сборку среды .NET (*.dll) и регистрирует классы 1Script, объявленные в этой сборке.
         /// Публичные классы, отмеченные в dll атрибутом ContextClass, будут импортированы аналогично встроенным классам 1Script.
         /// Загружаемая сборка должна ссылаться на сборку ScriptEngine.dll
-	/// </summary>
+	    /// </summary>
         /// <example>
         /// ПодключитьВнешнююКомпоненту("C:\MyAssembly.dll");
         /// КлассИзКомпоненты = Новый КлассИзКомпоненты(); // тип объявлен внутри компоненты
@@ -189,16 +176,6 @@ namespace ScriptEngine.HostedScript.Library
         public IRuntimeContextInstance StartupScript()
         {
             return new ScriptInformationContext(CodeSource);
-        }
-
-        /// <summary>
-        /// Приостанавливает выполнение скрипта.
-        /// </summary>
-        /// <param name="delay">Время приостановки в миллисекундах</param>
-        [ContextMethod("Приостановить", "Sleep")]
-        public void Sleep(int delay)
-        {
-            System.Threading.Thread.Sleep(delay);
         }
 
         /// <summary>
@@ -236,44 +213,6 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
-        /// Явное освобождение ресурса через интерфейс IDisposable среды CLR.
-        /// 
-        /// OneScript не выполняет подсчет ссылок на объекты, а полагается на сборщик мусора CLR.
-        /// Это значит, что объекты автоматически не освобождаются при выходе из области видимости. 
-        /// 
-        /// Метод ОсвободитьОбъект можно использовать для детерминированного освобождения ресурсов. Если объект поддерживает интерфейс IDisposable, то данный метод вызовет Dispose у данного объекта.
-        /// 
-        /// Как правило, интерфейс IDisposable реализуется различными ресурсами (файлами, соединениями с ИБ и т.п.)
-        /// </summary>
-        /// <param name="obj">Объект, ресурсы которого требуется освободить.</param>
-        [ContextMethod("ОсвободитьОбъект", "FreeObject")]
-        public void DisposeObject(IRuntimeContextInstance obj)
-        {
-            var disposable = obj as IDisposable;
-            if (disposable != null)
-            {
-                disposable.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// OneScript не выполняет подсчет ссылок на объекты, а полагается на сборщик мусора CLR.
-        /// Это значит, что объекты автоматически не освобождаются при выходе из области видимости.
-        /// 
-        /// С помощью данного метода можно запустить принудительную сборку мусора среды CLR.
-        /// Данные метод следует использовать обдуманно, поскольку вызов данного метода не гарантирует освобождение всех объектов.
-        /// Локальные переменные, например, до завершения текущего метода очищены не будут,
-        /// поскольку до завершения текущего метода CLR будет видеть, что они используются движком 1Script.
-        /// 
-        /// </summary>
-        [ContextMethod("ВыполнитьСборкуМусора", "RunGarbageCollection")]
-        public void RunGarbageCollection()
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-
-        /// <summary>
         /// Доступ к аргументам командной строки.
         /// Объект АргументыКоманднойСтроки представляет собой массив в режиме "только чтение".
         /// </summary>
@@ -299,24 +238,6 @@ namespace ScriptEngine.HostedScript.Library
             }
 
         }
-
-		/// <summary>
-		/// Содержит набор системных символов.
-		/// </summary>
-		/// <value>Набор системных символов.</value>
-		[ContextProperty("Символы")]
-		public IRuntimeContextInstance Chars
-		{
-			get
-			{
-				if (_symbols == null)
-				{
-					_symbols = new SymbolsContext();
-				}
-
-				return _symbols;
-			}
-		}
 
         /// <summary>
         /// Запуск приложения в операционной системе

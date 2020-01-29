@@ -5,7 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace ScriptEngine.HostedScript.Library.XMLSchema
+using OneScript.StandardLibrary.XMLSchema.Objects;
+using ScriptEngine;
+
+namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     /// <summary>
     /// Содержит варианты использования выражения XPath.
