@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine;
 
-namespace OneScript.StandardLibrary
+namespace OneScript.StandardLibrary.Collections
 {
     [EnumerationType("НаправлениеСортировки", "SortDirection")]
     public enum SortDirectionEnum
