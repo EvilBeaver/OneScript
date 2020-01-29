@@ -6,6 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -77,7 +81,222 @@ namespace OneScript.StandardLibrary
             System.Threading.Thread.Sleep(delay);
         }
         
+        [ContextMethod("КраткоеПредставлениеОшибки", "BriefErrorDescription")]
+        public string BriefErrorDescription(ExceptionInfoContext errInfo)
+        {
+            return errInfo.Description;
+        }
 
+        [ContextMethod("ПодробноеПредставлениеОшибки", "DetailErrorDescription")]
+        public string DetailErrorDescription(ExceptionInfoContext errInfo)
+        {
+            return errInfo.DetailedDescription;
+        }
+
+        [ContextMethod("ТекущаяУниверсальнаяДата", "CurrentUniversalDate")]
+        public IValue CurrentUniversalDate()
+        {
+            return ValueFactory.Create(DateTime.UtcNow);
+        }
+
+        [ContextMethod("ТекущаяУниверсальнаяДатаВМиллисекундах", "CurrentUniversalDateInMilliseconds")]
+        public long CurrentUniversalDateInMilliseconds()
+        {
+            return DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
+        }
+
+        /// <summary>
+        /// Проверяет заполненность значения по принципу, заложенному в 1С:Предприятии
+        /// </summary>
+        /// <param name="inValue"></param>
+        /// <returns></returns>
+        [ContextMethod("ЗначениеЗаполнено","ValueIsFilled")]
+        public bool ValueIsFilled(IValue inValue)
+        {
+            var value = inValue?.GetRawValue();
+            if (value == null)
+            {
+                return false;
+            }
+            if (value.DataType == DataType.Undefined)
+                return false;
+            else if (value.DataType == DataType.Boolean)
+                return true;
+            else if (value.DataType == DataType.String)
+                return !String.IsNullOrWhiteSpace(value.AsString());
+            else if (value.DataType == DataType.Number)
+                return value.AsNumber() != 0;
+            else if (value.DataType == DataType.Date)
+            {
+                var emptyDate = new DateTime(1, 1, 1, 0, 0, 0);
+                return value.AsDate() != emptyDate;
+            }
+            else if (value is COMWrapperContext)
+            {
+                return true;
+            }
+            else if (value is ICollectionContext)
+            {
+                var col = value as ICollectionContext;
+                return col.Count() != 0;
+            }
+            else if (ValueFactory.CreateNullValue().Equals(value))
+            {
+                return false;
+            }
+            else
+                return true;
+            
+        }
+
+        /// <summary>
+        /// Заполняет одноименные значения свойств одного объекта из другого
+        /// </summary>
+        /// <param name="acceptor">Объект-приемник</param>
+        /// <param name="source">Объект-источник</param>
+        /// <param name="filledProperties">Заполняемые свойства (строка, через запятую)</param>
+        /// <param name="ignoredProperties">Игнорируемые свойства (строка, через запятую)</param>
+        [ContextMethod("ЗаполнитьЗначенияСвойств","FillPropertyValues")]
+        public void FillPropertyValues(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, IValue filledProperties = null, IValue ignoredProperties = null)
+        {
+            string strFilled;
+            string strIgnored;
+
+            if (filledProperties == null || filledProperties.DataType == DataType.Undefined)
+            {
+                strFilled = null;
+            }
+            else if (filledProperties.DataType == DataType.String)
+            {
+                strFilled = filledProperties.AsString();
+            }
+            else
+            {
+                throw RuntimeException.InvalidArgumentType(3, nameof(filledProperties));
+            }
+
+            if (ignoredProperties == null || ignoredProperties.DataType == DataType.Undefined)
+            {
+                strIgnored = null;
+            }
+            else if (ignoredProperties.DataType == DataType.String)
+            {
+                strIgnored = ignoredProperties.AsString();
+            }
+            else
+            {
+                throw RuntimeException.InvalidArgumentType(4, nameof(ignoredProperties));
+            }
+
+            FillPropertyValuesStr(acceptor, source, strFilled, strIgnored);
+        }
+
+        private static void FillPropertyValuesStr(IRuntimeContextInstance acceptor, IRuntimeContextInstance source, string filledProperties = null, string ignoredProperties = null)
+        {
+            IEnumerable<string> sourceProperties;
+
+            if (filledProperties == null)
+            {
+                string[] names = new string[source.GetPropCount()];
+                for (int i = 0; i < names.Length; i++)
+                {
+                    names[i] = source.GetPropName(i);
+                }
+
+                if (ignoredProperties == null)
+                {
+                    sourceProperties = names;
+                }
+                else
+                {
+                    IEnumerable<string> ignoredPropCollection = ignoredProperties.Split(',')
+                        .Select(x => x.Trim())
+                        .Where(x => x.Length > 0);
+
+                    sourceProperties = names.Where(x => !ignoredPropCollection.Contains(x));
+                }
+            }
+            else
+            {
+                sourceProperties = filledProperties.Split(',')
+                    .Select(x => x.Trim())
+                    .Where(x => x.Length > 0);
+
+                // Проверка существования заявленных свойств
+                foreach (var item in sourceProperties)
+                {
+                    acceptor.FindProperty(item); // бросает PropertyAccessException если свойства нет
+                }
+            }
+
+
+            foreach (var srcProperty in sourceProperties)
+            {
+                try
+                {
+                    var srcPropIdx = source.FindProperty(srcProperty);
+                    var accPropIdx = acceptor.FindProperty(srcProperty); // бросает PropertyAccessException если свойства нет
+
+                    if (source.IsPropReadable(srcPropIdx) && acceptor.IsPropWritable(accPropIdx))
+                        acceptor.SetPropValue(accPropIdx, source.GetPropValue(srcPropIdx));
+
+                }
+                catch (PropertyAccessException)
+                {
+                    // игнорировать свойства Источника, которых нет в Приемнике
+                }
+            }
+        }
+
+        /// <summary>
+        /// Получает объект класса COM по его имени или пути. Подробнее см. синтакс-помощник от 1С.
+        /// </summary>
+        /// <param name="pathName">Путь к библиотеке</param>
+        /// <param name="className">Имя класса</param>
+        /// <returns>COMОбъект</returns>
+        [ContextMethod("ПолучитьCOMОбъект", "GetCOMObject")]
+        public IValue GetCOMObject(string pathName = null, string className = null)
+        {
+            var comObject = GetCOMObjectInternal(pathName, className);
+
+            return COMWrapperContext.Create(comObject);
+        }
+
+        /// <summary>
+        /// Ported from Microsoft.VisualBasic, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+        /// By JetBrains dotPeek decompiler
+        /// </summary>
+        private object GetCOMObjectInternal(string pathName = null, string className = null)
+        {
+            if (String.IsNullOrEmpty(className))
+            {
+                return Marshal.BindToMoniker(pathName);
+            }
+            else if (pathName == null)
+            {
+#if NETSTANDARD2_0
+                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#else
+                return Marshal.GetActiveObject(className);
+#endif
+            }
+            else if (pathName.Length == 0)
+            {
+                return Activator.CreateInstance(System.Type.GetTypeFromProgID(className));
+            }
+            else
+            {
+#if NETSTANDARD2_0
+                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#else
+                var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
+                persistFile.Load(pathName, 0);
+                
+                return (object)persistFile;
+#endif
+            }
+        }
+        
         #region Static infrastructure
 
         public static IAttachableContext CreateInstance()
