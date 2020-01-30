@@ -196,8 +196,6 @@ namespace ScriptEngine.Compiler
                     AppendCodeInfo(_lexer.GetCodePosition(), exc);
                 throw;
             }
-
-
         }
 
         private void CheckForwardedDeclarations()
@@ -377,7 +375,6 @@ namespace ScriptEngine.Compiler
 
                 }
             }
-
         }
 
         private void BuildModuleBody()
@@ -431,7 +428,6 @@ namespace ScriptEngine.Compiler
             {
                 descriptor.Variables.Add(localCtx.GetVariable(i));
             }
-            
         }
 
         private void HandleDirective(bool codeEntered)
@@ -445,7 +441,6 @@ namespace ScriptEngine.Compiler
 
             if (DirectiveHandler == null || !DirectiveHandler(directive, value, codeEntered))
                 throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
-
         }
 
         private void ReadToLineEnd()
@@ -566,7 +561,6 @@ namespace ScriptEngine.Compiler
             #endregion
 
             NextToken(); 
-            
         }
 
         private void BuildMethodParametersList(List<ParameterDefinition> paramsList, SymbolScope methodCtx)
@@ -765,7 +759,6 @@ namespace ScriptEngine.Compiler
                 }
                 NextToken();
             }
-
         }
 
         private void BuildComplexStructureStatement()
@@ -872,7 +865,6 @@ namespace ScriptEngine.Compiler
                 CorrectCommandArgument(indexToWrite, exitIndex);
             }
             NextToken();
-
         }
 
         private void BuildForStatement()
@@ -892,8 +884,6 @@ namespace ScriptEngine.Compiler
             {
                 throw CompilerException.IdentifierExpected();
             }
-
-
         }
 
         private void BuildForEachStatement()
@@ -970,12 +960,10 @@ namespace ScriptEngine.Compiler
                 AddCommand(OperationCode.Jmp, lastIdx + 4);
             }
 
-            {
-                // increment
-                var indexLoopBeginNew = BuildPushVariable(counter);
-                if (indexLoopBegin == DUMMY_ADDRESS)
-                    indexLoopBegin = indexLoopBeginNew;
-            }
+            // increment
+            var indexLoopBeginNew = BuildPushVariable(counter);
+            if (indexLoopBegin == DUMMY_ADDRESS)
+                indexLoopBegin = indexLoopBeginNew;
 
             AddCommand(OperationCode.Inc);
             BuildLoadVariable(counter);
@@ -1004,7 +992,6 @@ namespace ScriptEngine.Compiler
             CorrectCommandArgument( conditionIndex, indexLoopEnd);
             CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
             NextToken();
-            
         }
 
         private void BuildWhileStatement()
@@ -1144,7 +1131,7 @@ namespace ScriptEngine.Compiler
             {
                 if (_tokenStack.Any(x => x.Contains(Token.EndTry)))
                 {
-                    AddCommand(OperationCode.RaiseException, DUMMY_ADDRESS);
+                    AddCommand(OperationCode.RaiseException, -1);
                 }
                 else
                 {
@@ -1228,7 +1215,6 @@ namespace ScriptEngine.Compiler
             {
                 BuildMethodCall(identifier, args, false);
             }
-
         }
 
         private void BuildAccessChainLeftHand()
@@ -1245,7 +1231,6 @@ namespace ScriptEngine.Compiler
                 NextToken(); // перешли к выражению
                 BuildExpression(Token.Semicolon);
                 AddCommand(OperationCode.AssignRef);
-
             }
             else
             {
@@ -1266,7 +1251,6 @@ namespace ScriptEngine.Compiler
                 {
                     AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
                 }
-
             }
         }
 
@@ -1337,7 +1321,6 @@ namespace ScriptEngine.Compiler
 
                 currentOp = _lastExtractedLexem.Token;
                 opPriority = GetBinaryPriority(currentOp);
-
             }
         }
 
@@ -1595,7 +1578,6 @@ namespace ScriptEngine.Compiler
                     break;
                 }
             }
-
         }
 
         private bool IsValidPropertyName(ref Lexem lex)
@@ -1640,15 +1622,13 @@ namespace ScriptEngine.Compiler
 
             var endOfTruePart = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS); // уход в конец оператора
             
-            CorrectCommandArgument(addrOfCondition, AddCommand(OperationCode.Nop)); // отметили, куда переходить по false
+            CorrectCommandArgument(addrOfCondition, _module.Code.Count); // отметили, куда переходить по false
             NextToken();
             BuildExpression(Token.ClosePar); // построили false-part
             
-            var endOfFalsePart = AddCommand(OperationCode.Nop);
-            CorrectCommandArgument(endOfTruePart, endOfFalsePart);
+            CorrectCommandArgument(endOfTruePart, _module.Code.Count);
             
             NextToken();
-
         }
 
         private bool[] BuildArgumentList()
@@ -1809,7 +1789,6 @@ namespace ScriptEngine.Compiler
             {
                 // создание по строковому имени класса
                 NewObjectDynamicConstructor();
-
             }
             else if (IsUserSymbol(ref _lastExtractedLexem) || _lastExtractedLexem.Token == Token.ExceptionInfo)
             {
@@ -1819,7 +1798,6 @@ namespace ScriptEngine.Compiler
             {
                 throw CompilerException.IdentifierExpected();
             }
-
         }
 
         private void NewObjectDynamicConstructor()
@@ -1900,7 +1878,6 @@ namespace ScriptEngine.Compiler
             }
 
             AddCommand(funcId, passedArgs.Length);
-
         }
 
         #region Helper methods
@@ -2071,9 +2048,7 @@ namespace ScriptEngine.Compiler
                 _tokenToOpCode.Add(tokens[i], opCodes[i]);
             }
         }
-
     }
 
     public delegate bool CompilerDirectiveHandler(string directive, string value, bool codeEntered);
-
 }
