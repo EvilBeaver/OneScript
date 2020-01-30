@@ -24,6 +24,7 @@ namespace ScriptEngine.Compiler
     class Compiler    {
         public const string BODY_METHOD_NAME = "$entry";
 
+        private const int DUMMY_ADDRESS = -1;
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
         private ILexemGenerator _lexer;
@@ -56,7 +57,7 @@ namespace ScriptEngine.Compiler
             {
                 return new NestedLoopInfo()
                 {
-                    startPoint = -1,
+                    startPoint = DUMMY_ADDRESS,
                     breakStatements = new List<int>()
                 };
             }
@@ -837,11 +838,11 @@ namespace ScriptEngine.Compiler
                 BuildExpression(Token.Then);
                 PushStructureToken(Token.Else, Token.ElseIf, Token.EndIf);
 
-                jumpFalseIndex = AddCommand(OperationCode.JmpFalse, -1);
+                jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
                 NextToken();
                 BuildCodeBatch();
                 PopStructureToken();
-                exitIndices.Add(AddCommand(OperationCode.Jmp, -1));
+                exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
             }
 
             if (_lastExtractedLexem.Token == Token.Else)
@@ -931,7 +932,7 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.PushIterator, 0);
             var loopBegin = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
             AddCommand(OperationCode.IteratorNext, 0);
-            var condition = AddCommand(OperationCode.JmpFalse, -1);
+            var condition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             BuildLoadVariable(identifier);
             PushStructureToken(Token.EndLoop);
 
@@ -975,7 +976,7 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.MakeRawValue, 0);
             AddCommand(OperationCode.PushTmp, 0);
             var lastIdx = _module.Code.Count;
-            int indexLoopBegin = -1;
+            int indexLoopBegin = DUMMY_ADDRESS;
 
             // TODO: костыль
             if (_lastExtractedLexem.Token == Token.Loop)
@@ -991,7 +992,7 @@ namespace ScriptEngine.Compiler
             {
                 // increment
                 var indexLoopBeginNew = BuildPushVariable(counter);
-                if (indexLoopBegin == -1)
+                if (indexLoopBegin == DUMMY_ADDRESS)
                     indexLoopBegin = indexLoopBeginNew;
             }
 
@@ -999,7 +1000,7 @@ namespace ScriptEngine.Compiler
             BuildLoadVariable(counter);
 
             BuildPushVariable(counter);
-            var conditionIndex = AddCommand(OperationCode.JmpCounter, -1);
+            var conditionIndex = AddCommand(OperationCode.JmpCounter, DUMMY_ADDRESS);
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = indexLoopBegin;
             _nestedLoops.Push(loopRecord);
@@ -1077,7 +1078,7 @@ namespace ScriptEngine.Compiler
             var loopInfo = _nestedLoops.Peek();
             if(_isInTryBlock)
                 AddCommand(OperationCode.EndTry, 0);
-            var idx = AddCommand(OperationCode.Jmp, -1);
+            var idx = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
             loopInfo.breakStatements.Add(idx);
             NextToken();
         }
@@ -1134,14 +1135,14 @@ namespace ScriptEngine.Compiler
         {
             AddCommand(OperationCode.LineNum, _lexer.CurrentLine, CodeGenerationFlags.CodeStatistics);
 
-            var beginTryIndex = AddCommand(OperationCode.BeginTry, -1);
+            var beginTryIndex = AddCommand(OperationCode.BeginTry, DUMMY_ADDRESS);
             bool savedTryFlag = SetTryBlockFlag(true);
             PushStructureToken(Token.Exception);
             NextToken();
             BuildCodeBatch();
             PopStructureToken();
             SetTryBlockFlag(savedTryFlag);
-            var jmpIndex = AddCommand(OperationCode.Jmp, -1);
+            var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
 
             Assert(_lastExtractedLexem.Token == Token.Exception);
             
@@ -1170,7 +1171,7 @@ namespace ScriptEngine.Compiler
             {
                 if (_tokenStack.Any(x => x.Contains(Token.EndTry)))
                 {
-                    AddCommand(OperationCode.RaiseException, -1);
+                    AddCommand(OperationCode.RaiseException, DUMMY_ADDRESS);
                 }
                 else
                 {
@@ -1327,7 +1328,7 @@ namespace ScriptEngine.Compiler
             while (LanguageDef.IsBinaryOperator(currentOp) && opPriority >= acceptablePriority)
             {
                 bool isLogical = LanguageDef.IsLogicalBinaryOperator(currentOp);
-                int logicalCmdIndex = -1;
+                int logicalCmdIndex = DUMMY_ADDRESS;
 
                 if (isLogical)
                 {
@@ -1659,14 +1660,14 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.UnexpectedOperation();
             
             AddCommand(OperationCode.MakeBool, 0);
-            var addrOfCondition = AddCommand(OperationCode.JmpFalse, -1);
+            var addrOfCondition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
             NextToken();
             BuildExpression(Token.Comma); // построили true-part
             if (_lastExtractedLexem.Token != Token.Comma)
                 throw CompilerException.UnexpectedOperation();
 
-            var endOfTruePart = AddCommand(OperationCode.Jmp, -1); // уход в конец оператора
+            var endOfTruePart = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS); // уход в конец оператора
             
             CorrectCommandArgument(addrOfCondition, AddCommand(OperationCode.Nop, 0)); // отметили, куда переходить по false
             NextToken();
@@ -1807,7 +1808,7 @@ namespace ScriptEngine.Compiler
                 forwarded.factArguments = argsPassed;
 
                 var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
-                forwarded.commandIndex = AddCommand(opCode, -1);
+                forwarded.commandIndex = AddCommand(opCode, DUMMY_ADDRESS);
                 _forwardedMethods.Add(forwarded);
             }
         }
