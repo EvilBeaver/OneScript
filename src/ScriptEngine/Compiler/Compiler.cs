@@ -238,9 +238,7 @@ namespace ScriptEngine.Compiler
                         throw;
                     }
 
-                    var cmd = _module.Code[item.commandIndex];
-                    cmd.Argument = GetMethodRefNumber(ref methN);
-                    _module.Code[item.commandIndex] = cmd;
+                    CorrectCommandArgument(item.commandIndex, GetMethodRefNumber(ref methN));
                 }
             }
         }
@@ -827,11 +825,7 @@ namespace ScriptEngine.Compiler
 
             while (_lastExtractedLexem.Token == Token.ElseIf)
             {
-                _module.Code[jumpFalseIndex] = new Command()
-                {
-                    Code = OperationCode.JmpFalse,
-                    Argument = _module.Code.Count
-                };
+                CorrectCommandArgument(jumpFalseIndex, _module.Code.Count);
                 AddLineNumber(_lastExtractedLexem.LineNumber);
 
                 NextToken();
@@ -848,11 +842,7 @@ namespace ScriptEngine.Compiler
             if (_lastExtractedLexem.Token == Token.Else)
             {
                 hasAlternativeBranches = true;
-                _module.Code[jumpFalseIndex] = new Command()
-                {
-                    Code = OperationCode.JmpFalse,
-                    Argument = _module.Code.Count
-                };
+                CorrectCommandArgument(jumpFalseIndex, _module.Code.Count);
                 AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
                 NextToken();
@@ -874,20 +864,12 @@ namespace ScriptEngine.Compiler
 
             if (!hasAlternativeBranches)
             {
-                _module.Code[jumpFalseIndex] = new Command()
-                {
-                    Code = OperationCode.JmpFalse,
-                    Argument = exitIndex
-                };
+                CorrectCommandArgument(jumpFalseIndex, exitIndex);
             }
 
             foreach (var indexToWrite in exitIndices)
             {
-                _module.Code[indexToWrite] = new Command()
-                {
-                    Code = OperationCode.Jmp,
-                    Argument = exitIndex
-                };
+                CorrectCommandArgument(indexToWrite, exitIndex);
             }
             NextToken();
 
@@ -952,11 +934,10 @@ namespace ScriptEngine.Compiler
             }
 
             AddCommand(OperationCode.Jmp, loopBegin);
-            var cmd = _module.Code[condition];
-            cmd.Argument = AddCommand(OperationCode.StopIterator);
-            _module.Code[condition] = cmd;
 
-            CorrectBreakStatements(_nestedLoops.Pop(), cmd.Argument);
+            var indexLoopEnd = AddCommand(OperationCode.StopIterator);
+            CorrectCommandArgument(condition, indexLoopEnd);
+            CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
             NextToken();
         }
 
@@ -1018,12 +999,9 @@ namespace ScriptEngine.Compiler
 
             // jmp to start
             AddCommand(OperationCode.Jmp, indexLoopBegin);
+
             var indexLoopEnd = AddCommand(OperationCode.PopTmp, 1);
-
-            var cmd = _module.Code[conditionIndex];
-            cmd.Argument = indexLoopEnd;
-            _module.Code[conditionIndex] = cmd;
-
+            CorrectCommandArgument( conditionIndex, indexLoopEnd);
             CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
             NextToken();
             
@@ -1056,15 +1034,10 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.Jmp, conditionIndex);
 
             var endLoop = AddCommand(OperationCode.Nop);
-            _module.Code[jumpFalseIndex] = new Command() {
-                Code = OperationCode.JmpFalse,
-                Argument = endLoop
-            };
-
+            CorrectCommandArgument(jumpFalseIndex, endLoop);
             CorrectBreakStatements(_nestedLoops.Pop(), endLoop);
 
             NextToken();
-
         }
 
         private void BuildBreakStatement()
@@ -1183,7 +1156,6 @@ namespace ScriptEngine.Compiler
                 BuildExpression(Token.Semicolon);
                 AddCommand(OperationCode.RaiseException);
             }
-
         }
 
         private void BuildExecuteStatement()
@@ -1193,7 +1165,6 @@ namespace ScriptEngine.Compiler
 
             BuildExpression(Token.Semicolon);
             AddCommand(OperationCode.Execute);
-
         }
 
         private void CorrectCommandArgument(int index, int newArgument)
