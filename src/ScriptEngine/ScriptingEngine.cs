@@ -137,7 +137,7 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        private ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
+        public ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new UserScriptContextInstance(module);
             scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
