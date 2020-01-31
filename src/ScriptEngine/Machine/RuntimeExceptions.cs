@@ -76,12 +76,12 @@ namespace ScriptEngine.Machine
         
         public static RuntimeException MethodNotFoundException(string methodName)
         {
-            return new RuntimeException(string.Format("Метод объекта не обнаружен ({0})", methodName));
+            return new RuntimeException($"Метод объекта не обнаружен ({methodName})");
         }
 
         public static RuntimeException MethodNotFoundException(string methodName, string objectName)
         {
-            return new RuntimeException(string.Format("Метод объекта не обнаружен ({{{1}}}::{0})", methodName, objectName));
+            return new RuntimeException($"Метод объекта не обнаружен ({{{objectName}}}::{methodName})");
         }
 
         public static RuntimeException ValueIsNotObjectException()
