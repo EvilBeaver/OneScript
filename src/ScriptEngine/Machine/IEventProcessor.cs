@@ -20,5 +20,7 @@ namespace ScriptEngine.Machine
             string eventName,
             IRuntimeContextInstance handlerTarget,
             string handlerMethod);
+
+        void HandleEvent(IRuntimeContextInstance eventSource, string eventName, IValue[] eventArgs);
     }
 }
