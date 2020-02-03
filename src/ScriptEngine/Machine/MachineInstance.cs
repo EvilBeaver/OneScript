@@ -286,6 +286,11 @@ namespace ScriptEngine.Machine
         
         #endregion
 
+        /// <summary>
+        /// Обработчик событий, генерируемых классами прикладной логики.
+        /// </summary>
+        public IEventProcessor EventProcessor { get; set; }
+        
         private ScriptInformationContext CurrentScript
         {
             get
@@ -598,6 +603,8 @@ namespace ScriptEngine.Machine
                 PushTmp,
                 PopTmp,
                 Execute,
+                AddHandler,
+                RemoveHandler,
 
                 //built-ins
                 Eval,
@@ -1498,6 +1505,30 @@ namespace ScriptEngine.Machine
         {
             IValue value = Evaluate(_operationStack.Pop().AsString());
             _operationStack.Push(value);
+            NextInstruction();
+        }
+
+        private void AddHandler(int arg)
+        {
+            var handlerMethod = _operationStack.Pop().AsString();
+            var handlerTarget = _operationStack.Pop().AsObject();
+            var eventName = _operationStack.Pop().AsString();
+            var eventSource = _operationStack.Pop().AsObject();
+
+            EventProcessor?.AddHandler(eventSource, eventName, handlerTarget, handlerMethod);
+            
+            NextInstruction();
+        }
+        
+        private void RemoveHandler(int arg)
+        {
+            var handlerMethod = _operationStack.Pop().AsString();
+            var handlerTarget = _operationStack.Pop().AsObject();
+            var eventName = _operationStack.Pop().AsString();
+            var eventSource = _operationStack.Pop().AsObject();
+
+            EventProcessor?.RemoveHandler(eventSource, eventName, handlerTarget, handlerMethod);
+            
             NextInstruction();
         }
 

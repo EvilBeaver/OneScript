@@ -65,6 +65,13 @@ namespace ScriptEngine.Compiler
             public List<int> breakStatements;
         }
 
+        private enum ContinuationBuildMode
+        {
+            RightHand,
+            LeftHand,
+            EventHandler
+        }
+
         public CompilerDirectiveHandler DirectiveHandler { get; set; }
     
         public CodeGenerationFlags ProduceExtraCode { get; set; }
@@ -800,6 +807,10 @@ namespace ScriptEngine.Compiler
                 case Token.Execute:
                     BuildExecuteStatement();
                     break;
+                case Token.AddHandler:
+                case Token.RemoveHandler:
+                    BuildEventHandlerOperation(_lastExtractedLexem.Token);
+                    break;        
                 default:
                     var expected = PopStructureToken();
                     throw CompilerException.TokenExpected(expected);
@@ -1195,6 +1206,31 @@ namespace ScriptEngine.Compiler
 
         }
 
+        private void BuildEventHandlerOperation(Token token)
+        {
+            BuildContinuationInternal(ContinuationBuildMode.EventHandler, out var eventName);
+            if (eventName == null)
+            {
+                throw CompilerException.IdentifierExpected();
+            }
+            
+            BuildPushConstant();
+            NextToken();
+            if (_lastExtractedLexem.Token != Token.Comma)
+            {
+                throw CompilerException.TokenExpected(Token.Comma);
+            }
+            NextToken();
+            BuildContinuationInternal(ContinuationBuildMode.EventHandler, out var handlerName);
+            if (handlerName == null)
+            {
+                throw CompilerException.IdentifierExpected();
+            }
+            BuildPushConstant();
+            var opCode = token == Token.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler;
+            AddCommand(opCode, 0);
+        }
+        
         private void CorrectCommandArgument(int index, int newArgument)
         {
             var cmd = _module.Code[index];
@@ -1562,15 +1598,15 @@ namespace ScriptEngine.Compiler
         private void BuildContinuationRightHand()
         {
             string dummy;
-            BuildContinuationInternal(false, out dummy);
+            BuildContinuationInternal(ContinuationBuildMode.RightHand, out dummy);
         }
 
         private void BuildContinuationLeftHand(out string lastIdentifier)
         {
-            BuildContinuationInternal(true, out lastIdentifier);
+            BuildContinuationInternal(ContinuationBuildMode.LeftHand, out lastIdentifier);
         }
 
-        private void BuildContinuationInternal(bool interruptOnCall, out string lastIdentifier)
+        private void BuildContinuationInternal(ContinuationBuildMode interruptMode, out string lastIdentifier)
         {
             lastIdentifier = null;
             while (true)
@@ -1585,7 +1621,7 @@ namespace ScriptEngine.Compiler
                     NextToken();
                     if (_lastExtractedLexem.Token == Token.OpenPar)
                     {
-                        if (interruptOnCall)
+                        if (interruptMode == ContinuationBuildMode.LeftHand)
                         {
                             lastIdentifier = identifier;
                             return;
@@ -1603,7 +1639,15 @@ namespace ScriptEngine.Compiler
                     }
                     else
                     {
-                        ResolveProperty(identifier);
+                        if (interruptMode == ContinuationBuildMode.EventHandler)
+                        {
+                            lastIdentifier = identifier;
+                            return;
+                        }
+                        else
+                        {
+                            ResolveProperty(identifier);
+                        }
                     }
                 }
                 else if (_lastExtractedLexem.Token == Token.OpenBracket)

@@ -60,6 +60,8 @@ namespace ScriptEngine.Machine
         PushTmp,
         PopTmp,
         Execute,
+        AddHandler,
+        RemoveHandler,
 
         // built-in functions
         Eval,

@@ -39,6 +39,8 @@ namespace OneScript.Language.LexicalAnalysis
         EndOfText,
         Export,
         Execute,
+        AddHandler,
+        RemoveHandler,
 
         // operators
         Plus,
