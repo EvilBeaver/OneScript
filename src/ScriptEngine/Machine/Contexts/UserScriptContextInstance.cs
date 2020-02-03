@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ScriptEngine.Machine.Contexts
@@ -17,6 +18,10 @@ namespace ScriptEngine.Machine.Contexts
         List<IValue> _ownProperties;
 
         private Func<string> _asStringOverride;
+
+        private const string RAISEEVENT_RU = "ВызватьСобытие";
+        private const string RAISEEVENT_EN = "RaiseEvent";
+        private const int RAIZEEVENT_INDEX = 0;
         
         public IValue[] ConstructorParams { get; private set; }
         
@@ -139,7 +144,66 @@ namespace ScriptEngine.Machine.Contexts
 
         protected override int GetOwnMethodCount()
         {
-            return 0;
+            return 1;
+        }
+
+        protected override int FindOwnMethod(string name)
+        {
+            if (string.Equals(RAISEEVENT_EN, name, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(RAISEEVENT_RU, name, StringComparison.OrdinalIgnoreCase))
+            {
+                return RAIZEEVENT_INDEX;
+            }
+
+            return base.FindOwnMethod(name);
+        }
+
+        protected override MethodInfo GetOwnMethod(int index)
+        {
+            Debug.Assert(index == RAIZEEVENT_INDEX);
+
+            return new MethodInfo
+            {
+                Name = RAISEEVENT_RU,
+                Alias = RAISEEVENT_EN,
+                IsFunction = false,
+                IsExport = false,
+                Annotations = new AnnotationDefinition[0],
+                Params = new[]
+                {
+                    new ParameterDefinition
+                    {
+                        Name = "eventName",
+                        HasDefaultValue = false
+                    },
+                    new ParameterDefinition
+                    {
+                        Name = "eventArgs",
+                        HasDefaultValue = true,
+                        DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX
+                    }
+                }
+            };
+        }
+
+        protected override void CallOwnProcedure(int index, IValue[] arguments)
+        {
+            Debug.Assert(index == RAIZEEVENT_INDEX);
+
+            var eventName = arguments[0].AsString();
+            IValue[] eventArgs = null;
+            if (arguments.Length > 1)
+            {
+                if (arguments[1].AsObject() is IEnumerable<IValue> argsArray)
+                {
+                    eventArgs = argsArray.ToArray();
+                }
+            }
+
+            if (eventArgs == null)
+                eventArgs = new IValue[0];
+            
+            MachineInstance.Current.EventProcessor?.HandleEvent(this, eventName, eventArgs);
         }
 
         protected override int GetOwnVariableCount()
