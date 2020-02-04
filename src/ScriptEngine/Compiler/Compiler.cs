@@ -89,7 +89,7 @@ namespace ScriptEngine.Compiler
             _ctx = context;
             _lexer = lexer;
             NextToken();
-            BuildExpression(Token.EndOfText);
+            BuildExpressionUpTo(Token.EndOfText);
 
             _module.LoadAddress = _ctx.TopIndex();
             return _module;
@@ -372,7 +372,6 @@ namespace ScriptEngine.Compiler
                     {
                         throw CompilerException.IdentifierExpected();
                     }
-
                 }
             }
         }
@@ -380,20 +379,18 @@ namespace ScriptEngine.Compiler
         private void BuildModuleBody()
         {
             _isFunctionProcessed = false;
-            PushStructureToken(Token.EndOfText);
             var entry = _module.Code.Count;
-
             _ctx.PushScope(new SymbolScope());
+
             try
             {
-                BuildCodeBatch();
+                BuildCodeBatch(Token.EndOfText);
             }
             catch
             {
                 _ctx.PopScope();
                 throw;
             }
-            PopStructureToken();
 
             var localCtx = _ctx.PopScope();
             
@@ -459,20 +456,17 @@ namespace ScriptEngine.Compiler
 
             if (_lastExtractedLexem.Token == Token.Procedure)
             {
-                PushStructureToken(Token.EndProcedure);
                 _isFunctionProcessed = false;
-                NextToken();
             }
             else if (_lastExtractedLexem.Token == Token.Function)
             {
-                PushStructureToken(Token.EndFunction);
                 _isFunctionProcessed = true;
-                NextToken();
             }
             else
             {
                 throw CompilerException.UnexpectedOperation();
             }
+            NextToken();
 
             #region Method signature
             // сигнатура
@@ -527,8 +521,6 @@ namespace ScriptEngine.Compiler
                 _ctx.PopScope();
             }
             
-            PopStructureToken();
-
             var descriptor = new MethodDescriptor();
             descriptor.EntryPoint = entryPoint;
             descriptor.Signature = method;
@@ -680,7 +672,7 @@ namespace ScriptEngine.Compiler
 
             var codeStart = _module.Code.Count;
 
-            BuildCodeBatch();
+            BuildCodeBatch(_isFunctionProcessed? Token.EndFunction : Token.EndProcedure);
 
             if (_isFunctionProcessed)
             {
@@ -691,7 +683,6 @@ namespace ScriptEngine.Compiler
                 };
 
                 AddCommand(OperationCode.PushConst, GetConstNumber(ref undefConst));
-                
             }
 
             var codeEnd = _module.Code.Count;
@@ -719,16 +710,17 @@ namespace ScriptEngine.Compiler
             _inMethodScope = false;
         }
 
-        private void BuildCodeBatch()
+        private void BuildCodeBatch(params Token[] endTokens)
         {
-            var endTokens = _tokenStack.Peek();
+            PushStructureToken(endTokens);
 
             while (true)
             {
                 if (endTokens.Contains(_lastExtractedLexem.Token))
                 {
-                    return;
+                    break;
                 }
+
                 if (_lastExtractedLexem.Token == Token.Semicolon)
                 {
                     NextToken();
@@ -759,6 +751,7 @@ namespace ScriptEngine.Compiler
                 }
                 NextToken();
             }
+            PopStructureToken();
         }
 
         private void BuildComplexStructureStatement()
@@ -804,14 +797,11 @@ namespace ScriptEngine.Compiler
 
             var exitIndices = new List<int>();
             NextToken();
-            BuildExpression(Token.Then);
-            PushStructureToken(Token.Else, Token.ElseIf, Token.EndIf);
-
+            BuildExpressionUpTo(Token.Then);
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
             NextToken();
-            BuildCodeBatch();
-            PopStructureToken();
+            BuildCodeBatch(Token.Else, Token.ElseIf, Token.EndIf);
             exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
 
             bool hasAlternativeBranches = false;
@@ -822,13 +812,11 @@ namespace ScriptEngine.Compiler
                 AddLineNumber(_lastExtractedLexem.LineNumber);
 
                 NextToken();
-                BuildExpression(Token.Then);
-                PushStructureToken(Token.Else, Token.ElseIf, Token.EndIf);
-
+                BuildExpressionUpTo(Token.Then);
                 jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
+
                 NextToken();
-                BuildCodeBatch();
-                PopStructureToken();
+                BuildCodeBatch(Token.Else, Token.ElseIf, Token.EndIf);
                 exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
             }
 
@@ -839,21 +827,10 @@ namespace ScriptEngine.Compiler
                 AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
                 NextToken();
-                PushStructureToken(Token.EndIf);
-                BuildCodeBatch();
-                PopStructureToken();
+                BuildCodeBatch(Token.EndIf);
             }
 
-            int exitIndex;
-            if (_lastExtractedLexem.Token == Token.EndIf)
-            {
-                exitIndex = AddLineNumber(_lastExtractedLexem.LineNumber);
-            }
-            else
-            {
-                // Вообще, такого быть не должно...
-                exitIndex = AddCommand(OperationCode.Nop);
-            }
+            int exitIndex = AddLineNumber(_lastExtractedLexem.LineNumber);
 
             if (!hasAlternativeBranches)
             {
@@ -900,13 +877,12 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(Token.In);
 
             NextToken();
-            BuildExpression(Token.Loop);
+            BuildExpressionUpTo(Token.Loop);
             AddCommand(OperationCode.PushIterator);
             var loopBegin = AddLineNumber(_lastExtractedLexem.LineNumber);
             AddCommand(OperationCode.IteratorNext);
             var condition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             BuildLoadVariable(identifier);
-            PushStructureToken(Token.EndLoop);
 
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = loopBegin;
@@ -914,9 +890,8 @@ namespace ScriptEngine.Compiler
 
             NextToken();
             bool savedTryFlag = SetTryBlockFlag(false);
-            BuildCodeBatch();
+            BuildCodeBatch(Token.EndLoop);
             SetTryBlockFlag(savedTryFlag);
-            PopStructureToken();
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
@@ -940,45 +915,33 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(Token.Equal);
             }
             NextToken();
-            BuildExpression(Token.To);
+            BuildExpressionUpTo(Token.To);
             BuildLoadVariable(counter);
             NextToken();
-            BuildExpression(Token.Loop);
+            BuildExpressionUpTo(Token.Loop);
             AddCommand(OperationCode.MakeRawValue);
             AddCommand(OperationCode.PushTmp);
-            var lastIdx = _module.Code.Count;
-            int indexLoopBegin = DUMMY_ADDRESS;
 
-            // TODO: костыль
-            if (_lastExtractedLexem.Token == Token.Loop)
-            {
-                AddCommand(OperationCode.Jmp, lastIdx + 5);
-                indexLoopBegin = AddLineNumber(_lastExtractedLexem.LineNumber);
-            }
-            else
-            {
-                AddCommand(OperationCode.Jmp, lastIdx + 4);
-            }
+            var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
+            var indexLoopBegin = AddLineNumber(_lastExtractedLexem.LineNumber);
 
             // increment
-            var indexLoopBeginNew = BuildPushVariable(counter);
-            if (indexLoopBegin == DUMMY_ADDRESS)
-                indexLoopBegin = indexLoopBeginNew;
-
+            BuildPushVariable(counter);
             AddCommand(OperationCode.Inc);
             BuildLoadVariable(counter);
 
-            BuildPushVariable(counter);
+            var counterIndex = BuildPushVariable(counter);
+            CorrectCommandArgument(jmpIndex, counterIndex);
             var conditionIndex = AddCommand(OperationCode.JmpCounter, DUMMY_ADDRESS);
+
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = indexLoopBegin;
             _nestedLoops.Push(loopRecord);
+
             NextToken();
-            PushStructureToken(Token.EndLoop);
             bool savedTryFlag = SetTryBlockFlag(false);
-            BuildCodeBatch();
+            BuildCodeBatch(Token.EndLoop);
             SetTryBlockFlag(savedTryFlag);
-            PopStructureToken();
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
@@ -989,7 +952,7 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.Jmp, indexLoopBegin);
 
             var indexLoopEnd = AddCommand(OperationCode.PopTmp, 1);
-            CorrectCommandArgument( conditionIndex, indexLoopEnd);
+            CorrectCommandArgument(conditionIndex, indexLoopEnd);
             CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
             NextToken();
         }
@@ -1003,15 +966,13 @@ namespace ScriptEngine.Compiler
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
-            BuildExpression(Token.Loop);
-            PushStructureToken(Token.EndLoop);
+            BuildExpressionUpTo(Token.Loop);
 
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             NextToken();
             bool savedTryFlag = SetTryBlockFlag(false);
-            BuildCodeBatch();
+            BuildCodeBatch(Token.EndLoop);
             SetTryBlockFlag(savedTryFlag);
-            PopStructureToken();
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
@@ -1097,10 +1058,8 @@ namespace ScriptEngine.Compiler
 
             var beginTryIndex = AddCommand(OperationCode.BeginTry, DUMMY_ADDRESS);
             bool savedTryFlag = SetTryBlockFlag(true);
-            PushStructureToken(Token.Exception);
             NextToken();
-            BuildCodeBatch();
-            PopStructureToken();
+            BuildCodeBatch(Token.Exception);
             SetTryBlockFlag(savedTryFlag);
             var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
 
@@ -1110,10 +1069,8 @@ namespace ScriptEngine.Compiler
 
             CorrectCommandArgument(beginTryIndex, beginHandler);
 
-            PushStructureToken(Token.EndTry);
             NextToken();
-            BuildCodeBatch();
-            PopStructureToken();
+            BuildCodeBatch(Token.EndTry);
 
             var endIndex = AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             AddCommand(OperationCode.EndTry);
@@ -1259,6 +1216,19 @@ namespace ScriptEngine.Compiler
             return lex.Token == Token.Dot || lex.Token == Token.OpenBracket;
         }
 
+        private void BuildExpressionUpTo(Token stopToken)
+        {
+            BuildPrimaryNode();
+            BuildOperation(0);
+            if (_lastExtractedLexem.Token == stopToken)
+                return;
+
+            if (_lastExtractedLexem.Token == Token.EndOfText)
+                throw CompilerException.UnexpectedEndOfText();
+            else
+                throw CompilerException.ExpressionSyntax();
+        }
+
         private void BuildExpression(Token stopToken)
         {
             BuildPrimaryNode();
@@ -1267,10 +1237,10 @@ namespace ScriptEngine.Compiler
                 return;
 
             var endTokens = _tokenStack.Peek();
-
             if (endTokens.Contains(_lastExtractedLexem.Token))
                 return;
-            else if (_lastExtractedLexem.Token == Token.EndOfText)
+
+            if (_lastExtractedLexem.Token == Token.EndOfText)
                 throw CompilerException.UnexpectedEndOfText();
             else
                 throw CompilerException.ExpressionSyntax();
@@ -1567,7 +1537,7 @@ namespace ScriptEngine.Compiler
                     if (_lastExtractedLexem.Token == Token.CloseBracket)
                         throw CompilerException.ExpressionExpected();
 
-                    BuildExpression(Token.CloseBracket);
+                    BuildExpressionUpTo(Token.CloseBracket);
                     System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.CloseBracket);
                     NextToken();
 
@@ -1608,23 +1578,19 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.UnexpectedOperation();
 
             NextToken();
-            BuildExpression(Token.Comma);
-            if (_lastExtractedLexem.Token != Token.Comma)
-                throw CompilerException.UnexpectedOperation();
+            BuildExpressionUpTo(Token.Comma);
             
             AddCommand(OperationCode.MakeBool);
             var addrOfCondition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
             NextToken();
-            BuildExpression(Token.Comma); // построили true-part
-            if (_lastExtractedLexem.Token != Token.Comma)
-                throw CompilerException.UnexpectedOperation();
+            BuildExpressionUpTo(Token.Comma); // построили true-part
 
             var endOfTruePart = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS); // уход в конец оператора
             
             CorrectCommandArgument(addrOfCondition, _module.Code.Count); // отметили, куда переходить по false
             NextToken();
-            BuildExpression(Token.ClosePar); // построили false-part
+            BuildExpressionUpTo(Token.ClosePar); // построили false-part
             
             CorrectCommandArgument(endOfTruePart, _module.Code.Count);
             
@@ -1635,9 +1601,9 @@ namespace ScriptEngine.Compiler
         {
             System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
 
-            PushStructureToken(Token.ClosePar);
             List<bool> arguments = new List<bool>();
 
+            PushStructureToken(Token.ClosePar);
             try
             {
                 NextToken(); // съели открывающую скобку
