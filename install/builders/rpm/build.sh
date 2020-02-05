@@ -6,7 +6,7 @@ DATAROOT=$(pwd)/${ARTIFACTS_ROOT}
 VERSION=$(cat ${DATAROOT}/VERSION | grep -oE '([[:digit:]]+\.){2}[[:digit:]]+')
 BLDTMP=/tmp/rpm-src
 TMPDIR=${BLDTMP}/OneScript-$VERSION
-DISTPATH=${RPMSOURCE}
+DISTPATH=${DATAROOT}
 mkdir -p $TMPDIR
 
 echo "Check files changed"
