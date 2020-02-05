@@ -156,7 +156,6 @@ pipeline {
                     agent { 
                         dockerfile {
                             dir 'install/builders/deb'
-                            // image 'oscript/onescript-builder:deb'
                             label 'master' 
                         }
                     }
@@ -173,7 +172,6 @@ pipeline {
                     agent { 
                         dockerfile {
                             dir 'install/builders/rpm'
-                            // image 'oscript/onescript-builder:rpm'
                             label 'master' 
                         }
                     }
