@@ -162,25 +162,31 @@ namespace ScriptEngine.Machine.Contexts
         {
             Debug.Assert(index == RAIZEEVENT_INDEX);
 
-            return new MethodInfo
-            {
-                Name = RAISEEVENT_RU,
-                Alias = RAISEEVENT_EN,
-                IsFunction = false,
-                IsExport = false,
-                Annotations = new AnnotationDefinition[0],
-                Params = new[]
-                {
-                    new ParameterDefinition
+            return GetOwnMethodsDefinition()[RAIZEEVENT_INDEX];
+        }
+
+        public static MethodInfo[] GetOwnMethodsDefinition()
+        {
+            return new []{
+                new MethodInfo {
+                    Name = RAISEEVENT_RU,
+                    Alias = RAISEEVENT_EN,
+                    IsFunction = false,
+                    IsExport = false,
+                    Annotations = new AnnotationDefinition[0],
+                    Params = new[]
                     {
-                        Name = "eventName",
-                        HasDefaultValue = false
-                    },
-                    new ParameterDefinition
-                    {
-                        Name = "eventArgs",
-                        HasDefaultValue = true,
-                        DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX
+                        new ParameterDefinition
+                        {
+                            Name = "eventName",
+                            HasDefaultValue = false
+                        },
+                        new ParameterDefinition
+                        {
+                            Name = "eventArgs",
+                            HasDefaultValue = true,
+                            DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX
+                        }
                     }
                 }
             };

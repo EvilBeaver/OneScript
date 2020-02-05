@@ -142,6 +142,15 @@ namespace ScriptEngine.Machine.Contexts
             return returnValue;
         }
 
+        public Action<IValue[]> GetMethodExecutor(string methodName)
+        {
+            var id = GetScriptMethod(methodName);
+            if (id == -1)
+                throw RuntimeException.MethodNotFoundException(methodName, AsString());
+
+            return (args) => CallScriptMethod(id, args);
+        }
+        
         #region Own Members Call
 
         protected virtual int FindOwnProperty(string name)
