@@ -1124,7 +1124,8 @@ namespace ScriptEngine.Compiler
 
         private void BuildEventHandlerOperation(Token token)
         {
-            BuildContinuationInternal(ContinuationBuildMode.EventHandler, out var eventName);
+            string eventName = null;
+            BuildContinuationInternal(ContinuationBuildMode.EventHandler, s => eventName = s);
             if (eventName == null)
             {
                 throw CompilerException.IdentifierExpected();
@@ -1137,7 +1138,8 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(Token.Comma);
             }
             NextToken();
-            BuildContinuationInternal(ContinuationBuildMode.EventHandler, out var handlerName);
+            string handlerName = null;
+            BuildContinuationInternal(ContinuationBuildMode.EventHandler, s => handlerName = s);
             if (handlerName == null)
             {
                 throw CompilerException.IdentifierExpected();
@@ -1212,39 +1214,49 @@ namespace ScriptEngine.Compiler
 
         private void BuildAccessChainLeftHand()
         {
-            string ident;
-            BuildContinuationLeftHand(out ident);
-
-            if (ident == null)
+            BuildContinuationLeftHand(ident =>
             {
-                // это присваивание
-                if (_lastExtractedLexem.Token != Token.Equal)
-                    throw CompilerException.UnexpectedOperation();
-
-                NextToken(); // перешли к выражению
-                BuildExpression(Token.Semicolon);
-                AddCommand(OperationCode.AssignRef);
-            }
-            else
-            {
-                // это вызов
-                System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
-                PushMethodArgumentsBeforeCall();
-                var cDef = new ConstDefinition();
-                cDef.Type = DataType.String;
-                cDef.Presentation = ident;
-                int lastIdentifierConst = GetConstNumber(ref cDef);
-
-                if (IsContinuationToken(ref _lastExtractedLexem))
+                if (ident == null)
                 {
-                    AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
-                    BuildAccessChainLeftHand();
+                    // это присваивание
+                    BuildAssignment();
                 }
                 else
                 {
-                    AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
+                    // это вызов
+                    BuildLeftHandCall(ident);
                 }
+            });
+        }
+
+        private void BuildLeftHandCall(string ident)
+        {
+            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
+            PushMethodArgumentsBeforeCall();
+            var cDef = new ConstDefinition();
+            cDef.Type = DataType.String;
+            cDef.Presentation = ident;
+            int lastIdentifierConst = GetConstNumber(ref cDef);
+
+            if (IsContinuationToken(ref _lastExtractedLexem))
+            {
+                AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
+                BuildAccessChainLeftHand();
             }
+            else
+            {
+                AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
+            }
+        }
+
+        private void BuildAssignment()
+        {
+            if (_lastExtractedLexem.Token != Token.Equal)
+                throw CompilerException.UnexpectedOperation();
+
+            NextToken(); // перешли к выражению
+            BuildExpression(Token.Semicolon);
+            AddCommand(OperationCode.AssignRef);
         }
 
         private bool IsContinuationToken(ref Lexem lex)
@@ -1522,18 +1534,16 @@ namespace ScriptEngine.Compiler
 
         private void BuildContinuationRightHand()
         {
-            string dummy;
-            BuildContinuationInternal(ContinuationBuildMode.RightHand, out dummy);
+            BuildContinuationInternal(ContinuationBuildMode.RightHand, null);
         }
 
-        private void BuildContinuationLeftHand(out string lastIdentifier)
+        private void BuildContinuationLeftHand(Action<string> lastIdhandler)
         {
-            BuildContinuationInternal(ContinuationBuildMode.LeftHand, out lastIdentifier);
+            BuildContinuationInternal(ContinuationBuildMode.LeftHand, lastIdhandler);
         }
 
-        private void BuildContinuationInternal(ContinuationBuildMode interruptMode, out string lastIdentifier)
+        private void BuildContinuationInternal(ContinuationBuildMode interruptMode, Action<string> finalizer)
         {
-            lastIdentifier = null;
             while (true)
             {
                 if (_lastExtractedLexem.Token == Token.Dot)
@@ -1548,7 +1558,7 @@ namespace ScriptEngine.Compiler
                     {
                         if (interruptMode == ContinuationBuildMode.LeftHand)
                         {
-                            lastIdentifier = identifier;
+                            finalizer(identifier);
                             return;
                         }
                         else
@@ -1566,7 +1576,7 @@ namespace ScriptEngine.Compiler
                     {
                         if (interruptMode == ContinuationBuildMode.EventHandler)
                         {
-                            lastIdentifier = identifier;
+                            finalizer(identifier);
                             return;
                         }
                         else
