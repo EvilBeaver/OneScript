@@ -154,8 +154,9 @@ pipeline {
 
                 stage('DEB distribution') {
                     agent { 
-                        docker {
-                            image 'oscript/onescript-builder:deb'
+                        dockerfile {
+                            dir 'install/builders/rpm'
+                            // image 'oscript/onescript-builder:deb'
                             label 'master' 
                         }
                     }
