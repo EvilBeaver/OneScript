@@ -9,8 +9,6 @@ TMPDIR=${BLDTMP}/OneScript-$VERSION
 DISTPATH=${DATAROOT}
 mkdir -p $TMPDIR
 
-echo "Check files changed"
-
 echo "Copying sources to tmpdir"
 cp -r -v $DISTPATH/bin $TMPDIR
 cp -r -v $DISTPATH/lib $TMPDIR
