@@ -1510,10 +1510,10 @@ namespace ScriptEngine.Machine
 
         private void AddHandler(int arg)
         {
-            var handlerMethod = _operationStack.Pop().AsString();
-            var handlerTarget = _operationStack.Pop().AsObject();
-            var eventName = _operationStack.Pop().AsString();
             var eventSource = _operationStack.Pop().AsObject();
+            var eventName = _operationStack.Pop().AsString();
+            var handlerTarget = _operationStack.Pop().AsObject();
+            var handlerMethod = _module.Constants[arg].AsString();
 
             EventProcessor?.AddHandler(eventSource, eventName, handlerTarget, handlerMethod);
             
@@ -1522,10 +1522,10 @@ namespace ScriptEngine.Machine
         
         private void RemoveHandler(int arg)
         {
-            var handlerMethod = _operationStack.Pop().AsString();
-            var handlerTarget = _operationStack.Pop().AsObject();
-            var eventName = _operationStack.Pop().AsString();
             var eventSource = _operationStack.Pop().AsObject();
+            var eventName = _operationStack.Pop().AsString();
+            var handlerTarget = _operationStack.Pop().AsObject();
+            var handlerMethod = _module.Constants[arg].AsString();
 
             EventProcessor?.RemoveHandler(eventSource, eventName, handlerTarget, handlerMethod);
             
