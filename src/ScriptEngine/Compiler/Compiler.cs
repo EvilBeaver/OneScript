@@ -66,13 +66,6 @@ namespace ScriptEngine.Compiler
             public List<int> breakStatements;
         }
 
-        private enum ContinuationBuildMode
-        {
-            RightHand,
-            LeftHand,
-            EventHandler
-        }
-
         public CompilerDirectiveHandler DirectiveHandler { get; set; }
     
         public CodeGenerationFlags ProduceExtraCode { get; set; }
@@ -1124,29 +1117,34 @@ namespace ScriptEngine.Compiler
 
         private void BuildEventHandlerOperation(Token token)
         {
-            string eventName = null;
-            BuildContinuationInternal(ContinuationBuildMode.EventHandler, s => eventName = s);
-            if (eventName == null)
-            {
-                throw CompilerException.IdentifierExpected();
-            }
-            
-            BuildPushConstant();
-            NextToken();
-            if (_lastExtractedLexem.Token != Token.Comma)
-            {
-                throw CompilerException.TokenExpected(Token.Comma);
-            }
-            NextToken();
-            string handlerName = null;
-            BuildContinuationInternal(ContinuationBuildMode.EventHandler, s => handlerName = s);
-            if (handlerName == null)
-            {
-                throw CompilerException.IdentifierExpected();
-            }
-            BuildPushConstant();
-            var opCode = token == Token.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler;
-            AddCommand(opCode, 0);
+            var identifier = BuildContinuationLeftHand();
+            // BuildContinuationInternal(ContinuationBuildMode.EventHandler, eventName =>
+            // {
+            //     if (eventName == null)
+            //     {
+            //         throw CompilerException.IdentifierExpected();
+            //     }
+            //     BuildPushConstant();
+            // });
+            //
+            // NextToken();
+            // if (_lastExtractedLexem.Token != Token.Comma)
+            // {
+            //     throw CompilerException.TokenExpected(Token.Comma);
+            // }
+            // NextToken();
+            //
+            // BuildContinuationInternal(ContinuationBuildMode.EventHandler, handlerName =>
+            // {
+            //     if (handlerName == null)
+            //     {
+            //         throw CompilerException.IdentifierExpected();
+            //     }
+            //     BuildPushConstant();
+            // });
+            //
+            // var opCode = token == Token.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler;
+            // AddCommand(opCode, 0);
         }
         
         private void CorrectCommandArgument(int index, int newArgument)
@@ -1191,7 +1189,12 @@ namespace ScriptEngine.Compiler
                 case Token.OpenBracket:
                     // access chain
                     BuildPushVariable(identifier);
-                    BuildAccessChainLeftHand();
+                    var expectAssignment = BuildContinuationLeftHand();
+                    if (expectAssignment)
+                    {
+                        BuildAssignment();
+                    }
+                    
                     break;
                 default:
                     throw CompilerException.UnexpectedOperation();
@@ -1203,49 +1206,12 @@ namespace ScriptEngine.Compiler
             var args = PushMethodArgumentsBeforeCall();
             if(IsContinuationToken(ref _lastExtractedLexem))
             {
-                BuildMethodCall(identifier, args, true);
-                BuildAccessChainLeftHand();
+                BuildLocalMethodCall(identifier, args, true);
+                BuildContinuationLeftHand();
             }
             else
             {
-                BuildMethodCall(identifier, args, false);
-            }
-        }
-
-        private void BuildAccessChainLeftHand()
-        {
-            BuildContinuationLeftHand(ident =>
-            {
-                if (ident == null)
-                {
-                    // это присваивание
-                    BuildAssignment();
-                }
-                else
-                {
-                    // это вызов
-                    BuildLeftHandCall(ident);
-                }
-            });
-        }
-
-        private void BuildLeftHandCall(string ident)
-        {
-            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
-            PushMethodArgumentsBeforeCall();
-            var cDef = new ConstDefinition();
-            cDef.Type = DataType.String;
-            cDef.Presentation = ident;
-            int lastIdentifierConst = GetConstNumber(ref cDef);
-
-            if (IsContinuationToken(ref _lastExtractedLexem))
-            {
-                AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
-                BuildAccessChainLeftHand();
-            }
-            else
-            {
-                AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
+                BuildLocalMethodCall(identifier, args, false);
             }
         }
 
@@ -1534,16 +1500,117 @@ namespace ScriptEngine.Compiler
 
         private void BuildContinuationRightHand()
         {
-            BuildContinuationInternal(ContinuationBuildMode.RightHand, null);
+            var memberName = BuildIndexOrGetMemberIdentifier();
+            if (memberName != null)
+            {
+                NextToken();
+                if (_lastExtractedLexem.Token == Token.OpenPar)
+                {
+                    ResolveFunction(memberName);
+                }
+                else
+                {
+                    ResolveProperty(memberName);
+                }
+            }
+
+            if(IsContinuationToken(ref _lastExtractedLexem))
+                BuildContinuationRightHand();
         }
 
-        private void BuildContinuationLeftHand(Action<string> lastIdhandler)
+        private void ResolveFunction(string memberName)
         {
-            BuildContinuationInternal(ContinuationBuildMode.LeftHand, lastIdhandler);
+            PushMethodArgumentsBeforeCall();
+
+            var cDef = new ConstDefinition
+            {
+                Type = DataType.String,
+                Presentation = memberName
+            };
+
+            AddCommand(OperationCode.ResolveMethodFunc, GetConstNumber(ref cDef));
         }
 
-        private void BuildContinuationInternal(ContinuationBuildMode interruptMode, Action<string> finalizer)
+        private string BuildIndexOrGetMemberIdentifier()
         {
+            if (_lastExtractedLexem.Token == Token.Dot)
+            {
+                NextToken();
+                if (!IsValidPropertyName(ref _lastExtractedLexem))
+                    throw CompilerException.IdentifierExpected();
+
+                return _lastExtractedLexem.Content;
+            }
+            
+            if (_lastExtractedLexem.Token == Token.OpenBracket)
+            {
+                BuildIndexedAccess();
+            }
+
+            return null;
+        }
+
+        private bool BuildContinuationLeftHand()
+        {
+            var expectAssignment = false;
+            while (true)
+            {
+                var memberName = BuildIndexOrGetMemberIdentifier();
+                if (memberName != null)
+                {
+                    NextToken();
+                    if (_lastExtractedLexem.Token == Token.OpenPar)
+                    {
+                        PushMethodArgumentsBeforeCall();
+
+                        var cDef = new ConstDefinition {Type = DataType.String, Presentation = memberName};
+
+                        if (IsContinuationToken(ref _lastExtractedLexem))
+                        {
+                            AddCommand(OperationCode.ResolveMethodFunc, GetConstNumber(ref cDef));
+                            continue; // чтобы не проверять 2 раза условие IsContinuationToken внизу
+                        }
+                        else
+                        {
+                            AddCommand(OperationCode.ResolveMethodProc, GetConstNumber(ref cDef));
+                            expectAssignment = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        ResolveProperty(memberName);
+                        expectAssignment = true;
+                    }
+                }
+                else
+                {
+                    expectAssignment = true;
+                }
+
+                if (!IsContinuationToken(ref _lastExtractedLexem))
+                    break;
+            }
+
+            return expectAssignment;
+        }
+
+        private void BuildIndexedAccess()
+        {
+            NextToken();
+            if (_lastExtractedLexem.Token == Token.CloseBracket)
+                throw CompilerException.ExpressionExpected();
+
+            BuildExpressionUpTo(Token.CloseBracket);
+            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.CloseBracket);
+            NextToken();
+
+            AddCommand(OperationCode.PushIndexed);
+        }
+        
+        private string FindLastIdentifierOnChain()
+        {
+            string lastIdentifier = null;
             while (true)
             {
                 if (_lastExtractedLexem.Token == Token.Dot)
@@ -1552,37 +1619,32 @@ namespace ScriptEngine.Compiler
                     if (!IsValidPropertyName(ref _lastExtractedLexem))
                         throw CompilerException.IdentifierExpected();
 
-                    string identifier = _lastExtractedLexem.Content;
+                    lastIdentifier = _lastExtractedLexem.Content;
                     NextToken();
                     if (_lastExtractedLexem.Token == Token.OpenPar)
                     {
-                        if (interruptMode == ContinuationBuildMode.LeftHand)
+                        PushMethodArgumentsBeforeCall();
+                        
+                        var cDef = new ConstDefinition();
+                        cDef.Type = DataType.String;
+                        cDef.Presentation = lastIdentifier;
+                        int lastIdentifierConst = GetConstNumber(ref cDef);
+                        
+                        NextToken();
+                        if (IsContinuationToken(ref _lastExtractedLexem))
                         {
-                            finalizer(identifier);
-                            return;
+                            AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
                         }
                         else
                         {
-                            var args = BuildArgumentList();
-                            var cDef = new ConstDefinition();
-                            cDef.Type = DataType.String;
-                            cDef.Presentation = identifier;
-                            int lastIdentifierConst = GetConstNumber(ref cDef);
-                            AddCommand(OperationCode.ArgNum, args.Length);
-                            AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
+                            AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
+                            lastIdentifier = null;
+                            break;
                         }
                     }
                     else
                     {
-                        if (interruptMode == ContinuationBuildMode.EventHandler)
-                        {
-                            finalizer(identifier);
-                            return;
-                        }
-                        else
-                        {
-                            ResolveProperty(identifier);
-                        }
+                       ResolveProperty(lastIdentifier);
                     }
                 }
                 else if (_lastExtractedLexem.Token == Token.OpenBracket)
@@ -1602,6 +1664,8 @@ namespace ScriptEngine.Compiler
                     break;
                 }
             }
+
+            return lastIdentifier;
         }
 
         private bool IsValidPropertyName(ref Lexem lex)
@@ -1735,7 +1799,7 @@ namespace ScriptEngine.Compiler
         {
             bool[] args = PushMethodArgumentsBeforeCall();
             AddLineNumber(callLineNumber, CodeGenerationFlags.CodeStatistics);
-            BuildMethodCall(identifier, args, true);
+            BuildLocalMethodCall(identifier, args, true);
             AddLineNumber(callLineNumber, CodeGenerationFlags.DebugCode);
         }
 
@@ -1746,7 +1810,7 @@ namespace ScriptEngine.Compiler
             return argsPassed;
         }
 
-        private void BuildMethodCall(string identifier, bool[] argsPassed, bool asFunction)
+        private void BuildLocalMethodCall(string identifier, bool[] argsPassed, bool asFunction)
         {
             var hasMethod = _ctx.TryGetMethod(identifier, out var methBinding);
             if (hasMethod)
