@@ -55,7 +55,7 @@ namespace ScriptEngine.Machine.Contexts
 
             if (methId > -1)
             {
-                var procInfo = GetMethodInfo(methId);
+                var procInfo = GetMethodInfo(GetOwnMethodCount()+methId);
 
                 int procParamsCount = procInfo.Params.Count();
 
@@ -69,7 +69,7 @@ namespace ScriptEngine.Machine.Contexts
                 else if (procInfo.Params.Skip(constructorParamsCount).Any(param => !param.HasDefaultValue))
                     throw RuntimeException.TooFewArgumentsPassed();
 
-                CallAsProcedure(methId, ConstructorParams);
+                CallScriptMethod(methId, ConstructorParams);
             }
             else
             {
