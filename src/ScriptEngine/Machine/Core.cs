@@ -62,6 +62,7 @@ namespace ScriptEngine.Machine
         Execute,
         AddHandler,
         RemoveHandler,
+        ExitTry,
 
         // built-in functions
         Eval,

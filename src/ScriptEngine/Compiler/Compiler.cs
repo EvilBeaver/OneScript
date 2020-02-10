@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
@@ -35,7 +36,7 @@ namespace ScriptEngine.Compiler
         private bool _isMethodsDefined = false;
         private bool _isStatementsDefined = false;
         private bool _isFunctionProcessed = false;
-        private bool _isInTryBlock = false;
+        private int _tryBlockNesting = 0;
 
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
@@ -218,7 +219,7 @@ namespace ScriptEngine.Compiler
                     var scope = _ctx.GetScope(methN.ContextIndex);
 
                     var methInfo = scope.GetMethod(methN.CodeIndex);
-                    System.Diagnostics.Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
+                    Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
                     if (item.asFunction && !methInfo.IsFunction)
                     {
                         var exc = CompilerException.UseProcAsFunction();
@@ -869,7 +870,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildForEachStatement()
         {
-            Assert(_lastExtractedLexem.Token == Token.Each);
+            Debug.Assert(_lastExtractedLexem.Token == Token.Each);
             NextToken();
 
             if (!IsUserSymbol(ref _lastExtractedLexem))
@@ -893,10 +894,8 @@ namespace ScriptEngine.Compiler
             _nestedLoops.Push(loopRecord);
 
             NextToken();
-            bool savedTryFlag = SetTryBlockFlag(false);
             BuildCodeBatch(Token.EndLoop);
-            SetTryBlockFlag(savedTryFlag);
-
+            
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
                 AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
@@ -943,9 +942,7 @@ namespace ScriptEngine.Compiler
             _nestedLoops.Push(loopRecord);
 
             NextToken();
-            bool savedTryFlag = SetTryBlockFlag(false);
             BuildCodeBatch(Token.EndLoop);
-            SetTryBlockFlag(savedTryFlag);
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
@@ -974,9 +971,7 @@ namespace ScriptEngine.Compiler
 
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             NextToken();
-            bool savedTryFlag = SetTryBlockFlag(false);
             BuildCodeBatch(Token.EndLoop);
-            SetTryBlockFlag(savedTryFlag);
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
@@ -1001,13 +996,29 @@ namespace ScriptEngine.Compiler
             AddLineNumber(_lexer.CurrentLine);
 
             var loopInfo = _nestedLoops.Peek();
-            if(_isInTryBlock)
-                AddCommand(OperationCode.EndTry);
+            ExitTryBlocks();
             var idx = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
             loopInfo.breakStatements.Add(idx);
             NextToken();
         }
 
+        private void ExitTryBlocks()
+        {
+            if (_tryBlockNesting > 0)
+                AddCommand(OperationCode.ExitTry, _tryBlockNesting);
+        }
+
+        public void PushTryNesting()
+        {
+            ++_tryBlockNesting;
+        }
+        
+        public void PopTryNesting()
+        {
+            --_tryBlockNesting;
+            Debug.Assert(_tryBlockNesting >= 0);
+        }
+        
         private void BuildContinueStatement()
         {
             if (_nestedLoops.Count == 0)
@@ -1018,8 +1029,7 @@ namespace ScriptEngine.Compiler
             AddLineNumber(_lexer.CurrentLine);
 
             var loopInfo = _nestedLoops.Peek();
-            if(_isInTryBlock)
-                AddCommand(OperationCode.EndTry);
+            ExitTryBlocks();
             AddCommand(OperationCode.Jmp, loopInfo.startPoint);
             NextToken();
         }
@@ -1061,13 +1071,13 @@ namespace ScriptEngine.Compiler
             AddLineNumber(_lexer.CurrentLine, CodeGenerationFlags.CodeStatistics);
 
             var beginTryIndex = AddCommand(OperationCode.BeginTry, DUMMY_ADDRESS);
-            bool savedTryFlag = SetTryBlockFlag(true);
             NextToken();
+            PushTryNesting();
             BuildCodeBatch(Token.Exception);
-            SetTryBlockFlag(savedTryFlag);
+            PopTryNesting();
             var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
 
-            Assert(_lastExtractedLexem.Token == Token.Exception);
+            Debug.Assert(_lastExtractedLexem.Token == Token.Exception);
             
             var beginHandler = AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
@@ -1167,13 +1177,6 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private bool SetTryBlockFlag(bool isInTry)
-        {
-            bool current = _isInTryBlock;
-            _isInTryBlock = isInTry;
-            return current;
-        }
-
         private void BuildSimpleStatement()
         {
             var identifier = _lastExtractedLexem.Content;
@@ -1233,7 +1236,7 @@ namespace ScriptEngine.Compiler
             else
             {
                 // это вызов
-                System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
+                Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
                 PushMethodArgumentsBeforeCall();
                 var cDef = new ConstDefinition();
                 cDef.Type = DataType.String;
@@ -1585,7 +1588,7 @@ namespace ScriptEngine.Compiler
                         throw CompilerException.ExpressionExpected();
 
                     BuildExpressionUpTo(Token.CloseBracket);
-                    System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.CloseBracket);
+                    Debug.Assert(_lastExtractedLexem.Token == Token.CloseBracket);
                     NextToken();
 
                     AddCommand(OperationCode.PushIndexed);
@@ -1619,7 +1622,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildQuestionOperator()
         {
-            Assert(_lastExtractedLexem.Token == Token.Question);
+            Debug.Assert(_lastExtractedLexem.Token == Token.Question);
             NextToken();
             if (_lastExtractedLexem.Token != Token.OpenPar)
                 throw CompilerException.UnexpectedOperation();
@@ -1646,7 +1649,7 @@ namespace ScriptEngine.Compiler
 
         private bool[] BuildArgumentList()
         {
-            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
+            Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
 
             List<bool> arguments = new List<bool>();
 
@@ -2042,12 +2045,6 @@ namespace ScriptEngine.Compiler
 
         #endregion
 
-        [System.Diagnostics.Conditional("DEBUG")]
-        private static void Assert(bool condition)
-        {
-            System.Diagnostics.Debug.Assert(condition);
-        }
-
         static Compiler()
         {
             _tokenToOpCode = new Dictionary<Token, OperationCode>();
@@ -2055,7 +2052,7 @@ namespace ScriptEngine.Compiler
             var tokens  = LanguageDef.BuiltInFunctions();
             var opCodes = BuiltinFunctions.GetOperationCodes();
 
-            Assert(tokens.Length == opCodes.Length);
+            Debug.Assert(tokens.Length == opCodes.Length);
             for (int i = 0; i < tokens.Length; i++)
             {
                 _tokenToOpCode.Add(tokens[i], opCodes[i]);

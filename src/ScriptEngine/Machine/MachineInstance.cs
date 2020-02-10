@@ -605,6 +605,7 @@ namespace ScriptEngine.Machine
                 Execute,
                 AddHandler,
                 RemoveHandler,
+                ExitTry,
 
                 //built-ins
                 Eval,
@@ -1532,6 +1533,14 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void ExitTry(int arg)
+        {
+            while (arg-- > 0)
+                _exceptionsStack.Pop();
+            
+            NextInstruction();
+        }
+        
         #endregion
 
         #region Built-in functions
