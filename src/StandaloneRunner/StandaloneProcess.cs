@@ -6,17 +6,20 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using OneScript.StandardLibrary;
 using oscript;
+using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace StandaloneRunner
 {
@@ -75,11 +78,28 @@ namespace StandaloneRunner
                 var binaryIndexer = new CompiledCodeIndexer();
                 module.ModuleInfo.CodeIndexer = binaryIndexer;
 
+                var globalEnv = engine.EngineInstance.Environment;
+                var loadedModules = new List<ScriptDrivenObject>();
                 for (int i = 1; i < appDump.Scripts.Length; i++)
                 {
+                    // здесь важно обратиться к struct, а не к выделенной переменной
                     appDump.Scripts[i].Image.ModuleInfo.CodeIndexer = binaryIndexer;
-                    engine.LoadUserScript(appDump.Scripts[i]);
+                    
+                    var userAddedScript = appDump.Scripts[i];
+                    if (userAddedScript.Type == UserAddedScriptType.Class)
+                    {
+                        engine.LoadUserScript(userAddedScript);
+                    }
+                    else
+                    {
+                        var loaded = engine.EngineInstance.LoadModuleImage(userAddedScript.Image);
+                        var instance = engine.EngineInstance.CreateUninitializedSDO(loaded);
+                        globalEnv.InjectGlobalProperty(instance, userAddedScript.Symbol, true);
+                        loadedModules.Add(instance);
+                    }
                 }
+                
+                loadedModules.ForEach(x => engine.EngineInstance.InitializeSDO(x));
 
                 var process = engine.CreateProcess(this, module, src);
 

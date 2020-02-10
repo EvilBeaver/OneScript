@@ -101,6 +101,8 @@ namespace OneScript.Language
             AddToken(Token.And, "и", "and");
             AddToken(Token.Or, "или", "or");
             AddToken(Token.Not, "не", "not");
+            AddToken(Token.AddHandler, "ДобавитьОбработчик", "AddHandler");
+            AddToken(Token.RemoveHandler, "УдалитьОбработчик", "RemoveHandler");
 
             #endregion
 

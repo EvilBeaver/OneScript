@@ -76,16 +76,12 @@ namespace OneScript.Language
 
             switch (c)
             {
-                case 'ё':
-                    return 142;
                 case '%':
                     return 0;
-                case '=':
-                    return 20;
-                case '?':
-                    return 21;
                 case 'Ё':
-                    return 77;
+                    return 79;
+                case 'ё':
+                    return 144;
             }
 
             return -1;
