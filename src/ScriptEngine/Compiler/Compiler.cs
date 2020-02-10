@@ -1145,9 +1145,11 @@ namespace ScriptEngine.Compiler
 
             _module.Code[_module.Code.Count - 1] = new Command
             {
-                Code = TokenToOperationCode(token),
+                Code = OperationCode.PushConst,
                 Argument = lastCommand.Argument
             };
+
+            AddCommand(TokenToOperationCode(token));
         }
         
         private void CorrectCommandArgument(int index, int newArgument)

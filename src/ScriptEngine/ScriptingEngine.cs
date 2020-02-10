@@ -27,6 +27,8 @@ namespace ScriptEngine
             _machine = MachineInstance.Current;
 
             TypeManager.Initialize(new StandartTypeManager());
+            TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
+            
             GlobalsManager.Reset();
             AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
             

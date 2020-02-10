@@ -25,11 +25,6 @@ namespace ScriptEngine.Machine.Contexts
         
         public IValue[] ConstructorParams { get; private set; }
         
-        static UserScriptContextInstance()
-        {
-            TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
-        }
-
         public UserScriptContextInstance(LoadedModule module) : base(module)
         {
             _module = module;
