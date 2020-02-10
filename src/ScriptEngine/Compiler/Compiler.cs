@@ -36,8 +36,7 @@ namespace ScriptEngine.Compiler
         private bool _isMethodsDefined = false;
         private bool _isStatementsDefined = false;
         private bool _isFunctionProcessed = false;
-        private int _tryBlockNesting = 0;
-
+        
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
@@ -52,19 +51,23 @@ namespace ScriptEngine.Compiler
             public int commandIndex;
         }
 
-        private struct NestedLoopInfo
+        private class NestedLoopInfo
         {
+            private NestedLoopInfo(){}
+            
             public static NestedLoopInfo New()
             {
                 return new NestedLoopInfo()
                 {
                     startPoint = DUMMY_ADDRESS,
-                    breakStatements = new List<int>()
+                    breakStatements = new List<int>(),
+                    tryNesting = 0
                 };
             }
 
             public int startPoint;
             public List<int> breakStatements;
+            public int tryNesting;
         }
 
         public CompilerDirectiveHandler DirectiveHandler { get; set; }
@@ -1004,19 +1007,25 @@ namespace ScriptEngine.Compiler
 
         private void ExitTryBlocks()
         {
-            if (_tryBlockNesting > 0)
-                AddCommand(OperationCode.ExitTry, _tryBlockNesting);
+            var tryBlocks = _nestedLoops.Peek().tryNesting;
+            if (tryBlocks > 0)
+                AddCommand(OperationCode.ExitTry, tryBlocks);
         }
 
-        public void PushTryNesting()
+        private void PushTryNesting()
         {
-            ++_tryBlockNesting;
+            if (_nestedLoops.Count > 0)
+            {
+                _nestedLoops.Peek().tryNesting++;
+            }
         }
         
-        public void PopTryNesting()
+        private void PopTryNesting()
         {
-            --_tryBlockNesting;
-            Debug.Assert(_tryBlockNesting >= 0);
+            if (_nestedLoops.Count > 0)
+            {
+                _nestedLoops.Peek().tryNesting--;
+            }
         }
         
         private void BuildContinueStatement()
