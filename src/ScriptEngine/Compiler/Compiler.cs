@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
@@ -24,6 +25,7 @@ namespace ScriptEngine.Compiler
     class Compiler    {
         public const string BODY_METHOD_NAME = "$entry";
 
+        private const int DUMMY_ADDRESS = -1;
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
         private ILexemGenerator _lexer;
@@ -34,8 +36,7 @@ namespace ScriptEngine.Compiler
         private bool _isMethodsDefined = false;
         private bool _isStatementsDefined = false;
         private bool _isFunctionProcessed = false;
-        private bool _isInTryBlock = false;
-
+        
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
@@ -50,19 +51,23 @@ namespace ScriptEngine.Compiler
             public int commandIndex;
         }
 
-        private struct NestedLoopInfo
+        private class NestedLoopInfo
         {
+            private NestedLoopInfo(){}
+            
             public static NestedLoopInfo New()
             {
                 return new NestedLoopInfo()
                 {
-                    startPoint = -1,
-                    breakStatements = new List<int>()
+                    startPoint = DUMMY_ADDRESS,
+                    breakStatements = new List<int>(),
+                    tryNesting = 0
                 };
             }
 
             public int startPoint;
             public List<int> breakStatements;
+            public int tryNesting;
         }
 
         public CompilerDirectiveHandler DirectiveHandler { get; set; }
@@ -88,7 +93,7 @@ namespace ScriptEngine.Compiler
             _ctx = context;
             _lexer = lexer;
             NextToken();
-            BuildExpression(Token.EndOfText);
+            BuildExpressionUpTo(Token.EndOfText);
 
             _module.LoadAddress = _ctx.TopIndex();
             return _module;
@@ -195,8 +200,6 @@ namespace ScriptEngine.Compiler
                     AppendCodeInfo(_lexer.GetCodePosition(), exc);
                 throw;
             }
-
-
         }
 
         private void CheckForwardedDeclarations()
@@ -219,7 +222,7 @@ namespace ScriptEngine.Compiler
                     var scope = _ctx.GetScope(methN.ContextIndex);
 
                     var methInfo = scope.GetMethod(methN.CodeIndex);
-                    System.Diagnostics.Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
+                    Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
                     if (item.asFunction && !methInfo.IsFunction)
                     {
                         var exc = CompilerException.UseProcAsFunction();
@@ -237,9 +240,7 @@ namespace ScriptEngine.Compiler
                         throw;
                     }
 
-                    var cmd = _module.Code[item.commandIndex];
-                    cmd.Argument = GetMethodRefNumber(ref methN);
-                    _module.Code[item.commandIndex] = cmd;
+                    CorrectCommandArgument(item.commandIndex, GetMethodRefNumber(ref methN));
                 }
             }
         }
@@ -375,29 +376,25 @@ namespace ScriptEngine.Compiler
                     {
                         throw CompilerException.IdentifierExpected();
                     }
-
                 }
             }
-
         }
 
         private void BuildModuleBody()
         {
             _isFunctionProcessed = false;
-            PushStructureToken(Token.EndOfText);
             var entry = _module.Code.Count;
-
             _ctx.PushScope(new SymbolScope());
+
             try
             {
-                BuildCodeBatch();
+                BuildCodeBatch(Token.EndOfText);
             }
             catch
             {
                 _ctx.PopScope();
                 throw;
             }
-            PopStructureToken();
 
             var localCtx = _ctx.PopScope();
             
@@ -432,7 +429,6 @@ namespace ScriptEngine.Compiler
             {
                 descriptor.Variables.Add(localCtx.GetVariable(i));
             }
-            
         }
 
         private void HandleDirective(bool codeEntered)
@@ -446,7 +442,6 @@ namespace ScriptEngine.Compiler
 
             if (DirectiveHandler == null || !DirectiveHandler(directive, value, codeEntered))
                 throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
-
         }
 
         private void ReadToLineEnd()
@@ -461,24 +456,21 @@ namespace ScriptEngine.Compiler
         private void BuildSingleMethod()
         {
             var entryPoint = _module.Code.Count;
-            AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
+            AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
             if (_lastExtractedLexem.Token == Token.Procedure)
             {
-                PushStructureToken(Token.EndProcedure);
                 _isFunctionProcessed = false;
-                NextToken();
             }
             else if (_lastExtractedLexem.Token == Token.Function)
             {
-                PushStructureToken(Token.EndFunction);
                 _isFunctionProcessed = true;
-                NextToken();
             }
             else
             {
                 throw CompilerException.UnexpectedOperation();
             }
+            NextToken();
 
             #region Method signature
             // сигнатура
@@ -533,8 +525,6 @@ namespace ScriptEngine.Compiler
                 _ctx.PopScope();
             }
             
-            PopStructureToken();
-
             var descriptor = new MethodDescriptor();
             descriptor.EntryPoint = entryPoint;
             descriptor.Signature = method;
@@ -567,7 +557,6 @@ namespace ScriptEngine.Compiler
             #endregion
 
             NextToken(); 
-            
         }
 
         private void BuildMethodParametersList(List<ParameterDefinition> paramsList, SymbolScope methodCtx)
@@ -687,7 +676,7 @@ namespace ScriptEngine.Compiler
 
             var codeStart = _module.Code.Count;
 
-            BuildCodeBatch();
+            BuildCodeBatch(_isFunctionProcessed? Token.EndFunction : Token.EndProcedure);
 
             if (_isFunctionProcessed)
             {
@@ -698,7 +687,6 @@ namespace ScriptEngine.Compiler
                 };
 
                 AddCommand(OperationCode.PushConst, GetConstNumber(ref undefConst));
-                
             }
 
             var codeEnd = _module.Code.Count;
@@ -706,10 +694,10 @@ namespace ScriptEngine.Compiler
             if (_lastExtractedLexem.Token == Token.EndProcedure
                 || _lastExtractedLexem.Token == Token.EndFunction)
             {
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics|CodeGenerationFlags.DebugCode);
+                AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics|CodeGenerationFlags.DebugCode);
             }
 
-            AddCommand(OperationCode.Return, 0);
+            AddCommand(OperationCode.Return);
 
             {
                 // заменим Return на Jmp <сюда>
@@ -726,16 +714,17 @@ namespace ScriptEngine.Compiler
             _inMethodScope = false;
         }
 
-        private void BuildCodeBatch()
+        private void BuildCodeBatch(params Token[] endTokens)
         {
-            var endTokens = _tokenStack.Peek();
+            PushStructureToken(endTokens);
 
             while (true)
             {
                 if (endTokens.Contains(_lastExtractedLexem.Token))
                 {
-                    return;
+                    break;
                 }
+
                 if (_lastExtractedLexem.Token == Token.Semicolon)
                 {
                     NextToken();
@@ -766,7 +755,7 @@ namespace ScriptEngine.Compiler
                 }
                 NextToken();
             }
-
+            PopStructureToken();
         }
 
         private void BuildComplexStructureStatement()
@@ -800,6 +789,10 @@ namespace ScriptEngine.Compiler
                 case Token.Execute:
                     BuildExecuteStatement();
                     break;
+                case Token.AddHandler:
+                case Token.RemoveHandler:
+                    BuildEventHandlerOperation(_lastExtractedLexem.Token);
+                    break;        
                 default:
                     var expected = PopStructureToken();
                     throw CompilerException.TokenExpected(expected);
@@ -808,93 +801,60 @@ namespace ScriptEngine.Compiler
 
         private void BuildIfStatement()
         {
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
+            AddLineNumber(_lexer.CurrentLine);
 
             var exitIndices = new List<int>();
             NextToken();
-            BuildExpression(Token.Then);
-            PushStructureToken(Token.Else, Token.ElseIf, Token.EndIf);
-
-            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, 0);
+            BuildExpressionUpTo(Token.Then);
+            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
             NextToken();
-            BuildCodeBatch();
-            PopStructureToken();
-            exitIndices.Add(AddCommand(OperationCode.Jmp, 0));
+            BuildCodeBatch(Token.Else, Token.ElseIf, Token.EndIf);
+            exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
 
             bool hasAlternativeBranches = false;
 
             while (_lastExtractedLexem.Token == Token.ElseIf)
             {
-                _module.Code[jumpFalseIndex] = new Command()
-                {
-                    Code = OperationCode.JmpFalse,
-                    Argument = _module.Code.Count
-                };
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
+                CorrectCommandArgument(jumpFalseIndex, _module.Code.Count);
+                AddLineNumber(_lastExtractedLexem.LineNumber);
 
                 NextToken();
-                BuildExpression(Token.Then);
-                PushStructureToken(Token.Else, Token.ElseIf, Token.EndIf);
+                BuildExpressionUpTo(Token.Then);
+                jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
-                jumpFalseIndex = AddCommand(OperationCode.JmpFalse, -1);
                 NextToken();
-                BuildCodeBatch();
-                PopStructureToken();
-                exitIndices.Add(AddCommand(OperationCode.Jmp, -1));
+                BuildCodeBatch(Token.Else, Token.ElseIf, Token.EndIf);
+                exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
             }
 
             if (_lastExtractedLexem.Token == Token.Else)
             {
                 hasAlternativeBranches = true;
-                _module.Code[jumpFalseIndex] = new Command()
-                {
-                    Code = OperationCode.JmpFalse,
-                    Argument = _module.Code.Count
-                };
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
+                CorrectCommandArgument(jumpFalseIndex, _module.Code.Count);
+                AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
                 NextToken();
-                PushStructureToken(Token.EndIf);
-                BuildCodeBatch();
-                PopStructureToken();
+                BuildCodeBatch(Token.EndIf);
             }
 
-            int exitIndex;
-            if (_lastExtractedLexem.Token == Token.EndIf)
-            {
-                exitIndex = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
-            }
-            else
-            {
-                // Вообще, такого быть не должно...
-                exitIndex = AddCommand(OperationCode.Nop, 0);
-            }
+            int exitIndex = AddLineNumber(_lastExtractedLexem.LineNumber);
 
             if (!hasAlternativeBranches)
             {
-                _module.Code[jumpFalseIndex] = new Command()
-                {
-                    Code = OperationCode.JmpFalse,
-                    Argument = exitIndex
-                };
+                CorrectCommandArgument(jumpFalseIndex, exitIndex);
             }
 
             foreach (var indexToWrite in exitIndices)
             {
-                _module.Code[indexToWrite] = new Command()
-                {
-                    Code = OperationCode.Jmp,
-                    Argument = exitIndex
-                };
+                CorrectCommandArgument(indexToWrite, exitIndex);
             }
             NextToken();
-
         }
 
         private void BuildForStatement()
         {
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
+            AddLineNumber(_lexer.CurrentLine);
 
             NextToken();
             if (_lastExtractedLexem.Token == Token.Each)
@@ -909,13 +869,11 @@ namespace ScriptEngine.Compiler
             {
                 throw CompilerException.IdentifierExpected();
             }
-
-
         }
 
         private void BuildForEachStatement()
         {
-            Assert(_lastExtractedLexem.Token == Token.Each);
+            Debug.Assert(_lastExtractedLexem.Token == Token.Each);
             NextToken();
 
             if (!IsUserSymbol(ref _lastExtractedLexem))
@@ -927,35 +885,30 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(Token.In);
 
             NextToken();
-            BuildExpression(Token.Loop);
-            AddCommand(OperationCode.PushIterator, 0);
-            var loopBegin = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
-            AddCommand(OperationCode.IteratorNext, 0);
-            var condition = AddCommand(OperationCode.JmpFalse, -1);
+            BuildExpressionUpTo(Token.Loop);
+            AddCommand(OperationCode.PushIterator);
+            var loopBegin = AddLineNumber(_lastExtractedLexem.LineNumber);
+            AddCommand(OperationCode.IteratorNext);
+            var condition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             BuildLoadVariable(identifier);
-            PushStructureToken(Token.EndLoop);
 
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = loopBegin;
             _nestedLoops.Push(loopRecord);
 
             NextToken();
-            bool savedTryFlag = SetTryBlockFlag(false);
-            BuildCodeBatch();
-            SetTryBlockFlag(savedTryFlag);
-            PopStructureToken();
-
+            BuildCodeBatch(Token.EndLoop);
+            
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
+                AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             }
 
             AddCommand(OperationCode.Jmp, loopBegin);
-            var cmd = _module.Code[condition];
-            cmd.Argument = AddCommand(OperationCode.StopIterator, 0);
-            _module.Code[condition] = cmd;
 
-            CorrectBreakStatements(_nestedLoops.Pop(), cmd.Argument);
+            var indexLoopEnd = AddCommand(OperationCode.StopIterator);
+            CorrectCommandArgument(condition, indexLoopEnd);
+            CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
             NextToken();
         }
 
@@ -968,102 +921,73 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.TokenExpected(Token.Equal);
             }
             NextToken();
-            BuildExpression(Token.To);
+            BuildExpressionUpTo(Token.To);
             BuildLoadVariable(counter);
             NextToken();
-            BuildExpression(Token.Loop);
-            AddCommand(OperationCode.MakeRawValue, 0);
-            AddCommand(OperationCode.PushTmp, 0);
-            var lastIdx = _module.Code.Count;
-            int indexLoopBegin = -1;
+            BuildExpressionUpTo(Token.Loop);
+            AddCommand(OperationCode.MakeRawValue);
+            AddCommand(OperationCode.PushTmp);
 
-            // TODO: костыль
-            if (_lastExtractedLexem.Token == Token.Loop)
-            {
-                AddCommand(OperationCode.Jmp, lastIdx + 5);
-                indexLoopBegin = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber);
-            }
-            else
-            {
-                AddCommand(OperationCode.Jmp, lastIdx + 4);
-            }
+            var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
+            var indexLoopBegin = AddLineNumber(_lastExtractedLexem.LineNumber);
 
-            {
-                // increment
-                var indexLoopBeginNew = BuildPushVariable(counter);
-                if (indexLoopBegin == -1)
-                    indexLoopBegin = indexLoopBeginNew;
-            }
-
-            AddCommand(OperationCode.Inc, 0);
+            // increment
+            BuildPushVariable(counter);
+            AddCommand(OperationCode.Inc);
             BuildLoadVariable(counter);
 
-            BuildPushVariable(counter);
-            var conditionIndex = AddCommand(OperationCode.JmpCounter, -1);
+            var counterIndex = BuildPushVariable(counter);
+            CorrectCommandArgument(jmpIndex, counterIndex);
+            var conditionIndex = AddCommand(OperationCode.JmpCounter, DUMMY_ADDRESS);
+
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = indexLoopBegin;
             _nestedLoops.Push(loopRecord);
+
             NextToken();
-            PushStructureToken(Token.EndLoop);
-            bool savedTryFlag = SetTryBlockFlag(false);
-            BuildCodeBatch();
-            SetTryBlockFlag(savedTryFlag);
-            PopStructureToken();
+            BuildCodeBatch(Token.EndLoop);
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
+                AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             }
 
             // jmp to start
             AddCommand(OperationCode.Jmp, indexLoopBegin);
+
             var indexLoopEnd = AddCommand(OperationCode.PopTmp, 1);
-
-            var cmd = _module.Code[conditionIndex];
-            cmd.Argument = indexLoopEnd;
-            _module.Code[conditionIndex] = cmd;
-
+            CorrectCommandArgument(conditionIndex, indexLoopEnd);
             CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
             NextToken();
-            
         }
 
         private void BuildWhileStatement()
         {
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
+            AddLineNumber(_lexer.CurrentLine);
 
             NextToken();
             var conditionIndex = _module.Code.Count;
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
-            BuildExpression(Token.Loop);
-            PushStructureToken(Token.EndLoop);
+            BuildExpressionUpTo(Token.Loop);
 
-            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, 0);
+            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             NextToken();
-            bool savedTryFlag = SetTryBlockFlag(false);
-            BuildCodeBatch();
-            SetTryBlockFlag(savedTryFlag);
-            PopStructureToken();
+            BuildCodeBatch(Token.EndLoop);
 
             if (_lastExtractedLexem.Token == Token.EndLoop)
             {
-                AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
+                AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             }
 
             AddCommand(OperationCode.Jmp, conditionIndex);
 
-            var endLoop = AddCommand(OperationCode.Nop, 0);
-            _module.Code[jumpFalseIndex] = new Command() {
-                Code = OperationCode.JmpFalse,
-                Argument = endLoop
-            };
-
+            var endLoop = AddCommand(OperationCode.Nop);
+            CorrectCommandArgument(jumpFalseIndex, endLoop);
             CorrectBreakStatements(_nestedLoops.Pop(), endLoop);
 
             NextToken();
-
         }
 
         private void BuildBreakStatement()
@@ -1072,16 +996,38 @@ namespace ScriptEngine.Compiler
             {
                 throw CompilerException.BreakOutsideOfLoop();
             }
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
+            AddLineNumber(_lexer.CurrentLine);
 
             var loopInfo = _nestedLoops.Peek();
-            if(_isInTryBlock)
-                AddCommand(OperationCode.EndTry, 0);
-            var idx = AddCommand(OperationCode.Jmp, -1);
+            ExitTryBlocks();
+            var idx = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
             loopInfo.breakStatements.Add(idx);
             NextToken();
         }
 
+        private void ExitTryBlocks()
+        {
+            var tryBlocks = _nestedLoops.Peek().tryNesting;
+            if (tryBlocks > 0)
+                AddCommand(OperationCode.ExitTry, tryBlocks);
+        }
+
+        private void PushTryNesting()
+        {
+            if (_nestedLoops.Count > 0)
+            {
+                _nestedLoops.Peek().tryNesting++;
+            }
+        }
+        
+        private void PopTryNesting()
+        {
+            if (_nestedLoops.Count > 0)
+            {
+                _nestedLoops.Peek().tryNesting--;
+            }
+        }
+        
         private void BuildContinueStatement()
         {
             if (_nestedLoops.Count == 0)
@@ -1089,18 +1035,17 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.ContinueOutsideOfLoop();
             }
 
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
+            AddLineNumber(_lexer.CurrentLine);
 
             var loopInfo = _nestedLoops.Peek();
-            if(_isInTryBlock)
-                AddCommand(OperationCode.EndTry, 0);
+            ExitTryBlocks();
             AddCommand(OperationCode.Jmp, loopInfo.startPoint);
             NextToken();
         }
 
         private void BuildReturnStatement()
         {
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
+            AddLineNumber(_lexer.CurrentLine);
 
             if (_isFunctionProcessed)
             {
@@ -1111,7 +1056,7 @@ namespace ScriptEngine.Compiler
                     throw CompilerException.FuncEmptyReturnValue();
                 }
                 BuildExpression(Token.Semicolon);
-                AddCommand(OperationCode.MakeRawValue, 0);
+                AddCommand(OperationCode.MakeRawValue);
             }
             else if (_inMethodScope)
             {
@@ -1127,35 +1072,31 @@ namespace ScriptEngine.Compiler
                 throw CompilerException.ReturnOutsideOfMethod();
             }
 
-            AddCommand(OperationCode.Return, 0);
+            AddCommand(OperationCode.Return);
         }
 
         private void BuildTryExceptStatement()
         {
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine, CodeGenerationFlags.CodeStatistics);
+            AddLineNumber(_lexer.CurrentLine, CodeGenerationFlags.CodeStatistics);
 
-            var beginTryIndex = AddCommand(OperationCode.BeginTry, -1);
-            bool savedTryFlag = SetTryBlockFlag(true);
-            PushStructureToken(Token.Exception);
+            var beginTryIndex = AddCommand(OperationCode.BeginTry, DUMMY_ADDRESS);
             NextToken();
-            BuildCodeBatch();
-            PopStructureToken();
-            SetTryBlockFlag(savedTryFlag);
-            var jmpIndex = AddCommand(OperationCode.Jmp, -1);
+            PushTryNesting();
+            BuildCodeBatch(Token.Exception);
+            PopTryNesting();
+            var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
 
-            Assert(_lastExtractedLexem.Token == Token.Exception);
+            Debug.Assert(_lastExtractedLexem.Token == Token.Exception);
             
-            var beginHandler = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
+            var beginHandler = AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics);
 
             CorrectCommandArgument(beginTryIndex, beginHandler);
 
-            PushStructureToken(Token.EndTry);
             NextToken();
-            BuildCodeBatch();
-            PopStructureToken();
+            BuildCodeBatch(Token.EndTry);
 
-            var endIndex = AddCommand(OperationCode.LineNum, _lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
-            AddCommand(OperationCode.EndTry, 0);
+            var endIndex = AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
+            AddCommand(OperationCode.EndTry);
             CorrectCommandArgument(jmpIndex, endIndex);
             
             NextToken();
@@ -1163,7 +1104,7 @@ namespace ScriptEngine.Compiler
 
         private void BuildRaiseExceptionStatement()
         {
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
+            AddLineNumber(_lexer.CurrentLine);
 
             NextToken();
             if (_lastExtractedLexem.Token == Token.Semicolon)
@@ -1180,21 +1121,56 @@ namespace ScriptEngine.Compiler
             else
             {
                 BuildExpression(Token.Semicolon);
-                AddCommand(OperationCode.RaiseException, 0);
+                AddCommand(OperationCode.RaiseException);
             }
-
         }
 
         private void BuildExecuteStatement()
         {
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
+            AddLineNumber(_lexer.CurrentLine);
             NextToken();
 
             BuildExpression(Token.Semicolon);
-            AddCommand(OperationCode.Execute, 0);
-
+            AddCommand(OperationCode.Execute);
         }
 
+        private void BuildEventHandlerOperation(Token token)
+        {
+            NextToken();
+            if(!IsUserSymbol(ref _lastExtractedLexem))
+                throw CompilerException.IdentifierExpected();
+            
+            BuildExpression(Token.Comma);
+            var lastCommand = _module.Code[_module.Code.Count - 1]; 
+            if (lastCommand.Code != OperationCode.ResolveProp)
+            {
+                throw new CompilerException(Locale.NStr("ru = 'Ожидается имя события'; en = 'Event name expected'"));
+            }
+
+            _module.Code[_module.Code.Count - 1] = new Command
+            {
+                Code = OperationCode.PushConst,
+                Argument = lastCommand.Argument
+            };
+            
+            NextToken();
+            BuildExpression(Token.Semicolon);
+
+            lastCommand = _module.Code[_module.Code.Count - 1]; 
+            if (lastCommand.Code != OperationCode.ResolveProp)
+            {
+                throw new CompilerException(Locale.NStr("ru = 'Ожидается имя обработчика события'; en = 'Event handler name expected'"));
+            }
+
+            _module.Code[_module.Code.Count - 1] = new Command
+            {
+                Code = OperationCode.PushConst,
+                Argument = lastCommand.Argument
+            };
+
+            AddCommand(TokenToOperationCode(token));
+        }
+        
         private void CorrectCommandArgument(int index, int newArgument)
         {
             var cmd = _module.Code[index];
@@ -1210,19 +1186,12 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private bool SetTryBlockFlag(bool isInTry)
-        {
-            bool current = _isInTryBlock;
-            _isInTryBlock = isInTry;
-            return current;
-        }
-
         private void BuildSimpleStatement()
         {
             var identifier = _lastExtractedLexem.Content;
 
             NextToken();
-            AddCommand(OperationCode.LineNum, _lexer.CurrentLine);
+            AddLineNumber(_lexer.CurrentLine);
             switch (_lastExtractedLexem.Token)
             {
                 case Token.Equal:
@@ -1256,7 +1225,6 @@ namespace ScriptEngine.Compiler
             {
                 BuildMethodCall(identifier, args, false);
             }
-
         }
 
         private void BuildAccessChainLeftHand()
@@ -1272,13 +1240,12 @@ namespace ScriptEngine.Compiler
 
                 NextToken(); // перешли к выражению
                 BuildExpression(Token.Semicolon);
-                AddCommand(OperationCode.AssignRef, 0);
-
+                AddCommand(OperationCode.AssignRef);
             }
             else
             {
                 // это вызов
-                System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
+                Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
                 PushMethodArgumentsBeforeCall();
                 var cDef = new ConstDefinition();
                 cDef.Type = DataType.String;
@@ -1294,13 +1261,25 @@ namespace ScriptEngine.Compiler
                 {
                     AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
                 }
-
             }
         }
 
         private bool IsContinuationToken(ref Lexem lex)
         {
             return lex.Token == Token.Dot || lex.Token == Token.OpenBracket;
+        }
+
+        private void BuildExpressionUpTo(Token stopToken)
+        {
+            BuildPrimaryNode();
+            BuildOperation(0);
+            if (_lastExtractedLexem.Token == stopToken)
+                return;
+
+            if (_lastExtractedLexem.Token == Token.EndOfText)
+                throw CompilerException.UnexpectedEndOfText();
+            else
+                throw CompilerException.ExpressionSyntax();
         }
 
         private void BuildExpression(Token stopToken)
@@ -1311,10 +1290,10 @@ namespace ScriptEngine.Compiler
                 return;
 
             var endTokens = _tokenStack.Peek();
-
             if (endTokens.Contains(_lastExtractedLexem.Token))
                 return;
-            else if (_lastExtractedLexem.Token == Token.EndOfText)
+
+            if (_lastExtractedLexem.Token == Token.EndOfText)
                 throw CompilerException.UnexpectedEndOfText();
             else
                 throw CompilerException.ExpressionSyntax();
@@ -1327,11 +1306,11 @@ namespace ScriptEngine.Compiler
             while (LanguageDef.IsBinaryOperator(currentOp) && opPriority >= acceptablePriority)
             {
                 bool isLogical = LanguageDef.IsLogicalBinaryOperator(currentOp);
-                int logicalCmdIndex = -1;
+                int logicalCmdIndex = DUMMY_ADDRESS;
 
                 if (isLogical)
                 {
-                    logicalCmdIndex = AddCommand(TokenToOperationCode(currentOp), 0);
+                    logicalCmdIndex = AddCommand(TokenToOperationCode(currentOp));
                 }
 
                 NextToken();
@@ -1354,18 +1333,17 @@ namespace ScriptEngine.Compiler
                         BuildOperation(newPriority);
                     }
 
-                    AddCommand(OperationCode.MakeBool, 0);
+                    AddCommand(OperationCode.MakeBool);
                     CorrectCommandArgument(logicalCmdIndex, _module.Code.Count);
                 }
                 else
                 {
                     var opCode = TokenToOperationCode(currentOp);
-                    AddCommand(opCode, 0);
+                    AddCommand(opCode);
                 }
 
                 currentOp = _lastExtractedLexem.Token;
                 opPriority = GetBinaryPriority(currentOp);
-
             }
         }
 
@@ -1421,6 +1399,12 @@ namespace ScriptEngine.Compiler
                     break;
                 case Token.MoreOrEqual:
                     opCode = OperationCode.GreaterOrEqual;
+                    break;
+                case Token.AddHandler:
+                    opCode = OperationCode.AddHandler;
+                    break;
+                case Token.RemoveHandler:
+                    opCode = OperationCode.RemoveHandler;
                     break;
                 default:
                     throw new NotSupportedException();
@@ -1524,7 +1508,7 @@ namespace ScriptEngine.Compiler
             }
 
             BuildPrimaryNode();
-            AddCommand(OperationCode.Neg, 0);
+            AddCommand(OperationCode.Neg);
         }
 
         private void ProcessPrimaryUnaryPlus()
@@ -1536,7 +1520,7 @@ namespace ScriptEngine.Compiler
             }
 
             BuildPrimaryNode();
-            AddCommand(OperationCode.Number, 0);
+            AddCommand(OperationCode.Number);
         }
 
         private void ProcessSubexpression()
@@ -1556,7 +1540,7 @@ namespace ScriptEngine.Compiler
             NextToken();
             BuildPrimaryNode();
             BuildOperation(GetBinaryPriority(Token.Not));
-            AddCommand(OperationCode.Not, 0);
+            AddCommand(OperationCode.Not);
         }
 
         private void BuildContinuationRightHand()
@@ -1612,18 +1596,17 @@ namespace ScriptEngine.Compiler
                     if (_lastExtractedLexem.Token == Token.CloseBracket)
                         throw CompilerException.ExpressionExpected();
 
-                    BuildExpression(Token.CloseBracket);
-                    System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.CloseBracket);
+                    BuildExpressionUpTo(Token.CloseBracket);
+                    Debug.Assert(_lastExtractedLexem.Token == Token.CloseBracket);
                     NextToken();
 
-                    AddCommand(OperationCode.PushIndexed, 0);
+                    AddCommand(OperationCode.PushIndexed);
                 }
                 else
                 {
                     break;
                 }
             }
-
         }
 
         private bool IsValidPropertyName(ref Lexem lex)
@@ -1648,44 +1631,38 @@ namespace ScriptEngine.Compiler
 
         private void BuildQuestionOperator()
         {
-            Assert(_lastExtractedLexem.Token == Token.Question);
+            Debug.Assert(_lastExtractedLexem.Token == Token.Question);
             NextToken();
             if (_lastExtractedLexem.Token != Token.OpenPar)
                 throw CompilerException.UnexpectedOperation();
 
             NextToken();
-            BuildExpression(Token.Comma);
-            if (_lastExtractedLexem.Token != Token.Comma)
-                throw CompilerException.UnexpectedOperation();
+            BuildExpressionUpTo(Token.Comma);
             
-            AddCommand(OperationCode.MakeBool, 0);
-            var addrOfCondition = AddCommand(OperationCode.JmpFalse, -1);
+            AddCommand(OperationCode.MakeBool);
+            var addrOfCondition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
             NextToken();
-            BuildExpression(Token.Comma); // построили true-part
-            if (_lastExtractedLexem.Token != Token.Comma)
-                throw CompilerException.UnexpectedOperation();
+            BuildExpressionUpTo(Token.Comma); // построили true-part
 
-            var endOfTruePart = AddCommand(OperationCode.Jmp, -1); // уход в конец оператора
+            var endOfTruePart = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS); // уход в конец оператора
             
-            CorrectCommandArgument(addrOfCondition, AddCommand(OperationCode.Nop, 0)); // отметили, куда переходить по false
+            CorrectCommandArgument(addrOfCondition, _module.Code.Count); // отметили, куда переходить по false
             NextToken();
-            BuildExpression(Token.ClosePar); // построили false-part
+            BuildExpressionUpTo(Token.ClosePar); // построили false-part
             
-            var endOfFalsePart = AddCommand(OperationCode.Nop, 0);
-            CorrectCommandArgument(endOfTruePart, endOfFalsePart);
+            CorrectCommandArgument(endOfTruePart, _module.Code.Count);
             
             NextToken();
-
         }
 
         private bool[] BuildArgumentList()
         {
-            System.Diagnostics.Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
+            Debug.Assert(_lastExtractedLexem.Token == Token.OpenPar);
 
-            PushStructureToken(Token.ClosePar);
             List<bool> arguments = new List<bool>();
 
+            PushStructureToken(Token.ClosePar);
             try
             {
                 NextToken(); // съели открывающую скобку
@@ -1711,12 +1688,12 @@ namespace ScriptEngine.Compiler
         {
             if (_lastExtractedLexem.Token == Token.Comma)
             {
-                AddCommand(OperationCode.PushDefaultArg, 0);
+                AddCommand(OperationCode.PushDefaultArg);
                 arguments.Add(false);
                 NextToken();
                 if (_lastExtractedLexem.Token == Token.ClosePar)
                 {
-                    AddCommand(OperationCode.PushDefaultArg, 0);
+                    AddCommand(OperationCode.PushDefaultArg);
                     arguments.Add(false);
                 }
             }
@@ -1729,7 +1706,7 @@ namespace ScriptEngine.Compiler
                     NextToken();
                     if (_lastExtractedLexem.Token == Token.ClosePar)
                     {
-                        AddCommand(OperationCode.PushDefaultArg, 0);
+                        AddCommand(OperationCode.PushDefaultArg);
                         arguments.Add(false);
                     }
                 }
@@ -1762,9 +1739,9 @@ namespace ScriptEngine.Compiler
         private void BuildFunctionCall(string identifier, int callLineNumber)
         {
             bool[] args = PushMethodArgumentsBeforeCall();
-            AddCommand(OperationCode.LineNum, callLineNumber, CodeGenerationFlags.CodeStatistics);
+            AddLineNumber(callLineNumber, CodeGenerationFlags.CodeStatistics);
             BuildMethodCall(identifier, args, true);
-            AddCommand(OperationCode.LineNum, callLineNumber, CodeGenerationFlags.DebugCode);
+            AddLineNumber(callLineNumber, CodeGenerationFlags.DebugCode);
         }
 
         private bool[] PushMethodArgumentsBeforeCall()
@@ -1807,7 +1784,7 @@ namespace ScriptEngine.Compiler
                 forwarded.factArguments = argsPassed;
 
                 var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
-                forwarded.commandIndex = AddCommand(opCode, -1);
+                forwarded.commandIndex = AddCommand(opCode, DUMMY_ADDRESS);
                 _forwardedMethods.Add(forwarded);
             }
         }
@@ -1837,7 +1814,6 @@ namespace ScriptEngine.Compiler
             {
                 // создание по строковому имени класса
                 NewObjectDynamicConstructor();
-
             }
             else if (IsUserSymbol(ref _lastExtractedLexem) || _lastExtractedLexem.Token == Token.ExceptionInfo)
             {
@@ -1847,7 +1823,6 @@ namespace ScriptEngine.Compiler
             {
                 throw CompilerException.IdentifierExpected();
             }
-
         }
 
         private void NewObjectDynamicConstructor()
@@ -1928,7 +1903,6 @@ namespace ScriptEngine.Compiler
             }
 
             AddCommand(funcId, passedArgs.Length);
-
         }
 
         #region Helper methods
@@ -2035,13 +2009,20 @@ namespace ScriptEngine.Compiler
             return tok;
         }
 
-        private int AddCommand(OperationCode code, int arg, CodeGenerationFlags emitConditions = CodeGenerationFlags.Always)
+        private int AddCommand(OperationCode code, int arg = 0)
+        {
+            var addr = _module.Code.Count;
+            _module.Code.Add(new Command() { Code = code, Argument = arg });
+            return addr;
+        }
+
+        private int AddLineNumber(int linenum, CodeGenerationFlags emitConditions = CodeGenerationFlags.Always)
         {
             var addr = _module.Code.Count;
             bool emit = emitConditions == CodeGenerationFlags.Always || ExtraCodeConditionsMet(emitConditions);
             if (emit)
             {
-                _module.Code.Add(new Command() { Code = code, Argument = arg });
+                _module.Code.Add(new Command() { Code = OperationCode.LineNum, Argument = linenum });
             }
             return addr;
         }
@@ -2073,12 +2054,6 @@ namespace ScriptEngine.Compiler
 
         #endregion
 
-        [System.Diagnostics.Conditional("DEBUG")]
-        private static void Assert(bool condition)
-        {
-            System.Diagnostics.Debug.Assert(condition);
-        }
-
         static Compiler()
         {
             _tokenToOpCode = new Dictionary<Token, OperationCode>();
@@ -2086,15 +2061,13 @@ namespace ScriptEngine.Compiler
             var tokens  = LanguageDef.BuiltInFunctions();
             var opCodes = BuiltinFunctions.GetOperationCodes();
 
-            Assert(tokens.Length == opCodes.Length);
+            Debug.Assert(tokens.Length == opCodes.Length);
             for (int i = 0; i < tokens.Length; i++)
             {
                 _tokenToOpCode.Add(tokens[i], opCodes[i]);
             }
         }
-
     }
 
     public delegate bool CompilerDirectiveHandler(string directive, string value, bool codeEntered);
-
 }

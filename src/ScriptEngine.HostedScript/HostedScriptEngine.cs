@@ -9,6 +9,7 @@ using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using System.Collections.Generic;
+using ScriptEngine.Machine.Contexts;
 
 
 namespace ScriptEngine.HostedScript
@@ -164,6 +165,7 @@ namespace ScriptEngine.HostedScript
 
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);
+            UserScriptContextInstance.GetOwnMethodsDefinition().ForEach(x => compilerSvc.DefineMethod(x));
             return compilerSvc;
         }
 

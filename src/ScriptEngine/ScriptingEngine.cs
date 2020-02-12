@@ -27,6 +27,8 @@ namespace ScriptEngine
             _machine = MachineInstance.Current;
 
             TypeManager.Initialize(new StandartTypeManager());
+            TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
+            
             GlobalsManager.Reset();
             AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
             
@@ -137,7 +139,7 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        private ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
+        public ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new UserScriptContextInstance(module);
             scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
