@@ -90,7 +90,7 @@ namespace oscript
 	        // не пишем абсолютных путей в дамп
 	        foreach (var script in dump.Scripts)
 	        {
-		        script.Image.ModuleInfo.Origin = "oscript://" + Path.GetFileName(script.Image.ModuleInfo.Origin);
+		        script.Image.ModuleInfo.Origin = "oscript://" + script.ModuleName();
 		        script.Image.ModuleInfo.ModuleName = script.Image.ModuleInfo.Origin;
 	        }
 

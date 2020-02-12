@@ -213,7 +213,7 @@ namespace ScriptEngine.HostedScript
             }
 
             if(success)
-                CompileDelayedModules();
+                CompileDelayedModules(Path.GetFileName(libraryPath));
 
             return success;
         }
@@ -259,7 +259,7 @@ namespace ScriptEngine.HostedScript
             return hasFiles;
         }
 
-        private void CompileDelayedModules()
+        private void CompileDelayedModules(string libraryName)
         {
             var ordered = _delayLoadedScripts.OrderBy(x => x.asClass ? 1 : 0).ToArray();
             _delayLoadedScripts.Clear();
@@ -274,11 +274,11 @@ namespace ScriptEngine.HostedScript
                 if(script.asClass)
                 {
                     _engine.AttachedScriptsFactory.LoadAndRegister(script.identifier, module);
-                    _env.NotifyClassAdded(module, script.identifier);
+                    _env.NotifyClassAdded(module, script.identifier, libraryName);
                 }
                 else
                 {                    
-                    _env.NotifyModuleAdded(module, script.identifier);
+                    _env.NotifyModuleAdded(module, script.identifier, libraryName);
                 }
             }
 

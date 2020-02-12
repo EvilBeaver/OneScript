@@ -80,44 +80,33 @@ namespace ScriptEngine
             }
         }
 
-        public void NotifyClassAdded(ModuleImage module, string symbol)
+        public void NotifyClassAdded(ModuleImage module, string symbol, string libraryName)
         {
             _externalScripts.Add(new UserAddedScript()
                 {
                     Type = UserAddedScriptType.Class,
                     Symbol = symbol,
-                    Image = module
+                    Image = module,
+                    LibraryName = libraryName
                 });
         }
         
-        public void NotifyModuleAdded(ModuleImage module, string symbol)
+        public void NotifyModuleAdded(ModuleImage module, string symbol, string libraryName)
         {
             var script = new UserAddedScript()
             {
                 Type = UserAddedScriptType.Module,
                 Symbol = symbol,
-                Image = module
+                Image = module,
+                LibraryName = libraryName
             };
 
             _externalScripts.Add(script);
-            SetGlobalProperty(script.Symbol, null);
         }
         
         public IEnumerable<UserAddedScript> GetUserAddedScripts()
-        {
-            // Костыль. Чтобы скомпилированный EXE загружал модули в правильном порядке,
-            // упорядочиваем список в том порядке, в котором добавлялись свойства.
-            return _externalScripts.OrderBy(script =>
-            {
-                try
-                {
-                    return _injectedProperties.FindProperty(script.Symbol);
-                }
-                catch
-                {
-                    return 0;
-                }
-            });
+        { 
+            return _externalScripts.ToArray();
         }
 
         private void RegisterSymbolScope(IRuntimeContextInstance provider, bool asDynamicScope)
@@ -159,6 +148,15 @@ namespace ScriptEngine
         public UserAddedScriptType Type;
         public ModuleImage Image;
         public string Symbol;
+        public int InitOrder;
+        
+        [NonSerialized]
+        public string LibraryName;
+
+        public string ModuleName()
+        {
+            return $"{LibraryName}.{Type}.{Symbol}";
+        }
     }
 
     public enum UserAddedScriptType
