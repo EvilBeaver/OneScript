@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine
 {
@@ -19,7 +20,7 @@ namespace ScriptEngine
         private SymbolScope _globalScope;
         private PropertyBag _injectedProperties;
 
-        private readonly List<UserAddedScript> _externalScripts = new List<UserAddedScript>();
+        private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
 
         public void InjectObject(IAttachableContext context)
         {
@@ -80,33 +81,33 @@ namespace ScriptEngine
             }
         }
 
-        public void NotifyClassAdded(ModuleImage module, string symbol, string libraryName)
-        {
-            _externalScripts.Add(new UserAddedScript()
-                {
-                    Type = UserAddedScriptType.Class,
-                    Symbol = symbol,
-                    Image = module,
-                    LibraryName = libraryName
-                });
-        }
+        // public void NotifyClassAdded(ModuleImage module, string symbol, string libraryName)
+        // {
+        //     _externalScripts.Add(new UserAddedScript()
+        //         {
+        //             Type = UserAddedScriptType.Class,
+        //             Symbol = symbol,
+        //             Image = module,
+        //             LibraryName = libraryName
+        //         });
+        // }
+        //
+        // public void NotifyModuleAdded(ModuleImage module, string symbol, string libraryName)
+        // {
+        //     var script = new UserAddedScript()
+        //     {
+        //         Type = UserAddedScriptType.Module,
+        //         Symbol = symbol,
+        //         Image = module,
+        //         LibraryName = libraryName
+        //     };
+        //
+        //     _externalScripts.Add(script);
+        // }
         
-        public void NotifyModuleAdded(ModuleImage module, string symbol, string libraryName)
-        {
-            var script = new UserAddedScript()
-            {
-                Type = UserAddedScriptType.Module,
-                Symbol = symbol,
-                Image = module,
-                LibraryName = libraryName
-            };
-
-            _externalScripts.Add(script);
-        }
-        
-        public IEnumerable<UserAddedScript> GetUserAddedScripts()
+        public IEnumerable<ExternalLibraryDef> GetUserAddedScripts()
         { 
-            return _externalScripts.ToArray();
+            return _externalLibs.ToArray();
         }
 
         private void RegisterSymbolScope(IRuntimeContextInstance provider, bool asDynamicScope)
@@ -140,28 +141,22 @@ namespace ScriptEngine
             }
             machine.ContextsAttached();
         }
-    }
 
-    [Serializable]
-    public struct UserAddedScript
-    {
-        public UserAddedScriptType Type;
-        public ModuleImage Image;
-        public string Symbol;
-        public int InitOrder;
-        
-        [NonSerialized]
-        public string LibraryName;
-
-        public string ModuleName()
+        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
         {
-            return $"{LibraryName}.{Type}.{Symbol}";
+            var loadedObjects = new ScriptDrivenObject[library.Modules.Count];
+            int i = 0;
+            foreach (var module in library.Modules)
+            {
+                var loaded = runtime.LoadModuleImage(module.Image);
+                var instance = runtime.CreateUninitializedSDO(loaded);
+                SetGlobalProperty(module.Symbol, instance);
+                module.InjectOrder = _injectedProperties.FindProperty(module.Symbol);
+                loadedObjects[i++] = instance;
+            }
+            
+            _externalLibs.Add(library);
+            loadedObjects.ForEach(runtime.InitializeSDO);
         }
-    }
-
-    public enum UserAddedScriptType
-    {
-        Module,
-        Class
     }
 }

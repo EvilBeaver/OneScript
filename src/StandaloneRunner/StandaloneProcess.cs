@@ -79,7 +79,7 @@ namespace StandaloneRunner
                 module.ModuleInfo.CodeIndexer = binaryIndexer;
 
                 var globalEnv = engine.EngineInstance.Environment;
-                var loadedModules = new List<ScriptDrivenObject>();
+                var loadedModules = new ScriptDrivenObject[appDump.Scripts.Length-1];
                 for (int i = 1; i < appDump.Scripts.Length; i++)
                 {
                     // здесь важно обратиться к struct, а не к выделенной переменной
@@ -95,11 +95,14 @@ namespace StandaloneRunner
                         var loaded = engine.EngineInstance.LoadModuleImage(userAddedScript.Image);
                         var instance = engine.EngineInstance.CreateUninitializedSDO(loaded);
                         globalEnv.InjectGlobalProperty(instance, userAddedScript.Symbol, true);
-                        loadedModules.Add(instance);
+                        loadedModules[i-1] = instance;
                     }
                 }
-                
-                loadedModules.ForEach(x => engine.EngineInstance.InitializeSDO(x));
+
+                foreach (var instance in loadedModules.Where(x => x != null))
+                {
+                    engine.EngineInstance.InitializeSDO(instance);
+                }
 
                 var process = engine.CreateProcess(this, module, src);
 

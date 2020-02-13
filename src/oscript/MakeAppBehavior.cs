@@ -69,7 +69,9 @@ namespace oscript
 	        engine.SetGlobalEnvironment(new DoNothingHost(), source);
 	        var entry = compiler.Compile(source);
 
-	        var embeddedContext = engine.GetUserAddedScripts();
+	        var embeddedContext = engine.GetExternalLibraries()
+		        .SelectMany(x => x.Modules.Concat(x.Classes));
+	        
 	        var templates = GlobalsManager.GetGlobalContext<TemplateStorage>();
 
 	        var dump = new ApplicationDump();
