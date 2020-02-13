@@ -30,7 +30,10 @@ namespace StandaloneRunner
         public int LoadAndRun(Stream codeStream)
         {
             var loader = new ProcessLoader();
-            var host = new StandaloneApplicationHost();
+            var host = new StandaloneApplicationHost
+            {
+                CommandLineArguments = CommandLineArguments
+            };
             var process = loader.CreateProcess(codeStream, host);
             try
             {
