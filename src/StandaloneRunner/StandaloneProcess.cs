@@ -27,8 +27,6 @@ namespace StandaloneRunner
     {
         public string[] CommandLineArguments { get; set; }
 
-        private Stream _sourceStream;
-
         public int LoadAndRun(Stream codeStream)
         {
             var loader = new ProcessLoader();

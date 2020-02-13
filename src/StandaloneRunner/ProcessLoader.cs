@@ -21,58 +21,67 @@ namespace StandaloneRunner
     {
         public Process CreateProcess(Stream sourceStream, IHostApplication host)
         {
+            var appDump = DeserializeAppDump(sourceStream);
             var engine = new HostedScriptEngine();
             var src = new BinaryCodeSource();
-            engine.SetGlobalEnvironment(host, src);
-
             var templateStorage = new TemplateStorage(new StandaloneTemplateFactory());
+
+            engine.SetGlobalEnvironment(host, src);
             engine.InitializationCallback = (e, env) =>
             {
                 e.Environment.InjectObject(templateStorage);
                 GlobalsManager.RegisterInstance(templateStorage);
             };
-
             engine.Initialize();
 
-            var appDump = DeserializeAppDump(sourceStream);
-            foreach (var resource in appDump.Resources)
+            LoadResources(templateStorage, appDump.Resources);
+            LoadScripts(engine, appDump.Scripts);
+            
+            var process = engine.CreateProcess(host, appDump.Scripts[0].Image, src);
+
+            return process;
+        }
+
+        private void LoadResources(TemplateStorage templateStorage, ApplicationResource[] resources)
+        {
+            foreach (var resource in resources)
             {
                 templateStorage.RegisterTemplate(resource.ResourceName, DeserializeTemplate(resource.Data));
             }
+        }
 
-            var module = appDump.Scripts[0].Image;
-
+        private void LoadScripts(HostedScriptEngine engine, UserAddedScript[] scripts)
+        {
             var binaryIndexer = new CompiledCodeIndexer();
+            var module = scripts[0].Image;
             module.ModuleInfo.CodeIndexer = binaryIndexer;
-
-            var globalEnv = engine.EngineInstance.Environment;
             
-            var loadedModules = new ScriptDrivenObject[appDump.Scripts.Length-1];
-            for (int i = 1; i < appDump.Scripts.Length; i++)
+            scripts
+                .Skip(1)
+                .Where(x => x.Type == UserAddedScriptType.Module)
+                .OrderBy(x => x.InjectOrder)
+                .ForEach(x =>
+                {
+                    x.Image.ModuleInfo.CodeIndexer = binaryIndexer;
+                    engine.EngineInstance.Environment.InjectGlobalProperty(null, x.Symbol, true);
+                });
+
+            foreach (var userAddedScript in scripts.Skip(1).Where(x => x.Type == UserAddedScriptType.Class))
             {
-                var userAddedScript = appDump.Scripts[i];
                 userAddedScript.Image.ModuleInfo.CodeIndexer = binaryIndexer;
-                if (userAddedScript.Type == UserAddedScriptType.Class)
-                {
-                    engine.LoadUserScript(userAddedScript);
-                }
-                else
-                {
-                    var loaded = engine.EngineInstance.LoadModuleImage(userAddedScript.Image);
-                    var instance = engine.EngineInstance.CreateUninitializedSDO(loaded);
-                    globalEnv.InjectGlobalProperty(instance, userAddedScript.Symbol, true);
-                    loadedModules[i-1] = instance;
-                }
+                engine.LoadUserScript(userAddedScript);
             }
-
-            foreach (var instance in loadedModules.Where(x => x != null))
+            
+            scripts
+                .Skip(1)
+                .Where(x => x.Type == UserAddedScriptType.Module)
+                .ForEach(x =>
             {
+                var loaded = engine.EngineInstance.LoadModuleImage(x.Image);
+                var instance = engine.EngineInstance.CreateUninitializedSDO(loaded);
+                engine.EngineInstance.Environment.SetGlobalProperty(x.Symbol, instance);
                 engine.EngineInstance.InitializeSDO(instance);
-            }
-
-            var process = engine.CreateProcess(host, module, src);
-
-            return process;
+            });
         }
 
         private static ApplicationDump DeserializeAppDump(Stream sourceStream)
