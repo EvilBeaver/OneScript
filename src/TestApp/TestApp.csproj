@@ -38,14 +38,13 @@
     <!-- Resources -->
     <Resource Include="Controls/1CV8Syntax.xshd" />
     <Resource Include="Resources/module_icons.png" />
+    <Resource Include="logo.ico" />
     
     <PackageReference Include="AvalonEdit" Version="4.4.2.9744" />
 	
     <!-- Settings -->
     <None Update="Properties\Settings.settings" Generator="SettingsSingleFileGenerator" LastGenOutput="Settings.Designer.cs" />
     <Compile Update="Properties\Settings.Designer.cs" AutoGen="True" DependentUpon="Settings.settings" />
-    <None Remove="logo.ico" />
-    <Resource Include="logo.ico" />
 
   </ItemGroup>
   
