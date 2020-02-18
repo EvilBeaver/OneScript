@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="579" Width="807"
         xmlns:v8r="clr-namespace:V8Reader.Core"
-        xmlns:ctrl="clr-namespace:V8Reader.Controls" Closing="Window_Closing" Icon="pack://application:,,,/script_badge.ico"
+        xmlns:ctrl="clr-namespace:V8Reader.Controls" Closing="Window_Closing" Icon="pack://application:,,,/logo.ico"
         Loaded="Window_Loaded" >
     
     <Window.Resources>
