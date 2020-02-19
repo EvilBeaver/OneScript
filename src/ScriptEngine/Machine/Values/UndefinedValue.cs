@@ -16,6 +16,14 @@ namespace ScriptEngine.Machine.Values
             DataType = DataType.Undefined;
         }
 
+        public override int CompareTo(IValue other)
+        {
+            if(other.DataType == DataType)
+                return 0;
+
+            return base.CompareTo(other);
+        }
+
         public override string AsString()
         {
             return string.Empty;
