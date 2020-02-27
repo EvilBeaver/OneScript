@@ -229,12 +229,13 @@ pipeline {
 
             steps {
                 
-                dir('targetContent') {
-                    unstash 'winDist'
-                    unstash 'debian'
-                    unstash 'redhat'
-                    unstash 'vsix'
+                unstash 'winDist'
+                unstash 'debian'
+                unstash 'redhat'
+                unstash 'vsix'
 
+                dir('targetContent') {
+                    
                     sh '''
                     WIN=../built
                     DEB=../out/deb
