@@ -27,10 +27,26 @@ namespace ScriptEngine
             _machine = MachineInstance.Current;
 
             TypeManager.Initialize(new StandartTypeManager());
+            TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
+            
             GlobalsManager.Reset();
-            ContextDiscoverer.DiscoverClasses(System.Reflection.Assembly.GetExecutingAssembly());
+            AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
             
             _scriptFactory = new ScriptSourceFactory();
+            DirectiveResolvers = new DirectiveMultiResolver();
+
+            SetupDirectiveResolution();
+        }
+
+        private void SetupDirectiveResolution()
+        {
+            var ignoreDirectiveResolver = new DirectiveIgnorer
+            {
+                {"Region", "Область"},
+                {"EndRegion", "КонецОбласти"}
+            };
+
+            DirectiveResolvers.Add(ignoreDirectiveResolver);
         }
 
         public CodeGenerationFlags ProduceExtraCode { get; set; }
@@ -92,7 +108,7 @@ namespace ScriptEngine
             }
         }
 
-        public IDirectiveResolver DirectiveResolver { get; set; }
+        public IList<IDirectiveResolver> DirectiveResolvers { get; }
 
         public CompilerService GetCompilerService()
         {
@@ -111,7 +127,7 @@ namespace ScriptEngine
             }
             
             cs.ProduceExtraCode = ProduceExtraCode;
-            cs.DirectiveResolver = DirectiveResolver;
+            cs.DirectiveResolver = (IDirectiveResolver)DirectiveResolvers;
             return cs;
         }
         
@@ -123,9 +139,9 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        private ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
+        public ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
+            var scriptContext = new UserScriptContextInstance(module);
             scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
             if (externalContext != null)
             {
@@ -139,26 +155,6 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        [Obsolete]
-        public IRuntimeContextInstance NewObject(LoadedModuleHandle module)
-        {
-            return NewObject(module.Module); 
-        }
-
-        [Obsolete]
-        public IRuntimeContextInstance NewObject(LoadedModuleHandle module, ExternalContextData externalContext)
-        {
-            return NewObject(module.Module, externalContext);
-        }
-
-        [Obsolete]
-        public LoadedModuleHandle LoadModuleImage(ScriptModuleHandle moduleImage)
-        {
-            var handle = new LoadedModuleHandle();
-            handle.Module = new LoadedModule(moduleImage.Module);
-            return handle;
-        }
-
         public LoadedModule LoadModuleImage(ModuleImage moduleImage)
         {
             return new LoadedModule(moduleImage);
@@ -169,37 +165,19 @@ namespace ScriptEngine
             sdo.Initialize();
         }
 
-        [Obsolete]
-        public void ExecuteModule(LoadedModuleHandle module)
-        {
-            ExecuteModule(module.Module);
-        }
-
         public void ExecuteModule(LoadedModule module)
         {
-            var scriptContext = new Machine.Contexts.UserScriptContextInstance(module);
+            var scriptContext = new UserScriptContextInstance(module);
             InitializeSDO(scriptContext);
         }
 
-        public MachineInstance Machine
-        {
-            get { return _machine; }
-        }
+        public MachineInstance Machine => _machine;
 
-        public AttachedScriptsFactory AttachedScriptsFactory
-        {
-            get
-            {
-                return _attachedScriptsFactory;
-            }
-        }
+        public AttachedScriptsFactory AttachedScriptsFactory => _attachedScriptsFactory;
 
         public IDebugController DebugController
         {
-            get
-            {
-                return _debugController;
-            }
+            get => _debugController;
             set
             {
                 _debugController = value;
@@ -223,31 +201,5 @@ namespace ScriptEngine
         }
 
         #endregion
-
-        public void CompileEnvironmentModules(RuntimeEnvironment env)
-        {
-            var scripts = env.GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module && env.GetGlobalProperty(x.Symbol) == null)
-                             .ToArray();
-
-            if (scripts.Length > 0)
-            {
-                var loadedObjects = new ScriptDrivenObject[scripts.Length];
-                for(var i = 0; i < scripts.Length; i++)
-                {
-                    var script = scripts[i];
-                    var loaded = LoadModuleImage(script.Image);
-
-                    var instance = CreateUninitializedSDO(loaded);
-                    env.SetGlobalProperty(script.Symbol, instance);
-                    loadedObjects[i] = instance;
-                }
-
-                foreach (var instance in loadedObjects)
-                {
-                    InitializeSDO(instance);
-                }
-            }
-        }
-        
     }
 }

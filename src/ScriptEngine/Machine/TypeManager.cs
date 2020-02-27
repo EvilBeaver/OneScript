@@ -7,8 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine
 {
@@ -94,7 +94,7 @@ namespace ScriptEngine.Machine
 
             }
 
-            RegisterType("Null", typeof(NullValueImpl));
+            RegisterType("Null", typeof(NullValue));
         }
 
         #region ITypeManager Members

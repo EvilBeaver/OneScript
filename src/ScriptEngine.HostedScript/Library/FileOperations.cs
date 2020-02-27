@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security;
-using System.Text;
 
 namespace ScriptEngine.HostedScript.Library
 {

@@ -4,7 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using ScriptEngine.Environment;
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
@@ -203,6 +203,8 @@ namespace ScriptEngine.HostedScript
         public bool ProcessLibrary(string libraryPath)
         {
             bool success;
+            _delayLoadedScripts.Clear();
+            
             if(!_customized)
             {
                 success = DefaultProcessing(libraryPath);
@@ -212,8 +214,11 @@ namespace ScriptEngine.HostedScript
                 success = CustomizedProcessing(libraryPath);
             }
 
-            if(success)
-                CompileDelayedModules();
+            if (success)
+            {
+                var library = new ExternalLibraryDef(Path.GetFileName(libraryPath));
+                CompileDelayedModules(library);
+            }
 
             return success;
         }
@@ -259,31 +264,44 @@ namespace ScriptEngine.HostedScript
             return hasFiles;
         }
 
-        private void CompileDelayedModules()
+        private void CompileDelayedModules(ExternalLibraryDef library)
         {
-            var ordered = _delayLoadedScripts.OrderBy(x => x.asClass ? 1 : 0).ToArray();
-            _delayLoadedScripts.Clear();
-
-            foreach (var script in ordered)
+            foreach (var scriptFile in _delayLoadedScripts)
             {
-                var compiler = _engine.GetCompilerService();
-
-                var source = _engine.Loader.FromFile(script.path);
-                var module = _engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null);
-
-                if(script.asClass)
+                if (scriptFile.asClass)
                 {
-                    _engine.AttachedScriptsFactory.LoadAndRegister(script.identifier, module);
-                    _env.NotifyClassAdded(module, script.identifier);
+                    library.AddClass(scriptFile.identifier, scriptFile.path);
                 }
                 else
-                {                    
-                    _env.NotifyModuleAdded(module, script.identifier);
+                {
+                    var module = library.AddModule(scriptFile.identifier, scriptFile.path);
                 }
             }
 
-            _engine.CompileEnvironmentModules(_env);
+            library.Modules.ForEach(moduleFile =>
+            {
+                var image = CompileFile(moduleFile.FilePath);
+                moduleFile.Image = image;
+            });
+            
+            library.Classes.ForEach(classFile =>
+            {
+                var image = CompileFile(classFile.FilePath);
+                _engine.AttachedScriptsFactory.LoadAndRegister(classFile.Symbol, image);
+                classFile.Image = image;
+            });
 
+            _env.InitExternalLibrary(_engine, library);
+        }
+
+        private ModuleImage CompileFile(string path)
+        {
+            var compiler = _engine.GetCompilerService();
+            
+            var source = _engine.Loader.FromFile(path);
+            var module = _engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null);
+
+            return module;
         }
     }
 }

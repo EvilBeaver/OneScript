@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = '1.2.0'
+        ReleaseNumber = '1.3.0'
         outputEnc = '65001'
     }
 
@@ -16,7 +16,6 @@ pipeline {
             // нода уже определена
             environment {
                 NugetPath = "${tool 'nuget'}"
-                OneScriptDocumenter = "${tool 'documenter'}"
                 StandardLibraryPacks = "${tool 'os_stdlib'}"
             }
 
@@ -38,8 +37,9 @@ pipeline {
                     step([$class: 'WsCleanup'])
 					checkout scm
 
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore"
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent"
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
+                    bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent /p:OneScriptDocumenter=\"%WORKSPACE%/doctool/OneScriptDocumenter.exe\""
                     
                     stash includes: 'tests, built/**', name: 'buildResults'
                 }
@@ -154,8 +154,8 @@ pipeline {
 
                 stage('DEB distribution') {
                     agent { 
-                        docker {
-                            image 'oscript/onescript-builder:deb'
+                        dockerfile {
+                            dir 'install/builders/deb'
                             label 'master' 
                         }
                     }
@@ -170,8 +170,8 @@ pipeline {
 
                 stage('RPM distribution') {
                     agent { 
-                        docker {
-                            image 'oscript/onescript-builder:rpm'
+                        dockerfile {
+                            dir 'install/builders/rpm'
                             label 'master' 
                         }
                     }
@@ -229,13 +229,12 @@ pipeline {
 
             steps {
                 
-                unstash 'winDist'
-                unstash 'debian'
-                unstash 'redhat'
-                unstash 'vsix'
-
                 dir('targetContent') {
-                    
+                    unstash 'winDist'
+                    unstash 'debian'
+                    unstash 'redhat'
+                    unstash 'vsix'
+
                     sh '''
                     WIN=../built
                     DEB=../out/deb

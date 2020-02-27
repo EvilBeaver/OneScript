@@ -329,11 +329,13 @@ namespace ScriptEngine.Machine.Contexts
                 return methodClojure;
             }
 
+            // ReSharper disable once UnusedMember.Local
             private static T ConvertParam<T>(IValue value)
             {
                 return ContextValuesMarshaller.ConvertParam<T>(value);
             }
 
+            // ReSharper disable once UnusedMember.Local
             private static T ConvertParam<T>(IValue value, object def)
             {
                 if (value == null || value.DataType == DataType.NotAValidValue)

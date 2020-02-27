@@ -67,6 +67,7 @@
         <CallTarget Targets="GatherLibrary" />
         <CallTarget Targets="GatherExamples" />
         <CallTarget Targets="GatherDocuments"  Condition=" '$(OneScriptDocumenter)' != '' "/>
+        <CallTarget Targets="CleanIntermediates"/>
         
     </Target>
     
@@ -105,8 +106,6 @@
         <Copy SourceFiles="@(DbgPackageFiles)" DestinationFolder="$(DebugDest)"/>
         <Copy SourceFiles="@(DbgImageFiles)" DestinationFolder="$(DebugDest)/images"/>
 
-        <CallTarget Targets="CleanIntermediates"/>
-
         <Exec WorkingDirectory="$(TempFolder)" Command="&quot;$(ToolFolder)/oscript.exe&quot; -version > VERSION"/>
     </Target>
 
@@ -114,7 +113,7 @@
     <Target Name="GatherLibrary" DependsOnTargets="Make;GatherBinaries">
         
         <MakeDir Directories="$(LibFolder)" />
-        <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.14.4.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
+        <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.16.1.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
         <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
         <DeleteTree Directories="$(LibFolder)\tmp"/>
@@ -126,7 +125,7 @@
     <!-- Копирует поставляемые файлы stdlib, если они есть на машине сборки -->
     <Target Name="InstallStdLib">
         <ItemGroup>
-            <LibraryFiles Include="$(StandardLibraryPacks)\**\*" />
+            <LibraryFiles Include="$(StandardLibraryPacks)\**\*" Exclude="package-loader.os"/>
         </ItemGroup>
         <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/>
     </Target>
@@ -160,7 +159,6 @@
         <ItemGroup>
             <ExcludedArtifacts Include="$(TempFolder)/%(PlatformItem.BinFolder)/*.pdb" />
             <ExcludedArtifacts Include="$(TempFolder)/%(PlatformItem.BinFolder)/*.xml" />
-            <ExcludedArtifacts Include="$(TempFolder)/%(PlatformItem.BinFolder)/Costura.dll" />
             <!-- остается от документера. Надо починить его чтобы писал куда-то в другое место -->
             <ExcludedArtifacts Include="$(MSBuildProjectDirectory)/map.json"/>
         </ItemGroup>

@@ -9,9 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Threading;
-
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
@@ -477,13 +474,6 @@ namespace ScriptEngine.HostedScript.Library
             else
                 return true;
             
-        }
-
-        [ContextMethod("IsValueFilled", IsDeprecated = true, ThrowOnUse = false)]
-        [Obsolete]
-        public bool IsValueFilled(IValue value)
-        {
-            return ValueIsFilled(value);
         }
 
         /// <summary>

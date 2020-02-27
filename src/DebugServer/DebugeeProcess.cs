@@ -74,7 +74,12 @@ namespace DebugServer
         
         public void Connect(int port, IDebugEventListener listener)
         {
-            var channelFactory = new DuplexChannelFactory<IDebuggerService>(listener, Binder.GetBinding(), new EndpointAddress(Binder.GetDebuggerUri(port)));
+            var binding = (NetTcpBinding)Binder.GetBinding();
+            binding.MaxBufferPoolSize = 5000000;
+            binding.MaxBufferSize = 5000000;
+            binding.MaxReceivedMessageSize = 5000000;
+
+            var channelFactory = new DuplexChannelFactory<IDebuggerService>(listener, binding, new EndpointAddress(Binder.GetDebuggerUri(port)));
 
             _debugger = new ServiceProxy<IDebuggerService>(channelFactory.CreateChannel);
             

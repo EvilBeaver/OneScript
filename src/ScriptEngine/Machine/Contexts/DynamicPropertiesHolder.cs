@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -54,14 +53,10 @@ namespace ScriptEngine.Machine.Contexts
 
         public int GetPropertyNumber(string name)
         {
-            try
-            {
-                return _propNumbers[name];
-            }
-            catch (KeyNotFoundException)
-            {
-                throw RuntimeException.PropNotFoundException(name);
-            }
+            if (_propNumbers.TryGetValue(name, out var index))
+                return index;
+            
+            throw RuntimeException.PropNotFoundException(name);
         }
 
         public string GetPropertyName(int idx)

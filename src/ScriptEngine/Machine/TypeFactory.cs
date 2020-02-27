@@ -10,8 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using Refl = System.Reflection;
 
 namespace ScriptEngine.Machine
@@ -138,6 +136,7 @@ namespace ScriptEngine.Machine
             };
         }
 
+        // ReSharper disable once UnusedMember.Global
         internal static IValue[] CaptureVariantArgs(IValue[] sourceArgs, int startingFrom)
         {
             var newArray = new IValue[sourceArgs.Length - startingFrom];

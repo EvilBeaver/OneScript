@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Language;
-using ScriptEngine;
 using ScriptEngine.HostedScript.Library;
 
 namespace oscript
@@ -55,14 +54,14 @@ namespace oscript
 		}
 
 		public static void ShowExceptionInfo(Exception exc)
-		{
+		{ 
 			if (exc is ScriptException exception)
-		    {
-		        var rte = exception;
-		        Echo(rte.MessageWithoutCodeFragment);
-		    }
+			{
+			    var rte = exception;
+			    Echo(rte.MessageWithoutCodeFragment);
+			}
 		    else
-		        Echo(exc.Message);
+		         Echo(exc.ToString());
 		}
 
 		public static bool InputString(out string result, int maxLen)

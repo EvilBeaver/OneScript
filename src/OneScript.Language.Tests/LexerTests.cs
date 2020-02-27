@@ -1,7 +1,7 @@
 /*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
@@ -18,7 +18,7 @@ namespace OneScript.Language.Tests
             var lexer = new Lexer();
             Assert.True(lexer.CurrentColumn == CodePositionInfo.OUT_OF_TEXT);
             Assert.True(lexer.CurrentLine == CodePositionInfo.OUT_OF_TEXT);
-            
+
         }
 
         [Fact]
@@ -40,11 +40,11 @@ namespace OneScript.Language.Tests
         {
             string code = "Б = 1;";
             var iterator = new SourceCodeIterator(code);
-            
+
             Assert.True(iterator.CurrentLine == 1);
             Assert.True(iterator.CurrentSymbol == '\0');
             Assert.True(iterator.PeekNext() == 'Б');
-            
+
             Assert.True(iterator.MoveNext());
             Assert.True(iterator.CurrentLine == 1);
             Assert.True(iterator.CurrentSymbol == 'Б');
@@ -84,7 +84,7 @@ namespace OneScript.Language.Tests
             Assert.False(iterator.MoveNext());
             Assert.True(iterator.CurrentSymbol == '\0');
             Assert.True(iterator.PeekNext() == '\0');
-            
+
 
         }
 
@@ -195,7 +195,7 @@ namespace OneScript.Language.Tests
             SourceCodeIterator iterator;
             Lexem lex;
             StringLexerState state = new StringLexerState();
-            
+
             code = " \"-just string \"";
             iterator = new SourceCodeIterator(code);
             iterator.MoveToContent();
@@ -241,7 +241,7 @@ namespace OneScript.Language.Tests
             iterator = new SourceCodeIterator(code);
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
-            Assert.True(lex.Type == LexemType.BooleanLiteral);
+            Assert.Equal(LexemType.BooleanLiteral, lex.Type);
             Assert.Equal("Истина", lex.Content);
 
             iterator.MoveToContent();
@@ -284,13 +284,13 @@ namespace OneScript.Language.Tests
             var iterator = new SourceCodeIterator(code);
             var wordParser = new PreprocessorDirectiveLexerState();
             Lexem lex;
-            
+
             iterator.MoveToContent();
             lex = wordParser.ReadNextLexem(iterator);
             Assert.Equal(LexemType.PreprocessorDirective, lex.Type);
             Assert.Equal("Если", lex.Content);
             Assert.Equal(Token.If, lex.Token);
-            
+
             iterator.MoveToContent();
             lex = wordParser.ReadNextLexem(iterator);
             Assert.Equal(LexemType.PreprocessorDirective, lex.Type);
@@ -366,7 +366,7 @@ namespace OneScript.Language.Tests
             Assert.True(lex.Type == LexemType.DateLiteral);
             Assert.Equal("12341212", lex.Content);
         }
-        
+
         [Fact]
         public void Date_LexerState_Works_With_14_Numbers()
         {
@@ -521,7 +521,7 @@ namespace OneScript.Language.Tests
                     e.Iterator.MoveNext();
                     e.IsHandled = true;
                 };
-                
+
             Lexem lex = lexer.NextLexem();
             Assert.Equal("А", lex.Content);
             lex = lexer.NextLexem();

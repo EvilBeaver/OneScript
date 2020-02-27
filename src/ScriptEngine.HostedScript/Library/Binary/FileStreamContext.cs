@@ -25,25 +25,29 @@ namespace ScriptEngine.HostedScript.Library.Binary
         private readonly FileStream _underlyingStream;
         private readonly GenericStreamImpl _commonImpl;
 
+        private FileShare FileShareForAccess(FileAccessEnum access)
+        {
+            return access == FileAccessEnum.Read ? FileShare.ReadWrite : FileShare.Read;
+        }
+
         public FileStreamContext(string filename, FileOpenModeEnum openMode, FileAccessEnum access, int bufferSize = 0)
         {
             FileName = filename;
 
-            if(bufferSize == 0)
-                _underlyingStream = new FileStream(filename, 
+            if (bufferSize == 0)
+                _underlyingStream = new FileStream(filename,
                     FileStreamsManager.ConvertFileOpenModeToCLR(openMode),
                     FileStreamsManager.ConvertFileAccessToCLR(access),
-                    FileShare.Read);
+                    FileShareForAccess(access));
             else
-                _underlyingStream = new FileStream(filename, 
-                    FileStreamsManager.ConvertFileOpenModeToCLR(openMode), 
+                _underlyingStream = new FileStream(filename,
+                    FileStreamsManager.ConvertFileOpenModeToCLR(openMode),
                     FileStreamsManager.ConvertFileAccessToCLR(access),
-                    FileShare.Read,
+                    FileShareForAccess(access),
                     bufferSize);
 
             _commonImpl = new GenericStreamImpl(_underlyingStream);
-
-    }
+        }
 
         public FileStreamContext(string fileName, FileStream openedStream)
         {

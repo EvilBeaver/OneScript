@@ -6,14 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Machine.Contexts;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine
 {
@@ -287,6 +286,11 @@ namespace ScriptEngine.Machine
         
         #endregion
 
+        /// <summary>
+        /// Обработчик событий, генерируемых классами прикладной логики.
+        /// </summary>
+        public IEventProcessor EventProcessor { get; set; }
+        
         private ScriptInformationContext CurrentScript
         {
             get
@@ -599,6 +603,9 @@ namespace ScriptEngine.Machine
                 PushTmp,
                 PopTmp,
                 Execute,
+                AddHandler,
+                RemoveHandler,
+                ExitTry,
 
                 //built-ins
                 Eval,
@@ -1502,6 +1509,38 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void AddHandler(int arg)
+        {
+            var handlerMethod = _operationStack.Pop().AsString();
+            var handlerTarget = _operationStack.Pop().AsObject();
+            var eventName = _operationStack.Pop().AsString();
+            var eventSource = _operationStack.Pop().AsObject();
+
+            EventProcessor?.AddHandler(eventSource, eventName, handlerTarget, handlerMethod);
+            
+            NextInstruction();
+        }
+        
+        private void RemoveHandler(int arg)
+        {
+            var handlerMethod = _operationStack.Pop().AsString();
+            var handlerTarget = _operationStack.Pop().AsObject();
+            var eventName = _operationStack.Pop().AsString();
+            var eventSource = _operationStack.Pop().AsObject();
+            
+            EventProcessor?.RemoveHandler(eventSource, eventName, handlerTarget, handlerMethod);
+            
+            NextInstruction();
+        }
+
+        private void ExitTry(int arg)
+        {
+            while (arg-- > 0)
+                _exceptionsStack.Pop();
+            
+            NextInstruction();
+        }
+        
         #endregion
 
         #region Built-in functions

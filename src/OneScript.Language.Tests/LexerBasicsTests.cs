@@ -331,7 +331,62 @@ namespace OneScript.Language.Tests
             Assert.False(LanguageDef.IsValidIdentifier("V a r"));
             Assert.False(LanguageDef.IsValidIdentifier("Var$"));
             Assert.False(LanguageDef.IsValidIdentifier(null));
+        }
 
+        [Fact]
+        public void UndefinesLiteralsAreCaseIgnorant()
+        {
+            Assert.True(LanguageDef.IsUndefinedString("неоПреДЕЛеНо"));
+            Assert.True(LanguageDef.IsUndefinedString("unDEFineD"));
+
+            Assert.False(LanguageDef.IsUndefinedString("Не"));
+        }
+
+        [Fact]
+        public void BooleanLiteralsAreCaseIgnorant()
+        {
+            Assert.True(LanguageDef.IsBooleanLiteralString("Истина"));
+            Assert.True(LanguageDef.IsBooleanLiteralString("ИстиНа"));
+            Assert.True(LanguageDef.IsBooleanLiteralString("истиНа"));
+            Assert.True(LanguageDef.IsBooleanLiteralString("ложь"));
+            Assert.True(LanguageDef.IsBooleanLiteralString("ЛОЖЬ"));
+            Assert.True(LanguageDef.IsBooleanLiteralString("ЛоЖЬ"));
+
+            Assert.True(LanguageDef.IsBooleanLiteralString("True"));
+            Assert.True(LanguageDef.IsBooleanLiteralString("true"));
+            Assert.True(LanguageDef.IsBooleanLiteralString("trUe"));
+
+            Assert.True(LanguageDef.IsBooleanLiteralString("false"));
+            Assert.True(LanguageDef.IsBooleanLiteralString("fAlsE"));
+            Assert.True(LanguageDef.IsBooleanLiteralString("FaLSE"));
+
+            Assert.False(LanguageDef.IsBooleanLiteralString("Undefined"));
+        }
+
+        [Fact]
+        public void LogicalOperatorsAreCaseIgnorant()
+        {
+            Assert.True(LanguageDef.IsLogicalOperatorString("и"));
+            Assert.True(LanguageDef.IsLogicalOperatorString("И"));
+
+            Assert.True(LanguageDef.IsLogicalOperatorString("иЛи"));
+            Assert.True(LanguageDef.IsLogicalOperatorString("Или"));
+
+            Assert.True(LanguageDef.IsLogicalOperatorString("не"));
+            Assert.True(LanguageDef.IsLogicalOperatorString("нЕ"));
+            Assert.True(LanguageDef.IsLogicalOperatorString("Не"));
+
+            Assert.True(LanguageDef.IsLogicalOperatorString("and"));
+            Assert.True(LanguageDef.IsLogicalOperatorString("aND"));
+
+            Assert.True(LanguageDef.IsLogicalOperatorString("or"));
+            Assert.True(LanguageDef.IsLogicalOperatorString("oR"));
+
+            Assert.True(LanguageDef.IsLogicalOperatorString("nOt"));
+            Assert.True(LanguageDef.IsLogicalOperatorString("Not"));
+            Assert.True(LanguageDef.IsLogicalOperatorString("NOT"));
+
+            Assert.False(LanguageDef.IsLogicalOperatorString("Истина"));
         }
     }
 }

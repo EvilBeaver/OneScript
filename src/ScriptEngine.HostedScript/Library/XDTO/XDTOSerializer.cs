@@ -11,6 +11,7 @@ using System.Xml.Schema;
 using ScriptEngine.HostedScript.Library.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.HostedScript.Library.XDTO
 {

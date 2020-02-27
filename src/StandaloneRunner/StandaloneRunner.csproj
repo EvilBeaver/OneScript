@@ -22,11 +22,15 @@
   <ItemGroup>
     <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
+    <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Costura.Fody" Version="3.3.3" />
-    <PackageReference Include="Fody" Version="4.2.1" />
+    <EmbeddedResource Include="ScriptEngine.dll" />
+    <EmbeddedResource Include="ScriptEngine.HostedScript.dll" />
+    <EmbeddedResource Include="DotNetZip.dll" />
+    <EmbeddedResource Include="Newtonsoft.Json.dll" />
+    <EmbeddedResource Include="OneScript.Language.dll" />
   </ItemGroup>
 
   <Target Name="CleanExternals" AfterTargets="Clean">

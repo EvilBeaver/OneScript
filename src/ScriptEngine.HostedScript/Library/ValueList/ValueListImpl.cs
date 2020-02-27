@@ -6,10 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.HostedScript.Library.ValueList
 {
