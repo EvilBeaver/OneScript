@@ -172,7 +172,7 @@ namespace ScriptEngine.HostedScript
             return compilerSvc;
         }
 
-        public IEnumerable<UserAddedScript> GetUserAddedScripts()
+        public IEnumerable<ExternalLibraryDef> GetExternalLibraries()
         {
             return _env.GetUserAddedScripts();
         }

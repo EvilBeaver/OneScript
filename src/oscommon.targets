@@ -10,6 +10,15 @@
         <LangVersion>7</LangVersion>
     </PropertyGroup>
 	
+    <PropertyGroup>
+        <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
+        <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+        <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
+        <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
+    </PropertyGroup>
+    
     <!--Общие свойства для проектов-->
     <PropertyGroup>
         <Version>$(ReleaseNumber).$(BuildNumber)</Version>

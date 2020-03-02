@@ -201,31 +201,5 @@ namespace ScriptEngine
         }
 
         #endregion
-
-        public void CompileEnvironmentModules(RuntimeEnvironment env)
-        {
-            var scripts = env.GetUserAddedScripts().Where(x => x.Type == UserAddedScriptType.Module && env.GetGlobalProperty(x.Symbol) == null)
-                             .ToArray();
-
-            if (scripts.Length > 0)
-            {
-                var loadedObjects = new ScriptDrivenObject[scripts.Length];
-                for(var i = 0; i < scripts.Length; i++)
-                {
-                    var script = scripts[i];
-                    var loaded = LoadModuleImage(script.Image);
-
-                    var instance = CreateUninitializedSDO(loaded);
-                    env.SetGlobalProperty(script.Symbol, instance);
-                    loadedObjects[i] = instance;
-                }
-
-                foreach (var instance in loadedObjects)
-                {
-                    InitializeSDO(instance);
-                }
-            }
-        }
-        
     }
 }

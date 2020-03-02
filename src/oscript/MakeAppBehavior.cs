@@ -69,7 +69,9 @@ namespace oscript
 	        engine.SetGlobalEnvironment(new DoNothingHost(), source);
 	        var entry = compiler.Compile(source);
 
-	        var embeddedContext = engine.GetUserAddedScripts();
+	        var embeddedContext = engine.GetExternalLibraries()
+		        .SelectMany(x => x.Modules.Concat(x.Classes));
+	        
 	        var templates = GlobalsManager.GetGlobalContext<TemplateStorage>();
 
 	        var dump = new ApplicationDump();
@@ -90,7 +92,7 @@ namespace oscript
 	        // не пишем абсолютных путей в дамп
 	        foreach (var script in dump.Scripts)
 	        {
-		        script.Image.ModuleInfo.Origin = "oscript://" + Path.GetFileName(script.Image.ModuleInfo.Origin);
+		        script.Image.ModuleInfo.Origin = "oscript://" + script.ModuleName();
 		        script.Image.ModuleInfo.ModuleName = script.Image.ModuleInfo.Origin;
 	        }
 

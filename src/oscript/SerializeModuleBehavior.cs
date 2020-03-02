@@ -39,7 +39,7 @@ namespace oscript
             var compiler = engine.GetCompilerService();
             engine.SetGlobalEnvironment(new DoNothingHost(), source);
             var entry = compiler.Compile(source);
-            var embeddedContext = engine.GetUserAddedScripts();
+            var embeddedContext = engine.GetExternalLibraries();
 
             var serializer = new JsonSerializer();
             var sb = new StringBuilder();
@@ -55,9 +55,11 @@ namespace oscript
                     Image = entry
                 }, writer, serializer);
 
-                var userAddedScripts = embeddedContext as IList<UserAddedScript> ?? embeddedContext.ToList();
-                foreach (var item in userAddedScripts)
-                    WriteImage(item, writer, serializer);
+                foreach (var item in embeddedContext)
+                {
+                    item.Classes.ForEach(x => WriteImage(x, writer, serializer));
+                    item.Modules.ForEach(x => WriteImage(x, writer, serializer));
+                }
 
                 writer.WriteEndArray();
             }

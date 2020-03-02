@@ -53,14 +53,10 @@ namespace ScriptEngine.Machine.Contexts
 
         public int GetPropertyNumber(string name)
         {
-            try
-            {
-                return _propNumbers[name];
-            }
-            catch (KeyNotFoundException)
-            {
-                throw RuntimeException.PropNotFoundException(name);
-            }
+            if (_propNumbers.TryGetValue(name, out var index))
+                return index;
+            
+            throw RuntimeException.PropNotFoundException(name);
         }
 
         public string GetPropertyName(int idx)

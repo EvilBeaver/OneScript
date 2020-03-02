@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = '1.3.0'
+        ReleaseNumber = '1.4.0'
         outputEnc = '65001'
     }
 
@@ -229,12 +229,13 @@ pipeline {
 
             steps {
                 
-                dir('targetContent') {
-                    unstash 'winDist'
-                    unstash 'debian'
-                    unstash 'redhat'
-                    unstash 'vsix'
+                unstash 'winDist'
+                unstash 'debian'
+                unstash 'redhat'
+                unstash 'vsix'
 
+                dir('targetContent') {
+                    
                     sh '''
                     WIN=../built
                     DEB=../out/deb

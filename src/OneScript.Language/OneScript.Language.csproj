@@ -11,12 +11,6 @@
 
   <PropertyGroup>
     <PackageId>OneScript.Language</PackageId>
-    <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
-    <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
-    <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
-    <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
-    <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Title>OneScript BSL Parse Tools</Title>
     <PackageDescription>Parser components for 1Script and/or BSL</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2019</PackageCopyright>

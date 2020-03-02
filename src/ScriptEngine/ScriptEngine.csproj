@@ -14,12 +14,7 @@
   
   <PropertyGroup>
     <PackageId>OneScript</PackageId>
-    <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
     <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
-    <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
-    <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
-    <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Title>OneScript Core Runtime</Title>
     <PackageDescription>Core Runtime Engine for 1Script</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
