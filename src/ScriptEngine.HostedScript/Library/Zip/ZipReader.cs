@@ -91,9 +91,9 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
             realEntry.Password = password;
 
-            using (FileStream StreamToExtract = new FileStream(Path.Combine(destination, entry.Name), FileMode.Create))
+            using (FileStream streamToExtract = new FileStream(Path.Combine(destination, entry.Name), FileMode.Create))
             {
-                realEntry.Extract(StreamToExtract);
+                realEntry.Extract(streamToExtract);
             }
         }
 
