@@ -9,6 +9,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Text;
+using System.IO;
 
 namespace ScriptEngine.HostedScript.Library.Zip
 {
@@ -89,7 +90,21 @@ namespace ScriptEngine.HostedScript.Library.Zip
             var realEntry = entry.GetZipEntry();
             _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
             realEntry.Password = password;
-            realEntry.Extract(destination);
+            
+            FileStream StreamToExtract = new FileStream(Path.Combine(destination, entry.Name), FileMode.Create);
+            
+            try
+            {
+                realEntry.Extract(StreamToExtract);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                StreamToExtract.Close();
+            }
         }
 
         /// <summary>
