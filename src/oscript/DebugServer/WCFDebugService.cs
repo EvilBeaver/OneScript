@@ -278,9 +278,13 @@ namespace oscript.DebugServer
 
                 IVariable value;
 
+                //Свойство может иметь другой номер, отличный от i,
+                //если это ДЗ или подобная коллекция
+                var propNum = obj.FindProperty(propName);
+
                 try
                 {
-                    value = MachineVariable.Create(obj.GetPropValue(i), propName);
+                    value = MachineVariable.Create(obj.GetPropValue(propNum), propName);
                 }
                 catch (Exception e)
                 {
@@ -348,7 +352,7 @@ namespace oscript.DebugServer
             var result = HasProperties(variable) || HasIndexes(variable);
             if(!result)
             {
-                if (variable.DataType == DataType.Object)
+                if (VariableHasType(variable, DataType.Object))
                 {
                     var obj = variable.AsObject();
                     result = obj is IEnumerable<KeyAndValueImpl>;
@@ -359,7 +363,7 @@ namespace oscript.DebugServer
 
         private bool HasIndexes(IValue variable)
         {
-            if (variable.DataType == DataType.Object)
+            if (VariableHasType(variable, DataType.Object))
             {
                 var obj = variable.AsObject();
                 if (!(obj is IEnumerable<KeyAndValueImpl>)
@@ -377,13 +381,15 @@ namespace oscript.DebugServer
 
         private static bool HasProperties(IValue variable)
         {
-            if (variable.DataType == DataType.Object)
-            {
-                var obj = variable.AsObject();
-                return obj.GetPropCount() > 0;
-            }
+            if (!VariableHasType(variable, DataType.Object))
+                return false;
+            var obj = variable.AsObject();
+            return obj.GetPropCount() > 0;
+        }
 
-            return false;
+        private static bool VariableHasType(IValue variable, DataType type)
+        {
+            return variable.GetRawValue() != null && variable.DataType == type;
         }
 
         #endregion
