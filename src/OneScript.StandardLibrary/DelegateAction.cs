@@ -9,7 +9,7 @@ using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library
+namespace OneScript.StandardLibrary
 {
     /// <summary>
     /// Делегат для выполнения метода в другом объекте

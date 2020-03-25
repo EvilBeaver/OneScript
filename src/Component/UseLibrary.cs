@@ -13,6 +13,7 @@ using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.Collections.ValueTree;
 using OneScript.StandardLibrary.Http;
 using OneScript.StandardLibrary.Net;
+using OneScript.StandardLibrary.Processes;
 using OneScript.StandardLibrary.Text;
 using OneScript.StandardLibrary.TypeDescription;
 using OneScript.StandardLibrary.Xml;

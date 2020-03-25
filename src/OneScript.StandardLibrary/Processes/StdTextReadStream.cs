@@ -10,7 +10,7 @@ using System.IO;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace OneScript.StandardLibrary
+namespace OneScript.StandardLibrary.Processes
 {
     /// <summary>
     /// Стандартный поток вывода текста.

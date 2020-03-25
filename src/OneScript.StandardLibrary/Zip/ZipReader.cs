@@ -10,6 +10,7 @@ using System.Text;
 using Ionic.Zip;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System.IO;
 
 namespace OneScript.StandardLibrary.Zip
 {
@@ -90,7 +91,11 @@ namespace OneScript.StandardLibrary.Zip
             var realEntry = entry.GetZipEntry();
             _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
             realEntry.Password = password;
-            realEntry.Extract(destination);
+
+            using (FileStream streamToExtract = new FileStream(Path.Combine(destination, entry.Name), FileMode.Create))
+            {
+                realEntry.Extract(streamToExtract);
+            }
         }
 
         /// <summary>

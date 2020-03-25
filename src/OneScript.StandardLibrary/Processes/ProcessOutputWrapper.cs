@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using sys = System.Diagnostics;
 
-namespace OneScript.StandardLibrary
+namespace OneScript.StandardLibrary.Processes
 {
     class ProcessOutputWrapper : TextReader
     {

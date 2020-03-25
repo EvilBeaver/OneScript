@@ -120,9 +120,9 @@ namespace OneScript.StandardLibrary.Binary
             ThrowIfReadonly();
 
             if (number == 0)
-                Array.Copy(bytes._buffer, _buffer, bytes._buffer.Length);
+                Array.Copy(bytes._buffer, 0, _buffer, position, bytes._buffer.Length);
             else
-                Array.Copy(bytes._buffer, _buffer, number);
+                Array.Copy(bytes._buffer, 0, _buffer, position, number);
         }
 
         private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, IValue byteOrder = null)

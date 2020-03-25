@@ -9,7 +9,7 @@ using System;
 using System.IO;
 using ScriptEngine.Machine.Contexts;
 
-namespace OneScript.StandardLibrary
+namespace OneScript.StandardLibrary.Processes
 {
     /// <summary>
     /// Стандартный поток ввода текста. Используется для взаимодействия с работающими процессами.

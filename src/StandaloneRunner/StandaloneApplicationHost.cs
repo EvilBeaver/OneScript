@@ -6,9 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.StandardLibrary;
 using oscript;
 using ScriptEngine.HostedScript;
-using ScriptEngine.HostedScript.Library;
 
 namespace StandaloneRunner
 {

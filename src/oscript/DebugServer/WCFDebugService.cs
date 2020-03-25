@@ -9,9 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
-
 using OneScript.DebugProtocol;
 using OneScript.Language;
 using OneScript.StandardLibrary;
@@ -190,16 +187,24 @@ namespace oscript.DebugServer
                     typeName = e.Message;
                 }
 
-                result[i] = new Variable()
-                {
-                    Name = currentVar.Name,
-                    IsStructured = IsStructured(currentVar),
-                    Presentation = presentation,
-                    TypeName = typeName
-                };
+                result[i] = CreateDebuggerVariable(currentVar.Name, presentation, typeName);
+                result[i].IsStructured = IsStructured(currentVar);
             }
 
             return result;
+        }
+
+        public Variable CreateDebuggerVariable(string name, string presentation, string typeName)
+        {
+            if (presentation.Length > DebuggerSettings.MAX_PRESENTATION_LENGTH)
+                presentation = presentation.Substring(0, DebuggerSettings.MAX_PRESENTATION_LENGTH) + "...";
+
+            return new Variable()
+            {
+                Name = name,
+                Presentation = presentation,
+                TypeName = typeName
+            };
         }
 
         private List<IVariable> GetChildVariables(IVariable src)
@@ -295,23 +300,18 @@ namespace oscript.DebugServer
             try
             {
                 var value = GetMachine(threadId).Evaluate(expression, true);
-                return new Variable()
-                {
-                    Name = "$evalResult",
-                    Presentation = value.AsString(),
-                    TypeName = value.SystemType.Name,
-                    IsStructured = IsStructured(MachineVariable.Create(value, "$eval"))
-                };
+                
+                var variable = CreateDebuggerVariable("$evalResult",
+                    value.AsString(), value.SystemType.Name);
+
+                variable.IsStructured = IsStructured(MachineVariable.Create(value, "$eval"));
+
+                return variable;
             }
             catch (ScriptException e)
             {
-                return new Variable()
-                {
-                    Name = "$evalFault",
-                    Presentation = e.ErrorDescription,
-                    TypeName = "Ошибка",
-                    IsStructured = false
-                };
+                return CreateDebuggerVariable("$evalFault", e.ErrorDescription,
+                    "Ошибка");
             }
         }
 
