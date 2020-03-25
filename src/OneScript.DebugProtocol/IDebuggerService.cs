@@ -49,6 +49,16 @@ namespace OneScript.DebugProtocol
         Variable[] GetVariables(int threadId, int frameIndex, int[] path);
 
         /// <summary>
+        /// Получает значения переменных вычисленного выражения
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="frameIndex"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        [OperationContract]
+        Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path);
+
+        /// <summary>
         /// Вычисление выражения на остановленном процессе
         /// </summary>
         /// <param name="threadId"></param>

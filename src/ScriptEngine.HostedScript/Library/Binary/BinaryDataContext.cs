@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 using ScriptEngine.Machine;
@@ -104,8 +103,8 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("ОткрытьПотокДляЧтения", "OpenStreamForRead")]
         public GenericStream OpenStreamForRead()
         {
-            var stream = new MemoryStream(_buffer);
-            return new GenericStream(stream);
+            var stream = new MemoryStream(_buffer, 0, _buffer.Length, false, true);
+            return new GenericStream(stream, true);
         }
 
         [ScriptConstructor(Name = "На основании файла")]

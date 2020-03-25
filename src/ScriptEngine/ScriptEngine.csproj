@@ -3,8 +3,9 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
-    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
-    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <TargetFrameworks>net452;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -13,12 +14,7 @@
   
   <PropertyGroup>
     <PackageId>OneScript</PackageId>
-    <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
     <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
-    <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
-    <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
-    <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Title>OneScript Core Runtime</Title>
     <PackageDescription>Core Runtime Engine for 1Script</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
@@ -34,9 +30,9 @@
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
-    <PackageReference Include="Costura.Fody" Version="3.3.3" />
-    <PackageReference Include="Fody" Version="4.2.1" />
-  </ItemGroup>
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+    <Message Text="Copying StandaloneRunner resources" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
+  </Target>
   
 </Project>

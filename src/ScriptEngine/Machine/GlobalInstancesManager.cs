@@ -4,10 +4,10 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.Machine
 {
@@ -32,6 +32,11 @@ namespace ScriptEngine.Machine
             _instances.Add(instance.GetType(), instance);
         }
 
+        public static void RegisterInstance(Type type, object instance)
+        {
+            _instances.Add(type, instance);
+        }
+
         public static T GetGlobalContext<T>()
         {
             return InternalGetInstance<T>();
@@ -40,6 +45,11 @@ namespace ScriptEngine.Machine
         public static T GetEnum<T>()
         {
             return InternalGetInstance<T>();
+        }
+
+        public static EnumerationContext GetSimpleEnum(Type type)
+        {
+            return (EnumerationContext)_instances[type];
         }
 
         private static T InternalGetInstance<T>()

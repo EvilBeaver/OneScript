@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
-	public sealed class ValueBinder : System.Reflection.Binder
+	public sealed class ValueBinder : Binder
 	{
 		public override FieldInfo BindToField(BindingFlags bindingAttr, FieldInfo[] match, object value, CultureInfo culture)
 		{

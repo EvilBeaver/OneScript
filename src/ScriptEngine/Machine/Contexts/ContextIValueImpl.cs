@@ -120,14 +120,10 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual bool Equals(IValue other)
         {
-            if (other.SystemType.Equals(this.SystemType))
-            {
-                return Object.ReferenceEquals(this.AsObject(), other.AsObject());
-            }
-            else
-            {
+            if (other == null)
                 return false;
-            }
+
+            return other.SystemType.Equals(this.SystemType) && Object.ReferenceEquals(this.AsObject(), other.AsObject());
         }
 
         #endregion

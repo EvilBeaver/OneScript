@@ -6,14 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Machine.Contexts;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine
 {
@@ -221,27 +220,45 @@ namespace ScriptEngine.Machine
             var code = CompileExpressionModule(expression);
 
             MachineInstance runner;
+            MachineInstance currentMachine;
             if (separate)
             {
                 runner = new MachineInstance();
                 runner._scopes = new List<Scope>(_scopes);
+                currentMachine = Current;
+                SetCurrentMachineInstance(runner);
             }
             else
+            {
+                currentMachine = null;
                 runner = this;
+            }
 
-            var frame = new ExecutionFrame();
-            frame.MethodName = code.ModuleInfo.ModuleName;
-            frame.Locals = new IVariable[0];
-            frame.InstructionPointer = 0;
-            frame.Module = code;
-            
-            var mlocals = new Scope();
-            mlocals.Instance = new UserScriptContextInstance(code);
-            mlocals.Methods = TopScope.Methods;
-            mlocals.Variables = _currentFrame.Locals;
-            runner._scopes.Add(mlocals);
-            frame.ModuleScope = mlocals;
-            frame.ModuleLoadIndex = runner._scopes.Count - 1;
+            ExecutionFrame frame;
+
+            try
+            {
+                frame = new ExecutionFrame();
+                frame.MethodName = code.ModuleInfo.ModuleName;
+                frame.Locals = new IVariable[0];
+                frame.InstructionPointer = 0;
+                frame.Module = code;
+
+                var mlocals = new Scope();
+                mlocals.Instance = new UserScriptContextInstance(code);
+                mlocals.Methods = TopScope.Methods;
+                mlocals.Variables = _currentFrame.Locals;
+                runner._scopes.Add(mlocals);
+                frame.ModuleScope = mlocals;
+                frame.ModuleLoadIndex = runner._scopes.Count - 1;
+            }
+            finally
+            {
+                if (separate)
+                {
+                    SetCurrentMachineInstance(currentMachine);
+                }
+            }
 
             try
             {
@@ -255,6 +272,10 @@ namespace ScriptEngine.Machine
                     PopFrame();
                     _scopes.RemoveAt(_scopes.Count - 1);
                 }
+                else
+                {
+                    SetCurrentMachineInstance(currentMachine);
+                }
             }
 
             var result = runner._operationStack.Pop();
@@ -265,6 +286,11 @@ namespace ScriptEngine.Machine
         
         #endregion
 
+        /// <summary>
+        /// Обработчик событий, генерируемых классами прикладной логики.
+        /// </summary>
+        public IEventProcessor EventProcessor { get; set; }
+        
         private ScriptInformationContext CurrentScript
         {
             get
@@ -513,7 +539,7 @@ namespace ScriptEngine.Machine
             if (_module.ModuleInfo != null)
             {
                 exc.ModuleName = _module.ModuleInfo.ModuleName;
-                exc.Code = _module.ModuleInfo.CodeIndexer.GetCodeLine(exc.LineNumber);
+                exc.Code = _module.ModuleInfo.CodeIndexer?.GetCodeLine(exc.LineNumber) ?? "<исходный код недоступен>";
             }
             else
             {
@@ -577,6 +603,9 @@ namespace ScriptEngine.Machine
                 PushTmp,
                 PopTmp,
                 Execute,
+                AddHandler,
+                RemoveHandler,
+                ExitTry,
 
                 //built-ins
                 Eval,
@@ -1480,6 +1509,38 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void AddHandler(int arg)
+        {
+            var handlerMethod = _operationStack.Pop().AsString();
+            var handlerTarget = _operationStack.Pop().AsObject();
+            var eventName = _operationStack.Pop().AsString();
+            var eventSource = _operationStack.Pop().AsObject();
+
+            EventProcessor?.AddHandler(eventSource, eventName, handlerTarget, handlerMethod);
+            
+            NextInstruction();
+        }
+        
+        private void RemoveHandler(int arg)
+        {
+            var handlerMethod = _operationStack.Pop().AsString();
+            var handlerTarget = _operationStack.Pop().AsObject();
+            var eventName = _operationStack.Pop().AsString();
+            var eventSource = _operationStack.Pop().AsObject();
+            
+            EventProcessor?.RemoveHandler(eventSource, eventName, handlerTarget, handlerMethod);
+            
+            NextInstruction();
+        }
+
+        private void ExitTry(int arg)
+        {
+            while (arg-- > 0)
+                _exceptionsStack.Pop();
+            
+            NextInstruction();
+        }
+        
         #endregion
 
         #region Built-in functions
@@ -2447,6 +2508,11 @@ namespace ScriptEngine.Machine
         // multithreaded instance
         [ThreadStatic]
         private static MachineInstance _currentThreadWorker;
+
+        private static void SetCurrentMachineInstance(MachineInstance inst)
+        {
+            _currentThreadWorker = inst;
+        }
 
         public static MachineInstance Current
         {

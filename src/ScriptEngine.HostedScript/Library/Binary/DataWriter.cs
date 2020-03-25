@@ -56,7 +56,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             _writeBOM = writeBOM;
             TextEncoding = textEncoding;
 
-            _binaryWriter = new BinaryWriter(streamObj.GetUnderlyingStream(), _workingEncoding);
+            _binaryWriter = new BinaryWriter(streamObj.GetUnderlyingStream(), _workingEncoding, true);
         }
 
         /// <summary>

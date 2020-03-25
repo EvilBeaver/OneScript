@@ -35,14 +35,6 @@ namespace oscript.Web
 			FillEnvironmentVars();
 		}
 
-		[Obsolete]
-		[ContextProperty("GET")]
-		public IValue GET => _post.Params;
-
-		[Obsolete]
-		[ContextProperty("POST")]
-		public IValue POST => _post;
-
 		/// <summary>
 		///     Параметры запроса
 		/// </summary>

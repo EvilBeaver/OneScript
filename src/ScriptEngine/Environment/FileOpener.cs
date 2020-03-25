@@ -35,6 +35,16 @@ namespace ScriptEngine.Environment
             return OpenReader(filename, FileShare.ReadWrite, encoding);
         }
 
+        public static StreamReader OpenReader(Stream stream, Encoding encoding = null)
+        {
+            if(encoding == null)
+            {
+                var enc = AssumeEncoding(stream);
+                return new StreamReader(stream, enc, true);
+            }
+            return new StreamReader(stream, encoding);
+        }
+
         public static StreamWriter OpenWriter(string filename)
         {
             var utf8BOMEncoding = new UTF8Encoding(true);

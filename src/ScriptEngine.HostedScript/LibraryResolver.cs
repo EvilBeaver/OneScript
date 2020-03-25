@@ -6,9 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
-using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -7,11 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-
 using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library.Http
@@ -22,35 +18,26 @@ namespace ScriptEngine.HostedScript.Library.Http
     [ContextClass("HTTPЗапрос", "HTTPRequest")]
     public class HttpRequestContext : AutoContext<HttpRequestContext>, IDisposable
     {
+        private IHttpRequestBody _body;
 
-        IHttpRequestBody _body;
-        static readonly IHttpRequestBody _emptyBody = new HttpRequestBodyUnknown();
-
-        public HttpRequestContext()
+        private HttpRequestContext()
         {
             ResourceAddress = "";
             Headers = new MapImpl();
-            _body = _emptyBody;
         }
 
         public void Close()
         {
-            SetBody(_emptyBody);
+            SetBody(null);
         }
 
         private void SetBody(IHttpRequestBody newBody)
         {
-            _body.Dispose();
+            _body?.Dispose();
             _body = newBody;
         }
 
-        public Stream Body
-        {
-            get
-            {
-                return _body.GetDataStream();
-            }
-        }
+        public Stream Body => _body?.GetDataStream();
 
         /// <summary>
         /// Относительный путь к ресурсу на сервере (не включает имя сервера)
@@ -77,7 +64,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("ПолучитьИмяФайлаТела", "GetBodyFileName")]
         public IValue GetBodyFileName()
         {
-            return _body.GetAsFilename();
+            return _body?.GetAsFilename();
         }
 
         /// <summary>
@@ -93,7 +80,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinary")]
         public IValue GetBodyFromBinary()
         {
-            return _body.GetAsBinary();
+            return _body?.GetAsBinary();
         }
 
         /// <summary>
@@ -105,18 +92,19 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
         public void SetBodyFromString(string data, IValue encoding = null, ByteOrderMarkUsageEnum bomUsage = ByteOrderMarkUsageEnum.Auto)
         {
-            SetBody(new HttpRequestBodyString(data, encoding, bomUsage));
+            SetBody(new HttpRequestBodyBinary(data, encoding, bomUsage));
         }
 
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
         public IValue GetBodyAsString()
         {
-            return _body.GetAsString();
+            return _body?.GetAsString();
         }
 
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
         public GenericStream GetBodyAsStream()
         {
+            _body = _body ?? new HttpRequestBodyBinary();
             return new GenericStream(_body.GetDataStream());
         }
 
@@ -129,16 +117,12 @@ namespace ScriptEngine.HostedScript.Library.Http
         [ScriptConstructor(Name = "По адресу ресурса и заголовкам")]
         public static HttpRequestContext Constructor(IValue resource, IValue headers = null)
         {
-            var ctx = new HttpRequestContext();
-            ctx.ResourceAddress = resource.AsString();
-            if (headers != null)
-            {
-                var headersMap = headers.GetRawValue() as MapImpl;
-                if (headersMap == null)
-                    throw RuntimeException.InvalidArgumentType();
+            var ctx = new HttpRequestContext {ResourceAddress = resource.AsString()};
+            if (headers == null) return ctx;
+            if (!(headers.GetRawValue() is MapImpl headersMap))
+                throw RuntimeException.InvalidArgumentType();
 
-                ctx.Headers = headersMap;
-            }
+            ctx.Headers = headersMap;
 
             return ctx;
         }

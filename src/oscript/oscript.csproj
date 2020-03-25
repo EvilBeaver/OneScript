@@ -7,8 +7,8 @@
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>oscript.Program</StartupObject>
-    <Platforms>x86</Platforms>
-    <Configurations>Debug;Release;ReleaseNetStandard</Configurations>
+    <Platforms>x86;AnyCPU</Platforms>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -39,6 +39,7 @@
     <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
     <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+    <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="StandaloneRunner.exe" />

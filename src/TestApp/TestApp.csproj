@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
     <!--LanguageTargets>$(MSBuildExtensionsPath)\$(VisualStudioVersion)\Bin\Microsoft.CSharp.targets</LanguageTargets-->
-    <ApplicationIcon>script_badge.ico</ApplicationIcon>
+    <ApplicationIcon>logo.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
     <StartupObject>TestApp.App</StartupObject>
-    <Platforms>x86</Platforms>
+    <Platforms>x86;AnyCPU</Platforms>
     <Configurations>Debug;Release</Configurations>    
   </PropertyGroup>
 
@@ -38,7 +38,7 @@
     <!-- Resources -->
     <Resource Include="Controls/1CV8Syntax.xshd" />
     <Resource Include="Resources/module_icons.png" />
-    <Resource Include="script_badge.ico" />
+    <Resource Include="logo.ico" />
     
     <PackageReference Include="AvalonEdit" Version="4.4.2.9744" />
 	

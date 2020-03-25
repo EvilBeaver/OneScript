@@ -396,7 +396,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding);
-                _reader = new BinaryReader(_reader.BaseStream, _workingEncoding);
+                _reader = new BinaryReader(_reader.BaseStream, enc);
                 chars = _reader.ReadChars(count);
             }
             

@@ -8,9 +8,8 @@ using Ionic.Zip;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace ScriptEngine.HostedScript.Library.Zip
 {
@@ -91,7 +90,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
             var realEntry = entry.GetZipEntry();
             _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
             realEntry.Password = password;
-            realEntry.Extract(destination);
+
+            using (FileStream streamToExtract = new FileStream(Path.Combine(destination, entry.Name), FileMode.Create))
+            {
+                realEntry.Extract(streamToExtract);
+            }
         }
 
         /// <summary>

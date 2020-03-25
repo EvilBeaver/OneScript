@@ -6,9 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Machine.Contexts;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library
@@ -59,13 +57,6 @@ namespace ScriptEngine.HostedScript.Library
             }
 
             return result;
-        }
-
-        [ContextMethod("StrStartWith", IsDeprecated = true, ThrowOnUse = false)]
-        [Obsolete]
-        public bool StrStartWith(string inputString, string searchString)
-        {
-            return StrStartsWith(inputString, searchString);
         }
 
         /// <summary>

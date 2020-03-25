@@ -4,10 +4,8 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using System;
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ScriptEngine.Machine
 {
@@ -63,6 +61,18 @@ namespace ScriptEngine.Machine
             }
 
             return infos;
+        }
+
+        public static IValue GetPropValue(this IRuntimeContextInstance context, string propName)
+        {
+            int propNum = context.FindProperty(propName);
+
+            if (propNum == -1)
+            {
+                throw RuntimeException.InvalidArgumentValue(propName);
+            }
+
+            return context.GetPropValue(propNum);
         }
     }
 

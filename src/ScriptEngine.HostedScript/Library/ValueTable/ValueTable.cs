@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
 
@@ -594,6 +593,8 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 {
                     if (String.Compare(description[1], "DESC", true) == 0 || String.Compare(description[1], "УБЫВ", true) == 0)
                         Desc.direction = -1;
+                    else
+                        Desc.direction = 1;
                 }
                 else
                     Desc.direction = 1;

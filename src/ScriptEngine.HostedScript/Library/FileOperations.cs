@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security;
-using System.Text;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -69,7 +68,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public string PathScheme(string path)
         {
-            if(Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out Uri uri))
+            if(Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out Uri uri) && uri.IsAbsoluteUri)
             {
                 return uri.Scheme;
             }

@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
-    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net452;netstandard2.0;netstandard2.1;</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -11,16 +11,15 @@
 
   <PropertyGroup>
     <PackageId>OneScript.Language</PackageId>
-    <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
-    <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
-    <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
-    <PackageLicenseUrl>http://mozilla.org/MPL/2.0/</PackageLicenseUrl>
-    <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Title>OneScript BSL Parse Tools</Title>
     <PackageDescription>Parser components for 1Script and/or BSL</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2019</PackageCopyright>
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
   </PropertyGroup>
   
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+    <Message Text="Copying StandaloneRunner resources" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
+  </Target>
+
 </Project>

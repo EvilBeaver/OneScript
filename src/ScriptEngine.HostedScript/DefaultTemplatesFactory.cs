@@ -5,15 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-
 namespace ScriptEngine.HostedScript
 {
-    internal class DefaultTemplatesFactory : ITemplateFactory
+    public class DefaultTemplatesFactory : ITemplateFactory
     {
         public ITemplate CreateTemplate(string file, TemplateKind kind)
         {
-            return new Template(file, kind);
+            return new FileSourceTemplate(file, kind);
         }
     }
 }

@@ -7,9 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -50,6 +48,11 @@ namespace ScriptEngine.HostedScript.Library.Http
 
                 ProcessHeaders(response.Headers);
                 ProcessResponseBody(response, dumpToFile);
+                if (_body != null && _body.AutoDecompress)
+                {
+                    _headers.Delete(ValueFactory.Create("Content-Encoding"));
+                    _headers.SetIndexedValue(ValueFactory.Create("Content-Length"), ValueFactory.Create(_body.ContentSize));
+                }
             }
         }
 

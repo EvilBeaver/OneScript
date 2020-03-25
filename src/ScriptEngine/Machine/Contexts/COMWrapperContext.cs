@@ -8,8 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -40,13 +38,9 @@ namespace ScriptEngine.Machine.Contexts
         public static COMWrapperContext Create(string progId, IValue[] arguments)
         {
             Type type = null;
-            try
+            if (Type.GetType("Mono.Runtime") == null)
             {
                 type = Type.GetTypeFromProgID(progId, throwOnError: false);
-            }
-            catch (NotImplementedException)
-            {
-                // В Mono GetTypeFromProgID бросает такое исключение.
             }
             if (type == null)
             {

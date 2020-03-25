@@ -126,12 +126,6 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        [Obsolete]
-        public void LoadAndRegister(string typeName, ScriptModuleHandle moduleHandle)
-        {
-            LoadAndRegister(typeName, moduleHandle.Module);
-        }
-
         public void LoadAndRegister(string typeName, ModuleImage moduleImage)
         {
             if (_loadedModules.ContainsKey(typeName))
@@ -159,18 +153,15 @@ namespace ScriptEngine.Machine.Contexts
             return _engine.NewObject(loadedHandle, externalContext);
         }
 
-        [Obsolete]
-        public ScriptModuleHandle CreateModuleFromSource(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
-        {
-            return new ScriptModuleHandle()
-            {
-                Module = CompileModuleFromSource(compiler, code, externalContext)
-            };
-        }
-
         public ModuleImage CompileModuleFromSource(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
             compiler.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);
+
+            foreach (var methodInfo in UserScriptContextInstance.GetOwnMethodsDefinition())
+            {
+                compiler.DefineMethod(methodInfo);
+            }
+                
             if (externalContext != null)
             {
                 foreach (var item in externalContext)

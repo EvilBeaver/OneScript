@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Linq;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -75,7 +77,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsString();
             }
-            else if (value == SimpleConstantValue.Undefined()) 
+            else if (value == UndefinedValue.Instance)
             {
                 // Если тип параметра не IValue и не IVariable && Неопределено -> null
                 valueObj = null;
@@ -187,10 +189,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (type.IsEnum)
             {
-                var wrapperType = typeof(CLREnumValueWrapper<>).MakeGenericType(new Type[] { type });
-                var constructor = wrapperType.GetConstructor(new Type[] { typeof(EnumerationContext), type, typeof(DataType) });
-                var osValue = (EnumerationValue)constructor.Invoke(new object[] { null, objParam, DataType.Enumeration });
-                return osValue;
+                return ConvertEnum(objParam, type);
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
@@ -204,6 +203,24 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw new NotSupportedException($"Type {type} is not supported");
             }
+        }
+
+        private static IValue ConvertEnum(object objParam, Type type)
+        {
+            if (!type.IsAssignableFrom(objParam.GetType()))
+                throw new RuntimeException("Некорректный тип конвертируемого перечисления");
+
+            var memberInfo = type.GetMember(objParam.ToString());
+            var valueInfo = memberInfo.FirstOrDefault(x => x.DeclaringType == type);
+            var attrs = valueInfo.GetCustomAttributes(typeof(EnumItemAttribute), false);
+
+            if (attrs.Length == 0)
+                throw new RuntimeException("Значение перечисления должно быть помечено атрибутом EnumItemAttribute");
+
+            var itemName = ((EnumItemAttribute)attrs[0]).Name;
+            var enumImpl = GlobalsManager.GetSimpleEnum(type);
+
+            return enumImpl.GetPropValue(itemName);
         }
 
         public static IValue ConvertReturnValue<TRet>(TRet param)

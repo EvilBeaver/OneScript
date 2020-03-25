@@ -9,9 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Threading;
-
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
@@ -179,7 +176,7 @@ namespace ScriptEngine.HostedScript.Library
         public void AttachAddIn(string dllPath)
         {
             var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
-            EngineInstance.AttachAssembly(assembly, EngineInstance.Environment);
+            EngineInstance.AttachExternalAssembly(assembly, EngineInstance.Environment);
         }
 
         /// <summary>
@@ -423,6 +420,12 @@ namespace ScriptEngine.HostedScript.Library
             return errInfo.DetailedDescription;
         }
 
+        [ContextMethod("ТекущаяУниверсальнаяДата", "CurrentUniversalDate")]
+        public IValue CurrentUniversalDate()
+        {
+            return ValueFactory.Create(DateTime.UtcNow);
+        }
+
         [ContextMethod("ТекущаяУниверсальнаяДатаВМиллисекундах", "CurrentUniversalDateInMilliseconds")]
         public long CurrentUniversalDateInMilliseconds()
         {
@@ -471,13 +474,6 @@ namespace ScriptEngine.HostedScript.Library
             else
                 return true;
             
-        }
-
-        [ContextMethod("IsValueFilled", IsDeprecated = true, ThrowOnUse = false)]
-        [Obsolete]
-        public bool IsValueFilled(IValue value)
-        {
-            return ValueIsFilled(value);
         }
 
         /// <summary>
@@ -606,7 +602,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else if (pathName == null)
             {
-#if NETSTANDARD2_0
+#if (NETSTANDARD2_0 || NETSTANDARD2_1) 
                 throw new NotSupportedException("Getting object by classname not supported on netstandard2");
 #else
                 return Marshal.GetActiveObject(className);
@@ -618,7 +614,7 @@ namespace ScriptEngine.HostedScript.Library
             }
             else
             {
-#if NETSTANDARD2_0
+#if (NETSTANDARD2_0 || NETSTANDARD2_1) 
                 throw new NotSupportedException("Getting object by classname not supported on netstandard2");
 #else
                 var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
@@ -635,6 +631,9 @@ namespace ScriptEngine.HostedScript.Library
             out IVariable[] variables, 
             out MethodInfo[] methods)
         {
+            if (_state == null)
+                InitContextVariables();
+
             variables = _state;
             methods = new MethodInfo[_methods.Count];
             for (int i = 0; i < _methods.Count; i++)

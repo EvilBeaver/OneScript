@@ -214,7 +214,6 @@ namespace ScriptEngine.HostedScript.Library.Http
             }
 
             var request = (HttpWebRequest)HttpWebRequest.Create(resourceUri);
-            request.AutomaticDecompression = DecompressionMethods.GZip;
             if (User != "" || Password != "")
             {
                 request.Credentials = new NetworkCredential(User, Password);
@@ -253,13 +252,21 @@ namespace ScriptEngine.HostedScript.Library.Http
             
         }
 
+        private static bool ContentBodyAllowed(string method)
+        {
+            var methods = new List<string> {"GET", "CONNECT", "HEAD"};
+            return !methods.Contains(method, StringComparer.OrdinalIgnoreCase);
+        }
+        
         private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null)
         {
             var webRequest = CreateRequest(request.ResourceAddress);
             webRequest.AllowAutoRedirect = AllowAutoRedirect;
             webRequest.Method = method;
             SetRequestHeaders(request, webRequest);
-            SetRequestBody(request, webRequest);
+            
+            if (ContentBodyAllowed(method)) 
+                SetRequestBody(request, webRequest);
 
             HttpWebResponse response;
 

@@ -5,14 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Security.Cryptography;
 using System.IO;
-using ScriptEngine.HostedScript.Library;
 using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library.Hash
@@ -87,27 +84,27 @@ namespace ScriptEngine.HostedScript.Library.Hash
 
 
         [ContextMethod("Добавить", "Append")]
-        public void Append(IValue toAdd)
+        public void Append(IValue toAdd, uint count = 0)
         {
-            byte[] buffer = null;
-            if (toAdd.DataType==DataType.String)
+            switch (toAdd.DataType)
             {
-                buffer = Encoding.UTF8.GetBytes(toAdd.AsString());
+                case DataType.String:
+                    AddStream(new MemoryStream(Encoding.UTF8.GetBytes(toAdd.AsString())));
+                    break;
+                case DataType.Object when toAdd is GenericStream stream:
+                    var length = Math.Min(count == 0 ? stream.Size() : count, stream.Size() - stream.CurrentPosition());
+                    var buffer = (stream.GetUnderlyingStream() as MemoryStream)?.GetBuffer();
+                    if (buffer == null)
+                        throw RuntimeException.InvalidArgumentValue();
+                    AddStream(new MemoryStream(buffer, (int) stream.CurrentPosition(), (int) length));
+                    stream.Seek((int) length, StreamPositionEnum.Current);
+                    break;
+                case DataType.Object when toAdd is BinaryDataContext binaryData:
+                    AddStream(new MemoryStream(binaryData.Buffer));
+                    break;
+                default:
+                    throw RuntimeException.InvalidArgumentType();
             }
-            else if(toAdd.DataType==DataType.Object)
-            {
-                try
-                {
-                    var binaryData = toAdd as BinaryDataContext;
-                    buffer = binaryData.Buffer;
-                }
-                catch
-                {
-                     throw RuntimeException.InvalidArgumentType();
-                }
-            }
-            AddStream(new MemoryStream(buffer));
-            
         }
 
         [ContextMethod("ДобавитьФайл", "AppendFile")]
@@ -115,7 +112,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
         {
             if (!File.Exists(path))
                 throw RuntimeException.InvalidArgumentType();
-            AddStream(new FileStream(path, FileMode.Open));
+            AddStream(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
         }
 
         [ContextMethod("Очистить", "Clear")]
