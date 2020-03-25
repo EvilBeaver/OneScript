@@ -26,21 +26,6 @@ namespace oscript.DebugServer
         {
             _port = listenerPort;
         }
-        
-        private ThreadStopReason ConvertStopReason(MachineStopReason reason)
-        {
-            switch(reason)
-            {
-                case MachineStopReason.Breakpoint:
-                    return ThreadStopReason.Breakpoint;
-                case MachineStopReason.Step:
-                    return ThreadStopReason.Step;
-                case MachineStopReason.Exception:
-                    return ThreadStopReason.Exception;
-                default:
-                    throw new NotImplementedException();
-            }
-        }
 
         public override void Init()
         {
