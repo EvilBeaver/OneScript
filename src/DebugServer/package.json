@@ -52,7 +52,7 @@
             "cwd": "${workspaceRoot}",
             "runtimeExecutable": null,
             "debugPort": 2801,
-            "protocol":"internal"
+            "protocol":"tcp"
           }
         ],
         "configurationAttributes": {
@@ -93,7 +93,7 @@
               "protocol": {
                 "type": "string",
                 "description": "Вариант протокола взаимодействия с отлаживаемым процессом",
-                "enum" : ["wcf", "internal"]
+                "enum" : ["wcf", "tcp"]
               },
               "protocolVersion": {
                 "type": "string",

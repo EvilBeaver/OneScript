@@ -26,6 +26,8 @@ namespace oscript
             _port = port;
         }
 
+        public DebugProtocolType ProtocolType { get; set; }
+        
         public override int Execute()
         {
             var executor = new ExecuteScriptBehavior(_path, _args);
@@ -36,28 +38,49 @@ namespace oscript
 
         public static AppBehavior Create(CmdLineHelper helper)
         {
-            var arg = helper.Next();
             int port = 2801;
-            if (arg != null && arg.StartsWith("-port="))
+            string path = null;
+            DebugProtocolType protocolType = DebugProtocolType.Tcp;
+
+            while (true)
             {
-                var prefixLen = ("-port=").Length;
-                if (arg.Length > prefixLen)
+                var arg = helper.Next();
+                if (arg == null)
                 {
-                    var value = arg.Substring(prefixLen);
-                    if (!Int32.TryParse(value, out port))
+                    break;
+                }
+                
+                if (arg.StartsWith("-port="))
+                {
+                    var portString = helper.ValueOfKey("-port=", arg);
+                    if (portString == null) 
+                        return null;
+                
+                    if (!Int32.TryParse(portString, out port))
                     {
-                        Output.WriteLine("Incorrect port: " + value);
+                        Output.WriteLine("Incorrect port: " + portString);
                         return null;
                     }
                 }
-            }
-            else if(arg != null)
-            {
-                var path = arg;
-                return new DebugBehavior(port, path, helper.Tail());
+                else if (arg.StartsWith("-protocol="))
+                {
+                    var proto = helper.ValueOfKey("-protocol=", arg);
+                    if (proto == null || !Enum.TryParse(proto, true, out protocolType))
+                    {
+                        Output.WriteLine("Unknown protocol. Using default");
+                    }
+                }
+                else
+                {
+                    path = arg;
+                    break;
+                }
             }
 
-            return null;
+            return path == null ? null : new DebugBehavior(port, path, helper.Tail())
+            {
+                ProtocolType = protocolType
+            };
         }
     }
 }
