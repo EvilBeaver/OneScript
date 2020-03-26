@@ -10,7 +10,7 @@ using OneScript.DebugProtocol;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-
+using System.Text;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
 namespace DebugServer
@@ -43,17 +43,33 @@ namespace DebugServer
         public string StartupScript { get; set; }
         public string ScriptArguments { get; set; }
         public string RuntimeArguments { get; set; }
+        
+        public int DebugPort { get; set; }
+        
+        public string DebugProtocol { get; set; }
 
         public bool HasExited => _process.HasExited;
         public int ExitCode => _process.ExitCode;
 
         public void Start()
         {
+            var dbgArgsBuilder = new StringBuilder();
+            if (DebugPort != 0)
+            {
+                dbgArgsBuilder.Append($"-port={DebugPort}");
+            }
+            if (!string.IsNullOrEmpty(DebugProtocol))
+            {
+                dbgArgsBuilder.Append($"-protocol={DebugProtocol}");
+            }
+
+            var debugArguments = dbgArgsBuilder.ToString();
+            
             _process = new Process();
             var psi = _process.StartInfo;
             psi.FileName = RuntimeExecutable;
             psi.UseShellExecute = false;
-            psi.Arguments = $"-debug {RuntimeArguments} \"{StartupScript}\" {ScriptArguments}";
+            psi.Arguments = $"-debug {debugArguments} {RuntimeArguments} \"{StartupScript}\" {ScriptArguments}";
             psi.WorkingDirectory = WorkingDirectory;
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
