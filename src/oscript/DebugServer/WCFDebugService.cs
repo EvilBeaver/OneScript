@@ -274,13 +274,10 @@ namespace oscript.DebugServer
             var propsCount = obj.GetPropCount();
             for (int i = 0; i < propsCount; i++)
             {
-                string propName = obj.GetPropName(i);
-
+                var propNum = i;
+                var propName = obj.GetPropName(propNum);
+                
                 IVariable value;
-
-                //Свойство может иметь другой номер, отличный от i,
-                //если это ДЗ или подобная коллекция
-                var propNum = obj.FindProperty(propName);
 
                 try
                 {
@@ -292,7 +289,6 @@ namespace oscript.DebugServer
                 }
 
                 variables.Add(value);
-
             }
         }
 
