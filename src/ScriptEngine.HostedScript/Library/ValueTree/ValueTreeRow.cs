@@ -157,19 +157,20 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public override string GetPropName(int propNum)
         {
+            if (isOwnProp(propNum))
+                return _properties.GetProperty(propNum).Name;
             return Owner().Columns.GetPropName(propNum);
         }
 
         public override int FindProperty(string name)
         {
-            var column = Owner().Columns.FindColumnByName(name);
+            var cols = Owner().Columns;
+            var column = cols.FindColumnByName(name);
 
             if (column == null)
-            {
                 return _properties.FindProperty(name);
-            }
 
-            return column.ID;
+            return getColumnPropIndex(cols.IndexOf(column));
         }
 
         public override bool IsPropReadable(int propNum)
@@ -179,32 +180,30 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public override bool IsPropWritable(int propNum)
         {
-            return true;
+            return !isOwnProp(propNum);
         }
 
         public override IValue GetPropValue(int propNum)
         {
-            var column = Owner().Columns.FindColumnById(propNum);
-            if (column == null)
+            if (isOwnProp(propNum))
             {
                 var property = _properties.GetProperty(propNum);
                 return property.Getter(this);
             }
+            var column = Owner().Columns.FindColumnByIndex(propNum);
             return TryValue(column);
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
         {
-            var column = Owner().Columns.FindColumnById(propNum);
-            if (column == null)
+            if (isOwnProp(propNum))
             {
                 var property = _properties.GetProperty(propNum);
                 property.Setter(this, newVal);
+                return;
             }
-            else
-            {
-                _data[column] = column.ValueType.AdjustValue(newVal);
-            }
+            var column = Owner().Columns.FindColumnByIndex(getColumnIndex(propNum));
+            _data[column] = column.ValueType.AdjustValue(newVal);
         }
 
         private ValueTreeColumn GetColumnByIIndex(IValue index)
@@ -224,6 +223,20 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _data[GetColumnByIIndex(index)] = column.ValueType.AdjustValue(val);
         }
 
+        private bool isOwnProp(int propNum)
+        {
+            return _properties.Count - 1 >= propNum;
+        }
+
+        private int getColumnPropIndex(int index)
+        {
+            return _properties.Count + index;
+        }
+
+        private int getColumnIndex(int propIndex)
+        {
+            return propIndex - _properties.Count;
+        }
 
         private static readonly ContextMethodsMapper<ValueTreeRow> _methods = new ContextMethodsMapper<ValueTreeRow>();
 

@@ -22,36 +22,24 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         private int _width;
         private readonly ValueTreeColumnCollection _owner;
 
-        // id нужен для правильной работы функции FindProperty.
-        // Порядковый номер колонки не может быть использовать из-за своей изменчивости.
-        private readonly int _id;
-
-        public ValueTreeColumn(ValueTreeColumnCollection Owner, int id, string Name, string Title, TypeDescription Type, int Width)
+        public ValueTreeColumn(ValueTreeColumnCollection owner, string name, string title, TypeDescription type, int width)
         {
-            _name = Name;
-            _title = Title ?? Name;
-            _valueType = Type ?? new TypeDescription();
-            _width = Width;
+            _name = name;
+            _title = title ?? name;
+            _valueType = type ?? new TypeDescription();
+            _width = width;
 
-            _owner = Owner;
-            _id = id;
-
+            _owner = owner;
         }
 
-        public ValueTreeColumn(ValueTreeColumnCollection Owner, int id, ValueTreeColumn src)
+        public ValueTreeColumn(ValueTreeColumnCollection owner, ValueTreeColumn src)
         {
             _name = src._name;
             _title = src._title;
             _valueType = src._valueType;
             _width = src._width;
 
-            _owner = Owner;
-            _id = id;
-        }
-
-        public int ID
-        {
-            get { return _id; }
+            _owner = owner;
         }
 
         [ContextProperty("Заголовок", "Title")]
