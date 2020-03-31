@@ -180,11 +180,14 @@ namespace ScriptEngine.Machine.Contexts
                 .Select(x => new PropertyTarget<TInstance>(x)).ToList();
         }
 
+        public bool ContainsProperty(string name)
+        {
+            return GetPropertyIndex(name) >= 0;
+        }
+
         public int FindProperty(string name)
         {
-            Init();
-            var idx = _properties.FindIndex(x => String.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase) 
-                || String.Equals(x.Alias, name, StringComparison.OrdinalIgnoreCase));
+            var idx = GetPropertyIndex(name);
             if (idx < 0)
                 throw RuntimeException.PropNotFoundException(name);
 
@@ -225,6 +228,13 @@ namespace ScriptEngine.Machine.Contexts
             {
                 yield return GetPropertyInfo(i);
             }
+        }
+
+        private int GetPropertyIndex(string name)
+        {
+            Init();
+            return _properties.FindIndex(x => String.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase) 
+                || String.Equals(x.Alias, name, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
