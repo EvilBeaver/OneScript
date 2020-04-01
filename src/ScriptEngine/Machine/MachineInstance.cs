@@ -8,6 +8,7 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
@@ -41,13 +42,6 @@ namespace ScriptEngine.Machine
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
 
-        private struct ExceptionJumpInfo
-        {
-            public int handlerAddress;
-            public ExecutionFrame handlerFrame;
-            public int stackSize;
-        }
-        
         public void AttachContext(IAttachableContext context)
         {
             IVariable[] vars;
@@ -83,6 +77,32 @@ namespace ScriptEngine.Machine
             _scopes.Add(default(Scope));
         }
 
+        internal MachineStoredState SaveState()
+        {
+            return new MachineStoredState()
+            {
+                Scopes = _scopes,
+                ExceptionsStack = _exceptionsStack,
+                CallStack = _callStack,
+                OperationStack = _operationStack,
+                StopManager = _stopManager,
+                CodeStatCollector = _codeStatCollector
+            };
+        }
+
+        internal void RestoreState(MachineStoredState state)
+        {
+            Reset();
+            _scopes = state.Scopes;
+            _operationStack = state.OperationStack;
+            _callStack = state.CallStack;
+            _exceptionsStack = state.ExceptionsStack;
+            _stopManager = _stopManager;
+            _codeStatCollector = state.CodeStatCollector;
+            
+            SetFrame(_callStack.Peek());
+        } 
+
         internal void ExecuteModuleBody(IRunnable sdo)
         {
             var module = sdo.Module;
@@ -95,7 +115,59 @@ namespace ScriptEngine.Machine
                     PopFrame();
             }
         }
+        
+        internal async Task ExecuteModuleBodyAsync(IRunnable sdo)
+        {
+            if (sdo.Module.EntryMethodIndex < 0)
+            {
+                return;
+            }
 
+            var state = SaveState();
+            void Startup()
+            {
+                var m = MachineInstance.Current;
+                m.Reset();
+                m._scopes = state.Scopes;
+                m.ExecuteModuleBody(sdo);
+            };
+
+            await Task.Run(Startup);
+        }
+
+        internal Task<IValue> ExecuteMethodAsync(IRunnable sdo, int methodIndex, IValue[] arguments)
+        {
+            var state = SaveState();
+            Func<IValue> callAction = () =>
+            {
+                var m = MachineInstance.Current;
+                m.Reset();
+                m._scopes = state.Scopes; // память сохраняется, стеки с чистого листа
+                return m.ExecuteMethod(sdo, methodIndex, arguments);
+            };
+
+            _currentFrame = new ExecutionFrame()
+            {
+                InstructionPointer = -1
+            };
+
+            var asyncTask = Task<IValue>.Run(callAction);
+                
+            asyncTask.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.Flatten();
+                }
+
+                var m = MachineInstance.Current;
+                m.RestoreState(state);
+                m.ExecuteCode();
+            });
+
+            return asyncTask;
+        }
+        
         internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
             PrepareReentrantMethodExecution(sdo, methodIndex);
@@ -452,7 +524,7 @@ namespace ScriptEngine.Machine
                     var handler = _exceptionsStack.Pop();
 
                     // Раскрутка стека вызовов
-                    while (_currentFrame != handler.handlerFrame)
+                    while (_currentFrame != handler.HandlerFrame)
                     {
                         if (_currentFrame.IsReentrantCall)
                         {
@@ -464,13 +536,13 @@ namespace ScriptEngine.Machine
                         PopFrame();
                     }
 
-                    _currentFrame.InstructionPointer = handler.handlerAddress;
+                    _currentFrame.InstructionPointer = handler.HandlerAddress;
                     _currentFrame.LastException = exc;
 
                     // При возникновении исключения посредине выражения
                     // некому почистить стек операндов.
                     // Сделаем это
-                    while (_operationStack.Count > handler.stackSize)
+                    while (_operationStack.Count > handler.StackSize)
                         _operationStack.Pop();
                     
 
@@ -1234,7 +1306,7 @@ namespace ScriptEngine.Machine
             if (_currentFrame.DiscardReturnValue)
                 _operationStack.Pop();
 
-            while(_exceptionsStack.Count > 0 && _exceptionsStack.Peek().handlerFrame == _currentFrame)
+            while(_exceptionsStack.Count > 0 && _exceptionsStack.Peek().HandlerFrame == _currentFrame)
             {
                 _exceptionsStack.Pop();
             }
@@ -1360,9 +1432,9 @@ namespace ScriptEngine.Machine
         private void BeginTry(int exceptBlockAddress)
         {
             var info = new ExceptionJumpInfo();
-            info.handlerAddress = exceptBlockAddress;
-            info.handlerFrame = _currentFrame;
-            info.stackSize = _operationStack.Count;
+            info.HandlerAddress = exceptBlockAddress;
+            info.HandlerFrame = _currentFrame;
+            info.StackSize = _operationStack.Count;
 
             _exceptionsStack.Push(info);
             NextInstruction();
@@ -1370,7 +1442,7 @@ namespace ScriptEngine.Machine
 
         private void EndTry(int arg)
         {
-            if (_exceptionsStack.Count > 0 && _exceptionsStack.Peek().handlerFrame == _currentFrame)
+            if (_exceptionsStack.Count > 0 && _exceptionsStack.Peek().HandlerFrame == _currentFrame)
                 _exceptionsStack.Pop();
             _currentFrame.LastException = null;
             NextInstruction();

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -111,10 +112,20 @@ namespace ScriptEngine.Machine.Contexts
         {
             MachineInstance.Current.ExecuteModuleBody(this);
         }
+        
+        protected virtual Task OnInstanceCreationAsync()
+        {
+            return MachineInstance.Current.ExecuteModuleBodyAsync(this);
+        }
 
         public void Initialize()
         {
             OnInstanceCreation();
+        }
+        
+        public Task InitializeAsync()
+        {
+            return OnInstanceCreationAsync();
         }
 
         protected int GetScriptMethod(string methodName, string alias = null)

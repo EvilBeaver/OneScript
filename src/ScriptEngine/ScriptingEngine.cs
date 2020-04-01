@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -163,6 +163,11 @@ namespace ScriptEngine
         public void InitializeSDO(ScriptDrivenObject sdo)
         {
             sdo.Initialize();
+        }
+        
+        public Task InitializeSDOAsync(ScriptDrivenObject sdo)
+        {
+            return sdo.InitializeAsync();
         }
 
         public void ExecuteModule(LoadedModule module)
