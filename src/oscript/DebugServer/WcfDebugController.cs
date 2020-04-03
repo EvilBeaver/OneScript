@@ -43,6 +43,7 @@ namespace oscript.DebugServer
 
         public override void NotifyProcessExit(int exitCode)
         {
+            base.NotifyProcessExit(exitCode);
             if (!CallbackChannelIsReady())
                 return; // нет подписчика
 

@@ -9,7 +9,7 @@ using System;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace oscript.DebugServer
+namespace OneScript.DebugProtocol
 {
     public class TcpChannel : IDisposable
     {

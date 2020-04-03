@@ -31,7 +31,16 @@ namespace oscript
         public override int Execute()
         {
             var executor = new ExecuteScriptBehavior(_path, _args);
-            executor.DebugController = new WcfDebugController(_port);
+            switch (ProtocolType)
+            {
+                case DebugProtocolType.Wcf:
+                    executor.DebugController = new WcfDebugController(_port);
+                    break;
+                case DebugProtocolType.Tcp:
+                default:
+                    executor.DebugController = new TcpDebugController(_port);
+                    break;
+            }
 
             return executor.Execute();
         }

@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.DebugProtocol
 {
-    public static class TcpChannelName
+    public static class DebugChannelName
     {
         public const string Commands = "COMMANDS";
         public const string Events = "EVENTS";

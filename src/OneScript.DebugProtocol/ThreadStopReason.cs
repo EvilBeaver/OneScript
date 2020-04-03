@@ -11,6 +11,7 @@ using System.Text;
 
 namespace OneScript.DebugProtocol
 {
+    [Serializable]
     public enum ThreadStopReason
     {
         Breakpoint,

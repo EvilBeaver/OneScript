@@ -13,7 +13,7 @@ using System.Text;
 
 namespace OneScript.DebugProtocol
 {
-    [DataContract]
+    [DataContract, Serializable]
     public class StackFrame : IVariableLocator
     {
         [DataMember]

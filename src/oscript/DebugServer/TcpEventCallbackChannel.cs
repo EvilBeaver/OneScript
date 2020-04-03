@@ -22,12 +22,14 @@ namespace oscript.DebugServer
 
         public void ThreadStopped(int threadId, ThreadStopReason reason)
         {
-            throw new System.NotImplementedException();
+            var dto = TcpProtocolDto.Create(nameof(ThreadStopped), threadId, reason);
+            _channel.Write(dto);
         }
 
         public void ProcessExited(int exitCode)
         {
-            throw new System.NotImplementedException();
+            var dto = TcpProtocolDto.Create(nameof(ProcessExited), exitCode);
+            _channel.Write(dto);
         }
 
         public void Dispose()
