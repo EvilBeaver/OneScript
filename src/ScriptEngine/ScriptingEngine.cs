@@ -17,6 +17,7 @@ namespace ScriptEngine
 {
     public class ScriptingEngine : IDisposable
     {
+        // TODO выпилить инстанс машины отсюда, т.к. он привязан к потоку, а не к engine
         private readonly MachineInstance _machine;
         private readonly ScriptSourceFactory _scriptFactory;
         private AttachedScriptsFactory _attachedScriptsFactory;
