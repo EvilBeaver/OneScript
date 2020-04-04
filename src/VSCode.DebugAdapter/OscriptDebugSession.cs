@@ -18,7 +18,7 @@ using OneScript.DebugProtocol;
 using VSCodeDebug;
 
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     internal class OscriptDebugSession : DebugSession, IDebugEventListener
     {

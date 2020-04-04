@@ -13,7 +13,7 @@ using System.ServiceModel;
 using System.Text;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     internal class DebugeeOutputEventArgs : EventArgs
     {

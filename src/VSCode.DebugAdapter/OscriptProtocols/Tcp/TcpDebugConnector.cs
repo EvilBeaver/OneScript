@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using OneScript.DebugProtocol;
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     public class TcpDebugConnector : IDebuggerService
     {

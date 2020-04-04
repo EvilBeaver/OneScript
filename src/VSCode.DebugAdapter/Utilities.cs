@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     static class Utilities
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.ServiceModel;
 using System.Text;
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     internal class ServiceProxy<T> where T : class
     {

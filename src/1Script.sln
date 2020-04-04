@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTests", "NUnitTests\NU
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Component", "Component\Component.csproj", "{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugServer", "DebugServer\DebugServer.csproj", "{C979F151-AA29-47E4-B020-3039BA0986D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSCode.DebugAdapter", "VSCode.DebugAdapter\VSCode.DebugAdapter.csproj", "{C979F151-AA29-47E4-B020-3039BA0986D9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.DebugProtocol", "OneScript.DebugProtocol\OneScript.DebugProtocol.csproj", "{727A498F-BF50-42F8-8523-40C0B5B1B233}"
 EndProject

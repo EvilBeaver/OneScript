@@ -9,6 +9,7 @@
     <Configurations>Debug;Release</Configurations>
     <AssemblyTitle>VSC debug adapter for 1Script</AssemblyTitle>
     <Platforms>AnyCPU</Platforms>
+    <LangVersion>7.3</LangVersion>
     
   </PropertyGroup>
   <ItemGroup>

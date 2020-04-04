@@ -13,7 +13,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     class Program
     {

@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.ServiceModel;
 using OneScript.DebugProtocol;
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     public class WcfDebuggerConnection : IDebuggerService
     {
