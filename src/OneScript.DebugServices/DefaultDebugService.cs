@@ -192,15 +192,6 @@ namespace OneScript.DebugServices
         {
             return machineVariables.Select(x => _visualizer.GetVariable(x))
                 .ToArray();
-            
-            var result = new Variable[machineVariables.Count];
-
-            for (int i = 0; i < machineVariables.Count; i++)
-            {
-                _visualizer.GetVariable(machineVariables[i]);
-            }
-
-            return result;
         }
         
         public Variable CreateDebuggerVariable(string name, string presentation, string typeName)
