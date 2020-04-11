@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using OneScript.DebugProtocol;
 using OneScript.Language;
-using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
@@ -21,28 +20,30 @@ namespace OneScript.DebugServices
 {
     internal class DefaultDebugService : IDebuggerService
     {
-        private DebugControllerBase Controller { get; }
+        private readonly IVariableVisualizer _visualizer;
+        private ThreadManager _threadManager { get; }
 
-        public DefaultDebugService(DebugControllerBase controller)
+        public DefaultDebugService(ThreadManager threads, IVariableVisualizer visualizer)
         {
-            Controller = controller;
+            _visualizer = visualizer;
+            _threadManager = threads;
         }
         
         public void Execute(int threadId)
         {
             if (threadId > 0)
             {
-                var token = Controller.GetTokenForThread(threadId);
+                var token = _threadManager.GetTokenForThread(threadId);
                 token.Machine.PrepareDebugContinuation();
-                token.ThreadEvent.Set();        
+                token.Set();        
             }
             else
             {
-                var tokens = Controller.GetAllTokens();
+                var tokens = _threadManager.GetAllTokens();
                 foreach (var token in tokens)
                 {
                     token.Machine.PrepareDebugContinuation();
-                    token.ThreadEvent.Set();
+                    token.Set();
                 }
             }
         }
@@ -60,7 +61,7 @@ namespace OneScript.DebugServices
                     .Select(x => x.Line)
                     .ToArray();
 
-                foreach (var machine in Controller.GetAllTokens().Select(x=>x.Machine))
+                foreach (var machine in _threadManager.GetAllTokens().Select(x=>x.Machine))
                 {
                     machine.SetBreakpointsForModule(item.Key, lines);
                 }
@@ -81,7 +82,7 @@ namespace OneScript.DebugServices
 
         public virtual StackFrame[] GetStackFrames(int threadId)
         {
-            var machine = Controller.GetTokenForThread(threadId).Machine;
+            var machine = _threadManager.GetTokenForThread(threadId).Machine;
             var frames = machine.GetExecutionFrames();
             var result = new StackFrame[frames.Count];
             int index = 0;
@@ -100,13 +101,12 @@ namespace OneScript.DebugServices
 
         private MachineInstance GetMachine(int threadId)
         {
-            return Controller.GetTokenForThread(threadId).Machine;
+            return _threadManager.GetTokenForThread(threadId).Machine;
         }
 
-        
         public virtual Variable[] GetVariables(int threadId, int frameIndex, int[] path)
         {
-            var machine = Controller.GetTokenForThread(threadId).Machine;
+            var machine = _threadManager.GetTokenForThread(threadId).Machine;
             var locals = machine.GetFrameLocals(frameIndex);
 
             foreach (var step in path)
@@ -164,64 +164,40 @@ namespace OneScript.DebugServices
 
         public virtual void Next(int threadId)
         {
-            var t = Controller.GetTokenForThread(threadId);
+            var t = _threadManager.GetTokenForThread(threadId);
             t.Machine.StepOver();
-            t.ThreadEvent.Set();
+            t.Set();
         }
 
         public virtual void StepIn(int threadId)
         {
-            var t = Controller.GetTokenForThread(threadId);
+            var t = _threadManager.GetTokenForThread(threadId);
             t.Machine.StepIn();
-            t.ThreadEvent.Set();
+            t.Set();
         }
 
         public virtual void StepOut(int threadId)
         {
-            var t = Controller.GetTokenForThread(threadId);
+            var t = _threadManager.GetTokenForThread(threadId);
             t.Machine.StepOut();
-            t.ThreadEvent.Set();
+            t.Set();
         }
 
         public virtual int[] GetThreads()
         {
-            return Controller.GetAllThreadIds();
+            return _threadManager.GetAllThreadIds();
         }
         
         private Variable[] GetDebugVariables(IList<IVariable> machineVariables)
         {
+            return machineVariables.Select(x => _visualizer.GetVariable(x))
+                .ToArray();
+            
             var result = new Variable[machineVariables.Count];
 
             for (int i = 0; i < machineVariables.Count; i++)
             {
-                string presentation;
-                string typeName;
-
-                var currentVar = machineVariables[i];
-
-                //На случай проблем, подобных:
-                //https://github.com/EvilBeaver/OneScript/issues/918
-
-                try
-                {
-                    presentation = currentVar.AsString();
-                }
-                catch (Exception e)
-                {
-                    presentation = e.Message;
-                }
-
-                try
-                {
-                    typeName = currentVar.SystemType.Name;
-                }
-                catch (Exception e)
-                {
-                    typeName = e.Message;
-                }
-
-                result[i] = CreateDebuggerVariable(currentVar.Name, presentation, typeName);
-                result[i].IsStructured = IsStructured(currentVar);
+                _visualizer.GetVariable(machineVariables[i]);
             }
 
             return result;
@@ -248,59 +224,26 @@ namespace OneScript.DebugServices
             {
                 FillProperties(src, variables);
             }
-            else if(src.AsObject() is IEnumerable<KeyAndValueImpl> collection)
-            {
-                FillKeyValueProperties(collection, variables);
-            }
 
-            if (HasIndexes(src))
+            if (VariableHasType(src, DataType.Object))
             {
-                FillIndexedProperties(src, variables);
+                var context = src.AsObject();
+                if (context is IEnumerable<IValue> collection)
+                {
+                    FillIndexedProperties(collection, variables);
+                }
             }
 
             return variables;
         }
 
-        private void FillKeyValueProperties(IEnumerable<KeyAndValueImpl> collection, List<IVariable> variables)
+        private void FillIndexedProperties(IEnumerable<IValue> collection, List<IVariable> variables)
         {
-            var propsCount = collection.Count();
-
-            int i = 0;
-
-            foreach (var kv in collection)
+            int index = 0;
+            foreach (var collectionItem in collection)
             {
-                IVariable value;
-
-                value = MachineVariable.Create(kv, i.ToString());
-
-                variables.Add(value);
-
-                i++;
-            }
-        }
-
-        private void FillIndexedProperties(IVariable src, List<IVariable> variables)
-        {
-            var obj = src.AsObject();
-
-            if (obj is ICollectionContext cntx)
-            {
-                var itemsCount = cntx.Count();
-                for (int i = 0; i < itemsCount; i++)
-                {
-                    IValue value;
-
-                    try
-                    {
-                        value = obj.GetIndexedValue(ValueFactory.Create(i));
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
-
-                    variables.Add(MachineVariable.Create(value, i.ToString()));
-                }
+                variables.Add(MachineVariable.Create(collectionItem, index.ToString()));
+                ++index;
             }
         }
 
@@ -330,16 +273,7 @@ namespace OneScript.DebugServices
         
         private bool IsStructured(IVariable variable)
         {
-            var result = HasProperties(variable) || HasIndexes(variable);
-            if(!result)
-            {
-                if (VariableHasType(variable, DataType.Object))
-                {
-                    var obj = variable.AsObject();
-                    result = obj is IEnumerable<KeyAndValueImpl>;
-                }
-            }
-            return result;
+            return HasProperties(variable) || HasIndexes(variable);
         }
 
         private bool HasIndexes(IValue variable)
@@ -347,13 +281,9 @@ namespace OneScript.DebugServices
             if (VariableHasType(variable, DataType.Object))
             {
                 var obj = variable.AsObject();
-                if (!(obj is IEnumerable<KeyAndValueImpl>)
-                    && obj is IRuntimeContextInstance cntx && cntx.IsIndexed)
+                if (obj is ICollectionContext collection)
                 {
-                    if (obj is ICollectionContext collection)
-                    {
-                        return collection.Count() > 0;
-                    }
+                    return collection.Count() > 0;
                 }
             }
 

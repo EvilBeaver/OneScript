@@ -13,6 +13,8 @@ namespace OneScript.DebugServices
     public class DefaultDebugController : IDebugController
     {
         private readonly ICommunicationServer _server;
+        private readonly IDebuggerService _debugger;
+        private readonly IDebugEventListener _callbackService;
         private readonly ThreadManager _threadManager;
 
         public DefaultDebugController(
@@ -21,6 +23,8 @@ namespace OneScript.DebugServices
             IDebugEventListener callbackService)
         {
             _server = ipcServer;
+            _debugger = debugger;
+            _callbackService = callbackService;
             _threadManager = new ThreadManager();
         }
 
@@ -50,6 +54,8 @@ namespace OneScript.DebugServices
         public void NotifyProcessExit(int exitCode)
         {
             _threadManager.DetachFromCurrentThread();
+            _callbackService.ProcessExited(exitCode);
+            
         }
 
         public void AttachToThread(MachineInstance machine)
