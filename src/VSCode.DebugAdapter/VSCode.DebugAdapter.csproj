@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
     <OutputType>Exe</OutputType>
-    <StartupObject>DebugServer.Program</StartupObject>
+    <StartupObject>VSCode.DebugAdapter.Program</StartupObject>
     <Configurations>Debug;Release</Configurations>
     <AssemblyTitle>VSC debug adapter for 1Script</AssemblyTitle>
     <Platforms>AnyCPU</Platforms>
