@@ -63,61 +63,34 @@ namespace OneScript.DebugServices
 
         public IEnumerable<Variable> GetChildVariables(IValue value)
         {
-            var variables = new List<IVariable>();
-
+            var presenter = new DefaultValueVisitor();
+            
             if (VariableHasType(value, DataType.Object))
             {
                 var objectValue = value.AsObject();
-                if (HasProperties(objectValue))
+                if (objectValue is IDebugPresentationAcceptor customPresenter)
                 {
-                    FillProperties(value, variables);
+                    customPresenter.Accept(presenter);
                 }
-                
-                if(HasIndexes(objectValue as ICollectionContext))
+                else
                 {
-                    var context = value.AsObject();
-                    if (context is IEnumerable<IValue> collection)
+                    if (HasProperties(objectValue))
                     {
-                        FillIndexedProperties(collection, variables);
+                        presenter.ShowProperties(objectValue);
+                    }
+
+                    if (HasIndexes(objectValue as ICollectionContext))
+                    {
+                        var context = value.AsObject();
+                        if (context is IEnumerable<IValue> collection)
+                        {
+                            presenter.ShowCollectionItems(collection);
+                        }
                     }
                 }
             }
             
-            return variables.Select(GetVariable);
-        }
-        
-        private void FillIndexedProperties(IEnumerable<IValue> collection, List<IVariable> variables)
-        {
-            int index = 0;
-            foreach (var collectionItem in collection)
-            {
-                variables.Add(MachineVariable.Create(collectionItem, index.ToString()));
-                ++index;
-            }
-        }
-
-        private void FillProperties(IValue src, List<IVariable> variables)
-        {
-            var obj = src.AsObject();
-            var propsCount = obj.GetPropCount();
-            for (int i = 0; i < propsCount; i++)
-            {
-                var propNum = i;
-                var propName = obj.GetPropName(propNum);
-                
-                IVariable value;
-
-                try
-                {
-                    value = MachineVariable.Create(obj.GetPropValue(propNum), propName);
-                }
-                catch (Exception e)
-                {
-                    value = MachineVariable.Create(ValueFactory.Create(e.Message), propName);
-                }
-
-                variables.Add(value);
-            }
+            return presenter.Result.Select(GetVariable);
         }
 
         private bool IsStructured(IVariable variable)

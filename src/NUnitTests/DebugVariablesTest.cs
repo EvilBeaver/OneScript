@@ -108,7 +108,7 @@ namespace NUnitTests
             Assert.That(debuggerVar.IsStructured, Is.True);
 
             var items = Visualizer.GetChildVariables(obj).ToArray();
-            Assert.That(items, Has.Length.EqualTo(4));
+            Assert.That(items, Has.Length.EqualTo(2));
             Assert.That(items[0].Name, Is.EqualTo("first"));
             Assert.That(items[0].TypeName, Is.EqualTo("Число"));
             Assert.That(items[0].Presentation, Is.EqualTo("1"));
@@ -118,14 +118,6 @@ namespace NUnitTests
             Assert.That(items[1].TypeName, Is.EqualTo("Число"));
             Assert.That(items[1].Presentation, Is.EqualTo("2"));
             Assert.That(items[1].IsStructured, Is.False);
-            
-            Assert.That(items[2].Name, Is.EqualTo("0"));
-            Assert.That(items[2].TypeName, Is.EqualTo("КлючИЗначение"));
-            Assert.That(items[2].IsStructured, Is.True);
-            
-            Assert.That(items[3].Name, Is.EqualTo("1"));
-            Assert.That(items[3].TypeName, Is.EqualTo("КлючИЗначение"));
-            Assert.That(items[3].IsStructured, Is.True);
         }
         
         [Test]
@@ -188,7 +180,8 @@ namespace NUnitTests
             Assert.That(rows[1].IsStructured);
 
             var rowData = Visualizer.GetChildVariables(row)
-                .Take(4).ToArray();
+                .ToArray();
+            Assert.That(rowData, Has.Length.EqualTo(4));
             Assert.That(rowData[0].Name, Is.EqualTo("Родитель"));
             Assert.That(rowData[1].Name, Is.EqualTo("Строки"));
             Assert.That(rowData[2].Name, Is.EqualTo("first"));

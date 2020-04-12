@@ -15,7 +15,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Строка дерева значений.
     /// </summary>
     [ContextClass("СтрокаДереваЗначений", "ValueTreeRow")]
-    public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>
+    public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>, IDebugPresentationAcceptor
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTreeRow _parent;
@@ -277,6 +277,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         public override int FindMethod(string name)
         {
             return _methods.FindMethod(name);
+        }
+        
+        void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowProperties(this);
         }
         
     }

@@ -16,7 +16,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Коллекция колонок дерева значений.
     /// </summary>
     [ContextClass("КоллекцияКолонокДереваЗначений", "ValueTreeColumnCollection")]
-    public class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTreeColumn>
+    public class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTreeColumn>, IDebugPresentationAcceptor
     {
         private readonly List<ValueTreeColumn> _columns = new List<ValueTreeColumn>();
 
@@ -334,5 +334,9 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             return processingList;
         }
 
+        void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowProperties(this);
+        }
     }
 }

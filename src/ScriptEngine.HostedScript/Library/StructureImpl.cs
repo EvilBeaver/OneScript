@@ -11,7 +11,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("Структура", "Structure")]
-    public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<KeyAndValueImpl>
+    public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<KeyAndValueImpl>, IDebugPresentationAcceptor
     {
         private readonly List<IValue> _values = new List<IValue>();
         
@@ -262,6 +262,11 @@ namespace ScriptEngine.HostedScript.Library
         private static RuntimeException InvalidPropertyNameException( string name )
         {
             return new RuntimeException($"Задано неправильное имя атрибута структуры '{name}'");
+        }
+
+        void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowProperties(this);
         }
     }
 }
