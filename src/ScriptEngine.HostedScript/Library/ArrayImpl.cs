@@ -112,7 +112,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [ContextMethod("Вставить", "Insert")]
-        public void Insert(int index, IValue value =  null)
+        public void Insert(int index, IValue value = null)
         {
             if (index < 0)
                 throw IndexOutOfBoundsException();
