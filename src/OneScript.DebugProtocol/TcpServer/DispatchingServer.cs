@@ -42,7 +42,10 @@ namespace OneScript.DebugProtocol.TcpServer
             }
             else
             {
-                // TODO
+                if (e.Exception.StopChannel)
+                {
+                    Stop();
+                }
             }
         }
 
