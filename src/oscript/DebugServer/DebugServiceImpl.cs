@@ -19,11 +19,11 @@ using MachineVariable = ScriptEngine.Machine.Variable;
 
 namespace oscript.DebugServer
 {
-    internal class DefaultDebugService : IDebuggerService
+    internal class DebugServiceImpl : IDebuggerService
     {
         private DebugControllerBase Controller { get; }
 
-        public DefaultDebugService(DebugControllerBase controller)
+        public DebugServiceImpl(DebugControllerBase controller)
         {
             Controller = controller;
         }

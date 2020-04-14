@@ -18,7 +18,7 @@ using MachineVariable = ScriptEngine.Machine.Variable;
 
 namespace OneScript.DebugServices
 {
-    internal class DefaultDebugService : IDebuggerService
+    public class DefaultDebugService : IDebuggerService
     {
         private readonly IVariableVisualizer _visualizer;
         private ThreadManager _threadManager { get; }

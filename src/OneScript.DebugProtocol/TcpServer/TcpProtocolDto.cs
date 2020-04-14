@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 
-namespace OneScript.DebugProtocol
+namespace OneScript.DebugProtocol.TcpServer
 {
     [Serializable]
     public class TcpProtocolDto

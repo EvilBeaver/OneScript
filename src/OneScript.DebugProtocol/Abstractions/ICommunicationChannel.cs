@@ -7,14 +7,15 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 
-namespace OneScript.DebugServices
+namespace OneScript.DebugProtocol.Abstractions
 {
-    public interface ICommunicationServer
+    public interface ICommunicationChannel : IDisposable
     {
-        void Start();
+        void Write(object data);
 
-        void Stop();
-
-        event EventHandler<CommunicationEventArgs> DataReceived;
+        T Read<T>();
+        
+        object Read();
+        
     }
 }

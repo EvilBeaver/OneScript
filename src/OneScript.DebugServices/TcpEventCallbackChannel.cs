@@ -8,14 +8,16 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Net.Sockets;
 using OneScript.DebugProtocol;
+using OneScript.DebugProtocol.Abstractions;
+using OneScript.DebugProtocol.TcpServer;
 
-namespace oscript.DebugServer
+namespace OneScript.DebugServices
 {
     public class TcpEventCallbackChannel : IDebugEventListener, IDisposable
     {
-        private readonly TcpChannel _channel;
+        private readonly ICommunicationChannel _channel;
 
-        public TcpEventCallbackChannel(TcpChannel channel)
+        public TcpEventCallbackChannel(ICommunicationChannel channel)
         {
             _channel = channel;
         }

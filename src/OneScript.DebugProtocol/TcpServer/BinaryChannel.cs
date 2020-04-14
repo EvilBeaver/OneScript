@@ -6,18 +6,21 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.IO;
 using System.Net.Sockets;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using OneScript.DebugProtocol.Abstractions;
 
 namespace OneScript.DebugProtocol
 {
-    public class TcpChannel : IDisposable
+    public class BinaryChannel : ICommunicationChannel, IDisposable
     {
         private readonly TcpClient _client;
         private readonly NetworkStream _clientStream;
         private readonly BinaryFormatter _serializer;
 
-        public TcpChannel(TcpClient client)
+        public BinaryChannel(TcpClient client)
         {
             _client = client;
             _clientStream = _client.GetStream();
@@ -33,7 +36,23 @@ namespace OneScript.DebugProtocol
         
         public T Read<T>()
         {
-            return (T)_serializer.Deserialize(_clientStream);
+            return (T)Read();
+        }
+
+        public object Read()
+        {
+            try
+            {
+                return _serializer.Deserialize(_clientStream);
+            }
+            catch (SerializationException e)
+            {
+                throw new ChannelException("Serialization Exception occured", e);
+            }
+            catch (IOException e)
+            {
+                throw new ChannelException("Network exception occured", true, e);
+            }
         }
 
         public void Dispose()

@@ -7,12 +7,15 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 
-namespace OneScript.DebugServices
+namespace OneScript.DebugProtocol.Abstractions
 {
     public class CommunicationEventArgs : EventArgs
     {
-        private ICommunicationChannel Channel { get; set; }
+        public ICommunicationChannel Channel { get; set; }
         
-        private object Data { get; set; }
+        public object Data { get; set; }
+
+        public ChannelException Exception { get; set; }
+        
     }
 }

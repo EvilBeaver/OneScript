@@ -6,7 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Threading;
-
+using OneScript.DebugServices;
 using oscript.DebugServer;
 
 using ScriptEngine.Machine;
@@ -38,7 +38,9 @@ namespace oscript
                     break;
                 case DebugProtocolType.Tcp:
                 default:
-                    executor.DebugController = new TcpDebugController(_port);
+                    var tcpDebugServer = new BinaryTcpDebugServer();
+                    tcpDebugServer.WaitForConnections(_port);
+                    executor.DebugController = tcpDebugServer.CreateDebugController();
                     break;
             }
 

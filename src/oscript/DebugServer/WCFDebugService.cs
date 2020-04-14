@@ -23,13 +23,13 @@ namespace oscript.DebugServer
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IncludeExceptionDetailInFaults = true)]
     internal class WcfDebugService : IDebuggerService
     {
-        private readonly DefaultDebugService _debugServiceImpl;
+        private readonly DebugServiceImpl _debugServiceImpl;
         private WcfDebugController Controller { get; }
         
         public WcfDebugService(WcfDebugController controller)
         {
             Controller = controller;
-            _debugServiceImpl = new DefaultDebugService(controller);
+            _debugServiceImpl = new DebugServiceImpl(controller);
         }
 
         #region WCF Communication methods

@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using OneScript.DebugProtocol;
+using OneScript.DebugProtocol.TcpServer;
 
 namespace VSCode.DebugAdapter
 {
@@ -18,8 +19,8 @@ namespace VSCode.DebugAdapter
     {
         private readonly int _port;
         private readonly IDebugEventListener _eventBackChannel;
-        private TcpChannel _commandsChannel;
-        private TcpChannel _eventsChannel;
+        private BinaryChannel _commandsChannel;
+        private BinaryChannel _eventsChannel;
         
         public TcpDebugConnector(int port, IDebugEventListener eventBackChannel)
         {
@@ -32,11 +33,11 @@ namespace VSCode.DebugAdapter
             var debuggerUri = Binder.GetDebuggerUri(_port); 
             
             SessionLog.WriteLine("Creating commands tcp channel");
-            _commandsChannel = new TcpChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
+            _commandsChannel = new BinaryChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
             _commandsChannel.Write(DebugChannelName.Commands);
             
             SessionLog.WriteLine("Creating events tcp channel");
-            _eventsChannel = new TcpChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
+            _eventsChannel = new BinaryChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
             _eventsChannel.Write(DebugChannelName.Events);
             
             SessionLog.WriteLine("connected");

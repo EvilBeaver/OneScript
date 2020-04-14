@@ -5,7 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using OneScript.DebugProtocol;
+using OneScript.DebugProtocol.Abstractions;
+using OneScript.DebugProtocol.TcpServer;
 using ScriptEngine.Machine;
 
 namespace OneScript.DebugServices
@@ -20,30 +23,34 @@ namespace OneScript.DebugServices
         public DefaultDebugController(
             ICommunicationServer ipcServer,
             IDebuggerService debugger,
-            IDebugEventListener callbackService)
+            IDebugEventListener callbackService,
+            ThreadManager threadManager)
         {
             _server = ipcServer;
             _debugger = debugger;
             _callbackService = callbackService;
-            _threadManager = new ThreadManager();
+            _threadManager = threadManager;
         }
 
         public void Dispose()
         {
             _server.Stop();
-            _server.DataReceived -= ServerOnDataReceived;
             _threadManager.Dispose();
         }
 
         public void Init()
         {
-            _server.DataReceived += ServerOnDataReceived; 
-            _server.Start();
+            _threadManager.ThreadStopped += ThreadManagerOnThreadStopped;
+            var dispatcher = new DispatchingService<IDebuggerService>(_server, _debugger);
+            dispatcher.Start();
         }
 
-        private void ServerOnDataReceived(object sender, CommunicationEventArgs e)
+        private void ThreadManagerOnThreadStopped(object sender, ThreadStoppedEventArgs e)
         {
-            throw new System.NotImplementedException();
+            var token = _threadManager.GetTokenForThread(e.ThreadId);
+            token.Reset();
+            _callbackService.ThreadStopped(e.ThreadId, ConvertStopReason(e.StopReason));
+            token.Wait();
         }
 
         public void Wait()
@@ -61,6 +68,21 @@ namespace OneScript.DebugServices
         public void AttachToThread(MachineInstance machine)
         {
             _threadManager.AttachToCurrentThread(); 
+        }
+        
+        private ThreadStopReason ConvertStopReason(MachineStopReason reason)
+        {
+            switch(reason)
+            {
+                case MachineStopReason.Breakpoint:
+                    return ThreadStopReason.Breakpoint;
+                case MachineStopReason.Step:
+                    return ThreadStopReason.Step;
+                case MachineStopReason.Exception:
+                    return ThreadStopReason.Exception;
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }
