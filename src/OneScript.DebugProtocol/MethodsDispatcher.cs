@@ -52,8 +52,9 @@ namespace OneScript.DebugProtocol
             if (method.ReturnType == typeof(void))
             {
                 var methodEnd = Expression.Label(typeof(object));
-                var returnNewObject = Expression.Return(methodEnd, Expression.Constant(new object()));
-                body = Expression.Block(call, returnNewObject, Expression.Label(methodEnd, Expression.Constant(new object())));
+                var nullConstant = Expression.Constant(null, typeof(object));
+                var returnNewObject = Expression.Return(methodEnd, nullConstant);
+                body = Expression.Block(call, returnNewObject, Expression.Label(methodEnd, nullConstant));
             }
             else
             {

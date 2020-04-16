@@ -62,6 +62,7 @@ namespace OneScript.DebugServices
         {
             _threadManager.DetachFromCurrentThread();
             _callbackService.ProcessExited(exitCode);
+            _server.Stop();
             
         }
 

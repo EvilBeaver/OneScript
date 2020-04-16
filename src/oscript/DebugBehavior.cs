@@ -8,7 +8,7 @@ using System;
 using System.Threading;
 using OneScript.DebugServices;
 using oscript.DebugServer;
-
+using ScriptEngine;
 using ScriptEngine.Machine;
 
 namespace oscript
@@ -31,6 +31,7 @@ namespace oscript
         public override int Execute()
         {
             var executor = new ExecuteScriptBehavior(_path, _args);
+            SystemLogger.SetWriter(executor);
             switch (ProtocolType)
             {
                 case DebugProtocolType.Wcf:

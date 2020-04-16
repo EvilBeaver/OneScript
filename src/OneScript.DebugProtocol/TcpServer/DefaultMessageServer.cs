@@ -14,7 +14,7 @@ namespace OneScript.DebugProtocol.TcpServer
     public class DefaultMessageServer<TMessage> : ICommunicationServer
     {
         private readonly ICommunicationChannel _protocolChannel;
-        private volatile bool _shouldAcceptCommands = false;
+        private Thread _messageThread;
 
         public DefaultMessageServer(ICommunicationChannel protocolChannel)
         {
@@ -23,19 +23,19 @@ namespace OneScript.DebugProtocol.TcpServer
 
         public void Start()
         {
-            
+            RunCommandsLoop();
         }
         
         private void RunCommandsLoop()
         {
-            var incomingCommands = new Thread(() =>
+            _messageThread = new Thread(() =>
             {
-                while (_shouldAcceptCommands)
+                bool shouldAcceptCommands = true;
+                while (shouldAcceptCommands)
                 {
                     try
                     {
                         var data = _protocolChannel.Read<TMessage>();
-                        
                         var eventData = new CommunicationEventArgs
                         {
                             Data = data,
@@ -43,7 +43,6 @@ namespace OneScript.DebugProtocol.TcpServer
                         };
                         
                         DataReceived?.Invoke(this, eventData);
-                        
                     }
                     catch (ChannelException e)
                     {
@@ -57,21 +56,29 @@ namespace OneScript.DebugProtocol.TcpServer
                         DataReceived?.Invoke(this, eventData);
                         
                         // свойство в исключении может быть утановлено в обработчике евента
-                        _shouldAcceptCommands = e.StopChannel;
+                        shouldAcceptCommands = e.StopChannel;
+                    }
+                    catch (ThreadInterruptedException)
+                    {
+                        shouldAcceptCommands = false;
                     }
                     catch (Exception)
                     {
-                        _shouldAcceptCommands = false;
+                        shouldAcceptCommands = false;
                     }
                 }
             });
 
-            incomingCommands.Start();
+            _messageThread.Start();
         }
 
         public void Stop()
         {
-            _shouldAcceptCommands = false;
+            if (_messageThread?.IsAlive == true)
+            {
+                _protocolChannel.Dispose();
+                _messageThread.Interrupt();
+            }
         }
 
         public event EventHandler<CommunicationEventArgs> DataReceived;
