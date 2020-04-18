@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using OneScript.DebugProtocol;
+using OneScript.DebugProtocol.Abstractions;
 using OneScript.DebugProtocol.TcpServer;
 
 namespace VSCode.DebugAdapter
@@ -20,8 +21,7 @@ namespace VSCode.DebugAdapter
         private readonly int _port;
         private readonly IDebugEventListener _eventBackChannel;
         private BinaryChannel _commandsChannel;
-        private BinaryChannel _eventsChannel;
-        
+
         public TcpDebugConnector(int port, IDebugEventListener eventBackChannel)
         {
             _port = port;
@@ -37,54 +37,19 @@ namespace VSCode.DebugAdapter
             _commandsChannel.Write(DebugChannelName.Commands);
             
             SessionLog.WriteLine("Creating events tcp channel");
-            _eventsChannel = new BinaryChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
-            _eventsChannel.Write(DebugChannelName.Events);
+            var eventsChannel = new BinaryChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
+            eventsChannel.Write(DebugChannelName.Events);
             
             SessionLog.WriteLine("connected");
 
-            RunEventsListener();
+            RunEventsListener(eventsChannel);
         }
 
-        private void RunEventsListener()
+        private void RunEventsListener(ICommunicationChannel channelToListen)
         {
-            var eventsListenerThread = new Thread(() =>
-            {
-                bool shouldAcceptData = true;
-                while (shouldAcceptData)
-                {
-                    try
-                    {
-                        var data = _eventsChannel.Read<TcpProtocolDto>();
-                        SessionLog.WriteLine($"Event received: {data.Id}");
-                        if (data.Id == nameof(_eventBackChannel.ThreadStopped))
-                        {
-                            _eventBackChannel.ThreadStopped((int)data.Parameters[0], (ThreadStopReason)data.Parameters[1]);
-                        }
-                        else if (data.Id == nameof(_eventBackChannel.ProcessExited))
-                        {
-                            _eventBackChannel.ProcessExited((int)data.Parameters[0]);
-                        }
-                    }
-                    catch (IOException)
-                    {
-                        shouldAcceptData = false;
-                        _eventsChannel.Dispose();
-                    }
-                    catch (SocketException)
-                    {
-                        shouldAcceptData = false;
-                        _eventsChannel.Dispose();
-                    }
-                    catch (Exception e)
-                    {
-                        SessionLog.WriteLine($"Protocol error: {e}");
-                    }
-                }
-
-                SessionLog.WriteLine("Event listener stopped");
-            });
-
-            eventsListenerThread.Start();
+            var server = new DefaultMessageServer<TcpProtocolDto>(channelToListen);
+            var dispatcher = new DispatchingService<IDebugEventListener>(server, _eventBackChannel);
+            dispatcher.Start();
         }
 
         private void WriteCommand<T>(T data, [CallerMemberName] string command = "")
