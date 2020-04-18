@@ -11,7 +11,6 @@ using System.Linq;
 using OneScript.DebugProtocol;
 using OneScript.Language;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 using Variable = OneScript.DebugProtocol.Variable;
 using MachineVariable = ScriptEngine.Machine.Variable;
@@ -147,12 +146,7 @@ namespace OneScript.DebugServices
             try
             {
                 var value = GetMachine(threadId).Evaluate(expression, true);
-                
-                var variable = CreateDebuggerVariable("$evalResult",
-                    value.AsString(), value.SystemType.Name);
-
-                variable.IsStructured = IsStructured(MachineVariable.Create(value, "$eval"));
-
+                var variable = _visualizer.GetVariable(MachineVariable.Create(value, "$evalResult"));
                 return variable;
             }
             catch (ScriptException e)
@@ -207,91 +201,9 @@ namespace OneScript.DebugServices
             };
         }
 
-        private List<IVariable> GetChildVariables(IVariable src)
+        private IList<IVariable> GetChildVariables(IVariable src)
         {
-            var variables = new List<IVariable>();
-
-            if (HasProperties(src))
-            {
-                FillProperties(src, variables);
-            }
-
-            if (VariableHasType(src, DataType.Object))
-            {
-                var context = src.AsObject();
-                if (context is IEnumerable<IValue> collection)
-                {
-                    FillIndexedProperties(collection, variables);
-                }
-            }
-
-            return variables;
-        }
-
-        private void FillIndexedProperties(IEnumerable<IValue> collection, List<IVariable> variables)
-        {
-            int index = 0;
-            foreach (var collectionItem in collection)
-            {
-                variables.Add(MachineVariable.Create(collectionItem, index.ToString()));
-                ++index;
-            }
-        }
-
-        private void FillProperties(IVariable src, List<IVariable> variables)
-        {
-            var obj = src.AsObject();
-            var propsCount = obj.GetPropCount();
-            for (int i = 0; i < propsCount; i++)
-            {
-                var propNum = i;
-                var propName = obj.GetPropName(propNum);
-                
-                IVariable value;
-
-                try
-                {
-                    value = MachineVariable.Create(obj.GetPropValue(propNum), propName);
-                }
-                catch (Exception e)
-                {
-                    value = MachineVariable.Create(ValueFactory.Create(e.Message), propName);
-                }
-
-                variables.Add(value);
-            }
-        }
-        
-        private bool IsStructured(IVariable variable)
-        {
-            return HasProperties(variable) || HasIndexes(variable);
-        }
-
-        private bool HasIndexes(IValue variable)
-        {
-            if (VariableHasType(variable, DataType.Object))
-            {
-                var obj = variable.AsObject();
-                if (obj is ICollectionContext collection)
-                {
-                    return collection.Count() > 0;
-                }
-            }
-
-            return false;
-        }
-
-        private static bool HasProperties(IValue variable)
-        {
-            if (!VariableHasType(variable, DataType.Object))
-                return false;
-            var obj = variable.AsObject();
-            return obj.GetPropCount() > 0;
-        }
-
-        private static bool VariableHasType(IValue variable, DataType type)
-        {
-            return variable.GetRawValue() != null && variable.DataType == type;
+            return _visualizer.GetChildVariables(src).ToList();
         }
     }
 }

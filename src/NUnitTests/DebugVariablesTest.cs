@@ -68,7 +68,8 @@ namespace NUnitTests
             Assert.That(debuggerVar.Presentation, Is.EqualTo("Файл"));
             Assert.That(debuggerVar.IsStructured, Is.True);
 
-            var children = Visualizer.GetChildVariables(obj);
+            var children = Visualizer.GetChildVariables(obj)
+                .Select(x => Visualizer.GetVariable(x));
             Assert.That(children, Is.Not.Empty);
             Assert.That(children.All(x => x.IsStructured == false), Is.True);
 
@@ -107,7 +108,11 @@ namespace NUnitTests
             Assert.That(debuggerVar.Presentation, Is.EqualTo("Структура"));
             Assert.That(debuggerVar.IsStructured, Is.True);
 
-            var items = Visualizer.GetChildVariables(obj).ToArray();
+            var items = Visualizer
+                .GetChildVariables(obj)
+                .Select(x => Visualizer.GetVariable(x))
+                .ToArray();
+            
             Assert.That(items, Has.Length.EqualTo(2));
             Assert.That(items[0].Name, Is.EqualTo("first"));
             Assert.That(items[0].TypeName, Is.EqualTo("Число"));
@@ -131,7 +136,9 @@ namespace NUnitTests
             Assert.That(debuggerVar.Presentation, Is.EqualTo("Соответствие"));
             Assert.That(debuggerVar.IsStructured, Is.True);
 
-            var items = Visualizer.GetChildVariables(obj).ToArray();
+            var items = Visualizer.GetChildVariables(obj)
+                .Select(x => Visualizer.GetVariable(x))
+                .ToArray();
             Assert.That(items, Has.Length.EqualTo(2));
             Assert.That(items[0].Name, Is.EqualTo("0"));
             Assert.That(items[0].TypeName, Is.EqualTo("КлючИЗначение"));
@@ -143,7 +150,9 @@ namespace NUnitTests
             Assert.That(items[1].Presentation, Is.EqualTo("КлючИЗначение"));
             Assert.That(items[1].IsStructured, Is.True);
 
-            var keyValue = Visualizer.GetChildVariables(obj.First()).ToArray();
+            var keyValue = Visualizer.GetChildVariables(obj.First())
+                .Select(x => Visualizer.GetVariable(x))
+                .ToArray();
             
             Assert.That(keyValue[0].Name, Is.EqualTo("Ключ"));
             Assert.That(keyValue[0].Presentation, Is.EqualTo("first"));
@@ -163,6 +172,7 @@ namespace NUnitTests
             row.Set(1, ValueFactory.Create("val2"));
 
             var variables = Visualizer.GetChildVariables(obj)
+                .Select(x => Visualizer.GetVariable(x))
                 .ToDictionary(x => x.Name);
             
             Assert.That(variables, Has.Count.EqualTo(2));
@@ -170,6 +180,7 @@ namespace NUnitTests
             Assert.That(variables["Колонки"].IsStructured);
 
             var rows = Visualizer.GetChildVariables(obj.Rows)
+                .Select(x => Visualizer.GetVariable(x))
                 .ToArray();
             
             Assert.That(rows, Has.Length.EqualTo(2));
@@ -180,6 +191,7 @@ namespace NUnitTests
             Assert.That(rows[1].IsStructured);
 
             var rowData = Visualizer.GetChildVariables(row)
+                .Select(x => Visualizer.GetVariable(x))
                 .ToArray();
             Assert.That(rowData, Has.Length.EqualTo(4));
             Assert.That(rowData[0].Name, Is.EqualTo("Родитель"));

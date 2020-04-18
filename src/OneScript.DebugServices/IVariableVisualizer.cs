@@ -15,6 +15,6 @@ namespace OneScript.DebugServices
     {
         Variable GetVariable(IVariable value);
         
-        IEnumerable<Variable> GetChildVariables(IValue value);
+        IEnumerable<IVariable> GetChildVariables(IValue value);
     }
 }

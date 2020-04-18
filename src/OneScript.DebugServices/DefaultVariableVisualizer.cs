@@ -61,7 +61,7 @@ namespace OneScript.DebugServices
             };
         }
 
-        public IEnumerable<Variable> GetChildVariables(IValue value)
+        public IEnumerable<IVariable> GetChildVariables(IValue value)
         {
             var presenter = new DefaultValueVisitor();
             
@@ -90,7 +90,7 @@ namespace OneScript.DebugServices
                 }
             }
             
-            return presenter.Result.Select(GetVariable);
+            return presenter.Result;
         }
 
         private bool IsStructured(IVariable variable)
