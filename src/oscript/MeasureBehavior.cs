@@ -30,5 +30,11 @@ namespace oscript
 			Output.WriteLine("\nDuration: " + sw.Elapsed);
 			return exitCode;
 		}
+
+		public static AppBehavior Create(CmdLineHelper helper)
+		{
+			var path = helper.Next();
+            return path != null ? new MeasureBehavior(path, helper.Tail()) : null;
+		}
 	}
 }

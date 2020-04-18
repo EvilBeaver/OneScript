@@ -18,7 +18,7 @@ using OneScript.DebugProtocol;
 using VSCodeDebug;
 
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     internal class OscriptDebugSession : DebugSession, IDebugEventListener
     {
@@ -129,7 +129,10 @@ namespace DebugServer
             _process.StartupScript = startupScript;
             _process.ScriptArguments = Utilities.ConcatArguments(args.args);
             _process.WorkingDirectory = workingDirectory;
-
+            _process.DebugProtocol = (string)args.protocol;
+            int port = getInt(args, "debugPort", 2801);
+            _process.DebugPort = port;
+            
             _process.OutputReceived += (s, e) =>
             {
                 SessionLog.WriteLine("output received: " + e.Content);
@@ -152,10 +155,24 @@ namespace DebugServer
                 return;
             }
             
-            int port = getInt(args, "debugPort", 2801);
+            
             try
             {
-                _process.Connect(port, this);
+                IDebuggerService service;
+                if (_process.DebugProtocol == "wcf")
+                {
+                    var wcfConnector = new WcfDebuggerConnection(port, this);
+                    wcfConnector.Connect();
+                    service = wcfConnector;
+                }
+                else
+                {
+                    var tcpConnector = new TcpDebugConnector(port, this);
+                    tcpConnector.Connect();
+                    service = tcpConnector;
+                }
+                
+                _process.SetConnection(service);
             }
             catch (Exception e)
             {

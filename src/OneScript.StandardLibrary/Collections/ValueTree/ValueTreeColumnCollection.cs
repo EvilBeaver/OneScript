@@ -17,11 +17,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
     /// Коллекция колонок дерева значений.
     /// </summary>
     [ContextClass("КоллекцияКолонокДереваЗначений", "ValueTreeColumnCollection")]
-    public class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTreeColumn>
+    public class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTreeColumn>, IDebugPresentationAcceptor
     {
         private readonly List<ValueTreeColumn> _columns = new List<ValueTreeColumn>();
-        private int _internalCounter = 3; // Нарастающий счётчик определителей колонок
-                                           // Начальное значение установлено в ненулевое для предопределённых полей строки дерева Родитель и Строки
 
         public ValueTreeColumnCollection()
         {
@@ -41,7 +39,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);
 
-            ValueTreeColumn column = new ValueTreeColumn(this, ++_internalCounter, name, title, type, width);
+            ValueTreeColumn column = new ValueTreeColumn(this, name, title, type, width);
             _columns.Add(column);
             
             return column;
@@ -62,7 +60,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);
 
-            ValueTreeColumn column = new ValueTreeColumn(this, ++_internalCounter, name, title, type, width);
+            ValueTreeColumn column = new ValueTreeColumn(this, name, title, type, width);
             _columns.Insert(index, column);
 
             return column;
@@ -174,7 +172,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             _columns.Clear();
             foreach (ValueTreeColumn column in src._columns)
             {
-                _columns.Add(new ValueTreeColumn(this, ++_internalCounter, column));
+                _columns.Add(new ValueTreeColumn(this, column));
             }
         }
 
@@ -182,11 +180,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             var comparer = StringComparer.OrdinalIgnoreCase;
             return _columns.Find(column => comparer.Equals(name, column.Name));
-        }
-
-        public ValueTreeColumn FindColumnById(int id)
-        {
-            return _columns.Find(column => column.ID == id);
         }
 
         public ValueTreeColumn FindColumnByIndex(int index)
@@ -217,7 +210,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             var column = FindColumnByName(name);
             if (column == null)
                 throw RuntimeException.PropNotFoundException(name);
-            return column.ID;
+            return _columns.IndexOf(column);
         }
 
         public override int GetPropCount()
@@ -232,7 +225,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
 
         public override IValue GetPropValue(int propNum)
         {
-            return FindColumnById(propNum);
+            return _columns[propNum];
         }
 
         public override bool IsPropWritable(int propNum)
@@ -342,5 +335,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             return processingList;
         }
 
+        void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowProperties(this);
+        }
     }
 }

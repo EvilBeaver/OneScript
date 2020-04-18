@@ -6,9 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Threading;
-
+using OneScript.DebugServices;
 using oscript.DebugServer;
-
+using ScriptEngine;
 using ScriptEngine.Machine;
 
 namespace oscript
@@ -26,13 +26,73 @@ namespace oscript
             _port = port;
         }
 
+        public DebugProtocolType ProtocolType { get; set; }
+        
         public override int Execute()
         {
             var executor = new ExecuteScriptBehavior(_path, _args);
-            executor.DebugController = new WcfDebugController(_port);
+            SystemLogger.SetWriter(executor);
+            switch (ProtocolType)
+            {
+                case DebugProtocolType.Wcf:
+                    executor.DebugController = new WcfDebugController(_port);
+                    break;
+                case DebugProtocolType.Tcp:
+                default:
+                    var tcpDebugServer = new BinaryTcpDebugServer();
+                    tcpDebugServer.WaitForConnections(_port);
+                    executor.DebugController = tcpDebugServer.CreateDebugController();
+                    break;
+            }
 
             return executor.Execute();
         }
-        
+
+        public static AppBehavior Create(CmdLineHelper helper)
+        {
+            int port = 2801;
+            string path = null;
+            DebugProtocolType protocolType = DebugProtocolType.Tcp;
+
+            while (true)
+            {
+                var arg = helper.Next();
+                if (arg == null)
+                {
+                    break;
+                }
+                
+                if (arg.StartsWith("-port="))
+                {
+                    var portString = helper.ValueOfKey("-port=", arg);
+                    if (portString == null) 
+                        return null;
+                
+                    if (!Int32.TryParse(portString, out port))
+                    {
+                        Output.WriteLine("Incorrect port: " + portString);
+                        return null;
+                    }
+                }
+                else if (arg.StartsWith("-protocol="))
+                {
+                    var proto = helper.ValueOfKey("-protocol=", arg);
+                    if (proto == null || !Enum.TryParse(proto, true, out protocolType))
+                    {
+                        Output.WriteLine("Unknown protocol. Using default");
+                    }
+                }
+                else
+                {
+                    path = arg;
+                    break;
+                }
+            }
+
+            return path == null ? null : new DebugBehavior(port, path, helper.Tail())
+            {
+                ProtocolType = protocolType
+            };
+        }
     }
 }

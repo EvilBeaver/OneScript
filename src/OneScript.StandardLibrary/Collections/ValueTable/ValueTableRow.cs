@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
     [ContextClass("СтрокаТаблицыЗначений", "ValueTableRow")]
-    public class ValueTableRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>
+    public class ValueTableRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>, IDebugPresentationAcceptor
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTable _owner;
@@ -207,6 +207,11 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public override int FindMethod(string name)
         {
             return _methods.FindMethod(name);
+        }
+        
+        void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowProperties(this);
         }
 
     }

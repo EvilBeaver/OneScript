@@ -44,16 +44,6 @@ namespace OneScript.StandardLibrary.Collections
             throw new RuntimeException("Индексированное значение доступно только для чтения");
         }
 
-        public override bool IsPropReadable(int propNum)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool IsPropWritable(int propNum)
-        {
-            throw new NotImplementedException();
-        }
-
         #region ICollectionContext Members
 
         [ContextMethod("Количество", "Count")]
