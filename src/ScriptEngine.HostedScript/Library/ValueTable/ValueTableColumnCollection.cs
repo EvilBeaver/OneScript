@@ -157,6 +157,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return idx;
         }
 
+        public override int GetPropCount()
+        {
+            return _columns.Count;
+        }
+        
         public override string GetPropName(int propNum)
         {
             return FindColumnByIndex(propNum).Name;
