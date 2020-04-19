@@ -184,6 +184,7 @@
             <NugetAbleProject Include="ScriptEngine.HostedScript"/>
             <NugetAbleProject Include="OneScript.Language"/>
 			<NugetAbleProject Include="OneScript.DebugServices"/>
+			<NugetAbleProject Include="OneScript.DebugProtocol"/>
         </ItemGroup>
         
         <MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot);ReleaseNumber=$(ReleaseNumber)"/>
