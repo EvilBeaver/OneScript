@@ -34,8 +34,8 @@
 	ФайлыИсключения = Новый Массив; // чужой код
 	ФайлыИсключения.Добавить("src/GlobalAssemblyInfo.cs");
 	ФайлыИсключения.Добавить("src/oscript/Web/Multipart/");
-	ФайлыИсключения.Добавить("src/DebugServer/Wcf/DebugSession.cs");
-	ФайлыИсключения.Добавить("src/DebugServer/Wcf/ServiceProxy.cs");
+	ФайлыИсключения.Добавить("src/VSCode.DebugAdapter/OscriptProtocols/Wcf/DebugSession.cs");
+	ФайлыИсключения.Добавить("src/VSCode.DebugAdapter/OscriptProtocols/Wcf/ServiceProxy.cs");
 
 	ВсеФайлы = НайтиФайлы(КаталогИсходников, ПолучитьМаскуВсеФайлы());
 	ЕстьОшибки = Ложь;
