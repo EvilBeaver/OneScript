@@ -10,10 +10,10 @@ using OneScript.DebugProtocol;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-
+using System.Text;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     internal class DebugeeOutputEventArgs : EventArgs
     {
@@ -29,31 +29,47 @@ namespace DebugServer
 
     internal class DebugeeProcess
     {
-
         private Process _process;
 
         private bool _terminated;
         private bool _stdoutEOF;
         private bool _stderrEOF;
 
-        private ServiceProxy<IDebuggerService> _debugger;
+        private IDebuggerService _debugger;
         
         public string RuntimeExecutable { get; set; }
         public string WorkingDirectory { get; set; }
         public string StartupScript { get; set; }
         public string ScriptArguments { get; set; }
         public string RuntimeArguments { get; set; }
+        
+        public int DebugPort { get; set; }
+        
+        public string DebugProtocol { get; set; }
 
         public bool HasExited => _process.HasExited;
         public int ExitCode => _process.ExitCode;
 
+        private IDebuggerService DebugChannel { get; set; }
+
         public void Start()
         {
+            var dbgArgs = new List<string>();
+            if (DebugPort != 0)
+            {
+                dbgArgs.Add($"-port={DebugPort}");
+            }
+            if (!string.IsNullOrEmpty(DebugProtocol))
+            {
+                dbgArgs.Add($"-protocol={DebugProtocol}");
+            }
+
+            var debugArguments = string.Join(" ", dbgArgs);
             _process = new Process();
             var psi = _process.StartInfo;
             psi.FileName = RuntimeExecutable;
             psi.UseShellExecute = false;
-            psi.Arguments = $"-debug {RuntimeArguments} \"{StartupScript}\" {ScriptArguments}";
+            psi.Arguments = $"-debug {debugArguments} {RuntimeArguments} \"{StartupScript}\" {ScriptArguments}";
             psi.WorkingDirectory = WorkingDirectory;
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
@@ -72,17 +88,9 @@ namespace DebugServer
             _process.BeginErrorReadLine();
         }
         
-        public void Connect(int port, IDebugEventListener listener)
+        public void SetConnection(IDebuggerService service)
         {
-            var binding = (NetTcpBinding)Binder.GetBinding();
-            binding.MaxBufferPoolSize = DebuggerSettings.MAX_BUFFER_SIZE;
-            binding.MaxBufferSize = DebuggerSettings.MAX_BUFFER_SIZE;
-            binding.MaxReceivedMessageSize = DebuggerSettings.MAX_BUFFER_SIZE;
-
-            var channelFactory = new DuplexChannelFactory<IDebuggerService>(listener, binding, new EndpointAddress(Binder.GetDebuggerUri(port)));
-
-            _debugger = new ServiceProxy<IDebuggerService>(channelFactory.CreateChannel);
-            
+            _debugger = service;
         }
         
         public event EventHandler<DebugeeOutputEventArgs> OutputReceived;
@@ -144,19 +152,19 @@ namespace DebugServer
 
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)
         {
-            var confirmedBreaks = _debugger.Instance.SetMachineBreakpoints(breakpoints.ToArray());
+            var confirmedBreaks = _debugger.SetMachineBreakpoints(breakpoints.ToArray());
             
             return confirmedBreaks;
         }
 
         public void BeginExecution(int threadId)
         {
-            _debugger.Instance.Execute(threadId);
+            _debugger.Execute(threadId);
         }
         
         public StackFrame[] GetStackTrace(int threadId, int firstFrameIdx, int limit)
         {
-            var allFrames = _debugger.Instance.GetStackFrames(threadId);
+            var allFrames = _debugger.GetStackFrames(threadId);
             
             if (limit == 0)
                 limit = allFrames.Length;
@@ -177,14 +185,14 @@ namespace DebugServer
 
         public void FillVariables(IVariableLocator locator)
         {
-            locator.Hydrate(_debugger.Instance);
+            locator.Hydrate(_debugger);
         }
 
         public Variable Evaluate(StackFrame frame, string expression)
         {
             try
             {
-                return _debugger.Instance.Evaluate(frame.ThreadId, frame.Index, expression);
+                return _debugger.Evaluate(frame.ThreadId, frame.Index, expression);
             }
             catch (FaultException e)
             {
@@ -194,22 +202,22 @@ namespace DebugServer
 
         public void Next()
         {
-            _debugger.Instance.Next(1);
+            _debugger.Next(1);
         }
 
         public void StepIn()
         {
-            _debugger.Instance.StepIn(1);
+            _debugger.StepIn(1);
         }
 
         internal void StepOut()
         {
-            _debugger.Instance.StepOut(1);
+            _debugger.StepOut(1);
         }
 
         public int[] GetThreads()
         {
-            return _debugger.Instance.GetThreads();
+            return _debugger.GetThreads();
         }
     }
 }

@@ -39,125 +39,42 @@ namespace oscript
 
         private static AppBehavior SelectParametrized(CmdLineHelper helper)
         {
+            var initializers = new Dictionary<string, Func<CmdLineHelper, AppBehavior>>();
+            
+            initializers.Add("-measure", MeasureBehavior.Create);
+            initializers.Add("-compile", ShowCompiledBehavior.Create);
+            initializers.Add("-check", CheckSyntaxBehavior.Create);
+            initializers.Add("-make", MakeAppBehavior.Create);
+            initializers.Add("-cgi", h => new CgiBehavior());
+            initializers.Add("-version", h => new ShowVersionBehavior());
+            initializers.Add("-v", h => new ShowVersionBehavior());
+            initializers.Add("-encoding=", ProcessEncodingKey);
+            initializers.Add("-codestat=", EnableCodeStatistics);
+            initializers.Add("-debug", DebugBehavior.Create);
+            initializers.Add("-serialize", SerializeModuleBehavior.Create);
+            
             var param = helper.Current().ToLowerInvariant();
-            if (param == "-measure")
+            if(initializers.TryGetValue(param, out var action))
             {
-                var path = helper.Next();
-                if (path != null)
-                {
-                    return new MeasureBehavior(path, helper.Tail());
-                }
-            }
-            else if (param == "-compile")
-            {
-                var path = helper.Next();
-                if (path != null)
-                {
-                    return new ShowCompiledBehavior(path);
-                }
-            }
-            else if (param == "-check")
-            {
-                return ProcessCheckKey(helper);
-            }
-            else if (param == "-make")
-            {
-                var codepath = helper.Next();
-                var output = helper.Next();
-                var makeBin = helper.Next();
-                if (output != null && codepath != null)
-                {
-                    var appMaker = new MakeAppBehavior(codepath, output);
-                    if (makeBin != null && makeBin == "-bin")
-                        appMaker.CreateDumpOnly = true;
-
-                    return appMaker;
-                }
-            }
-            else if (param == "-cgi")
-            {
-                return new CgiBehavior();
-            }
-            else if (param == "-version" || param == "-v")
-            {
-                return new ShowVersionBehavior();
-            }
-            else if (param.StartsWith("-encoding="))
-            {
-                return ProcessEncodingKey(helper);
-            }
-            else if (param.StartsWith("-codestat="))
-            {
-                var prefixLen = ("-codestat=").Length;
-                if (param.Length > prefixLen)
-                {
-                    var outputStatFile = param.Substring(prefixLen);
-                    ScriptFileHelper.EnableCodeStatistics(outputStatFile);
-                    return Select(helper.Tail());
-                }
-            }
-            else if (param == "-debug")
-            {
-                var arg = helper.Next();
-                int port = 2801;
-                if (arg != null && arg.StartsWith("-port="))
-                {
-                    var prefixLen = ("-port=").Length;
-                    if (arg.Length > prefixLen)
-                    {
-                        var value = arg.Substring(prefixLen);
-                        if (!Int32.TryParse(value, out port))
-                        {
-                            Output.WriteLine("Incorrect port: " + value);
-                            return null;
-                        }
-                    }
-                }
-                else if(arg != null)
-                {
-                    var path = arg;
-                    return new DebugBehavior(port, path, helper.Tail());
-                }
-            }
-            else if (param == "-serialize")
-            {
-                var path = helper.Next();
-                if (path != null)
-                {
-                    return new SerializeModuleBehavior(path);
-                }
-
-                return new ShowUsageBehavior();
+                return action(helper);
             }
 
             return null;
         }
 
-        private static AppBehavior ProcessCheckKey(CmdLineHelper helper)
+        private static AppBehavior EnableCodeStatistics(CmdLineHelper helper)
         {
-            if (helper.Next() != null)
-            {
-                bool cgi_mode = false;
-                var arg = helper.Current();
-                if (arg.ToLowerInvariant() == "-cgi")
-                {
-                    cgi_mode = true;
-                    arg = helper.Next();
-                }
+            var param = helper.Current();
+            var prefixLen = ("-codestat=").Length;
+            if (param.Length <= prefixLen) 
+                return null;
+            
+            var outputStatFile = param.Substring(prefixLen);
+            ScriptFileHelper.EnableCodeStatistics(outputStatFile);
+            return Select(helper.Tail());
 
-                var path = arg;
-                var env = helper.Next();
-                if (env != null && env.StartsWith("-env="))
-                {
-                    env = env.Substring(5);
-                }
-
-                return new CheckSyntaxBehavior(path, env, cgi_mode);
-            }
-
-            return null;
         }
-
+        
         private static AppBehavior ProcessEncodingKey(CmdLineHelper helper)
         {
             var param = helper.Current();

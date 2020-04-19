@@ -23,11 +23,13 @@ namespace oscript.DebugServer
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IncludeExceptionDetailInFaults = true)]
     internal class WcfDebugService : IDebuggerService
     {
+        private readonly DebugServiceImpl _debugServiceImpl;
         private WcfDebugController Controller { get; }
         
         public WcfDebugService(WcfDebugController controller)
         {
             Controller = controller;
+            _debugServiceImpl = new DebugServiceImpl(controller);
         }
 
         #region WCF Communication methods
@@ -35,21 +37,7 @@ namespace oscript.DebugServer
         public void Execute(int threadId)
         {
             RegisterEventListener();
-            if (threadId > 0)
-            {
-                var token = Controller.GetTokenForThread(threadId);
-                token.Machine.PrepareDebugContinuation();
-                token.ThreadEvent.Set();        
-            }
-            else
-            {
-                var tokens = Controller.GetAllTokens();
-                foreach (var token in tokens)
-                {
-                    token.Machine.PrepareDebugContinuation();
-                    token.ThreadEvent.Set();
-                }
-            }
+            _debugServiceImpl.Execute(threadId);
         }
 
         private void RegisterEventListener()
@@ -62,330 +50,47 @@ namespace oscript.DebugServer
 
         public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
-            var confirmedBreakpoints = new List<Breakpoint>();
-
-            var grouped = breaksToSet.GroupBy(g => g.Source);
-
-            foreach (var item in grouped)
-            {
-                var lines = item
-                    .Where(x => x.Line != 0)
-                    .Select(x => x.Line)
-                    .ToArray();
-
-                foreach (var machine in Controller.GetAllTokens().Select(x=>x.Machine))
-                {
-                    machine.SetBreakpointsForModule(item.Key, lines);
-                }
-
-                foreach (var line in lines)
-                {
-                    confirmedBreakpoints.Add(new Breakpoint()
-                    {
-                        Line = line,
-                        Source = item.Key
-                    });
-                }
-
-            }
-
-            return confirmedBreakpoints.ToArray();
+            return _debugServiceImpl.SetMachineBreakpoints(breaksToSet);
         }
 
         public StackFrame[] GetStackFrames(int threadId)
         {
-            var machine = Controller.GetTokenForThread(threadId).Machine;
-            var frames = machine.GetExecutionFrames();
-            var result = new StackFrame[frames.Count];
-            int index = 0;
-            foreach (var frameInfo in frames)
-            {
-                var frame = new StackFrame();
-                frame.LineNumber = frameInfo.LineNumber;
-                frame.Index = index++;
-                frame.MethodName = frameInfo.MethodName;
-                frame.Source = frameInfo.Source;
-                result[frame.Index] = frame;
-
-            }
-            return result;
+            return _debugServiceImpl.GetStackFrames(threadId);
         }
 
         public Variable[] GetVariables(int threadId, int frameId, int[] path)
         {
-            var machine = Controller.GetTokenForThread(threadId).Machine;
-            var locals = machine.GetFrameLocals(frameId);
-
-            foreach (var step in path)
-            {
-                var variable = locals[step];
-                locals = GetChildVariables(variable);
-            }
-
-            return GetDebugVariables(locals);
+            return _debugServiceImpl.GetVariables(threadId, frameId, path);
         }
 
         public Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
         {
-            var machine = Controller.GetTokenForThread(threadId).Machine;
-            var srcVariable = Evaluate(threadId, frameIndex, expression);
-
-            IValue value;
-
-            try
-            {
-                value = GetMachine(threadId).Evaluate(expression, true);
-            }
-            catch (Exception e)
-            {
-                value = ValueFactory.Create(e.Message);
-            }
-
-            var locals = GetChildVariables(MachineVariable.Create(value, "$eval"));
-
-            foreach (var step in path)
-            {
-                var variable = locals[step];
-                locals = GetChildVariables(variable);
-            }
-
-            return GetDebugVariables(locals);
-        }
-        
-        private Variable[] GetDebugVariables(IList<IVariable> machineVariables)
-        {
-            var result = new Variable[machineVariables.Count];
-
-            for (int i = 0; i < machineVariables.Count; i++)
-            {
-                string presentation;
-                string typeName;
-
-                var currentVar = machineVariables[i];
-
-                //На случай проблем, подобных:
-                //https://github.com/EvilBeaver/OneScript/issues/918
-
-                try
-                {
-                    presentation = currentVar.AsString();
-                }
-                catch (Exception e)
-                {
-                    presentation = e.Message;
-                }
-
-                try
-                {
-                    typeName = currentVar.SystemType.Name;
-                }
-                catch (Exception e)
-                {
-                    typeName = e.Message;
-                }
-
-                result[i] = CreateDebuggerVariable(currentVar.Name, presentation, typeName);
-                result[i].IsStructured = IsStructured(currentVar);
-            }
-
-            return result;
-        }
-
-        public Variable CreateDebuggerVariable(string name, string presentation, string typeName)
-        {
-            if (presentation.Length > DebuggerSettings.MAX_PRESENTATION_LENGTH)
-                presentation = presentation.Substring(0, DebuggerSettings.MAX_PRESENTATION_LENGTH) + "...";
-
-            return new Variable()
-            {
-                Name = name,
-                Presentation = presentation,
-                TypeName = typeName
-            };
-        }
-
-        private List<IVariable> GetChildVariables(IVariable src)
-        {
-            var variables = new List<IVariable>();
-
-            if (HasProperties(src))
-            {
-                FillProperties(src, variables);
-            }
-            else if(src.AsObject() is IEnumerable<KeyAndValueImpl> collection)
-            {
-                FillKeyValueProperties(collection, variables);
-            }
-
-            if (HasIndexes(src))
-            {
-                FillIndexedProperties(src, variables);
-            }
-
-            return variables;
-        }
-
-        private void FillKeyValueProperties(IEnumerable<KeyAndValueImpl> collection, List<IVariable> variables)
-        {
-            var propsCount = collection.Count();
-
-            int i = 0;
-
-            foreach (var kv in collection)
-            {
-                IVariable value;
-
-                value = MachineVariable.Create(kv, i.ToString());
-
-                variables.Add(value);
-
-                i++;
-            }
-        }
-
-        private void FillIndexedProperties(IVariable src, List<IVariable> variables)
-        {
-            var obj = src.AsObject();
-
-            if (obj is ICollectionContext cntx)
-            {
-                var itemsCount = cntx.Count();
-                for (int i = 0; i < itemsCount; i++)
-                {
-                    IValue value;
-
-                    try
-                    {
-                        value = obj.GetIndexedValue(ValueFactory.Create(i));
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
-
-                    variables.Add(MachineVariable.Create(value, i.ToString()));
-                }
-            }
-        }
-
-        private void FillProperties(IVariable src, List<IVariable> variables)
-        {
-            var obj = src.AsObject();
-            var propsCount = obj.GetPropCount();
-            for (int i = 0; i < propsCount; i++)
-            {
-                var propNum = i;
-                var propName = obj.GetPropName(propNum);
-                
-                IVariable value;
-
-                try
-                {
-                    value = MachineVariable.Create(obj.GetPropValue(propNum), propName);
-                }
-                catch (Exception e)
-                {
-                    value = MachineVariable.Create(ValueFactory.Create(e.Message), propName);
-                }
-
-                variables.Add(value);
-            }
+            return _debugServiceImpl.GetEvaluatedVariables(expression, threadId, frameIndex, path);
         }
 
         public Variable Evaluate(int threadId, int contextFrame, string expression)
         {
-            try
-            {
-                var value = GetMachine(threadId).Evaluate(expression, true);
-                
-                var variable = CreateDebuggerVariable("$evalResult",
-                    value.AsString(), value.SystemType.Name);
-
-                variable.IsStructured = IsStructured(MachineVariable.Create(value, "$eval"));
-
-                return variable;
-            }
-            catch (ScriptException e)
-            {
-                return CreateDebuggerVariable("$evalFault", e.ErrorDescription,
-                    "Ошибка");
-            }
+            return _debugServiceImpl.Evaluate(threadId, contextFrame, expression);
         }
 
         public void Next(int threadId)
         {
-            var t = Controller.GetTokenForThread(threadId);
-            t.Machine.StepOver();
-            t.ThreadEvent.Set();
+            _debugServiceImpl.Next(threadId);
         }
 
         public void StepIn(int threadId)
         {
-            var t = Controller.GetTokenForThread(threadId);
-            t.Machine.StepIn();
-            t.ThreadEvent.Set();
+            _debugServiceImpl.StepIn(threadId);
         }
 
         public void StepOut(int threadId)
         {
-            var t = Controller.GetTokenForThread(threadId);
-            t.Machine.StepOut();
-            t.ThreadEvent.Set();
+            _debugServiceImpl.StepOut(threadId);
         }
 
         public int[] GetThreads()
         {
-            return Controller.GetAllThreadIds();
-        }
-
-        private MachineInstance GetMachine(int threadId)
-        {
-            return Controller.GetTokenForThread(threadId).Machine;
-        }
-
-        private bool IsStructured(IVariable variable)
-        {
-            var result = HasProperties(variable) || HasIndexes(variable);
-            if(!result)
-            {
-                if (VariableHasType(variable, DataType.Object))
-                {
-                    var obj = variable.AsObject();
-                    result = obj is IEnumerable<KeyAndValueImpl>;
-                }
-            }
-            return result;
-        }
-
-        private bool HasIndexes(IValue variable)
-        {
-            if (VariableHasType(variable, DataType.Object))
-            {
-                var obj = variable.AsObject();
-                if (!(obj is IEnumerable<KeyAndValueImpl>)
-                    && obj is IRuntimeContextInstance cntx && cntx.IsIndexed)
-                {
-                    if (obj is ICollectionContext collection)
-                    {
-                        return collection.Count() > 0;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private static bool HasProperties(IValue variable)
-        {
-            if (!VariableHasType(variable, DataType.Object))
-                return false;
-            var obj = variable.AsObject();
-            return obj.GetPropCount() > 0;
-        }
-
-        private static bool VariableHasType(IValue variable, DataType type)
-        {
-            return variable.GetRawValue() != null && variable.DataType == type;
+            return _debugServiceImpl.GetThreads();
         }
 
         #endregion

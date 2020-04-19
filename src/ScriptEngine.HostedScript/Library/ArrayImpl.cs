@@ -50,16 +50,6 @@ namespace ScriptEngine.HostedScript.Library
                 base.SetIndexedValue(index, val);
         }
 
-        public override bool IsPropReadable(int propNum)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool IsPropWritable(int propNum)
-        {
-            throw new NotImplementedException();
-        }
-
         #region ICollectionContext Members
         
         [ContextMethod("Количество", "Count")]

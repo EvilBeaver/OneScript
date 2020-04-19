@@ -5,10 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-
+using OneScript.DebugProtocol;
 using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
@@ -90,6 +91,21 @@ namespace oscript.DebugServer
             }
 
             _machinesOnThreads.Clear();
+        }
+
+        protected ThreadStopReason ConvertStopReason(MachineStopReason reason)
+        {
+            switch(reason)
+            {
+                case MachineStopReason.Breakpoint:
+                    return ThreadStopReason.Breakpoint;
+                case MachineStopReason.Step:
+                    return ThreadStopReason.Step;
+                case MachineStopReason.Exception:
+                    return ThreadStopReason.Exception;
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }

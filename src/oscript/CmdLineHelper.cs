@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace oscript
 {
@@ -41,6 +42,18 @@ namespace oscript
         public string[] Tail()
         {
             return _args.Skip(_index+1).ToArray();
+        }
+
+        public string ValueOfKey(string key, string param)
+        {
+            string value = null;
+            var len = key.Length;
+            if (param.Length > len)
+            {
+                value = param.Substring(len);
+            }
+
+            return value;
         }
     }
 }

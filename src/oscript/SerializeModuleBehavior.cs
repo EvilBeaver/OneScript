@@ -81,5 +81,16 @@ namespace oscript
             serializer.Serialize(writer, script.Image);
             writer.WriteEndObject();
         }
+
+        public static AppBehavior Create(CmdLineHelper helper)
+        {
+            var path = helper.Next();
+            if (path != null)
+            {
+                return new SerializeModuleBehavior(path);
+            }
+
+            return new ShowUsageBehavior();
+        }
     }
 }

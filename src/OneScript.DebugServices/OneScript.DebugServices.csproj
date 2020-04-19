@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+    
+    <PropertyGroup>
+        <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+        <Title>Debug services for apps hosting 1script engine</Title>
+        <Copyright>Copyright (c) 2020 EvilBeaver</Copyright>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
+      <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+    </ItemGroup>
+
+</Project>

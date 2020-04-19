@@ -49,5 +49,11 @@ namespace oscript
 
 			return 0;
 		}
+
+		public static AppBehavior Create(CmdLineHelper helper)
+		{
+			var path = helper.Next();
+			return path != null ? new ShowCompiledBehavior(path) : null;
+		}
 	}
 }
