@@ -61,11 +61,12 @@ namespace oscript
                 {
                     break;
                 }
-                
-                if (arg.StartsWith("-port="))
+
+                var parsedArg = helper.Parse(arg);
+                if (parsedArg.Name == "-port")
                 {
-                    var portString = helper.ValueOfKey("-port=", arg);
-                    if (portString == null) 
+                    var portString = parsedArg.Value;
+                    if (string.IsNullOrEmpty(portString)) 
                         return null;
                 
                     if (!Int32.TryParse(portString, out port))
@@ -74,10 +75,10 @@ namespace oscript
                         return null;
                     }
                 }
-                else if (arg.StartsWith("-protocol="))
+                else if (parsedArg.Name == "-protocol")
                 {
-                    var proto = helper.ValueOfKey("-protocol=", arg);
-                    if (proto == null || !Enum.TryParse(proto, true, out protocolType))
+                    var proto = parsedArg.Value;
+                    if (string.IsNullOrEmpty(proto) || !Enum.TryParse(proto, true, out protocolType))
                     {
                         Output.WriteLine("Unknown protocol. Using default");
                     }

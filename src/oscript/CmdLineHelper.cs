@@ -44,16 +44,24 @@ namespace oscript
             return _args.Skip(_index+1).ToArray();
         }
 
-        public string ValueOfKey(string key, string param)
+        public CmdLineParam Parse(string param)
         {
-            string value = null;
-            var len = key.Length;
-            if (param.Length > len)
+            var paramValue = new CmdLineParam();
+            var equality = param.IndexOf('=');
+            if (equality == -1)
             {
-                value = param.Substring(len);
+                paramValue.Name = param;
+            }
+            else
+            {
+                paramValue.Name = param.Substring(0, equality);
+                if (param.Length > equality + 1)
+                    paramValue.Value = param.Substring(equality + 1);
+                else
+                    paramValue.Value = string.Empty;
             }
 
-            return value;
+            return paramValue;
         }
     }
 }

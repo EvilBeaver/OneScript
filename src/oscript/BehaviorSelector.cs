@@ -48,13 +48,13 @@ namespace oscript
             initializers.Add("-cgi", h => new CgiBehavior());
             initializers.Add("-version", h => new ShowVersionBehavior());
             initializers.Add("-v", h => new ShowVersionBehavior());
-            initializers.Add("-encoding=", ProcessEncodingKey);
-            initializers.Add("-codestat=", EnableCodeStatistics);
+            initializers.Add("-encoding", ProcessEncodingKey);
+            initializers.Add("-codestat", EnableCodeStatistics);
             initializers.Add("-debug", DebugBehavior.Create);
             initializers.Add("-serialize", SerializeModuleBehavior.Create);
-            
-            var param = helper.Current().ToLowerInvariant();
-            if(initializers.TryGetValue(param, out var action))
+
+            var param = helper.Parse(helper.Current());
+            if(initializers.TryGetValue(param.Name.ToLowerInvariant(), out var action))
             {
                 return action(helper);
             }
@@ -64,12 +64,11 @@ namespace oscript
 
         private static AppBehavior EnableCodeStatistics(CmdLineHelper helper)
         {
-            var param = helper.Current();
-            var prefixLen = ("-codestat=").Length;
-            if (param.Length <= prefixLen) 
+            var param = helper.Parse(helper.Current());
+            if (string.IsNullOrEmpty(param.Value))
                 return null;
             
-            var outputStatFile = param.Substring(prefixLen);
+            var outputStatFile = param.Value;
             ScriptFileHelper.EnableCodeStatistics(outputStatFile);
             return Select(helper.Tail());
 
@@ -77,11 +76,10 @@ namespace oscript
         
         private static AppBehavior ProcessEncodingKey(CmdLineHelper helper)
         {
-            var param = helper.Current();
-            var prefixLen = ("-encoding=").Length;
-            if (param.Length > prefixLen)
+            var param = helper.Parse(helper.Current());
+            if (!string.IsNullOrEmpty(param.Value))
             {
-                var encValue = param.Substring(prefixLen);
+                var encValue = param.Value;
                 Encoding encoding;
                 try
                 {
