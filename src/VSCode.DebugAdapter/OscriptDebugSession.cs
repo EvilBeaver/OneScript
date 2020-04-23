@@ -98,6 +98,7 @@ namespace VSCode.DebugAdapter
 
             // validate argument 'runtimeExecutable'
             var runtimeExecutable = (string)args.runtimeExecutable;
+            var protocolId = (string)args.protocol;
             if (runtimeExecutable != null)
             {
                 runtimeExecutable = runtimeExecutable.Trim();
@@ -117,6 +118,10 @@ namespace VSCode.DebugAdapter
                     return;
                 }
             }
+            else if (protocolId == "web")
+            {
+                SendErrorResponse(response, 3007, "Runtime executable is required for «web» protocol");
+            }
             else
             {
                 runtimeExecutable = "oscript.exe";
@@ -129,7 +134,7 @@ namespace VSCode.DebugAdapter
             _process.StartupScript = startupScript;
             _process.ScriptArguments = Utilities.ConcatArguments(args.args);
             _process.WorkingDirectory = workingDirectory;
-            _process.DebugProtocol = (string)args.protocol;
+            _process.DebugProtocol = protocolId;
             int port = getInt(args, "debugPort", 2801);
             _process.DebugPort = port;
             

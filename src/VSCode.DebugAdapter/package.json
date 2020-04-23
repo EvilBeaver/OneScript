@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript",
   "icon": "images/mono-debug-icon.png",
@@ -35,7 +35,7 @@
       {
         "type": "oscript",
         "label": "1Script Debugger",
-        "program": "./bin/VSCode.DebugAdapter.exe",
+        "program": "./bin/Debug/net452/VSCode.DebugAdapter.exe",
         "osx": {
           "runtime": "mono"
         },
@@ -61,7 +61,7 @@
             "properties": {
               "program": {
                 "type": "string",
-                "description": "Файл сценария для запуска отладки"
+                "description": "Файл сценария для запуска отладки. Не используется при отладке Oscript.Web"
               },
               "args": {
                 "type": "array",
@@ -71,12 +71,12 @@
               },
               "cwd": {
                 "type": "string",
-                "description": "Текущий каталог запуска отладки",
+                "description": "Текущий каталог запуска отладки. Для отладки 1Script.Web - укажите каталог с файлом main.os",
                 "default": "."
               },
               "runtimeExecutable": {
                 "type": [ "string", "null" ],
-                "description": "Путь к исполняемому файлу oscript.exe",
+                "description": "Путь к исполняемому файлу oscript.exe / OneScript.WebHost.exe",
                 "default": "oscript"
               },
               "runtimeArgs": {
@@ -93,11 +93,7 @@
               "protocol": {
                 "type": "string",
                 "description": "Вариант протокола взаимодействия с отлаживаемым процессом",
-                "enum" : ["wcf", "tcp"]
-              },
-              "protocolVersion": {
-                "type": "string",
-                "description": "Версия протокола взаимодействия с отлаживаемым процессом"
+                "enum" : ["wcf", "tcp", "web"]
               }
             }
           },

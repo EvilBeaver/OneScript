@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using OneScript.DebugProtocol;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
@@ -36,7 +37,7 @@ namespace VSCode.DebugAdapter
         private bool _stderrEOF;
 
         private IDebuggerService _debugger;
-        
+
         public string RuntimeExecutable { get; set; }
         public string WorkingDirectory { get; set; }
         public string StartupScript { get; set; }
@@ -46,6 +47,8 @@ namespace VSCode.DebugAdapter
         public int DebugPort { get; set; }
         
         public string DebugProtocol { get; set; }
+        
+        
 
         public bool HasExited => _process.HasExited;
         public int ExitCode => _process.ExitCode;
@@ -53,6 +56,53 @@ namespace VSCode.DebugAdapter
         private IDebuggerService DebugChannel { get; set; }
 
         public void Start()
+        {
+            var exeFileName = Path.GetFileName(RuntimeExecutable);
+            if (DebugProtocol == "web")
+            {
+                RunOsWebRuntime();
+            }
+            else
+            {
+                RunOscriptRuntime();
+            }
+        }
+
+        private void RunOsWebRuntime()
+        {
+            var dbgArgs = new List<string>();
+            if (DebugPort != 0)
+            {
+                dbgArgs.Add($"--debug.port={DebugPort}");
+            }
+            dbgArgs.Add($"--debug.protocol=tcp");
+            dbgArgs.Add($"--debug.wait=1");
+            
+            var debugArguments = string.Join(" ", dbgArgs);
+            _process = new Process();
+            var psi = _process.StartInfo;
+            psi.FileName = RuntimeExecutable;
+            psi.UseShellExecute = false;
+            psi.Arguments = $"{debugArguments} {RuntimeArguments}";
+            psi.WorkingDirectory = WorkingDirectory;
+            psi.RedirectStandardError = true;
+            psi.RedirectStandardOutput = true;
+
+            _process.EnableRaisingEvents = true;
+            _process.OutputDataReceived += Process_OutputDataReceived;
+            _process.ErrorDataReceived += Process_ErrorDataReceived;
+            _process.Exited += Process_Exited;
+
+            SessionLog.WriteLine($"Starting {psi.FileName} with args {psi.Arguments}");
+            SessionLog.WriteLine($"cwd = {WorkingDirectory}");
+
+            _process.Start();
+            System.Threading.Thread.Sleep(1000);
+            _process.BeginOutputReadLine();
+            _process.BeginErrorReadLine();
+        }
+
+        private void RunOscriptRuntime()
         {
             var dbgArgs = new List<string>();
             if (DebugPort != 0)
@@ -63,7 +113,7 @@ namespace VSCode.DebugAdapter
             {
                 dbgArgs.Add($"-protocol={DebugProtocol}");
             }
-
+            
             var debugArguments = string.Join(" ", dbgArgs);
             _process = new Process();
             var psi = _process.StartInfo;
@@ -87,7 +137,7 @@ namespace VSCode.DebugAdapter
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
         }
-        
+
         public void SetConnection(IDebuggerService service)
         {
             _debugger = service;
