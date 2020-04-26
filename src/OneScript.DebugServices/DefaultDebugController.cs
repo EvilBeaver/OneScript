@@ -66,9 +66,14 @@ namespace OneScript.DebugServices
             
         }
 
-        public void AttachToThread(MachineInstance machine)
+        public void AttachToThread()
         {
             _threadManager.AttachToCurrentThread(); 
+        }
+        
+        public void DetachFromThread()
+        {
+            _threadManager.DetachFromCurrentThread(); 
         }
         
         private ThreadStopReason ConvertStopReason(MachineStopReason reason)

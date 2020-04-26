@@ -196,7 +196,7 @@ namespace ScriptEngine.HostedScript
             if (_engine.DebugController != null)
             {
                 _engine.DebugController.Init();
-                _engine.DebugController.AttachToThread(_engine.Machine);
+                _engine.DebugController.AttachToThread();
                 _engine.DebugController.Wait();
             }
 

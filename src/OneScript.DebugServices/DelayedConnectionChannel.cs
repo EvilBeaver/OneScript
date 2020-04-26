@@ -26,7 +26,7 @@ namespace OneScript.DebugServices
         {
             _listener?.Stop();
             _listener = null;
-            _connectedChannel.Dispose();
+            _connectedChannel?.Dispose();
         }
 
         public void Write(object data)

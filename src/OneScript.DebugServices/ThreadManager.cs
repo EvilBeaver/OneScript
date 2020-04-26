@@ -42,9 +42,17 @@ namespace OneScript.DebugServices
         
         public void DetachFromCurrentThread()
         {
-            var t = _machinesOnThreads[Thread.CurrentThread.ManagedThreadId];
-            t.Machine.MachineStopped -= Machine_MachineStopped;
-            _machinesOnThreads.Remove(Thread.CurrentThread.ManagedThreadId);
+            var threadId = Thread.CurrentThread.ManagedThreadId;
+            DetachFromThread(threadId);
+        }
+        
+        public void DetachFromThread(int threadId)
+        {
+            if (_machinesOnThreads.TryGetValue(threadId, out var t))
+            {
+                t.Machine.MachineStopped -= Machine_MachineStopped;
+                _machinesOnThreads.Remove(threadId);
+            }
         }
         
         public MachineWaitToken[] GetAllTokens()

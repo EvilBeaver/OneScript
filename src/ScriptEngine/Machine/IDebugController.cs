@@ -15,6 +15,8 @@ namespace ScriptEngine.Machine
         void Wait();
         void NotifyProcessExit(int exitCode);
 
-        void AttachToThread(MachineInstance machine);
+        void AttachToThread();
+
+        void DetachFromThread();
     }
 }
