@@ -17,27 +17,24 @@ namespace OneScript.DebugServices
 {
     public class BinaryTcpDebugServer
     {
-        public void WaitForConnections(int port)
+        private readonly int _port;
+
+        public BinaryTcpDebugServer(int port)
         {
-            var listener = TcpListener.Create(port);
-            listener.Start();
-            var client = listener.AcceptTcpClient();
-            var channel = new BinaryChannel(client);
-            listener.Stop();
-            IncomingChannel = channel;
+            _port = port;
         }
 
         public IDebugController CreateDebugController()
         {
-            var ipcServer = new DefaultMessageServer<RpcCall>(IncomingChannel);
-            var callback = new TcpEventCallbackChannel(IncomingChannel);
+            var listener = TcpListener.Create(_port);
+            var channel = new DelayedConnectionChannel(listener);
+            var ipcServer = new DefaultMessageServer<RpcCall>(channel);
+            var callback = new TcpEventCallbackChannel(channel);
             var threadManager = new ThreadManager();
             var debuggerService = new DefaultDebugService(threadManager, new DefaultVariableVisualizer());
             var controller = new DefaultDebugController(ipcServer, debuggerService, callback, threadManager);
 
             return controller;
         }
-
-        public ICommunicationChannel IncomingChannel { get; private set; }
     }
 }

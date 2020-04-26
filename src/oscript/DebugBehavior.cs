@@ -39,8 +39,7 @@ namespace oscript
                     break;
                 case DebugProtocolType.Tcp:
                 default:
-                    var tcpDebugServer = new BinaryTcpDebugServer();
-                    tcpDebugServer.WaitForConnections(_port);
+                    var tcpDebugServer = new BinaryTcpDebugServer(_port);
                     executor.DebugController = tcpDebugServer.CreateDebugController();
                     break;
             }
