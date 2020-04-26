@@ -35,7 +35,7 @@
       {
         "type": "oscript",
         "label": "1Script Debugger",
-        "program": "./bin/Debug/net452/VSCode.DebugAdapter.exe",
+        "program": "./bin/VSCode.DebugAdapter.exe",
         "osx": {
           "runtime": "mono"
         },
