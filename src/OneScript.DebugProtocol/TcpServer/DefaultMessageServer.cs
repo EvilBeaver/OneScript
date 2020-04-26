@@ -58,10 +58,6 @@ namespace OneScript.DebugProtocol.TcpServer
                         // свойство в исключении может быть утановлено в обработчике евента
                         shouldAcceptCommands = e.StopChannel;
                     }
-                    catch (ThreadInterruptedException)
-                    {
-                        shouldAcceptCommands = false;
-                    }
                     catch (Exception)
                     {
                         shouldAcceptCommands = false;

@@ -21,6 +21,7 @@ namespace VSCode.DebugAdapter
         private readonly int _port;
         private readonly IDebugEventListener _eventBackChannel;
         private BinaryChannel _commandsChannel;
+        private RpcProcessor _processor;
 
         public TcpDebugConnector(int port, IDebugEventListener eventBackChannel)
         {
@@ -34,36 +35,50 @@ namespace VSCode.DebugAdapter
             
             SessionLog.WriteLine("Creating commands tcp channel");
             _commandsChannel = new BinaryChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
-            _commandsChannel.Write(DebugChannelName.Commands);
-            
-            SessionLog.WriteLine("Creating events tcp channel");
-            var eventsChannel = new BinaryChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
-            eventsChannel.Write(DebugChannelName.Events);
             
             SessionLog.WriteLine("connected");
 
-            RunEventsListener(eventsChannel);
+            RunEventsListener(_commandsChannel);
         }
 
         private void RunEventsListener(ICommunicationChannel channelToListen)
         {
-            var server = new DefaultMessageServer<TcpProtocolDto>(channelToListen);
-            var dispatcher = new DispatchingService<IDebugEventListener>(server, _eventBackChannel);
-            dispatcher.Start();
+            var server = new DefaultMessageServer<TcpProtocolDtoBase>(channelToListen);
+            
+            _processor = new RpcProcessor(server);
+            _processor.AddChannel(
+                nameof(IDebugEventListener),
+                typeof(IDebugEventListener),
+                _eventBackChannel);
+            
+            _processor.AddChannel(
+                nameof(IDebuggerService),
+                typeof(IDebuggerService),
+                this);
+            
+            _processor.Start();
         }
 
         private void WriteCommand<T>(T data, [CallerMemberName] string command = "")
         {
             SessionLog.WriteLine($"Sending {command} to debuggee"); 
-            var dto = TcpProtocolDto.Create(command, data);
+            var dto = RpcCall.Create(nameof(IDebuggerService), command, data);
             _commandsChannel.Write(dto);
+
         }
         
         private void WriteCommand(object[] data, [CallerMemberName] string command = "")
         {
             SessionLog.WriteLine($"Sending {command} to debuggee"); 
-            var dto = TcpProtocolDto.Create(command, data);
+            var dto = RpcCall.Create(nameof(IDebuggerService), command, data);
             _commandsChannel.Write(dto);
+        }
+        
+        private T GetResponse<T>()
+        {
+            var rpcResult = _processor.GetResult();
+            SessionLog.WriteLine("Response received " + rpcResult.Id + " t = " + rpcResult.ReturnValue);
+            return (T) rpcResult.ReturnValue;
         }
         
         public void Execute(int threadId)
@@ -74,13 +89,13 @@ namespace VSCode.DebugAdapter
         public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
             WriteCommand(breaksToSet);
-            return _commandsChannel.Read<Breakpoint[]>();
+            return GetResponse<Breakpoint[]>();
         }
 
         public StackFrame[] GetStackFrames(int threadId)
         {
             WriteCommand(threadId);
-            return _commandsChannel.Read<StackFrame[]>();
+            return GetResponse<StackFrame[]>();
         }
 
         public Variable[] GetVariables(int threadId, int frameIndex, int[] path)
@@ -92,7 +107,7 @@ namespace VSCode.DebugAdapter
                 path
             });
 
-            return _commandsChannel.Read<Variable[]>();
+            return GetResponse<Variable[]>();
         }
 
         public Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
@@ -105,7 +120,7 @@ namespace VSCode.DebugAdapter
                 path
             });
 
-            return _commandsChannel.Read<Variable[]>();
+            return GetResponse<Variable[]>();
         }
 
         public Variable Evaluate(int threadId, int contextFrame, string expression)
@@ -117,7 +132,7 @@ namespace VSCode.DebugAdapter
                 expression
             });
 
-            return _commandsChannel.Read<Variable>();
+            return GetResponse<Variable>();
         }
 
         public void Next(int threadId)
@@ -138,7 +153,7 @@ namespace VSCode.DebugAdapter
         public int[] GetThreads()
         {
             WriteCommand(null);
-            return _commandsChannel.Read<int[]>();
+            return GetResponse<int[]>();
         }
     }
 }

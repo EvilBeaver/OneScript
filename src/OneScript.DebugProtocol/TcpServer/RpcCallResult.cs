@@ -10,18 +10,17 @@ using System;
 namespace OneScript.DebugProtocol.TcpServer
 {
     [Serializable]
-    public class TcpProtocolDto
+    public class RpcCallResult : TcpProtocolDtoBase
     {
-        public string Id { get; set; }
-        
-        public object[] Parameters { get; set; }
-        
-        public static TcpProtocolDto Create(string name, params object[] data)
+        public object ReturnValue { get; set; }
+
+        public static RpcCallResult Respond(RpcCall call, object value)
         {
-            return new TcpProtocolDto()
+            return new RpcCallResult
             {
-                Id = name,
-                Parameters = data
+                Id = call.Id,
+                ServiceName = call.ServiceName,
+                ReturnValue = value
             };
         }
     }
