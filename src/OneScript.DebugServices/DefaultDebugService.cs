@@ -19,11 +19,13 @@ namespace OneScript.DebugServices
 {
     public class DefaultDebugService : IDebuggerService
     {
+        private readonly IBreakpointManager _breakpointManager;
         private readonly IVariableVisualizer _visualizer;
         private ThreadManager _threadManager { get; }
 
-        public DefaultDebugService(ThreadManager threads, IVariableVisualizer visualizer)
+        public DefaultDebugService(IBreakpointManager breakpointManager, ThreadManager threads, IVariableVisualizer visualizer)
         {
+            _breakpointManager = breakpointManager;
             _visualizer = visualizer;
             _threadManager = threads;
         }
@@ -62,7 +64,8 @@ namespace OneScript.DebugServices
 
                 foreach (var machine in _threadManager.GetAllTokens().Select(x=>x.Machine))
                 {
-                    machine.SetBreakpointsForModule(item.Key, lines);
+                    machine.SetDebugMode(_breakpointManager);
+                    _breakpointManager.SetLineStops(item.Key, lines);
                 }
 
                 foreach (var line in lines)

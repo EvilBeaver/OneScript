@@ -31,8 +31,9 @@ namespace OneScript.DebugServices
             var ipcServer = new DefaultMessageServer<RpcCall>(channel);
             var callback = new TcpEventCallbackChannel(channel);
             var threadManager = new ThreadManager();
-            var debuggerService = new DefaultDebugService(threadManager, new DefaultVariableVisualizer());
-            var controller = new DefaultDebugController(ipcServer, debuggerService, callback, threadManager);
+            var breakpoints = new DefaultBreakpointManager();
+            var debuggerService = new DefaultDebugService(breakpoints, threadManager, new DefaultVariableVisualizer());
+            var controller = new DefaultDebugController(ipcServer, debuggerService, callback, threadManager, breakpoints);
 
             return controller;
         }

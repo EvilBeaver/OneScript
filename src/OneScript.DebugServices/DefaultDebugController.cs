@@ -20,16 +20,17 @@ namespace OneScript.DebugServices
         private readonly IDebugEventListener _callbackService;
         private readonly ThreadManager _threadManager;
 
-        public DefaultDebugController(
-            ICommunicationServer ipcServer,
+        public DefaultDebugController(ICommunicationServer ipcServer,
             IDebuggerService debugger,
             IDebugEventListener callbackService,
-            ThreadManager threadManager)
+            ThreadManager threadManager, 
+            IBreakpointManager breakpointManager)
         {
             _server = ipcServer;
             _debugger = debugger;
             _callbackService = callbackService;
             _threadManager = threadManager;
+            BreakpointManager = breakpointManager;
         }
 
         public void Dispose()
@@ -75,7 +76,9 @@ namespace OneScript.DebugServices
         {
             _threadManager.DetachFromCurrentThread(); 
         }
-        
+
+        public IBreakpointManager BreakpointManager { get; }
+
         private ThreadStopReason ConvertStopReason(MachineStopReason reason)
         {
             switch(reason)
