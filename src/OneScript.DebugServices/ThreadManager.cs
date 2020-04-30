@@ -65,7 +65,7 @@ namespace OneScript.DebugServices
             var args = new ThreadStoppedEventArgs
             {
                 Machine = (MachineInstance)sender,
-                ThreadId = Thread.CurrentThread.ManagedThreadId,
+                ThreadId = e.ThreadId,
                 StopReason = e.Reason
             };
             
