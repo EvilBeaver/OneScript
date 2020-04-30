@@ -410,7 +410,7 @@ namespace VSCode.DebugAdapter
             {
                 if (!_process.HasExited)
                 {
-                    _process.Next();
+                    _process.Next((int)arguments.threadId);
                 }
             }
             
@@ -423,7 +423,7 @@ namespace VSCode.DebugAdapter
             {
                 if (!_process.HasExited)
                 {
-                    _process.StepIn();
+                    _process.StepIn((int)arguments.threadId);
                 }
             }
         }
@@ -435,7 +435,7 @@ namespace VSCode.DebugAdapter
             {
                 if (!_process.HasExited)
                 {
-                    _process.StepOut();
+                    _process.StepOut((int)arguments.threadId);
                 }
             }
         }

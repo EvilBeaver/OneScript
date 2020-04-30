@@ -250,19 +250,19 @@ namespace VSCode.DebugAdapter
             }
         }
 
-        public void Next()
+        public void Next(int threadId)
         {
-            _debugger.Next(1);
+            _debugger.Next(threadId);
         }
 
-        public void StepIn()
+        public void StepIn(int threadId)
         {
-            _debugger.StepIn(1);
+            _debugger.StepIn(threadId);
         }
 
-        internal void StepOut()
+        internal void StepOut(int threadId)
         {
-            _debugger.StepOut(1);
+            _debugger.StepOut(threadId);
         }
 
         public int[] GetThreads()
