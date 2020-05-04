@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     public class Handles<T>
     {

@@ -9,6 +9,7 @@ using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using System.Collections.Generic;
+using ScriptEngine.Compiler;
 using ScriptEngine.Machine.Contexts;
 
 
@@ -195,13 +196,23 @@ namespace ScriptEngine.HostedScript
             if (_engine.DebugController != null)
             {
                 _engine.DebugController.Init();
-                _engine.DebugController.AttachToThread(_engine.Machine);
+                _engine.DebugController.AttachToThread();
                 _engine.DebugController.Wait();
             }
 
             var compilerSvc = GetCompilerService();
             DefineConstants(compilerSvc);
-            var module = _engine.LoadModuleImage(compilerSvc.Compile(src));
+            LoadedModule module;
+            try
+            {
+                var image = compilerSvc.Compile(src);
+                module = _engine.LoadModuleImage(image);
+            }
+            catch (CompilerException)
+            {
+                _engine.DebugController?.NotifyProcessExit(1);
+                throw;
+            }
             return InitProcess(host, module);
         }
 

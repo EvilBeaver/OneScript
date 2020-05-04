@@ -15,7 +15,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
     /// Коллекция колонок таблицы значений
     /// </summary>
     [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection")]
-    public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTableColumn>
+    public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTableColumn>, IDebugPresentationAcceptor
     {
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
  
@@ -157,6 +157,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
             return idx;
         }
 
+        public override int GetPropCount()
+        {
+            return _columns.Count;
+        }
+        
         public override string GetPropName(int propNum)
         {
             return FindColumnByIndex(propNum).Name;
@@ -264,6 +269,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
         public override int FindMethod(string name)
         {
             return _methods.FindMethod(name);
+        }
+
+        void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowProperties(this);
         }
     }
 }

@@ -160,5 +160,21 @@ namespace oscript
 				memoryStream.CopyTo(fileOutput);
 			}
 		}
+
+		public static AppBehavior Create(CmdLineHelper helper)
+		{
+			var codepath = helper.Next();
+			var output = helper.Next();
+			var makeBin = helper.Next();
+			if (output == null || codepath == null) 
+				return null;
+			
+			var appMaker = new MakeAppBehavior(codepath, output);
+			if (makeBin != null && makeBin == "-bin")
+				appMaker.CreateDumpOnly = true;
+
+			return appMaker;
+
+		}
 	}
 }

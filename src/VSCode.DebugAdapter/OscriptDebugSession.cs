@@ -18,7 +18,7 @@ using OneScript.DebugProtocol;
 using VSCodeDebug;
 
 
-namespace DebugServer
+namespace VSCode.DebugAdapter
 {
     internal class OscriptDebugSession : DebugSession, IDebugEventListener
     {
@@ -33,9 +33,13 @@ namespace DebugServer
             _variableHandles = new Handles<IVariableLocator>();
         }
         
+        private string AdapterID { get; set; }
+        
         public override void Initialize(Response response, dynamic args)
         {
             SessionLog.WriteLine("Initialize:" + args);
+            AdapterID = (string) args.adapterID;
+            
             SendResponse(response, new Capabilities()
             {
                 supportsConditionalBreakpoints = false,
@@ -50,17 +54,161 @@ namespace DebugServer
 
         public override void Launch(Response response, dynamic args)
         {
+            if (AdapterID == "oscript")
+            {
+                _process = ConfigureOscriptExe(response, args);
+            }
+            else if(AdapterID == "oscript.web")
+            {
+                _process = ConfigureWebExe(response, args);
+            }
+
+            if (_process == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _process.Start();
+            }
+            catch (Exception e)
+            {
+                SendErrorResponse(response, 3012, "Can't launch debugee ({reason}).", new { reason = e.Message });
+                return;
+            }
+            
+            
+            try
+            {
+                IDebuggerService service;
+                if (_process.DebugProtocol == "wcf")
+                {
+                    var wcfConnector = new WcfDebuggerConnection(_process.DebugPort, this);
+                    wcfConnector.Connect();
+                    service = wcfConnector;
+                }
+                else
+                {
+                    var tcpConnector = new TcpDebugConnector(_process.DebugPort, this);
+                    tcpConnector.Connect();
+                    service = tcpConnector;
+                }
+                
+                _process.SetConnection(service);
+            }
+            catch (Exception e)
+            {
+                _process.Kill();
+                _process = null;
+                SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
+                return;
+            }
+
+            SendResponse(response);
+
+        }
+
+        private DebugeeProcess ConfigureWebExe(Response response, dynamic args)
+        {
+            // validate argument 'args'
+            string[] arguments = null;
+            if (args.args != null)
+            {
+                arguments = args.args.ToObject<string[]>();
+                if (arguments != null && arguments.Length == 0)
+                {
+                    arguments = null;
+                }
+            }
+
+            // validate argument 'cwd'
+            var workingDirectory = (string)args.appDir;
+            if (workingDirectory != null)
+            {
+                workingDirectory = workingDirectory.Trim();
+                if (workingDirectory.Length == 0)
+                {
+                    SendErrorResponse(response, 3003, "Property 'cwd' is empty.");
+                    return null;
+                }
+                workingDirectory = ConvertClientPathToDebugger(workingDirectory);
+                if (!Directory.Exists(workingDirectory))
+                {
+                    SendErrorResponse(response, 3004, "Working directory '{path}' does not exist.", new { path = workingDirectory });
+                    return null;
+                }
+            }
+            else
+            {
+                SendErrorResponse(response, 3004, "Application directory 'appDir' is not specified.");
+                return null;
+            }
+
+            // validate argument 'runtimeExecutable'
+            var runtimeExecutable = (string)args.runtimeExecutable;
+            if (runtimeExecutable != null)
+            {
+                runtimeExecutable = runtimeExecutable.Trim();
+                if (runtimeExecutable.Length == 0)
+                {
+                    SendErrorResponse(response, 3005, "Property 'runtimeExecutable' is empty.");
+                    return null;
+                }
+
+                runtimeExecutable = ConvertClientPathToDebugger(runtimeExecutable);
+                if (!File.Exists(runtimeExecutable))
+                {
+                    SendErrorResponse(response, 3006, "Runtime executable '{path}' does not exist.", new
+                    {
+                        path = runtimeExecutable
+                    });
+                    return null;
+                }
+            }
+            else
+            {
+                SendErrorResponse(response, 3004, "Runtime executable 'runtimeExecutable' is not specified.");
+                return null;
+            }
+            
+            var process = new DebugeeProcess();
+
+            process.RuntimeExecutable = runtimeExecutable;
+            process.RuntimeArguments = Utilities.ConcatArguments(args.args);
+            process.WorkingDirectory = workingDirectory;
+            process.DebugProtocol = "web";
+            int port = getInt(args, "debugPort", 2801);
+            process.DebugPort = port;
+            
+            process.OutputReceived += (s, e) =>
+            {
+                SessionLog.WriteLine("output received: " + e.Content);
+                SendOutput(e.Category, e.Content);
+            };
+
+            process.ProcessExited += (s, e) =>
+            {
+                SessionLog.WriteLine("_process exited");
+                SendEvent(new TerminatedEvent());
+            };
+
+            return process;
+        }
+
+        private DebugeeProcess ConfigureOscriptExe(Response response, dynamic args)
+        {
             var startupScript = (string)args["program"];
             if (startupScript == null)
             {
                 SendErrorResponse(response, 1001, "Property 'program' is missing or empty.");
-                return;
+                return null;
             }
 
             if (!File.Exists(startupScript))
             {
                 SendErrorResponse(response, 1002, "Script '{path}' does not exist.", new { path = Path.Combine(Directory.GetCurrentDirectory(), startupScript) });
-                return;
+                return null;
             }
 
             // validate argument 'args'
@@ -82,13 +230,13 @@ namespace DebugServer
                 if (workingDirectory.Length == 0)
                 {
                     SendErrorResponse(response, 3003, "Property 'cwd' is empty.");
-                    return;
+                    return null;
                 }
                 workingDirectory = ConvertClientPathToDebugger(workingDirectory);
                 if (!Directory.Exists(workingDirectory))
                 {
                     SendErrorResponse(response, 3004, "Working directory '{path}' does not exist.", new { path = workingDirectory });
-                    return;
+                    return null;
                 }
             }
             else
@@ -98,13 +246,14 @@ namespace DebugServer
 
             // validate argument 'runtimeExecutable'
             var runtimeExecutable = (string)args.runtimeExecutable;
+            var protocolId = (string)args.protocol;
             if (runtimeExecutable != null)
             {
                 runtimeExecutable = runtimeExecutable.Trim();
                 if (runtimeExecutable.Length == 0)
                 {
                     SendErrorResponse(response, 3005, "Property 'runtimeExecutable' is empty.");
-                    return;
+                    return null;
                 }
 
                 runtimeExecutable = ConvertClientPathToDebugger(runtimeExecutable);
@@ -114,7 +263,7 @@ namespace DebugServer
                     {
                         path = runtimeExecutable
                     });
-                    return;
+                    return null;
                 }
             }
             else
@@ -122,53 +271,32 @@ namespace DebugServer
                 runtimeExecutable = "oscript.exe";
             }
             
-            _process = new DebugeeProcess();
+            var process = new DebugeeProcess();
 
-            _process.RuntimeExecutable = runtimeExecutable;
-            _process.RuntimeArguments = Utilities.ConcatArguments(args.runtimeArgs);
-            _process.StartupScript = startupScript;
-            _process.ScriptArguments = Utilities.ConcatArguments(args.args);
-            _process.WorkingDirectory = workingDirectory;
-
-            _process.OutputReceived += (s, e) =>
+            process.RuntimeExecutable = runtimeExecutable;
+            process.RuntimeArguments = Utilities.ConcatArguments(args.runtimeArgs);
+            process.StartupScript = startupScript;
+            process.ScriptArguments = Utilities.ConcatArguments(args.args);
+            process.WorkingDirectory = workingDirectory;
+            process.DebugProtocol = protocolId;
+            int port = getInt(args, "debugPort", 2801);
+            process.DebugPort = port;
+            
+            process.OutputReceived += (s, e) =>
             {
                 SessionLog.WriteLine("output received: " + e.Content);
                 SendOutput(e.Category, e.Content);
             };
 
-            _process.ProcessExited += (s, e) =>
+            process.ProcessExited += (s, e) =>
             {
                 SessionLog.WriteLine("_process exited");
                 SendEvent(new TerminatedEvent());
             };
 
-            try
-            {
-                _process.Start();
-            }
-            catch (Exception e)
-            {
-                SendErrorResponse(response, 3012, "Can't launch debugee ({reason}).", new { reason = e.Message });
-                return;
-            }
-            
-            int port = getInt(args, "debugPort", 2801);
-            try
-            {
-                _process.Connect(port, this);
-            }
-            catch (Exception e)
-            {
-                _process.Kill();
-                _process = null;
-                SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
-                return;
-            }
-
-            SendResponse(response);
-
+            return process;
         }
-        
+
         public override void Attach(Response response, dynamic arguments)
         {
             throw new NotImplementedException();
@@ -282,7 +410,7 @@ namespace DebugServer
             {
                 if (!_process.HasExited)
                 {
-                    _process.Next();
+                    _process.Next((int)arguments.threadId);
                 }
             }
             
@@ -295,7 +423,7 @@ namespace DebugServer
             {
                 if (!_process.HasExited)
                 {
-                    _process.StepIn();
+                    _process.StepIn((int)arguments.threadId);
                 }
             }
         }
@@ -307,7 +435,7 @@ namespace DebugServer
             {
                 if (!_process.HasExited)
                 {
-                    _process.StepOut();
+                    _process.StepOut((int)arguments.threadId);
                 }
             }
         }
