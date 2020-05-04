@@ -19,6 +19,8 @@ namespace ScriptEngine.Machine.Contexts
         private bool? _isIndexed;
         private readonly Dictionary<string, int> _dispIdIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private readonly List<int> _dispIds = new List<int>();
+
+        private PropertyInfo[] _propsCache;
         
         public UnmanagedRCWComContext(object instance)
         {
@@ -117,12 +119,34 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override object UnderlyingObject
+        public override object UnderlyingObject => _instance;
+
+        private void InitPropertiesCache()
         {
-            get
+            if(_propsCache != null)
+                return;
+            
+            try
             {
-                return _instance;
+                var marshalledType = DispatchUtility.GetType(_instance, true);
+                _propsCache = marshalledType.GetProperties();
             }
+            catch (PlatformNotSupportedException)
+            {
+                _propsCache = new PropertyInfo[0];
+            }
+        }
+        
+        public override int GetPropCount()
+        {
+            InitPropertiesCache();
+            return _propsCache.Length;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            InitPropertiesCache();
+            return _propsCache[propNum].Name;
         }
 
         public override int FindProperty(string name)

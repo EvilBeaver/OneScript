@@ -27,6 +27,17 @@ namespace ScriptEngine.Machine.Contexts
             _nameMapper = new ComReflectionNameToIdMapper(_instanceType);
         }
 
+        public override int GetPropCount()
+        {
+            return _nameMapper.GetProperties().Count;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            var prop = _nameMapper.GetProperty(propNum);
+            return prop.Name;
+        }
+
         public override bool IsIndexed
         {
             get
