@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using RegExp = System.Text.RegularExpressions;
 
 namespace ScriptEngine.HostedScript.Library.Http
 {
@@ -258,7 +259,77 @@ namespace ScriptEngine.HostedScript.Library.Http
             return !methods.Contains(method, StringComparer.OrdinalIgnoreCase);
         }
         
-        private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null)
+        private class Range
+        {
+            public string RangeSpecifier
+            {
+                get; private set;
+            }
+            public Int64 From
+            {
+                get; private set;
+            }
+            public Int64 To
+            {
+                get; private set;
+            }
+
+            public Range(string rangeSpecifier, Int64 from, Int64 to)
+            {
+                RangeSpecifier = rangeSpecifier;
+                From = from;
+                To = to;
+
+            }
+        }
+
+        private static List<Range> ParseRange(string rangeHeader)
+        {
+            
+            List<Range> range = new List<Range>();
+
+            if (rangeHeader.Length == 0)
+                return range;
+
+            RegExp.MatchCollection matches = RegExp.Regex.Matches(rangeHeader, @"^(.+)=([^;]+)");
+
+            string rangeSpecifier = matches[0].Groups[1].Value;
+
+            string stringrange = matches[0].Groups[2].Value;
+
+            string[] ranges = stringrange.Split(',');
+
+            for (int i = 0; i < ranges.Length; i++)
+            {
+                string range_spec = ranges[i].Trim();
+                
+                Int64 from = 0;
+                Int64 to = 0;
+                RegExp.MatchCollection fromMatches = RegExp.Regex.Matches(range_spec, @"^(\d+)\-$");
+                RegExp.MatchCollection fromToMatches = RegExp.Regex.Matches(range_spec, @"^(\d+)\-(\d+)$");
+                RegExp.MatchCollection toMatches = RegExp.Regex.Matches(range_spec, @"^\-(\d+)$");
+
+                if (fromMatches.Count > 0)
+                {
+                    from = Int64.Parse(fromMatches[0].Groups[1].Value);
+                    to = 0;
+                }
+                else if (fromToMatches.Count > 0)
+                {
+                    from = Int64.Parse(fromToMatches[0].Groups[1].Value);
+                    to = Int64.Parse(fromToMatches[0].Groups[2].Value);
+                }
+                else if (toMatches.Count > 0)
+                {
+                    from = Int64.Parse(toMatches[0].Groups[1].Value);
+                    to = 0;
+                }
+                range.Add(new Range(rangeSpecifier, from, to));
+            }
+            return range;
+        }
+
+    private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null)
         {
             var webRequest = CreateRequest(request.ResourceAddress);
             webRequest.AllowAutoRedirect = AllowAutoRedirect;
@@ -379,7 +450,22 @@ namespace ScriptEngine.HostedScript.Library.Http
                         }
                         break;
                     case "RANGE":
-                        throw new NotImplementedException();
+                        try
+                        {
+                            List<Range> range_list = ParseRange(value);
+                            foreach (Range range in range_list)
+                            {
+                                if (range.To == 0)
+                                    webRequest.AddRange(range.RangeSpecifier, range.From);
+                                else
+                                    webRequest.AddRange(range.RangeSpecifier, range.From, range.To);
+                            }
+                        }
+                        catch
+                        {
+                            throw new RuntimeException("Заголовок Range задан неправильно");
+                        }
+                        break;
                     case "REFERER":
                         webRequest.Referer = value;
                         break;
