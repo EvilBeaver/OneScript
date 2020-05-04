@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using OneScript.DebugProtocol;
+using OneScript.DebugServices;
 using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
@@ -28,6 +29,11 @@ namespace oscript.DebugServer
     {
         private readonly Dictionary<int, MachineWaitToken> _machinesOnThreads = new Dictionary<int, MachineWaitToken>();
 
+        public DebugControllerBase()
+        {
+            BreakpointManager = new DefaultBreakpointManager();
+        }
+        
         public virtual void Init()
         {
 
@@ -55,6 +61,8 @@ namespace oscript.DebugServer
                 _machinesOnThreads.Remove(Thread.CurrentThread.ManagedThreadId);
             }
         }
+
+        public IBreakpointManager BreakpointManager { get; set; }
 
         public virtual void AttachToThread()
         {

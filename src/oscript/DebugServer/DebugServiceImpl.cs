@@ -63,7 +63,7 @@ namespace oscript.DebugServer
 
                 foreach (var machine in Controller.GetAllTokens().Select(x=>x.Machine))
                 {
-                    machine.SetBreakpointsForModule(item.Key, lines);
+                    Controller.BreakpointManager.SetLineStops(item.Key, lines);
                 }
 
                 foreach (var line in lines)
