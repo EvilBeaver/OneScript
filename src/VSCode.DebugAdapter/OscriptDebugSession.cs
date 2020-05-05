@@ -13,7 +13,7 @@ using System.Linq.Expressions;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-
+using Newtonsoft.Json.Linq;
 using OneScript.DebugProtocol;
 using VSCodeDebug;
 
@@ -64,10 +64,20 @@ namespace VSCode.DebugAdapter
             }
 
             if (_process == null)
-            {
                 return;
-            }
 
+            _process.OutputReceived += (s, e) =>
+            {
+                SessionLog.WriteLine("output received: " + e.Content);
+                SendOutput(e.Category, e.Content);
+            };
+
+            _process.ProcessExited += (s, e) =>
+            {
+                SessionLog.WriteLine("_process exited");
+                SendEvent(new TerminatedEvent());
+            };
+            
             try
             {
                 _process.Start();
@@ -108,10 +118,12 @@ namespace VSCode.DebugAdapter
 
         }
 
-        private DebugeeProcess ConfigureWebExe(Response response, dynamic args)
+        private DebugeeProcess ConfigureWebExe(Response response, JObject args)
         {
+            var options = args.ToObject<WebLaunchOptions>();
+            
             // validate argument 'cwd'
-            var workingDirectory = (string)args.appDir;
+            var workingDirectory = options.AppDir;
             if (workingDirectory != null)
             {
                 workingDirectory = workingDirectory.Trim();
@@ -133,8 +145,10 @@ namespace VSCode.DebugAdapter
                 return null;
             }
 
+            options.AppDir = workingDirectory;
+
             // validate argument 'runtimeExecutable'
-            var runtimeExecutable = (string)args.runtimeExecutable;
+            var runtimeExecutable = options.RuntimeExecutable;
             if (runtimeExecutable != null)
             {
                 runtimeExecutable = runtimeExecutable.Trim();
@@ -159,59 +173,38 @@ namespace VSCode.DebugAdapter
                 SendErrorResponse(response, 3004, "Runtime executable 'runtimeExecutable' is not specified.");
                 return null;
             }
-            
+
+            options.RuntimeExecutable = runtimeExecutable;
+
             var process = new DebugeeProcess();
 
-            process.RuntimeExecutable = runtimeExecutable;
-            process.RuntimeArguments = Utilities.ConcatArguments(args.args);
-            process.WorkingDirectory = workingDirectory;
+            process.RuntimeExecutable = options.RuntimeExecutable;
+            process.RuntimeArguments = Utilities.ConcatArguments(options.RuntimeArgs);
+            process.WorkingDirectory = options.AppDir;
             process.DebugProtocol = "web";
-            int port = getInt(args, "debugPort", 2801);
-            process.DebugPort = port;
-            
-            process.OutputReceived += (s, e) =>
-            {
-                SessionLog.WriteLine("output received: " + e.Content);
-                SendOutput(e.Category, e.Content);
-            };
-
-            process.ProcessExited += (s, e) =>
-            {
-                SessionLog.WriteLine("_process exited");
-                SendEvent(new TerminatedEvent());
-            };
+            process.DebugPort = options.DebugPort;
+            process.Environment = options.Env;
 
             return process;
         }
 
-        private DebugeeProcess ConfigureOscriptExe(Response response, dynamic args)
+        private DebugeeProcess ConfigureOscriptExe(Response response, JObject args)
         {
-            var startupScript = (string)args["program"];
-            if (startupScript == null)
+            var options = args.ToObject<ConsoleLaunchOptions>();
+            if (options.Program == null)
             {
                 SendErrorResponse(response, 1001, "Property 'program' is missing or empty.");
                 return null;
             }
 
-            if (!File.Exists(startupScript))
+            if (!File.Exists(options.Program))
             {
-                SendErrorResponse(response, 1002, "Script '{path}' does not exist.", new { path = Path.Combine(Directory.GetCurrentDirectory(), startupScript) });
+                SendErrorResponse(response, 1002, "Script '{path}' does not exist.", new { path = Path.Combine(Directory.GetCurrentDirectory(), options.Program) });
                 return null;
             }
 
-            // validate argument 'args'
-            string[] arguments = null;
-            if (args.args != null)
-            {
-                arguments = args.args.ToObject<string[]>();
-                if (arguments != null && arguments.Length == 0)
-                {
-                    arguments = null;
-                }
-            }
-
             // validate argument 'cwd'
-            var workingDirectory = (string)args.cwd;
+            var workingDirectory = options.Cwd;
             if (workingDirectory != null)
             {
                 workingDirectory = workingDirectory.Trim();
@@ -229,12 +222,13 @@ namespace VSCode.DebugAdapter
             }
             else
             {
-                workingDirectory = Path.GetDirectoryName(startupScript);
+                workingDirectory = Path.GetDirectoryName(options.Program);
             }
 
+            options.Cwd = workingDirectory;
+
             // validate argument 'runtimeExecutable'
-            var runtimeExecutable = (string)args.runtimeExecutable;
-            var protocolId = (string)args.protocol;
+            var runtimeExecutable = options.RuntimeExecutable;
             if (runtimeExecutable != null)
             {
                 runtimeExecutable = runtimeExecutable.Trim();
@@ -258,29 +252,19 @@ namespace VSCode.DebugAdapter
             {
                 runtimeExecutable = "oscript.exe";
             }
-            
+
+            options.RuntimeExecutable = runtimeExecutable;
+
             var process = new DebugeeProcess();
 
             process.RuntimeExecutable = runtimeExecutable;
-            process.RuntimeArguments = Utilities.ConcatArguments(args.runtimeArgs);
-            process.StartupScript = startupScript;
-            process.ScriptArguments = Utilities.ConcatArguments(args.args);
-            process.WorkingDirectory = workingDirectory;
-            process.DebugProtocol = protocolId;
-            int port = getInt(args, "debugPort", 2801);
-            process.DebugPort = port;
-            
-            process.OutputReceived += (s, e) =>
-            {
-                SessionLog.WriteLine("output received: " + e.Content);
-                SendOutput(e.Category, e.Content);
-            };
-
-            process.ProcessExited += (s, e) =>
-            {
-                SessionLog.WriteLine("_process exited");
-                SendEvent(new TerminatedEvent());
-            };
+            process.RuntimeArguments = Utilities.ConcatArguments(options.RuntimeArgs);
+            process.StartupScript = options.Program;
+            process.ScriptArguments = Utilities.ConcatArguments(options.Args);
+            process.WorkingDirectory = options.Cwd;
+            process.DebugProtocol = options.Protocol;
+            process.DebugPort = options.DebugPort;
+            process.Environment = options.Env;
 
             return process;
         }

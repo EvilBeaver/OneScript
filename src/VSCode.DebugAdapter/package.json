@@ -50,6 +50,7 @@
             "program": "${file}",
             "args": [],
             "cwd": "${workspaceRoot}",
+            "env" : null,
             "runtimeExecutable": null,
             "runtimeArgs" : null,
             "debugPort": 2801,
@@ -74,6 +75,14 @@
                 "type": "string",
                 "description": "Текущий каталог запуска отладки.",
                 "default": "."
+              },
+              "env": {
+                "type": "object",
+                "description": "Переменные окружения для отлаживаемого процесса",
+                "patternProperties": {
+                  "[a-zA-Z_][0-9a-zA-Z_]+": { "type": "string" }
+                },
+                "default": null
               },
               "runtimeExecutable": {
                 "type": [ "string", "null" ],
@@ -125,8 +134,9 @@
             "type": "oscript.web",
             "request": "launch",
             "appDir": "${workspaceRoot}",
-            "args": [],
+            "env": null,
             "runtimeExecutable": null,
+            "runtimeArgs" : null,
             "debugPort": 2801,
             "protocol":"tcp"
           }
@@ -140,16 +150,24 @@
                 "description": "Текущий каталог запуска отладки. Для отладки 1Script.Web - укажите каталог с файлом main.os",
                 "default": "."
               },
-              "args": {
-                "type": "array",
-                "description": "Аргументы, передаваемые в строке запуска",
-                "items": { "type": "string" },
-                "default": []
+              "env": {
+                "type": "object",
+                "description": "Переменные окружения для отлаживаемого процесса",
+                "patternProperties": {
+                  "[a-zA-Z_][0-9a-zA-Z_]+": { "type": "string" }
+                },
+                "default": null
               },
               "runtimeExecutable": {
                 "type": [ "string", "null" ],
                 "description": "Путь к исполняемому файлу oscript.exe / OneScript.WebHost.exe",
                 "default": "oscript"
+              },
+              "runtimeArgs": {
+                "type": "array",
+                "description": "Аргументы, передаваемые в строке запуска",
+                "items": { "type": "string" },
+                "default": []
               },
               "debugPort": {
                 "type": "number",

@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -18,7 +18,7 @@ namespace VSCode.DebugAdapter
     {
         private static readonly Regex VARIABLE = new Regex(@"\{(\w+)\}");
 
-        public static string ConcatArguments(IEnumerable args)
+        public static string ConcatArguments(IEnumerable<string> args)
         {
             if (args == null)
                 return string.Empty;
@@ -28,7 +28,7 @@ namespace VSCode.DebugAdapter
             {
                 sb.Append(' ');
                 sb.Append('\"');
-                sb.Append(stringArg.ToString());
+                sb.Append(stringArg);
                 sb.Append('\"');
             }
 

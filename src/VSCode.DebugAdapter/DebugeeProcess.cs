@@ -43,12 +43,10 @@ namespace VSCode.DebugAdapter
         public string StartupScript { get; set; }
         public string ScriptArguments { get; set; }
         public string RuntimeArguments { get; set; }
-        
         public int DebugPort { get; set; }
-        
         public string DebugProtocol { get; set; }
-        
-        
+
+        public IDictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
 
         public bool HasExited => _process.HasExited;
         public int ExitCode => _process.ExitCode;
@@ -88,6 +86,8 @@ namespace VSCode.DebugAdapter
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
 
+            LoadEnvironment(psi);
+
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
             _process.ErrorDataReceived += Process_ErrorDataReceived;
@@ -124,6 +124,8 @@ namespace VSCode.DebugAdapter
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
 
+            LoadEnvironment(psi);
+            
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
             _process.ErrorDataReceived += Process_ErrorDataReceived;
@@ -136,6 +138,17 @@ namespace VSCode.DebugAdapter
             System.Threading.Thread.Sleep(1000);
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
+        }
+        
+        private void LoadEnvironment(ProcessStartInfo psi)
+        {
+            if (Environment.Count <= 0)
+                return;
+            
+            foreach (var pair in Environment)
+            {
+                psi.EnvironmentVariables[pair.Key] = pair.Value;
+            }
         }
 
         public void SetConnection(IDebuggerService service)
