@@ -139,10 +139,10 @@ namespace VSCode.DebugAdapter
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
         }
-        
+
         private void LoadEnvironment(ProcessStartInfo psi)
         {
-            if (Environment.Count <= 0)
+            if (Environment == null || Environment.Count <= 0)
                 return;
             
             foreach (var pair in Environment)

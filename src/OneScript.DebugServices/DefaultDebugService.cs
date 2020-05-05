@@ -148,7 +148,10 @@ namespace OneScript.DebugServices
         {
             try
             {
-                var value = GetMachine(threadId).Evaluate(expression, true);
+                var value = GetMachine(threadId)
+                    .Evaluate(expression, true)
+                    .GetRawValue();
+                
                 var variable = _visualizer.GetVariable(MachineVariable.Create(value, "$evalResult"));
                 return variable;
             }

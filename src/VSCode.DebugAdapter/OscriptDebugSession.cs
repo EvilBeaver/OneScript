@@ -54,6 +54,8 @@ namespace VSCode.DebugAdapter
 
         public override void Launch(Response response, dynamic args)
         {
+            SessionLog.WriteLine("Launch command accepted");
+            
             if (AdapterID == "oscript")
             {
                 _process = ConfigureOscriptExe(response, args);
@@ -81,9 +83,11 @@ namespace VSCode.DebugAdapter
             try
             {
                 _process.Start();
+                SessionLog.WriteLine("Debuggee started");
             }
             catch (Exception e)
             {
+                SessionLog.WriteLine(e.ToString());
                 SendErrorResponse(response, 3012, "Can't launch debugee ({reason}).", new { reason = e.Message });
                 return;
             }
@@ -110,6 +114,7 @@ namespace VSCode.DebugAdapter
             {
                 _process.Kill();
                 _process = null;
+                SessionLog.WriteLine(e.ToString());
                 SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
                 return;
             }
