@@ -112,7 +112,7 @@
       {
         "type": "oscript.web",
         "label": "1Script Debugger for 1Script.Web",
-        "program": "./bin/Debug/net452/VSCode.DebugAdapter.exe",
+        "program": "./bin/VSCode.DebugAdapter.exe",
         "osx": {
           "runtime": "mono"
         },
@@ -121,7 +121,7 @@
         },
         "initialConfigurations": [
           {
-            "name": "Отладка 1Script",
+            "name": "Отладка 1Script.Web",
             "type": "oscript.web",
             "request": "launch",
             "appDir": "${workspaceRoot}",
@@ -133,7 +133,7 @@
         ],
         "configurationAttributes": {
           "launch": {
-            "required": [ "program" ],
+            "required": [ "appDir", "runtimeExecutable" ],
             "properties": {
               "appDir": {
                 "type": "string",
