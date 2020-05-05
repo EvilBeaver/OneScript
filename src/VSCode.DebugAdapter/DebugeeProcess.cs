@@ -75,8 +75,8 @@ namespace VSCode.DebugAdapter
             {
                 dbgArgs.Add($"--debug.port={DebugPort}");
             }
-            dbgArgs.Add($"--debug.protocol=tcp");
-            dbgArgs.Add($"--debug.wait=1");
+            dbgArgs.Add("--debug.protocol=tcp");
+            dbgArgs.Add("--debug.wait=1");
             
             var debugArguments = string.Join(" ", dbgArgs);
             _process = new Process();
