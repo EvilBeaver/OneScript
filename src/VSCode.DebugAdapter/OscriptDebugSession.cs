@@ -78,7 +78,6 @@ namespace VSCode.DebugAdapter
                 return;
             }
             
-            
             try
             {
                 IDebuggerService service;
@@ -111,17 +110,6 @@ namespace VSCode.DebugAdapter
 
         private DebugeeProcess ConfigureWebExe(Response response, dynamic args)
         {
-            // validate argument 'args'
-            string[] arguments = null;
-            if (args.args != null)
-            {
-                arguments = args.args.ToObject<string[]>();
-                if (arguments != null && arguments.Length == 0)
-                {
-                    arguments = null;
-                }
-            }
-
             // validate argument 'cwd'
             var workingDirectory = (string)args.appDir;
             if (workingDirectory != null)

@@ -97,7 +97,7 @@ namespace VSCode.DebugAdapter
             SessionLog.WriteLine($"cwd = {WorkingDirectory}");
 
             _process.Start();
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(1500);
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
         }
