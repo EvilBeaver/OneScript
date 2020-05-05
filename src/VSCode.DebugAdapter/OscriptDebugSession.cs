@@ -540,7 +540,7 @@ namespace VSCode.DebugAdapter
 
             if (evalResult.Name.Equals("$evalFault") && context.Equals("hover"))
             {
-                evalResult.Presentation = "";
+                evalResult.Presentation = $"err: {expression}";
             }
 
             var protResult = new EvaluateResponseBody(evalResult.Presentation, id) {type = evalResult.TypeName};
