@@ -47,7 +47,7 @@ namespace OneScript.DebugProtocol
             }
             catch (SerializationException e)
             {
-                throw new ChannelException("Serialization Exception occured", e);
+                throw new ChannelException("Serialization Exception occured", Connected, e);
             }
             catch (IOException e)
             {

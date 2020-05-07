@@ -53,7 +53,7 @@ namespace VSCode.DebugAdapter
             }
             else
             {
-                SessionLog.WriteLine(e.Exception.ToString());
+                SessionLog.WriteLine("RPC Exception " + e.Exception + " critical: " + e.Exception.StopChannel);
                 if (e.Exception.StopChannel)
                 {
                     Stop();

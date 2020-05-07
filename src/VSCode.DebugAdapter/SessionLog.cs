@@ -17,6 +17,7 @@ namespace VSCode.DebugAdapter
     static class SessionLog
     {
         private static StreamWriter _log;
+        private static object lockObj = new object();
 
         private static string _path;
         [Conditional("DEBUG")]
@@ -31,23 +32,31 @@ namespace VSCode.DebugAdapter
         public static void WriteLine(string text)
         {
 #if DEBUG
-            if (_log == null)
+            lock (lockObj)
             {
-                _log = new StreamWriter(_path);
-                _log.AutoFlush = true;
-                _log.WriteLine("started: " + DateTime.Now);
+                if (_log == null)
+                {
+                    _log = new StreamWriter(_path, true);
+                    _log.AutoFlush = true;
+                    _log.WriteLine("started: " + DateTime.Now);
+                }
+                _log.WriteLine(text);
             }
-
-            _log.WriteLine(text);
 #endif
         }
 
         [Conditional("DEBUG")]
         public static void Close()
         {
-            _log.WriteLine("closed: " + DateTime.Now);
-            _log.Dispose();
-            _log = null;
+            lock (lockObj)
+            {
+                if(_log == null)
+                    return;
+                
+                _log.WriteLine("closed: " + DateTime.Now);
+                _log.Dispose();
+                _log = null;
+            }
         }
     }
 }
