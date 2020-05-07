@@ -52,11 +52,21 @@ namespace OneScript.DebugProtocol.TcpServer
 
         private void ProcessSuccess(RpcCall message, ICommunicationChannel responseChannel)
         {
-            var methodResult = _requestProcessor.Dispatch(_requestService, message.Id, message.Parameters);
-            if (methodResult != null)
+            RpcCallResult callResult = null;
+            try
             {
-                var result = RpcCallResult.Respond(message, methodResult);
-                responseChannel.Write(result);
+                var methodResult = _requestProcessor.Dispatch(_requestService, message.Id, message.Parameters);
+                if(methodResult != null)
+                    callResult = RpcCallResult.Respond(message, methodResult);
+            }
+            catch (Exception e)
+            {
+                callResult = RpcCallResult.Exception(message, e);
+            }
+            
+            if (callResult != null)
+            {
+                responseChannel.Write(callResult);
             }
         }
     }

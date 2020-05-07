@@ -23,5 +23,18 @@ namespace OneScript.DebugProtocol.TcpServer
                 ReturnValue = value
             };
         }
+        
+        public static RpcCallResult Exception(RpcCall call, Exception value)
+        {
+            return new RpcCallResult
+            {
+                Id = call.Id,
+                ServiceName = call.ServiceName,
+                ReturnValue = new RpcExceptionDto
+                {
+                    Description = value.Message
+                }
+            };
+        }
     }
 }

@@ -78,6 +78,12 @@ namespace VSCode.DebugAdapter
         {
             var rpcResult = _processor.GetResult();
             SessionLog.WriteLine("Response received " + rpcResult.Id + " t = " + rpcResult.ReturnValue);
+            if (rpcResult.ReturnValue is RpcExceptionDto excDto)
+            {
+                SessionLog.WriteLine($"Exception received: {excDto.Description}");
+                throw new RpcOperationException(excDto);
+            }
+            
             return (T) rpcResult.ReturnValue;
         }
         
