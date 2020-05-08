@@ -50,9 +50,9 @@
             "program": "${file}",
             "args": [],
             "cwd": "${workspaceRoot}",
-            "env" : null,
+            "env" : {},
             "runtimeExecutable": null,
-            "runtimeArgs" : null,
+            "runtimeArgs" : [],
             "debugPort": 2801,
             "protocol":"tcp"
           }
@@ -134,9 +134,9 @@
             "type": "oscript.web",
             "request": "launch",
             "appDir": "${workspaceRoot}",
-            "env": null,
+            "env": {},
             "runtimeExecutable": null,
-            "runtimeArgs" : null,
+            "runtimeArgs" : [],
             "debugPort": 2801,
             "protocol":"tcp"
           }
