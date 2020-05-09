@@ -12,7 +12,9 @@ namespace ScriptEngine.Machine.Rcw
 {
     public class RcwMetadata
     {
-        
+        //https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-oaut/3fe7db9f-5803-4dc4-9d14-5425d3f5461f
+        private const short VT_VOID = 0x0018;
+
         public RcwMembersMetadataCollection<RcwPropertyMetadata> Properties { get; }
 
         public RcwMembersMetadataCollection<RcwMethodMetadata> Methods { get; }
@@ -97,7 +99,10 @@ namespace ScriptEngine.Machine.Rcw
                 var memberName = arrOfNames[0];
 
                 if (funcDesc.invkind == INVOKEKIND.INVOKE_FUNC)
-                    AddMethod(memberName, dispId, false);
+                {
+                    var isFunc = funcDesc.elemdescFunc.tdesc.vt != VT_VOID;
+                    AddMethod(memberName, dispId, isFunc);
+                }
                 else
                 {
                     var prop = GetOrAddProperty(memberName, dispId);
