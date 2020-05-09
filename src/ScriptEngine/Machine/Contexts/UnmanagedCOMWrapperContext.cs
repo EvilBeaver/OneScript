@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Rcw;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    class RcwComContext : COMWrapperContext, IDebugPresentationAcceptor
+    public class UnmanagedCOMWrapperContext : COMWrapperContext, IDebugPresentationAcceptor
     {
         private object _instance;
 
@@ -21,7 +21,7 @@ namespace ScriptEngine.Machine.Contexts
         private readonly RcwMembersMetadataCollection<RcwPropertyMetadata> _props;
         private readonly RcwMembersMetadataCollection<RcwMethodMetadata> _methods;
 
-        public RcwComContext(object instance)
+        public UnmanagedCOMWrapperContext(object instance)
         {
             _instance = instance;
             InitByInstance();

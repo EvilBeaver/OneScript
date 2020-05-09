@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    class ManagedCOMWrapperContext : COMWrapperContext
+    public class ManagedCOMWrapperContext : COMWrapperContext
     {
         private readonly Type _instanceType;
         private readonly object _instance;

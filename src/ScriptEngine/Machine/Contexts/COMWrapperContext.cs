@@ -77,8 +77,8 @@ namespace ScriptEngine.Machine.Contexts
         private static COMWrapperContext InitByInstance(Type type, object instance)
         {
             if (TypeIsRuntimeCallableWrapper(type))
-            {
-                return new RcwComContext(instance);
+            {               
+                return new UnmanagedCOMWrapperContext(instance);
             }
             else if (IsObjectType(type) || IsAStruct(type))
             {
