@@ -78,7 +78,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (TypeIsRuntimeCallableWrapper(type))
             {
-                return new UnmanagedRCWComContext(instance);
+                return new RcwComContext(instance);
             }
             else if (IsObjectType(type) || IsAStruct(type))
             {

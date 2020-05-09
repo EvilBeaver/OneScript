@@ -8,24 +8,26 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ScriptEngine.Machine.Rcw;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    class UnmanagedRCWComContext : COMWrapperContext
+    class RcwComContext : COMWrapperContext, IDebugPresentationAcceptor
     {
         private object _instance;
 
         private const uint E_DISP_MEMBERNOTFOUND = 0x80020003;
-        private bool? _isIndexed;
-        private readonly Dictionary<string, int> _dispIdIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
-        private readonly List<int> _dispIds = new List<int>();
 
-        private PropertyInfo[] _propsCache;
-        
-        public UnmanagedRCWComContext(object instance)
+        private readonly RcwMembersMetadataCollection<RcwPropertyMetadata> _props;
+        private readonly RcwMembersMetadataCollection<RcwMethodMetadata> _methods;
+
+        public RcwComContext(object instance)
         {
             _instance = instance;
             InitByInstance();
+            var md = new RcwMetadata(instance);
+            _props = md.Properties;
+            _methods = md.Methods;
         }
 
         private void InitByInstance()
@@ -40,9 +42,6 @@ namespace ScriptEngine.Machine.Contexts
         protected override void Dispose(bool manualDispose)
         {
             base.Dispose(manualDispose);
-
-            _dispIdIndexes.Clear();
-            _dispIds.Clear();
 
             if (_instance != null)
             {
@@ -85,120 +84,61 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        public override bool IsIndexed
-        {
-            get
-            {
-                if (_isIndexed == null)
-                {
-                    try
-                    {
-
-                        var comValue = _instance.GetType().InvokeMember("[DispId=0]",
-                                                BindingFlags.InvokeMethod | BindingFlags.GetProperty,
-                                                null,
-                                                _instance,
-                                                new object[0]);
-                        _isIndexed = true;
-                    }
-                    catch (TargetInvocationException e)
-                    {
-                        uint hr = (uint)System.Runtime.InteropServices.Marshal.GetHRForException(e.InnerException);
-                        if (hr == E_DISP_MEMBERNOTFOUND)
-                        {
-                            _isIndexed = false;
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                }
-
-                return (bool)_isIndexed;
-            }
-        }
-
+        public override bool IsIndexed => _props.Count > 0;
+            
         public override object UnderlyingObject => _instance;
 
-        private void InitPropertiesCache()
-        {
-            if(_propsCache != null)
-                return;
-            
-            try
-            {
-                var marshalledType = DispatchUtility.GetType(_instance, true);
-                _propsCache = marshalledType.GetProperties();
-            }
-            catch (PlatformNotSupportedException)
-            {
-                _propsCache = new PropertyInfo[0];
-            }
-        }
-        
-        public override int GetPropCount()
-        {
-            InitPropertiesCache();
-            return _propsCache.Length;
-        }
+        public override int GetPropCount() => _props.Count;
 
-        public override string GetPropName(int propNum)
-        {
-            InitPropertiesCache();
-            return _propsCache[propNum].Name;
-        }
+        public override string GetPropName(int propNum) 
+            => _props[propNum].Name;
 
         public override int FindProperty(string name)
         {
-            var idx = FindMemberIndex(name);
-            if (idx < 0)
+            if(!_props.Names.TryGetValue(name, out var md))
                 throw RuntimeException.PropNotFoundException(name);
 
-            return idx;
+            return _props.IndexOf(md);
         }
 
-        private int GetDispIdByIndex(int index)
-        {
-            return _dispIds[index];
-        }
+        public override bool IsPropReadable(int propNum) => _props[propNum].IsReadable;
 
-        public override bool IsPropReadable(int propNum)
-        {
-            return true;
-        }
-
-        public override bool IsPropWritable(int propNum)
-        {
-            return true;
-        }
+        public override bool IsPropWritable(int propNum) => _props[propNum].IsWritable;
 
         public override IValue GetPropValue(int propNum)
         {
+            var prop = _props[propNum];
+
+            var dispId = prop.DispatchId;
+
             try
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(_instance, GetDispIdByIndex(propNum), null);
+                    var result = DispatchUtility.Invoke(_instance, dispId, null);
                     return CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
-                    throw e.InnerException;
+                    throw e.InnerException ?? e;
                 }
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.PropNotFoundException("dispid[" + GetDispIdByIndex(propNum) + "]");
+                throw RuntimeException.PropNotFoundException(prop.Name);
             }
             catch (System.MemberAccessException)
             {
-                throw RuntimeException.PropIsNotReadableException("dispid[" + GetDispIdByIndex(propNum) + "]");
+                throw RuntimeException.PropIsNotReadableException(prop.Name);
             }
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
         {
+            var prop = _props[propNum];
+
+            var dispId = prop.DispatchId;
+
             try
             {
                 try
@@ -220,51 +160,29 @@ namespace ScriptEngine.Machine.Contexts
                     {
                         argToPass = MarshalIValue(newVal);
                     }
-                    DispatchUtility.InvokeSetProperty(_instance, GetDispIdByIndex(propNum), argToPass);
+                    DispatchUtility.InvokeSetProperty(_instance, dispId, argToPass);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
-                    throw e.InnerException;
+                    throw e.InnerException ?? e;
                 }
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.PropNotFoundException("dispid[" + GetDispIdByIndex(propNum) + "]");
+                throw RuntimeException.PropNotFoundException(prop.Name);
             }
             catch (System.MemberAccessException)
             {
-                throw RuntimeException.PropIsNotWritableException("dispid[" + GetDispIdByIndex(propNum) + "]");
+                throw RuntimeException.PropIsNotWritableException(prop.Name);
             }
-        }
-
-        public int FindMemberIndex(string name)
-        {
-            int knownDiIndex;
-            if (!_dispIdIndexes.TryGetValue(name, out knownDiIndex))
-            {
-                int dispId;
-                if (DispatchUtility.TryGetDispId(_instance, name, out dispId))
-                {
-                    knownDiIndex = _dispIds.Count;
-                    _dispIds.Add(dispId);
-                    _dispIdIndexes.Add(name, knownDiIndex);
-                }
-                else
-                {
-                    knownDiIndex = -1;
-                }
-            }
-
-            return knownDiIndex;
         }
 
         public override int FindMethod(string name)
         {
-            var idx = FindMemberIndex(name);
-            if (idx < 0)
+            if (!_methods.Names.TryGetValue(name, out var md))
                 throw RuntimeException.MethodNotFoundException(name);
             
-            return idx;
+            return _methods.IndexOf(md);
         }
 
         public override MethodInfo GetMethodInfo(int methodNumber)
@@ -274,48 +192,61 @@ namespace ScriptEngine.Machine.Contexts
 
         private MethodInfo GetMethodDescription(int methodNumber)
         {
+            //TODO: Доработать RcwMethodMetadata
             return new MethodInfo();
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
+            var method = _methods[methodNumber];
+
+            var dispId = method.DispatchId;
+
             try
             {
                 try
                 {
-                    DispatchUtility.Invoke(_instance, GetDispIdByIndex(methodNumber), MarshalArguments(arguments));
+                    DispatchUtility.Invoke(_instance, dispId, MarshalArguments(arguments));
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
-                    throw e.InnerException;
+                    throw e.InnerException ?? e;
                 }
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.MethodNotFoundException("dispid[" + GetDispIdByIndex(methodNumber) + "]");
+                throw RuntimeException.MethodNotFoundException(method.Name);
             }
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
+            var method = _methods[methodNumber];
+
+            var dispId = method.DispatchId;
+
             try
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(_instance, GetDispIdByIndex(methodNumber), MarshalArguments(arguments));
+                    var result = DispatchUtility.Invoke(_instance, dispId, MarshalArguments(arguments));
                     retValue = CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
-                    throw e.InnerException;
+                    throw e.InnerException ?? e;
                 }
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.MethodNotFoundException("dispid[" + GetDispIdByIndex(methodNumber) + "]");
+                throw RuntimeException.MethodNotFoundException(method.Name);
             }
         }
 
+        public void Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowProperties(this);
+        }
     }
 }
 //#endif

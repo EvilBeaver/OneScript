@@ -11,25 +11,26 @@ at http://mozilla.org/MPL/2.0/.
 #region Using Directives
 
 using System;
-using System.Runtime.InteropServices;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Security.Permissions;
 
 #endregion
 
-namespace ScriptEngine.Machine.Contexts
+namespace ScriptEngine.Machine.Rcw
 {
 	/// <summary>
 	/// Provides helper methods for working with COM IDispatch objects that have a registered type library.
 	/// </summary>
 	static class DispatchUtility
 	{
-		#region Private Constants
-
-		private const int S_OK = 0; //From WinError.h
+        #region Private Constants
+		
+        private const int S_OK = 0; //From WinError.h
 		private const int LOCALE_SYSTEM_DEFAULT = 2 << 10; //From WinNT.h == 2048 == 0x800
-
-		#endregion
+        
+        #endregion
 
 		#region Public Methods
 
@@ -44,19 +45,33 @@ namespace ScriptEngine.Machine.Contexts
 			return result;
 		}
 
+        public static int GetTypeInfoCount(object obj)
+        {
+            var dispatch = (IDispatchInfo) obj;
+
+			var hr = dispatch.GetTypeInfoCount(out var typeInfoCount);
+
+            return hr == S_OK ? typeInfoCount : 0;
+        }
+
 		/// <summary>
 		/// Gets a Type that can be used with reflection.
 		/// </summary>
 		/// <param name="obj">An object that implements IDispatch.</param>
-		/// <param name="throwIfNotFound">Whether an exception should be thrown if a Type can't be obtained.</param>
 		/// <returns>A .NET Type that can be used with reflection.</returns>
 		/// <exception cref="InvalidCastException">If <paramref name="obj"/> doesn't implement IDispatch.</exception>
 		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-		public static Type GetType(object obj, bool throwIfNotFound)
+        public static ITypeInfo GetITypeInfo(object obj)
 		{
+#if NETSTANDARD
+			throw new PlatformNotSupportedException();
+#else
+
 			RequireReference(obj, "obj");
-			Type result = GetType((IDispatchInfo)obj, throwIfNotFound);
-			return result;
+            var dispatch = (IDispatchInfo) obj;
+			dispatch.GetTypeInfo(0, LOCALE_SYSTEM_DEFAULT, out var typeInfo);
+			return typeInfo;
+#endif
 		}
 
 		/// <summary>
@@ -140,9 +155,9 @@ namespace ScriptEngine.Machine.Contexts
                 null, obj, new object[]{propValue}, null);
         }
 
-		#endregion
+#endregion
 
-		#region Private Methods
+#region Private Methods
 
 		/// <summary>
 		/// Requires that the value is non-null.
@@ -158,43 +173,7 @@ namespace ScriptEngine.Machine.Contexts
 			}
 		}
 
-		/// <summary>
-		/// Gets a Type that can be used with reflection.
-		/// </summary>
-		/// <param name="dispatch">An object that implements IDispatch.</param>
-		/// <param name="throwIfNotFound">Whether an exception should be thrown if a Type can't be obtained.</param>
-		/// <returns>A .NET Type that can be used with reflection.</returns>
-		private static Type GetType(IDispatchInfo dispatch, bool throwIfNotFound)
-		{
-#if NETSTANDARD
-			throw new PlatformNotSupportedException();
-#else
-			RequireReference(dispatch, "dispatch");
-
-			Type result = null;
-			int typeInfoCount;
-			int hr = dispatch.GetTypeInfoCount(out typeInfoCount);
-			if (hr == S_OK && typeInfoCount > 0)
-			{
-				// Type info isn't usually culture-aware for IDispatch, so we might as well pass
-				// the default locale instead of looking up the current thread's LCID each time
-				// (via CultureInfo.CurrentCulture.LCID).
-				dispatch.GetTypeInfo(0, LOCALE_SYSTEM_DEFAULT, out result);
-			}
-
-			if (result == null && throwIfNotFound)
-			{
-				// If the GetTypeInfoCount called failed, throw an exception for that.
-				Marshal.ThrowExceptionForHR(hr);
-
-				// Otherwise, throw the same exception that Type.GetType would throw.
-				throw new TypeLoadException();
-			}
-
-			return result;
-#endif
-		}
-
+		
 		/// <summary>
 		/// Tries to get the DISPID for the requested member name.
 		/// </summary>
@@ -237,77 +216,6 @@ namespace ScriptEngine.Machine.Contexts
 			return result;
 		}
 
-		#endregion
-
-		#region Private Interfaces
-
-		/// <summary>
-		/// A partial declaration of IDispatch used to lookup Type information and DISPIDs.
-		/// </summary>
-		/// <remarks>
-		/// This interface only declares the first three methods of IDispatch.  It omits the
-		/// fourth method (Invoke) because there are already plenty of ways to do dynamic
-		/// invocation in .NET.  But the first three methods provide dynamic type metadata
-		/// discovery, which .NET doesn't provide normally if you have a System.__ComObject
-		/// RCW instead of a strongly-typed RCW.
-		/// <para/>
-		/// Note: The original declaration of IDispatch is in OAIdl.idl.
-		/// </remarks>
-		[ComImport]
-		[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-		[Guid("00020400-0000-0000-C000-000000000046")]
-		private interface IDispatchInfo
-		{
-			/// <summary>
-			/// Gets the number of Types that the object provides (0 or 1).
-			/// </summary>
-			/// <param name="typeInfoCount">Returns 0 or 1 for the number of Types provided by <see cref="GetTypeInfo"/>.</param>
-			/// <remarks>
-			/// http://msdn.microsoft.com/en-us/library/da876d53-cb8a-465c-a43e-c0eb272e2a12(VS.85)
-			/// </remarks>
-			[PreserveSig]
-			int GetTypeInfoCount(out int typeInfoCount);
-
-			/// <summary>
-			/// Gets the Type information for an object if <see cref="GetTypeInfoCount"/> returned 1.
-			/// </summary>
-			/// <param name="typeInfoIndex">Must be 0.</param>
-			/// <param name="lcid">Typically, LOCALE_SYSTEM_DEFAULT (2048).</param>
-			/// <param name="typeInfo">Returns the object's Type information.</param>
-			/// <remarks>
-			/// http://msdn.microsoft.com/en-us/library/cc1ec9aa-6c40-4e70-819c-a7c6dd6b8c99(VS.85)
-			/// </remarks>
-#if NETSTANDARD
-			void GetTypeInfo(int typeInfoIndex, int lcid, out Type typeInfo);
-#else
-			void GetTypeInfo(int typeInfoIndex, int lcid, [MarshalAs(UnmanagedType.CustomMarshaler,
-				MarshalTypeRef = typeof(System.Runtime.InteropServices.CustomMarshalers.TypeToTypeInfoMarshaler))] out Type typeInfo);
-#endif
-			/// <summary>
-			/// Gets the DISPID of the specified member name.
-			/// </summary>
-			/// <param name="riid">Must be IID_NULL.  Pass a copy of Guid.Empty.</param>
-			/// <param name="name">The name of the member to look up.</param>
-			/// <param name="nameCount">Must be 1.</param>
-			/// <param name="lcid">Typically, LOCALE_SYSTEM_DEFAULT (2048).</param>
-			/// <param name="dispId">If a member with the requested <paramref name="name"/>
-			/// is found, this returns its DISPID and the method's return value is 0.
-			/// If the method returns a non-zero value, then this parameter's output value is
-			/// undefined.</param>
-			/// <returns>Zero for success. Non-zero for failure.</returns>
-			/// <remarks>
-			/// http://msdn.microsoft.com/en-us/library/6f6cf233-3481-436e-8d6a-51f93bf91619(VS.85)
-			/// </remarks>
-			[PreserveSig]
-			int GetDispId(ref Guid riid, ref string name, int nameCount, int lcid, out int dispId);
-
-			// NOTE: The real IDispatch also has an Invoke method next, but we don't need it.
-			// We can invoke methods using .NET's Type.InvokeMember method with the special
-			// [DISPID=n] syntax for member "names", or we can get a .NET Type using GetTypeInfo
-			// and invoke methods on that through reflection.
-			// Type.InvokeMember: http://msdn.microsoft.com/en-us/library/de3dhzwy.aspx
-		}
-
-		#endregion
-	}
+#endregion
+    }
 }
