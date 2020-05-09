@@ -14,16 +14,13 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class UnmanagedCOMWrapperContext : COMWrapperContext, IDebugPresentationAcceptor
     {
-        private object _instance;
-
         private const uint E_DISP_MEMBERNOTFOUND = 0x80020003;
 
         private readonly RcwMembersMetadataCollection<RcwPropertyMetadata> _props;
         private readonly RcwMembersMetadataCollection<RcwMethodMetadata> _methods;
 
-        public UnmanagedCOMWrapperContext(object instance)
+        public UnmanagedCOMWrapperContext(object instance) : base(instance)
         {
-            _instance = instance;
             InitByInstance();
             var md = new RcwMetadata(instance);
             _props = md.Properties;
@@ -32,9 +29,9 @@ namespace ScriptEngine.Machine.Contexts
 
         private void InitByInstance()
         {
-            if (!DispatchUtility.ImplementsIDispatch(_instance))
+            if (!DispatchUtility.ImplementsIDispatch(Instance))
             {
-                _instance = null;
+                Instance = null;
                 throw new RuntimeException("Объект не реализует IDispatch.");
             }
         }
@@ -43,16 +40,16 @@ namespace ScriptEngine.Machine.Contexts
         {
             base.Dispose(manualDispose);
 
-            if (_instance != null)
+            if (Instance != null)
             {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(_instance);
-                _instance = null;
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(Instance);
+                Instance = null;
             }
         }
 
         public override IEnumerator<IValue> GetEnumerator()
         {
-            var comType = _instance.GetType();
+            var comType = Instance.GetType();
             System.Collections.IEnumerator comEnumerator;
 
             try
@@ -61,7 +58,7 @@ namespace ScriptEngine.Machine.Contexts
                 comEnumerator = (System.Collections.IEnumerator)comType.InvokeMember("[DispId=-4]",
                                         BindingFlags.InvokeMethod,
                                         null,
-                                        _instance,
+                                        Instance,
                                         new object[0]);
             }
             catch (TargetInvocationException e)
@@ -86,8 +83,6 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool IsIndexed => _props.Count > 0;
             
-        public override object UnderlyingObject => _instance;
-
         public override int GetPropCount() => _props.Count;
 
         public override string GetPropName(int propNum) 
@@ -115,7 +110,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(_instance, dispId, null);
+                    var result = DispatchUtility.Invoke(Instance, dispId, null);
                     return CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
@@ -160,7 +155,7 @@ namespace ScriptEngine.Machine.Contexts
                     {
                         argToPass = MarshalIValue(newVal);
                     }
-                    DispatchUtility.InvokeSetProperty(_instance, dispId, argToPass);
+                    DispatchUtility.InvokeSetProperty(Instance, dispId, argToPass);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -206,7 +201,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    DispatchUtility.Invoke(_instance, dispId, MarshalArguments(arguments));
+                    DispatchUtility.Invoke(Instance, dispId, MarshalArguments(arguments));
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -229,7 +224,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(_instance, dispId, MarshalArguments(arguments));
+                    var result = DispatchUtility.Invoke(Instance, dispId, MarshalArguments(arguments));
                     retValue = CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
