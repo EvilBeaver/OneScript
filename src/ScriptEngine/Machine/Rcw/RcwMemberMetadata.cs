@@ -9,9 +9,9 @@ namespace ScriptEngine.Machine.Rcw
 {
     public class RcwMethodMetadata : RcwMemberMetadata
     {
-        public bool IsFunction { get; }
+        public bool? IsFunction { get; }
 
-        public RcwMethodMetadata(string name, int dispId, bool isFunc) : base(name, dispId)
+        public RcwMethodMetadata(string name, int dispId, bool? isFunc) : base(name, dispId)
         {
             IsFunction = isFunc;
         }
@@ -25,7 +25,8 @@ namespace ScriptEngine.Machine.Rcw
 
         public RcwPropertyMetadata(string name, int dispId) : base(name, dispId)
         {
-
+            IsReadable = true;
+            IsWritable = true;
         }
     }
 

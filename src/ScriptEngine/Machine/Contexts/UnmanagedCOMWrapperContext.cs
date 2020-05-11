@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 //#if !__MonoCS__
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using ScriptEngine.Machine.Rcw;
@@ -18,6 +19,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private readonly RcwMembersMetadataCollection<RcwPropertyMetadata> _props;
         private readonly RcwMembersMetadataCollection<RcwMethodMetadata> _methods;
+        private readonly bool _isCollection;
 
         public UnmanagedCOMWrapperContext(object instance) : base(instance)
         {
@@ -25,6 +27,7 @@ namespace ScriptEngine.Machine.Contexts
             var md = new RcwMetadata(instance);
             _props = md.Properties;
             _methods = md.Methods;
+            _isCollection = md.IsCollection;
         }
 
         private void InitByInstance()
@@ -49,36 +52,15 @@ namespace ScriptEngine.Machine.Contexts
 
         public override IEnumerator<IValue> GetEnumerator()
         {
-            var comType = Instance.GetType();
-            System.Collections.IEnumerator comEnumerator;
+            if (!_isCollection)
+                throw RuntimeException.IteratorIsNotDefined();
 
-            try
-            {
-
-                comEnumerator = (System.Collections.IEnumerator)comType.InvokeMember("[DispId=-4]",
-                                        BindingFlags.InvokeMethod,
-                                        null,
-                                        Instance,
-                                        new object[0]);
-            }
-            catch (TargetInvocationException e)
-            {
-                uint hr = (uint)System.Runtime.InteropServices.Marshal.GetHRForException(e.InnerException);
-                if (hr == E_DISP_MEMBERNOTFOUND)
-                {
-                    throw RuntimeException.IteratorIsNotDefined();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            var comEnumerator = ((IEnumerable)Instance).GetEnumerator();
 
             while (comEnumerator.MoveNext())
             {
                 yield return CreateIValue(comEnumerator.Current);
             }
-
         }
 
         public override bool IsIndexed => _props.Count > 0;
@@ -90,7 +72,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int FindProperty(string name)
         {
-            if(!_props.Names.TryGetValue(name, out var md))
+            if(!TryFindProperty(name, out var md))
                 throw RuntimeException.PropNotFoundException(name);
 
             return _props.IndexOf(md);
@@ -174,7 +156,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int FindMethod(string name)
         {
-            if (!_methods.Names.TryGetValue(name, out var md))
+            if (!TryFindMethod(name, out var md))
                 throw RuntimeException.MethodNotFoundException(name);
             
             return _methods.IndexOf(md);
@@ -218,6 +200,9 @@ namespace ScriptEngine.Machine.Contexts
         {
             var method = _methods[methodNumber];
 
+            if (!(method.IsFunction ?? true))
+                throw RuntimeException.UseProcAsAFunction();
+
             var dispId = method.DispatchId;
 
             try
@@ -236,6 +221,36 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw RuntimeException.MethodNotFoundException(method.Name);
             }
+        }
+
+        private bool TryFindMethod(string name, out RcwMethodMetadata md)
+        {
+            if (_methods.Names.TryGetValue(name, out md))
+                return true;
+
+            if (DispatchUtility.TryGetDispId(Instance, name, out var dispId))
+            {
+                md = new RcwMethodMetadata(name, dispId, null);
+                _methods.Add(md);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryFindProperty(string name, out RcwPropertyMetadata md)
+        {
+            if (_props.Names.TryGetValue(name, out md))
+                return true;
+
+            if (DispatchUtility.TryGetDispId(Instance, name, out var dispId))
+            {
+                md = new RcwPropertyMetadata(name, dispId);
+                _props.Add(md);
+                return true;
+            }
+
+            return false;
         }
 
         public void Accept(IDebugValueVisitor visitor)

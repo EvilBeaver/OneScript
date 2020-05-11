@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using FUNCDESC = System.Runtime.InteropServices.ComTypes.FUNCDESC;
@@ -25,6 +26,8 @@ namespace ScriptEngine.Machine.Rcw
 
         public RcwMembersMetadataCollection<RcwMethodMetadata> Methods { get; }
 
+        public bool IsCollection { get; }
+
         public RcwMetadata(object instance)
         {
             if (instance == null)
@@ -36,6 +39,8 @@ namespace ScriptEngine.Machine.Rcw
             Properties = new RcwMembersMetadataCollection<RcwPropertyMetadata>();
 
             Methods = new RcwMembersMetadataCollection<RcwMethodMetadata>();
+
+            IsCollection = instance is IEnumerable;
 
             LoadMetadata(instance);
         }
