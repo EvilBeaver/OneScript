@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ScriptEngine.Machine.Rcw;
 
@@ -48,6 +49,14 @@ namespace ScriptEngine.Machine.Contexts
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(Instance);
                 Instance = null;
             }
+        }
+
+        public override int Count()
+        {
+            if (!_isCollection)
+                return 0;
+            else
+                return ((IEnumerable<IValue>) this).Count();
         }
 
         public override IEnumerator<IValue> GetEnumerator()
@@ -256,6 +265,8 @@ namespace ScriptEngine.Machine.Contexts
         public void Accept(IDebugValueVisitor visitor)
         {
             visitor.ShowProperties(this);
+            if(_isCollection)
+                visitor.ShowCollectionItems(this);
         }
     }
 }
