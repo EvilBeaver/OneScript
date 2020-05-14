@@ -15,6 +15,17 @@ namespace ScriptEngine.Machine
         void Wait();
         void NotifyProcessExit(int exitCode);
 
-        void AttachToThread(MachineInstance machine);
+        void AttachToThread();
+
+        void DetachFromThread();
+        
+        IBreakpointManager BreakpointManager { get; }
+    }
+
+    public interface IBreakpointManager
+    {
+        void SetLineStops(string module, int[] lines);
+        
+        bool Find(string module, int line);
     }
 }

@@ -182,8 +182,11 @@ namespace ScriptEngine
             set
             {
                 _debugController = value;
-                ProduceExtraCode = CodeGenerationFlags.DebugCode;
-                _machine.SetDebugMode(_debugController);
+                if (value != null)
+                {
+                    ProduceExtraCode = CodeGenerationFlags.DebugCode;
+                    _machine.SetDebugMode(_debugController.BreakpointManager);
+                }
             }
         }
 

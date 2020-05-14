@@ -3,11 +3,11 @@
 setlocal
 set pathdir=%~dp0
 
-rem echo сами тесты %CD%
-rem echo скрипты тестирования %pathdir%
+rem echo самя┐╜ я┐╜я┐╜я┐╜я┐╜ %CD%
+rem echo я┐╜рипя┐╜я┐╜ я┐╜я┐╜я┐╜ровя┐╜я┐╜я┐╜я┐╜ %pathdir%
 
 set progfiles=%ProgramFiles(x86)%
-if NOT EXIST ProgramFiles(x86) set progfiles=%ProgramFiles%
+if NOT EXIST "%progfiles%" set progfiles=%ProgramFiles%
 
 echo on
 "%progfiles%\OneScript\bin\oscript.exe" "%pathdir%testrunner.os" -run %1 %2 %3 %4 %5
@@ -17,7 +17,7 @@ rem echo %ERRORLEVEL%
 if NOT %ERRORLEVEL%==0 GOTO bad_exit
 
 :success_exit
-rem echo Успешно
+rem echo я┐╜спешно
 rem pause
 
 exit /B 0

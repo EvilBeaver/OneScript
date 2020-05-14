@@ -13,7 +13,7 @@ using System.Linq.Expressions;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-
+using Newtonsoft.Json.Linq;
 using OneScript.DebugProtocol;
 using VSCodeDebug;
 
@@ -33,9 +33,13 @@ namespace VSCode.DebugAdapter
             _variableHandles = new Handles<IVariableLocator>();
         }
         
+        private string AdapterID { get; set; }
+        
         public override void Initialize(Response response, dynamic args)
         {
             SessionLog.WriteLine("Initialize:" + args);
+            AdapterID = (string) args.adapterID;
+            
             SendResponse(response, new Capabilities()
             {
                 supportsConditionalBreakpoints = false,
@@ -50,89 +54,20 @@ namespace VSCode.DebugAdapter
 
         public override void Launch(Response response, dynamic args)
         {
-            var startupScript = (string)args["program"];
-            if (startupScript == null)
-            {
-                SendErrorResponse(response, 1001, "Property 'program' is missing or empty.");
-                return;
-            }
-
-            if (!File.Exists(startupScript))
-            {
-                SendErrorResponse(response, 1002, "Script '{path}' does not exist.", new { path = Path.Combine(Directory.GetCurrentDirectory(), startupScript) });
-                return;
-            }
-
-            // validate argument 'args'
-            string[] arguments = null;
-            if (args.args != null)
-            {
-                arguments = args.args.ToObject<string[]>();
-                if (arguments != null && arguments.Length == 0)
-                {
-                    arguments = null;
-                }
-            }
-
-            // validate argument 'cwd'
-            var workingDirectory = (string)args.cwd;
-            if (workingDirectory != null)
-            {
-                workingDirectory = workingDirectory.Trim();
-                if (workingDirectory.Length == 0)
-                {
-                    SendErrorResponse(response, 3003, "Property 'cwd' is empty.");
-                    return;
-                }
-                workingDirectory = ConvertClientPathToDebugger(workingDirectory);
-                if (!Directory.Exists(workingDirectory))
-                {
-                    SendErrorResponse(response, 3004, "Working directory '{path}' does not exist.", new { path = workingDirectory });
-                    return;
-                }
-            }
-            else
-            {
-                workingDirectory = Path.GetDirectoryName(startupScript);
-            }
-
-            // validate argument 'runtimeExecutable'
-            var runtimeExecutable = (string)args.runtimeExecutable;
-            if (runtimeExecutable != null)
-            {
-                runtimeExecutable = runtimeExecutable.Trim();
-                if (runtimeExecutable.Length == 0)
-                {
-                    SendErrorResponse(response, 3005, "Property 'runtimeExecutable' is empty.");
-                    return;
-                }
-
-                runtimeExecutable = ConvertClientPathToDebugger(runtimeExecutable);
-                if (!File.Exists(runtimeExecutable))
-                {
-                    SendErrorResponse(response, 3006, "Runtime executable '{path}' does not exist.", new
-                    {
-                        path = runtimeExecutable
-                    });
-                    return;
-                }
-            }
-            else
-            {
-                runtimeExecutable = "oscript.exe";
-            }
+            SessionLog.WriteLine("Launch command accepted");
             
-            _process = new DebugeeProcess();
+            if (AdapterID == "oscript")
+            {
+                _process = ConfigureOscriptExe(response, args);
+            }
+            else if(AdapterID == "oscript.web")
+            {
+                _process = ConfigureWebExe(response, args);
+            }
 
-            _process.RuntimeExecutable = runtimeExecutable;
-            _process.RuntimeArguments = Utilities.ConcatArguments(args.runtimeArgs);
-            _process.StartupScript = startupScript;
-            _process.ScriptArguments = Utilities.ConcatArguments(args.args);
-            _process.WorkingDirectory = workingDirectory;
-            _process.DebugProtocol = (string)args.protocol;
-            int port = getInt(args, "debugPort", 2801);
-            _process.DebugPort = port;
-            
+            if (_process == null)
+                return;
+
             _process.OutputReceived += (s, e) =>
             {
                 SessionLog.WriteLine("output received: " + e.Content);
@@ -144,30 +79,31 @@ namespace VSCode.DebugAdapter
                 SessionLog.WriteLine("_process exited");
                 SendEvent(new TerminatedEvent());
             };
-
+            
             try
             {
                 _process.Start();
+                SessionLog.WriteLine("Debuggee started");
             }
             catch (Exception e)
             {
+                SessionLog.WriteLine(e.ToString());
                 SendErrorResponse(response, 3012, "Can't launch debugee ({reason}).", new { reason = e.Message });
                 return;
             }
-            
             
             try
             {
                 IDebuggerService service;
                 if (_process.DebugProtocol == "wcf")
                 {
-                    var wcfConnector = new WcfDebuggerConnection(port, this);
+                    var wcfConnector = new WcfDebuggerConnection(_process.DebugPort, this);
                     wcfConnector.Connect();
                     service = wcfConnector;
                 }
                 else
                 {
-                    var tcpConnector = new TcpDebugConnector(port, this);
+                    var tcpConnector = new TcpDebugConnector(_process.DebugPort, this);
                     tcpConnector.Connect();
                     service = tcpConnector;
                 }
@@ -178,6 +114,7 @@ namespace VSCode.DebugAdapter
             {
                 _process.Kill();
                 _process = null;
+                SessionLog.WriteLine(e.ToString());
                 SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
                 return;
             }
@@ -185,7 +122,158 @@ namespace VSCode.DebugAdapter
             SendResponse(response);
 
         }
-        
+
+        private DebugeeProcess ConfigureWebExe(Response response, JObject args)
+        {
+            var options = args.ToObject<WebLaunchOptions>();
+            
+            // validate argument 'cwd'
+            var workingDirectory = options.AppDir;
+            if (workingDirectory != null)
+            {
+                workingDirectory = workingDirectory.Trim();
+                if (workingDirectory.Length == 0)
+                {
+                    SendErrorResponse(response, 3003, "Property 'cwd' is empty.");
+                    return null;
+                }
+                workingDirectory = ConvertClientPathToDebugger(workingDirectory);
+                if (!Directory.Exists(workingDirectory))
+                {
+                    SendErrorResponse(response, 3004, "Working directory '{path}' does not exist.", new { path = workingDirectory });
+                    return null;
+                }
+            }
+            else
+            {
+                SendErrorResponse(response, 3004, "Application directory 'appDir' is not specified.");
+                return null;
+            }
+
+            options.AppDir = workingDirectory;
+
+            // validate argument 'runtimeExecutable'
+            var runtimeExecutable = options.RuntimeExecutable;
+            if (runtimeExecutable != null)
+            {
+                runtimeExecutable = runtimeExecutable.Trim();
+                if (runtimeExecutable.Length == 0)
+                {
+                    SendErrorResponse(response, 3005, "Property 'runtimeExecutable' is empty.");
+                    return null;
+                }
+
+                runtimeExecutable = ConvertClientPathToDebugger(runtimeExecutable);
+                if (!File.Exists(runtimeExecutable))
+                {
+                    SendErrorResponse(response, 3006, "Runtime executable '{path}' does not exist.", new
+                    {
+                        path = runtimeExecutable
+                    });
+                    return null;
+                }
+            }
+            else
+            {
+                SendErrorResponse(response, 3004, "Runtime executable 'runtimeExecutable' is not specified.");
+                return null;
+            }
+
+            options.RuntimeExecutable = runtimeExecutable;
+
+            var process = new DebugeeProcess();
+
+            process.RuntimeExecutable = options.RuntimeExecutable;
+            process.RuntimeArguments = Utilities.ConcatArguments(options.RuntimeArgs);
+            process.WorkingDirectory = options.AppDir;
+            process.DebugProtocol = "web";
+            process.DebugPort = options.DebugPort;
+            process.Environment = options.Env;
+
+            return process;
+        }
+
+        private DebugeeProcess ConfigureOscriptExe(Response response, JObject args)
+        {
+            var options = args.ToObject<ConsoleLaunchOptions>();
+            if (options.Program == null)
+            {
+                SendErrorResponse(response, 1001, "Property 'program' is missing or empty.");
+                return null;
+            }
+
+            if (!File.Exists(options.Program))
+            {
+                SendErrorResponse(response, 1002, "Script '{path}' does not exist.", new { path = Path.Combine(Directory.GetCurrentDirectory(), options.Program) });
+                return null;
+            }
+
+            // validate argument 'cwd'
+            var workingDirectory = options.Cwd;
+            if (workingDirectory != null)
+            {
+                workingDirectory = workingDirectory.Trim();
+                if (workingDirectory.Length == 0)
+                {
+                    SendErrorResponse(response, 3003, "Property 'cwd' is empty.");
+                    return null;
+                }
+                workingDirectory = ConvertClientPathToDebugger(workingDirectory);
+                if (!Directory.Exists(workingDirectory))
+                {
+                    SendErrorResponse(response, 3004, "Working directory '{path}' does not exist.", new { path = workingDirectory });
+                    return null;
+                }
+            }
+            else
+            {
+                workingDirectory = Path.GetDirectoryName(options.Program);
+            }
+
+            options.Cwd = workingDirectory;
+
+            // validate argument 'runtimeExecutable'
+            var runtimeExecutable = options.RuntimeExecutable;
+            if (runtimeExecutable != null)
+            {
+                runtimeExecutable = runtimeExecutable.Trim();
+                if (runtimeExecutable.Length == 0)
+                {
+                    SendErrorResponse(response, 3005, "Property 'runtimeExecutable' is empty.");
+                    return null;
+                }
+
+                runtimeExecutable = ConvertClientPathToDebugger(runtimeExecutable);
+                if (!File.Exists(runtimeExecutable))
+                {
+                    SendErrorResponse(response, 3006, "Runtime executable '{path}' does not exist.", new
+                    {
+                        path = runtimeExecutable
+                    });
+                    return null;
+                }
+            }
+            else
+            {
+                runtimeExecutable = "oscript.exe";
+            }
+
+            options.RuntimeExecutable = runtimeExecutable;
+
+            var process = new DebugeeProcess();
+
+            process.RuntimeExecutable = runtimeExecutable;
+            process.RuntimeArguments = Utilities.ConcatArguments(options.RuntimeArgs);
+            process.StartupScript = options.Program;
+            process.ScriptArguments = Utilities.ConcatArguments(options.Args);
+            process.WorkingDirectory = options.Cwd;
+            process.DebugProtocol = options.Protocol;
+            process.DebugPort = options.DebugPort;
+            process.Environment = options.Env;
+
+            return process;
+        }
+
         public override void Attach(Response response, dynamic arguments)
         {
             throw new NotImplementedException();
@@ -299,7 +387,7 @@ namespace VSCode.DebugAdapter
             {
                 if (!_process.HasExited)
                 {
-                    _process.Next();
+                    _process.Next((int)arguments.threadId);
                 }
             }
             
@@ -312,7 +400,7 @@ namespace VSCode.DebugAdapter
             {
                 if (!_process.HasExited)
                 {
-                    _process.StepIn();
+                    _process.StepIn((int)arguments.threadId);
                 }
             }
         }
@@ -324,7 +412,7 @@ namespace VSCode.DebugAdapter
             {
                 if (!_process.HasExited)
                 {
-                    _process.StepOut();
+                    _process.StepOut((int)arguments.threadId);
                 }
             }
         }
@@ -452,7 +540,7 @@ namespace VSCode.DebugAdapter
 
             if (evalResult.Name.Equals("$evalFault") && context.Equals("hover"))
             {
-                evalResult.Presentation = "";
+                evalResult.Presentation = $"err: {expression}";
             }
 
             var protResult = new EvaluateResponseBody(evalResult.Presentation, id) {type = evalResult.TypeName};

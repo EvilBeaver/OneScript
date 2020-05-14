@@ -15,6 +15,7 @@ namespace OneScript.DebugProtocol.TcpServer
     {
         private readonly ICommunicationChannel _protocolChannel;
         private Thread _messageThread;
+        private volatile bool _serverStopped;
 
         public DefaultMessageServer(ICommunicationChannel protocolChannel)
         {
@@ -30,8 +31,8 @@ namespace OneScript.DebugProtocol.TcpServer
         {
             _messageThread = new Thread(() =>
             {
-                bool shouldAcceptCommands = true;
-                while (shouldAcceptCommands)
+                _serverStopped = false;
+                while (!_serverStopped)
                 {
                     try
                     {
@@ -53,18 +54,24 @@ namespace OneScript.DebugProtocol.TcpServer
                             Exception = e
                         };
                         
-                        DataReceived?.Invoke(this, eventData);
+                        try
+                        {
+                            DataReceived?.Invoke(this, eventData);
+                        }
+                        catch
+                        {
+                            // один из обработчиков выбросил исключение
+                            // мы все равно не знаем что с ним делать.
+                            
+                            // Считаем, что факап подписчика - его проблемы.
+                        }
                         
                         // свойство в исключении может быть утановлено в обработчике евента
-                        shouldAcceptCommands = e.StopChannel;
-                    }
-                    catch (ThreadInterruptedException)
-                    {
-                        shouldAcceptCommands = false;
+                        _serverStopped = e.StopChannel;
                     }
                     catch (Exception)
                     {
-                        shouldAcceptCommands = false;
+                        _serverStopped = true;
                     }
                 }
             });
@@ -74,6 +81,8 @@ namespace OneScript.DebugProtocol.TcpServer
 
         public void Stop()
         {
+            _serverStopped = true;
+
             if (_messageThread?.IsAlive == true)
             {
                 _protocolChannel.Dispose();

@@ -10,10 +10,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using OneScript.DebugProtocol;
+using OneScript.DebugServices;
 using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
 {
+    [Obsolete]
     internal class MachineWaitToken
     {
         public MachineInstance Machine;
@@ -22,10 +24,16 @@ namespace oscript.DebugServer
     }
 
 
+    [Obsolete]
     internal abstract class DebugControllerBase : IDebugController
     {
         private readonly Dictionary<int, MachineWaitToken> _machinesOnThreads = new Dictionary<int, MachineWaitToken>();
 
+        public DebugControllerBase()
+        {
+            BreakpointManager = new DefaultBreakpointManager();
+        }
+        
         public virtual void Init()
         {
 
@@ -45,8 +53,20 @@ namespace oscript.DebugServer
             _machinesOnThreads.Remove(Thread.CurrentThread.ManagedThreadId);
         }
 
-        public virtual void AttachToThread(MachineInstance machine)
+        public void DetachFromThread()
         {
+            if (_machinesOnThreads.TryGetValue(Thread.CurrentThread.ManagedThreadId, out var t))
+            {
+                t.Machine.MachineStopped -= Machine_MachineStopped;
+                _machinesOnThreads.Remove(Thread.CurrentThread.ManagedThreadId);
+            }
+        }
+
+        public IBreakpointManager BreakpointManager { get; set; }
+
+        public virtual void AttachToThread()
+        {
+            var machine = MachineInstance.Current;
             _machinesOnThreads[Thread.CurrentThread.ManagedThreadId] = new MachineWaitToken()
             {
                 Machine = machine

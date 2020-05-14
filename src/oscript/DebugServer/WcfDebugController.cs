@@ -16,6 +16,7 @@ using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
 {
+    [Obsolete]
     internal class WcfDebugController : DebugControllerBase
     {
         private readonly int _port;

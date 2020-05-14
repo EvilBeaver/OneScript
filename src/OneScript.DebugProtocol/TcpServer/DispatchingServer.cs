@@ -28,7 +28,7 @@ namespace OneScript.DebugProtocol.TcpServer
             _server.DataReceived += OnDataReceived;
             _server.Start();
         }
-        
+
         public void Stop()
         {
             _server.DataReceived -= OnDataReceived;
@@ -39,7 +39,7 @@ namespace OneScript.DebugProtocol.TcpServer
         {
             if (e.Exception == null)
             {
-                ProcessSuccess((TcpProtocolDto)e.Data, e.Channel);
+                ProcessSuccess((RpcCall) e.Data, e.Channel);
             }
             else
             {
@@ -50,12 +50,23 @@ namespace OneScript.DebugProtocol.TcpServer
             }
         }
 
-        private void ProcessSuccess(TcpProtocolDto message, ICommunicationChannel responseChannel)
+        private void ProcessSuccess(RpcCall message, ICommunicationChannel responseChannel)
         {
-            var response = _requestProcessor.Dispatch(_requestService, message.Id, message.Parameters);
-            if (response != null)
+            RpcCallResult callResult = null;
+            try
             {
-                responseChannel.Write(response);
+                var methodResult = _requestProcessor.Dispatch(_requestService, message.Id, message.Parameters);
+                if(methodResult != null)
+                    callResult = RpcCallResult.Respond(message, methodResult);
+            }
+            catch (Exception e)
+            {
+                callResult = RpcCallResult.Exception(message, e);
+            }
+            
+            if (callResult != null)
+            {
+                responseChannel.Write(callResult);
             }
         }
     }

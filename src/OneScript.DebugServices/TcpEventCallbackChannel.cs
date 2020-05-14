@@ -24,13 +24,13 @@ namespace OneScript.DebugServices
 
         public void ThreadStopped(int threadId, ThreadStopReason reason)
         {
-            var dto = TcpProtocolDto.Create(nameof(ThreadStopped), threadId, reason);
+            var dto = RpcCall.Create(nameof(IDebugEventListener), nameof(ThreadStopped), threadId, reason);
             _channel.Write(dto);
         }
 
         public void ProcessExited(int exitCode)
         {
-            var dto = TcpProtocolDto.Create(nameof(ProcessExited), exitCode);
+            var dto = RpcCall.Create(nameof(IDebugEventListener), nameof(ProcessExited), exitCode);
             _channel.Write(dto);
         }
 

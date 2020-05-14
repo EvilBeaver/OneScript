@@ -10,19 +10,8 @@ using System;
 namespace OneScript.DebugProtocol.TcpServer
 {
     [Serializable]
-    public class TcpProtocolDto
+    public class RpcExceptionDto
     {
-        public string Id { get; set; }
-        
-        public object[] Parameters { get; set; }
-        
-        public static TcpProtocolDto Create(string name, params object[] data)
-        {
-            return new TcpProtocolDto()
-            {
-                Id = name,
-                Parameters = data
-            };
-        }
+        public string Description { get; set; }
     }
 }

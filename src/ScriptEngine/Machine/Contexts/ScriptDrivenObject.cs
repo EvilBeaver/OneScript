@@ -407,16 +407,5 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _module.ExportedMethods.Select(x => x.SymbolicName).ToArray();
         }
-
-        public Type ReflectAsCLRType()
-        {
-            throw new NotImplementedException();
-            //return ReflectedClassType.ReflectModule(_module, GetReflectedTypeName());
-        }
-
-        protected virtual string GetReflectedTypeName()
-        {
-            return SystemType.Name;
-        }
     }
 }

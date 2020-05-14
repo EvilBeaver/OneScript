@@ -145,42 +145,10 @@ namespace ScriptEngine.Machine
         
         #region Debug protocol methods
 
-        public void SetDebugMode(IDebugController debugContr)
+        public void SetDebugMode(IBreakpointManager breakpointManager)
         {
-            _stopManager = new MachineStopManager(this);
-        }
-
-        public void ClearBreakpoints()
-        {
-            _stopManager.ClearBreakpoints();
-        }
-
-        public bool SetBreakpoint(string source, int line, out int id)
-        {
-            if (_stopManager == null)
-                throw new InvalidOperationException("Machine is not in debug mode");
-
-            id = _stopManager.SetBreakpoint(source, line);
-            
-            return true;
-        }
-        
-        public bool RemoveBreakpoint(string source, int line, out int id)
-        {
-            if (_stopManager == null)
-                throw new InvalidOperationException("Machine is not in debug mode");
-
-            id = _stopManager.RemoveBreakpoint(source, line);
-
-            return id >= 0;
-        }
-
-        public void SetBreakpointsForModule(string source, int[] lines)
-        {
-            if (_stopManager == null)
-                throw new InvalidOperationException("Machine is not in debug mode");
-
-            _stopManager.Breakpoints.SetAllForModule(source, lines);
+            if(_stopManager == null)
+                _stopManager = new MachineStopManager(this, breakpointManager);
         }
 
         public void StepOver()

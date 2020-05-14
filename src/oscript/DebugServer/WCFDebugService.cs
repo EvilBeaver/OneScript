@@ -23,6 +23,7 @@ using MachineVariable = ScriptEngine.Machine.Variable;
 
 namespace oscript.DebugServer
 {
+    [Obsolete]
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IncludeExceptionDetailInFaults = true)]
     internal class WcfDebugService : IDebuggerService
     {

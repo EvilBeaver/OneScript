@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript",
   "icon": "images/mono-debug-icon.png",
@@ -50,7 +50,9 @@
             "program": "${file}",
             "args": [],
             "cwd": "${workspaceRoot}",
+            "env" : {},
             "runtimeExecutable": null,
+            "runtimeArgs" : [],
             "debugPort": 2801,
             "protocol":"tcp"
           }
@@ -61,7 +63,7 @@
             "properties": {
               "program": {
                 "type": "string",
-                "description": "Файл сценария для запуска отладки"
+                "description": "Файл сценария для запуска отладки."
               },
               "args": {
                 "type": "array",
@@ -71,12 +73,20 @@
               },
               "cwd": {
                 "type": "string",
-                "description": "Текущий каталог запуска отладки",
+                "description": "Текущий каталог запуска отладки.",
                 "default": "."
+              },
+              "env": {
+                "type": "object",
+                "description": "Переменные окружения для отлаживаемого процесса",
+                "patternProperties": {
+                  "[a-zA-Z_][0-9a-zA-Z_]+": { "type": "string" }
+                },
+                "default": null
               },
               "runtimeExecutable": {
                 "type": [ "string", "null" ],
-                "description": "Путь к исполняемому файлу oscript.exe",
+                "description": "Путь к исполняемому файлу oscript.exe / OneScript.WebHost.exe",
                 "default": "oscript"
               },
               "runtimeArgs": {
@@ -94,16 +104,86 @@
                 "type": "string",
                 "description": "Вариант протокола взаимодействия с отлаживаемым процессом",
                 "enum" : ["wcf", "tcp"]
-              },
-              "protocolVersion": {
-                "type": "string",
-                "description": "Версия протокола взаимодействия с отлаживаемым процессом"
               }
             }
           },
           "attach": {
             "properties": {
             "debugPort": {
+                "type": "number",
+                "description": "Присоединиться к работающему процессу (не поддерживается)",
+                "default": 2801
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "oscript.web",
+        "label": "1Script Debugger for 1Script.Web",
+        "program": "./bin/VSCode.DebugAdapter.exe",
+        "osx": {
+          "runtime": "mono"
+        },
+        "linux": {
+          "runtime": "mono"
+        },
+        "initialConfigurations": [
+          {
+            "name": "Отладка 1Script.Web",
+            "type": "oscript.web",
+            "request": "launch",
+            "appDir": "${workspaceRoot}",
+            "env": {},
+            "runtimeExecutable": null,
+            "runtimeArgs" : [],
+            "debugPort": 2801,
+            "protocol":"tcp"
+          }
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [ "appDir", "runtimeExecutable" ],
+            "properties": {
+              "appDir": {
+                "type": "string",
+                "description": "Текущий каталог запуска отладки. Для отладки 1Script.Web - укажите каталог с файлом main.os",
+                "default": "."
+              },
+              "env": {
+                "type": "object",
+                "description": "Переменные окружения для отлаживаемого процесса",
+                "patternProperties": {
+                  "[a-zA-Z_][0-9a-zA-Z_]+": { "type": "string" }
+                },
+                "default": null
+              },
+              "runtimeExecutable": {
+                "type": [ "string", "null" ],
+                "description": "Путь к исполняемому файлу oscript.exe / OneScript.WebHost.exe",
+                "default": "oscript"
+              },
+              "runtimeArgs": {
+                "type": "array",
+                "description": "Аргументы, передаваемые в строке запуска",
+                "items": { "type": "string" },
+                "default": []
+              },
+              "debugPort": {
+                "type": "number",
+                "description": "Порт для запуска отладчика. Одновременные сеансы отладки должны быть разделены по портам",
+                "default": 2801
+              },
+              "protocol": {
+                "type": "string",
+                "description": "Вариант протокола взаимодействия с отлаживаемым процессом",
+                "enum" : ["wcf", "tcp"]
+              }
+            }
+          },
+          "attach": {
+            "properties": {
+              "debugPort": {
                 "type": "number",
                 "description": "Присоединиться к работающему процессу (не поддерживается)",
                 "default": 2801

@@ -12,7 +12,12 @@ using System.Reflection;
 
 namespace OneScript.DebugProtocol
 {
-    public class MethodsDispatcher<TInterface>
+    public interface IMethodsDispatcher
+    {
+        object Dispatch(object target, string methodName, object[] args);
+    }
+
+    public class MethodsDispatcher<TInterface> : IMethodsDispatcher
     {
         private delegate object ProtocolMethod(TInterface target, object[] parameters);
         private readonly Dictionary<string, ProtocolMethod> _methods = new Dictionary<string, ProtocolMethod>();
@@ -70,6 +75,11 @@ namespace OneScript.DebugProtocol
         {
             var method = _methods[methodName];
             return method(target, args);
+        }
+
+        object IMethodsDispatcher.Dispatch(object target, string methodName, object[] args)
+        {
+            return Dispatch((TInterface) target, methodName, args);
         }
     }
 }
