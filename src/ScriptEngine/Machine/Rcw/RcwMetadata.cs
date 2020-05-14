@@ -67,14 +67,13 @@ namespace ScriptEngine.Machine.Rcw
         private void LoadVars(ITypeInfo typeInfo, TYPEATTR typeAttr)
         {
             //TODO: Узнать что сюда прилетает
-            return;
-            for (var i = 0; i < typeAttr.cVars; i++)
-            {
-                typeInfo.GetVarDesc(i, out var ptVarDesc);
-                var varDesc = Marshal.PtrToStructure<VARDESC>(ptVarDesc);
-
-                Marshal.Release(ptVarDesc);
-            }
+            // for (var i = 0; i < typeAttr.cVars; i++)
+            // {
+            //     typeInfo.GetVarDesc(i, out var ptVarDesc);
+            //     var varDesc = Marshal.PtrToStructure<VARDESC>(ptVarDesc);
+            //
+            //     Marshal.Release(ptVarDesc);
+            // }
 
         }
 
