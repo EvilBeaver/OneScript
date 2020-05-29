@@ -12,23 +12,12 @@ using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
+using Newtonsoft.Json.Linq;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
 namespace VSCode.DebugAdapter
 {
-    internal class DebugeeOutputEventArgs : EventArgs
-    {
-        public DebugeeOutputEventArgs(string category, string content)
-        {
-            this.Category = category;
-            this.Content = content;
-        }
-
-        public string Category { get; }
-        public string Content { get; }
-    }
-
-    internal class DebugeeProcess
+    internal abstract class DebugeeProcess
     {
         private Process _process;
 
@@ -38,114 +27,59 @@ namespace VSCode.DebugAdapter
 
         private IDebuggerService _debugger;
 
-        public string RuntimeExecutable { get; set; }
-        public string WorkingDirectory { get; set; }
-        public string StartupScript { get; set; }
-        public string ScriptArguments { get; set; }
-        public string RuntimeArguments { get; set; }
-        public int DebugPort { get; set; }
-        public string DebugProtocol { get; set; }
+        private readonly PathHandlingStrategy _strategy;
 
-        public IDictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
-
+        public DebugeeProcess(PathHandlingStrategy pathHandling)
+        {
+            _strategy = pathHandling;
+        }
+        
+        public string DebugProtocol { get; protected set; }
+        
         public bool HasExited => _process.HasExited;
         public int ExitCode => _process.ExitCode;
 
         private IDebuggerService DebugChannel { get; set; }
+        public int DebugPort { get; set; }
 
         public void Start()
         {
-            var exeFileName = Path.GetFileName(RuntimeExecutable);
-            if (DebugProtocol == "web")
-            {
-                RunOsWebRuntime();
-            }
-            else
-            {
-                RunOscriptRuntime();
-            }
-        }
-
-        private void RunOsWebRuntime()
-        {
-            var dbgArgs = new List<string>();
-            if (DebugPort != 0)
-            {
-                dbgArgs.Add($"--debug.port={DebugPort}");
-            }
-            dbgArgs.Add("--debug.protocol=tcp");
-            dbgArgs.Add("--debug.wait=1");
-            
-            var debugArguments = string.Join(" ", dbgArgs);
-            _process = new Process();
+            _process = CreateProcess();
             var psi = _process.StartInfo;
-            psi.FileName = RuntimeExecutable;
-            psi.UseShellExecute = false;
-            psi.Arguments = $"{debugArguments} {RuntimeArguments}";
-            psi.WorkingDirectory = WorkingDirectory;
+            
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
-
-            LoadEnvironment(psi);
-
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
             _process.ErrorDataReceived += Process_ErrorDataReceived;
             _process.Exited += Process_Exited;
-
-            SessionLog.WriteLine($"Starting {psi.FileName} with args {psi.Arguments}");
-            SessionLog.WriteLine($"cwd = {WorkingDirectory}");
-
+            
             _process.Start();
             System.Threading.Thread.Sleep(1500);
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
         }
 
-        private void RunOscriptRuntime()
+        public void Init(JObject args)
         {
-            var dbgArgs = new List<string>();
-            if (DebugPort != 0)
-            {
-                dbgArgs.Add($"-port={DebugPort}");
-            }
-            if (!string.IsNullOrEmpty(DebugProtocol))
-            {
-                dbgArgs.Add($"-protocol={DebugProtocol}");
-            }
-            
-            var debugArguments = string.Join(" ", dbgArgs);
-            _process = new Process();
-            var psi = _process.StartInfo;
-            psi.FileName = RuntimeExecutable;
-            psi.UseShellExecute = false;
-            psi.Arguments = $"-debug {debugArguments} {RuntimeArguments} \"{StartupScript}\" {ScriptArguments}";
-            psi.WorkingDirectory = WorkingDirectory;
-            psi.RedirectStandardError = true;
-            psi.RedirectStandardOutput = true;
-
-            LoadEnvironment(psi);
-            
-            _process.EnableRaisingEvents = true;
-            _process.OutputDataReceived += Process_OutputDataReceived;
-            _process.ErrorDataReceived += Process_ErrorDataReceived;
-            _process.Exited += Process_Exited;
-
-            SessionLog.WriteLine($"Starting {psi.FileName} with args {psi.Arguments}");
-            SessionLog.WriteLine($"cwd = {WorkingDirectory}");
-
-            _process.Start();
-            System.Threading.Thread.Sleep(1000);
-            _process.BeginOutputReadLine();
-            _process.BeginErrorReadLine();
+            InitInternal(args);
         }
+        
+        protected abstract Process CreateProcess();
 
-        private void LoadEnvironment(ProcessStartInfo psi)
+        protected abstract void InitInternal(JObject args);
+
+        protected string ConvertClientPathToDebugger(string clientPath)
         {
-            if (Environment == null || Environment.Count <= 0)
+            return _strategy.ConvertClientPathToDebugger(clientPath);
+        }
+        
+        protected void LoadEnvironment(ProcessStartInfo psi, IDictionary<string, string> variables)
+        {
+            if (variables == null || variables.Count <= 0)
                 return;
             
-            foreach (var pair in Environment)
+            foreach (var pair in variables)
             {
                 psi.EnvironmentVariables[pair.Key] = pair.Value;
             }

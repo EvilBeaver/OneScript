@@ -266,16 +266,18 @@ namespace VSCodeDebug
 
 	public abstract class DebugSession : ProtocolServer
 	{
-		private bool _debuggerLinesStartAt1;
-		private bool _debuggerPathsAreURI;
 		private bool _clientLinesStartAt1 = true;
-		private bool _clientPathsAreURI = true;
+		private bool _clientPathsAreUri = true;
 
+		public PathHandlingStrategy PathStrategy { get; }
 
 		public DebugSession(bool debuggerLinesStartAt1, bool debuggerPathsAreURI = false)
 		{
-			_debuggerLinesStartAt1 = debuggerLinesStartAt1;
-			_debuggerPathsAreURI = debuggerPathsAreURI;
+			PathStrategy = new PathHandlingStrategy
+			{
+				DebuggerLinesStartAt1 = debuggerLinesStartAt1,
+				DebuggerPathsAreUri = debuggerPathsAreURI
+			};
 		}
 
 		public void SendResponse(Response response, dynamic body = null)
@@ -311,16 +313,18 @@ namespace VSCodeDebug
 					if (pathFormat != null) {
 						switch (pathFormat) {
 						case "uri":
-							_clientPathsAreURI = true;
+							_clientPathsAreUri = true;
 							break;
 						case "path":
-							_clientPathsAreURI = false;
+							_clientPathsAreUri = false;
 							break;
 						default:
 							SendErrorResponse(response, 1015, "initialize: bad value '{_format}' for pathFormat", new { _format = pathFormat });
 							return;
 						}
 					}
+
+					SetPathStrategy();
 					Initialize(response, args);
 					break;
 
@@ -410,7 +414,18 @@ namespace VSCodeDebug
 			}
 		}
 
-        public abstract void ConfigurationDone(Response response, dynamic args);
+		private void SetPathStrategy()
+		{
+			PathStrategy.ClientLinesStartAt1 = _clientLinesStartAt1;
+			PathStrategy.ClientPathsAreUri = _clientPathsAreUri;
+		}
+
+		protected string ConvertClientPathToDebugger(string path)
+		{
+			return PathStrategy.ConvertClientPathToDebugger(path);
+		}
+		
+		public abstract void ConfigurationDone(Response response, dynamic args);
 
         public abstract void Initialize(Response response, dynamic args);
 
@@ -459,84 +474,5 @@ namespace VSCodeDebug
 		public abstract void Threads(Response response, dynamic arguments);
 
 		public abstract void Evaluate(Response response, dynamic arguments);
-
-		// protected
-
-		protected int ConvertDebuggerLineToClient(int line)
-		{
-			if (_debuggerLinesStartAt1) {
-				return _clientLinesStartAt1 ? line : line - 1;
-			}
-			else {
-				return _clientLinesStartAt1 ? line + 1 : line;
-			}
-		}
-
-		protected int ConvertClientLineToDebugger(int line)
-		{
-			if (_debuggerLinesStartAt1) {
-				return _clientLinesStartAt1 ? line : line + 1;
-			}
-			else {
-				return _clientLinesStartAt1 ? line - 1 : line;
-			}
-		}
-
-		protected string ConvertDebuggerPathToClient(string path)
-		{
-			if (_debuggerPathsAreURI) {
-				if (_clientPathsAreURI) {
-					return path;
-				}
-				else {
-					Uri uri = new Uri(path);
-					return uri.LocalPath;
-				}
-			}
-			else {
-				if (_clientPathsAreURI) {
-					try {
-						var uri = new System.Uri(path);
-						return uri.AbsoluteUri;
-					}
-					catch {
-						return null;
-					}
-				}
-				else {
-					return path;
-				}
-			}
-		}
-
-		protected string ConvertClientPathToDebugger(string clientPath)
-		{
-			if (clientPath == null) {
-				return null;
-			}
-
-			if (_debuggerPathsAreURI) {
-				if (_clientPathsAreURI) {
-					return clientPath;
-				}
-				else {
-					var uri = new System.Uri(clientPath);
-					return uri.AbsoluteUri;
-				}
-			}
-			else {
-				if (_clientPathsAreURI) {
-					if (Uri.IsWellFormedUriString(clientPath, UriKind.Absolute)) {
-						Uri uri = new Uri(clientPath);
-						return uri.LocalPath;
-					}
-					Console.Error.WriteLine("path not well formed: '{0}'", clientPath);
-					return null;
-				}
-				else {
-					return clientPath;
-				}
-			}
-		}
 	}
 }
