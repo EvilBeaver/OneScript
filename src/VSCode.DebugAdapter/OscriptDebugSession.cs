@@ -125,7 +125,33 @@ namespace VSCode.DebugAdapter
 
         public override void Attach(Response response, dynamic arguments)
         {
-            throw new NotImplementedException();
+            SessionLog.WriteLine("Attach command received");
+            _process.DebugPort = getInt(arguments, "debugPort", 2801);
+            _process.ProcessExited += (s, e) =>
+            {
+                SessionLog.WriteLine("_process exited");
+                SendEvent(new TerminatedEvent());
+            };
+            
+            try
+            {
+                IDebuggerService service;
+                var tcpConnector = new TcpDebugConnector(_process.DebugPort, this);
+                tcpConnector.Connect();
+                SessionLog.WriteLine($"Connected to host on port {_process.DebugPort}");
+                service = tcpConnector;
+                
+                _process.SetConnection(service);
+                _process.InitAttached();
+            }
+            catch (Exception e)
+            {
+                SessionLog.WriteLine(e.ToString());
+                SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
+                return;
+            }
+            
+            SendResponse(response);
         }
 
         public override void Disconnect(Response response, dynamic arguments)
@@ -349,7 +375,7 @@ namespace VSCode.DebugAdapter
             var processThreads = _process.GetThreads();
             for (int i = 0; i < processThreads.Length; i++)
             {
-                threads.Add(new VSCodeDebug.Thread(processThreads[i], "Thread "+i));
+                threads.Add(new VSCodeDebug.Thread(processThreads[i], $"Thread {processThreads[i]}"));
             }
             
             SendResponse(response, new ThreadsResponseBody(threads));

@@ -36,7 +36,7 @@ namespace VSCode.DebugAdapter
         
         public string DebugProtocol { get; protected set; }
         
-        public bool HasExited => _process.HasExited;
+        public bool HasExited => _process?.HasExited ?? true;
         public int ExitCode => _process.ExitCode;
 
         private IDebuggerService DebugChannel { get; set; }
@@ -215,6 +215,14 @@ namespace VSCode.DebugAdapter
         public int[] GetThreads()
         {
             return _debugger.GetThreads();
+        }
+
+        public void InitAttached()
+        {
+            var pid = _debugger.GetProcessId();
+            _process = Process.GetProcessById(pid);
+            _process.EnableRaisingEvents = true;
+            _process.Exited += Process_Exited;
         }
     }
 }

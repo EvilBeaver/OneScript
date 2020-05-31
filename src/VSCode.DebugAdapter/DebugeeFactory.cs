@@ -6,8 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using VSCode.DebugAdapter.OscriptProtocols;
-using VSCodeDebug;
 
 namespace VSCode.DebugAdapter
 {

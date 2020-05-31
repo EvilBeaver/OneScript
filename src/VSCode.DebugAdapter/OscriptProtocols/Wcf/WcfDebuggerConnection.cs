@@ -83,5 +83,10 @@ namespace VSCode.DebugAdapter
         {
             return _serviceProxy.Instance.GetThreads();
         }
+        
+        public int GetProcessId()
+        {
+            return _serviceProxy.Instance.GetProcessId();
+        }
     }
 }
