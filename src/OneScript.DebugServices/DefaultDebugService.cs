@@ -189,6 +189,11 @@ namespace OneScript.DebugServices
             return _threadManager.GetAllThreadIds();
         }
         
+        public int GetProcessId()
+        {
+            return System.Diagnostics.Process.GetCurrentProcess().Id;
+        }
+        
         private Variable[] GetDebugVariables(IList<IVariable> machineVariables)
         {
             return machineVariables.Select(x => _visualizer.GetVariable(x))

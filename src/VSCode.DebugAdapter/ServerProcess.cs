@@ -10,7 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json.Linq;
 
-namespace VSCode.DebugAdapter.OscriptProtocols
+namespace VSCode.DebugAdapter
 {
     internal class ServerProcess : DebugeeProcess
     {
