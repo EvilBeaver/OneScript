@@ -62,12 +62,7 @@ namespace OneScript.DebugServices
                     .Select(x => x.Line)
                     .ToArray();
 
-                foreach (var machine in _threadManager.GetAllTokens().Select(x=>x.Machine))
-                {
-                    machine.SetDebugMode(_breakpointManager);
-                    _breakpointManager.SetLineStops(item.Key, lines);
-                }
-
+                _breakpointManager.SetLineStops(item.Key, lines);
                 foreach (var line in lines)
                 {
                     confirmedBreakpoints.Add(new Breakpoint()
@@ -79,6 +74,12 @@ namespace OneScript.DebugServices
 
             }
 
+            // Уведомить все потоки о новых точках остановки
+            foreach (var machine in _threadManager.GetAllTokens().Select(x=>x.Machine))
+            {
+                machine.SetDebugMode(_breakpointManager);
+            }
+            
             return confirmedBreakpoints.ToArray();
         }
 
