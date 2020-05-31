@@ -218,5 +218,20 @@
         <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." IgnoreExitCode="true"/>
 
     </Target>
+
+    <Target Name="PublishNuget">
+        <ItemGroup>
+            <NugetAbleProject Include="OneScript"/>
+            <NugetAbleProject Include="OneScript.StandardLibrary"/>
+            <NugetAbleProject Include="OneScript.Language"/>
+			<NugetAbleProject Include="OneScript.DebugServices"/>
+			<NugetAbleProject Include="OneScript.DebugProtocol"/>
+        </ItemGroup>
+        
+        <Error Text="No nuget token (/p:NugetToken=) specified" Condition="'$(NugetToken)' == ''" />
+        <Exec WorkingDirectory="$(MSBuildProjectDirectory)\built"
+            Command="dotnet nuget push %(NugetAbleProject.Identity).$(ReleaseNumber).nupkg -k $(NugetToken) -s https://api.nuget.org/v3/index.json"/>
+        
+    </Target>
     
 </Project>
