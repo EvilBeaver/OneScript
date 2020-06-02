@@ -94,6 +94,10 @@ namespace VSCodeDebug
 		public string name { get; }
 		public string path { get; }
 		public int sourceReference { get; }
+		
+		public string origin { get; set; }
+		
+		public string presentationHint { get; set; }
 
 		public Source(string name, string path, int sourceReference = 0) {
 			this.name = name;

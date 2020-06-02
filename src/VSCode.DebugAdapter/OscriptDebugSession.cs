@@ -311,7 +311,7 @@ namespace VSCode.DebugAdapter
                 frames[i] = new VSCodeDebug.StackFrame(
                     _framesHandles.Create(processFrames[i]),
                     processFrames[i].MethodName,
-                    new Source(processFrames[i].Source),
+                    processFrames[i].GetSource(),
                     processFrames[i].LineNumber, 0);
             }
 
