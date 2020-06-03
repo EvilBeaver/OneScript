@@ -12,7 +12,7 @@ using System.Text;
 
 namespace OneScript.DebugProtocol
 {
-    [DataContract]
+    [DataContract, Serializable]
     public class Variable
     {
         [DataMember]

@@ -72,5 +72,29 @@ namespace oscript
 
 			return 0;
 		}
+
+		public static AppBehavior Create(CmdLineHelper helper)
+		{
+			if (helper.Next() == null) 
+				return null;
+			
+			bool cgiMode = false;
+			var arg = helper.Current();
+			if (arg.ToLowerInvariant() == "-cgi")
+			{
+				cgiMode = true;
+				arg = helper.Next();
+			}
+            
+			var path = arg;
+			var env = helper.Next();
+			if (env != null && env.StartsWith("-env="))
+			{
+				env = env.Substring(5);
+			}
+            
+			return new CheckSyntaxBehavior(path, env, cgiMode);
+
+		}
 	}
 }

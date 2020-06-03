@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
-    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net452;netstandard2.0;netstandard2.1</TargetFrameworks>
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -28,6 +28,10 @@
   
   <ItemGroup>
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="CustomMarshalers" Condition="'$(TargetFramework)' == 'net452'" />
   </ItemGroup>
   
   <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">

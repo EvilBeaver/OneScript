@@ -16,10 +16,12 @@ namespace ScriptEngine.Machine.Contexts
     {
         protected static readonly DateTime MIN_OLE_DATE = new DateTime(100,1,1);
 
-        public COMWrapperContext()
+        protected object Instance;
+
+        protected COMWrapperContext(object instance)
             : base(TypeManager.GetTypeByFrameworkType(typeof(COMWrapperContext)))
         {
-
+            Instance = instance;
         }
 
         private static Type FindTypeByName(string typeName)
@@ -77,8 +79,8 @@ namespace ScriptEngine.Machine.Contexts
         private static COMWrapperContext InitByInstance(Type type, object instance)
         {
             if (TypeIsRuntimeCallableWrapper(type))
-            {
-                return new UnmanagedRCWComContext(instance);
+            {               
+                return new UnmanagedCOMWrapperContext(instance);
             }
             else if (IsObjectType(type) || IsAStruct(type))
             {
@@ -246,12 +248,9 @@ namespace ScriptEngine.Machine.Contexts
 
         #region ICollectionContext Members
 
-        public int Count()
-        {
-            throw new NotImplementedException();
-        }
+        public virtual int Count() => 0;
 
-        public void Clear()
+        public virtual void Clear()
         {
             throw new NotImplementedException();
         }
@@ -262,7 +261,8 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         public abstract IEnumerator<IValue> GetEnumerator();
-        public abstract object UnderlyingObject { get; }
+
+        public object UnderlyingObject => Instance;
 
         #region IEnumerable Members
 

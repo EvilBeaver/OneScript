@@ -16,6 +16,7 @@ using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
 {
+    [Obsolete]
     internal class WcfDebugController : DebugControllerBase
     {
         private readonly int _port;
@@ -26,30 +27,15 @@ namespace oscript.DebugServer
         {
             _port = listenerPort;
         }
-        
-        private ThreadStopReason ConvertStopReason(MachineStopReason reason)
-        {
-            switch(reason)
-            {
-                case MachineStopReason.Breakpoint:
-                    return ThreadStopReason.Breakpoint;
-                case MachineStopReason.Step:
-                    return ThreadStopReason.Step;
-                case MachineStopReason.Exception:
-                    return ThreadStopReason.Exception;
-                default:
-                    throw new NotImplementedException();
-            }
-        }
 
         public override void Init()
         {
             var serviceInstance = new WcfDebugService(this);
             var host = new ServiceHost(serviceInstance);
             var binding = (NetTcpBinding)Binder.GetBinding();
-            binding.MaxBufferPoolSize = 5000000;
-            binding.MaxBufferSize = 5000000;
-            binding.MaxReceivedMessageSize = 5000000;
+            binding.MaxBufferPoolSize = DebuggerSettings.MAX_BUFFER_SIZE;
+            binding.MaxBufferSize = DebuggerSettings.MAX_BUFFER_SIZE;
+            binding.MaxReceivedMessageSize = DebuggerSettings.MAX_BUFFER_SIZE;
             host.AddServiceEndpoint(typeof(IDebuggerService), binding, Binder.GetDebuggerUri(_port));
             _serviceHost = host;
             host.Open();
@@ -58,6 +44,7 @@ namespace oscript.DebugServer
 
         public override void NotifyProcessExit(int exitCode)
         {
+            base.NotifyProcessExit(exitCode);
             if (!CallbackChannelIsReady())
                 return; // нет подписчика
 

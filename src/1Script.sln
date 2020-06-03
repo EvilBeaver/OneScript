@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTests", "NUnitTests\NU
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Component", "Component\Component.csproj", "{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugServer", "DebugServer\DebugServer.csproj", "{C979F151-AA29-47E4-B020-3039BA0986D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSCode.DebugAdapter", "VSCode.DebugAdapter\VSCode.DebugAdapter.csproj", "{C979F151-AA29-47E4-B020-3039BA0986D9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.DebugProtocol", "OneScript.DebugProtocol\OneScript.DebugProtocol.csproj", "{727A498F-BF50-42F8-8523-40C0B5B1B233}"
 EndProject
@@ -56,6 +56,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScriptDocumenter", "OneScriptDocumenter\OneScriptDocumenter.csproj", "{76F2521D-44D7-48C9-A678-074E22B46092}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Core.Tests", "OneScript.Core.Tests\OneScript.Core.Tests.csproj", "{4FF7C82D-BFEF-415E-81FF-5C0337E99845}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.DebugServices", "OneScript.DebugServices\OneScript.DebugServices.csproj", "{600ACA55-4077-4D29-8C51-DBA93EB34609}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -205,6 +207,14 @@ Global
 		{4FF7C82D-BFEF-415E-81FF-5C0337E99845}.Release|x86.Build.0 = Release|Any CPU
 		{4FF7C82D-BFEF-415E-81FF-5C0337E99845}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FF7C82D-BFEF-415E-81FF-5C0337E99845}.Release|Any CPU.Build.0 = Release|Any CPU
+		{600ACA55-4077-4D29-8C51-DBA93EB34609}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{600ACA55-4077-4D29-8C51-DBA93EB34609}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{600ACA55-4077-4D29-8C51-DBA93EB34609}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{600ACA55-4077-4D29-8C51-DBA93EB34609}.Debug|x86.Build.0 = Debug|Any CPU
+		{600ACA55-4077-4D29-8C51-DBA93EB34609}.Release|x86.ActiveCfg = Release|Any CPU
+		{600ACA55-4077-4D29-8C51-DBA93EB34609}.Release|x86.Build.0 = Release|Any CPU
+		{600ACA55-4077-4D29-8C51-DBA93EB34609}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{600ACA55-4077-4D29-8C51-DBA93EB34609}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -212,6 +222,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{69A7869C-203C-4F09-AC3F-04E9B52AD7AB} = {91059C5B-526C-4B81-B106-99DEFF542D1F}
 		{4FF7C82D-BFEF-415E-81FF-5C0337E99845} = {91059C5B-526C-4B81-B106-99DEFF542D1F}
+		{93ACC849-E7E1-4695-B59D-54B3737E48A6} = {91059C5B-526C-4B81-B106-99DEFF542D1F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A4A871EF-C5A7-478F-907E-31C69A869973}

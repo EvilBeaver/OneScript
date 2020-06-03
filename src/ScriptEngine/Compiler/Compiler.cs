@@ -1334,7 +1334,7 @@ namespace ScriptEngine.Compiler
                     }
 
                     AddCommand(OperationCode.MakeBool);
-                    CorrectCommandArgument(logicalCmdIndex, _module.Code.Count);
+                    CorrectCommandArgument(logicalCmdIndex, _module.Code.Count - 1);
                 }
                 else
                 {

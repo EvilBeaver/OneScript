@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace oscript
 {
@@ -41,6 +42,26 @@ namespace oscript
         public string[] Tail()
         {
             return _args.Skip(_index+1).ToArray();
+        }
+
+        public CmdLineParam Parse(string param)
+        {
+            var paramValue = new CmdLineParam();
+            var equality = param.IndexOf('=');
+            if (equality == -1)
+            {
+                paramValue.Name = param;
+            }
+            else
+            {
+                paramValue.Name = param.Substring(0, equality);
+                if (param.Length > equality + 1)
+                    paramValue.Value = param.Substring(equality + 1);
+                else
+                    paramValue.Value = string.Empty;
+            }
+
+            return paramValue;
         }
     }
 }

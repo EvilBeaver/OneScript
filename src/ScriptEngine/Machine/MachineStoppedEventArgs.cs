@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Threading;
 
 namespace ScriptEngine.Machine
 {
@@ -14,9 +15,18 @@ namespace ScriptEngine.Machine
         public MachineStoppedEventArgs(MachineStopReason reason)
         {
             Reason = reason;
+            ThreadId = Thread.CurrentThread.ManagedThreadId;
+        }
+        
+        public MachineStoppedEventArgs(MachineStopReason reason, int threadId)
+        {
+            Reason = reason;
+            ThreadId = threadId;
         }
         
         public MachineStopReason Reason { get; }
+        
+        public int ThreadId { get; }
 
     }
 
