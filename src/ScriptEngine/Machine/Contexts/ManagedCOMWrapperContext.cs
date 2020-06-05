@@ -12,19 +12,28 @@ using System.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    class ManagedCOMWrapperContext : COMWrapperContext
+    public class ManagedCOMWrapperContext : COMWrapperContext
     {
         private readonly Type _instanceType;
-        private readonly object _instance;
         private bool? _isIndexed;
 
         private readonly ComReflectionNameToIdMapper _nameMapper;
 
-        public ManagedCOMWrapperContext(object instance)
+        public ManagedCOMWrapperContext(object instance) : base(instance)
         {
             _instanceType = instance.GetType();
-            _instance = instance;
             _nameMapper = new ComReflectionNameToIdMapper(_instanceType);
+        }
+
+        public override int GetPropCount()
+        {
+            return _nameMapper.GetProperties().Count;
+        }
+
+        public override string GetPropName(int propNum)
+        {
+            var prop = _nameMapper.GetProperty(propNum);
+            return prop.Name;
         }
 
         public override bool IsIndexed
@@ -50,7 +59,7 @@ namespace ScriptEngine.Machine.Contexts
                 comEnumerator = (System.Collections.IEnumerator)_instanceType.InvokeMember("GetEnumerator",
                                         BindingFlags.InvokeMethod,
                                         null,
-                                        _instance,
+                                        Instance,
                                         new object[0]);
             }
             catch (MissingMethodException)
@@ -62,11 +71,6 @@ namespace ScriptEngine.Machine.Contexts
             {
                 yield return CreateIValue(comEnumerator.Current);
             }
-        }
-
-        public override object UnderlyingObject
-        {
-            get { return _instance; }
         }
 
         public override int FindProperty(string name)
@@ -89,7 +93,7 @@ namespace ScriptEngine.Machine.Contexts
         public override IValue GetPropValue(int propNum)
         {
             var pi = _nameMapper.GetProperty(propNum);
-            var result = pi.GetGetMethod().Invoke(_instance, null);
+            var result = pi.GetGetMethod().Invoke(Instance, null);
             return CreateIValue(result);
         }
 
@@ -98,7 +102,7 @@ namespace ScriptEngine.Machine.Contexts
             var pi = _nameMapper.GetProperty(propNum);
             
             var setMethod = pi.GetSetMethod();
-            setMethod.Invoke(_instance, MarshalArgumentsStrict(new[] { newVal }, new[] { pi.PropertyType }));
+            setMethod.Invoke(Instance, MarshalArgumentsStrict(new[] { newVal }, new[] { pi.PropertyType }));
         }
 
         public override IValue GetIndexedValue(IValue index)
@@ -111,7 +115,7 @@ namespace ScriptEngine.Machine.Contexts
             if (member == null) // set only?
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
 
-            object retValue = member.Invoke(_instance, MarshalArgumentsStrict(new[] { index }, GetMethodParametersTypes(member)));
+            object retValue = member.Invoke(Instance, MarshalArgumentsStrict(new[] { index }, GetMethodParametersTypes(member)));
 
             return CreateIValue(retValue);
 
@@ -127,13 +131,13 @@ namespace ScriptEngine.Machine.Contexts
             if (member == null) // get only?
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
 
-            object retValue = member.Invoke(_instance, MarshalArgumentsStrict(new[] { index, value }, GetMethodParametersTypes(member)));
+            object retValue = member.Invoke(Instance, MarshalArgumentsStrict(new[] { index, value }, GetMethodParametersTypes(member)));
 
         }
 
         public override int FindMethod(string name)
         {
-            return _nameMapper.FindMethod(_instance, name);
+            return _nameMapper.FindMethod(Instance, name);
         }
 
         public override MethodInfo GetMethodInfo(int methodNumber)

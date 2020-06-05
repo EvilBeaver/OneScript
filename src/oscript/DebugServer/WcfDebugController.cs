@@ -16,6 +16,7 @@ using ScriptEngine.Machine;
 
 namespace oscript.DebugServer
 {
+    [Obsolete]
     internal class WcfDebugController : DebugControllerBase
     {
         private readonly int _port;
@@ -25,21 +26,6 @@ namespace oscript.DebugServer
         public WcfDebugController(int listenerPort)
         {
             _port = listenerPort;
-        }
-        
-        private ThreadStopReason ConvertStopReason(MachineStopReason reason)
-        {
-            switch(reason)
-            {
-                case MachineStopReason.Breakpoint:
-                    return ThreadStopReason.Breakpoint;
-                case MachineStopReason.Step:
-                    return ThreadStopReason.Step;
-                case MachineStopReason.Exception:
-                    return ThreadStopReason.Exception;
-                default:
-                    throw new NotImplementedException();
-            }
         }
 
         public override void Init()
@@ -58,6 +44,7 @@ namespace oscript.DebugServer
 
         public override void NotifyProcessExit(int exitCode)
         {
+            base.NotifyProcessExit(exitCode);
             if (!CallbackChannelIsReady())
                 return; // нет подписчика
 

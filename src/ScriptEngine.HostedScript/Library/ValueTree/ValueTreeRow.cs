@@ -15,7 +15,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
     /// Строка дерева значений.
     /// </summary>
     [ContextClass("СтрокаДереваЗначений", "ValueTreeRow")]
-    public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>
+    public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>, IDebugPresentationAcceptor
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTreeRow _parent;
@@ -33,7 +33,7 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public int Count()
         {
-            return _owner.Columns.Count();
+            return _properties.Count + _owner.Columns.Count();
         }
 
         [ContextProperty("Родитель", "Parent")]
@@ -157,19 +157,23 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public override string GetPropName(int propNum)
         {
-            return Owner().Columns.GetPropName(propNum);
+            if (IsOwnProp(propNum))
+                return _properties.GetProperty(propNum).Name;
+            return Owner().Columns.GetPropName(GetColumnIndex(propNum));
         }
 
         public override int FindProperty(string name)
         {
-            var column = Owner().Columns.FindColumnByName(name);
-
-            if (column == null)
-            {
+            if(_properties.ContainsProperty(name))
                 return _properties.FindProperty(name);
-            }
 
-            return column.ID;
+            var cols = Owner().Columns;
+            var column = cols.FindColumnByName(name);
+            
+            if(column == null)
+                throw RuntimeException.PropNotFoundException(name);
+
+            return GetColumnPropIndex(cols.IndexOf(column));
         }
 
         public override bool IsPropReadable(int propNum)
@@ -179,32 +183,30 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
 
         public override bool IsPropWritable(int propNum)
         {
-            return true;
+            return !IsOwnProp(propNum);
         }
 
         public override IValue GetPropValue(int propNum)
         {
-            var column = Owner().Columns.FindColumnById(propNum);
-            if (column == null)
+            if (IsOwnProp(propNum))
             {
                 var property = _properties.GetProperty(propNum);
                 return property.Getter(this);
             }
+            var column = Owner().Columns.FindColumnByIndex(GetColumnIndex(propNum));
             return TryValue(column);
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
         {
-            var column = Owner().Columns.FindColumnById(propNum);
-            if (column == null)
+            if (IsOwnProp(propNum))
             {
                 var property = _properties.GetProperty(propNum);
                 property.Setter(this, newVal);
+                return;
             }
-            else
-            {
-                _data[column] = column.ValueType.AdjustValue(newVal);
-            }
+            var column = Owner().Columns.FindColumnByIndex(GetColumnIndex(propNum));
+            _data[column] = column.ValueType.AdjustValue(newVal);
         }
 
         private ValueTreeColumn GetColumnByIIndex(IValue index)
@@ -224,6 +226,20 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
             _data[GetColumnByIIndex(index)] = column.ValueType.AdjustValue(val);
         }
 
+        private static bool IsOwnProp(int propNum)
+        {
+            return _properties.Count - 1 >= propNum;
+        }
+
+        private static int GetColumnPropIndex(int index)
+        {
+            return _properties.Count + index;
+        }
+
+        private static int GetColumnIndex(int propIndex)
+        {
+            return propIndex - _properties.Count;
+        }
 
         private static readonly ContextMethodsMapper<ValueTreeRow> _methods = new ContextMethodsMapper<ValueTreeRow>();
 
@@ -261,6 +277,11 @@ namespace ScriptEngine.HostedScript.Library.ValueTree
         public override int FindMethod(string name)
         {
             return _methods.FindMethod(name);
+        }
+        
+        void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowProperties(this);
         }
         
     }

@@ -91,7 +91,7 @@
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(BinaryFiles.Dest)"/>
 
         <PropertyGroup>
-            <DebugSrc>$(MSBuildProjectDirectory)/src/DebugServer/bin/$(Configuration)/net452</DebugSrc>
+            <DebugSrc>$(MSBuildProjectDirectory)/src/VSCode.DebugAdapter/bin/$(Configuration)/net452</DebugSrc>
         </PropertyGroup>
         <ItemGroup>
             <DbgBinFiles Include="$(DebugSrc)/*.dll"/>
@@ -113,7 +113,7 @@
     <Target Name="GatherLibrary" DependsOnTargets="Make;GatherBinaries">
         
         <MakeDir Directories="$(LibFolder)" />
-        <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.16.1.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
+        <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.16.2.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
         <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
         <DeleteTree Directories="$(LibFolder)\tmp"/>
@@ -183,6 +183,8 @@
             <NugetAbleProject Include="ScriptEngine"/>
             <NugetAbleProject Include="ScriptEngine.HostedScript"/>
             <NugetAbleProject Include="OneScript.Language"/>
+			<NugetAbleProject Include="OneScript.DebugServices"/>
+			<NugetAbleProject Include="OneScript.DebugProtocol"/>
         </ItemGroup>
         
         <MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot);ReleaseNumber=$(ReleaseNumber)"/>
@@ -215,6 +217,21 @@
 
         <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." IgnoreExitCode="true"/>
 
+    </Target>
+
+    <Target Name="PublishNuget">
+        <ItemGroup>
+            <NugetAbleProject Include="OneScript"/>
+            <NugetAbleProject Include="OneScript.StandardLibrary"/>
+            <NugetAbleProject Include="OneScript.Language"/>
+			<NugetAbleProject Include="OneScript.DebugServices"/>
+			<NugetAbleProject Include="OneScript.DebugProtocol"/>
+        </ItemGroup>
+        
+        <Error Text="No nuget token (/p:NugetToken=) specified" Condition="'$(NugetToken)' == ''" />
+        <Exec WorkingDirectory="$(MSBuildProjectDirectory)\built"
+            Command="dotnet nuget push %(NugetAbleProject.Identity).$(ReleaseNumber).nupkg -k $(NugetToken) -s https://api.nuget.org/v3/index.json"/>
+        
     </Target>
     
 </Project>

@@ -130,11 +130,11 @@ namespace ScriptEngine.Machine
                     if (string.Compare(presentation, "null", StringComparison.OrdinalIgnoreCase) == 0)
                         result = ValueFactory.CreateNullValue();
                     else
-                        throw new NotImplementedException("constant type is not supported");
+                        throw new NotSupportedException("constant type is not supported");
 
                     break;
                 default:
-                    throw new NotImplementedException("constant type is not supported");
+                    throw new NotSupportedException("constant type is not supported");
             }
 
             return result;

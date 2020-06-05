@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class UserScriptContextInstance : ScriptDrivenObject
+    public class UserScriptContextInstance : ScriptDrivenObject, IDebugPresentationAcceptor
     {
         readonly LoadedModule _module;
         Dictionary<string, int> _ownPropertyIndexes;
@@ -251,6 +251,15 @@ namespace ScriptEngine.Machine.Contexts
         public override string AsString()
         {
             return _asStringOverride();
+        }
+
+        void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
+        {
+            var propVariables = this.GetProperties()
+                .Where(x => x.Identifier != "ЭтотОбъект")
+                .Select(x => Variable.Create(GetPropValue(x.Index), x.Identifier));
+            
+            visitor.ShowCustom(propVariables.ToList());
         }
     }
 }

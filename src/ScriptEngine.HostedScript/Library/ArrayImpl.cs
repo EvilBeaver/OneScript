@@ -50,16 +50,6 @@ namespace ScriptEngine.HostedScript.Library
                 base.SetIndexedValue(index, val);
         }
 
-        public override bool IsPropReadable(int propNum)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool IsPropWritable(int propNum)
-        {
-            throw new NotImplementedException();
-        }
-
         #region ICollectionContext Members
         
         [ContextMethod("Количество", "Count")]
@@ -103,13 +93,16 @@ namespace ScriptEngine.HostedScript.Library
         #endregion
 
         [ContextMethod("Добавить", "Add")]
-        public void Add(IValue value)
+        public void Add(IValue value = null)
         {
-            _values.Add(value);
+            if (value == null)
+                _values.Add(ValueFactory.Create());
+            else 
+                _values.Add(value);
         }
 
         [ContextMethod("Вставить", "Insert")]
-        public void Insert(int index, IValue value)
+        public void Insert(int index, IValue value = null)
         {
             if (index < 0)
                 throw IndexOutOfBoundsException();
@@ -117,7 +110,10 @@ namespace ScriptEngine.HostedScript.Library
             if (index > _values.Count)
                 Extend(index - _values.Count);
 
-            _values.Insert(index, value);
+            if (value == null)
+                _values.Insert(index, ValueFactory.Create());
+            else
+                _values.Insert(index, value);
         }
 
         [ContextMethod("Найти", "Find")]

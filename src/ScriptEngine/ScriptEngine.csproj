@@ -30,6 +30,10 @@
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
   </ItemGroup>
   
+  <ItemGroup>
+    <Reference Include="CustomMarshalers" Condition="'$(TargetFramework)' == 'net452'" />
+  </ItemGroup>
+  
   <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
     <Message Text="Copying StandaloneRunner resources" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />

@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Linq;
 
 namespace ScriptEngine.Machine
@@ -29,40 +30,22 @@ namespace ScriptEngine.Machine
         }
 
         private DebugState _currentState = DebugState.Running;
-        private readonly Breakpoints _breakpoints = new Breakpoints();
+        private readonly IBreakpointManager _breakpoints;
         private readonly MachineInstance _machine;
         private ExecutionFrame[] _stopFrames;
 
         private StopPoint _lastStopPoint;
-
-        public Breakpoints Breakpoints => _breakpoints;
         
+        public MachineStopManager(MachineInstance runner, IBreakpointManager breakpoints)
+        {
+            _machine = runner ?? throw new ArgumentNullException(nameof(runner));
+            _breakpoints = breakpoints ?? throw new ArgumentNullException(nameof(runner));
+        }
+        
+        public IBreakpointManager Breakpoints => _breakpoints;
         public MachineStopReason LastStopReason { get; internal set; }
-
         public DebugState CurrentState => _currentState;
 
-        public int SetBreakpoint(string module, int line)
-        {
-            return _breakpoints.SetBreakpoint(module, line);
-        }
-
-        internal int RemoveBreakpoint(string source, int line)
-        {
-            var id = _breakpoints.FindIndex(source, line);
-            if(id > 0)
-            {
-                _breakpoints.RemoveBreakpoint(id);
-            }
-
-            return id;
-
-        }
-
-        public MachineStopManager(MachineInstance runner)
-        {
-            _machine = runner;
-        }
-        
         public bool ShouldStopAtThisLine(string module, ExecutionFrame currentFrame)
         {
             bool mustStop = false;
@@ -121,11 +104,6 @@ namespace ScriptEngine.Machine
         private bool FrameIsInStopList(ExecutionFrame currentFrame)
         {
             return _stopFrames != null && _stopFrames.Contains(currentFrame);
-        }
-
-        public void ClearBreakpoints()
-        {
-            _breakpoints.Clear();
         }
 
         public void StepOver(ExecutionFrame currentFrame)
