@@ -1,15 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net452</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <Platforms>AnyCPU;x86</Platforms>
     <Configurations>Debug;Release</Configurations>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>StandaloneRunner.Program</StartupObject>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType></DebugType>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\oscript\ConsoleHostImpl.cs">
