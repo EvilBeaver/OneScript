@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Threading;
 using OneScript.DebugServices;
-using oscript.DebugServer;
 using ScriptEngine;
 using ScriptEngine.Machine;
 
@@ -26,24 +25,13 @@ namespace oscript
             _port = port;
         }
 
-        public DebugProtocolType ProtocolType { get; set; }
-        
         public override int Execute()
         {
             var executor = new ExecuteScriptBehavior(_path, _args);
             SystemLogger.SetWriter(executor);
-            switch (ProtocolType)
-            {
-                case DebugProtocolType.Wcf:
-                    executor.DebugController = new WcfDebugController(_port);
-                    break;
-                case DebugProtocolType.Tcp:
-                default:
-                    var tcpDebugServer = new BinaryTcpDebugServer(_port);
+            var tcpDebugServer = new BinaryTcpDebugServer(_port);
                     executor.DebugController = tcpDebugServer.CreateDebugController();
-                    break;
-            }
-
+            
             return executor.Execute();
         }
 
@@ -51,8 +39,7 @@ namespace oscript
         {
             int port = 2801;
             string path = null;
-            DebugProtocolType protocolType = DebugProtocolType.Tcp;
-
+            
             while (true)
             {
                 var arg = helper.Next();
@@ -76,12 +63,7 @@ namespace oscript
                 }
                 else if (parsedArg.Name == "-protocol")
                 {
-                    var proto = parsedArg.Value;
-                    if (string.IsNullOrEmpty(proto) || !Enum.TryParse(proto, true, out protocolType))
-                    {
-                        Output.WriteLine("Unknown protocol. Using default");
-                        protocolType = DebugProtocolType.Tcp;
-                    }
+                    continue;
                 }
                 else
                 {
@@ -90,10 +72,7 @@ namespace oscript
                 }
             }
 
-            return path == null ? null : new DebugBehavior(port, path, helper.Tail())
-            {
-                ProtocolType = protocolType
-            };
+            return path == null ? null : new DebugBehavior(port, path, helper.Tail());
         }
     }
 }
