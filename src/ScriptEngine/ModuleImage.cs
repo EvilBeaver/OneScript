@@ -46,6 +46,7 @@ namespace ScriptEngine
         public MethodInfo Signature;
         public VariablesFrame Variables;
         public int EntryPoint;
+        public bool IsAsync;
     }
 
     [Serializable]

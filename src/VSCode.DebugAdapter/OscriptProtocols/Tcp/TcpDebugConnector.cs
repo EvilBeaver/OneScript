@@ -161,5 +161,11 @@ namespace VSCode.DebugAdapter
             WriteCommand(null);
             return GetResponse<int[]>();
         }
+
+        public int GetProcessId()
+        {
+            WriteCommand(null);
+            return GetResponse<int>();
+        }
     }
 }

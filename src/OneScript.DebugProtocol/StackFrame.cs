@@ -74,13 +74,13 @@ namespace OneScript.DebugProtocol
         {
             if (Variables != null)
                 return;
-            var variables = process.GetVariables(1, Index, new int[0]);
+            var variables = process.GetVariables(ThreadId, Index, new int[0]);
             Variables = variables;
         }
 
         public IVariableLocator CreateChildLocator(int variableIndex)
         {
-            return new VariableLocator(Index, variableIndex);
+            return new VariableLocator(ThreadId, Index, variableIndex);
         }
     }
 }

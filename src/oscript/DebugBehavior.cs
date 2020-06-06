@@ -80,6 +80,7 @@ namespace oscript
                     if (string.IsNullOrEmpty(proto) || !Enum.TryParse(proto, true, out protocolType))
                     {
                         Output.WriteLine("Unknown protocol. Using default");
+                        protocolType = DebugProtocolType.Tcp;
                     }
                 }
                 else

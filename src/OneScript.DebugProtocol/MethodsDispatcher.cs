@@ -63,7 +63,7 @@ namespace OneScript.DebugProtocol
             }
             else
             {
-                body = call;
+                body = Expression.Convert(call, typeof(object));
             }
 
 

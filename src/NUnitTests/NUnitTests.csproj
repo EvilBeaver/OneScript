@@ -75,6 +75,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AsyncExecution.cs" />
     <Compile Include="CompilerTests.cs" />
     <Compile Include="ContextTests.cs" />
     <Compile Include="DebugVariablesTest.cs" />

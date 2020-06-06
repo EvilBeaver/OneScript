@@ -5,9 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.ServiceModel;
 using OneScript.DebugProtocol;
 using OneScript.Language;
@@ -95,6 +92,11 @@ namespace oscript.DebugServer
         public int[] GetThreads()
         {
             return _debugServiceImpl.GetThreads();
+        }
+
+        public int GetProcessId()
+        {
+            return System.Diagnostics.Process.GetCurrentProcess().Id;
         }
 
         #endregion

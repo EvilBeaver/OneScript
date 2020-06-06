@@ -188,7 +188,12 @@ namespace oscript.DebugServer
         {
             return Controller.GetAllThreadIds();
         }
-        
+
+        public int GetProcessId()
+        {
+            return System.Diagnostics.Process.GetCurrentProcess().Id;
+        }
+
         private Variable[] GetDebugVariables(IList<IVariable> machineVariables)
         {
             var result = new Variable[machineVariables.Count];

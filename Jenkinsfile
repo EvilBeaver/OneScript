@@ -260,6 +260,17 @@ pipeline {
             }
         }
 
+        stage ('Publishing artifacts to clouds'){
+            when { branch 'master' }
+            agent { label 'windows' }
+
+            steps{
+                unstash 'winDist'
+                withCredentials([string(credentialsId: 'NuGetToken', variable: 'NUGET_TOKEN')]) {
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PublishNuget /p:NugetToken=$NUGET_TOKEN"
+                }
+            }
+        }
     }
     
 }

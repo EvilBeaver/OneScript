@@ -104,5 +104,10 @@ namespace OneScript.DebugProtocol
         [OperationContract]
 #endif
         int[] GetThreads();
+        
+#if NETFRAMEWORK
+        [OperationContract]
+#endif
+        int GetProcessId();
     }
 }
