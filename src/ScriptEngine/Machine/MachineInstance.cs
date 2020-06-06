@@ -97,7 +97,7 @@ namespace ScriptEngine.Machine
             _operationStack = state.OperationStack;
             _callStack = state.CallStack;
             _exceptionsStack = state.ExceptionsStack;
-            _stopManager = _stopManager;
+            _stopManager = state.StopManager;
             _codeStatCollector = state.CodeStatCollector;
             
             SetFrame(_callStack.Peek());
