@@ -13,13 +13,16 @@ namespace OneScript.Language.LexicalAnalysis
         {
             bool isEndOfText = false;
             char cs = '\0';
+            int start = iterator.Position;
             int currentLine = iterator.CurrentLine;
+            int currentColumn = iterator.CurrentColumn;
             while (true)
             {
                 if (!isEndOfText)
                 {
                     cs = iterator.CurrentSymbol;
                 }
+                
                 if (SpecialChars.IsDelimiter(cs) || isEndOfText)
                 {
                     var content = iterator.GetContents();
@@ -33,7 +36,7 @@ namespace OneScript.Language.LexicalAnalysis
                             Type = LexemType.Operator,
                             Token = LanguageDef.GetToken(content),
                             Content = content,
-                            LineNumber = currentLine
+                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
                         };
                     }
                     else if (LanguageDef.IsBooleanLiteralString(content))
@@ -42,7 +45,7 @@ namespace OneScript.Language.LexicalAnalysis
                         {
                             Type = LexemType.BooleanLiteral,
                             Content = content,
-                            LineNumber = currentLine
+                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
                         };
                     }
                     else if (LanguageDef.IsUndefinedString(content))
@@ -51,7 +54,7 @@ namespace OneScript.Language.LexicalAnalysis
                         {
                             Type = LexemType.UndefinedLiteral,
                             Content = content,
-                            LineNumber = currentLine
+                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
                         };
 
                     }
@@ -61,7 +64,7 @@ namespace OneScript.Language.LexicalAnalysis
                         {
                             Type = LexemType.NullLiteral,
                             Content = content,
-                            LineNumber = currentLine
+                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
                         };
 
                     }
@@ -72,7 +75,7 @@ namespace OneScript.Language.LexicalAnalysis
                             Type = LexemType.Identifier,
                             Content = content,
                             Token = LanguageDef.GetToken(content),
-                            LineNumber = currentLine
+                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
                         };
 
                         if (LanguageDef.IsBuiltInFunction(lex.Token))

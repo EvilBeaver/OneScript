@@ -14,7 +14,9 @@ namespace OneScript.Language.LexicalAnalysis
         public LexemType Type;
         public string Content;
         public Token Token;
-        public int LineNumber;
+        public CodeRange Location { get; set; }
+        
+        public int LineNumber => Location.LineNumber;
 
         public static Lexem Empty()
         {
