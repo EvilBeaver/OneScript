@@ -15,7 +15,6 @@ using OneScript.StandardLibrary.Http;
 using OneScript.StandardLibrary.Net;
 using OneScript.StandardLibrary.Processes;
 using OneScript.StandardLibrary.Text;
-using OneScript.StandardLibrary.TypeDescription;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.Zip;
 using ScriptEngine.HostedScript.Library;

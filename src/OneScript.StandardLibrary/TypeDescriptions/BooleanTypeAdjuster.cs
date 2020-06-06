@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Machine;
 
-namespace OneScript.StandardLibrary.TypeDescription
+namespace OneScript.StandardLibrary.TypeDescriptions
 {
 	public sealed class BooleanTypeAdjuster : IValueAdjuster
 	{

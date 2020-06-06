@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -18,7 +19,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
     {
         private string _title;
         private string _name;
-        private TypeDescription.TypeDescription _valueType;
+        private TypeDescription _valueType;
         private int _width;
         private readonly ValueTreeColumnCollection _owner;
 
@@ -66,7 +67,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         }
 
         [ContextProperty("ТипЗначения", "ValueType")]
-        public TypeDescription.TypeDescription ValueType
+        public TypeDescription ValueType
         {
             get { return _valueType; }
         }

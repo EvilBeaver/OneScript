@@ -11,7 +11,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
 
-namespace OneScript.StandardLibrary.TypeDescription
+namespace OneScript.StandardLibrary.TypeDescriptions
 {
 	[ContextClass("ОписаниеТипов", "TypeDescription")]
 	public class TypeDescription : AutoContext<TypeDescription>

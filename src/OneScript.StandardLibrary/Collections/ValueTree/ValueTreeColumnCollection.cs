@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -34,7 +35,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// <param name="width">Число. Ширина колонки. Необязательный параметр.</param>
         /// <returns>КолонкаДереваЗначений. Добавленная колонка.</returns>
         [ContextMethod("Добавить", "Add")]
-        public ValueTreeColumn Add(string name, TypeDescription.TypeDescription type = null, string title = null, int width = 0)
+        public ValueTreeColumn Add(string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);
@@ -55,7 +56,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// <param name="width">Число. Ширина колонки. Необязательный параметр.</param>
         /// <returns>КолонкаДереваЗначений. Добавленная колонка.</returns>
         [ContextMethod("Вставить", "Insert")]
-        public ValueTreeColumn Insert(int index, string name, TypeDescription.TypeDescription type = null, string title = null, int width = 0)
+        public ValueTreeColumn Insert(int index, string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);

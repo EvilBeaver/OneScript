@@ -5,17 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using ScriptEngine.Machine;
 
-namespace OneScript.StandardLibrary.TypeDescription
+namespace OneScript.StandardLibrary.TypeDescriptions
 {
-	[EnumerationType("ДопустимыйЗнак", "AllowedSign")]
-	public enum AllowedSignEnum
+	public interface IValueAdjuster
 	{
-		[EnumItem("Любой", "Any")]
-		Any,
-
-		[EnumItem("Неотрицательный", "Nonnegative")]
-		Nonnegative
+		IValue Adjust(IValue value);
 	}
 }

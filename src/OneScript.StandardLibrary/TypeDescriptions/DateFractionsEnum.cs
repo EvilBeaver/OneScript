@@ -7,15 +7,18 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine;
 
-namespace OneScript.StandardLibrary.TypeDescription
+namespace OneScript.StandardLibrary.TypeDescriptions
 {
-	[EnumerationType("ДопустимаяДлина", "AllowedLength")]
-	public enum AllowedLengthEnum
+	[EnumerationType("ЧастиДаты", "DateFractions")]
+	public enum DateFractionsEnum
 	{
-		[EnumItem("Переменная", "Variable")]
-		Variable,
+		[EnumItem("Дата", "Date")]
+		Date,
 
-		[EnumItem("Фиксированная", "Fixed")]
-		Fixed
+		[EnumItem("ДатаВремя", "DateTime")]
+		DateTime,
+
+		[EnumItem("Время", "Time")]
+		Time
 	}
 }

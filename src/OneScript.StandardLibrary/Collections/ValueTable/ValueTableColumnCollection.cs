@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -39,7 +40,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// <param name="width">Число - Ширина колонки</param>
         /// <returns>КолонкаТаблицыЗначений</returns>
         [ContextMethod("Добавить", "Add")]
-        public ValueTableColumn Add(string name, TypeDescription.TypeDescription type = null, string title = null, int width = 0)
+        public ValueTableColumn Add(string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);
@@ -60,7 +61,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// <param name="width">Число - Ширина колонки</param>
         /// <returns>КолонкаТаблицыЗначений</returns>
         [ContextMethod("Вставить", "Insert")]
-        public ValueTableColumn Insert(int index, string name, TypeDescription.TypeDescription type = null, string title = null, int width = 0)
+        public ValueTableColumn Insert(int index, string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);

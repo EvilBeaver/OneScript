@@ -9,7 +9,7 @@ using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace OneScript.StandardLibrary.TypeDescription
+namespace OneScript.StandardLibrary.TypeDescriptions
 {
 	[ContextClass("КвалификаторыДаты", "DateQualifiers")]
 	public sealed class DateQualifiers : AutoContext<DateQualifiers>, IValueAdjuster

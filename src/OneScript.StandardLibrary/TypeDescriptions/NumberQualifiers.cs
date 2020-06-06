@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace OneScript.StandardLibrary.TypeDescription
+namespace OneScript.StandardLibrary.TypeDescriptions
 {
 	[ContextClass("КвалификаторыЧисла", "NumberQualifiers")]
 	public sealed class NumberQualifiers : AutoContext<NumberQualifiers>, IValueAdjuster

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTable;
+using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Reflection;
@@ -315,12 +316,12 @@ namespace OneScript.StandardLibrary
 
         private static void FillMethodsTable(ValueTable result, IEnumerable<MethodInfo> methods)
         {
-            var nameColumn = result.Columns.Add("Имя", TypeDescription.TypeDescription.StringType(), "Имя");
-            var countColumn = result.Columns.Add("КоличествоПараметров", TypeDescription.TypeDescription.IntegerType(), "Количество параметров");
-            var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.TypeDescription.BooleanType(), "Это функция");
-            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription.TypeDescription(), "Аннотации");
-            var paramsColumn = result.Columns.Add("Параметры", new TypeDescription.TypeDescription(), "Параметры");
-            var isExportlColumn = result.Columns.Add("Экспорт", new TypeDescription.TypeDescription(), "Экспорт");
+            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
+            var countColumn = result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
+            var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
+            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
+            var paramsColumn = result.Columns.Add("Параметры", new TypeDescription(), "Параметры");
+            var isExportlColumn = result.Columns.Add("Экспорт", new TypeDescription(), "Экспорт");
 
             foreach (var methInfo in methods)
             {
@@ -334,10 +335,10 @@ namespace OneScript.StandardLibrary
                 new_row.Set(annotationsColumn, methInfo.AnnotationsCount != 0 ? CreateAnnotationTable(methInfo.Annotations) : EmptyAnnotationsTable());
 
                 var paramTable = new ValueTable();
-                var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.TypeDescription.StringType(), "Имя");
-                var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.TypeDescription.BooleanType(), "По значению");
-                var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.TypeDescription.BooleanType(), "Есть значение по-умолчанию");
-                var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription.TypeDescription(), "Аннотации");
+                var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
+                var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
+                var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.BooleanType(), "Есть значение по-умолчанию");
+                var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
                 
                 new_row.Set(paramsColumn, paramTable);
 
@@ -416,8 +417,8 @@ namespace OneScript.StandardLibrary
 
         private static void FillPropertiesTable(ValueTable result, IEnumerable<VariableInfo> properties)
         {
-            var nameColumn = result.Columns.Add("Имя", TypeDescription.TypeDescription.StringType(), "Имя");
-            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription.TypeDescription(), "Аннотации");
+            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
+            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
             var systemVarNames = new string[] { "этотобъект", "thisobject" };
 
             foreach (var propInfo in properties)

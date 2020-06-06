@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -19,15 +20,15 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     {
         private string _title;
         private string _name;
-        private TypeDescription.TypeDescription _valueType;
+        private TypeDescription _valueType;
         private int _width;
         private readonly WeakReference _owner;
 
-        public ValueTableColumn(ValueTableColumnCollection Owner, string Name, string Title, TypeDescription.TypeDescription Type, int Width)
+        public ValueTableColumn(ValueTableColumnCollection Owner, string Name, string Title, TypeDescription Type, int Width)
         {
             _name = Name;
             _title = Title;
-            _valueType = Type ?? new TypeDescription.TypeDescription();
+            _valueType = Type ?? new TypeDescription();
             _width = Width;
 
             _owner = new WeakReference(Owner);
@@ -70,7 +71,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// </summary>
         /// <value>ОписаниеТипа</value>
         [ContextProperty("ТипЗначения", "ValueType")]
-        public TypeDescription.TypeDescription ValueType
+        public TypeDescription ValueType
         {
             get { return _valueType; }
         }
