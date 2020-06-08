@@ -152,10 +152,25 @@ pipeline {
                     }
                 }
 
+                stage('Prepare Linux Environment'){
+                    agent{ label 'master'}
+                    steps{
+                        dir('install'){
+                            sh 'chmod +x make-dockers.sh && ./make-dockers.sh'
+                        }
+                        withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerpassword', usernameVariable: 'dockeruser')]) {
+                            sh """
+                            docker login -p $dockerpassword -u $dockeruser
+                            docker push oscript/onescript-builder:deb'
+                            docker push oscript/onescript-builder:rpm""".stripIndent()
+                        }
+                    }
+                }
+
                 stage('DEB distribution') {
                     agent { 
-                        dockerfile {
-                            dir 'install/builders/deb'
+                        docker {
+                            image 'oscript/onescript-builder:deb'
                             label 'master' 
                         }
                     }
@@ -171,7 +186,7 @@ pipeline {
                 stage('RPM distribution') {
                     agent { 
                         dockerfile {
-                            dir 'install/builders/rpm'
+                            dir 'oscript/onescript-builder:rpm'
                             label 'master' 
                         }
                     }
