@@ -161,8 +161,9 @@ pipeline {
                         withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerpassword', usernameVariable: 'dockeruser')]) {
                             sh """
                             docker login -p $dockerpassword -u $dockeruser
-                            docker push oscript/onescript-builder:deb'
-                            docker push oscript/onescript-builder:rpm""".stripIndent()
+                            docker push oscript/onescript-builder:deb
+                            docker push oscript/onescript-builder:rpm
+                            """.stripIndent()
                         }
                     }
                 }
