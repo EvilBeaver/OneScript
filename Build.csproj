@@ -113,12 +113,14 @@
     <Target Name="GatherLibrary" DependsOnTargets="Make;GatherBinaries">
         
         <MakeDir Directories="$(LibFolder)" />
+        <CallTarget Targets="InstallStdLib" Condition="'$(StandardLibraryPacks)' != ''"/>
+        <DeleteTree Directories="$(LibFolder)/opm" />
+        
         <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm-0.16.2.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
         <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
+        
         <DeleteTree Directories="$(LibFolder)\tmp"/>
-
-        <CallTarget Targets="InstallStdLib" Condition="'$(StandardLibraryPacks)' != ''"/>
 
     </Target>
 
