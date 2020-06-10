@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -160,12 +160,7 @@ namespace OneScript.Language.LexicalAnalysis
             return _lineBounds[lineNumber - 1];
         }
 
-        public string GetContents()
-        {
-            return GetContents(0, 0);
-        }
-
-        public string GetContents(int padLeft, int padRight)
+        public ReadOnlyMemory<char> GetContentSpan()
         {
             int len;
 
@@ -179,14 +174,20 @@ namespace OneScript.Language.LexicalAnalysis
             }
             else
             {
-                return "";
+                return ReadOnlyMemory<char>.Empty;
             }
 
-            var contents = _code.Substring(_startPosition + padLeft, len - padRight);
+            var contents = _code.AsMemory(_startPosition, len);
 
             _startPosition = _index + 1;
+            _whitespaceStart = _startPosition;
 
             return contents;
+        }
+        
+        public string GetContents()
+        {
+            return GetContentSpan().ToString();
         }
 
         public CodePositionInfo GetPositionInfo()
