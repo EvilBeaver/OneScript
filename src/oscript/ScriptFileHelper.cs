@@ -7,8 +7,10 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
+#if NETFRAMEWORK
 using System.Net.Configuration;
 using System.Reflection;
+#endif
 using System.Text;
 
 using ScriptEngine.Environment;
@@ -35,6 +37,7 @@ namespace oscript
 			CodeStatisticsFileName = fileName;
 		}
 
+#if NETFRAMEWORK
 		// http://www.cookcomputing.com/blog/archives/000556.html
 		public static bool SetAllowUnsafeHeaderParsing()
 		{
@@ -70,7 +73,7 @@ namespace oscript
 
 			return defaultValue;
 		}
-
+#endif
 		public static void OnBeforeScriptRead(HostedScriptEngine engine)
 		{
 			var cfg = engine.GetWorkingConfig();
@@ -82,10 +85,11 @@ namespace oscript
 				else
 					engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
 
+#if NETFRAMEWORK
 			var strictWebRequest = ConvertSettingValueToBool(cfg["http.strictWebRequest"]);
 			if (!strictWebRequest)
 				SetAllowUnsafeHeaderParsing();
-
+#endif
 			if (CodeStatisticsEnabled)
 				engine.EnableCodeStatistics();
 		}
