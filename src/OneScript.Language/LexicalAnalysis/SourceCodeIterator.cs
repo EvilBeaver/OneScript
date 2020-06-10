@@ -180,8 +180,7 @@ namespace OneScript.Language.LexicalAnalysis
             var contents = _code.AsMemory(_startPosition, len);
 
             _startPosition = _index + 1;
-            _whitespaceStart = _startPosition;
-
+            
             return contents;
         }
         

@@ -52,7 +52,7 @@ namespace OneScript.Language.LexicalAnalysis
                 var cs = iterator.CurrentSymbol;
                 if (cs == SpecialChars.DateQuote)
                 {
-                    iterator.GetContents(1, 1);
+                    iterator.GetContentSpan();
                     iterator.MoveNext();
 
                     try
