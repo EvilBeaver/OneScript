@@ -125,7 +125,7 @@ namespace OneScript.Language.LexicalAnalysis
         private bool SolveExpression()
         {
             NextLexem();
-            if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+            if (!LanguageDef.IsUserSymbol(_lastExtractedLexem))
                 throw PreprocessorError("Ожидается выражение");
 
             return SolveOrExpression();
@@ -188,7 +188,7 @@ namespace OneScript.Language.LexicalAnalysis
                 throw PreprocessorError("Ожидается закрывающая скобка");
             }
 
-            if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+            if (!LanguageDef.IsUserSymbol(_lastExtractedLexem))
                 throw PreprocessorError("Ожидается объявление препроцессора");
             
             var expression = IsDefined(_lastExtractedLexem.Content);

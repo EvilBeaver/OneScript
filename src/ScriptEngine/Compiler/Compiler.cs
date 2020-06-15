@@ -1430,7 +1430,7 @@ namespace ScriptEngine.Compiler
                 BuildPushConstant();
                 NextToken();
             }
-            else if (LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
+            else if (LanguageDef.IsUserSymbol(in _lastExtractedLexem))
             {
                 ProcessPrimaryIdentifier();
             }
@@ -1909,7 +1909,7 @@ namespace ScriptEngine.Compiler
 
         private static bool IsUserSymbol(ref Lexem lex)
         {
-            return LanguageDef.IsUserSymbol(ref lex);
+            return LanguageDef.IsUserSymbol(lex);
         }
 
         private static bool IsLiteral(ref Lexem lex)

@@ -280,7 +280,7 @@ namespace OneScript.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsUserSymbol(ref Lexem lex)
+        public static bool IsUserSymbol(in Lexem lex)
         {
             return lex.Type == LexemType.Identifier && lex.Token == Token.NotAToken;
         }
