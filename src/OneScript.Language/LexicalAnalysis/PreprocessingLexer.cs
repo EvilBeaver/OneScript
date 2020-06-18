@@ -33,6 +33,8 @@ namespace OneScript.Language.LexicalAnalysis
 
         public event EventHandler<PreprocessorUnknownTokenEventArgs> UnknownDirective;
 
+        public bool EmitUnknownDirectives { get; set; }
+            
         public void Define(string param)
         {
             _definitions.Add(param);
@@ -96,6 +98,9 @@ namespace OneScript.Language.LexicalAnalysis
 
         private void HandleUnknownDirective(Lexem lex)
         {
+            if(EmitUnknownDirectives)
+                return;
+            
             if (UnknownDirective != null)
             {
                 var args = new PreprocessorUnknownTokenEventArgs()

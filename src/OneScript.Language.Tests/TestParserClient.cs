@@ -79,7 +79,17 @@ namespace OneScript.Language.Tests
         {
             //throw new System.NotImplementedException();
         }
-        
+
+        public void PreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)
+        {
+            var currentLine = lexer.CurrentLine;
+            
+            do
+            {
+                lastExtractedLexem = lexer.NextLexem();
+            } while (currentLine == lexer.CurrentLine);
+        }
+
         private void ApplyAnnotations(TestAstNode node)
         {
             foreach (var annotation in _annotations)

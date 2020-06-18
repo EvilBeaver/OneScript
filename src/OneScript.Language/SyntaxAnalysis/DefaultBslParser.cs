@@ -28,6 +28,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private Stack<IAstNode> _parsingContext = new Stack<IAstNode>();
         
         private List<ParseError> _errors = new List<ParseError>();
+        private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         
         public DefaultBslParser(IAstBuilder builder, ILexemGenerator lexer)
         {
@@ -42,10 +43,36 @@ namespace OneScript.Language.SyntaxAnalysis
             NextLexem();
             var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             PushContext(node);
-            //ParseDirectives();
+            
             try
             {
+                ParseDirectives();
                 ParseModuleSections();
+            }
+            finally
+            {
+                PopContext();
+            }
+        }
+
+        private void ParseDirectives()
+        {
+            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+            {
+                _builder.PreprocessorDirective(_lexer, ref _lastExtractedLexem);
+                if(_lastExtractedLexem.Token == Token.EndOfText)
+                    break;
+            }
+        }
+
+        public void ParseCodeBatch()
+        {
+            NextLexem();
+            var node = _builder.CreateNode(NodeKind.CodeBatch, _lastExtractedLexem);
+            PushContext(node);
+            try
+            {
+                BuildCodeBatch(Token.EndOfText);
             }
             finally
             {
@@ -232,27 +259,33 @@ namespace OneScript.Language.SyntaxAnalysis
             try
             {
                 BuildMethodSignature();
+                _inMethodScope = true;
                 BuildVariableSection();
+                _isStatementsDefined = true;
                 BuildMethodBody();
             }
             finally
             {
                 _isInFunctionScope = false;
                 _inMethodScope = false;
+                _isStatementsDefined = false;
                 PopContext();
             }
         }
 
         private void BuildMethodBody()
         {
-            var endToken = _isInFunctionScope ? Token.EndFunction : Token.EndProcedure;
-            _inMethodScope = true;
-            while (_lastExtractedLexem.Token != endToken)
+            var body = _builder.AddChild(CurrentParent, NodeKind.CodeBatch, _lastExtractedLexem);
+            PushContext(body);
+            try
             {
-                // just fast forward
+                BuildCodeBatch(_isInFunctionScope ? Token.EndFunction : Token.EndProcedure);
                 NextLexem();
             }
-            NextLexem();
+            finally
+            {
+                PopContext();
+            }
         }
 
         private void BuildMethodSignature()
@@ -371,7 +404,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildModuleBody()
         {
-            throw new NotImplementedException();
+            
         }
 
         #region Annotations
@@ -452,6 +485,50 @@ namespace OneScript.Language.SyntaxAnalysis
         
         #endregion
         
+        private void BuildCodeBatch(params Token[] endTokens)
+        {
+            PushStructureToken(endTokens);
+
+            while (true)
+            {
+                if (endTokens.Contains(_lastExtractedLexem.Token))
+                {
+                    break;
+                }
+
+                if (_lastExtractedLexem.Token == Token.Semicolon)
+                {
+                    NextLexem();
+                    continue;
+                }
+
+                if (_lastExtractedLexem.Type != LexemType.Identifier && _lastExtractedLexem.Token != Token.EndOfText)
+                {
+                    AddError(LocalizedErrors.UnexpectedOperation());
+                }
+
+                if (_lastExtractedLexem.Token == Token.NotAToken)
+                {
+                    //BuildSimpleStatement();
+                }
+                else
+                {
+                    //BuildComplexStructureStatement();
+                }
+
+                if (_lastExtractedLexem.Token != Token.Semicolon)
+                {
+                    if (endTokens.Contains(_lastExtractedLexem.Token) || LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
+                    {
+                        break;
+                    }
+                    AddError(LocalizedErrors.SemicolonExpected());
+                }
+                NextLexem();
+            }
+            PopStructureToken();
+        }
+        
         private void NextLexem()
         {
             _lastExtractedLexem = _lexer.NextLexem();
@@ -489,7 +566,10 @@ namespace OneScript.Language.SyntaxAnalysis
             err.Position = _lexer.GetCodePosition();
             _errors.Add(err);
             _builder.HandleParseError(err, _lastExtractedLexem, _lexer);
-            SkipToNextStatement();
+            if(_tokenStack.Count > 0)
+                SkipToNextStatement(_tokenStack.Peek());
+            else
+                SkipToNextStatement();
         }
 
         private static bool IsUserSymbol(in Lexem lex)
@@ -497,6 +577,16 @@ namespace OneScript.Language.SyntaxAnalysis
             return LanguageDef.IsUserSymbol(in lex);
         }
 
+        private void PushStructureToken(params Token[] tok)
+        {
+            _tokenStack.Push(tok);
+        }
+
+        private Token[] PopStructureToken()
+        {
+            var tok = _tokenStack.Pop();
+            return tok;
+        }
 
     }
 }

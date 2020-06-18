@@ -32,5 +32,6 @@ namespace OneScript.Language.SyntaxAnalysis
         ParameterDefaultValue,
         MethodBody,
         BlockEnd,
+        CodeBatch
     }
 }
