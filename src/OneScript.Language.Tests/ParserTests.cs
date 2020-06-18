@@ -138,6 +138,44 @@ namespace OneScript.Language.Tests
                 .NoMoreChildren();
                 
         }
+
+        [Fact]
+        public void Check_Method_Parameters()
+        {
+            var code = @"
+            Процедура П(А, Знач А, Б = 1, Знач Д = -10) Экспорт КонецПроцедуры";
+
+            var proc = ParseAndGetValidator(code).NextChild();
+
+            var signature = proc.NextChild().Is(NodeKind.MethodSignature);
+            signature
+                .NextChildIs(NodeKind.Procedure)
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.MethodParameters)
+                .NextChildIs(NodeKind.ExportFlag)
+                .NoMoreChildren();
+
+            var paramList = signature.HasNode("MethodParameters");
+            paramList.NextChild().Is(NodeKind.MethodParameter)
+                .NextChildIs(NodeKind.Identifier).ChildItself()
+                .Equal("А");
+            
+            paramList.NextChild().Is(NodeKind.MethodParameter)
+                .NextChildIs(NodeKind.ByValModifier)
+                .NextChildIs(NodeKind.Identifier)
+                .NoMoreChildren();
+            
+            paramList.NextChild().Is(NodeKind.MethodParameter)
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.ParameterDefaultValue)
+                .ChildItself().Equal("1");
+            
+            paramList.NextChild().Is(NodeKind.MethodParameter)
+                .NextChildIs(NodeKind.ByValModifier)
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.ParameterDefaultValue)
+                .ChildItself().Equal("-10");
+        }
         
         private static SyntaxTreeValidator ParseAndGetValidator(string code)
         {

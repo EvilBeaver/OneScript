@@ -286,13 +286,15 @@ namespace OneScript.Language.SyntaxAnalysis
                 AddError(LocalizedErrors.TokenExpected(Token.OpenPar));
                 return;
             }
-            
+
+            var paramList = _builder.AddChild(
+                node, NodeKind.MethodParameters, _lastExtractedLexem);
             NextLexem(); // (
 
             while (_lastExtractedLexem.Token != Token.ClosePar)
             {
                 BuildAnnotations();
-                var param = _builder.AddChild(node, NodeKind.MethodParameter, _lastExtractedLexem);
+                var param = _builder.AddChild(paramList, NodeKind.MethodParameter, _lastExtractedLexem);
                 // [Знач] Identifier [= Literal],...
                 if (_lastExtractedLexem.Token == Token.ByValParam)
                 {

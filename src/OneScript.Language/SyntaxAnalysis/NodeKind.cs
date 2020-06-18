@@ -27,6 +27,7 @@ namespace OneScript.Language.SyntaxAnalysis
         Function,
         Method,
         MethodSignature,
+        MethodParameters,
         MethodParameter,
         ParameterDefaultValue,
         MethodBody,
