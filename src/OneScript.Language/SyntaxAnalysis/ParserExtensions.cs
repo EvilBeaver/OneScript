@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using System.Text;
+using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
@@ -21,6 +22,11 @@ namespace OneScript.Language.SyntaxAnalysis
             }
 
             return builder.ToString();
+        }
+
+        public static bool IsEmpty(this CodeRange range)
+        {
+            return range.LineNumber == -1;
         }
     }
 }

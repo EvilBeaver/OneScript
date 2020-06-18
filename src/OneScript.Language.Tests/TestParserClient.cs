@@ -5,7 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 
@@ -14,83 +16,70 @@ namespace OneScript.Language.Tests
     public class TestParserClient : IAstBuilder
     {
         public TestAstNode RootNode { get; set; }
-
-        private TestAstNode _currentParent;
+        
         private List<TestAstNode> _annotations = new List<TestAstNode>();
         
-        public IAstNode CreateAnnotation(string content)
+        public IAstNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
-            var node = new TestAstNode
+            var node = TestAstNode.New(kind);
+            if (kind == NodeKind.Annotation)
             {
-                Type = "Annotation",
-                Value = content
-            };
-            
-            _annotations.Add(node);
+                node.Value = startLexem.Content;
+                _annotations.Add(node);
+            }
+            else
+            {
+                RootNode ??= node;                
+            }
+
             return node;
         }
 
-        public void AddAnnotationParameter(IAstNode annotation, string id)
+        public IAstNode AddChild(IAstNode parent, NodeKind kind, in Lexem startLexem)
         {
-            var param = new TestAstNode
+            var cast = (TestAstNode) parent;
+            var child = TestAstNode.New(kind);
+            bool checkAnnotations = true;
+            if (kind == NodeKind.Identifier 
+                || kind == NodeKind.AnnotationParameterName 
+                || kind == NodeKind.AnnotationParameterValue
+                || kind == NodeKind.ParameterDefaultValue)
             {
-                Type = "AnnotationParameter", 
-                Value = id
-            };
-
-            var testAnno = (TestAstNode) annotation;
-            testAnno.Children.Add(param);
-        }
-
-        public void AddAnnotationParameter(IAstNode annotation, string id, in Lexem lastExtractedLexem)
-        {
-            var param = new TestAstNode
-            {
-                Type = "AnnotationParameter", 
-                Value = $"{id}={lastExtractedLexem.Content}"
-            };
-
-            var testAnno = (TestAstNode) annotation;
-            testAnno.Children.Add(param);
-        }
-
-        public void AddAnnotationParameter(IAstNode annotation, in Lexem lastExtractedLexem)
-        {
-            var param = new TestAstNode
-            {
-                Type = "AnnotationParameter", 
-                Value = lastExtractedLexem.Content
-            };
-
-            var testAnno = (TestAstNode) annotation;
-            testAnno.Children.Add(param);
-        }
-
-        public void CreateVarDefinition(string symbolicName, bool isExported)
-        {
-            var param = new TestAstNode
-            {
-                Type = "Variable"
-            };
-
-            ApplyAnnotations(param);
-            param.Children.Add(new TestAstNode
-            {
-                Type = "Identifier",
-                Value = symbolicName
-            });
-            
-            if (isExported)
-            {
-                param.Children.Add(new TestAstNode
-                {
-                    Type = "Export"
-                });
+                child.Value = startLexem.Content;
+                checkAnnotations = false;
             }
+            else if (kind == NodeKind.AnnotationParameter)
+            {
+                checkAnnotations = false;
+            }
+
+            if (kind == NodeKind.Annotation)
+            {
+                child.Value = startLexem.Content;
+                _annotations.Add(child);
+            }
+            else if(kind == NodeKind.Method || kind == NodeKind.VariableDefinition || kind == NodeKind.MethodParameter)
+            {
+                ApplyAnnotations(child);
+            }
+            else if(checkAnnotations && _annotations.Count > 0)
+                throw new Exception($"Node {kind} cannot have annotations");
             
-            _currentParent.Children.Add(param);
+            cast.Children.Add(child);
+            return child;
         }
 
+        public void AddChild(IAstNode parent, IAstNode child)
+        {
+            var cast = (TestAstNode) parent;
+            cast.Children.Add((TestAstNode)child);
+        }
+
+        public void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer)
+        {
+            //throw new System.NotImplementedException();
+        }
+        
         private void ApplyAnnotations(TestAstNode node)
         {
             foreach (var annotation in _annotations)
@@ -98,20 +87,6 @@ namespace OneScript.Language.Tests
                 node.Children.Add(annotation);
             }
             _annotations.Clear();
-        }
-
-        public void HandleParseError(ParseError err)
-        {
-            
-        }
-
-        public void StartVariablesSection()
-        {
-            RootNode = new TestAstNode
-            {
-                Type = "ModuleVariables"
-            };
-            _currentParent = RootNode;
         }
     }
 }

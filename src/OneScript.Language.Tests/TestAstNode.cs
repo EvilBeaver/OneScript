@@ -17,5 +17,13 @@ namespace OneScript.Language.Tests
         public string Value { get; set; }
         
         public List<TestAstNode> Children { get; set; } = new List<TestAstNode>();
+
+        public static TestAstNode New(NodeKind kind)
+        {
+            return new TestAstNode
+            {
+                Type = kind.ToString()
+            };
+        }
     }
 }

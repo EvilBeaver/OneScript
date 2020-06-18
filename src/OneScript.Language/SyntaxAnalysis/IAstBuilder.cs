@@ -11,12 +11,12 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public interface IAstBuilder
     {
-        IAstNode CreateAnnotation(string content);
-        void AddAnnotationParameter(IAstNode annotation, string id);
-        void AddAnnotationParameter(IAstNode annotation, string id, in Lexem lastExtractedLexem);
-        void AddAnnotationParameter(IAstNode annotation, in Lexem lastExtractedLexem);
-        void CreateVarDefinition(string symbolicName, bool isExported);
-        void HandleParseError(ParseError err);
-        void StartVariablesSection();
+        IAstNode CreateNode(NodeKind kind, in Lexem startLexem);
+
+        IAstNode AddChild(IAstNode parent, NodeKind kind, in Lexem startLexem);
+        
+        void AddChild(IAstNode parent, IAstNode child);
+
+        void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer);
     }
 }
