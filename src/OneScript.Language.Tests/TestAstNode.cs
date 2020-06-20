@@ -22,8 +22,16 @@ namespace OneScript.Language.Tests
         {
             return new TestAstNode
             {
-                Type = kind.ToString()
+                Type = kind.ToString(),
+                Kind = (int)kind
             };
         }
+
+        public override string ToString()
+        {
+            return Type + (Value != default? $": {Value}" : "");
+        }
+
+        public int Kind { get; set; }
     }
 }

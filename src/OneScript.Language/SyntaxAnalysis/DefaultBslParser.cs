@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis
@@ -509,7 +510,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
                 if (_lastExtractedLexem.Token == Token.NotAToken)
                 {
-                    //BuildSimpleStatement();
+                    BuildSimpleStatement();
                 }
                 else
                 {
@@ -528,6 +529,325 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             PopStructureToken();
         }
+        
+        private void BuildSimpleStatement()
+        {
+            var statement = _builder.AddChild(CurrentParent, NodeKind.Statement, _lastExtractedLexem);
+            var subTree = BuildGlobalCall(_lastExtractedLexem);
+            _builder.AddChild(statement, subTree);
+        }
+
+        private void BuildAssignment(IAstNode statement)
+        {
+            //var valRef = BuildValueReference();
+            
+        }
+
+        private IAstNode BuildValueReference()
+        {
+            throw new NotImplementedException();
+            // var identifier = _lastExtractedLexem;
+            // NextLexem();
+            // BuildGlobalCall(identifier);
+            // // +prop access
+            // return default;
+        }
+
+        private IAstNode BuildGlobalCall(Lexem identifier)
+        {
+            var target = _builder.CreateNode(NodeKind.Identifier, identifier);
+            NextLexem();
+            var callNode = BuildCall(target);
+            return BuildDereference(callNode);
+        }
+
+        private IAstNode BuildCall(IAstNode target)
+        {
+            IAstNode callNode = default;
+            if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                callNode = _builder.CreateNode(NodeKind.Call, _lastExtractedLexem);
+                _builder.AddChild(callNode, target);
+                
+                BuildCallParameters(callNode);
+                NextLexem();
+            }
+            return callNode ?? target;
+        }
+
+        private void BuildCallParameters(IAstNode node)
+        {
+            PushStructureToken(Token.ClosePar);
+            try
+            {
+                NextLexem(); // съели открывающую скобку
+                while (_lastExtractedLexem.Token != Token.ClosePar)
+                {
+                    BuildCallArgument(node);
+                }
+
+                if (_lastExtractedLexem.Token != Token.ClosePar)
+                {
+                    AddError(LocalizedErrors.TokenExpected(Token.OpenPar));
+                    return;
+                }
+
+                NextLexem(); // съели закрывающую скобку
+            }
+            finally
+            {
+                PopStructureToken();
+            }
+        }
+
+        private void BuildCallArgument(IAstNode argsList)
+        {
+            if (_lastExtractedLexem.Token == Token.Comma)
+            {
+                _builder.AddChild(argsList, NodeKind.CallArgument, _lastExtractedLexem);
+                
+                BuildLastDefaultArg(argsList);
+            }
+            else if (_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                var node = _builder.AddChild(argsList, NodeKind.CallArgument, _lastExtractedLexem);
+                BuildExpression(node, Token.Comma);
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    BuildLastDefaultArg(argsList);
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void BuildLastDefaultArg(IAstNode argsList)
+        {
+            NextLexem();
+            if (_lastExtractedLexem.Token == Token.ClosePar)
+            {
+                _builder.AddChild(argsList, NodeKind.CallArgument, _lastExtractedLexem);
+            }
+        }
+
+        private IAstNode BuildDereference(IAstNode target)
+        {
+            var activeTarget = BuildIndexerAccess(target);
+            if (_lastExtractedLexem.Token == Token.Dot)
+            {
+                var dotNode = _builder.CreateNode(NodeKind.DereferenceOperation, _lastExtractedLexem);
+                _builder.AddChild(dotNode, activeTarget);
+                NextLexem();
+                if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                {
+                    AddError(LocalizedErrors.IdentifierExpected());
+                    return default;
+                }
+
+                var identifier = _lastExtractedLexem;
+                NextLexem();
+                if (_lastExtractedLexem.Token == Token.OpenPar)
+                {
+                    var ident = _builder.CreateNode(NodeKind.Identifier, identifier);
+                    var call = BuildCall(ident);
+                    _builder.AddChild(dotNode, call);
+                }
+                else
+                {
+                    _builder.AddChild(dotNode, NodeKind.Identifier, identifier);
+                }
+                
+                return BuildDereference(dotNode);
+            }
+
+            return activeTarget;
+        }
+
+        private IAstNode BuildIndexerAccess(IAstNode target)
+        {
+            if (_lastExtractedLexem.Token == Token.OpenBracket)
+            {
+                var node = _builder.CreateNode(NodeKind.IndexAccess, _lastExtractedLexem);
+                _builder.AddChild(node, target);
+                NextLexem();
+                BuildExpression(node, Token.CloseBracket);
+                NextLexem();
+                return BuildDereference(node);
+            }
+
+            return target;
+        }
+
+        #region Expression
+
+        private IAstNode BuildExpression(IAstNode parent, Token stopToken)
+        {
+            if (_lastExtractedLexem.Token == stopToken)
+            {
+                AddError(LocalizedErrors.ExpressionSyntax(), true);
+                return default;
+            }
+
+            var op = BuildLogicalOr();
+            _builder.AddChild(parent, op);
+            return op;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IAstNode BuildLogicalOr()
+        {
+            var firstArg = BuildLogicalAnd();
+            if (_lastExtractedLexem.Token == Token.Or)
+            {
+                var orToken = _lastExtractedLexem;
+                NextLexem();
+                var secondArg = BuildLogicalAnd();
+                var node = _builder.CreateNode(NodeKind.BinaryOperation, orToken);
+                _builder.AddChild(node, firstArg);
+                _builder.AddChild(node, secondArg);
+
+                return node;
+            }
+            
+            return firstArg;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IAstNode BuildLogicalAnd()
+        {
+            var firstArg = BuildLogicalComparison();
+            if (_lastExtractedLexem.Token == Token.And)
+            {
+                var token = _lastExtractedLexem;
+                NextLexem();
+                var secondArg = BuildLogicalComparison();
+                var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
+                _builder.AddChild(node, firstArg);
+                _builder.AddChild(node, secondArg);
+            }
+
+            return firstArg;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IAstNode BuildLogicalNot()
+        {
+            bool hasNegative = _lastExtractedLexem.Token == Token.Not;
+            if (hasNegative)
+            {
+                var operation = _builder.CreateNode(NodeKind.UnaryOperation, _lastExtractedLexem);
+                _builder.AddChild(operation, BuildAddition());
+                return operation;
+            }
+
+            return BuildAddition();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IAstNode BuildLogicalComparison()
+        {
+            var firstArg = BuildLogicalNot();
+            var operatorSign = _lastExtractedLexem.Token;
+            if (operatorSign == Token.LessThan
+                || operatorSign == Token.LessOrEqual
+                || operatorSign == Token.MoreThan
+                || operatorSign == Token.MoreOrEqual
+                || operatorSign == Token.Equal
+                || operatorSign == Token.NotEqual)
+            {
+                var token = _lastExtractedLexem;
+                NextLexem();
+                var secondArg = BuildLogicalNot();
+                var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
+                _builder.AddChild(node, firstArg);
+                _builder.AddChild(node, secondArg);
+            }
+
+            return firstArg;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IAstNode BuildAddition()
+        {
+            var firstArg = BuildMultiplication();
+            if (_lastExtractedLexem.Token == Token.Plus || _lastExtractedLexem.Token == Token.Minus)
+            {
+                var token = _lastExtractedLexem;
+                NextLexem();
+                var secondArg = BuildMultiplication();
+                var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
+                _builder.AddChild(node, firstArg);
+                _builder.AddChild(node, secondArg);
+            }
+
+            return firstArg;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IAstNode BuildMultiplication()
+        {
+            var firstArg = BuildUnaryArifmetics();
+            if (_lastExtractedLexem.Token == Token.Multiply 
+                || _lastExtractedLexem.Token == Token.Multiply
+                ||_lastExtractedLexem.Token == Token.Modulo)
+            {
+                var token = _lastExtractedLexem;
+                NextLexem();
+                var secondArg = BuildUnaryArifmetics();
+                var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
+                _builder.AddChild(node, firstArg);
+                _builder.AddChild(node, secondArg);
+            }
+
+            return firstArg;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IAstNode BuildUnaryArifmetics()
+        {
+            var hasUnarySign = _lastExtractedLexem.Token == Token.Minus || _lastExtractedLexem.Token == Token.Plus;
+            var operation = _lastExtractedLexem;
+            var arg = BuildParenthesis();
+            if (hasUnarySign)
+            {
+                var op = _builder.CreateNode(NodeKind.UnaryOperation, _lastExtractedLexem);
+                _builder.AddChild(op, arg);
+                return op;
+            }
+
+            return arg;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IAstNode BuildParenthesis()
+        {
+            if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                NextLexem();
+                var expr = BuildLogicalOr();
+                if (_lastExtractedLexem.Token != Token.ClosePar)
+                {
+                    AddError(LocalizedErrors.TokenExpected(Token.ClosePar), true);
+                }
+                NextLexem();
+                return expr;
+            }
+            else
+            {
+                return TerminalNode();
+            }
+        }
+
+        private IAstNode TerminalNode()
+        {
+            if (LanguageDef.IsLiteral(ref _lastExtractedLexem))
+            {
+                return _builder.CreateNode(NodeKind.Constant, _lastExtractedLexem);
+            }
+            
+            throw new NotImplementedException();
+        }
+
+        #endregion  
         
         private void NextLexem()
         {
@@ -561,7 +881,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
         
-        private void AddError(ParseError err)
+        private void AddError(ParseError err, bool throwInternal = false)
         {
             err.Position = _lexer.GetCodePosition();
             _errors.Add(err);
@@ -570,6 +890,9 @@ namespace OneScript.Language.SyntaxAnalysis
                 SkipToNextStatement(_tokenStack.Peek());
             else
                 SkipToNextStatement();
+            
+            if(throwInternal)
+                throw new InternalParseException();
         }
 
         private static bool IsUserSymbol(in Lexem lex)

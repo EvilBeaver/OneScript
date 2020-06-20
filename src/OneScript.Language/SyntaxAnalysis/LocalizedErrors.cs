@@ -26,10 +26,8 @@ namespace OneScript.Language.SyntaxAnalysis
                           + "en='Variable declarations must be placed at beginning of module, procedure, or function'");
         }
 
-        public static ParseError SemicolonExpected()
-        {
-            return Create("ru='Ожидается символ ; (точка с запятой)';en='Expecting \";\"'");
-        }
+        public static ParseError SemicolonExpected() 
+            => Create("ru='Ожидается символ ; (точка с запятой)';en='Expecting \";\"'");
 
         private static ParseError Create(string description, [CallerMemberName] string errorId = default)
         {
@@ -40,11 +38,12 @@ namespace OneScript.Language.SyntaxAnalysis
             };  
         }
 
-        public static ParseError IdentifierExpected()
-        {
-            return Create("ru='Ожидается идентификатор';en='Identifier expecting'");
-        }
+        public static ParseError IdentifierExpected() 
+            => Create("ru='Ожидается идентификатор';en='Identifier expecting'");
 
+        public static ParseError ExpressionSyntax()
+            => Create("ru='Ошибка в выражении';en='Expression syntax error'");
+        
         public static ParseError TokenExpected(params Token[] expected)
         {
             var names = String.Join("/", expected.Select(x => Enum.GetName(typeof(Token), x)));

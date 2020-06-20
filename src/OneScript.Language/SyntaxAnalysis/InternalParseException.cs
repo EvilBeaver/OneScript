@@ -5,10 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public interface IAstNode
+    internal class InternalParseException : Exception
     {
-        int Kind { get; set; }
     }
 }

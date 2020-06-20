@@ -32,6 +32,15 @@ namespace OneScript.Language.SyntaxAnalysis
         ParameterDefaultValue,
         MethodBody,
         BlockEnd,
-        CodeBatch
+        CodeBatch,
+        Statement,
+        Call,
+        CallArgumentList,
+        CallArgument,
+        DereferenceOperation,
+        Constant,
+        IndexAccess,
+        BinaryOperation,
+        UnaryOperation
     }
 }

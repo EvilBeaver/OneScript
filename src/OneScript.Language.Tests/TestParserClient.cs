@@ -27,6 +27,10 @@ namespace OneScript.Language.Tests
                 node.Value = startLexem.Content;
                 _annotations.Add(node);
             }
+            else if (kind == NodeKind.Identifier)
+            {
+                node.Value = startLexem.Content;
+            }
             else
             {
                 RootNode ??= node;                

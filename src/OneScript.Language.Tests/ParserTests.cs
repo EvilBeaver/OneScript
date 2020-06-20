@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using Xunit;
@@ -24,7 +25,7 @@ namespace OneScript.Language.Tests
             Перем П3;
             Перем П4 Экспорт, П5 Экспорт;";
             
-            var treeValidator = ParseAndGetValidator(code);
+            var treeValidator = ParseModuleAndGetValidator(code);
 
             treeValidator.Is(NodeKind.VariablesSection);
 
@@ -60,7 +61,7 @@ namespace OneScript.Language.Tests
         public void CheckBuild_Of_Methods_Section()
         {
             var code = "Процедура А() КонецПроцедуры Функция Б() КонецФункции";
-            var node = ParseAndGetValidator(code);
+            var node = ParseModuleAndGetValidator(code);
 
             node.Is(NodeKind.MethodsSection);
             node.CurrentNode.Children.Should().HaveCount(2, "two methods in code");
@@ -93,7 +94,7 @@ namespace OneScript.Language.Tests
             &ИмяИЗначение(А = ""Привет"", М = 1)
             Перем УзелВладелец;";
 
-            var variable = ParseAndGetValidator(code).NextChild();
+            var variable = ParseModuleAndGetValidator(code).NextChild();
 
             var anno = variable.NextChild();
             anno.Is(NodeKind.Annotation)
@@ -145,7 +146,7 @@ namespace OneScript.Language.Tests
             var code = @"
             Процедура П(А, Знач А, Б = 1, Знач Д = -10) Экспорт КонецПроцедуры";
 
-            var proc = ParseAndGetValidator(code).NextChild();
+            var proc = ParseModuleAndGetValidator(code).NextChild();
 
             var signature = proc.NextChild().Is(NodeKind.MethodSignature);
             signature
@@ -176,8 +177,55 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.ParameterDefaultValue)
                 .ChildItself().Equal("-10");
         }
+
+        [Fact]
+        public void Check_Statement_GlobalFunctionCall()
+        {
+            var batch = ParseBatchAndGetValidator("Proc();");
+            batch.Is(NodeKind.CodeBatch);
+            var node = batch.NextChild();
+            node.Is(NodeKind.Statement)
+                .NextChild().Is(NodeKind.Call)
+                .HasNode("Identifier")
+                .Equal("Proc");
+
+        }
         
-        private static SyntaxTreeValidator ParseAndGetValidator(string code)
+        [Fact]
+        public void Check_Statement_ObjectMethod_Call()
+        {
+            var code = @"Target.Call();
+            Target().Call();
+            Target[0].Call()";
+            var batch = ParseBatchAndGetValidator("Target.Call()");
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Statement)
+                .NextChild().Is(NodeKind.DereferenceOperation)
+                    .NextChildIs(NodeKind.Identifier)
+                    .NextChildIs(NodeKind.Call);
+        }
+        
+        [Fact]
+        public void Check_Assignment_OnVariable()
+        {
+            throw new NotImplementedException();
+        }
+        
+        [Fact]
+        public void Check_Assignment_OnProperty()
+        {
+            throw new NotImplementedException();
+        }
+        
+        [Fact]
+        public void Check_Assignment_OnIndex()
+        {
+            throw new NotImplementedException();
+        }
+        
+        private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)
         {
             var lexer = new Lexer();
             lexer.Code = code;
@@ -188,6 +236,20 @@ namespace OneScript.Language.Tests
 
             parser.Errors.Should().BeEmpty("the valid code is passed");
             var treeValidator = new SyntaxTreeValidator(client.RootNode.Children[0]);
+            return treeValidator;
+        }
+        
+        private static SyntaxTreeValidator ParseBatchAndGetValidator(string code)
+        {
+            var lexer = new Lexer();
+            lexer.Code = code;
+
+            var client = new TestParserClient();
+            var parser = new DefaultBslParser(client, lexer);
+            parser.ParseCodeBatch();
+
+            parser.Errors.Should().BeEmpty("the valid code is passed");
+            var treeValidator = new SyntaxTreeValidator(client.RootNode);
             return treeValidator;
         }
 
