@@ -11,5 +11,16 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     internal class InternalParseException : Exception
     {
+        public ParseError Error { get; }
+
+        public InternalParseException(ParseError error)
+        {
+            Error = error;
+        }
+
+        public override string ToString()
+        {
+            return Error.Description + base.ToString();
+        }
     }
 }

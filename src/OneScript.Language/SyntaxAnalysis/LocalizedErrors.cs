@@ -29,6 +29,9 @@ namespace OneScript.Language.SyntaxAnalysis
         public static ParseError SemicolonExpected() 
             => Create("ru='Ожидается символ ; (точка с запятой)';en='Expecting \";\"'");
 
+        public static ParseError ExpressionExpected() =>
+            Create("ru='Ожидается выражение';en='Expression expected'");
+        
         private static ParseError Create(string description, [CallerMemberName] string errorId = default)
         {
             return new ParseError

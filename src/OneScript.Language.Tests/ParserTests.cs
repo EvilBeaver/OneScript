@@ -210,19 +210,61 @@ namespace OneScript.Language.Tests
         [Fact]
         public void Check_Assignment_OnVariable()
         {
-            throw new NotImplementedException();
+            var code = @"Target = 1";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Statement)
+                .NextChild().Is(NodeKind.Assignment)
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.Constant);
         }
         
         [Fact]
         public void Check_Assignment_OnProperty()
         {
-            throw new NotImplementedException();
+            var code = @"Target.Prop = 1";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Statement)
+                .NextChild().Is(NodeKind.Assignment)
+                .NextChildIs(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.Constant);
         }
         
         [Fact]
         public void Check_Assignment_OnIndex()
         {
-            throw new NotImplementedException();
+            var code = @"Target[0] = 1";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Statement)
+                .NextChild().Is(NodeKind.Assignment)
+                .NextChildIs(NodeKind.IndexAccess)
+                .NextChildIs(NodeKind.Constant);
+        }
+        
+        [Fact]
+        public void Check_Assignment_OnComplex_Chain()
+        {
+            var code = @"Target[0].SomeProp.Method(Object.Prop[3*(8-2)].Data).Prop = ?(Data = True, Object[0], Object.Method()[12]);";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Statement)
+                .NextChild().Is(NodeKind.Assignment)
+                .NextChildIs(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.TernaryOperator);
         }
         
         private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)

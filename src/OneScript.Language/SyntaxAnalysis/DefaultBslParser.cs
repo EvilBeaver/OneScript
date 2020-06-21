@@ -25,6 +25,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private bool _isMethodsDefined = false;
         private bool _isStatementsDefined = false;
         private bool _isInFunctionScope = false;
+        private bool _lastDereferenceIsWritable = false;
 
         private Stack<IAstNode> _parsingContext = new Stack<IAstNode>();
         
@@ -533,28 +534,38 @@ namespace OneScript.Language.SyntaxAnalysis
         private void BuildSimpleStatement()
         {
             var statement = _builder.AddChild(CurrentParent, NodeKind.Statement, _lastExtractedLexem);
-            var subTree = BuildGlobalCall(_lastExtractedLexem);
-            _builder.AddChild(statement, subTree);
+            BuildAssignment(statement);
         }
 
         private void BuildAssignment(IAstNode statement)
         {
-            //var valRef = BuildValueReference();
+            var call = BuildGlobalCall(_lastExtractedLexem);
+            if (call == default)
+                return;
             
-        }
-
-        private IAstNode BuildValueReference()
-        {
-            throw new NotImplementedException();
-            // var identifier = _lastExtractedLexem;
-            // NextLexem();
-            // BuildGlobalCall(identifier);
-            // // +prop access
-            // return default;
+            if (_lastExtractedLexem.Token == Token.Equal)
+            {
+                if (_lastDereferenceIsWritable)
+                {
+                    var node = _builder.AddChild(statement, NodeKind.Assignment, _lastExtractedLexem);
+                    _builder.AddChild(node, call);
+                    NextLexem();
+                    BuildExpression(node, Token.Semicolon);
+                }
+                else
+                {
+                    AddError(LocalizedErrors.ExpressionSyntax());
+                }
+            }
+            else
+            {
+                _builder.AddChild(statement, call);
+            }
         }
 
         private IAstNode BuildGlobalCall(Lexem identifier)
         {
+            _lastDereferenceIsWritable = true;
             var target = _builder.CreateNode(NodeKind.Identifier, identifier);
             NextLexem();
             var callNode = BuildCall(target);
@@ -570,7 +581,6 @@ namespace OneScript.Language.SyntaxAnalysis
                 _builder.AddChild(callNode, target);
                 
                 BuildCallParameters(callNode);
-                NextLexem();
             }
             return callNode ?? target;
         }
@@ -611,7 +621,7 @@ namespace OneScript.Language.SyntaxAnalysis
             else if (_lastExtractedLexem.Token != Token.ClosePar)
             {
                 var node = _builder.AddChild(argsList, NodeKind.CallArgument, _lastExtractedLexem);
-                BuildExpression(node, Token.Comma);
+                BuildOptionalExpression(node, Token.Comma);
                 if (_lastExtractedLexem.Token == Token.Comma)
                 {
                     BuildLastDefaultArg(argsList);
@@ -647,12 +657,14 @@ namespace OneScript.Language.SyntaxAnalysis
                 NextLexem();
                 if (_lastExtractedLexem.Token == Token.OpenPar)
                 {
+                    _lastDereferenceIsWritable = false;
                     var ident = _builder.CreateNode(NodeKind.Identifier, identifier);
                     var call = BuildCall(ident);
                     _builder.AddChild(dotNode, call);
                 }
                 else
                 {
+                    _lastDereferenceIsWritable = true;
                     _builder.AddChild(dotNode, NodeKind.Identifier, identifier);
                 }
                 
@@ -669,8 +681,14 @@ namespace OneScript.Language.SyntaxAnalysis
                 var node = _builder.CreateNode(NodeKind.IndexAccess, _lastExtractedLexem);
                 _builder.AddChild(node, target);
                 NextLexem();
-                BuildExpression(node, Token.CloseBracket);
+                var expression = BuildExpression(node, Token.CloseBracket);
+                if (expression == default)
+                {
+                    AddError(LocalizedErrors.ExpressionSyntax());
+                    return default;
+                }
                 NextLexem();
+                _lastDereferenceIsWritable = true;
                 return BuildDereference(node);
             }
 
@@ -683,7 +701,19 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             if (_lastExtractedLexem.Token == stopToken)
             {
-                AddError(LocalizedErrors.ExpressionSyntax(), true);
+                AddError(LocalizedErrors.ExpressionExpected());
+                return default;
+            }
+
+            var op = BuildLogicalOr();
+            _builder.AddChild(parent, op);
+            return op;
+        }
+        
+        private IAstNode BuildOptionalExpression(IAstNode parent, Token stopToken)
+        {
+            if (_lastExtractedLexem.Token == stopToken)
+            {
                 return default;
             }
 
@@ -692,7 +722,9 @@ namespace OneScript.Language.SyntaxAnalysis
             return op;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        #region Operators
+
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IAstNode BuildLogicalOr()
         {
             var firstArg = BuildLogicalAnd();
@@ -760,6 +792,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
                 _builder.AddChild(node, firstArg);
                 _builder.AddChild(node, secondArg);
+                return node;
             }
 
             return firstArg;
@@ -837,13 +870,62 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
+        #endregion
+
         private IAstNode TerminalNode()
         {
+            IAstNode node = default;
             if (LanguageDef.IsLiteral(ref _lastExtractedLexem))
             {
-                return _builder.CreateNode(NodeKind.Constant, _lastExtractedLexem);
+                node = _builder.CreateNode(NodeKind.Constant, _lastExtractedLexem);
+                NextLexem();
+                
             }
-            
+            else if (LanguageDef.IsUserSymbol(in _lastExtractedLexem))
+            {
+                node = BuildGlobalCall(_lastExtractedLexem);
+            }
+            else if(_lastExtractedLexem.Token == Token.NewObject)
+            {
+                node = BuildNewObjectCreation();
+            }
+            else if (_lastExtractedLexem.Token == Token.Question)
+            {
+                node = BuildQuestionOperator();
+            }
+            else
+            {
+                AddError(LocalizedErrors.ExpressionSyntax(), true);
+                return default;
+            }
+
+            return node ?? throw new NotImplementedException(_lastExtractedLexem.ToString());
+        }
+
+        private IAstNode BuildQuestionOperator()
+        {
+            var node = _builder.CreateNode(NodeKind.TernaryOperator, _lastExtractedLexem);
+            if(!NextExpected(Token.OpenPar))
+                AddError(LocalizedErrors.TokenExpected(Token.OpenPar), true);
+
+            NextLexem();
+            BuildExpression(node, Token.Comma);
+            NextLexem();
+            BuildExpression(node, Token.Comma);
+            NextLexem();
+            BuildExpression(node, Token.ClosePar);
+            if (_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                AddError(LocalizedErrors.TokenExpected(Token.ClosePar));
+                return default;
+            }
+            NextLexem();
+
+            return BuildDereference(node);
+        }
+
+        private IAstNode BuildNewObjectCreation()
+        {
             throw new NotImplementedException();
         }
 
@@ -892,7 +974,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 SkipToNextStatement();
             
             if(throwInternal)
-                throw new InternalParseException();
+                throw new InternalParseException(err);
         }
 
         private static bool IsUserSymbol(in Lexem lex)

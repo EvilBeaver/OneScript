@@ -41,6 +41,8 @@ namespace OneScript.Language.SyntaxAnalysis
         Constant,
         IndexAccess,
         BinaryOperation,
-        UnaryOperation
+        UnaryOperation,
+        Assignment,
+        TernaryOperator
     }
 }
