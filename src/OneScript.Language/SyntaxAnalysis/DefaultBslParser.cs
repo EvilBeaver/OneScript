@@ -31,7 +31,8 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private List<ParseError> _errors = new List<ParseError>();
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
-        
+        private bool _isInLoopScope;
+
         public DefaultBslParser(IAstBuilder builder, ILexemGenerator lexer)
         {
             _builder = builder;
@@ -515,7 +516,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 }
                 else
                 {
-                    //BuildComplexStructureStatement();
+                    BuildComplexStructureStatement();
                 }
 
                 if (_lastExtractedLexem.Token != Token.Semicolon)
@@ -530,7 +531,70 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             PopStructureToken();
         }
-        
+
+        private void BuildComplexStructureStatement()
+        {
+            switch (_lastExtractedLexem.Token)
+            {
+                case Token.If:
+                    //BuildIfStatement();
+                    break;
+                case Token.For:
+                    //BuildForStatement();
+                    break;
+                case Token.While:
+                    BuildWhileStatement();
+                    break;
+                case Token.Break:
+                    //BuildBreakStatement();
+                    break;
+                case Token.Continue:
+                    //BuildContinueStatement();
+                    break;
+                case Token.Return:
+                    //BuildReturnStatement();
+                    break;
+                case Token.Try:
+                    //BuildTryExceptStatement();
+                    break;
+                case Token.RaiseException:
+                    //BuildRaiseExceptionStatement();
+                    break;
+                case Token.Execute:
+                    //BuildExecuteStatement();
+                    break;
+                case Token.AddHandler:
+                case Token.RemoveHandler:
+                    //BuildEventHandlerOperation(_lastExtractedLexem.Token);
+                    break;        
+                default:
+                    var expected = PopStructureToken();
+                    AddError(LocalizedErrors.TokenExpected(expected));
+                    break;
+            }
+        }
+
+        private void BuildWhileStatement()
+        {
+            var loopNode = _builder.AddChild(CurrentParent, NodeKind.Loop, _lastExtractedLexem);
+            NextLexem();
+            BuildExpressionUpTo(loopNode, Token.Loop);
+            NextLexem();
+            var body = _builder.AddChild(loopNode, NodeKind.CodeBatch, _lastExtractedLexem);
+            PushContext(body);
+            try
+            {
+                _isInLoopScope = true;
+                BuildCodeBatch(Token.EndLoop);
+                _builder.AddChild(loopNode, NodeKind.BlockEnd, _lastExtractedLexem);
+            }
+            finally
+            {
+                _isInLoopScope = false ;
+                PopContext();
+            }
+        }
+
         private void BuildSimpleStatement()
         {
             var statement = _builder.AddChild(CurrentParent, NodeKind.Statement, _lastExtractedLexem);
@@ -579,14 +643,15 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 callNode = _builder.CreateNode(NodeKind.Call, _lastExtractedLexem);
                 _builder.AddChild(callNode, target);
-                
                 BuildCallParameters(callNode);
             }
             return callNode ?? target;
         }
 
-        private void BuildCallParameters(IAstNode node)
+        private int BuildCallParameters(IAstNode callNode)
         {
+            var node = _builder.AddChild(callNode, NodeKind.CallArgumentList, _lastExtractedLexem);
+            int argCount = 0;
             PushStructureToken(Token.ClosePar);
             try
             {
@@ -594,12 +659,13 @@ namespace OneScript.Language.SyntaxAnalysis
                 while (_lastExtractedLexem.Token != Token.ClosePar)
                 {
                     BuildCallArgument(node);
+                    argCount++;
                 }
 
                 if (_lastExtractedLexem.Token != Token.ClosePar)
                 {
                     AddError(LocalizedErrors.TokenExpected(Token.OpenPar));
-                    return;
+                    return -1;
                 }
 
                 NextLexem(); // съели закрывающую скобку
@@ -608,6 +674,8 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 PopStructureToken();
             }
+
+            return argCount;
         }
 
         private void BuildCallArgument(IAstNode argsList)
@@ -708,6 +776,18 @@ namespace OneScript.Language.SyntaxAnalysis
             var op = BuildLogicalOr();
             _builder.AddChild(parent, op);
             return op;
+        }
+        
+        private IAstNode BuildExpressionUpTo(IAstNode parent, Token stopToken)
+        {
+            var node = BuildExpression(parent, stopToken);
+            if (_lastExtractedLexem.Token != stopToken)
+            {
+                AddError(LocalizedErrors.TokenExpected(stopToken));
+                return default;
+            }
+            
+            return node;
         }
         
         private IAstNode BuildOptionalExpression(IAstNode parent, Token stopToken)
@@ -896,10 +976,9 @@ namespace OneScript.Language.SyntaxAnalysis
             else
             {
                 AddError(LocalizedErrors.ExpressionSyntax(), true);
-                return default;
             }
 
-            return node ?? throw new NotImplementedException(_lastExtractedLexem.ToString());
+            return node;
         }
 
         private IAstNode BuildQuestionOperator()
@@ -926,7 +1005,44 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private IAstNode BuildNewObjectCreation()
         {
-            throw new NotImplementedException();
+            var node = _builder.CreateNode(NodeKind.NewObject, _lastExtractedLexem);
+            NextLexem();
+            if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                // создание по строковому имени класса
+                NewObjectDynamicConstructor(node);
+            }
+            else if (IsUserSymbol(_lastExtractedLexem) || _lastExtractedLexem.Token == Token.ExceptionInfo)
+            {
+                NewObjectStaticConstructor(node);
+            }
+            else
+            {
+                AddError(LocalizedErrors.IdentifierExpected());
+                node = default;
+            }
+
+            return node;
+        }
+        
+        private void NewObjectDynamicConstructor(IAstNode node)
+        {
+            var argsPassed = BuildCallParameters(node);
+            if (argsPassed < 1)
+            {
+                AddError(LocalizedErrors.ExpressionExpected());
+            }
+        }
+
+        private void NewObjectStaticConstructor(IAstNode node)
+        {
+            _builder.AddChild(node, NodeKind.Identifier, _lastExtractedLexem);
+            
+            NextLexem();
+            if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                BuildCallParameters(node);
+            }
         }
 
         #endregion  

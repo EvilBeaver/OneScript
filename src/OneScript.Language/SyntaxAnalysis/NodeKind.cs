@@ -43,6 +43,8 @@ namespace OneScript.Language.SyntaxAnalysis
         BinaryOperation,
         UnaryOperation,
         Assignment,
-        TernaryOperator
+        TernaryOperator,
+        NewObject,
+        Loop
     }
 }
