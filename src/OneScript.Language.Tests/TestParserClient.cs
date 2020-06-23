@@ -22,55 +22,31 @@ namespace OneScript.Language.Tests
         public IAstNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
             var node = TestAstNode.New(kind);
+            var checkAnnotations = false;
             if (kind == NodeKind.Annotation)
             {
                 node.Value = startLexem.Content;
                 _annotations.Add(node);
             }
-            else if (kind == NodeKind.Identifier)
+            else if (kind == NodeKind.Identifier
+                     || kind == NodeKind.AnnotationParameterName 
+                     || kind == NodeKind.AnnotationParameterValue
+                     || kind == NodeKind.ParameterDefaultValue)
             {
                 node.Value = startLexem.Content;
             }
             else
             {
-                RootNode ??= node;                
+                checkAnnotations = true;
+                RootNode ??= node;
             }
 
-            return node;
-        }
-
-        public IAstNode AddChild(IAstNode parent, NodeKind kind, in Lexem startLexem)
-        {
-            var cast = (TestAstNode) parent;
-            var child = TestAstNode.New(kind);
-            bool checkAnnotations = true;
-            if (kind == NodeKind.Identifier 
-                || kind == NodeKind.AnnotationParameterName 
-                || kind == NodeKind.AnnotationParameterValue
-                || kind == NodeKind.ParameterDefaultValue)
+            if(kind == NodeKind.Method || kind == NodeKind.VariableDefinition || kind == NodeKind.MethodParameter)
             {
-                child.Value = startLexem.Content;
-                checkAnnotations = false;
+                ApplyAnnotations(node);
             }
-            else if (kind == NodeKind.AnnotationParameter)
-            {
-                checkAnnotations = false;
-            }
-
-            if (kind == NodeKind.Annotation)
-            {
-                child.Value = startLexem.Content;
-                _annotations.Add(child);
-            }
-            else if(kind == NodeKind.Method || kind == NodeKind.VariableDefinition || kind == NodeKind.MethodParameter)
-            {
-                ApplyAnnotations(child);
-            }
-            else if(checkAnnotations && _annotations.Count > 0)
-                throw new Exception($"Node {kind} cannot have annotations");
             
-            cast.Children.Add(child);
-            return child;
+            return node;
         }
 
         public void AddChild(IAstNode parent, IAstNode child)

@@ -13,8 +13,6 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         IAstNode CreateNode(NodeKind kind, in Lexem startLexem);
 
-        IAstNode AddChild(IAstNode parent, NodeKind kind, in Lexem startLexem);
-        
         void AddChild(IAstNode parent, IAstNode child);
 
         void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer);
