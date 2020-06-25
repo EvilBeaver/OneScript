@@ -197,7 +197,7 @@ namespace OneScript.Language.Tests
             var code = @"Target.Call();
             Target().Call();
             Target[0].Call()";
-            var batch = ParseBatchAndGetValidator("Target.Call()");
+            var batch = ParseBatchAndGetValidator(code);
             batch.Is(NodeKind.CodeBatch);
             
             var node = batch.NextChild();
@@ -291,7 +291,7 @@ namespace OneScript.Language.Tests
             parser.ParseCodeBatch();
 
             parser.Errors.Should().BeEmpty("the valid code is passed");
-            var treeValidator = new SyntaxTreeValidator(client.RootNode);
+            var treeValidator = new SyntaxTreeValidator(client.RootNode.Children[0]);
             return treeValidator;
         }
 

@@ -5,9 +5,15 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace OneScript.Language.SyntaxAnalysis
+using System;
+
+namespace ScriptEngine.Compiler
 {
-    public interface IAstNode
+    [Flags]
+    public enum CodeGenerationFlags
     {
+        Always,
+        CodeStatistics,
+        DebugCode
     }
 }

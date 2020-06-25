@@ -72,11 +72,12 @@ namespace OneScript.Language.SyntaxAnalysis
         public void ParseCodeBatch()
         {
             NextLexem();
-            var node = _builder.CreateNode(NodeKind.CodeBatch, _lastExtractedLexem);
+            var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             PushContext(node);
             try
             {
-                BuildCodeBatch(Token.EndOfText);
+                ParseDirectives();
+                BuildModuleBody();
             }
             finally
             {
@@ -94,7 +95,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             BuildVariableSection();
             BuildMethodsSection();
-            //BuildModuleBody();
+            BuildModuleBody();
         }
 
         #region Variables
@@ -408,7 +409,16 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildModuleBody()
         {
-            
+            var node = CreateChild(CurrentParent, NodeKind.CodeBatch, _lastExtractedLexem);
+            PushContext(node);
+            try
+            {
+                BuildCodeBatch(Token.EndOfText);
+            }
+            finally
+            {
+                PopContext();
+            }
         }
 
         #region Annotations

@@ -22,7 +22,6 @@ namespace OneScript.Language.Tests
         public IAstNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
             var node = TestAstNode.New(kind);
-            var checkAnnotations = false;
             if (kind == NodeKind.Annotation)
             {
                 node.Value = startLexem.Content;
@@ -37,7 +36,6 @@ namespace OneScript.Language.Tests
             }
             else
             {
-                checkAnnotations = true;
                 RootNode ??= node;
             }
 

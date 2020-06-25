@@ -5,9 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace OneScript.Language.SyntaxAnalysis
+using OneScript.Language.SyntaxAnalysis;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
+
+namespace ScriptEngine.Compiler.ByteCode
 {
-    public interface IAstNode
+    public class AnnotationNode : NonTerminalNode
     {
+        public string Name { get; set; }
     }
 }

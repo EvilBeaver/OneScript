@@ -14,14 +14,6 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    [Flags]
-    public enum CodeGenerationFlags
-    {
-        Always,
-        CodeStatistics,
-        DebugCode
-    }
-
     class Compiler    {
         public const string BODY_METHOD_NAME = "$entry";
 
