@@ -427,7 +427,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildModuleBody()
         {
-            var node = CreateChild(CurrentParent, NodeKind.CodeBatch, _lastExtractedLexem);
+            var node = _builder.CreateNode(NodeKind.CodeBatch, _lastExtractedLexem);
             PushContext(node);
             try
             {
@@ -437,6 +437,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 PopContext();
             }
+            _builder.AddChild(CurrentParent, node);
         }
 
         #region Annotations
@@ -631,6 +632,7 @@ namespace OneScript.Language.SyntaxAnalysis
             try
             {
                 _enableException = true;
+                _isStatementsDefined = true;
                 PushContext(statement);
                 BuildAssignment(statement);
             }

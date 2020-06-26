@@ -16,12 +16,12 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         
         public string Name { get; set; }
 
-        public bool IsExport { get; private set; }
+        public bool IsExported { get; private set; }
 
         protected override void OnChildAdded(AstNodeBase child)
         {
             if (child.Kind == NodeKind.ExportFlag)
-                IsExport = true;
+                IsExported = true;
             else if (child.Kind == NodeKind.Identifier && child is TerminalNode term)
                 Name = term.Lexem.Content;
             else

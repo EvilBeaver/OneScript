@@ -25,6 +25,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.ByValModifier:
                 case NodeKind.AnnotationParameterName:
                 case NodeKind.AnnotationParameterValue:
+                case NodeKind.ParameterDefaultValue:
                     return new TerminalNode(kind, startLexem);
                 default:
                     var node = MakeNonTerminal(kind, startLexem);
@@ -45,6 +46,12 @@ namespace OneScript.Language.SyntaxAnalysis
                     };
                 case NodeKind.AnnotationParameter:
                     return new AnnotationParameterNode();
+                case NodeKind.Method:
+                    return new MethodNode();
+                case NodeKind.MethodSignature:
+                    return new MethodSignatureNode();
+                case NodeKind.MethodParameter:
+                    return new MethodParameterNode();
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }
