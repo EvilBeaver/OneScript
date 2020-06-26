@@ -60,14 +60,12 @@ namespace OneScript.Language.SyntaxAnalysis
                           "en = 'Local variable can't be exported ({varName})'");
         }
 
-        public static ParseError LiteralExpected()
-        {
-            return Create("ru='Ожидается константа';en='Constant expected'");
-        }
+        public static ParseError LiteralExpected() => Create("ru='Ожидается константа';en='Constant expected'");
 
-        public static ParseError NumberExpected()
-        {
-            return Create("ru='Ожидается числовая константа';en='Numeric constant expected'");
-        }
+        public static ParseError NumberExpected() => Create("ru='Ожидается числовая константа';en='Numeric constant expected'");
+
+        public static ParseError UnexpectedEof() =>
+            Create("ru='Неожиданный конец модуля';en = 'Unexpected end of text'");
+
     }
 }

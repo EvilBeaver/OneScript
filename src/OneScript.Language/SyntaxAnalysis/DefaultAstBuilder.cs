@@ -13,6 +13,8 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class DefaultAstBuilder : IAstBuilder
     {
+        public NonTerminalNode RootNode { get; private set; }
+        
         public virtual IAstNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
             switch (kind)
@@ -25,20 +27,26 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.AnnotationParameterValue:
                     return new TerminalNode(kind, startLexem);
                 default:
-                    return MakeNonTerminal(kind, startLexem);
+                    var node = MakeNonTerminal(kind, startLexem);
+                    if (RootNode == default)
+                        RootNode = node;
+                    return node;
             }
         }
 
-        private IAstNode MakeNonTerminal(NodeKind kind, in Lexem startLexem)
+        private static NonTerminalNode MakeNonTerminal(NodeKind kind, in Lexem startLexem)
         {
             switch (kind)
             {
                 case NodeKind.Annotation:
-                    return new AnnotationNode();
+                    return new AnnotationNode
+                    {
+                        Name = startLexem.Content
+                    };
                 case NodeKind.AnnotationParameter:
                     return new AnnotationParameterNode();
                 default:
-                    return new NonTerminalNode();
+                    return new NonTerminalNode(kind, startLexem);
             }
         }
 

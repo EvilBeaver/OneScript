@@ -12,6 +12,14 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class AnnotatableNode : NonTerminalNode
     {
+        protected AnnotatableNode()
+        {
+        }
+        
+        public AnnotatableNode(NodeKind kind) : base(kind)
+        {
+        }
+        
         private List<AnnotationNode> AnnotationsList { get; } = new List<AnnotationNode>();
 
         public IEnumerable<AnnotationNode> Annotations => AnnotationsList;

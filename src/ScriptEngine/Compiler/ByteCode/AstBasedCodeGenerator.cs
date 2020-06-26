@@ -33,6 +33,11 @@ namespace ScriptEngine.Compiler.ByteCode
             {
                 WriteModuleVariable((VariableDefinitionNode)child);
             }
+
+            if (child.Kind == NodeKind.MethodSignature)
+            {
+               // WriteMethodDefinition(child);
+            }
         }
         
         private void WriteModuleVariable(VariableDefinitionNode variableNode)

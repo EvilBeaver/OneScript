@@ -29,10 +29,12 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private Stack<IAstNode> _parsingContext = new Stack<IAstNode>();
         
-        private List<ParseError> _errors = new List<ParseError>();
+        private readonly List<ParseError> _errors = new List<ParseError>();
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private bool _isInLoopScope;
         private bool _enableException = false;
+        
+        private readonly List<IAstNode> _annotations = new List<IAstNode>();
 
         public DefaultBslParser(IAstBuilder builder, ILexemGenerator lexer)
         {
@@ -96,6 +98,11 @@ namespace OneScript.Language.SyntaxAnalysis
             BuildVariableSection();
             BuildMethodsSection();
             BuildModuleBody();
+
+            if (_annotations.Count != 0)
+            {
+                AddError(LocalizedErrors.UnexpectedEof());
+            }
         }
 
         #region Variables
@@ -146,6 +153,8 @@ namespace OneScript.Language.SyntaxAnalysis
                     CurrentParent,
                     NodeKind.VariableDefinition,
                     _lastExtractedLexem);
+
+                ApplyAnnotations(variable);
 
                 NextLexem();
 
@@ -204,6 +213,15 @@ namespace OneScript.Language.SyntaxAnalysis
 
                 break;
             }
+        }
+
+        private void ApplyAnnotations(IAstNode annotatable)
+        {
+            foreach (var astNode in _annotations)
+            {
+                _builder.AddChild(annotatable, astNode);
+            }
+            _annotations.Clear();
         }
 
         #endregion
@@ -427,6 +445,7 @@ namespace OneScript.Language.SyntaxAnalysis
             while (_lastExtractedLexem.Type == LexemType.Annotation)
             {
                 var node = _builder.CreateNode(NodeKind.Annotation, _lastExtractedLexem);
+                _annotations.Add(node);
                 NextLexem();
                 if (_lastExtractedLexem.Token == Token.OpenPar)
                 {

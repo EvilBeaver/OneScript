@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using FluentAssertions;
 using OneScript.Language.SyntaxAnalysis;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 using Xunit;
 using Xunit.Sdk;
 
@@ -28,7 +29,7 @@ namespace OneScript.Language.Tests
         {
             MoveToNextChild();
 
-            return new SyntaxTreeValidator(CurrentNode.Children[_currentChildIndex]);
+            return new SyntaxTreeValidator(CurrentNode.ChildrenList[_currentChildIndex]);
         }
 
         private void MoveToNextChild()
@@ -41,7 +42,7 @@ namespace OneScript.Language.Tests
         {
            MoveToNextChild();
 
-            var child = CurrentNode.Children[_currentChildIndex];
+            var child = CurrentNode.ChildrenList[_currentChildIndex];
             child.Is(nodeType);
             return this;
         }
@@ -54,7 +55,7 @@ namespace OneScript.Language.Tests
         public SyntaxTreeValidator DownOneLevel()
         {
             EnsureHasCurrentChild();
-            return new SyntaxTreeValidator(CurrentNode.Children[_currentChildIndex]);
+            return new SyntaxTreeValidator(CurrentNode.ChildrenList[_currentChildIndex]);
         }
 
         private void EnsureHasCurrentChild()
@@ -62,7 +63,7 @@ namespace OneScript.Language.Tests
             if(_currentChildIndex ==-1)
                 MoveToNextChild();
             
-            if (_currentChildIndex >= CurrentNode.Children.Count)
+            if (_currentChildIndex >= CurrentNode.ChildrenList.Count)
             {
                 throw new Exception("No more children");
             }
@@ -71,19 +72,19 @@ namespace OneScript.Language.Tests
         public TestAstNode ChildItself()
         {
             EnsureHasCurrentChild();
-            return CurrentNode.Children[_currentChildIndex];
+            return CurrentNode.ChildrenList[_currentChildIndex];
         }
         
         public void NoMoreChildren()
         {
             if (_currentChildIndex == -1)
             {
-                Assert.Empty(CurrentNode.Children);
+                Assert.Empty(CurrentNode.ChildrenList);
             }
             else
             {
                 _currentChildIndex++;
-                Assert.True(_currentChildIndex >= CurrentNode.Children.Count, "should not have more children");
+                Assert.True(_currentChildIndex >= CurrentNode.ChildrenList.Count, "should not have more children");
             }
         }
     }

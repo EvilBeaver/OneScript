@@ -12,6 +12,10 @@ namespace ScriptEngine.Compiler.ByteCode
 {
     public class AnnotationNode : NonTerminalNode
     {
+        public AnnotationNode() : base(NodeKind.Annotation)
+        {
+        }
+        
         public string Name { get; set; }
     }
 }

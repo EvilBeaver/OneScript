@@ -6,13 +6,28 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class NonTerminalNode : AstNodeBase
     {
         private List<AstNodeBase> _children = new List<AstNodeBase>();
+
+        public NonTerminalNode(NodeKind kind, Lexem startLexem)
+            :this(kind)
+        {
+        }
         
+        protected NonTerminalNode()
+        {
+        }
+        
+        public NonTerminalNode(NodeKind kind)
+        {
+            Kind = kind;
+        }
+
         public IEnumerable<AstNodeBase> Children => _children;
 
         public void AddChild(AstNodeBase child)

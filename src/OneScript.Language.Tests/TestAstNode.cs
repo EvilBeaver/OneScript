@@ -5,33 +5,41 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
-using OneScript.Language.SyntaxAnalysis;
+using System.Linq;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
+using ScriptEngine.Compiler.ByteCode;
 
 namespace OneScript.Language.Tests
 {
-    public class TestAstNode : IAstNode
+    public class TestAstNode : AstNodeBase
     {
-        public string Type { get; set; }
+        private Lazy<IReadOnlyList<TestAstNode>> _childrenLazy;
+        
+        public AstNodeBase RealNode { get; }
+        
+        public TestAstNode(AstNodeBase node)
+        {
+            RealNode = node;
+            Kind = node.Kind;
+            if (node is NonTerminalNode nonTerm)
+            {
+                _childrenLazy = new Lazy<IReadOnlyList<TestAstNode>>(nonTerm.Children.Select(x => new TestAstNode(x)).ToArray());
+                if (nonTerm is AnnotationNode anno)
+                {
+                    Value = anno.Name;
+                }
+            }
+            else
+            {
+                _childrenLazy = new Lazy<IReadOnlyList<TestAstNode>>(new TestAstNode[0]);
+                Value = ((TerminalNode) node).Lexem.Content;
+            }
+        }
         
         public string Value { get; set; }
-        
-        public List<TestAstNode> Children { get; set; } = new List<TestAstNode>();
 
-        public static TestAstNode New(NodeKind kind)
-        {
-            return new TestAstNode
-            {
-                Type = kind.ToString(),
-                Kind = (int)kind
-            };
-        }
-
-        public override string ToString()
-        {
-            return Type + (Value != default? $": {Value}" : "");
-        }
-
-        public int Kind { get; set; }
+        public IReadOnlyList<TestAstNode> ChildrenList => _childrenLazy.Value;
     }
 }

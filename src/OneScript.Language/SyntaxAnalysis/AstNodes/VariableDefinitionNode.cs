@@ -9,6 +9,11 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class VariableDefinitionNode : AnnotatableNode
     {
+        public VariableDefinitionNode()
+        : base(NodeKind.VariableDefinition)
+        {
+        }
+        
         public string Name { get; set; }
 
         public bool IsExport { get; private set; }

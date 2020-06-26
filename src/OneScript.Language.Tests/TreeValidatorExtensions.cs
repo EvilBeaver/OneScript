@@ -16,58 +16,58 @@ namespace OneScript.Language.Tests
     {
         public static SyntaxTreeValidator Is(this SyntaxTreeValidator validator, string type)
         {
-            Assert.Equal(type, validator.CurrentNode.Type);
+            Assert.Equal(type, validator.CurrentNode.Kind.ToString());
             return validator;
         }
         
         public static SyntaxTreeValidator Is(this SyntaxTreeValidator validator, NodeKind type)
         {
-            Assert.Equal(type.ToString(), validator.CurrentNode.Type);
+            Assert.Equal(type, validator.CurrentNode.Kind);
             return validator;
         }
         
         public static void Is(this TestAstNode node, string type)
         {
-            Assert.Equal(type, node.Type);
+            Assert.Equal(type, node.Kind.ToString());
         }
         
         public static void Is(this TestAstNode node, NodeKind type)
         {
-            node.Is(type.ToString());
+            Assert.Equal(type, node.Kind);
         }
 
         public static SyntaxTreeValidator HasChildNodes(this SyntaxTreeValidator validator, int count)
         {
-            Assert.Equal(count, validator.CurrentNode.Children.Count);
+            Assert.Equal(count, validator.CurrentNode.ChildrenList.Count);
             return validator;
         }
         
         public static SyntaxTreeValidator HasChildNodes(this SyntaxTreeValidator validator)
         {
-            Assert.NotEmpty(validator.CurrentNode.Children);
+            Assert.NotEmpty(validator.CurrentNode.ChildrenList);
             return validator;
         }
         
         public static TestAstNode FirstChild(this SyntaxTreeValidator validator)
         {
-            if (validator.CurrentNode.Children.Count < 0)
+            if (validator.CurrentNode.ChildrenList.Count < 0)
             {
                 throw new Exception("No more children");
             }
 
-            return validator.CurrentNode.Children[0];
+            return validator.CurrentNode.ChildrenList[0];
         }
         public static TestAstNode WithNode(this SyntaxTreeValidator validator, string type)
         {
             var child = validator.FirstChild();
-            Assert.Equal(type, child.Type);
+            Assert.Equal(type, child.Kind.ToString());
 
             return child;
         }
         
         public static SyntaxTreeValidator HasNode(this SyntaxTreeValidator validator, string type)
         {
-            var child = validator.CurrentNode.Children.FirstOrDefault(x => x.Type == type);
+            var child = validator.CurrentNode.ChildrenList.FirstOrDefault(x => x.Kind.ToString() == type);
             Assert.NotNull(child);
 
             return new SyntaxTreeValidator(child);

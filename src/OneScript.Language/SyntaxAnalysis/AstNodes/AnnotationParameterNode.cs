@@ -11,6 +11,10 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class AnnotationParameterNode : NonTerminalNode
     {
+        public AnnotationParameterNode() : base(NodeKind.AnnotationParameter)
+        {
+        }
+        
         protected override void OnChildAdded(AstNodeBase child)
         {
             var node = (TerminalNode) child;

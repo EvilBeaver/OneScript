@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Linq;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using Xunit;
@@ -64,7 +65,7 @@ namespace OneScript.Language.Tests
             var node = ParseModuleAndGetValidator(code);
 
             node.Is(NodeKind.MethodsSection);
-            node.CurrentNode.Children.Should().HaveCount(2, "two methods in code");
+            node.CurrentNode.ChildrenList.Should().HaveCount(2, "two methods in code");
 
             var methodNode = node.NextChild();
             methodNode.Is(NodeKind.Method)
@@ -272,12 +273,12 @@ namespace OneScript.Language.Tests
             var lexer = new Lexer();
             lexer.Code = code;
 
-            var client = new TestParserClient();
+            var client = new DefaultAstBuilder();
             var parser = new DefaultBslParser(client, lexer);
             parser.ParseStatefulModule();
 
             parser.Errors.Should().BeEmpty("the valid code is passed");
-            var treeValidator = new SyntaxTreeValidator(client.RootNode.Children[0]);
+            var treeValidator = new SyntaxTreeValidator(new TestAstNode(client.RootNode.Children.First()));
             return treeValidator;
         }
         
@@ -286,12 +287,12 @@ namespace OneScript.Language.Tests
             var lexer = new Lexer();
             lexer.Code = code;
 
-            var client = new TestParserClient();
+            var client = new DefaultAstBuilder();
             var parser = new DefaultBslParser(client, lexer);
             parser.ParseCodeBatch();
 
             parser.Errors.Should().BeEmpty("the valid code is passed");
-            var treeValidator = new SyntaxTreeValidator(client.RootNode.Children[0]);
+            var treeValidator = new SyntaxTreeValidator(new TestAstNode(client.RootNode.Children.First()));
             return treeValidator;
         }
 
