@@ -52,6 +52,10 @@ namespace OneScript.Language.SyntaxAnalysis
                     return new MethodSignatureNode();
                 case NodeKind.MethodParameter:
                     return new MethodParameterNode();
+                case NodeKind.BinaryOperation:
+                    return new BinaryOperationNode(startLexem);
+                case NodeKind.UnaryOperation:
+                    return new UnaryOperationNode(startLexem);
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }

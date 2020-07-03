@@ -87,6 +87,13 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
+        public void ParseExpression()
+        {
+            NextLexem();
+            var parent = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
+            BuildExpression(parent, Token.EndOfText);
+        }
+
         private void PushContext(IAstNode node) => _parsingContext.Push(node);
         
         private IAstNode PopContext() => _parsingContext.Pop();
@@ -872,15 +879,16 @@ namespace OneScript.Language.SyntaxAnalysis
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IAstNode BuildLogicalAnd()
         {
-            var firstArg = BuildLogicalComparison();
+            var firstArg = BuildLogicalNot();
             if (_lastExtractedLexem.Token == Token.And)
             {
                 var token = _lastExtractedLexem;
                 NextLexem();
-                var secondArg = BuildLogicalComparison();
+                var secondArg = BuildLogicalNot();
                 var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
                 _builder.AddChild(node, firstArg);
                 _builder.AddChild(node, secondArg);
+                return node;
             }
 
             return firstArg;
@@ -893,17 +901,18 @@ namespace OneScript.Language.SyntaxAnalysis
             if (hasNegative)
             {
                 var operation = _builder.CreateNode(NodeKind.UnaryOperation, _lastExtractedLexem);
-                _builder.AddChild(operation, BuildAddition());
+                NextLexem();
+                _builder.AddChild(operation, BuildLogicalComparison());
                 return operation;
             }
 
-            return BuildAddition();
+            return BuildLogicalComparison();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IAstNode BuildLogicalComparison()
         {
-            var firstArg = BuildLogicalNot();
+            var firstArg = BuildAddition();
             var operatorSign = _lastExtractedLexem.Token;
             if (operatorSign == Token.LessThan
                 || operatorSign == Token.LessOrEqual
@@ -914,7 +923,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 var token = _lastExtractedLexem;
                 NextLexem();
-                var secondArg = BuildLogicalNot();
+                var secondArg = BuildAddition();
                 var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
                 _builder.AddChild(node, firstArg);
                 _builder.AddChild(node, secondArg);
@@ -936,6 +945,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
                 _builder.AddChild(node, firstArg);
                 _builder.AddChild(node, secondArg);
+                return node;
             }
 
             return firstArg;
@@ -965,10 +975,13 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             var hasUnarySign = _lastExtractedLexem.Token == Token.Minus || _lastExtractedLexem.Token == Token.Plus;
             var operation = _lastExtractedLexem;
+            if(hasUnarySign)
+                NextLexem();
+
             var arg = BuildParenthesis();
             if (hasUnarySign)
             {
-                var op = _builder.CreateNode(NodeKind.UnaryOperation, _lastExtractedLexem);
+                var op = _builder.CreateNode(NodeKind.UnaryOperation, operation);
                 _builder.AddChild(op, arg);
                 return op;
             }

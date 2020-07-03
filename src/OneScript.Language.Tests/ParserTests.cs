@@ -268,28 +268,66 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.TernaryOperator);
         }
         
+        [Fact]
+        public void Check_Binary_And_Unary_Expressions()
+        {
+            var code = @"А = -2 + 2";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+
+            var assignment = batch
+                .NextChild().Is(NodeKind.Statement)
+                .NextChild().Is(NodeKind.Assignment);
+            assignment.NextChild();
+            var node = assignment.NextChild();
+            node.Is(NodeKind.BinaryOperation)
+                .Equal("+");
+            node.NextChild().Is(NodeKind.UnaryOperation)
+                .NextChildIs(NodeKind.Constant);
+            node.NextChild().Is(NodeKind.Constant);
+        }
+        
+        [Fact]
+        public void Check_Logical_Expressions()
+        {
+            var code = @"Переменная >= 2 ИЛИ Не Переменная < 1";
+            
+            var expr = ParseExpressionAndGetValidator(code);
+            expr.Is(NodeKind.BinaryOperation)
+                .Equal("ИЛИ");
+
+            expr.NextChild().Is(NodeKind.BinaryOperation)
+                .Equal(">=");
+            
+            expr.NextChild().Is(NodeKind.UnaryOperation)
+                .NextChild().Is(NodeKind.BinaryOperation)
+                .Equal("<");
+        }
+        
         private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)
         {
-            var lexer = new Lexer();
-            lexer.Code = code;
-
-            var client = new DefaultAstBuilder();
-            var parser = new DefaultBslParser(client, lexer);
-            parser.ParseStatefulModule();
-
-            parser.Errors.Should().BeEmpty("the valid code is passed");
-            var treeValidator = new SyntaxTreeValidator(new TestAstNode(client.RootNode.Children.First()));
-            return treeValidator;
+            return MakeValidator(code, p => p.ParseStatefulModule());
         }
         
         private static SyntaxTreeValidator ParseBatchAndGetValidator(string code)
         {
+            return MakeValidator(code, p => p.ParseCodeBatch());
+        }
+        
+        private static SyntaxTreeValidator ParseExpressionAndGetValidator(string code)
+        {
+            return MakeValidator(code, p => p.ParseExpression());
+        }
+
+        private static SyntaxTreeValidator MakeValidator(string code, Action<DefaultBslParser> action)
+        {
             var lexer = new Lexer();
             lexer.Code = code;
 
             var client = new DefaultAstBuilder();
             var parser = new DefaultBslParser(client, lexer);
-            parser.ParseCodeBatch();
+            action(parser);
 
             parser.Errors.Should().BeEmpty("the valid code is passed");
             var treeValidator = new SyntaxTreeValidator(new TestAstNode(client.RootNode.Children.First()));

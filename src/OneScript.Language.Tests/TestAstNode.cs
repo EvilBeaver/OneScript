@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using ScriptEngine.Compiler.ByteCode;
 
@@ -29,6 +30,16 @@ namespace OneScript.Language.Tests
                 if (nonTerm is AnnotationNode anno)
                 {
                     Value = anno.Name;
+                }
+
+                if (nonTerm is BinaryOperationNode binary)
+                {
+                    Value = binary.Operation.Content;
+                }
+                
+                if (nonTerm is UnaryOperationNode unary)
+                {
+                    Value = unary.Operation.Content;
                 }
             }
             else
