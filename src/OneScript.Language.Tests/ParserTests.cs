@@ -305,6 +305,26 @@ namespace OneScript.Language.Tests
                 .Equal("<");
         }
         
+        [Fact]
+        public void Check_Logical_Priority_Direct()
+        {
+            var code = @"Переменная1 ИЛИ Переменная2 И Переменная3";
+
+            var expr = ParseExpressionAndGetValidator(code);
+            expr.Is(NodeKind.BinaryOperation)
+                .Equal("ИЛИ");
+        }
+        
+        [Fact]
+        public void Check_Logical_Priority_Parenthesis()
+        {
+            var code = @"(Переменная1 ИЛИ Переменная2) И Переменная3";
+            
+            var expr = ParseExpressionAndGetValidator(code);
+            expr.Is(NodeKind.BinaryOperation)
+                .Equal("И");
+        }
+        
         private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)
         {
             return MakeValidator(code, p => p.ParseStatefulModule());
