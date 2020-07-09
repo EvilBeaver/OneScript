@@ -13,10 +13,12 @@ namespace ScriptEngine.Environment
     class StringBasedSource : ICodeSource
     {
         readonly string _src;
+        string SourceDescription;
 
         public StringBasedSource(string src)
         {
             _src = src;
+            SourceDescription = "<string>" + System.Guid.NewGuid();
         }
 
         #region ICodeSource Members
@@ -33,7 +35,7 @@ namespace ScriptEngine.Environment
         {
             get
             {
-                return "<string>";
+                return SourceDescription;
             }
         }
 
