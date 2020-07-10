@@ -45,6 +45,8 @@ namespace OneScript.Language.SyntaxAnalysis
         Assignment,
         TernaryOperator,
         NewObject,
-        Loop
+        WhileLoop,
+        ForLoop,
+        Condition
     }
 }

@@ -56,6 +56,10 @@ namespace OneScript.Language.SyntaxAnalysis
                     return new BinaryOperationNode(startLexem);
                 case NodeKind.UnaryOperation:
                     return new UnaryOperationNode(startLexem);
+                case NodeKind.WhileLoop:
+                    return new WhileLoopNode();
+                case NodeKind.Condition:
+                    return new ConditionNode();
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }

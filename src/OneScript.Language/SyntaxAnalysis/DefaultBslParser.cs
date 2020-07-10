@@ -575,7 +575,7 @@ namespace OneScript.Language.SyntaxAnalysis
             switch (_lastExtractedLexem.Token)
             {
                 case Token.If:
-                    //BuildIfStatement();
+                    BuildIfStatement();
                     break;
                 case Token.For:
                     //BuildForStatement();
@@ -612,11 +612,17 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
+        private void BuildIfStatement()
+        {
+            throw new NotImplementedException();
+        }
+
         private void BuildWhileStatement()
         {
-            var loopNode = CreateChild(CurrentParent, NodeKind.Loop, _lastExtractedLexem);
+            var loopNode = CreateChild(CurrentParent, NodeKind.WhileLoop, _lastExtractedLexem);
             NextLexem();
-            BuildExpressionUpTo(loopNode, Token.Loop);
+            _builder.AddChild(loopNode, BuildExpressionUpTo(loopNode, Token.Loop));
+
             NextLexem();
             var body = CreateChild(loopNode, NodeKind.CodeBatch, _lastExtractedLexem);
             PushContext(body);
@@ -624,11 +630,12 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 _isInLoopScope = true;
                 BuildCodeBatch(Token.EndLoop);
+                _builder.AddChild(loopNode, body);
                 CreateChild(loopNode, NodeKind.BlockEnd, _lastExtractedLexem);
             }
             finally
             {
-                _isInLoopScope = false ;
+                _isInLoopScope = false;
                 PopContext();
             }
         }
