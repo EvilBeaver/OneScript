@@ -46,10 +46,12 @@ namespace OneScript.Language.SyntaxAnalysis
                     };
                 case NodeKind.AnnotationParameter:
                     return new AnnotationParameterNode();
+                case NodeKind.VariableDefinition:
+                    return new VariableDefinitionNode(startLexem);
                 case NodeKind.Method:
                     return new MethodNode();
                 case NodeKind.MethodSignature:
-                    return new MethodSignatureNode();
+                    return new MethodSignatureNode(startLexem);
                 case NodeKind.MethodParameter:
                     return new MethodParameterNode();
                 case NodeKind.BinaryOperation:

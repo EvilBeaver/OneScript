@@ -5,13 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Language.LexicalAnalysis;
+
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class VariableDefinitionNode : AnnotatableNode
     {
-        public VariableDefinitionNode()
+        public VariableDefinitionNode(Lexem startLexem)
         : base(NodeKind.VariableDefinition)
         {
+            Location = startLexem.Location;
         }
         
         public string Name { get; set; }

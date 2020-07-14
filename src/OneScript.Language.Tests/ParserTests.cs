@@ -185,8 +185,7 @@ namespace OneScript.Language.Tests
             var batch = ParseBatchAndGetValidator("Proc();");
             batch.Is(NodeKind.CodeBatch);
             var node = batch.NextChild();
-            node.Is(NodeKind.Statement)
-                .NextChild().Is(NodeKind.Call)
+            node.Is(NodeKind.Call)
                 .HasNode("Identifier")
                 .Equal("Proc");
 
@@ -202,8 +201,7 @@ namespace OneScript.Language.Tests
             batch.Is(NodeKind.CodeBatch);
             
             var node = batch.NextChild();
-            node.Is(NodeKind.Statement)
-                .NextChild().Is(NodeKind.DereferenceOperation)
+            node.Is(NodeKind.DereferenceOperation)
                     .NextChildIs(NodeKind.Identifier)
                     .NextChildIs(NodeKind.Call);
         }
@@ -217,8 +215,7 @@ namespace OneScript.Language.Tests
             batch.Is(NodeKind.CodeBatch);
             
             var node = batch.NextChild();
-            node.Is(NodeKind.Statement)
-                .NextChild().Is(NodeKind.Assignment)
+            node.Is(NodeKind.Assignment)
                 .NextChildIs(NodeKind.Identifier)
                 .NextChildIs(NodeKind.Constant);
         }
@@ -232,8 +229,7 @@ namespace OneScript.Language.Tests
             batch.Is(NodeKind.CodeBatch);
             
             var node = batch.NextChild();
-            node.Is(NodeKind.Statement)
-                .NextChild().Is(NodeKind.Assignment)
+            node.Is(NodeKind.Assignment)
                 .NextChildIs(NodeKind.DereferenceOperation)
                 .NextChildIs(NodeKind.Constant);
         }
@@ -247,8 +243,7 @@ namespace OneScript.Language.Tests
             batch.Is(NodeKind.CodeBatch);
             
             var node = batch.NextChild();
-            node.Is(NodeKind.Statement)
-                .NextChild().Is(NodeKind.Assignment)
+            node.Is(NodeKind.Assignment)
                 .NextChildIs(NodeKind.IndexAccess)
                 .NextChildIs(NodeKind.Constant);
         }
@@ -262,8 +257,7 @@ namespace OneScript.Language.Tests
             batch.Is(NodeKind.CodeBatch);
             
             var node = batch.NextChild();
-            node.Is(NodeKind.Statement)
-                .NextChild().Is(NodeKind.Assignment)
+            node.Is(NodeKind.Assignment)
                 .NextChildIs(NodeKind.DereferenceOperation)
                 .NextChildIs(NodeKind.TernaryOperator);
         }
@@ -277,7 +271,6 @@ namespace OneScript.Language.Tests
             batch.Is(NodeKind.CodeBatch);
 
             var assignment = batch
-                .NextChild().Is(NodeKind.Statement)
                 .NextChild().Is(NodeKind.Assignment);
             assignment.NextChild();
             var node = assignment.NextChild();

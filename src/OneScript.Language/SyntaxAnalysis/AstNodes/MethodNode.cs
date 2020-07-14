@@ -7,10 +7,24 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
-    public class MethodNode : NonTerminalNode
+    public class MethodNode : AnnotatableNode
     {
         public MethodNode() : base(NodeKind.Method)
         {
+        }
+
+        public MethodSignatureNode Signature { get; private set; }
+
+        protected override void OnChildAdded(AstNodeBase child)
+        {
+            if (child.Kind == NodeKind.MethodSignature)
+            {
+                Signature = (MethodSignatureNode) child;
+            }
+            else
+            {
+                base.OnChildAdded(child);
+            }
         }
     }
 }

@@ -642,13 +642,12 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildSimpleStatement()
         {
-            var statement = CreateChild(CurrentParent, NodeKind.Statement, _lastExtractedLexem);
+            var exceptionFlag = _enableException; 
             try
             {
                 _enableException = true;
                 _isStatementsDefined = true;
-                PushContext(statement);
-                BuildAssignment(statement);
+                BuildAssignment(CurrentParent);
             }
             catch (InternalParseException)
             {
@@ -656,12 +655,11 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             finally
             {
-                _enableException = true;
-                PopContext();
+                _enableException = exceptionFlag;
             }
         }
 
-        private void BuildAssignment(IAstNode statement)
+        private void BuildAssignment(IAstNode batch)
         {
             var call = BuildGlobalCall(_lastExtractedLexem);
             if (call == default)
@@ -671,7 +669,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 if (_lastDereferenceIsWritable)
                 {
-                    var node = CreateChild(statement, NodeKind.Assignment, _lastExtractedLexem);
+                    var node = CreateChild(batch, NodeKind.Assignment, _lastExtractedLexem);
                     _builder.AddChild(node, call);
                     NextLexem();
                     BuildExpression(node, Token.Semicolon);
@@ -683,7 +681,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             else
             {
-                _builder.AddChild(statement, call);
+                _builder.AddChild(batch, call);
             }
         }
 

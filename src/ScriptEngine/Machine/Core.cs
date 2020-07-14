@@ -193,13 +193,7 @@ namespace ScriptEngine.Machine
         public ParameterDefinition[] Params;
         public AnnotationDefinition[] Annotations;
 
-        public int ArgCount
-        {
-            get
-            {
-                return Params != null ? Params.Length : 0;
-            }
-        }
+        public int ArgCount => Params?.Length ?? 0;
 
         public int AnnotationsCount => Annotations?.Length ?? 0;
 

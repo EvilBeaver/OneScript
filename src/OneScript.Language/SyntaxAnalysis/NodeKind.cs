@@ -33,7 +33,6 @@ namespace OneScript.Language.SyntaxAnalysis
         MethodBody,
         BlockEnd,
         CodeBatch,
-        Statement,
         Call,
         CallArgumentList,
         CallArgument,

@@ -9,7 +9,7 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
-    public class MethodParameterNode : NonTerminalNode
+    public class MethodParameterNode : AnnotatableNode
     {
         public MethodParameterNode() : base(NodeKind.MethodParameter)
         {

@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Language.SyntaxAnalysis;
 
 namespace ScriptEngine.Compiler
 {
@@ -20,6 +21,15 @@ namespace ScriptEngine.Compiler
 
         }
 
+        public static CompilerException FromParseError(ParseError error)
+        {
+            var exc = new CompilerException(Locale.NStr(error.Description));
+            if (error.Position != default)
+                AppendCodeInfo(exc, error.Position);
+
+            return exc;
+        }
+        
         internal static CompilerException AppendCodeInfo(CompilerException exc, CodePositionInfo codePosInfo)
         {
             exc.LineNumber = codePosInfo.LineNumber;
