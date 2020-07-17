@@ -48,11 +48,14 @@ namespace OneScript.Language.LexicalAnalysis
         {
             Lexem lex;
             var content = iterator.GetContents();
-            lex = new Lexem()
+            lex = new Lexem
             {
                 Type = LexemType.Operator,
                 Content = content,
-                Token = LanguageDef.GetToken(content)
+                Token = LanguageDef.GetToken(content),
+                Location = new CodeRange(
+                    iterator.CurrentLine,
+                    iterator.CurrentColumn)
             };
             return lex;
         }

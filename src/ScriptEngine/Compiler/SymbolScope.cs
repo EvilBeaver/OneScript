@@ -11,7 +11,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    class SymbolScope
+    public class SymbolScope
     {
         readonly Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 

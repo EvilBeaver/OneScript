@@ -9,7 +9,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    interface ICompilerContext
+    public interface ICompilerContext
     {
         SymbolBinding DefineMethod(ScriptEngine.Machine.MethodInfo method);
         SymbolBinding DefineProperty(string name, string alias = null);

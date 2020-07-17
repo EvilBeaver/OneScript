@@ -315,7 +315,7 @@ namespace ScriptEngine.Machine
         }
     }
 
-    struct VariableBinding
+    public struct VariableBinding
     {
         public SymbolType type;
         public SymbolBinding binding;

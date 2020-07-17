@@ -11,11 +11,11 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class BinaryOperationNode : NonTerminalNode
     {
-        public Lexem Operation { get; }
+        public Token Operation { get; }
 
         public BinaryOperationNode(Lexem operation) : base(NodeKind.BinaryOperation)
         {
-            Operation = operation;
+            Operation = operation.Token;
         }
     }
 }

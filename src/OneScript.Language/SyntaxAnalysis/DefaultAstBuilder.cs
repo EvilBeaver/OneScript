@@ -15,6 +15,8 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         public NonTerminalNode RootNode { get; private set; }
         
+        public bool ThrowOnError { get; set; }
+        
         public virtual IAstNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
             switch (kind)
@@ -76,6 +78,8 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public virtual void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer)
         {
+            if(ThrowOnError)
+                throw new SyntaxErrorException(error.Position, error.Description);
         }
 
         public virtual void PreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)

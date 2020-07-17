@@ -11,12 +11,12 @@ namespace ScriptEngine.Compiler
 {
     class ModuleCompilerContext : ICompilerContext
     {
-        private readonly CompilerContext _outerCtx;
+        private readonly ICompilerContext _outerCtx;
         private readonly CompilerContext _moduleCtx;
         private int OUTER_CTX_SIZE;
         private int _localScopesCount = 0;
 
-        public ModuleCompilerContext(CompilerContext outerContext)
+        public ModuleCompilerContext(ICompilerContext outerContext)
         {
             _outerCtx = outerContext;
             _moduleCtx = new CompilerContext();

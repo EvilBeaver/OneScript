@@ -11,7 +11,6 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         Unknown,
         Module,
-        StatelessModule,
         VariablesSection,
         MethodsSection,
         ModuleBody,
@@ -30,7 +29,6 @@ namespace OneScript.Language.SyntaxAnalysis
         MethodParameters,
         MethodParameter,
         ParameterDefaultValue,
-        MethodBody,
         BlockEnd,
         CodeBatch,
         Call,

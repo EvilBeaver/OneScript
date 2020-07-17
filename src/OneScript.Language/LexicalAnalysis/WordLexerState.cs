@@ -36,7 +36,7 @@ namespace OneScript.Language.LexicalAnalysis
                             Type = LexemType.Operator,
                             Token = LanguageDef.GetToken(content),
                             Content = content,
-                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
+                            Location = new CodeRange(currentLine, currentColumn)
                         };
                     }
                     else if (LanguageDef.IsBooleanLiteralString(content))
@@ -45,7 +45,7 @@ namespace OneScript.Language.LexicalAnalysis
                         {
                             Type = LexemType.BooleanLiteral,
                             Content = content,
-                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
+                            Location = new CodeRange(currentLine, currentColumn)
                         };
                     }
                     else if (LanguageDef.IsUndefinedString(content))
@@ -54,7 +54,7 @@ namespace OneScript.Language.LexicalAnalysis
                         {
                             Type = LexemType.UndefinedLiteral,
                             Content = content,
-                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
+                            Location = new CodeRange(currentLine, currentColumn)
                         };
 
                     }
@@ -64,7 +64,7 @@ namespace OneScript.Language.LexicalAnalysis
                         {
                             Type = LexemType.NullLiteral,
                             Content = content,
-                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
+                            Location = new CodeRange(currentLine, currentColumn)
                         };
 
                     }
@@ -75,7 +75,7 @@ namespace OneScript.Language.LexicalAnalysis
                             Type = LexemType.Identifier,
                             Content = content,
                             Token = LanguageDef.GetToken(content),
-                            Location = new CodeRange(start, content.Length, currentLine, currentColumn)
+                            Location = new CodeRange(currentLine, currentColumn)
                         };
 
                         if (LanguageDef.IsBuiltInFunction(lex.Token))

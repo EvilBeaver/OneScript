@@ -204,6 +204,73 @@ namespace OneScript.Language.Tests
             node.Is(NodeKind.DereferenceOperation)
                     .NextChildIs(NodeKind.Identifier)
                     .NextChildIs(NodeKind.Call);
+
+            node = batch.NextChild();
+            node.Is(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.Call)
+                .NextChildIs(NodeKind.Call);
+            
+            node = batch.NextChild();
+            node.Is(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.IndexAccess)
+                .NextChildIs(NodeKind.Call);
+        }
+        
+        [Fact]
+        public void Check_Argument_Passing()
+        {
+            var code = @"Proc();
+            Proc(А+1, Б+2);
+            Proc('00010101');
+            Proc(,);
+            Proc(1,);
+            Proc(,1)";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            var node = batch.NextChild();
+            node.Is(NodeKind.Call)
+                .NextChild().Is(NodeKind.Identifier)
+                .Equal("Proc");
+            node.NextChild().Is(NodeKind.CallArgumentList)
+                .NoMoreChildren();
+
+            node = batch.NextChild();
+            node.NextChild();
+            var list = node.NextChild().Is(NodeKind.CallArgumentList);
+            list.NextChildIs(NodeKind.CallArgument)
+                .NextChildIs(NodeKind.CallArgument)
+                .NoMoreChildren();
+
+            list.CurrentNode.ChildrenList[0].ChildrenList[0].Kind.Should().Be(NodeKind.BinaryOperation);
+            list.CurrentNode.ChildrenList[1].ChildrenList[0].Kind.Should().Be(NodeKind.BinaryOperation);
+
+            node = batch.NextChild();
+            node.NextChild();
+            list = node.NextChild();
+            list.HasChildNodes(1);
+
+            node = batch.NextChild();
+            node.NextChild();
+            list = node.NextChild();
+            list.HasChildNodes(2);
+            list.NextChild().Is(NodeKind.CallArgument).NoMoreChildren();
+            list.NextChild().Is(NodeKind.CallArgument).NoMoreChildren();
+            
+            node = batch.NextChild();
+            node.NextChild();
+            list = node.NextChild();
+            list.HasChildNodes(2);
+            list.NextChild().Is(NodeKind.CallArgument).NextChildIs(NodeKind.Constant);
+            list.NextChild().Is(NodeKind.CallArgument).NoMoreChildren();
+            
+            node = batch.NextChild();
+            node.NextChild();
+            list = node.NextChild();
+            list.HasChildNodes(2);
+            list.NextChild().Is(NodeKind.CallArgument).NoMoreChildren();
+            list.NextChild().Is(NodeKind.CallArgument).NextChildIs(NodeKind.Constant);
+            
         }
         
         [Fact]
@@ -325,7 +392,8 @@ namespace OneScript.Language.Tests
         
         private static SyntaxTreeValidator ParseBatchAndGetValidator(string code)
         {
-            return MakeValidator(code, p => p.ParseCodeBatch());
+            var body = MakeValidator(code, p => p.ParseCodeBatch());
+            return body.NextChild();
         }
         
         private static SyntaxTreeValidator ParseExpressionAndGetValidator(string code)

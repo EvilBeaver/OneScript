@@ -113,7 +113,7 @@ namespace ScriptEngine
 
         public CompilerService GetCompilerService()
         {
-            var cs = new CompilerService(Environment.SymbolsContext);
+            var cs = new AstBasedCompilerService(Environment.SymbolsContext);
             switch (System.Environment.OSVersion.Platform)
             {
                 case PlatformID.Unix:

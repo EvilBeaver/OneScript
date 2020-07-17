@@ -434,7 +434,8 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildModuleBody()
         {
-            var node = _builder.CreateNode(NodeKind.CodeBatch, _lastExtractedLexem);
+            var parent = _builder.CreateNode(NodeKind.ModuleBody, _lastExtractedLexem);
+            var node = CreateChild(parent, NodeKind.CodeBatch, _lastExtractedLexem);
             PushContext(node);
             try
             {
@@ -444,7 +445,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 PopContext();
             }
-            _builder.AddChild(CurrentParent, node);
+            _builder.AddChild(CurrentParent, parent);
         }
 
         #region Annotations
@@ -662,8 +663,6 @@ namespace OneScript.Language.SyntaxAnalysis
         private void BuildAssignment(IAstNode batch)
         {
             var call = BuildGlobalCall(_lastExtractedLexem);
-            if (call == default)
-                return;
             
             if (_lastExtractedLexem.Token == Token.Equal)
             {
@@ -848,16 +847,15 @@ namespace OneScript.Language.SyntaxAnalysis
             return node;
         }
         
-        private IAstNode BuildOptionalExpression(IAstNode parent, Token stopToken)
+        private void BuildOptionalExpression(IAstNode parent, Token stopToken)
         {
             if (_lastExtractedLexem.Token == stopToken)
             {
-                return default;
+                return;
             }
 
             var op = BuildLogicalOr();
             _builder.AddChild(parent, op);
-            return op;
         }
 
         #region Operators

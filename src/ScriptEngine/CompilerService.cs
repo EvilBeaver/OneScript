@@ -23,7 +23,7 @@ namespace ScriptEngine
         private readonly List<string> _preprocessorVariables = new List<string>();
         
 
-        internal CompilerService(CompilerContext outerContext)
+        internal CompilerService(ICompilerContext outerContext)
         {
             _currentContext = new ModuleCompilerContext(outerContext);
         }
@@ -103,10 +103,6 @@ namespace ScriptEngine
             };
             parser.Code = source.Code;
 
-            var compiler = new Compiler.Compiler();
-            compiler.ProduceExtraCode = ProduceExtraCode;
-            compiler.DirectiveHandler = ResolveDirective;
-
             if (DirectiveResolver != null)
             {
                 DirectiveResolver.Source = source;
@@ -115,14 +111,7 @@ namespace ScriptEngine
             ModuleImage compiledImage;
             try
             {
-                compiledImage = compiler.Compile(parser, _currentContext);
-            }
-            catch (ScriptException e)
-            {
-                if(e.ModuleName == null)
-                    e.ModuleName = source.SourceDescription;
-
-                throw;
+                compiledImage = CreateImage(_currentContext, source, parser);
             }
             finally
             {
@@ -132,16 +121,40 @@ namespace ScriptEngine
                 }
             }
 
-            var mi = new ModuleInformation();
-            mi.CodeIndexer = parser.Iterator;
-            // пока у модулей нет собственных имен, будет совпадать с источником модуля
-            mi.ModuleName = source.SourceDescription;
-            mi.Origin = source.SourceDescription;
+            var mi = CreateModuleInformation(source, parser);
             compiledImage.ModuleInfo = mi;
 
             return compiledImage;
         }
 
+        protected static ModuleInformation CreateModuleInformation(ICodeSource source, ILexemGenerator parser)
+        {
+            var mi = new ModuleInformation();
+            mi.CodeIndexer = parser.Iterator;
+            // пока у модулей нет собственных имен, будет совпадать с источником модуля
+            mi.ModuleName = source.SourceDescription;
+            mi.Origin = source.SourceDescription;
+            return mi;
+        }
+
+        protected virtual ModuleImage CreateImage(ICompilerContext context, ICodeSource source, ILexemGenerator lexer)
+        {
+            try
+            {
+                var compiler = new Compiler.Compiler();
+                compiler.ProduceExtraCode = ProduceExtraCode;
+                compiler.DirectiveHandler = ResolveDirective;
+                return compiler.Compile(lexer, _currentContext);
+            }
+            catch (ScriptException e)
+            {
+                if(e.ModuleName == null)
+                    e.ModuleName = source.SourceDescription;
+
+                throw;
+            }
+        }
+        
         private bool ResolveDirective(string directive, string value, bool codeEntered)
         {
             if (DirectiveResolver != null)
