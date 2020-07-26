@@ -27,6 +27,7 @@ namespace ScriptEngine.Compiler.ByteCode
         private ModuleInformation _moduleInfo;
 
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
+        private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
 
         public AstBasedCodeGenerator(ICompilerContext context)
         {
@@ -181,9 +182,31 @@ namespace ScriptEngine.Compiler.ByteCode
             base.VisitStatement(statement);
         }
 
-        private void WriteWhileLoop(NonTerminalNode node)
+        protected override void VisitWhileNode(WhileLoopNode node)
         {
-            var loop = node as WhileLoopNode;
+            var conditionIndex = _module.Code.Count;
+            var loopRecord = NestedLoopInfo.New();
+            loopRecord.startPoint = conditionIndex;
+            _nestedLoops.Push(loopRecord);
+            base.VisitExpression(node.Children[0]);
+            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
+            
+            VisitCodeBlock(node.Children[1]);
+            AddLineNumber(
+                ((LabelNode)node.Children[2]).Location.LineNumber,
+                CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
+            
+            var endLoop = AddCommand(OperationCode.Nop);
+            CorrectCommandArgument(jumpFalseIndex, endLoop);
+            CorrectBreakStatements(_nestedLoops.Pop(), endLoop);
+        }
+        
+        private void CorrectBreakStatements(NestedLoopInfo nestedLoopInfo, int endLoopIndex)
+        {
+            foreach (var breakCmdIndex in nestedLoopInfo.breakStatements)
+            {
+                CorrectCommandArgument(breakCmdIndex, endLoopIndex);
+            }
         }
 
         protected override void VisitAssignment(BslSyntaxNode assignment)
@@ -411,7 +434,7 @@ namespace ScriptEngine.Compiler.ByteCode
         {
             for (int i = 0; i < argList.Children.Count; i++)
             {
-                var passedArg = (NonTerminalNode)argList.Children[i];
+                var passedArg = argList.Children[i];
                 if (passedArg.Children.Count > 0)
                 {
                     VisitExpression(passedArg.Children[0]);

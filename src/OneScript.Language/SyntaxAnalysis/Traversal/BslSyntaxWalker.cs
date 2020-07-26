@@ -33,8 +33,9 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             _nodeVisitors[NodeKind.DereferenceOperation] = VisitDereferenceOperation;
             _nodeVisitors[NodeKind.IndexAccess] = VisitIndexAccess;
             _nodeVisitors[NodeKind.GlobalCall] = VisitGlobalFunctionCall;
-            _nodeVisitors[NodeKind.BinaryOperation] = VisitBinaryOperationInternal;
-            _nodeVisitors[NodeKind.UnaryOperation] = VisitUnaryOperationInternal;
+            _nodeVisitors[NodeKind.BinaryOperation] = (x) => VisitBinaryOperation((BinaryOperationNode)x);
+            _nodeVisitors[NodeKind.UnaryOperation] = (x) => VisitUnaryOperation((UnaryOperationNode)x);
+            _nodeVisitors[NodeKind.WhileLoop] = (x) => VisitWhileNode((WhileLoopNode)x);
 
         }
 
@@ -233,16 +234,6 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         {
         }
         
-        private void VisitBinaryOperationInternal(BslSyntaxNode node)
-        {
-            VisitBinaryOperation((BinaryOperationNode)node);
-        }
-        
-        private void VisitUnaryOperationInternal(BslSyntaxNode node)
-        {
-            VisitUnaryOperation((UnaryOperationNode)node);
-        }
-        
         protected virtual void VisitBinaryOperation(BinaryOperationNode node)
         {
         }
@@ -258,6 +249,22 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         protected virtual void VisitModuleBody(BslSyntaxNode codeBlock)
         {
             VisitCodeBlock(codeBlock);
+        }
+
+        protected virtual void VisitWhileNode(WhileLoopNode node)
+        {
+            VisitWhileCondition(node.Children[0]);
+            VisitWhileBody(node.Children[1]);
+        }
+
+        protected virtual void VisitWhileBody(BslSyntaxNode node)
+        {
+            VisitCodeBlock(node);
+        }
+
+        protected virtual void VisitWhileCondition(BslSyntaxNode node)
+        {
+            VisitExpression(node);
         }
 
         public void Visit(BslSyntaxNode node)

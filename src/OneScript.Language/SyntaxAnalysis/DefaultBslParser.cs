@@ -615,7 +615,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildIfStatement()
         {
-            throw new NotImplementedException();
+            
         }
 
         private void BuildWhileStatement()

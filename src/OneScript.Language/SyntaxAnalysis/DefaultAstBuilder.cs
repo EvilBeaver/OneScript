@@ -29,6 +29,8 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.AnnotationParameterValue:
                 case NodeKind.ParameterDefaultValue:
                     return new TerminalNode(kind, startLexem);
+                case NodeKind.BlockEnd:
+                    return new LabelNode(startLexem.Location);
                 default:
                     var node = MakeNonTerminal(kind, startLexem);
                     if (RootNode == default)
