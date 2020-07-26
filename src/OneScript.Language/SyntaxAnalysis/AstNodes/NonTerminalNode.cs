@@ -14,7 +14,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
     {
         private List<AstNodeBase> _children = new List<AstNodeBase>();
 
-        public NonTerminalNode(NodeKind kind, Lexem startLexem)
+        public NonTerminalNode(int kind, Lexem startLexem)
             :this(kind)
         {
             Location = startLexem.Location;
@@ -24,7 +24,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         {
         }
         
-        public NonTerminalNode(NodeKind kind)
+        public NonTerminalNode(int kind)
         {
             Kind = kind;
         }

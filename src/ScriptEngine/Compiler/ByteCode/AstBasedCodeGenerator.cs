@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
@@ -16,6 +17,7 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
+using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
 namespace ScriptEngine.Compiler.ByteCode
 {
@@ -26,12 +28,18 @@ namespace ScriptEngine.Compiler.ByteCode
         private List<CompilerException> _errors = new List<CompilerException>();
         private ModuleInformation _moduleInfo;
 
+        private Action<NonTerminalNode>[] _nodeWriters;
+
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
 
         public AstBasedCodeGenerator(ICompilerContext context)
         {
             _ctx = context;
             _module = new ModuleImage();
+            _nodeWriters = new Action<NonTerminalNode>[
+                typeof(NodeKind).GetFields(BindingFlags.Static|BindingFlags.Public).Length
+            ];
+            _nodeWriters[NodeKind.WhileLoop] = WriteWhileLoop;
         }
 
         public bool ThrowErrors { get; set; }
@@ -215,8 +223,13 @@ namespace ScriptEngine.Compiler.ByteCode
             }
             else
             {
-                //WriteStructuralBlock(statement);
+                _nodeWriters[statement.Kind](statement);
             }
+        }
+
+        private void WriteWhileLoop(NonTerminalNode node)
+        {
+            var loop = node as WhileLoopNode;
         }
 
         private void WriteAssignment(NonTerminalNode assignment)

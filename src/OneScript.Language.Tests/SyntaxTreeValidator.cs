@@ -47,7 +47,7 @@ namespace OneScript.Language.Tests
             return this;
         }
 
-        public SyntaxTreeValidator NextChildIs(NodeKind nodeType)
+        public SyntaxTreeValidator NextChildIs(int nodeType)
         {
             return NextChildIs(nodeType.ToString());
         }

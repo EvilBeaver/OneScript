@@ -34,12 +34,12 @@ namespace OneScript.Language.Tests
 
                 if (nonTerm is BinaryOperationNode binary)
                 {
-                    Value = binary.Operation.Content;
+                    Value = binary.Operation.ToString();
                 }
                 
                 if (nonTerm is UnaryOperationNode unary)
                 {
-                    Value = unary.Operation.Content;
+                    Value = unary.Operation.ToString();
                 }
             }
             else

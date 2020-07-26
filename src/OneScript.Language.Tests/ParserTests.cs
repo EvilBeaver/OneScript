@@ -342,7 +342,7 @@ namespace OneScript.Language.Tests
             assignment.NextChild();
             var node = assignment.NextChild();
             node.Is(NodeKind.BinaryOperation)
-                .Equal("+");
+                .Equal(Token.Plus.ToString());
             node.NextChild().Is(NodeKind.UnaryOperation)
                 .NextChildIs(NodeKind.Constant);
             node.NextChild().Is(NodeKind.Constant);
@@ -355,14 +355,14 @@ namespace OneScript.Language.Tests
             
             var expr = ParseExpressionAndGetValidator(code);
             expr.Is(NodeKind.BinaryOperation)
-                .Equal("ИЛИ");
+                .Equal(Token.Or.ToString());
 
             expr.NextChild().Is(NodeKind.BinaryOperation)
-                .Equal(">=");
+                .Equal(Token.MoreOrEqual.ToString());
             
             expr.NextChild().Is(NodeKind.UnaryOperation)
                 .NextChild().Is(NodeKind.BinaryOperation)
-                .Equal("<");
+                .Equal(Token.LessThan.ToString());
         }
         
         [Fact]
@@ -372,7 +372,7 @@ namespace OneScript.Language.Tests
 
             var expr = ParseExpressionAndGetValidator(code);
             expr.Is(NodeKind.BinaryOperation)
-                .Equal("ИЛИ");
+                .Equal(Token.Or.ToString());
         }
         
         [Fact]
@@ -382,7 +382,7 @@ namespace OneScript.Language.Tests
             
             var expr = ParseExpressionAndGetValidator(code);
             expr.Is(NodeKind.BinaryOperation)
-                .Equal("И");
+                .Equal(Token.And.ToString());
         }
         
         private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)

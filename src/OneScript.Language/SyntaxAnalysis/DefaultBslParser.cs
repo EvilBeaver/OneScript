@@ -114,7 +114,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         #region Variables
         
-        private void BuildVariableSection(NodeKind sectionKind = NodeKind.VariablesSection)
+        private void BuildVariableSection(int sectionKind = NodeKind.VariablesSection)
         {
             if (_lastExtractedLexem.Token != Token.VarDef && _lastExtractedLexem.Type != LexemType.Annotation)
             {
@@ -1171,7 +1171,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return tok;
         }
 
-        private IAstNode CreateChild(IAstNode parent, NodeKind kind, in Lexem lex)
+        private IAstNode CreateChild(IAstNode parent, int kind, in Lexem lex)
         {
             var child = _builder.CreateNode(kind, lex);
             _builder.AddChild(parent, child);

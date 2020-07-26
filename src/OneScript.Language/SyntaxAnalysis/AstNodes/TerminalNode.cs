@@ -13,12 +13,12 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
     {
         public Lexem Lexem { get; set; }
         
-        public TerminalNode(NodeKind kind)
+        public TerminalNode(int kind)
         {
             Kind = kind;
         }
         
-        public TerminalNode(NodeKind kind, Lexem lexem)
+        public TerminalNode(int kind, Lexem lexem)
         {
             Kind = kind;
             Lexem = lexem;

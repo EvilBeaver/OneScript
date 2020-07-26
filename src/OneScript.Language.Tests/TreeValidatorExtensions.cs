@@ -20,7 +20,7 @@ namespace OneScript.Language.Tests
             return validator;
         }
         
-        public static SyntaxTreeValidator Is(this SyntaxTreeValidator validator, NodeKind type)
+        public static SyntaxTreeValidator Is(this SyntaxTreeValidator validator, int type)
         {
             Assert.Equal(type, validator.CurrentNode.Kind);
             return validator;
@@ -31,7 +31,7 @@ namespace OneScript.Language.Tests
             Assert.Equal(type, node.Kind.ToString());
         }
         
-        public static void Is(this TestAstNode node, NodeKind type)
+        public static void Is(this TestAstNode node, int type)
         {
             Assert.Equal(type, node.Kind);
         }

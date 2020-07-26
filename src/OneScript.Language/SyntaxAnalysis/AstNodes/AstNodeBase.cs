@@ -11,7 +11,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public abstract class AstNodeBase : IAstNode
     {
-        public NodeKind Kind { get; protected set; }
+        public int Kind { get; protected set; }
         
         public IAstNode Parent { get; internal set; }
         
