@@ -10,9 +10,9 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
-    public class NonTerminalNode : AstNodeBase
+    public class NonTerminalNode : BslSyntaxNode
     {
-        private List<AstNodeBase> _children = new List<AstNodeBase>();
+        private List<BslSyntaxNode> _children = new List<BslSyntaxNode>();
 
         public NonTerminalNode(int kind, Lexem startLexem)
             :this(kind)
@@ -29,16 +29,16 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
             Kind = kind;
         }
 
-        public IReadOnlyList<AstNodeBase> Children => _children;
+        public override IReadOnlyList<BslSyntaxNode> Children => _children;
 
-        public void AddChild(AstNodeBase child)
+        public void AddChild(BslSyntaxNode child)
         {
             child.Parent = this;
             _children.Add(child);
             OnChildAdded(child);
         }
 
-        protected virtual void OnChildAdded(AstNodeBase child)
+        protected virtual void OnChildAdded(BslSyntaxNode child)
         {
         }
     }

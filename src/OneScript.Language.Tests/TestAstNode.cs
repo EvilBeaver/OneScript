@@ -14,13 +14,13 @@ using ScriptEngine.Compiler.ByteCode;
 
 namespace OneScript.Language.Tests
 {
-    public class TestAstNode : AstNodeBase
+    public class TestAstNode : BslSyntaxNode
     {
         private Lazy<IReadOnlyList<TestAstNode>> _childrenLazy;
         
-        public AstNodeBase RealNode { get; }
+        public BslSyntaxNode RealNode { get; }
         
-        public TestAstNode(AstNodeBase node)
+        public TestAstNode(BslSyntaxNode node)
         {
             RealNode = node;
             Kind = node.Kind;
@@ -52,5 +52,12 @@ namespace OneScript.Language.Tests
         public string Value { get; set; }
 
         public IReadOnlyList<TestAstNode> ChildrenList => _childrenLazy.Value;
+
+        public override IReadOnlyList<BslSyntaxNode> Children => ChildrenList;
+        
+        public override string ToString()
+        {
+            return $"{NodeKind.Presentation(Kind)} ({Location.LineNumber},{Location.ColumnNumber})";
+        }
     }
 }

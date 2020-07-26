@@ -689,16 +689,16 @@ namespace OneScript.Language.SyntaxAnalysis
             _lastDereferenceIsWritable = true;
             var target = _builder.CreateNode(NodeKind.Identifier, identifier);
             NextLexem();
-            var callNode = BuildCall(target);
+            var callNode = BuildCall(target, NodeKind.GlobalCall);
             return BuildDereference(callNode);
         }
 
-        private IAstNode BuildCall(IAstNode target)
+        private IAstNode BuildCall(IAstNode target, int callKind)
         {
             IAstNode callNode = default;
             if (_lastExtractedLexem.Token == Token.OpenPar)
             {
-                callNode = _builder.CreateNode(NodeKind.Call, _lastExtractedLexem);
+                callNode = _builder.CreateNode(callKind, _lastExtractedLexem);
                 _builder.AddChild(callNode, target);
                 BuildCallParameters(callNode);
             }
@@ -784,7 +784,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 {
                     _lastDereferenceIsWritable = false;
                     var ident = _builder.CreateNode(NodeKind.Identifier, identifier);
-                    var call = BuildCall(ident);
+                    var call = BuildCall(ident, NodeKind.MethodCall);
                     _builder.AddChild(dotNode, call);
                 }
                 else

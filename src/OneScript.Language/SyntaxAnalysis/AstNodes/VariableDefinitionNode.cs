@@ -21,7 +21,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 
         public bool IsExported { get; private set; }
 
-        protected override void OnChildAdded(AstNodeBase child)
+        protected override void OnChildAdded(BslSyntaxNode child)
         {
             if (child.Kind == NodeKind.ExportFlag)
                 IsExported = true;

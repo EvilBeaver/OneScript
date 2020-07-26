@@ -23,7 +23,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 
         public Lexem DefaultValue { get; private set; }
 
-        protected override void OnChildAdded(AstNodeBase child)
+        protected override void OnChildAdded(BslSyntaxNode child)
         {
             base.OnChildAdded(child);
             switch (child.Kind)

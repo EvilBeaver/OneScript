@@ -9,26 +9,22 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using OneScript.Language.SyntaxAnalysis.Traversal;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
-using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
 namespace ScriptEngine.Compiler.ByteCode
 {
-    internal partial class AstBasedCodeGenerator
+    internal partial class AstBasedCodeGenerator : BslSyntaxWalker
     {
         private ModuleImage _module;
         private ICompilerContext _ctx;
         private List<CompilerException> _errors = new List<CompilerException>();
         private ModuleInformation _moduleInfo;
-
-        private Action<NonTerminalNode>[] _nodeWriters;
 
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
 
@@ -36,10 +32,6 @@ namespace ScriptEngine.Compiler.ByteCode
         {
             _ctx = context;
             _module = new ModuleImage();
-            _nodeWriters = new Action<NonTerminalNode>[
-                typeof(NodeKind).GetFields(BindingFlags.Static|BindingFlags.Public).Length
-            ];
-            _nodeWriters[NodeKind.WhileLoop] = WriteWhileLoop;
         }
 
         public bool ThrowErrors { get; set; }
@@ -62,35 +54,34 @@ namespace ScriptEngine.Compiler.ByteCode
 
         private ModuleImage CreateImageInternal(NonTerminalNode moduleNode)
         {
-            foreach (var child in moduleNode.Children.Cast<NonTerminalNode>())
-            {
-                switch (child.Kind)
-                {
-                    case NodeKind.VariablesSection:
-                        child.Children
-                            .ForEach(x => WriteModuleVariable((VariableDefinitionNode)x));
-                        break;
-                    case NodeKind.MethodsSection:
-                        child.Children
-                            .ForEach(x => WriteMethod((MethodNode)x));
-                        break;
-                    case NodeKind.ModuleBody:
-                        WriteModuleBody(child);
-                        break;
-                }
-            }
-
+            VisitModule(moduleNode);
             return _module;
         }
 
-        private void WriteModuleBody(NonTerminalNode child)
+        protected override void VisitModuleVariable(VariableDefinitionNode varNode)
+        {
+            var symbolicName = varNode.Name;
+            var annotations = GetAnnotations(varNode);
+            var definition = _ctx.DefineVariable(symbolicName);
+            _module.VariableRefs.Add(definition);
+            _module.Variables.Add(new VariableInfo
+            {
+                Identifier = symbolicName,
+                Annotations = annotations,
+                CanGet = true,
+                CanSet = true,
+                Index = definition.CodeIndex
+            });
+        }
+
+        protected override void VisitModuleBody(BslSyntaxNode child)
         {
             var entry = _module.Code.Count;
             _ctx.PushScope(new SymbolScope());
 
             try
             {
-                WriteCodeBatch(child.Children[0].AsNonTerminal());
+                VisitCodeBlock(child.Children[0]);
             }
             catch
             {
@@ -133,7 +124,7 @@ namespace ScriptEngine.Compiler.ByteCode
             }
         }
         
-        private void WriteMethod(MethodNode methodNode)
+        protected override void VisitMethod(MethodNode methodNode)
         {
             var signature = methodNode.Signature;
             if (_ctx.TryGetMethod(signature.MethodName, out _))
@@ -171,7 +162,7 @@ namespace ScriptEngine.Compiler.ByteCode
             _ctx.PushScope(methodCtx);
             try
             {
-                DispatchMethodBody(methodNode);
+                VisitMethodBody(methodNode);
             }
             finally
             {
@@ -179,52 +170,15 @@ namespace ScriptEngine.Compiler.ByteCode
             }
         }
 
-        private void DispatchMethodBody(MethodNode methodNode)
+        protected override void VisitMethodVariable(MethodNode method, VariableDefinitionNode variableDefinition)
         {
-            foreach (var node in methodNode
-                .Children
-                .SkipWhile(x => x.Kind == NodeKind.Annotation || x.Kind == NodeKind.MethodSignature))
-            {
-                if (node is VariableDefinitionNode variable)
-                {
-                    _ctx.DefineVariable(variable.Name);
-                }
-                else if(node.Kind == NodeKind.CodeBatch)
-                {
-                    WriteCodeBatch((NonTerminalNode)node);
-                }
-            }
+            _ctx.DefineVariable(variableDefinition.Name);
         }
 
-        private void WriteCodeBatch(NonTerminalNode node)
-        {
-            foreach (var statement in node.Children)
-            {
-                WriteStatement((NonTerminalNode)statement);
-            }
-        }
-
-        private void WriteStatement(NonTerminalNode statement)
+        protected override void VisitStatement(BslSyntaxNode statement)
         {
             AddLineNumber(statement.Location.LineNumber);
-            
-            if (statement.Kind == NodeKind.Assignment)
-            {
-                WriteAssignment(statement);
-            }
-            else if (statement.Kind == NodeKind.Call)
-            {
-                GlobalCall(statement, false);
-            }
-            else if (statement.Kind == NodeKind.DereferenceOperation)
-            {
-                PushReference(statement.Children[0].AsNonTerminal());
-                ResolveObjectMethod(statement.Children[1].AsNonTerminal(), false);
-            }
-            else
-            {
-                _nodeWriters[statement.Kind](statement);
-            }
+            base.VisitStatement(statement);
         }
 
         private void WriteWhileLoop(NonTerminalNode node)
@@ -232,59 +186,79 @@ namespace ScriptEngine.Compiler.ByteCode
             var loop = node as WhileLoopNode;
         }
 
-        private void WriteAssignment(NonTerminalNode assignment)
+        protected override void VisitAssignment(BslSyntaxNode assignment)
         {
             var left = assignment.Children[0];
             var right = assignment.Children[1];
             if (left is TerminalNode term)
             {
-                PushExpressionResult(right);
-                BuildLoadVariable(term.Lexem.Content);
+                VisitExpression(right);
+                VisitVariableWrite(term);
             }
             else
             {
-                PushReference(left.AsNonTerminal());
-                PushExpressionResult(right);
+                VisitReferenceRead(left);
+                VisitExpression(right);
                 AddCommand(OperationCode.AssignRef);
             }
         }
 
-        private void PushReference(NonTerminalNode operation)
+        protected override void VisitResolveProperty(TerminalNode operand)
         {
-            switch (operation.Kind)
+            ResolveProperty(operand.GetIdentifier());
+        }
+
+        protected override void VisitVariableRead(TerminalNode node)
+        {
+            PushVariable(node.GetIdentifier());
+        }
+
+        protected override void VisitVariableWrite(TerminalNode node)
+        {
+            var identifier = node.GetIdentifier();
+            var hasVar = _ctx.TryGetVariable(identifier, out var varBinding);
+            if (hasVar)
             {
-                case NodeKind.DereferenceOperation:
+                if (varBinding.binding.ContextIndex == _ctx.TopIndex())
                 {
-                    PushAccessTarget(operation.Children[0]);
-                    var argument = operation.Children[1];
-                    if (argument.Kind == NodeKind.Identifier)
-                    {
-                        ResolveProperty(argument.GetIdentifier());
-                    }
-                    else
-                    {
-                        Debug.Assert(argument.Kind == NodeKind.Call);
-                        ResolveObjectMethod(argument.AsNonTerminal(), true);
-                    }
-                    break;
+                    AddCommand(OperationCode.LoadLoc, varBinding.binding.CodeIndex);
                 }
-                case NodeKind.IndexAccess:
+                else
                 {
-                    PushAccessTarget(operation.Children[0]);
-                    var argument = operation.Children[1];
-                    PushExpressionResult(argument);
-                    AddCommand(OperationCode.PushIndexed);
-                    break;
+                    var num = GetVariableRefNumber(ref varBinding.binding);
+                    AddCommand(OperationCode.LoadVar, num);
                 }
-                case NodeKind.Call:
-                    GlobalCall(operation, true);
-                    return;
-                default:
-                    throw new ApplicationException($"Wrong tree structure: {operation.Kind}/{operation.Location.LineNumber}");
+            }
+            else
+            {
+                // can create variable
+                var binding = _ctx.DefineVariable(identifier);
+                AddCommand(OperationCode.LoadLoc, binding.CodeIndex);
             }
         }
 
-        private void ResolveObjectMethod(NonTerminalNode callNode, bool asFunction)
+        protected override void VisitObjectFunctionCall(BslSyntaxNode node)
+        {
+            ResolveObjectMethod(node, true);
+        }
+
+        protected override void VisitIndexExpression(BslSyntaxNode operand)
+        {
+            base.VisitIndexExpression(operand);
+            AddCommand(OperationCode.PushIndexed);
+        }
+
+        protected override void VisitGlobalFunctionCall(BslSyntaxNode node)
+        {
+            GlobalCall(node, true);
+        }
+
+        protected override void VisitGlobalProcedureCall(BslSyntaxNode node)
+        {
+            GlobalCall(node, false);
+        }
+
+        private void ResolveObjectMethod(BslSyntaxNode callNode, bool asFunction)
         {
             var name = callNode.Children[0];
             var args = callNode.Children[1];
@@ -296,25 +270,13 @@ namespace ScriptEngine.Compiler.ByteCode
             cDef.Type = DataType.String;
             cDef.Presentation = name.GetIdentifier();
             int lastIdentifierConst = GetConstNumber(cDef);
-            PushCallArguments(args.AsNonTerminal());
+            PushCallArguments(args);
             if (asFunction)
                 AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
             else
                 AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
         }
         
-        private void PushAccessTarget(AstNodeBase target)
-        {
-            if (target.Kind == NodeKind.Identifier)
-            {
-                PushVariable(target.GetIdentifier());
-            }
-            else
-            {
-                PushReference(target.AsNonTerminal());
-            }
-        }
-
         private void ResolveProperty(string identifier)
         {
             var cDef = new ConstDefinition();
@@ -357,30 +319,7 @@ namespace ScriptEngine.Compiler.ByteCode
             return AddCommand(OperationCode.PushRef, idx);
         }
 
-        private void BuildLoadVariable(string identifier)
-        {
-            var hasVar = _ctx.TryGetVariable(identifier, out var varBinding);
-            if (hasVar)
-            {
-                if (varBinding.binding.ContextIndex == _ctx.TopIndex())
-                {
-                    AddCommand(OperationCode.LoadLoc, varBinding.binding.CodeIndex);
-                }
-                else
-                {
-                    var num = GetVariableRefNumber(ref varBinding.binding);
-                    AddCommand(OperationCode.LoadVar, num);
-                }
-            }
-            else
-            {
-                // can create variable
-                var binding = _ctx.DefineVariable(identifier);
-                AddCommand(OperationCode.LoadLoc, binding.CodeIndex);
-            }
-        }
-        
-        private void GlobalCall(NonTerminalNode nonTerminal, bool asFunction)
+        private void GlobalCall(BslSyntaxNode nonTerminal, bool asFunction)
         {
             var identifierNode = nonTerminal.Children[0] as TerminalNode;
             var argList = nonTerminal.Children[1] as NonTerminalNode;
@@ -442,7 +381,7 @@ namespace ScriptEngine.Compiler.ByteCode
                 var passedArg = (NonTerminalNode)argList.Children[i];
                 if (passedArg.Children.Count > 0)
                 {
-                    PushExpressionResult(passedArg.Children[0]);
+                    VisitExpression(passedArg.Children[0]);
                 }
                 else
                 {
@@ -468,14 +407,14 @@ namespace ScriptEngine.Compiler.ByteCode
             AddCommand(OperationCode.ArgNum, argList.Children.Count);
         }
 
-        private void PushCallArguments(NonTerminalNode argList)
+        private void PushCallArguments(BslSyntaxNode argList)
         {
             for (int i = 0; i < argList.Children.Count; i++)
             {
                 var passedArg = (NonTerminalNode)argList.Children[i];
                 if (passedArg.Children.Count > 0)
                 {
-                    PushExpressionResult(passedArg.Children[0]);
+                    VisitExpression(passedArg.Children[0]);
                 }
                 else
                 {
@@ -486,63 +425,32 @@ namespace ScriptEngine.Compiler.ByteCode
             AddCommand(OperationCode.ArgNum, argList.Children.Count);
         }
         
-        private void PushExpressionResult(AstNodeBase expression)
-        {
-            if (expression is TerminalNode term)
-            {
-                PushTerminalSymbol(term);
-            }
-            else
-            {
-                DispatchExpression(expression.AsNonTerminal());
-            }
-        }
-
-        private void DispatchExpression(NonTerminalNode expression)
-        {
-            switch (expression.Kind)
-            {
-                case NodeKind.BinaryOperation:
-                    WriteBinaryOperation((BinaryOperationNode)expression);
-                    break;
-                case NodeKind.UnaryOperation:
-                    WriteUnaryOperaion((UnaryOperationNode)expression);
-                    break;
-                case NodeKind.TernaryOperator:
-                    WriteTernaryOperator(expression);
-                    break;
-                default:
-                    PushReference(expression);
-                    break;
-            }
-        }
-
-        private void WriteTernaryOperator(NonTerminalNode expression)
+        protected override void VisitTernaryOperation(BslSyntaxNode expression)
         {
             throw new NotImplementedException();
         }
 
-        private void WriteUnaryOperaion(UnaryOperationNode unaryOperationNode)
+        protected override void VisitUnaryOperation(UnaryOperationNode unaryOperationNode)
         {
             var child = unaryOperationNode.Children[0];
-            PushExpressionResult(child);
+            VisitExpression(child);
             AddCommand(TokenToOperationCode(unaryOperationNode.Operation));
         }
         
-        private void WriteBinaryOperation(BinaryOperationNode binaryOperationNode)
+        protected override void VisitBinaryOperation(BinaryOperationNode binaryOperationNode)
         {
             if (LanguageDef.IsLogicalBinaryOperator(binaryOperationNode.Operation))
             {
-                PushExpressionResult(binaryOperationNode.Children[0]);
+                VisitExpression(binaryOperationNode.Children[0]);
                 var logicalCmdIndex = AddCommand(TokenToOperationCode(binaryOperationNode.Operation));
-                PushExpressionResult(binaryOperationNode.Children[1]);
+                VisitExpression(binaryOperationNode.Children[1]);
                 AddCommand(OperationCode.MakeBool);
                 CorrectCommandArgument(logicalCmdIndex, _module.Code.Count - 1);
             }
             else
             {
-                PushExpressionResult(binaryOperationNode.Children[0]);
-                PushExpressionResult(binaryOperationNode.Children[1]);
+                VisitExpression(binaryOperationNode.Children[0]);
+                VisitExpression(binaryOperationNode.Children[1]);
                 AddCommand(TokenToOperationCode(binaryOperationNode.Operation));
             }
         }
@@ -619,41 +527,11 @@ namespace ScriptEngine.Compiler.ByteCode
             return opCode;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PushTerminalSymbol(TerminalNode term)
+        protected override void VisitConstant(TerminalNode node)
         {
-            switch (term.Kind)
-            {
-                case NodeKind.Identifier:
-                    PushVariable(term.GetIdentifier());
-                    break;
-                case NodeKind.Constant:
-                    PushConstant(term.Lexem);
-                    break;
-            }
-        }
-
-        private void PushConstant(in Lexem lexem)
-        {
-            var cDef = CreateConstDefinition(lexem);
+            var cDef = CreateConstDefinition(node.Lexem);
             var num = GetConstNumber(cDef);
             AddCommand(OperationCode.PushConst, num);
-        }
-        
-        private void WriteModuleVariable(VariableDefinitionNode variableNode)
-        {
-            var symbolicName = variableNode.Name;
-            var annotations = GetAnnotations(variableNode);
-            var definition = _ctx.DefineVariable(symbolicName);
-            _module.VariableRefs.Add(definition);
-            _module.Variables.Add(new VariableInfo
-            {
-                Identifier = symbolicName,
-                Annotations = annotations,
-                CanGet = true,
-                CanSet = true,
-                Index = definition.CodeIndex
-            });
         }
 
         private AnnotationDefinition[] GetAnnotations(AnnotatableNode parent)

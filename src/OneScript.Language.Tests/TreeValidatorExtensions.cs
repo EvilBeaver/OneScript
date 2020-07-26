@@ -57,17 +57,18 @@ namespace OneScript.Language.Tests
 
             return validator.CurrentNode.ChildrenList[0];
         }
-        public static TestAstNode WithNode(this SyntaxTreeValidator validator, string type)
+
+        public static TestAstNode WithNode(this SyntaxTreeValidator validator, int type)
         {
             var child = validator.FirstChild();
-            Assert.Equal(type, child.Kind.ToString());
+            Assert.Equal(type, child.Kind);
 
             return child;
         }
         
-        public static SyntaxTreeValidator HasNode(this SyntaxTreeValidator validator, string type)
+        public static SyntaxTreeValidator HasNode(this SyntaxTreeValidator validator, int type)
         {
-            var child = validator.CurrentNode.ChildrenList.FirstOrDefault(x => x.Kind.ToString() == type);
+            var child = validator.CurrentNode.ChildrenList.FirstOrDefault(x => x.Kind == type);
             Assert.NotNull(child);
 
             return new SyntaxTreeValidator(child);

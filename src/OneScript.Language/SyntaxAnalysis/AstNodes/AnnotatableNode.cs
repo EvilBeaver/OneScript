@@ -24,7 +24,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 
         public IEnumerable<AnnotationNode> Annotations => AnnotationsList;
 
-        protected override void OnChildAdded(AstNodeBase child)
+        protected override void OnChildAdded(BslSyntaxNode child)
         {
             if(child is AnnotationNode anno)
                 AnnotationsList.Add(anno);

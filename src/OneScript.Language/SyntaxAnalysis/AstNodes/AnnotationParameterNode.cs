@@ -15,7 +15,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         {
         }
         
-        protected override void OnChildAdded(AstNodeBase child)
+        protected override void OnChildAdded(BslSyntaxNode child)
         {
             var node = (TerminalNode) child;
             if (child.Kind == NodeKind.AnnotationParameterName)

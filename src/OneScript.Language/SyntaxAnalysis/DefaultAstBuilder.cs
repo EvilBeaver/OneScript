@@ -72,7 +72,7 @@ namespace OneScript.Language.SyntaxAnalysis
         public virtual void AddChild(IAstNode parent, IAstNode child)
         {
             var parentNonTerm = (NonTerminalNode) parent;
-            var childTerm = (AstNodeBase) child;
+            var childTerm = (BslSyntaxNode) child;
             parentNonTerm.AddChild(childTerm);
         }
 

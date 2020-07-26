@@ -14,7 +14,7 @@ namespace ScriptEngine.Compiler.ByteCode
     public static class AstNodesExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string GetIdentifier(this AstNodeBase node)
+        public static string GetIdentifier(this BslSyntaxNode node)
         {
             return GetIdentifier((TerminalNode) node);
         }
@@ -32,13 +32,7 @@ namespace ScriptEngine.Compiler.ByteCode
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NonTerminalNode AsNonTerminal(this AstNodeBase node)
-        {
-            return node as NonTerminalNode;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TerminalNode AsTerminal(this AstNodeBase node)
+        public static TerminalNode AsTerminal(this BslSyntaxNode node)
         {
             return node as TerminalNode;
         }

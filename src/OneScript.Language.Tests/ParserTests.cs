@@ -32,30 +32,30 @@ namespace OneScript.Language.Tests
 
             var child = treeValidator.NextChild();
             child.Is(NodeKind.VariableDefinition)
-                .WithNode("Identifier")
+                .WithNode(NodeKind.Identifier)
                 .Equal("П1");
 
             child = treeValidator.NextChild();
             child.Is(NodeKind.VariableDefinition)
-                .WithNode("Identifier")
+                .WithNode(NodeKind.Identifier)
                 .Equal("П2");
-            child.HasNode(nameof(NodeKind.ExportFlag));
+            child.HasNode(NodeKind.ExportFlag);
             
             child = treeValidator.NextChild();
             child.Is(NodeKind.VariableDefinition)
-                .WithNode("Annotation")
+                .WithNode(NodeKind.Annotation)
                 .Equal("Аннотация");
             
-            child.HasNode("Identifier")
+            child.HasNode(NodeKind.Identifier)
                 .Equal("П3");
             
             child = treeValidator.NextChild();
-            child.Is(NodeKind.VariableDefinition).WithNode("Identifier").Equal("П4");
-            child.HasNode(nameof(NodeKind.ExportFlag));
+            child.Is(NodeKind.VariableDefinition).WithNode(NodeKind.Identifier).Equal("П4");
+            child.HasNode(NodeKind.ExportFlag);
             
             child = treeValidator.NextChild();
-            child.Is(NodeKind.VariableDefinition).WithNode("Identifier").Equal("П5");
-            child.HasNode(nameof(NodeKind.ExportFlag));
+            child.Is(NodeKind.VariableDefinition).WithNode(NodeKind.Identifier).Equal("П5");
+            child.HasNode(NodeKind.ExportFlag);
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.MethodSignature)
                 .DownOneLevel()
                 .NextChildIs(NodeKind.Function)
-                    .HasNode("Identifier")
+                    .HasNode(NodeKind.Identifier)
                     .Equal("Б");
         }
 
@@ -157,7 +157,7 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.ExportFlag)
                 .NoMoreChildren();
 
-            var paramList = signature.HasNode("MethodParameters");
+            var paramList = signature.HasNode(NodeKind.MethodParameters);
             paramList.NextChild().Is(NodeKind.MethodParameter)
                 .NextChildIs(NodeKind.Identifier).ChildItself()
                 .Equal("А");
@@ -185,8 +185,8 @@ namespace OneScript.Language.Tests
             var batch = ParseBatchAndGetValidator("Proc();");
             batch.Is(NodeKind.CodeBatch);
             var node = batch.NextChild();
-            node.Is(NodeKind.Call)
-                .HasNode("Identifier")
+            node.Is(NodeKind.GlobalCall)
+                .HasNode(NodeKind.Identifier)
                 .Equal("Proc");
 
         }
@@ -203,17 +203,17 @@ namespace OneScript.Language.Tests
             var node = batch.NextChild();
             node.Is(NodeKind.DereferenceOperation)
                     .NextChildIs(NodeKind.Identifier)
-                    .NextChildIs(NodeKind.Call);
+                    .NextChildIs(NodeKind.MethodCall);
 
             node = batch.NextChild();
             node.Is(NodeKind.DereferenceOperation)
-                .NextChildIs(NodeKind.Call)
-                .NextChildIs(NodeKind.Call);
+                .NextChildIs(NodeKind.GlobalCall)
+                .NextChildIs(NodeKind.MethodCall);
             
             node = batch.NextChild();
             node.Is(NodeKind.DereferenceOperation)
                 .NextChildIs(NodeKind.IndexAccess)
-                .NextChildIs(NodeKind.Call);
+                .NextChildIs(NodeKind.MethodCall);
         }
         
         [Fact]
@@ -229,7 +229,7 @@ namespace OneScript.Language.Tests
             var batch = ParseBatchAndGetValidator(code);
             batch.Is(NodeKind.CodeBatch);
             var node = batch.NextChild();
-            node.Is(NodeKind.Call)
+            node.Is(NodeKind.GlobalCall)
                 .NextChild().Is(NodeKind.Identifier)
                 .Equal("Proc");
             node.NextChild().Is(NodeKind.CallArgumentList)

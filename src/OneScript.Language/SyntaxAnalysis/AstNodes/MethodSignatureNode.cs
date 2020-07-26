@@ -33,7 +33,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
             return ((NonTerminalNode) paramList).Children.Cast<MethodParameterNode>();
         }
 
-        protected override void OnChildAdded(AstNodeBase child)
+        protected override void OnChildAdded(BslSyntaxNode child)
         {
             base.OnChildAdded(child);
             switch (child.Kind)
