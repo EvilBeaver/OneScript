@@ -33,13 +33,22 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 
         public void AddChild(BslSyntaxNode child)
         {
+            var cancel = false;
+            OnChildAdded(child, ref cancel);
+            if (cancel) 
+                return;
+            
             child.Parent = this;
             _children.Add(child);
-            OnChildAdded(child);
         }
 
         protected virtual void OnChildAdded(BslSyntaxNode child)
         {
+        }
+        
+        protected virtual void OnChildAdded(BslSyntaxNode child, ref bool cancel)
+        {
+            OnChildAdded(child);
         }
     }
 }

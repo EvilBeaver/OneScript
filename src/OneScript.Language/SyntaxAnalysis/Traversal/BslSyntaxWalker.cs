@@ -101,12 +101,17 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             VisitCodeBlock(methodNode.MethodBody);
         }
 
-        protected virtual void VisitCodeBlock(BslSyntaxNode statements)
+        protected virtual void VisitCodeBlock(CodeBatchNode statements)
         {
             foreach (var statement in statements.Children)
             {
                 VisitStatement(statement);
             }
+        }
+
+        protected void VisitCodeBlock(BslSyntaxNode node)
+        {
+            VisitCodeBlock((CodeBatchNode)node);
         }
 
         protected virtual void VisitStatement(BslSyntaxNode statement)

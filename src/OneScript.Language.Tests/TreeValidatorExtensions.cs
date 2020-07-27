@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq;
+using FluentAssertions;
 using OneScript.Language.SyntaxAnalysis;
 using Xunit;
 
@@ -26,16 +27,11 @@ namespace OneScript.Language.Tests
             return validator;
         }
         
-        public static void Is(this TestAstNode node, string type)
-        {
-            Assert.Equal(type, node.Kind.ToString());
-        }
-        
         public static void Is(this TestAstNode node, int type)
         {
-            Assert.Equal(type, node.Kind);
+            node.Kind.Should().Be(type, NodeKind.Presentation(node.Kind) + " is unexpected");
         }
-
+        
         public static SyntaxTreeValidator HasChildNodes(this SyntaxTreeValidator validator, int count)
         {
             Assert.Equal(count, validator.CurrentNode.ChildrenList.Count);

@@ -37,19 +37,14 @@ namespace OneScript.Language.Tests
             _currentChildIndex++;
             EnsureHasCurrentChild();
         }
-
-        public SyntaxTreeValidator NextChildIs(string nodeType)
+        
+        public SyntaxTreeValidator NextChildIs(int nodeType)
         {
-           MoveToNextChild();
+            MoveToNextChild();
 
             var child = CurrentNode.ChildrenList[_currentChildIndex];
             child.Is(nodeType);
             return this;
-        }
-
-        public SyntaxTreeValidator NextChildIs(int nodeType)
-        {
-            return NextChildIs(nodeType.ToString());
         }
 
         public SyntaxTreeValidator DownOneLevel()

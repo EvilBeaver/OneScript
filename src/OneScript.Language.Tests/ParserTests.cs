@@ -364,6 +364,16 @@ namespace OneScript.Language.Tests
                 .NextChild().Is(NodeKind.BinaryOperation)
                 .Equal(Token.LessThan.ToString());
         }
+
+        [Fact]
+        public void Check_EqualExpression_Is_Comparison_But_Not_Assignment()
+        {
+            var code = @"Переменная = 2";
+            
+            var expr = ParseExpressionAndGetValidator(code);
+            expr.Is(NodeKind.BinaryOperation)
+                .Equal(Token.Equal.ToString());
+        }
         
         [Fact]
         public void Check_Logical_Priority_Direct()
@@ -383,6 +393,114 @@ namespace OneScript.Language.Tests
             var expr = ParseExpressionAndGetValidator(code);
             expr.Is(NodeKind.BinaryOperation)
                 .Equal(Token.And.ToString());
+        }
+
+        [Fact]
+        public void Check_If_With_No_Alternatives()
+        {
+            var code =
+                @"Если А = 1 Тогда
+                    Б = 0;
+                КонецЕсли;";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Condition);
+            node.NextChildIs(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NoMoreChildren();
+        }
+        
+        [Fact]
+        public void Check_If_With_Else_Alternative()
+        {
+            var code =
+                @"Если А = 1 Тогда
+                    ;
+                Иначе
+                    ;
+                КонецЕсли;";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Condition);
+            node.NextChildIs(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NoMoreChildren();
+        }
+        
+        [Fact]
+        public void Check_If_With_ElseIf_Alternatives()
+        {
+            var code =
+                @"Если А = 1 Тогда
+                    ;
+                ИначеЕсли Б = 2 Тогда
+                    ;
+                ИначеЕсли Б = 2 Тогда
+                    ;
+                КонецЕсли;";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Condition);
+            node.NextChildIs(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.Condition)
+                .NextChildIs(NodeKind.Condition)
+                .NoMoreChildren();
+        }
+        
+        [Fact]
+        public void Check_If_With_ElseIf_And_Else_Alternatives()
+        {
+            var code =
+                @"Если А = 1 Тогда
+                    ;
+                ИначеЕсли Б = 2 Тогда
+                    ;
+                ИначеЕсли Б = 2 Тогда
+                    ;
+                Иначе
+                    ;
+                КонецЕсли;";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Condition);
+            node.NextChildIs(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.Condition)
+                .NextChildIs(NodeKind.Condition)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NoMoreChildren();
+        }
+        
+        [Fact]
+        public void Check_While_Statement()
+        {
+            var code =
+                @"Пока А = 1 Цикл
+                    ;
+                КонецЦикла";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.WhileLoop);
+            node.NextChildIs(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NoMoreChildren();
         }
         
         private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)

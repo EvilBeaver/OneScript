@@ -66,6 +66,8 @@ namespace OneScript.Language.SyntaxAnalysis
                     return new WhileLoopNode();
                 case NodeKind.Condition:
                     return new ConditionNode();
+                case NodeKind.CodeBatch:
+                    return new CodeBatchNode();
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }
@@ -73,9 +75,12 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public virtual void AddChild(IAstNode parent, IAstNode child)
         {
+            if(child == default)
+                child = new NonTerminalNode(NodeKind.Unknown);
+            
             var parentNonTerm = (NonTerminalNode) parent;
-            var childTerm = (BslSyntaxNode) child;
-            parentNonTerm.AddChild(childTerm);
+            var childNode = (BslSyntaxNode) child;
+            parentNonTerm.AddChild(childNode);
         }
 
         public virtual void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer)

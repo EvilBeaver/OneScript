@@ -607,7 +607,7 @@ namespace OneScript.Language.SyntaxAnalysis
                     //BuildEventHandlerOperation(_lastExtractedLexem.Token);
                     break;        
                 default:
-                    var expected = PopStructureToken();
+                    var expected = _tokenStack.Peek();
                     AddError(LocalizedErrors.TokenExpected(expected));
                     break;
             }
@@ -615,24 +615,55 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildIfStatement()
         {
+            var condition = CreateChild(CurrentParent, NodeKind.Condition, _lastExtractedLexem);
+            NextLexem();
+            BuildExpressionUpTo(condition, Token.Then);
+            BuildBatchWithBlockEnd(condition, Token.Else, Token.ElseIf, Token.EndIf);
             
+            while (_lastExtractedLexem.Token == Token.ElseIf)
+            {
+                var elif = CreateChild(condition, NodeKind.Condition, _lastExtractedLexem);
+                NextLexem();
+                BuildExpressionUpTo(elif, Token.Then);
+                BuildBatchWithBlockEnd(elif, Token.Else, Token.ElseIf, Token.EndIf);
+            }
+
+            if (_lastExtractedLexem.Token == Token.Else)
+            {
+                NextLexem();
+                BuildBatchWithBlockEnd(condition, Token.EndIf);
+            }
+
+            NextLexem();
         }
 
+        private void BuildBatchWithBlockEnd(IAstNode context, params Token[] stopTokens)
+        {
+            var batch = CreateChild(context, NodeKind.CodeBatch, _lastExtractedLexem);
+            PushContext(batch);
+            try
+            {
+                BuildCodeBatch(stopTokens);
+                CreateChild(batch, NodeKind.BlockEnd, _lastExtractedLexem);
+            }
+            finally
+            {
+                PopContext();
+            }
+        }
+        
         private void BuildWhileStatement()
         {
             var loopNode = CreateChild(CurrentParent, NodeKind.WhileLoop, _lastExtractedLexem);
             NextLexem();
-            _builder.AddChild(loopNode, BuildExpressionUpTo(loopNode, Token.Loop));
-
-            NextLexem();
+            BuildExpressionUpTo(loopNode, Token.Loop);
             var body = CreateChild(loopNode, NodeKind.CodeBatch, _lastExtractedLexem);
             PushContext(body);
             try
             {
                 _isInLoopScope = true;
                 BuildCodeBatch(Token.EndLoop);
-                _builder.AddChild(loopNode, body);
-                CreateChild(loopNode, NodeKind.BlockEnd, _lastExtractedLexem);
+                CreateChild(body, NodeKind.BlockEnd, _lastExtractedLexem);
             }
             finally
             {
@@ -838,10 +869,9 @@ namespace OneScript.Language.SyntaxAnalysis
         private IAstNode BuildExpressionUpTo(IAstNode parent, Token stopToken)
         {
             var node = BuildExpression(parent, stopToken);
-            if (_lastExtractedLexem.Token != stopToken)
+            if (_lastExtractedLexem.Token == stopToken)
             {
-                AddError(LocalizedErrors.TokenExpected(stopToken));
-                return default;
+                NextLexem();
             }
             
             return node;
@@ -1049,12 +1079,27 @@ namespace OneScript.Language.SyntaxAnalysis
             if(!NextExpected(Token.OpenPar))
                 AddError(LocalizedErrors.TokenExpected(Token.OpenPar));
 
-            NextLexem();
-            BuildExpression(node, Token.Comma);
-            NextLexem();
-            BuildExpression(node, Token.Comma);
-            NextLexem();
-            BuildExpression(node, Token.ClosePar);
+
+            var flag = _enableException;
+            _enableException = true;
+            try
+            {
+                NextLexem();
+                BuildExpression(node, Token.Comma);
+                NextLexem();
+                BuildExpression(node, Token.Comma);
+                NextLexem();
+                BuildExpression(node, Token.ClosePar);
+            }
+            catch (InternalParseException)
+            {
+                return default;
+            }
+            finally
+            {
+                _enableException = flag;
+            }
+            
             if (_lastExtractedLexem.Token != Token.ClosePar)
             {
                 AddError(LocalizedErrors.TokenExpected(Token.ClosePar));

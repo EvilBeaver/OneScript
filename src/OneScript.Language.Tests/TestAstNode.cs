@@ -42,10 +42,10 @@ namespace OneScript.Language.Tests
                     Value = unary.Operation.ToString();
                 }
             }
-            else
+            else if(node is TerminalNode term)
             {
                 _childrenLazy = new Lazy<IReadOnlyList<TestAstNode>>(new TestAstNode[0]);
-                Value = ((TerminalNode) node).Lexem.Content;
+                Value = term.Lexem.Content;
             }
         }
         
