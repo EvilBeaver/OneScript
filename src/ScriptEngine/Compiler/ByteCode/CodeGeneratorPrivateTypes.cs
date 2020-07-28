@@ -10,7 +10,7 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace ScriptEngine.Compiler.ByteCode
 {
-    internal partial class AstBasedCodeGenerator
+    public partial class AstBasedCodeGenerator
     {
         public const string BODY_METHOD_NAME = "$entry";
         private const int DUMMY_ADDRESS = -1;

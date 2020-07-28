@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
@@ -23,6 +24,8 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         
         public BslSyntaxNode MethodBody { get; private set; }
 
+        public CodeRange EndLocation { get; private set; }
+        
         public IReadOnlyList<VariableDefinitionNode> VariableDefinitions()
         {
             if (_variableCount == 0)
@@ -47,12 +50,13 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
                     MethodBody = child;
                     break;
                 case NodeKind.VariableDefinition:
-                {
                     if (_variableStart == -1)
                         _variableStart = Children.Count;
                     _variableCount++;
                     break;
-                }
+                case NodeKind.BlockEnd:
+                    EndLocation = child.Location;
+                    break;
                 default:
                     base.OnChildAdded(child);
                     break;

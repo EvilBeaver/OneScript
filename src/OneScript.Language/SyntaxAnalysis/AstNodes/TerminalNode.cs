@@ -23,6 +23,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         {
             Kind = kind;
             Lexem = lexem;
+            Location = lexem.Location;
         }
 
         public override IReadOnlyList<BslSyntaxNode> Children => EmptyChildren;

@@ -11,6 +11,7 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using Xunit;
 using FluentAssertions;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.Tests
 {
@@ -410,6 +411,7 @@ namespace OneScript.Language.Tests
             node.Is(NodeKind.Condition);
             node.NextChildIs(NodeKind.BinaryOperation)
                 .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.BlockEnd)
                 .NoMoreChildren();
         }
         
@@ -431,6 +433,7 @@ namespace OneScript.Language.Tests
             node.NextChildIs(NodeKind.BinaryOperation)
                 .NextChildIs(NodeKind.CodeBatch)
                 .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.BlockEnd)
                 .NoMoreChildren();
         }
         
@@ -455,6 +458,7 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.CodeBatch)
                 .NextChildIs(NodeKind.Condition)
                 .NextChildIs(NodeKind.Condition)
+                .NextChildIs(NodeKind.BlockEnd)
                 .NoMoreChildren();
         }
         
@@ -482,6 +486,7 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.Condition)
                 .NextChildIs(NodeKind.Condition)
                 .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.BlockEnd)
                 .NoMoreChildren();
         }
         
@@ -500,6 +505,7 @@ namespace OneScript.Language.Tests
             node.Is(NodeKind.WhileLoop);
             node.NextChildIs(NodeKind.BinaryOperation)
                 .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.BlockEnd)
                 .NoMoreChildren();
         }
         
@@ -519,17 +525,18 @@ namespace OneScript.Language.Tests
             return MakeValidator(code, p => p.ParseExpression());
         }
 
-        private static SyntaxTreeValidator MakeValidator(string code, Action<DefaultBslParser> action)
+        private static SyntaxTreeValidator MakeValidator(string code, Func<DefaultBslParser, IAstNode> action)
         {
-            var lexer = new Lexer();
+            var lexer = new DefaultLexer();
             lexer.Code = code;
 
             var client = new DefaultAstBuilder();
             var parser = new DefaultBslParser(client, lexer);
-            action(parser);
+            var node = action(parser) as BslSyntaxNode;
 
+            node.Should().NotBeNull();
             parser.Errors.Should().BeEmpty("the valid code is passed");
-            var treeValidator = new SyntaxTreeValidator(new TestAstNode(client.RootNode.Children.First()));
+            var treeValidator = new SyntaxTreeValidator(new TestAstNode(node.Children.First()));
             return treeValidator;
         }
 

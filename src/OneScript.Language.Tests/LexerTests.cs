@@ -15,7 +15,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void Empty_Lexer_Position_Is_Negative()
         {
-            var lexer = new Lexer();
+            var lexer = new DefaultLexer();
             Assert.True(lexer.CurrentColumn == CodePositionInfo.OUT_OF_TEXT);
             Assert.True(lexer.CurrentLine == CodePositionInfo.OUT_OF_TEXT);
 
@@ -24,7 +24,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void Code_Set_Sets_Position()
         {
-            var lexer = new Lexer();
+            var lexer = new DefaultLexer();
             lexer.Code = "А = 1;";
             Assert.True(lexer.Code == "А = 1;");
             Assert.True(lexer.CurrentColumn == CodePositionInfo.OUT_OF_TEXT);
@@ -475,7 +475,7 @@ namespace OneScript.Language.Tests
             А = Б+11.2 <> 
             '20100207' - ""ffff""";
 
-            var lexer = new Lexer();
+            var lexer = new DefaultLexer();
             lexer.Code = code;
 
             Lexem lex;
@@ -514,7 +514,7 @@ namespace OneScript.Language.Tests
             string code = @"
             А$Б";
 
-            var lexer = new Lexer();
+            var lexer = new DefaultLexer();
             lexer.Code = code;
             lexer.UnexpectedCharacterFound += (s, e) =>
                 {
@@ -562,7 +562,7 @@ namespace OneScript.Language.Tests
         public void Lexer_Ignores_Comments()
         {
             string code = "a //comment\r\n// another comment\r\nvalue";
-            var lexer = new Lexer();
+            var lexer = new DefaultLexer();
             lexer.Code = code;
             Lexem lex;
 

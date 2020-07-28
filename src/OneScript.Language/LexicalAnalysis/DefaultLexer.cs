@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.Language.LexicalAnalysis
 {
-    public class Lexer : FullSourceLexer
+    public class DefaultLexer : FullSourceLexer
     {
         public override Lexem NextLexem()
         {

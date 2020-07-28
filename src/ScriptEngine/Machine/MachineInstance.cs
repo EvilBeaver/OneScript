@@ -2450,7 +2450,7 @@ namespace ScriptEngine.Machine
             var ctx = ExtractCompilerContext();
 
             ICodeSource stringSource = new StringBasedSource(expression);
-            var parser = new Lexer();
+            var parser = new DefaultLexer();
             parser.Code = stringSource.Code;
             var compiler = new Compiler.Compiler();
             ctx.PushScope(new SymbolScope()); // скоуп выражения
@@ -2468,7 +2468,7 @@ namespace ScriptEngine.Machine
             var entryId = CurrentCodeEntry().ToString();
 
             ICodeSource stringSource = new StringBasedSource(execBatch);
-            var parser = new Lexer();
+            var parser = new DefaultLexer();
             parser.Code = stringSource.Code;
             var compiler = new Compiler.Compiler();
             ctx.PushScope(new SymbolScope()); // скоуп выражения

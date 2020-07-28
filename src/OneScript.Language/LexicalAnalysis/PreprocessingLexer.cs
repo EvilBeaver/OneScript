@@ -28,7 +28,7 @@ namespace OneScript.Language.LexicalAnalysis
 
         public PreprocessingLexer()
         {
-            _lexer = new Lexer();
+            _lexer = new DefaultLexer();
         }
 
         public event EventHandler<PreprocessorUnknownTokenEventArgs> UnknownDirective;

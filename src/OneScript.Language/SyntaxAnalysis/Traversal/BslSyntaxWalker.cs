@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis.Traversal
@@ -36,6 +37,7 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             _nodeVisitors[NodeKind.BinaryOperation] = (x) => VisitBinaryOperation((BinaryOperationNode)x);
             _nodeVisitors[NodeKind.UnaryOperation] = (x) => VisitUnaryOperation((UnaryOperationNode)x);
             _nodeVisitors[NodeKind.WhileLoop] = (x) => VisitWhileNode((WhileLoopNode)x);
+            _nodeVisitors[NodeKind.Condition] = (x) => VisitIfNode((ConditionNode)x);
 
         }
 
@@ -85,9 +87,14 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         {
             VisitMethodSignature(methodNode.Signature);
             VisitMethodBody(methodNode);
+            VisitBlockEnd(methodNode.EndLocation);
         }
 
-        protected virtual void VisitMethodSignature(MethodSignatureNode methodNodeSignature)
+        protected virtual void VisitBlockEnd(in CodeRange endLocation)
+        {
+        }
+
+        protected virtual void VisitMethodSignature(MethodSignatureNode node)
         {
         }
         
@@ -99,6 +106,7 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             }
 
             VisitCodeBlock(methodNode.MethodBody);
+            VisitBlockEnd(methodNode.EndLocation);
         }
 
         protected virtual void VisitCodeBlock(CodeBatchNode statements)
@@ -260,6 +268,7 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         {
             VisitWhileCondition(node.Children[0]);
             VisitWhileBody(node.Children[1]);
+            VisitBlockEnd(node.EndLocation);
         }
 
         protected virtual void VisitWhileBody(BslSyntaxNode node)
@@ -272,6 +281,50 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             VisitExpression(node);
         }
 
+        protected virtual void VisitIfNode(ConditionNode node)
+        {
+            VisitIfExpression(node.Expression);
+            VisitIfTruePart(node.TruePart);
+            foreach (var alternative in node.GetAlternatives())
+            {
+                VisitIfAlternative(alternative);
+            }
+            VisitBlockEnd(node.EndLocation);
+        }
+
+        protected virtual void VisitIfExpression(BslSyntaxNode node)
+        {
+            VisitExpression(node);
+        }
+
+        protected virtual void VisitIfTruePart(CodeBatchNode node)
+        {
+            VisitCodeBlock(node);
+        }
+
+        protected virtual void VisitIfAlternative(BslSyntaxNode node)
+        {
+            if (node.Kind == NodeKind.Condition)
+            {
+                VisitElseIfNode((ConditionNode)node);
+            }
+            else
+            {
+                VisitElseNode((CodeBatchNode)node);
+            }
+        }
+
+        protected virtual void VisitElseIfNode(ConditionNode node)
+        {
+            VisitIfExpression(node);
+            VisitIfTruePart(node.TruePart);
+        }
+        
+        protected virtual void VisitElseNode(CodeBatchNode node)
+        {
+            VisitCodeBlock(node);
+        }
+        
         public void Visit(BslSyntaxNode node)
         {
             DefaultVisit(node);

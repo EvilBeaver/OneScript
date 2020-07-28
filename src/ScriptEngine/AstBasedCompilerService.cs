@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 using ScriptEngine.Compiler;
 using ScriptEngine.Compiler.ByteCode;
 using ScriptEngine.Environment;
@@ -32,9 +33,9 @@ namespace ScriptEngine
             };
             
             var parser = new DefaultBslParser(astBuilder, lexer);
-            parser.ParseStatefulModule();
+            var node = (BslSyntaxNode)parser.ParseStatefulModule();
             codeGen.ProduceExtraCode = ProduceExtraCode;
-            return codeGen.CreateImage(astBuilder.RootNode, CreateModuleInformation(source, lexer));
+            return codeGen.CreateImage(node, CreateModuleInformation(source, lexer));
         }
     }
 }

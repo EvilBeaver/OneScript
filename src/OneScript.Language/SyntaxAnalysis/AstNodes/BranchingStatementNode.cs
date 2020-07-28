@@ -9,16 +9,22 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
-    public class WhileLoopNode : BranchingStatementNode
+    public abstract class BranchingStatementNode : NonTerminalNode
     {
-        public WhileLoopNode(Lexem startLexem) : base(NodeKind.WhileLoop, startLexem)
+        protected BranchingStatementNode(int kind) : base(kind)
+        {
+        }
+        
+        protected BranchingStatementNode(int kind, Lexem startLexem) : base(kind, startLexem)
         {
         }
 
+
+        public CodeRange EndLocation { get; private set; }
+        
         protected override void OnChildAdded(BslSyntaxNode child)
         {
-            if(child is LineMarkerNode)
-                base.OnChildAdded(child);
+            EndLocation = child.Location;
         }
     }
 }

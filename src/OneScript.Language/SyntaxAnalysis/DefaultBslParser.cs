@@ -42,9 +42,18 @@ namespace OneScript.Language.SyntaxAnalysis
             _lexer = lexer;
         }
 
+        public static DefaultBslParser PrepareParser(string code)
+        {
+            var lexer = new DefaultLexer();
+            lexer.Code = code;
+            var treeBuilder = new DefaultAstBuilder();
+            var parser = new DefaultBslParser(treeBuilder, lexer);
+            return parser;
+        }
+        
         public IEnumerable<ParseError> Errors => _errors; 
         
-        public void ParseStatefulModule()
+        public IAstNode ParseStatefulModule()
         {
             NextLexem();
             var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
@@ -59,6 +68,8 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 PopContext();
             }
+
+            return node;
         }
 
         private void ParseDirectives()
@@ -71,7 +82,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        public void ParseCodeBatch()
+        public IAstNode ParseCodeBatch()
         {
             NextLexem();
             var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
@@ -85,13 +96,16 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 PopContext();
             }
+
+            return node;
         }
 
-        public void ParseExpression()
+        public IAstNode ParseExpression()
         {
             NextLexem();
             var parent = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             BuildExpression(parent, Token.EndOfText);
+            return parent;
         }
 
         private void PushContext(IAstNode node) => _parsingContext.Push(node);
@@ -310,12 +324,14 @@ namespace OneScript.Language.SyntaxAnalysis
             try
             {
                 BuildCodeBatch(_isInFunctionScope ? Token.EndFunction : Token.EndProcedure);
-                NextLexem();
             }
             finally
             {
                 PopContext();
             }
+            
+            CreateChild(CurrentParent, NodeKind.BlockEnd, _lastExtractedLexem);
+            NextLexem();
         }
 
         private void BuildMethodSignature()
@@ -434,6 +450,9 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildModuleBody()
         {
+            if (!_lexer.Iterator.MoveToContent())
+                return;
+            
             var parent = _builder.CreateNode(NodeKind.ModuleBody, _lastExtractedLexem);
             var node = CreateChild(parent, NodeKind.CodeBatch, _lastExtractedLexem);
             PushContext(node);
@@ -618,33 +637,34 @@ namespace OneScript.Language.SyntaxAnalysis
             var condition = CreateChild(CurrentParent, NodeKind.Condition, _lastExtractedLexem);
             NextLexem();
             BuildExpressionUpTo(condition, Token.Then);
-            BuildBatchWithBlockEnd(condition, Token.Else, Token.ElseIf, Token.EndIf);
+            BuildBatchWithContext(condition, Token.Else, Token.ElseIf, Token.EndIf);
             
             while (_lastExtractedLexem.Token == Token.ElseIf)
             {
                 var elif = CreateChild(condition, NodeKind.Condition, _lastExtractedLexem);
                 NextLexem();
                 BuildExpressionUpTo(elif, Token.Then);
-                BuildBatchWithBlockEnd(elif, Token.Else, Token.ElseIf, Token.EndIf);
+                BuildBatchWithContext(elif, Token.Else, Token.ElseIf, Token.EndIf);
             }
 
             if (_lastExtractedLexem.Token == Token.Else)
             {
                 NextLexem();
-                BuildBatchWithBlockEnd(condition, Token.EndIf);
+                BuildBatchWithContext(condition, Token.EndIf);
             }
+
+            CreateChild(condition, NodeKind.BlockEnd, _lastExtractedLexem);
 
             NextLexem();
         }
 
-        private void BuildBatchWithBlockEnd(IAstNode context, params Token[] stopTokens)
+        private void BuildBatchWithContext(IAstNode context, params Token[] stopTokens)
         {
             var batch = CreateChild(context, NodeKind.CodeBatch, _lastExtractedLexem);
             PushContext(batch);
             try
             {
                 BuildCodeBatch(stopTokens);
-                CreateChild(batch, NodeKind.BlockEnd, _lastExtractedLexem);
             }
             finally
             {
@@ -663,7 +683,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 _isInLoopScope = true;
                 BuildCodeBatch(Token.EndLoop);
-                CreateChild(body, NodeKind.BlockEnd, _lastExtractedLexem);
+                CreateChild(loopNode, NodeKind.BlockEnd, _lastExtractedLexem);
             }
             finally
             {

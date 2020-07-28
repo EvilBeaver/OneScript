@@ -10,13 +10,18 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
-    public class LabelNode : BslSyntaxNode
+    public class LineMarkerNode : BslSyntaxNode
     {
-        public CodeRange Location { get; }
-
-        public LabelNode(CodeRange location)
+        public LineMarkerNode(CodeRange location)
         {
             Location = location;
+            Kind = NodeKind.BlockEnd;
+        }
+        
+        public LineMarkerNode(CodeRange location, int kind)
+        {
+            Location = location;
+            Kind = kind;
         }
         
         public override IReadOnlyList<BslSyntaxNode> Children => new BslSyntaxNode[0];

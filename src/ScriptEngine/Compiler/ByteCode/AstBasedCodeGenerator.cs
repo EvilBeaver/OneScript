@@ -19,7 +19,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler.ByteCode
 {
-    internal partial class AstBasedCodeGenerator : BslSyntaxWalker
+    public partial class AstBasedCodeGenerator : BslSyntaxWalker
     {
         private ModuleImage _module;
         private ICompilerContext _ctx;
@@ -41,7 +41,7 @@ namespace ScriptEngine.Compiler.ByteCode
 
         public IReadOnlyList<CompilerException> Errors => _errors;
         
-        public ModuleImage CreateImage(NonTerminalNode moduleNode, ModuleInformation moduleInfo)
+        public ModuleImage CreateImage(BslSyntaxNode moduleNode, ModuleInformation moduleInfo)
         {
             if (moduleNode.Kind != NodeKind.Module)
             {
@@ -53,7 +53,7 @@ namespace ScriptEngine.Compiler.ByteCode
             return CreateImageInternal(moduleNode);
         }
 
-        private ModuleImage CreateImageInternal(NonTerminalNode moduleNode)
+        private ModuleImage CreateImageInternal(BslSyntaxNode moduleNode)
         {
             VisitModule(moduleNode);
             return _module;
@@ -161,6 +161,7 @@ namespace ScriptEngine.Compiler.ByteCode
             method.Params = paramsList.ToArray();
             
             _ctx.PushScope(methodCtx);
+            var entryPoint = _module.Code.Count;
             try
             {
                 VisitMethodBody(methodNode);
@@ -169,6 +170,27 @@ namespace ScriptEngine.Compiler.ByteCode
             {
                 _ctx.PopScope();
             }
+            
+            var descriptor = new MethodDescriptor();
+            descriptor.EntryPoint = entryPoint;
+            descriptor.Signature = method;
+            FillVariablesFrame(ref descriptor, methodCtx);
+
+            SymbolBinding binding;
+            binding = _ctx.DefineMethod(method);
+            _module.MethodRefs.Add(binding);
+            _module.Methods.Add(descriptor);
+
+            // TODO: deprecate?
+            if (signature.IsExported)
+            {
+                _module.ExportedMethods.Add(new ExportedSymbol()
+                {
+                    SymbolicName = method.Name,
+                    Index = binding.CodeIndex
+                });
+            }
+
         }
 
         protected override void VisitMethodVariable(MethodNode method, VariableDefinitionNode variableDefinition)
@@ -192,15 +214,64 @@ namespace ScriptEngine.Compiler.ByteCode
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             
             VisitCodeBlock(node.Children[1]);
-            AddLineNumber(
-                ((LabelNode)node.Children[2]).Location.LineNumber,
-                CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             
             var endLoop = AddCommand(OperationCode.Nop);
             CorrectCommandArgument(jumpFalseIndex, endLoop);
             CorrectBreakStatements(_nestedLoops.Pop(), endLoop);
         }
-        
+
+        protected override void VisitIfNode(ConditionNode node)
+        {
+            var exitIndices = new List<int>();
+            VisitIfExpression(node.Expression);
+            
+            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
+
+            VisitIfTruePart(node.TruePart);
+            exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
+
+            bool hasAlternativeBranches = false;
+            
+            foreach (var alternative in node.GetAlternatives())
+            {
+                CorrectCommandArgument(jumpFalseIndex, _module.Code.Count);
+                if (alternative is ConditionNode elif)
+                {
+                    AddLineNumber(alternative.Location.LineNumber);
+                    VisitIfExpression(elif.Expression);
+                    jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
+                    VisitIfTruePart(elif.TruePart);
+                    exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
+                }
+                else
+                {
+                    hasAlternativeBranches = true;
+                    CorrectCommandArgument(jumpFalseIndex, _module.Code.Count);
+                    AddLineNumber(alternative.Location.LineNumber, CodeGenerationFlags.CodeStatistics);
+                    VisitCodeBlock(alternative);
+                }
+            }
+
+            int exitIndex = AddLineNumber(node.EndLocation.LineNumber);
+
+            if (!hasAlternativeBranches)
+            {
+                CorrectCommandArgument(jumpFalseIndex, exitIndex);
+            }
+            
+            foreach (var indexToWrite in exitIndices)
+            {
+                CorrectCommandArgument(indexToWrite, exitIndex);
+            }
+        }
+
+        protected override void VisitBlockEnd(in CodeRange endLocation)
+        {
+            AddLineNumber(
+                endLocation.LineNumber,
+                CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
+        }
+
         private void CorrectBreakStatements(NestedLoopInfo nestedLoopInfo, int endLoopIndex)
         {
             foreach (var breakCmdIndex in nestedLoopInfo.breakStatements)

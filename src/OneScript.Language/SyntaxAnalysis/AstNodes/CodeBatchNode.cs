@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
@@ -13,17 +14,6 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
     {
         public CodeBatchNode() : base(NodeKind.CodeBatch)
         {
-        }
-        
-        public CodeRange EndLocation { get; private set; }
-        
-        protected override void OnChildAdded(BslSyntaxNode child, ref bool cancel)
-        {
-            if (child.Kind == NodeKind.BlockEnd)
-            {
-                EndLocation = child.Location;
-                cancel = true;
-            }
         }
     }
 }

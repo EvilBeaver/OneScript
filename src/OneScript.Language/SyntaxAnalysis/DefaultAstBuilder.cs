@@ -13,8 +13,6 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class DefaultAstBuilder : IAstBuilder
     {
-        public NonTerminalNode RootNode { get; private set; }
-        
         public bool ThrowOnError { get; set; }
         
         public virtual IAstNode CreateNode(int kind, in Lexem startLexem)
@@ -30,11 +28,9 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.ParameterDefaultValue:
                     return new TerminalNode(kind, startLexem);
                 case NodeKind.BlockEnd:
-                    return new LabelNode(startLexem.Location);
+                    return new LineMarkerNode(startLexem.Location);
                 default:
                     var node = MakeNonTerminal(kind, startLexem);
-                    if (RootNode == default)
-                        RootNode = node;
                     return node;
             }
         }
@@ -63,9 +59,9 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.UnaryOperation:
                     return new UnaryOperationNode(startLexem);
                 case NodeKind.WhileLoop:
-                    return new WhileLoopNode();
+                    return new WhileLoopNode(startLexem);
                 case NodeKind.Condition:
-                    return new ConditionNode();
+                    return new ConditionNode(startLexem);
                 case NodeKind.CodeBatch:
                     return new CodeBatchNode();
                 default:
