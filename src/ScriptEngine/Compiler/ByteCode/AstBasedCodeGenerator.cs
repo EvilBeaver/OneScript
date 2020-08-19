@@ -73,6 +73,15 @@ namespace ScriptEngine.Compiler.ByteCode
                 CanSet = true,
                 Index = definition.CodeIndex
             });
+
+            if (varNode.IsExported)
+            {
+                _module.ExportedProperties.Add(new ExportedSymbol
+                {
+                    SymbolicName = symbolicName,
+                    Index = definition.CodeIndex
+                });
+            }
         }
 
         protected override void VisitModuleBody(BslSyntaxNode child)

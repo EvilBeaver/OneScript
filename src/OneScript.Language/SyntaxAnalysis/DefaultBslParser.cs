@@ -298,7 +298,8 @@ namespace OneScript.Language.SyntaxAnalysis
                 CurrentParent,
                 NodeKind.Method,
                 _lastExtractedLexem);
-
+            
+            ApplyAnnotations(method);
             PushContext(method);
             try
             {
@@ -374,6 +375,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 BuildAnnotations();
                 var param = CreateChild(paramList, NodeKind.MethodParameter, _lastExtractedLexem);
+                ApplyAnnotations(param);
                 // [Знач] Identifier [= Literal],...
                 if (_lastExtractedLexem.Token == Token.ByValParam)
                 {
