@@ -40,59 +40,29 @@ namespace OneScript.Language
 
         public int LineNumber
         {
-            get
-            {
-                return _codePosition.LineNumber;
-            }
-            set
-            {
-                _codePosition.LineNumber = value;
-            }
+            get => _codePosition.LineNumber;
+            set => _codePosition.LineNumber = value;
         }
 
         public int ColumnNumber
         {
-            get
-            {
-                return _codePosition.ColumnNumber;
-            }
-            set
-            {
-                _codePosition.ColumnNumber = value;
-            }
+            get => _codePosition.ColumnNumber;
+            set => _codePosition.ColumnNumber = value;
         }
 
         public string Code
         {
-            get
-            {
-                return _codePosition.Code;
-            }
-            set
-            {
-                _codePosition.Code = value;
-            }
+            get => _codePosition.Code;
+            set => _codePosition.Code = value;
         }
 
         public string ModuleName
         {
-            get
-            {
-                return _codePosition.ModuleName;
-            }
-            set
-            {
-                _codePosition.ModuleName = value;
-            }
+            get => _codePosition.ModuleName;
+            set => _codePosition.ModuleName = value;
         }
 
-        public string ErrorDescription
-        {
-            get
-            {
-                return base.Message;
-            }
-        }
+        public string ErrorDescription => base.Message;
 
         public string MessageWithoutCodeFragment
         {

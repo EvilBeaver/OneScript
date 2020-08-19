@@ -33,7 +33,7 @@ namespace ScriptEngine.Compiler
         internal static CompilerException AppendCodeInfo(CompilerException exc, CodePositionInfo codePosInfo)
         {
             exc.LineNumber = codePosInfo.LineNumber;
-            exc.ColumnNumber = codePosInfo.LineNumber;
+            exc.ColumnNumber = codePosInfo.ColumnNumber;
             exc.Code = codePosInfo.Code;
             exc.ModuleName = codePosInfo.ModuleName;
             

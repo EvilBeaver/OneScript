@@ -64,6 +64,8 @@ namespace OneScript.Language.SyntaxAnalysis
                     return new ConditionNode(startLexem);
                 case NodeKind.CodeBatch:
                     return new CodeBatchNode();
+                case NodeKind.ForEachLoop:
+                    return new ForEachLoopNode(startLexem);
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }

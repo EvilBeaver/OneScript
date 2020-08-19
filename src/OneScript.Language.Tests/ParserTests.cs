@@ -509,6 +509,26 @@ namespace OneScript.Language.Tests
                 .NoMoreChildren();
         }
         
+        [Fact]
+        public void Check_Foreach_Statement()
+        {
+            var code =
+                @"Для Каждого Итератор Из Коллекция Цикл
+                    ;
+                КонецЦикла";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.ForEachLoop);
+            node.NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.BlockEnd)
+                .NoMoreChildren();
+        }
+        
         private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)
         {
             return MakeValidator(code, p => p.ParseStatefulModule());

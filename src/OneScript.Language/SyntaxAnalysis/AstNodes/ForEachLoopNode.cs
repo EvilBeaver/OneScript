@@ -5,19 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Collections.Generic;
 using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
-    public abstract class BslSyntaxNode : IAstNode
+    public class ForEachLoopNode : BranchingStatementNode
     {
-        public int Kind { get; protected set; }
+        public ForEachLoopNode(Lexem startLexem) : base(NodeKind.ForEachLoop, startLexem)
+        {
+        }
         
-        public BslSyntaxNode Parent { get; internal set; }
-        
-        public CodeRange Location { get; protected set; }
-        
-        public abstract IReadOnlyList<BslSyntaxNode> Children { get; }
+        protected override void OnChildAdded(BslSyntaxNode child)
+        {
+            if(child is LineMarkerNode)
+                base.OnChildAdded(child);
+        }
     }
 }

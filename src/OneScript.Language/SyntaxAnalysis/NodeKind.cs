@@ -51,6 +51,7 @@ namespace OneScript.Language.SyntaxAnalysis
         public const int WhileLoop = 34;
         public const int ForLoop = 35;
         public const int Condition = 36;
+        public const int ForEachLoop = 37;
 
         public static string Presentation(int kind)
         {

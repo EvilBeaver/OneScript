@@ -600,7 +600,7 @@ namespace OneScript.Language.SyntaxAnalysis
                     BuildIfStatement();
                     break;
                 case Token.For:
-                    //BuildForStatement();
+                    BuildForStatement();
                     break;
                 case Token.While:
                     BuildWhileStatement();
@@ -694,23 +694,68 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        private void BuildSimpleStatement()
+        private void BuildForStatement()
         {
-            var exceptionFlag = _enableException; 
+            var lexem = _lastExtractedLexem;
+            NextLexem();
+
+            var nodeType = _lastExtractedLexem.Token == Token.Each ? NodeKind.ForEachLoop : NodeKind.ForLoop;
+            var loopNode = CreateChild(CurrentParent, nodeType, lexem);
+            
+            PushContext(loopNode);
             try
             {
-                _enableException = true;
-                _isStatementsDefined = true;
-                BuildAssignment(CurrentParent);
-            }
-            catch (InternalParseException)
-            {
-                // просто выход из стека построения выражения
+                _isInLoopScope = true;
+                if (nodeType == NodeKind.ForEachLoop)
+                    BuildForEachStatement(loopNode);
+                else
+                    BuildCountableForStatement(loopNode);
             }
             finally
             {
-                _enableException = exceptionFlag;
+                _isInLoopScope = false;
+                PopContext();
             }
+        }
+
+        private void BuildCountableForStatement(IAstNode loopNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void BuildForEachStatement(IAstNode loopNode)
+        {
+            NextLexem();
+            _isInLoopScope = true;
+            if (!IsUserSymbol(_lastExtractedLexem))
+            {
+                AddError(LocalizedErrors.IdentifierExpected());
+                BuildBatchWithContext(loopNode, Token.EndLoop);
+                return;
+            }
+
+            CreateChild(loopNode, NodeKind.Identifier, _lastExtractedLexem);
+            NextLexem();
+            if (_lastExtractedLexem.Token != Token.In)
+            {
+                AddError(LocalizedErrors.TokenExpected(Token.In));
+                BuildBatchWithContext(loopNode, Token.EndLoop);
+                return;
+            }
+
+            NextLexem();
+            TryParseNode(() => BuildExpressionUpTo(loopNode, Token.Loop));
+
+            BuildBatchWithContext(loopNode, Token.EndLoop);
+            CreateChild(loopNode, NodeKind.BlockEnd, _lastExtractedLexem);
+            
+            NextLexem();
+        }
+
+        private void BuildSimpleStatement()
+        {
+            _isStatementsDefined = true;
+            TryParseNode(() => BuildAssignment(CurrentParent));
         }
 
         private void BuildAssignment(IAstNode batch)
@@ -1101,10 +1146,7 @@ namespace OneScript.Language.SyntaxAnalysis
             if(!NextExpected(Token.OpenPar))
                 AddError(LocalizedErrors.TokenExpected(Token.OpenPar));
 
-
-            var flag = _enableException;
-            _enableException = true;
-            try
+            if (!TryParseNode(() =>
             {
                 NextLexem();
                 BuildExpression(node, Token.Comma);
@@ -1112,16 +1154,11 @@ namespace OneScript.Language.SyntaxAnalysis
                 BuildExpression(node, Token.Comma);
                 NextLexem();
                 BuildExpression(node, Token.ClosePar);
-            }
-            catch (InternalParseException)
+            }))
             {
                 return default;
             }
-            finally
-            {
-                _enableException = flag;
-            }
-            
+
             if (_lastExtractedLexem.Token != Token.ClosePar)
             {
                 AddError(LocalizedErrors.TokenExpected(Token.ClosePar));
@@ -1245,5 +1282,23 @@ namespace OneScript.Language.SyntaxAnalysis
             return child;
         }
 
+        private bool TryParseNode(Action action)
+        {
+            var exc = _enableException;
+            try
+            {
+                _enableException = true;
+                action();
+                return true;
+            }
+            catch (InternalParseException)
+            {
+                return false;
+            }
+            finally
+            {
+                _enableException = exc;
+            }
+        }
     }
 }

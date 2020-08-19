@@ -38,6 +38,7 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             _nodeVisitors[NodeKind.UnaryOperation] = (x) => VisitUnaryOperation((UnaryOperationNode)x);
             _nodeVisitors[NodeKind.WhileLoop] = (x) => VisitWhileNode((WhileLoopNode)x);
             _nodeVisitors[NodeKind.Condition] = (x) => VisitIfNode((ConditionNode)x);
+            _nodeVisitors[NodeKind.ForEachLoop] = (x) => VisitForeachNode((ForEachLoopNode)x);
 
         }
 
@@ -325,6 +326,29 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             VisitCodeBlock(node);
         }
         
+        protected virtual void VisitForeachNode(ForEachLoopNode node)
+        {
+            VisitIteratorLoopVariable((TerminalNode)node.Children[0]);
+            VisitIteratorExpression(node.Children[1]);
+            VisitIteratorLoopBody(node.Children[2]);
+            VisitBlockEnd(node.Children[3].Location);
+        }
+
+        protected virtual void VisitIteratorLoopVariable(TerminalNode node)
+        {
+            VisitVariableWrite(node);
+        }
+
+        protected virtual void VisitIteratorExpression(BslSyntaxNode node)
+        {
+            VisitExpression(node);
+        }
+        
+        protected virtual void VisitIteratorLoopBody(BslSyntaxNode node)
+        {
+            VisitCodeBlock(node);
+        }
+
         public void Visit(BslSyntaxNode node)
         {
             DefaultVisit(node);

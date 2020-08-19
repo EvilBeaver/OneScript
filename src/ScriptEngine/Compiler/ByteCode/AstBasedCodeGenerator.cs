@@ -56,6 +56,7 @@ namespace ScriptEngine.Compiler.ByteCode
         private ModuleImage CreateImageInternal(BslSyntaxNode moduleNode)
         {
             VisitModule(moduleNode);
+            _module.LoadAddress = _ctx.TopIndex();
             return _module;
         }
 
@@ -229,6 +230,32 @@ namespace ScriptEngine.Compiler.ByteCode
             CorrectBreakStatements(_nestedLoops.Pop(), endLoop);
         }
 
+        protected override void VisitForeachNode(ForEachLoopNode node)
+        {
+            VisitIteratorExpression(node.Children[1]);
+            AddCommand(OperationCode.PushIterator);
+            
+            var loopBegin = AddLineNumber(node.Location.LineNumber);
+            AddCommand(OperationCode.IteratorNext);
+            var condition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
+            
+            VisitIteratorLoopVariable((TerminalNode)node.Children[0]);
+            
+            var loopRecord = NestedLoopInfo.New();
+            loopRecord.startPoint = loopBegin;
+            _nestedLoops.Push(loopRecord);
+            
+            VisitIteratorLoopBody(node.Children[2]);
+            
+            AddCommand(OperationCode.Jmp, loopBegin);
+            
+            VisitBlockEnd(node.Children[3].Location);
+            
+            var indexLoopEnd = AddCommand(OperationCode.StopIterator);
+            CorrectCommandArgument(condition, indexLoopEnd);
+            CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
+        }
+
         protected override void VisitIfNode(ConditionNode node)
         {
             var exitIndices = new List<int>();
@@ -313,7 +340,14 @@ namespace ScriptEngine.Compiler.ByteCode
 
         protected override void VisitVariableRead(TerminalNode node)
         {
-            PushVariable(node.GetIdentifier());
+            try
+            {
+                PushVariable(node.GetIdentifier());
+            }
+            catch (SymbolNotFoundException e)
+            {
+                AddError(e, node.Location);
+            }
         }
 
         protected override void VisitVariableWrite(TerminalNode node)
