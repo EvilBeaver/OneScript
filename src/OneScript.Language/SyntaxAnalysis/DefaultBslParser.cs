@@ -720,13 +720,44 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildCountableForStatement(IAstNode loopNode)
         {
-            throw new NotImplementedException();
+            if (!IsUserSymbol(_lastExtractedLexem))
+            {
+                AddError(LocalizedErrors.IdentifierExpected());
+                BuildBatchWithContext(loopNode, Token.EndLoop);
+                return;
+            }
+            
+            var counter = _lastExtractedLexem;
+            NextLexem();
+            if (_lastExtractedLexem.Token != Token.Equal)
+            {
+                AddError(LocalizedErrors.TokenExpected(Token.Equal));
+                BuildBatchWithContext(loopNode, Token.EndLoop);
+                return;
+            }
+            
+            var assignment = _builder.CreateNode(NodeKind.ForInitializer, _lastExtractedLexem);
+            
+            NextLexem();
+
+            CreateChild(assignment, NodeKind.Identifier, counter);
+            BuildExpressionUpTo(assignment, Token.To);
+            _builder.AddChild(loopNode, assignment);
+            
+            var limit = _builder.CreateNode(NodeKind.ForLimit, _lastExtractedLexem);
+            BuildExpressionUpTo(limit, Token.Loop);
+            _builder.AddChild(loopNode, limit);
+            
+            BuildBatchWithContext(loopNode, Token.EndLoop);
+
+            CreateChild(loopNode, NodeKind.BlockEnd, _lastExtractedLexem);
+
+            NextLexem();
         }
 
         private void BuildForEachStatement(IAstNode loopNode)
         {
             NextLexem();
-            _isInLoopScope = true;
             if (!IsUserSymbol(_lastExtractedLexem))
             {
                 AddError(LocalizedErrors.IdentifierExpected());
@@ -734,7 +765,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 return;
             }
 
-            CreateChild(loopNode, NodeKind.Identifier, _lastExtractedLexem);
+            CreateChild(loopNode, NodeKind.ForEachVariable, _lastExtractedLexem);
             NextLexem();
             if (_lastExtractedLexem.Token != Token.In)
             {
@@ -744,7 +775,12 @@ namespace OneScript.Language.SyntaxAnalysis
             }
 
             NextLexem();
-            TryParseNode(() => BuildExpressionUpTo(loopNode, Token.Loop));
+            TryParseNode(() =>
+            {
+                var collection = _builder.CreateNode(NodeKind.ForEachCollection, _lastExtractedLexem);
+                BuildExpressionUpTo(collection, Token.Loop);
+                _builder.AddChild(loopNode, collection);
+            });
 
             BuildBatchWithContext(loopNode, Token.EndLoop);
             CreateChild(loopNode, NodeKind.BlockEnd, _lastExtractedLexem);

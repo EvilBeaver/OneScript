@@ -26,6 +26,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.AnnotationParameterName:
                 case NodeKind.AnnotationParameterValue:
                 case NodeKind.ParameterDefaultValue:
+                case NodeKind.ForEachVariable:
                     return new TerminalNode(kind, startLexem);
                 case NodeKind.BlockEnd:
                     return new LineMarkerNode(startLexem.Location);
@@ -63,9 +64,11 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.Condition:
                     return new ConditionNode(startLexem);
                 case NodeKind.CodeBatch:
-                    return new CodeBatchNode();
+                    return new CodeBatchNode(startLexem);
                 case NodeKind.ForEachLoop:
                     return new ForEachLoopNode(startLexem);
+                case NodeKind.ForLoop:
+                    return new ForLoopNode(startLexem);
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }

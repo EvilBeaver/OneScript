@@ -12,7 +12,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class CodeBatchNode : NonTerminalNode
     {
-        public CodeBatchNode() : base(NodeKind.CodeBatch)
+        public CodeBatchNode(Lexem startLexem) : base(NodeKind.CodeBatch, startLexem)
         {
         }
     }

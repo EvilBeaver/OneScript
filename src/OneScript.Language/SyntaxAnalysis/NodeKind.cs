@@ -52,6 +52,10 @@ namespace OneScript.Language.SyntaxAnalysis
         public const int ForLoop = 35;
         public const int Condition = 36;
         public const int ForEachLoop = 37;
+        public const int ForEachVariable = 38;
+        public const int ForEachCollection = 39;
+        public const int ForInitializer = 40;
+        public const int ForLimit = 41;
 
         public static string Presentation(int kind)
         {

@@ -522,8 +522,8 @@ namespace OneScript.Language.Tests
             
             var node = batch.NextChild();
             node.Is(NodeKind.ForEachLoop);
-            node.NextChildIs(NodeKind.Identifier)
-                .NextChildIs(NodeKind.Identifier)
+            node.NextChildIs(NodeKind.ForEachVariable)
+                .NextChildIs(NodeKind.ForEachCollection)
                 .NextChildIs(NodeKind.CodeBatch)
                 .NextChildIs(NodeKind.BlockEnd)
                 .NoMoreChildren();

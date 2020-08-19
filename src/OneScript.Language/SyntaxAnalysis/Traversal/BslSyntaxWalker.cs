@@ -38,7 +38,8 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             _nodeVisitors[NodeKind.UnaryOperation] = (x) => VisitUnaryOperation((UnaryOperationNode)x);
             _nodeVisitors[NodeKind.WhileLoop] = (x) => VisitWhileNode((WhileLoopNode)x);
             _nodeVisitors[NodeKind.Condition] = (x) => VisitIfNode((ConditionNode)x);
-            _nodeVisitors[NodeKind.ForEachLoop] = (x) => VisitForeachNode((ForEachLoopNode)x);
+            _nodeVisitors[NodeKind.ForEachLoop] = (x) => VisitForEachLoopNode((ForEachLoopNode)x);
+            _nodeVisitors[NodeKind.ForLoop] = (x) => VisitForLoopNode((ForLoopNode)x);
 
         }
 
@@ -326,12 +327,12 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             VisitCodeBlock(node);
         }
         
-        protected virtual void VisitForeachNode(ForEachLoopNode node)
+        protected virtual void VisitForEachLoopNode(ForEachLoopNode node)
         {
-            VisitIteratorLoopVariable((TerminalNode)node.Children[0]);
-            VisitIteratorExpression(node.Children[1]);
-            VisitIteratorLoopBody(node.Children[2]);
-            VisitBlockEnd(node.Children[3].Location);
+            VisitIteratorLoopVariable(node.IteratorVariable);
+            VisitIteratorExpression(node.CollectionExpression);
+            VisitIteratorLoopBody(node.LoopBody);
+            VisitBlockEnd(node.EndLocation);
         }
 
         protected virtual void VisitIteratorLoopVariable(TerminalNode node)
@@ -345,6 +346,27 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         }
         
         protected virtual void VisitIteratorLoopBody(BslSyntaxNode node)
+        {
+            VisitCodeBlock(node);
+        }
+
+        protected virtual void VisitForLoopNode(ForLoopNode node)
+        {
+            VisitForInitializer(node.InitializationClause);
+            VisitForUpperLimit(node.UpperLimitExpression);
+            VisitForLoopBody(node.LoopBody);
+            VisitBlockEnd(node.EndLocation);
+        }
+
+        protected virtual void VisitForInitializer(BslSyntaxNode node)
+        {
+        }
+
+        protected virtual void VisitForUpperLimit(BslSyntaxNode node)
+        {
+        }
+
+        protected virtual void VisitForLoopBody(CodeBatchNode node)
         {
             VisitCodeBlock(node);
         }

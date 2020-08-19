@@ -176,7 +176,8 @@ namespace OneScript.Language.LexicalAnalysis
             _fixedState.SetOutput(new Lexem()
             {
                 Type = lexemType,
-                Token = token
+                Token = token,
+                Location = new CodeRange(CurrentLine, CurrentColumn)
             });
 
             _state = _fixedState;

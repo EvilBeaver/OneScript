@@ -230,29 +230,68 @@ namespace ScriptEngine.Compiler.ByteCode
             CorrectBreakStatements(_nestedLoops.Pop(), endLoop);
         }
 
-        protected override void VisitForeachNode(ForEachLoopNode node)
+        protected override void VisitForEachLoopNode(ForEachLoopNode node)
         {
-            VisitIteratorExpression(node.Children[1]);
+            VisitIteratorExpression(node.CollectionExpression);
             AddCommand(OperationCode.PushIterator);
             
             var loopBegin = AddLineNumber(node.Location.LineNumber);
             AddCommand(OperationCode.IteratorNext);
             var condition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             
-            VisitIteratorLoopVariable((TerminalNode)node.Children[0]);
+            VisitIteratorLoopVariable(node.IteratorVariable);
             
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = loopBegin;
             _nestedLoops.Push(loopRecord);
             
-            VisitIteratorLoopBody(node.Children[2]);
+            VisitIteratorLoopBody(node.LoopBody);
             
             AddCommand(OperationCode.Jmp, loopBegin);
             
-            VisitBlockEnd(node.Children[3].Location);
+            VisitBlockEnd(node.EndLocation);
             
             var indexLoopEnd = AddCommand(OperationCode.StopIterator);
             CorrectCommandArgument(condition, indexLoopEnd);
+            CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
+        }
+
+        protected override void VisitForLoopNode(ForLoopNode node)
+        {
+            var initializer = node.InitializationClause;
+            var counter = (TerminalNode) initializer.Children[0];
+            VisitExpression(initializer.Children[1]);
+            VisitVariableWrite(counter);
+            
+            VisitExpression(node.UpperLimitExpression);
+            
+            AddCommand(OperationCode.MakeRawValue);
+            AddCommand(OperationCode.PushTmp);
+
+            var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
+            var indexLoopBegin = AddLineNumber(node.Location.LineNumber);
+
+            // increment
+            VisitVariableRead(counter);
+            AddCommand(OperationCode.Inc);
+            VisitVariableWrite(counter);
+
+            var counterIndex = PushVariable(counter.GetIdentifier());
+            CorrectCommandArgument(jmpIndex, counterIndex);
+            var conditionIndex = AddCommand(OperationCode.JmpCounter, DUMMY_ADDRESS);
+
+            var loopRecord = NestedLoopInfo.New();
+            loopRecord.startPoint = indexLoopBegin;
+            _nestedLoops.Push(loopRecord);
+
+            VisitCodeBlock(node.LoopBody);
+            VisitBlockEnd(node.EndLocation);
+
+            // jmp to start
+            AddCommand(OperationCode.Jmp, indexLoopBegin);
+
+            var indexLoopEnd = AddCommand(OperationCode.PopTmp, 1);
+            CorrectCommandArgument(conditionIndex, indexLoopEnd);
             CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
         }
 
