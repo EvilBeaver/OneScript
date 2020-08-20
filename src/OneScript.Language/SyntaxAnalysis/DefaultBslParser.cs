@@ -606,13 +606,13 @@ namespace OneScript.Language.SyntaxAnalysis
                     BuildWhileStatement();
                     break;
                 case Token.Break:
-                    //BuildBreakStatement();
+                    BuildBreakStatement();
                     break;
                 case Token.Continue:
-                    //BuildContinueStatement();
+                    BuildContinueStatement();
                     break;
                 case Token.Return:
-                    //BuildReturnStatement();
+                    BuildReturnStatement();
                     break;
                 case Token.Try:
                     //BuildTryExceptStatement();
@@ -788,6 +788,61 @@ namespace OneScript.Language.SyntaxAnalysis
             NextLexem();
         }
 
+        private void BuildBreakStatement()
+        {
+            if (!_isInLoopScope)
+            {
+                AddError(LocalizedErrors.BreakOutsideOfLoop());
+            }
+
+            CreateChild(CurrentParent, NodeKind.BreakStatement, _lastExtractedLexem);
+            NextLexem();
+        }
+        
+        private void BuildContinueStatement()
+        {
+            if (!_isInLoopScope)
+            {
+                AddError(LocalizedErrors.ContinueOutsideLoop());
+            }
+
+            CreateChild(CurrentParent, NodeKind.ContinueStatement, _lastExtractedLexem);
+            NextLexem();
+        }
+        
+        private void BuildReturnStatement()
+        {
+            var returnNode = _builder.CreateNode(NodeKind.ReturnStatement, _lastExtractedLexem);
+            if (_isInFunctionScope)
+            {
+                NextLexem();
+                if (_lastExtractedLexem.Token == Token.Semicolon ||
+                    LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
+                {
+                    AddError(LocalizedErrors.FuncEmptyReturnValue());
+                }
+                else
+                {
+                    BuildExpression(returnNode, Token.Semicolon);
+                }
+            }
+            else if (_inMethodScope)
+            {
+                NextLexem();
+                if (_lastExtractedLexem.Token != Token.Semicolon
+                    && !LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
+                {
+                    AddError(LocalizedErrors.ProcReturnsAValue());
+                }
+            }
+            else
+            {
+                AddError(LocalizedErrors.ReturnOutsideOfMethod());
+            }
+
+            _builder.AddChild(CurrentParent, returnNode);
+        }
+        
         private void BuildSimpleStatement()
         {
             _isStatementsDefined = true;

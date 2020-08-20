@@ -29,7 +29,9 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.ForEachVariable:
                     return new TerminalNode(kind, startLexem);
                 case NodeKind.BlockEnd:
-                    return new LineMarkerNode(startLexem.Location);
+                case NodeKind.ContinueStatement:
+                case NodeKind.BreakStatement:
+                    return new LineMarkerNode(startLexem.Location, kind);
                 default:
                     var node = MakeNonTerminal(kind, startLexem);
                     return node;

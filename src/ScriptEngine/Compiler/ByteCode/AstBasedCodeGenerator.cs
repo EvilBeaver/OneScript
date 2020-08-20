@@ -295,6 +295,21 @@ namespace ScriptEngine.Compiler.ByteCode
             CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
         }
 
+        protected override void VisitBreakNode(LineMarkerNode node)
+        {
+            ExitTryBlocks();
+            var loopInfo = _nestedLoops.Peek();
+            var idx = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
+            loopInfo.breakStatements.Add(idx);
+        }
+        
+        protected override void VisitContinueNode(LineMarkerNode node)
+        {
+            ExitTryBlocks();
+            var loopInfo = _nestedLoops.Peek();
+            AddCommand(OperationCode.Jmp, loopInfo.startPoint);
+        }
+
         protected override void VisitIfNode(ConditionNode node)
         {
             var exitIndices = new List<int>();
@@ -628,6 +643,29 @@ namespace ScriptEngine.Compiler.ByteCode
                 VisitExpression(binaryOperationNode.Children[0]);
                 VisitExpression(binaryOperationNode.Children[1]);
                 AddCommand(TokenToOperationCode(binaryOperationNode.Operation));
+            }
+        }
+        
+        private void ExitTryBlocks()
+        {
+            var tryBlocks = _nestedLoops.Peek().tryNesting;
+            if (tryBlocks > 0)
+                AddCommand(OperationCode.ExitTry, tryBlocks);
+        }
+
+        private void PushTryNesting()
+        {
+            if (_nestedLoops.Count > 0)
+            {
+                _nestedLoops.Peek().tryNesting++;
+            }
+        }
+        
+        private void PopTryNesting()
+        {
+            if (_nestedLoops.Count > 0)
+            {
+                _nestedLoops.Peek().tryNesting--;
             }
         }
         

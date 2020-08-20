@@ -56,6 +56,9 @@ namespace OneScript.Language.SyntaxAnalysis
         public const int ForEachCollection = 39;
         public const int ForInitializer = 40;
         public const int ForLimit = 41;
+        public const int BreakStatement = 42;
+        public const int ContinueStatement = 43;
+        public const int ReturnStatement = 44;
 
         public static string Presentation(int kind)
         {

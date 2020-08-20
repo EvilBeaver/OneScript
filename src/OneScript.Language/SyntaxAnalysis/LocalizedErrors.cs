@@ -67,5 +67,19 @@ namespace OneScript.Language.SyntaxAnalysis
         public static ParseError UnexpectedEof() =>
             Create("ru='Неожиданный конец модуля';en = 'Unexpected end of text'");
 
+        public static ParseError BreakOutsideOfLoop() =>
+            Create("ru='Оператор \"Прервать\" может использоваться только внутри цикла';en='Break operator may be used only within loop'");
+
+        public static ParseError ContinueOutsideLoop() =>
+            Create("ru='Оператор \"Продолжить\" может использоваться только внутри цикла';en='Continue operator may be used only within loop'");
+
+        public static ParseError FuncEmptyReturnValue() =>
+            Create("ru='Функция должна возвращать значение';en='Function should return a value'");
+
+        public static ParseError ProcReturnsAValue() =>
+            Create("ru='Процедуры не могут возвращать значение';en='Procedures cannot return value'");
+
+        public static ParseError ReturnOutsideOfMethod() => Create("ru='Оператор \"Возврат\" может использоваться только внутри метода';"+
+                                                                   "en='Return operator may not be used outside procedure or function'");
     }
 }
