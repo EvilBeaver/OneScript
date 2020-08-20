@@ -310,6 +310,29 @@ namespace ScriptEngine.Compiler.ByteCode
             AddCommand(OperationCode.Jmp, loopInfo.startPoint);
         }
 
+        protected override void VisitReturnNode(BslSyntaxNode node)
+        {
+            if (node.Children.Count > 0)
+            {
+                VisitExpression(node.Children[0]);
+                AddCommand(OperationCode.MakeRawValue);
+            }
+            
+            AddCommand(OperationCode.Return);
+        }
+
+        protected override void VisitRaiseNode(BslSyntaxNode node)
+        {
+            int arg = -1;
+            if (node.Children.Any())
+            {
+                VisitExpression(node.Children[0]);
+                arg = 0;
+            }
+
+            AddCommand(OperationCode.RaiseException, arg);
+        }
+
         protected override void VisitIfNode(ConditionNode node)
         {
             var exitIndices = new List<int>();
@@ -645,7 +668,35 @@ namespace ScriptEngine.Compiler.ByteCode
                 AddCommand(TokenToOperationCode(binaryOperationNode.Operation));
             }
         }
-        
+
+        protected override void VisitTryExceptNode(TryExceptNode node)
+        {
+            var beginTryIndex = AddCommand(OperationCode.BeginTry, DUMMY_ADDRESS);
+            VisitTryBlock(node.TryBlock);
+            var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
+
+            var beginHandler = AddLineNumber(
+                node.ExceptBlock.Location.LineNumber,
+                CodeGenerationFlags.CodeStatistics);
+
+            CorrectCommandArgument(beginTryIndex, beginHandler);
+
+            VisitExceptBlock(node.ExceptBlock);
+
+            var endIndex = AddLineNumber(node.EndLocation.LineNumber,
+                CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
+            
+            AddCommand(OperationCode.EndTry);
+            CorrectCommandArgument(jmpIndex, endIndex);
+        }
+
+        protected override void VisitTryBlock(CodeBatchNode node)
+        {
+            PushTryNesting();
+            base.VisitTryBlock(node);
+            PopTryNesting();
+        }
+
         private void ExitTryBlocks()
         {
             var tryBlocks = _nestedLoops.Peek().tryNesting;

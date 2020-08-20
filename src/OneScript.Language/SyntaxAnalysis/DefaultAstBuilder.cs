@@ -71,6 +71,8 @@ namespace OneScript.Language.SyntaxAnalysis
                     return new ForEachLoopNode(startLexem);
                 case NodeKind.ForLoop:
                     return new ForLoopNode(startLexem);
+                case NodeKind.TryExcept:
+                    return new TryExceptNode(startLexem);
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }

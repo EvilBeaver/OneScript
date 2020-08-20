@@ -42,6 +42,9 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             _nodeVisitors[NodeKind.ForLoop] = (x) => VisitForLoopNode((ForLoopNode)x);
             _nodeVisitors[NodeKind.BreakStatement] = (x) => VisitBreakNode((LineMarkerNode)x);
             _nodeVisitors[NodeKind.ContinueStatement] = (x) => VisitContinueNode((LineMarkerNode)x);
+            _nodeVisitors[NodeKind.ReturnStatement] = VisitReturnNode;
+            _nodeVisitors[NodeKind.RaiseException] = VisitRaiseNode;
+            _nodeVisitors[NodeKind.TryExcept] = (x) => VisitTryExceptNode((TryExceptNode)x);
 
         }
 
@@ -381,6 +384,31 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         {
         }
         
+        protected virtual void VisitReturnNode(BslSyntaxNode node)
+        {
+        }
+
+        protected virtual void VisitRaiseNode(BslSyntaxNode node)
+        {
+        }
+        
+        protected virtual void VisitTryExceptNode(TryExceptNode node)
+        {
+            VisitTryBlock(node.TryBlock);
+            VisitExceptBlock(node.TryBlock);
+            VisitBlockEnd(node.EndLocation);
+        }
+
+        protected virtual void VisitTryBlock(CodeBatchNode node)
+        {
+            VisitCodeBlock(node);
+        }
+
+        protected virtual void VisitExceptBlock(CodeBatchNode node)
+        {
+            VisitCodeBlock(node);
+        }
+
         public void Visit(BslSyntaxNode node)
         {
             DefaultVisit(node);

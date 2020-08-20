@@ -615,17 +615,17 @@ namespace OneScript.Language.SyntaxAnalysis
                     BuildReturnStatement();
                     break;
                 case Token.Try:
-                    //BuildTryExceptStatement();
+                    BuildTryExceptStatement();
                     break;
                 case Token.RaiseException:
-                    //BuildRaiseExceptionStatement();
+                    BuildRaiseExceptionStatement();
                     break;
                 case Token.Execute:
-                    //BuildExecuteStatement();
+                    BuildExecuteStatement();
                     break;
                 case Token.AddHandler:
                 case Token.RemoveHandler:
-                    //BuildEventHandlerOperation(_lastExtractedLexem.Token);
+                    BuildEventHandlerOperation(_lastExtractedLexem.Token);
                     break;        
                 default:
                     var expected = _tokenStack.Peek();
@@ -841,6 +841,51 @@ namespace OneScript.Language.SyntaxAnalysis
             }
 
             _builder.AddChild(CurrentParent, returnNode);
+        }
+
+        private void BuildTryExceptStatement()
+        {
+            var node = _builder.CreateNode(NodeKind.TryExcept, _lastExtractedLexem);
+            NextLexem();
+            BuildBatchWithContext(node, Token.Exception);
+            
+            Debug.Assert(_lastExtractedLexem.Token == Token.Exception);
+            
+            NextLexem();
+            BuildBatchWithContext(node, Token.EndTry);
+            CreateChild(node, NodeKind.BlockEnd, _lastExtractedLexem);
+            NextLexem();
+            _builder.AddChild(CurrentParent, node);
+        }
+        
+        private void BuildRaiseExceptionStatement()
+        {
+            var node = _builder.CreateNode(NodeKind.RaiseException, _lastExtractedLexem);
+            NextLexem();
+            if (_lastExtractedLexem.Token == Token.Semicolon)
+            {
+                if (!_tokenStack.Any(x => x.Contains(Token.EndTry)))
+                {
+                    AddError(LocalizedErrors.MismatchedRaiseException());
+                    return;
+                }
+            }
+            else
+            {
+                BuildExpression(node, Token.Semicolon);
+            }
+            
+            _builder.AddChild(CurrentParent, node);
+        }
+
+        private void BuildExecuteStatement()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void BuildEventHandlerOperation(Token token)
+        {
+            throw new NotImplementedException();
         }
         
         private void BuildSimpleStatement()

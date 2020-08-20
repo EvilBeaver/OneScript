@@ -12,12 +12,6 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class LineMarkerNode : BslSyntaxNode
     {
-        public LineMarkerNode(CodeRange location)
-        {
-            Location = location;
-            Kind = NodeKind.BlockEnd;
-        }
-        
         public LineMarkerNode(CodeRange location, int kind)
         {
             Location = location;

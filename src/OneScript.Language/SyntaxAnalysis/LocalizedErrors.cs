@@ -81,5 +81,9 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public static ParseError ReturnOutsideOfMethod() => Create("ru='Оператор \"Возврат\" может использоваться только внутри метода';"+
                                                                    "en='Return operator may not be used outside procedure or function'");
+
+        public static ParseError MismatchedRaiseException() =>
+            Create("ru='Оператор \"ВызватьИсключение\" без параметров может использоваться только в блоке \"Исключение\"';" + 
+                   "en='Raise operator may be used without arguments only when handling exception'");
     }
 }
