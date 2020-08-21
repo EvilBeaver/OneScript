@@ -61,6 +61,9 @@ namespace OneScript.Language.SyntaxAnalysis
         public const int ReturnStatement = 44;
         public const int RaiseException = 45;
         public const int TryExcept = 46;
+        public const int ExecuteStatement = 47;
+        public const int AddHandler = 48;
+        public const int RemoveHandler = 49;
 
         public static string Presentation(int kind)
         {

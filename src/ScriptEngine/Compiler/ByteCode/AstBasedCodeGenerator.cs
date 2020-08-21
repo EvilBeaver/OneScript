@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -623,6 +624,12 @@ namespace ScriptEngine.Compiler.ByteCode
 
         private void PushCallArguments(BslSyntaxNode argList)
         {
+            PushArgumentsList(argList);
+            AddCommand(OperationCode.ArgNum, argList.Children.Count);
+        }
+
+        private void PushArgumentsList(BslSyntaxNode argList)
+        {
             for (int i = 0; i < argList.Children.Count; i++)
             {
                 var passedArg = argList.Children[i];
@@ -635,10 +642,8 @@ namespace ScriptEngine.Compiler.ByteCode
                     AddCommand(OperationCode.PushDefaultArg);
                 }
             }
-            
-            AddCommand(OperationCode.ArgNum, argList.Children.Count);
         }
-        
+
         protected override void VisitTernaryOperation(BslSyntaxNode expression)
         {
             throw new NotImplementedException();
@@ -695,6 +700,43 @@ namespace ScriptEngine.Compiler.ByteCode
             PushTryNesting();
             base.VisitTryBlock(node);
             PopTryNesting();
+        }
+
+        protected override void VisitExecuteStatement(BslSyntaxNode node)
+        {
+            base.VisitExecuteStatement(node);
+            AddCommand(OperationCode.Execute);
+        }
+
+        protected override void VisitHandlerOperation(BslSyntaxNode node)
+        {
+            var (srcValue, eventName) = SplitExpressionAndName(node);
+            VisitExpression(srcValue);
+            VisitConstant(eventName);
+            AddCommand(node.Kind == NodeKind.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static (BslSyntaxNode, TerminalNode) SplitExpressionAndName(BslSyntaxNode node)
+        {
+            return (node.Children[0], (TerminalNode) node.Children[1]);
+        }
+
+        protected override void VisitNewObjectCreation(NewObjectNode node)
+        {
+            if (node.IsDynamic)
+            {
+                VisitExpression(node.TypeNameNode);
+            }
+
+            var callArgs = 0;
+            if (node.ConstructorArguments != default)
+            {
+                PushArgumentsList(node.ConstructorArguments);
+                callArgs = node.ConstructorArguments.Children.Count;
+            }
+
+            AddCommand(OperationCode.NewInstance, callArgs);
         }
 
         private void ExitTryBlocks()

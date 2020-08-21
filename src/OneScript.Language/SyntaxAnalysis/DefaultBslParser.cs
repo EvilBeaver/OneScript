@@ -728,8 +728,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             
             var counter = _lastExtractedLexem;
-            NextLexem();
-            if (_lastExtractedLexem.Token != Token.Equal)
+            if (!NextExpected(Token.Equal))
             {
                 AddError(LocalizedErrors.TokenExpected(Token.Equal));
                 BuildBatchWithContext(loopNode, Token.EndLoop);
@@ -766,8 +765,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
 
             CreateChild(loopNode, NodeKind.ForEachVariable, _lastExtractedLexem);
-            NextLexem();
-            if (_lastExtractedLexem.Token != Token.In)
+            if (!NextExpected(Token.In))
             {
                 AddError(LocalizedErrors.TokenExpected(Token.In));
                 BuildBatchWithContext(loopNode, Token.EndLoop);
@@ -880,12 +878,38 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildExecuteStatement()
         {
-            throw new NotImplementedException();
+            var node = _builder.CreateNode(NodeKind.ExecuteStatement, _lastExtractedLexem);
+            NextLexem();
+            BuildExpression(node, Token.Semicolon);
+            _builder.AddChild(CurrentParent, node);
         }
 
         private void BuildEventHandlerOperation(Token token)
         {
-            throw new NotImplementedException();
+            var node = _builder.CreateNode(
+                token == Token.AddHandler ? NodeKind.AddHandler : NodeKind.RemoveHandler,
+                _lastExtractedLexem);
+            
+            NextLexem();
+            
+            var source = BuildExpression(node, Token.Comma);
+            if (source.Kind != NodeKind.DereferenceOperation || !_lastDereferenceIsWritable)
+            {
+                AddError(LocalizedErrors.WrongEventName());
+                return;
+            }
+
+            NextLexem();
+            var expr = BuildExpression(node, Token.Semicolon);
+
+            if (expr.Kind != NodeKind.Identifier &&
+                (expr.Kind != NodeKind.DereferenceOperation || !_lastDereferenceIsWritable))
+            {
+                AddError(LocalizedErrors.WrongHandlerName());
+                return;
+            }
+            
+            _builder.AddChild(CurrentParent, node);
         }
         
         private void BuildSimpleStatement()
@@ -939,31 +963,36 @@ namespace OneScript.Language.SyntaxAnalysis
             return callNode ?? target;
         }
 
-        private int BuildCallParameters(IAstNode callNode)
+        private void BuildCallParameters(IAstNode callNode)
         {
             var node = CreateChild(callNode, NodeKind.CallArgumentList, _lastExtractedLexem);
-            int argCount = 0;
             PushStructureToken(Token.ClosePar);
             try
             {
                 NextLexem(); // съели открывающую скобку
-                while (_lastExtractedLexem.Token != Token.ClosePar)
-                {
-                    BuildCallArgument(node);
-                    argCount++;
-                }
-
-                if (_lastExtractedLexem.Token != Token.ClosePar)
-                {
-                    AddError(LocalizedErrors.TokenExpected(Token.OpenPar));
-                    return -1;
-                }
+                WalkCallArguments(node);
 
                 NextLexem(); // съели закрывающую скобку
             }
             finally
             {
                 PopStructureToken();
+            }
+        }
+
+        private int WalkCallArguments(IAstNode node)
+        {
+            int argCount = 0;
+            while (_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                BuildCallArgument(node);
+                argCount++;
+            }
+
+            if (_lastExtractedLexem.Token != Token.ClosePar)
+            {
+                AddError(LocalizedErrors.TokenExpected(Token.ClosePar));
+                argCount = -1;
             }
 
             return argCount;
@@ -996,62 +1025,6 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 CreateChild(argsList, NodeKind.CallArgument, _lastExtractedLexem);
             }
-        }
-
-        private IAstNode BuildDereference(IAstNode target)
-        {
-            var activeTarget = BuildIndexerAccess(target);
-            if (_lastExtractedLexem.Token == Token.Dot)
-            {
-                var dotNode = _builder.CreateNode(NodeKind.DereferenceOperation, _lastExtractedLexem);
-                _builder.AddChild(dotNode, activeTarget);
-                NextLexem();
-                if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
-                {
-                    AddError(LocalizedErrors.IdentifierExpected());
-                    return default;
-                }
-
-                var identifier = _lastExtractedLexem;
-                NextLexem();
-                if (_lastExtractedLexem.Token == Token.OpenPar)
-                {
-                    _lastDereferenceIsWritable = false;
-                    var ident = _builder.CreateNode(NodeKind.Identifier, identifier);
-                    var call = BuildCall(ident, NodeKind.MethodCall);
-                    _builder.AddChild(dotNode, call);
-                }
-                else
-                {
-                    _lastDereferenceIsWritable = true;
-                    CreateChild(dotNode, NodeKind.Identifier, identifier);
-                }
-                
-                return BuildDereference(dotNode);
-            }
-
-            return activeTarget;
-        }
-
-        private IAstNode BuildIndexerAccess(IAstNode target)
-        {
-            if (_lastExtractedLexem.Token == Token.OpenBracket)
-            {
-                var node = _builder.CreateNode(NodeKind.IndexAccess, _lastExtractedLexem);
-                _builder.AddChild(node, target);
-                NextLexem();
-                var expression = BuildExpression(node, Token.CloseBracket);
-                if (expression == default)
-                {
-                    AddError(LocalizedErrors.ExpressionSyntax());
-                    return default;
-                }
-                NextLexem();
-                _lastDereferenceIsWritable = true;
-                return BuildDereference(node);
-            }
-
-            return target;
         }
 
         #region Expression
@@ -1305,6 +1278,62 @@ namespace OneScript.Language.SyntaxAnalysis
             return BuildDereference(node);
         }
 
+        private IAstNode BuildDereference(IAstNode target)
+        {
+            var activeTarget = BuildIndexerAccess(target);
+            if (_lastExtractedLexem.Token == Token.Dot)
+            {
+                var dotNode = _builder.CreateNode(NodeKind.DereferenceOperation, _lastExtractedLexem);
+                _builder.AddChild(dotNode, activeTarget);
+                NextLexem();
+                if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                {
+                    AddError(LocalizedErrors.IdentifierExpected());
+                    return default;
+                }
+
+                var identifier = _lastExtractedLexem;
+                NextLexem();
+                if (_lastExtractedLexem.Token == Token.OpenPar)
+                {
+                    _lastDereferenceIsWritable = false;
+                    var ident = _builder.CreateNode(NodeKind.Identifier, identifier);
+                    var call = BuildCall(ident, NodeKind.MethodCall);
+                    _builder.AddChild(dotNode, call);
+                }
+                else
+                {
+                    _lastDereferenceIsWritable = true;
+                    CreateChild(dotNode, NodeKind.Identifier, identifier);
+                }
+                
+                return BuildDereference(dotNode);
+            }
+
+            return activeTarget;
+        }
+
+        private IAstNode BuildIndexerAccess(IAstNode target)
+        {
+            if (_lastExtractedLexem.Token == Token.OpenBracket)
+            {
+                var node = _builder.CreateNode(NodeKind.IndexAccess, _lastExtractedLexem);
+                _builder.AddChild(node, target);
+                NextLexem();
+                var expression = BuildExpression(node, Token.CloseBracket);
+                if (expression == default)
+                {
+                    AddError(LocalizedErrors.ExpressionSyntax());
+                    return default;
+                }
+                NextLexem();
+                _lastDereferenceIsWritable = true;
+                return BuildDereference(node);
+            }
+
+            return target;
+        }
+        
         private IAstNode BuildNewObjectCreation()
         {
             var node = _builder.CreateNode(NodeKind.NewObject, _lastExtractedLexem);
@@ -1329,10 +1358,27 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void NewObjectDynamicConstructor(IAstNode node)
         {
-            var argsPassed = BuildCallParameters(node);
-            if (argsPassed < 1)
+            NextLexem();
+            if (_lastExtractedLexem.Token == Token.ClosePar)
             {
                 AddError(LocalizedErrors.ExpressionExpected());
+                return;
+            }
+
+            var nameArg = _builder.CreateNode(NodeKind.CallArgument, _lastExtractedLexem);
+            PushStructureToken(Token.ClosePar);
+            try
+            {
+                BuildExpressionUpTo(nameArg, Token.Comma);
+                _builder.AddChild(node, nameArg);
+                var callArgs = _builder.CreateNode(NodeKind.CallArgumentList, _lastExtractedLexem);
+                WalkCallArguments(callArgs);
+                _builder.AddChild(node, callArgs);
+                NextLexem();
+            }
+            finally
+            {
+                PopStructureToken();
             }
         }
 
@@ -1361,13 +1407,6 @@ namespace OneScript.Language.SyntaxAnalysis
             return expected == _lastExtractedLexem.Token;
         }
         
-        private bool NextExpected(LexemType expected)
-        {
-            NextLexem();
-            
-            return expected == _lastExtractedLexem.Type;
-        }
-
         private void SkipToNextStatement(Token[] additionalStops = null)
         {
             while (!(_lastExtractedLexem.Token == Token.EndOfText

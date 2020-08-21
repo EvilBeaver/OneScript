@@ -45,6 +45,10 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             _nodeVisitors[NodeKind.ReturnStatement] = VisitReturnNode;
             _nodeVisitors[NodeKind.RaiseException] = VisitRaiseNode;
             _nodeVisitors[NodeKind.TryExcept] = (x) => VisitTryExceptNode((TryExceptNode)x);
+            _nodeVisitors[NodeKind.ExecuteStatement] = VisitExecuteStatement;
+            _nodeVisitors[NodeKind.AddHandler] = VisitHandlerOperation;
+            _nodeVisitors[NodeKind.RemoveHandler] = VisitHandlerOperation;
+            _nodeVisitors[NodeKind.NewObject] = (x) => VisitNewObjectCreation((NewObjectNode)x);
 
         }
 
@@ -409,6 +413,19 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             VisitCodeBlock(node);
         }
 
+        protected virtual void VisitExecuteStatement(BslSyntaxNode node)
+        {
+            VisitExpression(node.Children[0]);
+        }
+
+        protected virtual void VisitHandlerOperation(BslSyntaxNode node)
+        {
+        }
+        
+        protected virtual void VisitNewObjectCreation(NewObjectNode node)
+        {
+        }
+        
         public void Visit(BslSyntaxNode node)
         {
             DefaultVisit(node);

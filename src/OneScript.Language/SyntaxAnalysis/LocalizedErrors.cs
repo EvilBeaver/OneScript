@@ -85,5 +85,11 @@ namespace OneScript.Language.SyntaxAnalysis
         public static ParseError MismatchedRaiseException() =>
             Create("ru='Оператор \"ВызватьИсключение\" без параметров может использоваться только в блоке \"Исключение\"';" + 
                    "en='Raise operator may be used without arguments only when handling exception'");
+        
+        public static ParseError WrongEventName() =>
+            Create("ru = 'Ожидается имя события'; en = 'Event name expected'");
+        
+        public static ParseError WrongHandlerName() =>
+            Create("ru = 'Ожидается имя обработчика события'; en = 'Event handler name expected'");
     }
 }

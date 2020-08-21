@@ -9,5 +9,6 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public interface IAstNode
     {
+        int Kind { get; }
     }
 }

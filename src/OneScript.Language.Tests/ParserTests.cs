@@ -528,6 +528,36 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.BlockEnd)
                 .NoMoreChildren();
         }
+
+        [Fact]
+        public void CheckHandler_Expression_And_EventName()
+        {
+            var code = "ДобавитьОбработчик ЧтоТо[Индекс].ИмяСобытия, ЧтоТо().ИмяОбработчика";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.AddHandler);
+            node.NextChildIs(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.DereferenceOperation)
+                .NoMoreChildren();
+        }
+        
+        [Fact]
+        public void CheckHandler_Expression_And_ProcedureName()
+        {
+            var code = "ДобавитьОбработчик ЧтоТо[Индекс].ИмяСобытия, ИмяОбработчика";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.AddHandler);
+            node.NextChildIs(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.Identifier)
+                .NoMoreChildren();
+        }
         
         private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)
         {
