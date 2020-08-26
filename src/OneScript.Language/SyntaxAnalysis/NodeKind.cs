@@ -64,6 +64,7 @@ namespace OneScript.Language.SyntaxAnalysis
         public const int ExecuteStatement = 47;
         public const int AddHandler = 48;
         public const int RemoveHandler = 49;
+        public const int Preprocessor = 50;
 
         public static string Presentation(int kind)
         {

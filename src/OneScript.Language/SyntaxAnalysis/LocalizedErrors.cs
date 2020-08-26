@@ -53,7 +53,7 @@ namespace OneScript.Language.SyntaxAnalysis
             
             return Create($"ru='Ожидается символ: {names}';en='Expecting symbol: {names}'");
         }
-        
+
         public static ParseError ExportedLocalVar(string varName)
         {
             return Create($"ru = 'Локальная переменная не может быть экспортирована ({varName})';" +

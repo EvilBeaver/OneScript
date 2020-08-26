@@ -27,6 +27,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.AnnotationParameterValue:
                 case NodeKind.ParameterDefaultValue:
                 case NodeKind.ForEachVariable:
+                case NodeKind.Unknown:
                     return new TerminalNode(kind, startLexem);
                 case NodeKind.BlockEnd:
                 case NodeKind.ContinueStatement:
@@ -75,6 +76,8 @@ namespace OneScript.Language.SyntaxAnalysis
                     return new TryExceptNode(startLexem);
                 case NodeKind.NewObject:
                     return new NewObjectNode(startLexem);
+                case NodeKind.Preprocessor:
+                    return new PreprocessorDirectiveNode(startLexem);
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }
@@ -96,8 +99,36 @@ namespace OneScript.Language.SyntaxAnalysis
                 throw new SyntaxErrorException(error.Position, error.Description);
         }
 
-        public virtual void PreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)
+        public IAstNode ParsePreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)
         {
+            var node = new PreprocessorDirectiveNode(lastExtractedLexem);
+            ReadToLineEnd(lexer);
+
+            var value = lexer.Iterator.GetContents().TrimEnd();
+            if (!string.IsNullOrEmpty(value))
+            {
+                var lex = new Lexem
+                {
+                    Location = new CodeRange(lexer.CurrentLine, lexer.CurrentColumn),
+                    Type = LexemType.NotALexem,
+                    Content = value
+                };
+
+                node.AddChild(new TerminalNode(NodeKind.Unknown, lex));
+            }
+
+            lastExtractedLexem = lexer.NextLexem();
+
+            return node;
+        }
+        
+        private void ReadToLineEnd(ILexemGenerator lexer)
+        {
+            char cs;
+            do
+            {
+                cs = lexer.Iterator.CurrentSymbol;
+            } while (cs != '\n' && lexer.Iterator.MoveNext());
         }
     }
 }

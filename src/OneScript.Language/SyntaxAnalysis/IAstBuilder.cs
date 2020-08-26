@@ -17,6 +17,6 @@ namespace OneScript.Language.SyntaxAnalysis
 
         void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer);
         
-        void PreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem);
+        IAstNode ParsePreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem);
     }
 }

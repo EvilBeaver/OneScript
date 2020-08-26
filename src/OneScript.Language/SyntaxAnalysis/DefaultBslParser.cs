@@ -61,7 +61,6 @@ namespace OneScript.Language.SyntaxAnalysis
             
             try
             {
-                ParseDirectives();
                 ParseModuleSections();
             }
             finally
@@ -72,16 +71,6 @@ namespace OneScript.Language.SyntaxAnalysis
             return node;
         }
 
-        private void ParseDirectives()
-        {
-            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-            {
-                _builder.PreprocessorDirective(_lexer, ref _lastExtractedLexem);
-                if(_lastExtractedLexem.Token == Token.EndOfText)
-                    break;
-            }
-        }
-
         public IAstNode ParseCodeBatch()
         {
             NextLexem();
@@ -89,7 +78,6 @@ namespace OneScript.Language.SyntaxAnalysis
             PushContext(node);
             try
             {
-                ParseDirectives();
                 BuildModuleBody();
             }
             finally
@@ -130,6 +118,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildVariableSection(int sectionKind = NodeKind.VariablesSection)
         {
+            ParseDirectives();
             if (_lastExtractedLexem.Token != Token.VarDef && _lastExtractedLexem.Type != LexemType.Annotation)
             {
                 return;
@@ -163,6 +152,18 @@ namespace OneScript.Language.SyntaxAnalysis
             finally
             {
                 PopContext();
+            }
+        }
+
+        private void ParseDirectives()
+        {
+            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+            {
+                var node = _builder.ParsePreprocessorDirective(_lexer, ref _lastExtractedLexem);
+                if (node != default)
+                {
+                    _builder.AddChild(CurrentParent, node);
+                }
             }
         }
 
@@ -251,6 +252,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildMethodsSection()
         {
+            ParseDirectives();
             if (_lastExtractedLexem.Type != LexemType.Annotation 
                 && _lastExtractedLexem.Token != Token.Procedure 
                 && _lastExtractedLexem.Token != Token.Function)
@@ -550,6 +552,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildCodeBatch(params Token[] endTokens)
         {
+            ParseDirectives();
             PushStructureToken(endTokens);
 
             while (true)
@@ -570,14 +573,7 @@ namespace OneScript.Language.SyntaxAnalysis
                     AddError(LocalizedErrors.UnexpectedOperation());
                 }
 
-                if (_lastExtractedLexem.Token == Token.NotAToken)
-                {
-                    BuildSimpleStatement();
-                }
-                else
-                {
-                    BuildComplexStructureStatement();
-                }
+                BuildStatement();
 
                 if (_lastExtractedLexem.Token != Token.Semicolon)
                 {
@@ -590,6 +586,18 @@ namespace OneScript.Language.SyntaxAnalysis
                 NextLexem();
             }
             PopStructureToken();
+        }
+
+        private void BuildStatement()
+        {
+            if (_lastExtractedLexem.Token == Token.NotAToken)
+            {
+                BuildSimpleStatement();
+            }
+            else
+            {
+                BuildComplexStructureStatement();
+            }
         }
 
         private void BuildComplexStructureStatement()
@@ -1417,9 +1425,14 @@ namespace OneScript.Language.SyntaxAnalysis
                 {
                     break;
                 }
+                
+                if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                {
+                    _builder.ParsePreprocessorDirective(_lexer, ref _lastExtractedLexem);
+                }
             }
         }
-        
+
         private void AddError(ParseError err)
         {
             err.Position = _lexer.GetCodePosition();

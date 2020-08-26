@@ -22,9 +22,10 @@ namespace OneScript.Language.LexicalAnalysis
         private LexerState _operatorState = new OperatorLexerState();
         private LexerState _dateState = new DateLexerState();
         private LexerState _commentState = new CommentLexerState();
+        private LexerState _annotationState = new AnnotationLexerState();
+        private LexerState _directiveState = new PreprocessorDirectiveLexerState();
+        
         private FixedParserState _fixedState = new FixedParserState();
-        private AnnotationLexerState _annotationState = new AnnotationLexerState();
-        private PreprocessorDirectiveLexerState _directiveState = new PreprocessorDirectiveLexerState();
 
         private class FixedParserState : LexerState
         {

@@ -27,20 +27,14 @@ namespace OneScript.Language.Tests
             if (node is NonTerminalNode nonTerm)
             {
                 _childrenLazy = new Lazy<IReadOnlyList<TestAstNode>>(nonTerm.Children.Select(x => new TestAstNode(x)).ToArray());
-                if (nonTerm is AnnotationNode anno)
+                Value = nonTerm switch
                 {
-                    Value = anno.Name;
-                }
-
-                if (nonTerm is BinaryOperationNode binary)
-                {
-                    Value = binary.Operation.ToString();
-                }
-                
-                if (nonTerm is UnaryOperationNode unary)
-                {
-                    Value = unary.Operation.ToString();
-                }
+                    AnnotationNode anno => anno.Name,
+                    BinaryOperationNode binary => binary.Operation.ToString(),
+                    UnaryOperationNode unary => unary.Operation.ToString(),
+                    PreprocessorDirectiveNode preproc => preproc.DirectiveName,
+                    _ => Value
+                };
             }
             else if(node is TerminalNode term)
             {

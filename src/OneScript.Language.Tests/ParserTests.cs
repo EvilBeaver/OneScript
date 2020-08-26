@@ -559,6 +559,57 @@ namespace OneScript.Language.Tests
                 .NoMoreChildren();
         }
         
+        [Fact]
+        public void Check_AstDirectives_Creation()
+        {
+            var code = @"#Использовать АБВ
+                        #Использовать ""аааа""
+                        #Область Продукты
+                        #КонецОбласти
+                        #ВерсияЯзыка 2.0.8
+                        #ЧтоТоЕще АбраКадабра(>= 18, ??)";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Preprocessor)
+                .Equal("Использовать");
+            node.NextChild().Is(NodeKind.Unknown)
+                .Equal("АБВ");
+            
+            node = batch.NextChild();
+            node.Is(NodeKind.Preprocessor)
+                .Equal("Использовать");
+            node.NextChild().Is(NodeKind.Unknown)
+                .Equal("\"аааа\"");
+            
+            node = batch.NextChild();
+            node.Is(NodeKind.Preprocessor)
+                .Equal("Область");
+            node.NextChild().Is(NodeKind.Unknown)
+                .Equal("Продукты");
+            
+            node = batch.NextChild();
+            node.Is(NodeKind.Preprocessor)
+                .Equal("КонецОбласти");
+            node.NoMoreChildren();
+            
+            node = batch.NextChild();
+            node.Is(NodeKind.Preprocessor)
+                .Equal("ВерсияЯзыка");
+            node.NextChild().Is(NodeKind.Unknown)
+                .Equal("2.0.8");
+            
+            node = batch.NextChild();
+            node.Is(NodeKind.Preprocessor)
+                .Equal("ЧтоТоЕще");
+            node.NextChild().Is(NodeKind.Unknown)
+                .Equal("АбраКадабра(>= 18, ??)");
+
+            batch.NoMoreChildren();
+        }
+        
         private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)
         {
             return MakeValidator(code, p => p.ParseStatefulModule());
