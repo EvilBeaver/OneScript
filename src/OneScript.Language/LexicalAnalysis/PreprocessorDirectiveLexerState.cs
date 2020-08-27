@@ -17,12 +17,15 @@ namespace OneScript.Language.LexicalAnalysis
         {
             System.Diagnostics.Debug.Assert(iterator.CurrentSymbol == SpecialChars.Preprocessor);
 
+            if (!iterator.OnNewLine)
+                throw CreateExceptionOnCurrentLine("Недопустимое начало директивы препроцессора", iterator);
+
             iterator.MoveNext();
             if (!iterator.MoveToContent())
                 throw CreateExceptionOnCurrentLine("Ожидается директива", iterator);
             
             if (!Char.IsLetter(iterator.CurrentSymbol))
-                CreateExceptionOnCurrentLine("Ожидается директива препроцессора", iterator);
+                throw CreateExceptionOnCurrentLine("Ожидается директива препроцессора", iterator);
             
             var lex = _wordExtractor.ReadNextLexem(iterator);
 
