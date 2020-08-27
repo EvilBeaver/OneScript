@@ -29,6 +29,7 @@ namespace ScriptEngine.Compiler.ByteCode
 
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
+        private bool _isCodeEntered;
 
         public AstBasedCodeGenerator(ICompilerContext context)
         {
@@ -41,7 +42,9 @@ namespace ScriptEngine.Compiler.ByteCode
         public CodeGenerationFlags ProduceExtraCode { get; set; }
 
         public IReadOnlyList<CompilerException> Errors => _errors;
-        
+
+        public IDirectiveResolver DirectiveResolver { get; set; }
+
         public ModuleImage CreateImage(BslSyntaxNode moduleNode, ModuleInformation moduleInfo)
         {
             if (moduleNode.Kind != NodeKind.Module)
@@ -61,8 +64,14 @@ namespace ScriptEngine.Compiler.ByteCode
             return _module;
         }
 
+        protected override void VisitPreprocessorDirective(PreprocessorDirectiveNode node)
+        {
+            DirectiveResolver.Resolve(node.DirectiveName, node.Children[0].GetIdentifier(), _isCodeEntered);
+        }
+
         protected override void VisitModuleVariable(VariableDefinitionNode varNode)
         {
+            _isCodeEntered = true;
             var symbolicName = varNode.Name;
             var annotations = GetAnnotations(varNode);
             var definition = _ctx.DefineVariable(symbolicName);
@@ -88,6 +97,10 @@ namespace ScriptEngine.Compiler.ByteCode
 
         protected override void VisitModuleBody(BslSyntaxNode child)
         {
+            if (child.Children.Count == 0)
+                return;
+
+            _isCodeEntered = true;
             var entry = _module.Code.Count;
             _ctx.PushScope(new SymbolScope());
 
@@ -138,6 +151,7 @@ namespace ScriptEngine.Compiler.ByteCode
         
         protected override void VisitMethod(MethodNode methodNode)
         {
+            _isCodeEntered = true;
             var signature = methodNode.Signature;
             if (_ctx.TryGetMethod(signature.MethodName, out _))
             {

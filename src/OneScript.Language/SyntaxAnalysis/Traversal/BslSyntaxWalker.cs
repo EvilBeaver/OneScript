@@ -49,6 +49,7 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             _nodeVisitors[NodeKind.AddHandler] = VisitHandlerOperation;
             _nodeVisitors[NodeKind.RemoveHandler] = VisitHandlerOperation;
             _nodeVisitors[NodeKind.NewObject] = (x) => VisitNewObjectCreation((NewObjectNode)x);
+            _nodeVisitors[NodeKind.Preprocessor] = (x) => VisitPreprocessorDirective((PreprocessorDirectiveNode)x);
 
         }
 
@@ -84,6 +85,9 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
                         break;
                     case NodeKind.ModuleBody:
                         VisitModuleBody(child);
+                        break;
+                    default:
+                        Visit(child);
                         break;
                 }
             }
@@ -423,6 +427,10 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         }
         
         protected virtual void VisitNewObjectCreation(NewObjectNode node)
+        {
+        }
+        
+        protected virtual void VisitPreprocessorDirective(PreprocessorDirectiveNode node)
         {
         }
         

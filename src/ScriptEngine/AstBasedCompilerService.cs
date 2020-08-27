@@ -25,7 +25,8 @@ namespace ScriptEngine
         {
             var codeGen = new AstBasedCodeGenerator(context)
             {
-                ThrowErrors = true
+                ThrowErrors = true,
+                DirectiveResolver = DirectiveResolver
             };
             var astBuilder = new DefaultAstBuilder()
             {
