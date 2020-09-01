@@ -660,7 +660,18 @@ namespace ScriptEngine.Compiler.ByteCode
 
         protected override void VisitTernaryOperation(BslSyntaxNode expression)
         {
-            throw new NotImplementedException();
+            VisitExpression(expression.Children[0]);
+            AddCommand(OperationCode.MakeBool);
+            var addrOfCondition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
+
+            VisitExpression(expression.Children[1]); // построили true-part
+
+            var endOfTruePart = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS); // уход в конец оператора
+            
+            CorrectCommandArgument(addrOfCondition, _module.Code.Count); // отметили, куда переходить по false
+            VisitExpression(expression.Children[2]); // построили false-part
+            
+            CorrectCommandArgument(endOfTruePart, _module.Code.Count);
         }
 
         protected override void VisitUnaryOperation(UnaryOperationNode unaryOperationNode)
