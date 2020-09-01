@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace ScriptEngine.Compiler.ByteCode
@@ -18,9 +19,9 @@ namespace ScriptEngine.Compiler.ByteCode
         private struct ForwardedMethodDecl
         {
             public string identifier;
-            public NonTerminalNode factArguments;
+            public BslSyntaxNode factArguments;
             public bool asFunction;
-            public int codeLine;
+            public CodeRange location;
             public int commandIndex;
         }
         

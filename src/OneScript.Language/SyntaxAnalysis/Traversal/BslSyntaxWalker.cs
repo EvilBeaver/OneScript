@@ -33,7 +33,7 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             _nodeVisitors[NodeKind.Assignment] = VisitAssignment;
             _nodeVisitors[NodeKind.DereferenceOperation] = VisitDereferenceOperation;
             _nodeVisitors[NodeKind.IndexAccess] = VisitIndexAccess;
-            _nodeVisitors[NodeKind.GlobalCall] = VisitGlobalFunctionCall;
+            _nodeVisitors[NodeKind.GlobalCall] = (x) => VisitGlobalFunctionCall((CallNode)x);
             _nodeVisitors[NodeKind.BinaryOperation] = (x) => VisitBinaryOperation((BinaryOperationNode)x);
             _nodeVisitors[NodeKind.UnaryOperation] = (x) => VisitUnaryOperation((UnaryOperationNode)x);
             _nodeVisitors[NodeKind.WhileLoop] = (x) => VisitWhileNode((WhileLoopNode)x);
@@ -140,7 +140,7 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         protected virtual void VisitStatement(BslSyntaxNode statement)
         {
             if(statement.Kind == NodeKind.GlobalCall)
-                VisitGlobalProcedureCall(statement);
+                VisitGlobalProcedureCall(statement as CallNode);
             else
                 DefaultVisit(statement);
         }
@@ -214,11 +214,11 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         {
         }
 
-        protected virtual void VisitGlobalFunctionCall(BslSyntaxNode node)
+        protected virtual void VisitGlobalFunctionCall(CallNode node)
         {
         }
         
-        protected virtual void VisitGlobalProcedureCall(BslSyntaxNode node)
+        protected virtual void VisitGlobalProcedureCall(CallNode node)
         {
         }
         

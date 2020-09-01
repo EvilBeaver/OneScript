@@ -12,7 +12,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class TerminalNode : BslSyntaxNode
     {
-        public Lexem Lexem { get; set; }
+        public Lexem Lexem { get; }
         
         public TerminalNode(int kind)
         {

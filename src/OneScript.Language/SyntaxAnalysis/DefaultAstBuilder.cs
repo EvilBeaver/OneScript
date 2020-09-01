@@ -78,6 +78,9 @@ namespace OneScript.Language.SyntaxAnalysis
                     return new NewObjectNode(startLexem);
                 case NodeKind.Preprocessor:
                     return new PreprocessorDirectiveNode(startLexem);
+                case NodeKind.GlobalCall:
+                case NodeKind.MethodCall:
+                    return new CallNode(kind, startLexem);
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }

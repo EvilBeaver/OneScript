@@ -22,9 +22,9 @@ namespace ScriptEngine.Compiler.ByteCode
 {
     public partial class AstBasedCodeGenerator : BslSyntaxWalker
     {
-        private ModuleImage _module;
-        private ICompilerContext _ctx;
-        private List<CompilerException> _errors = new List<CompilerException>();
+        private readonly ModuleImage _module;
+        private readonly ICompilerContext _ctx;
+        private readonly List<CompilerException> _errors = new List<CompilerException>();
         private ModuleInformation _moduleInfo;
 
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
@@ -60,10 +60,55 @@ namespace ScriptEngine.Compiler.ByteCode
         private ModuleImage CreateImageInternal(BslSyntaxNode moduleNode)
         {
             VisitModule(moduleNode);
+            CheckForwardedDeclarations();
             _module.LoadAddress = _ctx.TopIndex();
             return _module;
         }
 
+        private void CheckForwardedDeclarations()
+        {
+            if (_forwardedMethods.Count > 0)
+            {
+                foreach (var item in _forwardedMethods)
+                {
+                    SymbolBinding methN;
+                    try
+                    {
+                        methN = _ctx.GetMethod(item.identifier);
+                    }
+                    catch (CompilerException exc)
+                    {
+                        AddError(exc, item.location);
+                        continue;
+                    }
+
+                    var scope = _ctx.GetScope(methN.ContextIndex);
+
+                    var methInfo = scope.GetMethod(methN.CodeIndex);
+                    Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
+                    if (item.asFunction && !methInfo.IsFunction)
+                    {
+                        AddError(
+                            CompilerException.UseProcAsFunction(),
+                            item.location);
+                        continue;
+                    }
+
+                    try
+                    {
+                        CheckFactArguments(methInfo.Params, item.factArguments);
+                    }
+                    catch (CompilerException exc)
+                    {
+                        AddError(exc, item.location);
+                        continue;
+                    }
+
+                    CorrectCommandArgument(item.commandIndex, GetMethodRefNumber(ref methN));
+                }
+            }
+        }
+        
         protected override void VisitPreprocessorDirective(PreprocessorDirectiveNode node)
         {
             DirectiveResolver.Resolve(node.DirectiveName, node.Children[0].GetIdentifier(), _isCodeEntered);
@@ -477,13 +522,60 @@ namespace ScriptEngine.Compiler.ByteCode
             AddCommand(OperationCode.PushIndexed);
         }
 
-        protected override void VisitGlobalFunctionCall(BslSyntaxNode node)
+        protected override void VisitGlobalFunctionCall(CallNode node)
         {
-            GlobalCall(node, true);
+            if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
+            {
+                BuiltInFunctionCall(node);
+            }
+            else
+            {
+                GlobalCall(node, true);
+            }
         }
 
-        protected override void VisitGlobalProcedureCall(BslSyntaxNode node)
+        private void BuiltInFunctionCall(CallNode node)
         {
+            var funcId = BuiltInFunctionCode(node.Identifier.Lexem.Token);
+
+            var argsPassed = node.ArgumentList.Children.Count;
+            PushCallArguments(node.ArgumentList);
+            if (funcId == OperationCode.Min || funcId == OperationCode.Max)
+            {
+                if (argsPassed == 0)
+                    throw CompilerException.TooFewArgumentsPassed();
+            }
+            else
+            {
+                var parameters = BuiltinFunctions.ParametersInfo(funcId);
+                CheckFactArguments(parameters, node.ArgumentList);
+            }
+
+            AddCommand(funcId, argsPassed);
+        }
+
+        private void CheckFactArguments(ParameterDefinition[] parameters, BslSyntaxNode argList)
+        {
+            var argsPassed = argList.Children.Count;
+            if (argsPassed > parameters.Length)
+            {
+                AddError(CompilerException.TooManyArgumentsPassed(), argList.Location);
+            }
+            if (parameters.Skip(argsPassed).Any(param => !param.HasDefaultValue))
+            {
+                AddError(CompilerException.TooFewArgumentsPassed(), argList.Location);
+            }
+        }
+        
+        protected override void VisitGlobalProcedureCall(CallNode node)
+        {
+            if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
+            {   
+                AddError(new CompilerException(Locale.NStr(
+                        "en = 'Using build-in function as procedure';" +
+                        "ru = 'Использование встроенной функции, как процедуры'")));
+                return;
+            }
             GlobalCall(node, false);
         }
 
@@ -548,10 +640,10 @@ namespace ScriptEngine.Compiler.ByteCode
             return AddCommand(OperationCode.PushRef, idx);
         }
 
-        private void GlobalCall(BslSyntaxNode nonTerminal, bool asFunction)
+        private void GlobalCall(CallNode call, bool asFunction)
         {
-            var identifierNode = nonTerminal.Children[0] as TerminalNode;
-            var argList = nonTerminal.Children[1] as NonTerminalNode;
+            var identifierNode = call.Identifier;
+            var argList = call.ArgumentList;
             
             Debug.Assert(identifierNode != null);
             Debug.Assert(argList != null);
@@ -587,7 +679,7 @@ namespace ScriptEngine.Compiler.ByteCode
                 var forwarded = new ForwardedMethodDecl();
                 forwarded.identifier = identifier;
                 forwarded.asFunction = asFunction;
-                forwarded.codeLine = identifierNode.Location.LineNumber;
+                forwarded.location = identifierNode.Location;
                 forwarded.factArguments = argList;
 
                 var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
@@ -596,7 +688,7 @@ namespace ScriptEngine.Compiler.ByteCode
             }
         }
 
-        private void PushGlobalCallArguments(MethodInfo methInfo, NonTerminalNode argList)
+        private void PushGlobalCallArguments(MethodInfo methInfo, BslSyntaxNode argList)
         {
             var parameters = methInfo.Params;
             
@@ -607,7 +699,7 @@ namespace ScriptEngine.Compiler.ByteCode
 
             for (int i = 0; i < argList.Children.Count; i++)
             {
-                var passedArg = (NonTerminalNode)argList.Children[i];
+                var passedArg = argList.Children[i];
                 if (passedArg.Children.Count > 0)
                 {
                     VisitExpression(passedArg.Children[0]);
@@ -1012,5 +1104,31 @@ namespace ScriptEngine.Compiler.ByteCode
         {
             return (((int)ProduceExtraCode) & (int)emitConditions) != 0;
         }
+        
+        #region Static cache
+        
+        private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static OperationCode BuiltInFunctionCode(Token token)
+        {
+            return _tokenToOpCode[token];
+        }
+        
+        static AstBasedCodeGenerator()
+        {
+            _tokenToOpCode = new Dictionary<Token, OperationCode>();
+
+            var tokens  = LanguageDef.BuiltInFunctions();
+            var opCodes = BuiltinFunctions.GetOperationCodes();
+
+            Debug.Assert(tokens.Length == opCodes.Length);
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                _tokenToOpCode.Add(tokens[i], opCodes[i]);
+            }
+        }
+        
+        #endregion
     }
 }

@@ -1235,7 +1235,6 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 node = _builder.CreateNode(NodeKind.Constant, _lastExtractedLexem);
                 NextLexem();
-                
             }
             else if (LanguageDef.IsUserSymbol(in _lastExtractedLexem))
             {
@@ -1248,6 +1247,10 @@ namespace OneScript.Language.SyntaxAnalysis
             else if (_lastExtractedLexem.Token == Token.Question)
             {
                 node = BuildQuestionOperator();
+            }
+            else if (LanguageDef.IsBuiltInFunction(_lastExtractedLexem.Token))
+            {
+                BuildGlobalCall(_lastExtractedLexem);
             }
             else
             {
