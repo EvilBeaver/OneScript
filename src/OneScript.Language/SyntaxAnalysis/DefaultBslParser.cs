@@ -1080,14 +1080,10 @@ namespace OneScript.Language.SyntaxAnalysis
             var firstArg = BuildLogicalAnd();
             if (_lastExtractedLexem.Token == Token.Or)
             {
-                var orToken = _lastExtractedLexem;
+                var token = _lastExtractedLexem;
                 NextLexem();
-                var secondArg = BuildLogicalAnd();
-                var node = _builder.CreateNode(NodeKind.BinaryOperation, orToken);
-                _builder.AddChild(node, firstArg);
-                _builder.AddChild(node, secondArg);
-
-                return node;
+                var secondArg = BuildLogicalOr();
+                return MakeBinaryOperationNode(firstArg, secondArg, token);
             }
             
             return firstArg;
@@ -1101,11 +1097,8 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 var token = _lastExtractedLexem;
                 NextLexem();
-                var secondArg = BuildLogicalNot();
-                var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
-                _builder.AddChild(node, firstArg);
-                _builder.AddChild(node, secondArg);
-                return node;
+                var secondArg = BuildLogicalAnd();
+                return MakeBinaryOperationNode(firstArg, secondArg, token);
             }
 
             return firstArg;
@@ -1140,11 +1133,8 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 var token = _lastExtractedLexem;
                 NextLexem();
-                var secondArg = BuildAddition();
-                var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
-                _builder.AddChild(node, firstArg);
-                _builder.AddChild(node, secondArg);
-                return node;
+                var secondArg = BuildLogicalComparison();
+                return MakeBinaryOperationNode(firstArg, secondArg, token);
             }
 
             return firstArg;
@@ -1158,11 +1148,8 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 var token = _lastExtractedLexem;
                 NextLexem();
-                var secondArg = BuildMultiplication();
-                var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
-                _builder.AddChild(node, firstArg);
-                _builder.AddChild(node, secondArg);
-                return node;
+                var secondArg = BuildAddition();
+                return MakeBinaryOperationNode(firstArg, secondArg, token);
             }
 
             return firstArg;
@@ -1178,15 +1165,22 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 var token = _lastExtractedLexem;
                 NextLexem();
-                var secondArg = BuildUnaryArifmetics();
-                var node = _builder.CreateNode(NodeKind.BinaryOperation, token);
-                _builder.AddChild(node, firstArg);
-                _builder.AddChild(node, secondArg);
+                var secondArg = BuildMultiplication();
+                return MakeBinaryOperationNode(firstArg, secondArg, token);
             }
 
             return firstArg;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IAstNode MakeBinaryOperationNode(IAstNode firstArg, IAstNode secondArg, in Lexem lexem)
+        {
+            var node = _builder.CreateNode(NodeKind.BinaryOperation, lexem);
+            _builder.AddChild(node, firstArg);
+            _builder.AddChild(node, secondArg);
+            return node;
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IAstNode BuildUnaryArifmetics()
         {
@@ -1220,10 +1214,8 @@ namespace OneScript.Language.SyntaxAnalysis
                 NextLexem();
                 return expr;
             }
-            else
-            {
-                return TerminalNode();
-            }
+
+            return TerminalNode();
         }
 
         #endregion
@@ -1250,7 +1242,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             else if (LanguageDef.IsBuiltInFunction(_lastExtractedLexem.Token))
             {
-                BuildGlobalCall(_lastExtractedLexem);
+                node = BuildGlobalCall(_lastExtractedLexem);
             }
             else
             {

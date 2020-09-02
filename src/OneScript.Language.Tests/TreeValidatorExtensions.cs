@@ -23,7 +23,8 @@ namespace OneScript.Language.Tests
         
         public static SyntaxTreeValidator Is(this SyntaxTreeValidator validator, int type)
         {
-            Assert.Equal(type, validator.CurrentNode.Kind);
+            type.Should().Be(validator.CurrentNode.Kind,
+                $"expected {NodeKind.Presentation(type)} and found {NodeKind.Presentation(validator.CurrentNode.Kind)}");
             return validator;
         }
         

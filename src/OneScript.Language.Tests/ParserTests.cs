@@ -350,6 +350,43 @@ namespace OneScript.Language.Tests
         }
         
         [Fact]
+        public void Check_Binary_Expressions_Chain()
+        {
+            var code = @"А = 2 + 2 + 3 - 1";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+
+            var assignment = batch
+                .NextChild().Is(NodeKind.Assignment);
+            assignment.NextChild();
+            var node = assignment.NextChild();
+            node.Is(NodeKind.BinaryOperation)
+                .Equal(Token.Plus.ToString());
+            node.NextChildIs(NodeKind.Constant)
+                .NextChildIs(NodeKind.BinaryOperation);
+        }
+        
+        [Fact]
+        public void Check_Binary_Expressions_Priority()
+        {
+            var code = @"А = 2 + 2 * 3";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+
+            var assignment = batch
+                .NextChild().Is(NodeKind.Assignment);
+            assignment.NextChild();
+            var node = assignment.NextChild();
+            node.Is(NodeKind.BinaryOperation)
+                .Equal(Token.Plus.ToString());
+            node.NextChild();
+            node.NextChild().Is(NodeKind.BinaryOperation)
+                .Equal(Token.Multiply.ToString());
+        }
+        
+        [Fact]
         public void Check_Logical_Expressions()
         {
             var code = @"Переменная >= 2 ИЛИ Не Переменная < 1";
