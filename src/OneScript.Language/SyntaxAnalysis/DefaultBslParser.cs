@@ -693,6 +693,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 _isInLoopScope = true;
                 BuildCodeBatch(Token.EndLoop);
+                NextLexem();
                 CreateChild(loopNode, NodeKind.BlockEnd, _lastExtractedLexem);
             }
             finally
@@ -1212,7 +1213,8 @@ namespace OneScript.Language.SyntaxAnalysis
                     AddError(LocalizedErrors.TokenExpected(Token.ClosePar));
                 }
                 NextLexem();
-                return expr;
+                
+                return BuildDereference(expr);
             }
 
             return TerminalNode();
