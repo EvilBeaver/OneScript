@@ -216,14 +216,20 @@ namespace ScriptEngine.Compiler.ByteCode
             var paramsList = new List<ParameterDefinition>();
             foreach (var paramNode in signature.GetParameters())
             {
-                var constDef = CreateConstDefinition(paramNode.DefaultValue);
+                int defValueIndex = DUMMY_ADDRESS;
+                if (paramNode.HasDefaultValue)
+                {
+                    var constDef = CreateConstDefinition(paramNode.DefaultValue);
+                    defValueIndex = GetConstNumber(constDef);
+                }
+                
                 var p = new ParameterDefinition
                 {
                     Annotations = GetAnnotations(paramNode),
                     Name = paramNode.Name,
                     IsByValue = paramNode.IsByValue,
                     HasDefaultValue = paramNode.HasDefaultValue,
-                    DefaultValueIndex = GetConstNumber(constDef)
+                    DefaultValueIndex = defValueIndex
                 };
                 paramsList.Add(p);
                 methodCtx.DefineVariable(p.Name);
@@ -261,6 +267,37 @@ namespace ScriptEngine.Compiler.ByteCode
                 });
             }
 
+        }
+
+        protected override void VisitMethodBody(MethodNode methodNode)
+        {
+            var codeStart = _module.Code.Count;
+            
+            base.VisitMethodBody(methodNode);
+            
+            if (methodNode.Signature.IsFunction)
+            {
+                var undefConst = new ConstDefinition()
+                {
+                    Type = DataType.Undefined,
+                    Presentation = "Неопределено"
+                };
+
+                AddCommand(OperationCode.PushConst, GetConstNumber(undefConst));
+            }
+            
+            var codeEnd = _module.Code.Count;
+            
+            AddCommand(OperationCode.Return);
+
+            // заменим Return на Jmp <сюда>
+            for (var i = codeStart; i < codeEnd; i++)
+            {
+                if (_module.Code[i].Code == OperationCode.Return)
+                {
+                    _module.Code[i] = new Command() { Code = OperationCode.Jmp, Argument = codeEnd };
+                }
+            }
         }
 
         protected override void VisitMethodVariable(MethodNode method, VariableDefinitionNode variableDefinition)
@@ -539,7 +576,7 @@ namespace ScriptEngine.Compiler.ByteCode
             var funcId = BuiltInFunctionCode(node.Identifier.Lexem.Token);
 
             var argsPassed = node.ArgumentList.Children.Count;
-            PushCallArguments(node.ArgumentList);
+            PushArgumentsList(node.ArgumentList);
             if (funcId == OperationCode.Min || funcId == OperationCode.Max)
             {
                 if (argsPassed == 0)
@@ -560,11 +597,28 @@ namespace ScriptEngine.Compiler.ByteCode
             if (argsPassed > parameters.Length)
             {
                 AddError(CompilerException.TooManyArgumentsPassed(), argList.Location);
+                return;
+            }
+            for (int i = 0; i < argList.Children.Count; i++)
+            {
+                var passedArg = argList.Children[i];
+                if (passedArg.Children.Count == 0 && !parameters[i].HasDefaultValue)
+                {
+                    var exc = new CompilerException(Locale.NStr(
+                        $"ru='Параметр {i + 1} метода является обязательным';" +
+                        $"en='Parameter {i + 1} of method is required'"));
+                    AddError(exc, passedArg.Location);
+                }
             }
             if (parameters.Skip(argsPassed).Any(param => !param.HasDefaultValue))
             {
                 AddError(CompilerException.TooFewArgumentsPassed(), argList.Location);
             }
+        }
+
+        private void CheckFactArguments(MethodInfo method, BslSyntaxNode argList)
+        {
+            CheckFactArguments(method.Params, argList);
         }
         
         protected override void VisitGlobalProcedureCall(CallNode node)
@@ -665,7 +719,8 @@ namespace ScriptEngine.Compiler.ByteCode
                         return;
                     }
 
-                    PushGlobalCallArguments(methInfo, argList);
+                    PushCallArguments(argList);
+                    CheckFactArguments(methInfo, argList);
                 }
 
                 if (asFunction)
@@ -682,50 +737,12 @@ namespace ScriptEngine.Compiler.ByteCode
                 forwarded.location = identifierNode.Location;
                 forwarded.factArguments = argList;
 
+                PushCallArguments(call.ArgumentList);
+                
                 var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
                 forwarded.commandIndex = AddCommand(opCode, DUMMY_ADDRESS);
                 _forwardedMethods.Add(forwarded);
             }
-        }
-
-        private void PushGlobalCallArguments(MethodInfo methInfo, BslSyntaxNode argList)
-        {
-            var parameters = methInfo.Params;
-            
-            if (argList.Children.Count > parameters.Length)
-            {
-                throw CompilerException.TooManyArgumentsPassed();
-            }
-
-            for (int i = 0; i < argList.Children.Count; i++)
-            {
-                var passedArg = argList.Children[i];
-                if (passedArg.Children.Count > 0)
-                {
-                    VisitExpression(passedArg.Children[0]);
-                }
-                else
-                {
-                    if (parameters[i].HasDefaultValue)
-                    {
-                        AddCommand(OperationCode.PushDefaultArg);
-                    }
-                    else
-                    {
-                        var exc = new CompilerException(Locale.NStr(
-                            $"ru='Параметр {i} метода {methInfo.Name} является обязательным';"+
-                            $"en='Parameter {i} of method {methInfo.Name} is required'"));
-                        AddError(exc, passedArg.Location);
-                    }
-                }
-            }
-            
-            if (parameters.Skip(argList.Children.Count).Any(param => !param.HasDefaultValue))
-            {
-                AddError(CompilerException.TooFewArgumentsPassed(), argList.Location);
-            }
-
-            AddCommand(OperationCode.ArgNum, argList.Children.Count);
         }
 
         private void PushCallArguments(BslSyntaxNode argList)
@@ -844,6 +861,16 @@ namespace ScriptEngine.Compiler.ByteCode
             if (node.IsDynamic)
             {
                 VisitExpression(node.TypeNameNode);
+            }
+            else
+            {
+                var cDef = new ConstDefinition()
+                {
+                    Type = DataType.String,
+                    Presentation = node.TypeNameNode.GetIdentifier()
+                };
+
+                AddCommand(OperationCode.PushConst, GetConstNumber(cDef));
             }
 
             var callArgs = 0;
