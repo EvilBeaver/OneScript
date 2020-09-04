@@ -41,6 +41,10 @@ namespace ScriptEngine.HostedScript
             _env.InjectObject(_globalCtx, false);
             GlobalsManager.RegisterInstance(_globalCtx);
 
+            var dynLoader = new DynamicLoadingFunctions(_engine);
+            _env.InjectObject(dynLoader, false);
+            GlobalsManager.RegisterInstance(dynLoader);
+            
             InitializationCallback = (eng, env) =>
             {
                 var templateFactory = new DefaultTemplatesFactory();
