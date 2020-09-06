@@ -787,7 +787,8 @@ namespace ScriptEngine.Compiler.ByteCode
         {
             var child = unaryOperationNode.Children[0];
             VisitExpression(child);
-            AddCommand(TokenToOperationCode(unaryOperationNode.Operation));
+            var opCode = unaryOperationNode.Operation == Token.Plus ? OperationCode.Number : OperationCode.Neg;
+            AddCommand(opCode);
         }
         
         protected override void VisitBinaryOperation(BinaryOperationNode binaryOperationNode)
