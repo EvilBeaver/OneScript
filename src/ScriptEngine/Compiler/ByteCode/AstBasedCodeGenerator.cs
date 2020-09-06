@@ -553,6 +553,11 @@ namespace ScriptEngine.Compiler.ByteCode
             ResolveObjectMethod(node, true);
         }
 
+        protected override void VisitObjectProcedureCall(BslSyntaxNode node)
+        {
+            ResolveObjectMethod(node, false);
+        }
+
         protected override void VisitIndexExpression(BslSyntaxNode operand)
         {
             base.VisitIndexExpression(operand);

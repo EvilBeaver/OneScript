@@ -36,6 +36,7 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
             _nodeVisitors[NodeKind.GlobalCall] = (x) => VisitGlobalFunctionCall((CallNode)x);
             _nodeVisitors[NodeKind.BinaryOperation] = (x) => VisitBinaryOperation((BinaryOperationNode)x);
             _nodeVisitors[NodeKind.UnaryOperation] = (x) => VisitUnaryOperation((UnaryOperationNode)x);
+            _nodeVisitors[NodeKind.TernaryOperator] = VisitTernaryOperation;
             _nodeVisitors[NodeKind.WhileLoop] = (x) => VisitWhileNode((WhileLoopNode)x);
             _nodeVisitors[NodeKind.Condition] = (x) => VisitIfNode((ConditionNode)x);
             _nodeVisitors[NodeKind.ForEachLoop] = (x) => VisitForEachLoopNode((ForEachLoopNode)x);
@@ -141,6 +142,8 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         {
             if(statement.Kind == NodeKind.GlobalCall)
                 VisitGlobalProcedureCall(statement as CallNode);
+            else if (statement.Kind == NodeKind.DereferenceOperation)
+                VisitProcedureDereference(statement);
             else
                 DefaultVisit(statement);
         }
@@ -222,6 +225,16 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
         {
         }
         
+        protected virtual void VisitProcedureDereference(BslSyntaxNode statement)
+        {
+            VisitAccessTarget(statement.Children[0]);
+            VisitObjectProcedureCall(statement.Children[1]);
+        }
+
+        protected virtual void VisitObjectProcedureCall(BslSyntaxNode node)
+        {
+        }
+
         protected virtual void VisitDereferenceOperand(BslSyntaxNode operand)
         {
             if (operand.Kind == NodeKind.Identifier)
