@@ -186,7 +186,7 @@ namespace OneScript.Language.Tests
             var batch = ParseBatchAndGetValidator("Proc();");
             batch.Is(NodeKind.CodeBatch);
             var node = batch.NextChild();
-            node.Is(NodeKind.GlobalCall)
+            node.Is(NodeKind.MethodCall)
                 .HasNode(NodeKind.Identifier)
                 .Equal("Proc");
 
@@ -197,7 +197,8 @@ namespace OneScript.Language.Tests
         {
             var code = @"Target.Call();
             Target().Call();
-            Target[0].Call()";
+            Target[0].Call();
+            Target.SubCall().Call()";
             var batch = ParseBatchAndGetValidator(code);
             batch.Is(NodeKind.CodeBatch);
             
@@ -208,12 +209,17 @@ namespace OneScript.Language.Tests
 
             node = batch.NextChild();
             node.Is(NodeKind.DereferenceOperation)
-                .NextChildIs(NodeKind.GlobalCall)
+                .NextChildIs(NodeKind.MethodCall)
                 .NextChildIs(NodeKind.MethodCall);
             
             node = batch.NextChild();
             node.Is(NodeKind.DereferenceOperation)
                 .NextChildIs(NodeKind.IndexAccess)
+                .NextChildIs(NodeKind.MethodCall);
+
+            node = batch.NextChild();
+            node.Is(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.DereferenceOperation)
                 .NextChildIs(NodeKind.MethodCall);
         }
         
@@ -230,7 +236,7 @@ namespace OneScript.Language.Tests
             var batch = ParseBatchAndGetValidator(code);
             batch.Is(NodeKind.CodeBatch);
             var node = batch.NextChild();
-            node.Is(NodeKind.GlobalCall)
+            node.Is(NodeKind.MethodCall)
                 .NextChild().Is(NodeKind.Identifier)
                 .Equal("Proc");
             node.NextChild().Is(NodeKind.CallArgumentList)
