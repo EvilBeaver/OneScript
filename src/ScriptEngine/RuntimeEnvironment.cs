@@ -118,7 +118,7 @@ namespace ScriptEngine
             _symbolScopes.PushScope(scope);
             foreach (var item in provider.GetProperties())
             {
-                _symbolScopes.DefineVariable(item.Identifier);
+                _symbolScopes.DefineVariable(item.Identifier, item.Alias);
             }
 
             foreach (var item in provider.GetMethods())
