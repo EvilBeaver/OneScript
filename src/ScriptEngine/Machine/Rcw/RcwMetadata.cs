@@ -60,8 +60,8 @@ namespace ScriptEngine.Machine.Rcw
 
             LoadVars(typeInfo, typeAttr);
             LoadFuncs(typeInfo, typeAttr);
-
-            Marshal.Release(ptAttr);
+            
+            typeInfo.ReleaseTypeAttr(ptAttr);
         }
 
         private void LoadVars(ITypeInfo typeInfo, TYPEATTR typeAttr)
@@ -90,7 +90,7 @@ namespace ScriptEngine.Machine.Rcw
 
                 if ((currentFlags & skippingFlags) != 0)
                 {
-                    Marshal.Release(ptFuncDesc);
+                    typeInfo.ReleaseFuncDesc(ptFuncDesc);
                     continue;
                 }
 
@@ -102,7 +102,7 @@ namespace ScriptEngine.Machine.Rcw
 
                 if (names == 0)
                 {
-                    Marshal.Release(ptFuncDesc);
+                    typeInfo.ReleaseFuncDesc(ptFuncDesc);
                     continue;
                 }
 
@@ -123,7 +123,7 @@ namespace ScriptEngine.Machine.Rcw
                         prop.IsWritable = true;
                 }
 
-                Marshal.Release(ptFuncDesc);
+                typeInfo.ReleaseFuncDesc(ptFuncDesc);
             }
         }
 

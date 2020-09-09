@@ -63,15 +63,10 @@ namespace ScriptEngine.Machine.Rcw
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public static ITypeInfo GetITypeInfo(object obj)
         {
-#if NETSTANDARD
-            throw new PlatformNotSupportedException();
-#else
-
             RequireReference(obj, "obj");
             var dispatch = (IDispatchInfo) obj;
             dispatch.GetTypeInfo(0, LOCALE_SYSTEM_DEFAULT, out var typeInfo);
             return typeInfo;
-#endif
         }
 
         /// <summary>

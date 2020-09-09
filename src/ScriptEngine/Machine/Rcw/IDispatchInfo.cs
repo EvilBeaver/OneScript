@@ -47,11 +47,8 @@ namespace ScriptEngine.Machine.Rcw
 		/// <remarks>
 		/// http://msdn.microsoft.com/en-us/library/cc1ec9aa-6c40-4e70-819c-a7c6dd6b8c99(VS.85)
 		/// </remarks>
-#if NETSTANDARD
-			void GetTypeInfo(int typeInfoIndex, int lcid, out Type typeInfo);
-#else
 		void GetTypeInfo(int typeInfoIndex, int lcid, out ITypeInfo typeInfo);
-#endif
+
 		/// <summary>
 		/// Gets the DISPID of the specified member name.
 		/// </summary>
