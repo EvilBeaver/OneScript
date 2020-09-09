@@ -237,14 +237,13 @@ namespace ScriptEngine.Machine.Contexts
             if (_methods.Names.TryGetValue(name, out md))
                 return true;
 
-            if (DispatchUtility.TryGetDispId(Instance, name, out var dispId))
-            {
-                md = new RcwMethodMetadata(name, dispId, null);
-                _methods.Add(md);
-                return true;
-            }
-
-            return false;
+            if (!DispatchUtility.TryGetDispId(Instance, name, out var dispatchId))
+                return false;
+            
+            _methods.Add(new RcwMethodMetadata(name, dispatchId, null));
+            md = _methods.DispatchIds[dispatchId];
+            
+            return true;
         }
 
         private bool TryFindProperty(string name, out RcwPropertyMetadata md)
@@ -252,14 +251,13 @@ namespace ScriptEngine.Machine.Contexts
             if (_props.Names.TryGetValue(name, out md))
                 return true;
 
-            if (DispatchUtility.TryGetDispId(Instance, name, out var dispId))
-            {
-                md = new RcwPropertyMetadata(name, dispId);
-                _props.Add(md);
-                return true;
-            }
-
-            return false;
+            if (!DispatchUtility.TryGetDispId(Instance, name, out var dispatchId))
+                return false;
+            
+            _props.Add(new RcwPropertyMetadata(name, dispatchId));
+            md = _props.DispatchIds[dispatchId];
+            
+            return true;
         }
 
         public void Accept(IDebugValueVisitor visitor)
