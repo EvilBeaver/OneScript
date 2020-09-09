@@ -116,7 +116,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         #region Variables
         
-        private void BuildVariableSection(int sectionKind = NodeKind.VariablesSection)
+        private void BuildVariableSection()
         {
             ParseDirectives();
             if (_lastExtractedLexem.Token != Token.VarDef && _lastExtractedLexem.Type != LexemType.Annotation)
@@ -125,7 +125,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
 
             var parent = CurrentParent;
-            var allVarsSection = _builder.CreateNode(sectionKind, _lastExtractedLexem);
+            var allVarsSection = _builder.CreateNode(NodeKind.VariablesSection, _lastExtractedLexem);
             PushContext(allVarsSection);
             bool hasVars = false;
             try
@@ -1193,6 +1193,7 @@ namespace OneScript.Language.SyntaxAnalysis
             var arg = BuildParenthesis();
             if (hasUnarySign)
             {
+                operation.Token = operation.Token == Token.Plus ? Token.UnaryPlus : Token.UnaryMinus;
                 var op = _builder.CreateNode(NodeKind.UnaryOperation, operation);
                 _builder.AddChild(op, arg);
                 return op;

@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using FluentAssertions;
 using OneScript.Language.SyntaxAnalysis;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 using Xunit;
 
 namespace OneScript.Language.Tests
@@ -79,6 +80,11 @@ namespace OneScript.Language.Tests
         public static void Equal(this SyntaxTreeValidator node, string value)
         {
             Assert.Equal(value, node.CurrentNode.Value);
+        }
+
+        public static T CastTo<T>(this SyntaxTreeValidator node) where T : BslSyntaxNode
+        {
+            return (T) node.CurrentNode.RealNode;
         }
     }
 }

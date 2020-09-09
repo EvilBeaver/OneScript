@@ -307,7 +307,9 @@ namespace ScriptEngine.Compiler.ByteCode
 
         protected override void VisitStatement(BslSyntaxNode statement)
         {
-            AddLineNumber(statement.Location.LineNumber);
+            if(statement.Kind != NodeKind.TryExcept)
+                AddLineNumber(statement.Location.LineNumber);
+
             base.VisitStatement(statement);
         }
 
@@ -321,7 +323,8 @@ namespace ScriptEngine.Compiler.ByteCode
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             
             VisitCodeBlock(node.Children[1]);
-            
+
+            AddCommand(OperationCode.Jmp, conditionIndex);
             var endLoop = AddCommand(OperationCode.Nop);
             CorrectCommandArgument(jumpFalseIndex, endLoop);
             CorrectBreakStatements(_nestedLoops.Pop(), endLoop);
@@ -646,11 +649,13 @@ namespace ScriptEngine.Compiler.ByteCode
             Debug.Assert(name != null);
             Debug.Assert(args != null);
             
+            PushCallArguments(args);
+            
             var cDef = new ConstDefinition();
             cDef.Type = DataType.String;
             cDef.Presentation = name.GetIdentifier();
             int lastIdentifierConst = GetConstNumber(cDef);
-            PushCallArguments(args);
+            
             if (asFunction)
                 AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
             else
@@ -792,7 +797,7 @@ namespace ScriptEngine.Compiler.ByteCode
         {
             var child = unaryOperationNode.Children[0];
             VisitExpression(child);
-            var opCode = unaryOperationNode.Operation == Token.Plus ? OperationCode.Number : OperationCode.Neg;
+            var opCode = TokenToOperationCode(unaryOperationNode.Operation);
             AddCommand(opCode);
         }
         

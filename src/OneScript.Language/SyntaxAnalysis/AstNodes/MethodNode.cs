@@ -13,9 +13,6 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class MethodNode : AnnotatableNode
     {
-        private int _variableStart = -1;
-        private int _variableCount;
-        
         public MethodNode() : base(NodeKind.Method)
         {
         }
@@ -24,16 +21,16 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         
         public BslSyntaxNode MethodBody { get; private set; }
 
+        public BslSyntaxNode VariableSection { get; private set; }
+        
         public CodeRange EndLocation { get; private set; }
         
         public IReadOnlyList<VariableDefinitionNode> VariableDefinitions()
         {
-            if (_variableCount == 0)
+            if (VariableSection == default)
                 return new VariableDefinitionNode[0];
             
-            return Children
-                .Skip(_variableStart)
-                .Take(_variableCount)
+            return VariableSection.Children
                 .Cast<VariableDefinitionNode>()
                 .ToList()
                 .AsReadOnly();
@@ -49,10 +46,8 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
                 case NodeKind.CodeBatch:
                     MethodBody = child;
                     break;
-                case NodeKind.VariableDefinition:
-                    if (_variableStart == -1)
-                        _variableStart = Children.Count;
-                    _variableCount++;
+                case NodeKind.VariablesSection:
+                    VariableSection = child;
                     break;
                 case NodeKind.BlockEnd:
                     EndLocation = child.Location;

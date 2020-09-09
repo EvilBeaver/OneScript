@@ -56,9 +56,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         private void UpdateAlternatives()
         {
             if (_alternativesStart == 0)
-                _alternativesStart = Children.Count-1;
-            else
-                _alternativesStart++;
+                _alternativesStart = Children.Count - 1;
         }
     }
 }

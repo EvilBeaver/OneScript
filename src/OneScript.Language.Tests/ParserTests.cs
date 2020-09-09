@@ -179,6 +179,24 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.ParameterDefaultValue)
                 .ChildItself().Equal("-10");
         }
+        
+        [Fact]
+        public void Check_Method_Variables()
+        {
+            var code = @"
+            Процедура П()
+                Перем А;
+                Перем Б;
+                Код = Истина;
+            КонецПроцедуры";
+
+            var proc = ParseModuleAndGetValidator(code)
+                .NextChild()
+                .CastTo<MethodNode>();
+
+            proc.VariableDefinitions().Should().HaveCount(2);
+
+        }
 
         [Fact]
         public void Check_Statement_GlobalFunctionCall()
@@ -186,7 +204,7 @@ namespace OneScript.Language.Tests
             var batch = ParseBatchAndGetValidator("Proc();");
             batch.Is(NodeKind.CodeBatch);
             var node = batch.NextChild();
-            node.Is(NodeKind.MethodCall)
+            node.Is(NodeKind.GlobalCall)
                 .HasNode(NodeKind.Identifier)
                 .Equal("Proc");
 
@@ -209,7 +227,7 @@ namespace OneScript.Language.Tests
 
             node = batch.NextChild();
             node.Is(NodeKind.DereferenceOperation)
-                .NextChildIs(NodeKind.MethodCall)
+                .NextChildIs(NodeKind.GlobalCall)
                 .NextChildIs(NodeKind.MethodCall);
             
             node = batch.NextChild();
@@ -236,7 +254,7 @@ namespace OneScript.Language.Tests
             var batch = ParseBatchAndGetValidator(code);
             batch.Is(NodeKind.CodeBatch);
             var node = batch.NextChild();
-            node.Is(NodeKind.MethodCall)
+            node.Is(NodeKind.GlobalCall)
                 .NextChild().Is(NodeKind.Identifier)
                 .Equal("Proc");
             node.NextChild().Is(NodeKind.CallArgumentList)
@@ -531,6 +549,9 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.CodeBatch)
                 .NextChildIs(NodeKind.BlockEnd)
                 .NoMoreChildren();
+
+            var altNodes = ((ConditionNode) node.CurrentNode.RealNode).GetAlternatives();
+            altNodes.Should().HaveCount(3);
         }
         
         [Fact]
