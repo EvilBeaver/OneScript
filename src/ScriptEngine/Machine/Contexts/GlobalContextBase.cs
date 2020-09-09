@@ -94,6 +94,11 @@ namespace ScriptEngine.Machine.Contexts
             return Methods.GetMethodInfo(methodNumber);
         }
 
+        public virtual VariableInfo GetPropertyInfo(int propertyNumber)
+        {
+            return Properties.GetPropertyInfo(propertyNumber);
+        }
+
         public virtual void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             Methods.GetMethod(methodNumber)((T)this, arguments);

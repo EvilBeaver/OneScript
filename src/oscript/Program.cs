@@ -16,14 +16,17 @@ namespace oscript
 	{
 		public static Encoding ConsoleOutputEncoding
 		{
-			get { return Output.ConsoleOutputEncoding; }
-			set { Output.ConsoleOutputEncoding = value; }
+			get => Output.ConsoleOutputEncoding;
+			set => Output.ConsoleOutputEncoding = value;
 		}
 
 		public static int Main(string[] args)
 		{
 			int returnCode;
 
+#if NETCOREAPP
+			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+#endif
 			var behavior = BehaviorSelector.Select(args);
 			try
 			{

@@ -146,6 +146,19 @@ namespace ScriptEngine.Machine.Contexts
             return GetReflectableMethod(methodInfo.Method);
         }
 
+        public override VariableInfo GetPropertyInfo(int propertyNumber)
+        {
+            var info = _nameMapper.GetProperty(propertyNumber);
+            return new VariableInfo
+            {
+                Identifier = info.Name,
+                Index = propertyNumber,
+                CanGet = info.CanRead,
+                CanSet = info.CanWrite,
+                Type = SymbolType.ContextProperty
+            };
+        }
+
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             var method = _nameMapper.GetMethod(methodNumber);

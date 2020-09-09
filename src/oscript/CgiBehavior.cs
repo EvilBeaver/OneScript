@@ -96,21 +96,7 @@ namespace oscript
 		public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
 		{
 			variables = new IVariable[0];
-			methods = (MethodInfo[]) GetMethods();
-		}
-
-		public IEnumerable<VariableInfo> GetProperties()
-		{
-			return new VariableInfo[0];
-		}
-
-		public IEnumerable<MethodInfo> GetMethods()
-		{
-			var array = new MethodInfo[_methods.Count];
-			for (var i = 0; i < _methods.Count; i++)
-				array[i] = _methods.GetMethodInfo(i);
-
-			return array;
+			methods = this.GetMethods().ToArray();
 		}
 
 		#region CGIHost
@@ -254,6 +240,11 @@ namespace oscript
 		public MethodInfo GetMethodInfo(int methodNumber)
 		{
 			return _methods.GetMethodInfo(methodNumber);
+		}
+
+		public VariableInfo GetPropertyInfo(int propertyNumber)
+		{
+			throw new NotImplementedException();
 		}
 
 		public void CallAsProcedure(int methodNumber, IValue[] arguments)

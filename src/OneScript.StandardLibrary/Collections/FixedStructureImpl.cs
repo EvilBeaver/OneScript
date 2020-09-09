@@ -60,6 +60,13 @@ namespace OneScript.StandardLibrary.Collections
             return _methods.GetMethodInfo(methodNumber);
         }
 
+        public override VariableInfo GetPropertyInfo(int propertyNumber)
+        {
+            var realProp = _structure.GetPropertyInfo(propertyNumber);
+            realProp.CanSet = false;
+            return realProp;
+        }
+
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             var binding = _methods.GetMethod(methodNumber);

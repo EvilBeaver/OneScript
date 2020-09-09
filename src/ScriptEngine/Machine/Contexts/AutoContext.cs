@@ -77,6 +77,11 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.GetMethodInfo(methodNumber);
         }
 
+        public override VariableInfo GetPropertyInfo(int propertyNumber)
+        {
+            return _properties.GetPropertyInfo(propertyNumber);
+        }
+
         private void CheckIfCallIsPossible(int methodNumber, IValue[] arguments)
         {
             var methodInfo = _methods.GetMethodInfo(methodNumber);

@@ -251,6 +251,11 @@ namespace ScriptEngine.HostedScript.Library
             return _methods.GetMethodInfo(methodNumber);
         }
 
+        public VariableInfo GetPropertyInfo(int propertyNumber)
+        {
+            return _propHolder.GetPropertyInfo(propertyNumber);
+        }
+
         public int GetMethodsCount()
         {
             return _methods.Count;

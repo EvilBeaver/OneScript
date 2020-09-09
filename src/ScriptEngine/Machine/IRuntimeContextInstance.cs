@@ -29,9 +29,9 @@ namespace ScriptEngine.Machine
         int FindMethod(string name);
         int GetMethodsCount();
         MethodInfo GetMethodInfo(int methodNumber);
+        VariableInfo GetPropertyInfo(int propertyNumber);
         void CallAsProcedure(int methodNumber, IValue[] arguments);
         void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue);
-
     }
 
     public static class RCIHelperExtensions
@@ -52,12 +52,13 @@ namespace ScriptEngine.Machine
             VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
             for (int i = 0; i < infos.Length; i++)
             {
-                infos[i] = new VariableInfo()
-                {
-                    Identifier = context.GetPropName(i),
-                    Type = SymbolType.ContextProperty,
-                    Index = i
-                };
+                infos[i] = context.GetPropertyInfo(i);
+                // new VariableInfo()
+                // {
+                //     Identifier = context.GetPropName(i),
+                //     Type = SymbolType.ContextProperty,
+                //     Index = i
+                // };
             }
 
             return infos;
