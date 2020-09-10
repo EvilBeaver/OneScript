@@ -40,6 +40,7 @@ namespace ScriptEngine.Machine.Contexts
         public static COMWrapperContext Create(string progId, IValue[] arguments)
         {
             Type type = null;
+#if NETFRAMEWORK
             if (Type.GetType("Mono.Runtime") == null)
             {
                 type = Type.GetTypeFromProgID(progId, throwOnError: false);
@@ -48,7 +49,13 @@ namespace ScriptEngine.Machine.Contexts
             {
                 type = FindTypeByName(progId);
             }
-
+#else
+            type = Type.GetType(progId);
+            if (type == null)
+            {
+                type = Type.GetTypeFromProgID(progId, false);
+            }
+#endif
             if (type == null)
             {
                 throw new TypeLoadException(String.Format("Тип {0} не найден!", progId));
