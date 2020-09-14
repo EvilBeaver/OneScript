@@ -34,6 +34,12 @@ namespace ScriptEngine.Machine.Rcw
         
         public void Add(T item)
         {
+            if (_dispIds.ContainsKey(item.DispatchId))
+            {
+                _names.Add(item.Name, _dispIds[item.DispatchId]);
+                return;
+            }
+
             _collection.Add(item);
             _dispIds.Add(item.DispatchId, item);
             _names.Add(item.Name, item);
