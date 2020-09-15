@@ -96,26 +96,26 @@ namespace ScriptEngine.Machine.Rcw
 
                 var arrOfNames = new string[1];
                 var cNames = arrOfNames.Length;
-                var dispId = funcDesc.memid;
+                var dispatchId = funcDesc.memid;
 
-                typeInfo.GetNames(dispId, arrOfNames, cNames, out var names);
+                typeInfo.GetNames(dispatchId, arrOfNames, cNames, out var names);
 
                 if (names == 0)
                 {
                     typeInfo.ReleaseFuncDesc(ptFuncDesc);
                     continue;
                 }
-
+    
                 var memberName = arrOfNames[0];
 
                 if (funcDesc.invkind == INVOKEKIND.INVOKE_FUNC)
                 {
                     var isFunc = funcDesc.elemdescFunc.tdesc.vt != VT_VOID;
-                    AddMethod(memberName, dispId, isFunc);
+                    AddMethod(memberName, dispatchId, isFunc);
                 }
                 else
                 {
-                    var prop = GetOrAddProperty(memberName, dispId);
+                    var prop = GetOrAddProperty(memberName, dispatchId);
 
                     if (funcDesc.invkind == INVOKEKIND.INVOKE_PROPERTYGET)
                         prop.IsReadable = true;

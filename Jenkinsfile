@@ -4,49 +4,67 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = '1.4.0'
+        ReleaseNumber = '1.5.0'
         outputEnc = '65001'
     }
 
     stages {
-        stage('Windows Build') {
-            agent { label 'windows' }
-
-            // пути к инструментам доступны только когда
-            // нода уже определена
-            environment {
-                NugetPath = "${tool 'nuget'}"
-                StandardLibraryPacks = "${tool 'os_stdlib'}"
-            }
-
-            steps {
-                
-                // в среде Multibranch Pipeline Jenkins первращает имена веток в папки
-                // а для веток Gitflow вида release/* экранирует в слэш в %2F
-                // При этом MSBuild, видя urlEncoding, разэкранирует его обратно, ломая путь (появляется слэш, где не надо)
-                //
-                // Поэтому, применяем костыль с кастомным workspace
-                // см. https://issues.jenkins-ci.org/browse/JENKINS-34564
-                //
-                // А еще Jenkins под Windows постоянно добавляет в конец папки какую-то мусорную строку.
-                // Для этого отсекаем все, что находится после последнего дефиса
-                // см. https://issues.jenkins-ci.org/browse/JENKINS-40072
-                
-                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
-                {
-                    step([$class: 'WsCleanup'])
-					checkout scm
-
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
-                    bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent /p:OneScriptDocumenter=\"%WORKSPACE%/doctool/OneScriptDocumenter.exe\""
-                    
-                    stash includes: 'tests, built/**', name: 'buildResults'
+        stage('Build'){
+            parallel {
+                stage('Prepare Linux Environment') {
+                    agent{ label 'master'}
+                    steps{
+                        dir('install'){
+                            sh 'chmod +x make-dockers.sh && ./make-dockers.sh'
+                        }
+                        withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerpassword', usernameVariable: 'dockeruser')]) {
+                            sh """
+                            docker login -p $dockerpassword -u $dockeruser
+                            docker push oscript/onescript-builder:deb
+                            docker push oscript/onescript-builder:rpm
+                            """.stripIndent()
+                        }
+                    }
                 }
-           }
 
+                stage('Windows Build') {
+                    agent { label 'windows' }
+
+                    // пути к инструментам доступны только когда
+                    // нода уже определена
+                    environment {
+                        NugetPath = "${tool 'nuget'}"
+                        StandardLibraryPacks = "${tool 'os_stdlib'}"
+                    }
+
+                    steps {
+                        
+                        // в среде Multibranch Pipeline Jenkins первращает имена веток в папки
+                        // а для веток Gitflow вида release/* экранирует в слэш в %2F
+                        // При этом MSBuild, видя urlEncoding, разэкранирует его обратно, ломая путь (появляется слэш, где не надо)
+                        //
+                        // Поэтому, применяем костыль с кастомным workspace
+                        // см. https://issues.jenkins-ci.org/browse/JENKINS-34564
+                        //
+                        // А еще Jenkins под Windows постоянно добавляет в конец папки какую-то мусорную строку.
+                        // Для этого отсекаем все, что находится после последнего дефиса
+                        // см. https://issues.jenkins-ci.org/browse/JENKINS-40072
+                        
+                        ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
+                        {
+                            step([$class: 'WsCleanup'])
+                            checkout scm
+
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
+                            bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent /p:OneScriptDocumenter=\"%WORKSPACE%/doctool/OneScriptDocumenter.exe\""
+                            
+                            stash includes: 'tests, built/**', name: 'buildResults'
+                        }
+                    }
+                }
+            }
         }
-
         stage('VSCode debugger Build') {
             agent {
                 docker {
@@ -154,8 +172,8 @@ pipeline {
 
                 stage('DEB distribution') {
                     agent { 
-                        dockerfile {
-                            dir 'install/builders/deb'
+                        docker {
+                            image 'oscript/onescript-builder:deb'
                             label 'master' 
                         }
                     }
@@ -170,8 +188,8 @@ pipeline {
 
                 stage('RPM distribution') {
                     agent { 
-                        dockerfile {
-                            dir 'install/builders/rpm'
+                        docker {
+                            image 'oscript/onescript-builder:rpm'
                             label 'master' 
                         }
                     }
