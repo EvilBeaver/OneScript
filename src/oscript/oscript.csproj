@@ -37,15 +37,9 @@
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     <ProjectReference Include="..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="StandaloneRunner.exe" />
-  </ItemGroup>
+  
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
-  <Target Name="CleanExternals" AfterTargets="Clean">
-    <Delete Files="@(EmbeddedResource)" />
-  </Target>
 
 </Project>
