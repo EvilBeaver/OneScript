@@ -336,6 +336,24 @@ namespace OneScript.StandardLibrary.Xml
                 base.Write(value);
             }
 
+            // netcore3.1 использует эту перегрузку вместо старой со string
+            public override void Write(char[] buffer)
+            {
+                if (TrimEndSlashes && 
+                    buffer != default 
+                    && buffer.Length == 3 
+                    && buffer[0] == ' '
+                    && buffer[1] == '/'
+                    && buffer[2] == '>')
+                {
+                    Write(buffer, 1, 2);
+                }
+                else
+                {
+                    base.Write(buffer);
+                }
+            }
+
             protected override void Dispose(bool disposing)
             {
                 if (disposing)
