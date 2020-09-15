@@ -41,7 +41,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             Type type = null;
 #if NETFRAMEWORK
-            if (Type.GetType("Mono.Runtime") == null)
+            if (!Utils.IsMonoRuntime)
             {
                 type = Type.GetTypeFromProgID(progId, throwOnError: false);
             }
