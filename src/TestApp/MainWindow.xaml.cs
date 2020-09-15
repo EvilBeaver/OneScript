@@ -44,6 +44,9 @@ namespace TestApp
         public MainWindow()
         {
             InitializeComponent();
+#if NETCOREAPP
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+#endif
         }
 
         // Определяем путь к AppData\Local
