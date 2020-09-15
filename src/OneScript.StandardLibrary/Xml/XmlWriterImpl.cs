@@ -336,10 +336,14 @@ namespace OneScript.StandardLibrary.Xml
                 base.Write(value);
             }
 
-            public override void Close()
+            protected override void Dispose(bool disposing)
             {
-                _baseObject.Close();
-                base.Close();
+                if (disposing)
+                {
+                    _baseObject.Close();
+                }
+
+                base.Dispose(disposing);
             }
         }
 
