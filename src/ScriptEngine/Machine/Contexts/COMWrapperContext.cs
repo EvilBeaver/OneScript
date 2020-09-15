@@ -50,7 +50,7 @@ namespace ScriptEngine.Machine.Contexts
                 type = FindTypeByName(progId);
             }
 #else
-            type = Type.GetType(progId);
+            type = FindTypeByName(progId);
             if (type == null)
             {
                 type = Type.GetTypeFromProgID(progId, false);
