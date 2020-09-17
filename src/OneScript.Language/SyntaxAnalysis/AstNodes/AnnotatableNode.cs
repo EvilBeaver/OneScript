@@ -16,7 +16,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         {
         }
         
-        public AnnotatableNode(int kind) : base(kind)
+        public AnnotatableNode(NodeKind kind) : base(kind)
         {
         }
         

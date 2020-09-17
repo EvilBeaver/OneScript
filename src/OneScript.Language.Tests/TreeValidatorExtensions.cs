@@ -22,16 +22,15 @@ namespace OneScript.Language.Tests
             return validator;
         }
         
-        public static SyntaxTreeValidator Is(this SyntaxTreeValidator validator, int type)
+        public static SyntaxTreeValidator Is(this SyntaxTreeValidator validator, NodeKind type)
         {
-            type.Should().Be(validator.CurrentNode.Kind,
-                $"expected {NodeKind.Presentation(type)} and found {NodeKind.Presentation(validator.CurrentNode.Kind)}");
+            type.Should().Be(validator.CurrentNode.Kind);
             return validator;
         }
         
-        public static void Is(this TestAstNode node, int type)
+        public static void Is(this TestAstNode node, NodeKind type)
         {
-            node.Kind.Should().Be(type, NodeKind.Presentation(node.Kind) + " is unexpected");
+            node.Kind.Should().Be(type, node.Kind + " is unexpected");
         }
         
         public static SyntaxTreeValidator HasChildNodes(this SyntaxTreeValidator validator, int count)
@@ -56,7 +55,7 @@ namespace OneScript.Language.Tests
             return validator.CurrentNode.ChildrenList[0];
         }
 
-        public static TestAstNode WithNode(this SyntaxTreeValidator validator, int type)
+        public static TestAstNode WithNode(this SyntaxTreeValidator validator, NodeKind type)
         {
             var child = validator.FirstChild();
             Assert.Equal(type, child.Kind);
@@ -64,7 +63,7 @@ namespace OneScript.Language.Tests
             return child;
         }
         
-        public static SyntaxTreeValidator HasNode(this SyntaxTreeValidator validator, int type)
+        public static SyntaxTreeValidator HasNode(this SyntaxTreeValidator validator, NodeKind type)
         {
             var child = validator.CurrentNode.ChildrenList.FirstOrDefault(x => x.Kind == type);
             Assert.NotNull(child);

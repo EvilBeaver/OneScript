@@ -15,7 +15,7 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         public bool ThrowOnError { get; set; }
         
-        public virtual IAstNode CreateNode(int kind, in Lexem startLexem)
+        public virtual IAstNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
             switch (kind)
             {
@@ -39,7 +39,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        private static NonTerminalNode MakeNonTerminal(int kind, in Lexem startLexem)
+        private static NonTerminalNode MakeNonTerminal(NodeKind kind, in Lexem startLexem)
         {
             switch (kind)
             {

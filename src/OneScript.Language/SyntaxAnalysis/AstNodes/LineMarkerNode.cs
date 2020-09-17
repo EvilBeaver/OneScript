@@ -12,7 +12,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class LineMarkerNode : BslSyntaxNode
     {
-        public LineMarkerNode(CodeRange location, int kind)
+        public LineMarkerNode(CodeRange location, NodeKind kind)
         {
             Location = location;
             Kind = kind;

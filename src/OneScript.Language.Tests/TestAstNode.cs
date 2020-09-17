@@ -51,7 +51,7 @@ namespace OneScript.Language.Tests
         
         public override string ToString()
         {
-            return $"{NodeKind.Presentation(Kind)} ({Location.LineNumber},{Location.ColumnNumber})";
+            return $"{Kind} ({Location.LineNumber},{Location.ColumnNumber})";
         }
     }
 }

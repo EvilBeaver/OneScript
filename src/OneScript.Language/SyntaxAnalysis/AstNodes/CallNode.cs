@@ -11,7 +11,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class CallNode : NonTerminalNode
     {
-        public CallNode(int kind, Lexem startLexem) : base (kind, startLexem)
+        public CallNode(NodeKind kind, Lexem startLexem) : base (kind, startLexem)
         {
         }
         

@@ -960,7 +960,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return BuildDereference(callNode);
         }
 
-        private IAstNode BuildCall(IAstNode target, int callKind)
+        private IAstNode BuildCall(IAstNode target, NodeKind callKind)
         {
             IAstNode callNode = default;
             if (_lastExtractedLexem.Token == Token.OpenPar)
@@ -1461,7 +1461,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return tok;
         }
 
-        private IAstNode CreateChild(IAstNode parent, int kind, in Lexem lex)
+        private IAstNode CreateChild(IAstNode parent, NodeKind kind, in Lexem lex)
         {
             var child = _builder.CreateNode(kind, lex);
             _builder.AddChild(parent, child);

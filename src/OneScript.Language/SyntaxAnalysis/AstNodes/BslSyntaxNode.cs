@@ -12,7 +12,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public abstract class BslSyntaxNode : IAstNode
     {
-        public int Kind { get; protected set; }
+        public NodeKind Kind { get; protected set; }
         
         public BslSyntaxNode Parent { get; internal set; }
         

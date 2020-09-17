@@ -11,7 +11,7 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public interface IAstBuilder
     {
-        IAstNode CreateNode(int kind, in Lexem startLexem);
+        IAstNode CreateNode(NodeKind kind, in Lexem startLexem);
 
         void AddChild(IAstNode parent, IAstNode child);
 

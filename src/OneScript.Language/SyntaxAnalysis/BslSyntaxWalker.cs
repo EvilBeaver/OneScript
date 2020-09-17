@@ -12,7 +12,7 @@ using System.Reflection;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
-namespace OneScript.Language.SyntaxAnalysis.Traversal
+namespace OneScript.Language.SyntaxAnalysis
 {
     public class BslSyntaxWalker
     {
@@ -29,34 +29,34 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
                 typeof(NodeKind).GetFields(BindingFlags.Static|BindingFlags.Public).Length
             ];
 
-            _nodeVisitors[NodeKind.Module] = VisitModule;
-            _nodeVisitors[NodeKind.Assignment] = VisitAssignment;
-            _nodeVisitors[NodeKind.DereferenceOperation] = VisitDereferenceOperation;
-            _nodeVisitors[NodeKind.IndexAccess] = VisitIndexAccess;
-            _nodeVisitors[NodeKind.GlobalCall] = (x) => VisitGlobalFunctionCall((CallNode)x);
-            _nodeVisitors[NodeKind.BinaryOperation] = (x) => VisitBinaryOperation((BinaryOperationNode)x);
-            _nodeVisitors[NodeKind.UnaryOperation] = (x) => VisitUnaryOperation((UnaryOperationNode)x);
-            _nodeVisitors[NodeKind.TernaryOperator] = VisitTernaryOperation;
-            _nodeVisitors[NodeKind.WhileLoop] = (x) => VisitWhileNode((WhileLoopNode)x);
-            _nodeVisitors[NodeKind.Condition] = (x) => VisitIfNode((ConditionNode)x);
-            _nodeVisitors[NodeKind.ForEachLoop] = (x) => VisitForEachLoopNode((ForEachLoopNode)x);
-            _nodeVisitors[NodeKind.ForLoop] = (x) => VisitForLoopNode((ForLoopNode)x);
-            _nodeVisitors[NodeKind.BreakStatement] = (x) => VisitBreakNode((LineMarkerNode)x);
-            _nodeVisitors[NodeKind.ContinueStatement] = (x) => VisitContinueNode((LineMarkerNode)x);
-            _nodeVisitors[NodeKind.ReturnStatement] = VisitReturnNode;
-            _nodeVisitors[NodeKind.RaiseException] = VisitRaiseNode;
-            _nodeVisitors[NodeKind.TryExcept] = (x) => VisitTryExceptNode((TryExceptNode)x);
-            _nodeVisitors[NodeKind.ExecuteStatement] = VisitExecuteStatement;
-            _nodeVisitors[NodeKind.AddHandler] = VisitHandlerOperation;
-            _nodeVisitors[NodeKind.RemoveHandler] = VisitHandlerOperation;
-            _nodeVisitors[NodeKind.NewObject] = (x) => VisitNewObjectCreation((NewObjectNode)x);
-            _nodeVisitors[NodeKind.Preprocessor] = (x) => VisitPreprocessorDirective((PreprocessorDirectiveNode)x);
+            _nodeVisitors[(int)NodeKind.Module] = VisitModule;
+            _nodeVisitors[(int)NodeKind.Assignment] = VisitAssignment;
+            _nodeVisitors[(int)NodeKind.DereferenceOperation] = VisitDereferenceOperation;
+            _nodeVisitors[(int)NodeKind.IndexAccess] = VisitIndexAccess;
+            _nodeVisitors[(int)NodeKind.GlobalCall] = (x) => VisitGlobalFunctionCall((CallNode)x);
+            _nodeVisitors[(int)NodeKind.BinaryOperation] = (x) => VisitBinaryOperation((BinaryOperationNode)x);
+            _nodeVisitors[(int)NodeKind.UnaryOperation] = (x) => VisitUnaryOperation((UnaryOperationNode)x);
+            _nodeVisitors[(int)NodeKind.TernaryOperator] = VisitTernaryOperation;
+            _nodeVisitors[(int)NodeKind.WhileLoop] = (x) => VisitWhileNode((WhileLoopNode)x);
+            _nodeVisitors[(int)NodeKind.Condition] = (x) => VisitIfNode((ConditionNode)x);
+            _nodeVisitors[(int)NodeKind.ForEachLoop] = (x) => VisitForEachLoopNode((ForEachLoopNode)x);
+            _nodeVisitors[(int)NodeKind.ForLoop] = (x) => VisitForLoopNode((ForLoopNode)x);
+            _nodeVisitors[(int)NodeKind.BreakStatement] = (x) => VisitBreakNode((LineMarkerNode)x);
+            _nodeVisitors[(int)NodeKind.ContinueStatement] = (x) => VisitContinueNode((LineMarkerNode)x);
+            _nodeVisitors[(int)NodeKind.ReturnStatement] = VisitReturnNode;
+            _nodeVisitors[(int)NodeKind.RaiseException] = VisitRaiseNode;
+            _nodeVisitors[(int)NodeKind.TryExcept] = (x) => VisitTryExceptNode((TryExceptNode)x);
+            _nodeVisitors[(int)NodeKind.ExecuteStatement] = VisitExecuteStatement;
+            _nodeVisitors[(int)NodeKind.AddHandler] = VisitHandlerOperation;
+            _nodeVisitors[(int)NodeKind.RemoveHandler] = VisitHandlerOperation;
+            _nodeVisitors[(int)NodeKind.NewObject] = (x) => VisitNewObjectCreation((NewObjectNode)x);
+            _nodeVisitors[(int)NodeKind.Preprocessor] = (x) => VisitPreprocessorDirective((PreprocessorDirectiveNode)x);
 
         }
 
-        protected void SetDefaultVisitorFor(int kind, Action<BslSyntaxNode> action)
+        protected void SetDefaultVisitorFor(NodeKind kind, Action<BslSyntaxNode> action)
         {
-            _nodeVisitors[kind] = action;
+            _nodeVisitors[(int)kind] = action;
         }
         
         protected void ChangeVisitorsDispatch(IEnumerable<Action<BslSyntaxNode>> newVisitors)
@@ -454,7 +454,7 @@ namespace OneScript.Language.SyntaxAnalysis.Traversal
 
         protected virtual void DefaultVisit(BslSyntaxNode node)
         {
-            var action = _nodeVisitors[node.Kind];
+            var action = _nodeVisitors[(int)node.Kind];
             action?.Invoke(node);
         }
     }

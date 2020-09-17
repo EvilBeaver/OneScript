@@ -14,7 +14,6 @@ using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using OneScript.Language.SyntaxAnalysis.Traversal;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 

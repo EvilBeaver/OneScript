@@ -11,11 +11,11 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public abstract class BranchingStatementNode : NonTerminalNode
     {
-        protected BranchingStatementNode(int kind) : base(kind)
+        protected BranchingStatementNode(NodeKind kind) : base(kind)
         {
         }
         
-        protected BranchingStatementNode(int kind, Lexem startLexem) : base(kind, startLexem)
+        protected BranchingStatementNode(NodeKind kind, Lexem startLexem) : base(kind, startLexem)
         {
         }
 
