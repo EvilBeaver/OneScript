@@ -690,7 +690,7 @@ namespace OneScript.Language.Tests
             return MakeValidator(code, p => p.ParseExpression());
         }
 
-        private static SyntaxTreeValidator MakeValidator(string code, Func<DefaultBslParser, IAstNode> action)
+        private static SyntaxTreeValidator MakeValidator(string code, Func<DefaultBslParser, BslSyntaxNode> action)
         {
             var lexer = new DefaultLexer();
             lexer.Code = code;

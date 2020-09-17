@@ -15,7 +15,7 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         public bool ThrowOnError { get; set; }
         
-        public virtual IAstNode CreateNode(NodeKind kind, in Lexem startLexem)
+        public virtual BslSyntaxNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
             switch (kind)
             {
@@ -86,14 +86,13 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        public virtual void AddChild(IAstNode parent, IAstNode child)
+        public virtual void AddChild(BslSyntaxNode parent, BslSyntaxNode child)
         {
             if(child == default)
                 child = new NonTerminalNode(NodeKind.Unknown);
             
             var parentNonTerm = (NonTerminalNode) parent;
-            var childNode = (BslSyntaxNode) child;
-            parentNonTerm.AddChild(childNode);
+            parentNonTerm.AddChild(child);
         }
 
         public virtual void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer)
@@ -102,7 +101,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 throw new SyntaxErrorException(error.Position, error.Description);
         }
 
-        public IAstNode ParsePreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)
+        public BslSyntaxNode ParsePreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)
         {
             var node = new PreprocessorDirectiveNode(lastExtractedLexem);
             ReadToLineEnd(lexer);

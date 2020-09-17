@@ -10,7 +10,7 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
-    public abstract class BslSyntaxNode : IAstNode
+    public abstract class BslSyntaxNode
     {
         public NodeKind Kind { get; protected set; }
         
