@@ -16,7 +16,7 @@ namespace ScriptEngine.Compiler
     public class CompilerException : ScriptException
     {
         public CompilerException(string msg)
-            : base(new CodePositionInfo(), msg)
+            : base(new ErrorPositionInfo(), msg)
         {
 
         }
@@ -30,12 +30,12 @@ namespace ScriptEngine.Compiler
             return exc;
         }
         
-        internal static CompilerException AppendCodeInfo(CompilerException exc, CodePositionInfo codePosInfo)
+        internal static CompilerException AppendCodeInfo(CompilerException exc, ErrorPositionInfo errorPosInfo)
         {
-            exc.LineNumber = codePosInfo.LineNumber;
-            exc.ColumnNumber = codePosInfo.ColumnNumber;
-            exc.Code = codePosInfo.Code;
-            exc.ModuleName = codePosInfo.ModuleName;
+            exc.LineNumber = errorPosInfo.LineNumber;
+            exc.ColumnNumber = errorPosInfo.ColumnNumber;
+            exc.Code = errorPosInfo.Code;
+            exc.ModuleName = errorPosInfo.ModuleName;
             
             return exc;
         }
@@ -151,10 +151,10 @@ namespace ScriptEngine.Compiler
 
     public class ExtraClosedParenthesis : CompilerException
     {
-        internal ExtraClosedParenthesis(CodePositionInfo codePosInfo) : base(Locale.NStr("ru='Ожидается символ: (';en='Expecting symbol: ('"))
+        internal ExtraClosedParenthesis(ErrorPositionInfo errorPosInfo) : base(Locale.NStr("ru='Ожидается символ: (';en='Expecting symbol: ('"))
         {
-            this.LineNumber = codePosInfo.LineNumber;
-            this.Code = codePosInfo.Code;
+            this.LineNumber = errorPosInfo.LineNumber;
+            this.Code = errorPosInfo.Code;
         }
     }
 

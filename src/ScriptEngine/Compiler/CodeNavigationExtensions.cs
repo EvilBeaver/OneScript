@@ -13,9 +13,9 @@ namespace ScriptEngine.Compiler
 {
     public static class CodeNavigationExtensions
     {
-        public static CodePositionInfo ToCodePosition(this CodeRange range, ModuleInformation moduleInfo)
+        public static ErrorPositionInfo ToCodePosition(this CodeRange range, ModuleInformation moduleInfo)
         {
-            return new CodePositionInfo()
+            return new ErrorPositionInfo()
             {
                 Code = moduleInfo.GetCodeLine(range.LineNumber),
                 LineNumber = range.LineNumber,

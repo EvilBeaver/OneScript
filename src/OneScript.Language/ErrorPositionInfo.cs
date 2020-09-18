@@ -7,9 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.Language
 {
-    public class CodePositionInfo
+    public class ErrorPositionInfo
     {
-        public CodePositionInfo()
+        public ErrorPositionInfo()
         {
             LineNumber = -1;
             ColumnNumber = -1;

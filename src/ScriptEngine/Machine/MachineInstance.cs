@@ -475,7 +475,7 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
-                    if(exc.LineNumber == CodePositionInfo.OUT_OF_TEXT)
+                    if(exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT)
                         SetScriptExceptionSource(exc);
 
                     if (_exceptionsStack.Count == 0)

@@ -1434,7 +1434,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void AddError(ParseError err)
         {
-            err.Position = _lexer.GetCodePosition();
+            err.Position = _lexer.GetErrorPosition();
             _errors.Add(err);
             _builder.HandleParseError(err, _lastExtractedLexem, _lexer);
             if(_tokenStack.Count > 0)

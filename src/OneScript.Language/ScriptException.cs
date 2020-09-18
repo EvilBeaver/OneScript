@@ -12,30 +12,30 @@ namespace OneScript.Language
 {
     public class ScriptException : ApplicationException
     {
-        private readonly CodePositionInfo _codePosition;
+        private readonly ErrorPositionInfo _codePosition;
 
         public ScriptException() 
         {
-            _codePosition = new CodePositionInfo();
+            _codePosition = new ErrorPositionInfo();
             _codePosition.LineNumber = -1;
         }
 
         public ScriptException(string message)
-            : this(new CodePositionInfo(), message, null)
+            : this(new ErrorPositionInfo(), message, null)
         {
 
         }
 
-        public ScriptException(CodePositionInfo codeInfo, string message)
-            : this(codeInfo, message, null)
+        public ScriptException(ErrorPositionInfo errorInfo, string message)
+            : this(errorInfo, message, null)
         {
 
         }
 
-        public ScriptException(CodePositionInfo codeInfo, string message, Exception innerException)
+        public ScriptException(ErrorPositionInfo errorInfo, string message, Exception innerException)
             : base(message, innerException)
         {
-            _codePosition = codeInfo;
+            _codePosition = errorInfo;
         }
 
         public int LineNumber
@@ -68,7 +68,7 @@ namespace OneScript.Language
         {
             get
             {
-                if (ColumnNumber != CodePositionInfo.OUT_OF_TEXT)
+                if (ColumnNumber != ErrorPositionInfo.OUT_OF_TEXT)
                     return $"{{Модуль {ModuleName} / Ошибка в строке: {LineNumber},{ColumnNumber} / {base.Message}}}";
                 
                 return $"{{Модуль {ModuleName} / Ошибка в строке: {LineNumber} / {base.Message}}}";

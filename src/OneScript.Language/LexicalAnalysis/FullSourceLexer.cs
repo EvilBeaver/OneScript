@@ -152,7 +152,7 @@ namespace OneScript.Language.LexicalAnalysis
             }
             else
             {
-                var cp = _iterator.GetPositionInfo();
+                var cp = _iterator.GetErrorPosition();
                 var exc = new SyntaxErrorException(cp, string.Format("Неизвестный символ {0}", cs));
                 if (!HandleError(exc))
                 {
@@ -183,11 +183,6 @@ namespace OneScript.Language.LexicalAnalysis
 
             _state = _fixedState;
 
-        }
-
-        public CodePositionInfo GetCodePosition()
-        {
-            return _iterator.GetPositionInfo();
         }
 
         private bool HandleError(SyntaxErrorException exc)

@@ -1114,7 +1114,7 @@ namespace ScriptEngine.Compiler.ByteCode
             AddError(error);
         }
 
-        private CodePositionInfo MakeCodePosition(CodeRange range)
+        private ErrorPositionInfo MakeCodePosition(CodeRange range)
         {
             return range.ToCodePosition(_moduleInfo);
         }

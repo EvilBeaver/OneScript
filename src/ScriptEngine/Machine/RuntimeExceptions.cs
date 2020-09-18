@@ -23,7 +23,7 @@ namespace ScriptEngine.Machine
         }
 
         public RuntimeException(string msg, Exception inner)
-            : base(new CodePositionInfo(), msg, inner)
+            : base(new ErrorPositionInfo(), msg, inner)
         {
         }
 

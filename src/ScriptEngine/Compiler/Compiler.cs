@@ -188,8 +188,8 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException exc)
             {
-                if(exc.LineNumber == CodePositionInfo.OUT_OF_TEXT)
-                    AppendCodeInfo(_lexer.GetCodePosition(), exc);
+                if(exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT)
+                    AppendCodeInfo(_lexer.GetErrorPosition(), exc);
                 throw;
             }
         }
@@ -207,7 +207,7 @@ namespace ScriptEngine.Compiler
                     }
                     catch (CompilerException exc)
                     {
-                        AppendCodeInfo(exc, item.codeLine, CodePositionInfo.OUT_OF_TEXT);
+                        AppendCodeInfo(exc, item.codeLine, ErrorPositionInfo.OUT_OF_TEXT);
                         throw;
                     }
 
@@ -218,7 +218,7 @@ namespace ScriptEngine.Compiler
                     if (item.asFunction && !methInfo.IsFunction)
                     {
                         var exc = CompilerException.UseProcAsFunction();
-                        AppendCodeInfo(exc, item.codeLine, CodePositionInfo.OUT_OF_TEXT);
+                        AppendCodeInfo(exc, item.codeLine, ErrorPositionInfo.OUT_OF_TEXT);
                         throw exc;
                     }
 
@@ -228,7 +228,7 @@ namespace ScriptEngine.Compiler
                     }
                     catch (CompilerException exc)
                     {
-                        AppendCodeInfo(exc, item.codeLine, CodePositionInfo.OUT_OF_TEXT);
+                        AppendCodeInfo(exc, item.codeLine, ErrorPositionInfo.OUT_OF_TEXT);
                         throw;
                     }
 
@@ -237,14 +237,14 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void AppendCodeInfo(CodePositionInfo info, CompilerException exc)
+        private void AppendCodeInfo(ErrorPositionInfo info, CompilerException exc)
         {
             CompilerException.AppendCodeInfo(exc, info);
         }
         
         private void AppendCodeInfo(CompilerException exc, int line, int column)
         {
-            var info = _lexer.GetCodePosition();
+            var info = _lexer.GetErrorPosition();
             info.LineNumber = line;
             info.ColumnNumber = column;
             info.Code = _lexer.Iterator.GetCodeLine(line);

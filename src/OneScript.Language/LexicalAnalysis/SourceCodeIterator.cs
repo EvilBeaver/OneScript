@@ -188,17 +188,5 @@ namespace OneScript.Language.LexicalAnalysis
         {
             return GetContentSpan().ToString();
         }
-
-        public CodePositionInfo GetPositionInfo()
-        {
-            var posInfo = new CodePositionInfo()
-            {
-                LineNumber = CurrentLine,
-                ColumnNumber = CurrentColumn,
-                Code = GetCodeLine(CurrentLine)
-            };
-
-            return posInfo;
-        }
     }
 }

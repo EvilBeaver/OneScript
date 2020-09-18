@@ -13,6 +13,6 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public string Description { get; set; }
         
-        public CodePositionInfo Position { get; set; }
+        public ErrorPositionInfo Position { get; set; }
     }
 }

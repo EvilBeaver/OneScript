@@ -12,7 +12,6 @@ namespace OneScript.Language.LexicalAnalysis
         string Code { get; set; }
         int CurrentColumn { get; }
         int CurrentLine { get; }
-        CodePositionInfo GetCodePosition();
         Lexem NextLexem();
         SourceCodeIterator Iterator { get; }
     }

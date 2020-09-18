@@ -124,7 +124,7 @@ namespace OneScript.Language.LexicalAnalysis
 
         private SyntaxErrorException PreprocessorError(string message)
         {
-            return new SyntaxErrorException(_lexer.GetCodePosition(), message);
+            return new SyntaxErrorException(_lexer.GetErrorPosition(), message);
         }
 
         private bool SolveExpression()
@@ -217,11 +217,6 @@ namespace OneScript.Language.LexicalAnalysis
         public int CurrentColumn => _lexer.CurrentColumn;
 
         public int CurrentLine => _lexer.CurrentLine;
-
-        public CodePositionInfo GetCodePosition()
-        {
-            return _lexer.GetCodePosition();
-        }
 
         public Lexem NextLexem()
         {

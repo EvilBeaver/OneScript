@@ -16,8 +16,8 @@ namespace OneScript.Language.Tests
         public void Empty_Lexer_Position_Is_Negative()
         {
             var lexer = new DefaultLexer();
-            Assert.True(lexer.CurrentColumn == CodePositionInfo.OUT_OF_TEXT);
-            Assert.True(lexer.CurrentLine == CodePositionInfo.OUT_OF_TEXT);
+            Assert.True(lexer.CurrentColumn == ErrorPositionInfo.OUT_OF_TEXT);
+            Assert.True(lexer.CurrentLine == ErrorPositionInfo.OUT_OF_TEXT);
 
         }
 
@@ -27,12 +27,12 @@ namespace OneScript.Language.Tests
             var lexer = new DefaultLexer();
             lexer.Code = "А = 1;";
             Assert.True(lexer.Code == "А = 1;");
-            Assert.True(lexer.CurrentColumn == CodePositionInfo.OUT_OF_TEXT);
+            Assert.True(lexer.CurrentColumn == ErrorPositionInfo.OUT_OF_TEXT);
             Assert.True(lexer.CurrentLine == 1);
             lexer.NextLexem();
             Assert.True(lexer.CurrentColumn >= 0);
             lexer.Code = "А = 1;";
-            Assert.True(lexer.CurrentColumn == CodePositionInfo.OUT_OF_TEXT);
+            Assert.True(lexer.CurrentColumn == ErrorPositionInfo.OUT_OF_TEXT);
         }
 
         [Fact]

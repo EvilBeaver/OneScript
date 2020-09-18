@@ -13,7 +13,7 @@ namespace OneScript.Language.LexicalAnalysis
         
         public SyntaxErrorException CreateExceptionOnCurrentLine(string message, SourceCodeIterator iterator)
         {
-            var cp = iterator.GetPositionInfo();
+            var cp = iterator.GetErrorPosition();
             return new SyntaxErrorException(cp, message);
         }
     }
