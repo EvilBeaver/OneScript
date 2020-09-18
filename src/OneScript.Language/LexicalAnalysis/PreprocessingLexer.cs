@@ -214,15 +214,9 @@ namespace OneScript.Language.LexicalAnalysis
             }
         }
 
-        public int CurrentColumn
-        {
-            get { return _lexer.CurrentColumn; }
-        }
+        public int CurrentColumn => _lexer.CurrentColumn;
 
-        public int CurrentLine
-        {
-            get { return _lexer.CurrentLine; }
-        }
+        public int CurrentLine => _lexer.CurrentLine;
 
         public CodePositionInfo GetCodePosition()
         {
