@@ -5,16 +5,15 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using FluentAssertions;
 using Moq;
-using NUnit.Framework;
-using OneScript.DebugProtocol;
+using Xunit;
 
-namespace NUnitTests
+namespace OneScript.DebugProtocol.Test
 {
-    [TestFixture]
     public class MethodDispatcherTest
     {
-        [Test]
+        [Fact]
         public void TestVoidCallOfInterface()
         {
             var instance = new Mock<IDebuggerService>();
@@ -26,17 +25,17 @@ namespace NUnitTests
             instance.VerifyNoOtherCalls();
         }
         
-        [Test]
+        [Fact]
         public void TestFunctionCallOfInterface()
         {
             var instance = new Mock<IDebuggerService>();
             instance.Setup(i => i.GetThreads()).Returns(new []{1,2,3});
 
             var dispatcher = new MethodsDispatcher<IDebuggerService>();
-            var result = dispatcher.Dispatch(instance.Object, "GetThreads", new object[0]);
+            var result = (int[])dispatcher.Dispatch(instance.Object, "GetThreads", new object[0]);
             instance.Verify(i => i.GetThreads(), Times.Once);
             instance.VerifyNoOtherCalls();
-            Assert.That(result, Has.Length.EqualTo(3));
+            result.Should().HaveCount(3);
         }
     }
 }

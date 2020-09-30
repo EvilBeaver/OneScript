@@ -6,17 +6,14 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Dynamic;
-using NUnit.Framework;
-using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
-using ScriptEngine.HostedScript.Library;
+using Xunit;
 
-namespace NUnitTests
+namespace OneScript.Core.Tests
 {
-    [TestFixture]
     public class DynamicObjectTest
     {
-        [Test]
+        [Fact]
         public void CanCallMethodsOfStruct()
         {
             var structImpl = new StructureImpl();
@@ -25,12 +22,12 @@ namespace NUnitTests
             dyn.Insert("Свойство", 1);
             dyn.Вставить("Свойство2", "Привет");
             
-            Assert.AreEqual(2, structImpl.Count());
+            Assert.Equal(2, structImpl.Count());
             Assert.True(structImpl.HasProperty("Свойство"));
             Assert.True(structImpl.HasProperty("Свойство2"));
         }
         
-        [Test]
+        [Fact]
         public void CanAccessPropertiesOfStruct()
         {
             var structImpl = new StructureImpl();
@@ -39,11 +36,11 @@ namespace NUnitTests
             dyn.Вставить("Свойство", 1);
             dyn.Вставить("Свойство2", "Привет");
             
-            Assert.AreEqual(1, dyn.Свойство);
-            Assert.AreEqual("Привет",dyn.Свойство2);
+            Assert.Equal(1, dyn.Свойство);
+            Assert.Equal("Привет",dyn.Свойство2);
         }
         
-        [Test]
+        [Fact]
         public void CanAccessIndexOfStruct()
         {
             var structImpl = new StructureImpl();
@@ -52,11 +49,11 @@ namespace NUnitTests
             dyn.Вставить("Свойство", 1);
             dyn.Вставить("Свойство2", "Привет");
             
-            Assert.AreEqual(1, dyn["Свойство"]);
-            Assert.AreEqual("Привет",dyn["Свойство2"]);
+            Assert.Equal(1, dyn["Свойство"]);
+            Assert.Equal("Привет",dyn["Свойство2"]);
         }
         
-        [Test]
+        [Fact]
         public void CanAccessArraysByIndex()
         {
             var arr = new ArrayImpl();
@@ -66,10 +63,10 @@ namespace NUnitTests
             Массив.Добавить(2);
             Массив.Добавить("Привет");
             
-            Assert.AreEqual(3, Массив.Количество());
-            Assert.AreEqual(1, Массив[0]);
-            Assert.AreEqual(2, Массив[1]);
-            Assert.AreEqual("Привет", Массив[2]);
+            Assert.Equal(3, Массив.Количество());
+            Assert.Equal(1, Массив[0]);
+            Assert.Equal(2, Массив[1]);
+            Assert.Equal("Привет", Массив[2]);
         }
                 
     }

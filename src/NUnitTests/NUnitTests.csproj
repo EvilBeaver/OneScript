@@ -78,12 +78,6 @@
     <Compile Include="AsyncExecution.cs" />
     <Compile Include="CompilerTests.cs" />
     <Compile Include="ContextTests.cs" />
-    <Compile Include="DebugVariablesTest.cs" />
-    <Compile Include="DynamicObjectTest.cs" />
-    <Compile Include="EngineWrapperNUnit.cs" />
-    <Compile Include="MethodDispatcherTest.cs" />
-    <Compile Include="TestContextClass.cs" />
-    <Compile Include="TestNullConversion.cs" />
     <Compile Include="TestRunnerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

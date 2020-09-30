@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Language.SyntaxAnalysis;
+
 namespace OneScript.Language
 {
     public class SyntaxErrorException : ScriptException
@@ -12,6 +14,11 @@ namespace OneScript.Language
         internal SyntaxErrorException(ErrorPositionInfo codeInfo, string message):base(codeInfo, message)
         {
 
+        }
+
+        internal SyntaxErrorException(ParseError error) : base(error.Position, error.Description)
+        {
+            
         }
     }
 }

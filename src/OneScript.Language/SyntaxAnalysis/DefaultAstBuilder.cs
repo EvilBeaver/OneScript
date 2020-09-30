@@ -98,7 +98,7 @@ namespace OneScript.Language.SyntaxAnalysis
         public virtual void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer)
         {
             if(ThrowOnError)
-                throw new SyntaxErrorException(error.Position, error.Description);
+                throw new SyntaxErrorException(error);
         }
 
         public BslSyntaxNode ParsePreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)

@@ -6,42 +6,36 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library;
-using NUnit.Framework;
+using Xunit.Sdk;
 
-namespace NUnitTests
+namespace OneScript.Core.Tests
 {
     [ContextClass("ТестNullПреобразования", "TestNullConversion")]
-    class TestNullConversion : AutoContext<TestNullConversion>
+    class NullConversionTestContext : AutoContext<NullConversionTestContext>
     {
         IValue _pIValue;
         string _pString;
         TestNullClass _pClass;
 
 
-        public TestNullConversion()
+        public NullConversionTestContext()
         {
 
         }
 
         [ScriptConstructor(Name = "Без параметров")]
-        public static TestNullConversion Constructor()
+        public static NullConversionTestContext Constructor()
         {
-            return new TestNullConversion();
+            return new NullConversionTestContext();
         }
 
         [ContextMethod("ТестIValue", "IValueTest")]
         public IValue TestIValue(IValue arg)
         {
-            if (arg.GetType() != typeof(IValue))
-                Assert.Fail("Test IValue Func(IValue) -> Func(IValue): argument type is different from IValue.");
+            if (arg == default)
+                throw new XunitException("Test IValue Func(IValue) -> Func(IValue): argument is undefined");
 
             return arg;
         }
@@ -50,7 +44,7 @@ namespace NUnitTests
         public IValue TestIValueNull(IValue arg)
         {
             if (arg != ValueFactory.Create())
-                Assert.Fail("Test IValue Func(IValue) -> Func(Unknown): argument value is different from null.");
+                throw new XunitException("Test IValue Func(IValue) -> Func(Unknown): argument value is different from null.");
 
             return arg;
         }
@@ -59,7 +53,7 @@ namespace NUnitTests
         public TestNullClass TestClass(TestNullClass arg)
         {
             if (arg.GetType() != typeof(TestNullClass))
-                Assert.Fail("Test Class Func(Class) -> Func(Class): argument type is different from Class.");
+                throw new XunitException("Test Class Func(Class) -> Func(Class): argument type is different from Class.");
 
             return arg;
         }
@@ -68,7 +62,7 @@ namespace NUnitTests
         public TestNullClass TestClassNull(TestNullClass arg)
         {
              if (arg != null)
-                Assert.Fail("Test Class Func(Class) -> Func(Unknown): argument value is different from null.");
+                 throw new XunitException("Test Class Func(Class) -> Func(Unknown): argument value is different from null.");
 
             return arg;
         }
@@ -79,7 +73,7 @@ namespace NUnitTests
         public string TestString(string arg)
         {
             if (arg.GetType() != typeof(System.String))
-                Assert.Fail("Test string Func(string) -> Func(string): argument type is different from string.");
+                throw new XunitException("Test string Func(string) -> Func(string): argument type is different from string.");
 
             return arg;
         }
@@ -88,7 +82,7 @@ namespace NUnitTests
         public string TestStringNull(string arg)
         {
             if (arg != null)
-                Assert.Fail("Test string Func(string) -> Func(Unknown): argument value is different from null.");
+                throw new XunitException("Test string Func(string) -> Func(Unknown): argument value is different from null.");
 
             return arg;
         }
@@ -188,7 +182,7 @@ namespace NUnitTests
             set
             {
                 if (value.GetType() != typeof(System.String))
-                    Assert.Fail("Test string Property = string: value type is different from string.");
+                    throw new XunitException("Test string Property = string: value type is different from string.");
 
                 _pString = value;
             }
@@ -204,7 +198,7 @@ namespace NUnitTests
             set
             {
                 if (value != null)
-                    Assert.Fail("Test string Property = Unknown: value value is different from null.");
+                    throw new XunitException("Test string Property = Unknown: value value is different from null.");
 
                 _pString = value;
             }
@@ -220,7 +214,7 @@ namespace NUnitTests
             set
             {
                 if (value.GetType() != typeof(IValue))
-                    Assert.Fail("Test IValue Property = IValue: value type is different from IValue.");
+                    throw new XunitException("Test IValue Property = IValue: value type is different from IValue.");
 
                 _pIValue = value;
             }
@@ -236,7 +230,7 @@ namespace NUnitTests
             set
             {
                  if (value != ValueFactory.Create())
-                    Assert.Fail("Test IValue Property = Unknown: value value is different from Unknown.");
+                     throw new XunitException("Test IValue Property = Unknown: value value is different from Unknown.");
 
                 _pIValue = value;
             }
@@ -254,7 +248,7 @@ namespace NUnitTests
             set
             {
                 if (value.GetType() != typeof(TestNullClass))
-                    Assert.Fail("Test TestNullClass Property = TestNullClass: value type is different from TestNullClass.");
+                    throw new XunitException("Test TestNullClass Property = TestNullClass: value type is different from TestNullClass.");
 
                 _pClass = value;
             }
@@ -270,7 +264,7 @@ namespace NUnitTests
             set
             {
                 if (value != null)
-                    Assert.Fail("Test TestNullClass Property = Unknown: value value is different from null.");
+                    throw new XunitException("Test TestNullClass Property = Unknown: value value is different from null.");
                 _pIValue = value;
             }
         }
