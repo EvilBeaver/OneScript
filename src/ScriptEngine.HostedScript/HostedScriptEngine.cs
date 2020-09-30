@@ -172,8 +172,8 @@ namespace ScriptEngine.HostedScript
             InitLibraries(GetWorkingConfig());
 
             var compilerSvc = _engine.GetCompilerService();
-            compilerSvc.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);
-            UserScriptContextInstance.GetOwnMethodsDefinition().ForEach(x => compilerSvc.DefineMethod(x));
+            UserScriptContextInstance.PrepareCompilation(compilerSvc);
+            
             return compilerSvc;
         }
 

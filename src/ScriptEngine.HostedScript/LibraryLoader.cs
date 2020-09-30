@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace ScriptEngine.HostedScript
 {
-    public class LibraryLoader : ScriptDrivenObject
+    public class LibraryLoader : ThisAwareScriptedObjectBase
     {
         private readonly RuntimeEnvironment _env;
         private readonly ScriptingEngine _engine;
@@ -55,7 +55,7 @@ namespace ScriptEngine.HostedScript
         {
             var code = engine.Loader.FromFile(processingScript);
             var compiler = engine.GetCompilerService();
-            compiler.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);
+            RegisterSymbols(compiler);
             
             for (int i = 0; i < _methods.Count; i++)
             {
@@ -133,41 +133,6 @@ namespace ScriptEngine.HostedScript
         protected override int GetOwnVariableCount()
         {
             return 1;
-        }
-
-        protected override int FindOwnProperty(string name)
-        {
-            if(StringComparer.OrdinalIgnoreCase.Compare(name, "ЭтотОбъект") == 0)
-            {
-                return 0;
-            }
-            if(StringComparer.OrdinalIgnoreCase.Compare(name, "ThisObject") == 0)
-            {
-                return 0;
-            }
-
-            return base.FindOwnProperty(name);
-        }
-
-        protected override string GetOwnPropName(int index)
-        {
-            if (index == 0)
-                return "ЭтотОбъект";
-
-            throw new ArgumentException();
-        }
-
-        protected override bool IsOwnPropReadable(int index)
-        {
-            return true;
-        }
-
-        protected override IValue GetOwnPropValue(int index)
-        {
-            if (index == 0)
-                return this;
-            else
-                throw new ArgumentException(String.Format("Неверный индекс свойства {0}", index), "index");
         }
 
         protected override int GetOwnMethodCount()

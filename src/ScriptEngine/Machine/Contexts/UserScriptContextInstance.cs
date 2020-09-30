@@ -8,10 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using ScriptEngine.Compiler;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class UserScriptContextInstance : ScriptDrivenObject, IDebugPresentationAcceptor
+    public class UserScriptContextInstance : ThisAwareScriptedObjectBase, IDebugPresentationAcceptor
     {
         readonly LoadedModule _module;
         Dictionary<string, int> _ownPropertyIndexes;
@@ -160,7 +161,13 @@ namespace ScriptEngine.Machine.Contexts
             return GetOwnMethodsDefinition()[RAIZEEVENT_INDEX];
         }
 
-        public static MethodInfo[] GetOwnMethodsDefinition()
+        public static void PrepareCompilation(CompilerService compiler)
+        {
+            RegisterSymbols(compiler);
+            GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x));
+        }
+        
+        private static MethodInfo[] GetOwnMethodsDefinition()
         {
             return new []{
                 new MethodInfo {
@@ -209,10 +216,7 @@ namespace ScriptEngine.Machine.Contexts
 
         protected override int GetOwnVariableCount()
         {
-            if (_ownProperties == null)
-                return 0;
-            else
-                return _ownProperties.Count;
+            return base.GetOwnVariableCount() + (_ownProperties?.Count ?? 0);
         }
 
         protected override void UpdateState()
@@ -222,25 +226,28 @@ namespace ScriptEngine.Machine.Contexts
         protected override bool IsOwnPropReadable(int index)
         {
             if (_ownProperties == null)
-                return false;
+                return base.IsOwnPropReadable(index);
 
-            if (index >= 0 && index < _ownProperties.Count)
+            if (index > base.GetOwnVariableCount() && index < _ownProperties.Count)
                 return true;
             else
-                return false;
+                return base.IsOwnPropReadable(index);
         }
 
         protected override IValue GetOwnPropValue(int index)
         {
-            return _ownProperties[index];
+            if (index > base.GetOwnVariableCount() && index < _ownProperties.Count)
+                return _ownProperties[index];
+            else
+                return base.GetOwnPropValue(index);
         }
         
         protected override string GetOwnPropName(int index)
         {
-            if (_ownProperties == null)
-                throw new ArgumentException("Unknown property index");
-
-            return _ownPropertyIndexes.Where(x => x.Value == index).First().Key;
+            if (_ownProperties == null || index <= base.GetOwnVariableCount())
+                return base.GetOwnPropName(index);
+            
+            return _ownPropertyIndexes.First(x => x.Value == index).Key;
         }
         
         public override int GetMethodsCount()
@@ -256,7 +263,7 @@ namespace ScriptEngine.Machine.Contexts
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
             var propVariables = this.GetProperties()
-                .Where(x => x.Identifier != "ЭтотОбъект")
+                .Where(x => x.Identifier != ThisAwareScriptedObjectBase.THISOBJ_RU)
                 .Select(x => Variable.Create(GetPropValue(x.Index), x.Identifier));
             
             visitor.ShowCustom(propVariables.ToList());

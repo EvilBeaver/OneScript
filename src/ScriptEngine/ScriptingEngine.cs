@@ -113,8 +113,8 @@ namespace ScriptEngine
 
         public CompilerService GetCompilerService()
         {
-            //var cs = new AstBasedCompilerService(Environment.SymbolsContext);
-            var cs = new CompilerService(Environment.SymbolsContext);
+            var cs = new AstBasedCompilerService(Environment.SymbolsContext);
+            //var cs = new CompilerService(Environment.SymbolsContext);
             switch (System.Environment.OSVersion.Platform)
             {
                 case PlatformID.Unix:
@@ -144,7 +144,6 @@ namespace ScriptEngine
         public ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new UserScriptContextInstance(module);
-            scriptContext.AddProperty("ЭтотОбъект", "ThisObject", scriptContext);
             if (externalContext != null)
             {
                 foreach (var item in externalContext)

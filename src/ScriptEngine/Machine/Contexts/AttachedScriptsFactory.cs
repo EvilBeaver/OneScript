@@ -155,12 +155,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public ModuleImage CompileModuleFromSource(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
-            compiler.DefineVariable("ЭтотОбъект", "ThisObject", SymbolType.ContextProperty);
-
-            foreach (var methodInfo in UserScriptContextInstance.GetOwnMethodsDefinition())
-            {
-                compiler.DefineMethod(methodInfo);
-            }
+            UserScriptContextInstance.PrepareCompilation(compiler);
                 
             if (externalContext != null)
             {
@@ -195,7 +190,6 @@ namespace ScriptEngine.Machine.Contexts
             var module = _instance._loadedModules[typeName];
 
             var newObj = new UserScriptContextInstance(module, typeName, arguments);
-            newObj.AddProperty("ЭтотОбъект", "ThisObject", newObj);
             newObj.InitOwnData();
             newObj.Initialize();
 

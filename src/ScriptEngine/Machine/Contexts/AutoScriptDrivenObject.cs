@@ -9,12 +9,9 @@ using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class AutoScriptDrivenObject<T> : ScriptDrivenObject where T : AutoScriptDrivenObject<T>
+    public abstract class AutoScriptDrivenObject<T> : ThisAwareScriptedObjectBase where T : AutoScriptDrivenObject<T>
     {
-        private const int THISOBJ_VARIABLE_INDEX = 0;
-        private const string THISOBJ_EN = "ThisObject";
-        private const string THISOBJ_RU = "ЭтотОбъект";
-        private const int PRIVATE_PROPS_OFFSET = 1;
+        private readonly int _privatePropsOffset;
 
         protected static readonly ContextPropertyMapper<T> _ownProperties = new ContextPropertyMapper<T>();
         protected static readonly ContextMethodsMapper<T> _ownMethods = new ContextMethodsMapper<T>();
@@ -24,28 +21,29 @@ namespace ScriptEngine.Machine.Contexts
         protected AutoScriptDrivenObject(LoadedModule module, bool deffered)
             : base(module, deffered)
         {
+            _privatePropsOffset = base.GetOwnVariableCount();
         }
 
         protected AutoScriptDrivenObject(LoadedModule module)
-            : base(module)
+            : this(module, false)
         {
         }
 
-        protected AutoScriptDrivenObject()
+        protected AutoScriptDrivenObject() : this(default)
         {
         }
 
         protected override string GetOwnPropName(int index)
         {
-            if (index == THISOBJ_VARIABLE_INDEX)
-                return THISOBJ_RU;
+            if (index < _privatePropsOffset)
+                return base.GetOwnPropName(index);
 
-            return _ownProperties.GetProperty(index - PRIVATE_PROPS_OFFSET).Name;
+            return _ownProperties.GetProperty(index - _privatePropsOffset).Name;
         }
 
         protected override int GetOwnVariableCount()
         {
-            return _ownProperties.Count + PRIVATE_PROPS_OFFSET;
+            return _ownProperties.Count + _privatePropsOffset;
         }
 
         protected override int GetOwnMethodCount()
@@ -59,42 +57,42 @@ namespace ScriptEngine.Machine.Contexts
 
         protected override int FindOwnProperty(string name)
         {
-            if (string.Compare(name, THISOBJ_RU, StringComparison.OrdinalIgnoreCase) == 0
-                || string.Compare(name, THISOBJ_EN, StringComparison.OrdinalIgnoreCase) == 0)
+            var baseIndex = base.FindOwnProperty(name);
+            if (baseIndex != -1)
             {
-                return THISOBJ_VARIABLE_INDEX;
+                return baseIndex;
             }
 
-            return _ownProperties.FindProperty(name) + PRIVATE_PROPS_OFFSET;
+            return _ownProperties.FindProperty(name) + _privatePropsOffset;
         }
 
         protected override bool IsOwnPropReadable(int index)
         {
-            if (index == THISOBJ_VARIABLE_INDEX)
-                return true;
+            if (index < _privatePropsOffset)
+                return base.IsOwnPropReadable(index);
 
-            return _ownProperties.GetProperty(index - PRIVATE_PROPS_OFFSET).CanRead;
+            return _ownProperties.GetProperty(index - _privatePropsOffset).CanRead;
         }
 
         protected override bool IsOwnPropWritable(int index)
         {
-            if (index == THISOBJ_VARIABLE_INDEX)
+            if (index < _privatePropsOffset)
                 return false;
 
-            return _ownProperties.GetProperty(index - PRIVATE_PROPS_OFFSET).CanWrite;
+            return _ownProperties.GetProperty(index - _privatePropsOffset).CanWrite;
         }
 
         protected override IValue GetOwnPropValue(int index)
         {
-            if (index == THISOBJ_VARIABLE_INDEX)
+            if (index < _privatePropsOffset)
                 return this;
 
-            return _ownProperties.GetProperty(index - PRIVATE_PROPS_OFFSET).Getter((T)this);
+            return _ownProperties.GetProperty(index - _privatePropsOffset).Getter((T)this);
         }
 
         protected override void SetOwnPropValue(int index, IValue val)
         {
-            _ownProperties.GetProperty(index - PRIVATE_PROPS_OFFSET).Setter((T)this, val);
+            _ownProperties.GetProperty(index - _privatePropsOffset).Setter((T)this, val);
         }
 
         protected override int FindOwnMethod(string name)
@@ -127,9 +125,8 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-        public static ModuleImage CompileModule(CompilerService compiler, ICodeSource src)
+        protected new static void RegisterSymbols(CompilerService compiler)
         {
-            compiler.DefineVariable(THISOBJ_RU, THISOBJ_EN, SymbolType.ContextProperty);
             for (int i = 0; i < _ownProperties.Count; i++)
             {
                 var currentProp = _ownProperties.GetProperty(i);
@@ -140,6 +137,12 @@ namespace ScriptEngine.Machine.Contexts
             {
                 compiler.DefineMethod(_ownMethods.GetMethodInfo(i));
             }
+        }
+        
+        public static ModuleImage CompileModule(CompilerService compiler, ICodeSource src)
+        {
+            ThisAwareScriptedObjectBase.RegisterSymbols(compiler);
+            RegisterSymbols(compiler);
 
             return compiler.Compile(src);
         }
