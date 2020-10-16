@@ -125,8 +125,6 @@ namespace OneScript.Language.LexicalAnalysis
         private bool SolveExpression()
         {
             NextLexem();
-            if (!LanguageDef.IsUserSymbol(ref _lastExtractedLexem))
-                throw PreprocessorError("Ожидается выражение");
 
             return SolveOrExpression();
         }

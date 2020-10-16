@@ -316,6 +316,24 @@ namespace OneScript.Language.Tests
 
             Assert.Equal(Token.EndOfText, lex.Token);
         }
+        
+        [Fact]
+        public void ParsingFirstNot()
+        {
+            var pp = new PreprocessingLexer();
+            pp.Define("Да");
+
+            var code = @"
+            #Если Не Да Тогда
+                F;
+            #КонецЕсли";
+
+            pp.Code = code;
+
+            var lex = pp.NextLexem();
+
+            Assert.Equal(Token.EndOfText, lex.Token);
+        }
 
         private string GetPreprocessedContent(PreprocessingLexer pp, string code)
         {
