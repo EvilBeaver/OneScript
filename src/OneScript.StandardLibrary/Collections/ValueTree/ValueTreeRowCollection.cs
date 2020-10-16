@@ -163,8 +163,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             row = row.GetRawValue();
 
-            if (row is ValueTreeRow)
-                return _rows.IndexOf(row as ValueTreeRow);
+            if (row is ValueTreeRow treeRow)
+                return _rows.IndexOf(treeRow);
 
             return -1;
         }
