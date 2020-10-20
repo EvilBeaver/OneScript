@@ -606,17 +606,7 @@ namespace ScriptEngine.Compiler.ByteCode
                 AddError(CompilerException.TooManyArgumentsPassed(), argList.Location);
                 return;
             }
-            for (int i = 0; i < argList.Children.Count; i++)
-            {
-                var passedArg = argList.Children[i];
-                if (passedArg.Children.Count == 0 && !parameters[i].HasDefaultValue)
-                {
-                    var exc = new CompilerException(Locale.NStr(
-                        $"ru='Параметр {i + 1} метода является обязательным';" +
-                        $"en='Parameter {i + 1} of method is required'"));
-                    AddError(exc, passedArg.Location);
-                }
-            }
+            
             if (parameters.Skip(argsPassed).Any(param => !param.HasDefaultValue))
             {
                 AddError(CompilerException.TooFewArgumentsPassed(), argList.Location);

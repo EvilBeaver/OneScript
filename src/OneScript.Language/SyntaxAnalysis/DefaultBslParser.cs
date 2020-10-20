@@ -690,6 +690,7 @@ namespace OneScript.Language.SyntaxAnalysis
             BuildExpressionUpTo(loopNode, Token.Loop);
             var body = CreateChild(loopNode, NodeKind.CodeBatch, _lastExtractedLexem);
             PushContext(body);
+            var loopState = _isInLoopScope;
             try
             {
                 _isInLoopScope = true;
@@ -699,7 +700,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             finally
             {
-                _isInLoopScope = false;
+                _isInLoopScope = loopState;
                 PopContext();
             }
         }
@@ -713,6 +714,7 @@ namespace OneScript.Language.SyntaxAnalysis
             var loopNode = CreateChild(CurrentParent, nodeType, lexem);
             
             PushContext(loopNode);
+            var loopState = _isInLoopScope;
             try
             {
                 _isInLoopScope = true;
@@ -723,7 +725,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             finally
             {
-                _isInLoopScope = false;
+                _isInLoopScope = loopState;
                 PopContext();
             }
         }
@@ -1162,7 +1164,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             var firstArg = BuildUnaryArifmetics();
             if (_lastExtractedLexem.Token == Token.Multiply 
-                || _lastExtractedLexem.Token == Token.Multiply
+                || _lastExtractedLexem.Token == Token.Division
                 ||_lastExtractedLexem.Token == Token.Modulo)
             {
                 var token = _lastExtractedLexem;
@@ -1293,7 +1295,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 var dotNode = _builder.CreateNode(NodeKind.DereferenceOperation, _lastExtractedLexem);
                 _builder.AddChild(dotNode, activeTarget);
                 NextLexem();
-                if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                if (!LanguageDef.IsValidPropertyName(_lastExtractedLexem))
                 {
                     AddError(LocalizedErrors.IdentifierExpected());
                     return default;
@@ -1360,7 +1362,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 node = default;
             }
 
-            return node;
+            return BuildDereference(node);
         }
         
         private void NewObjectDynamicConstructor(BslSyntaxNode node)

@@ -280,6 +280,18 @@ namespace OneScript.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsValidPropertyName(in Lexem lex)
+        {
+            return lex.Type == LexemType.Identifier 
+                   || lex.Type == LexemType.BooleanLiteral
+                   || lex.Type == LexemType.NullLiteral
+                   || lex.Type == LexemType.UndefinedLiteral
+                   || lex.Token == Token.And
+                   || lex.Token == Token.Or
+                   || lex.Token == Token.Not;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsUserSymbol(in Lexem lex)
         {
             return lex.Type == LexemType.Identifier && lex.Token == Token.NotAToken;

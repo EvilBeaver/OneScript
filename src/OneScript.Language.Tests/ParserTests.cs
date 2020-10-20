@@ -411,6 +411,38 @@ namespace OneScript.Language.Tests
         }
         
         [Fact]
+        public void Check_Binary_Division()
+        {
+            var code = @"А = Variable/Variable;";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+
+            var assignment = batch
+                .NextChild().Is(NodeKind.Assignment);
+            assignment.NextChild();
+            var node = assignment.NextChild();
+            node.Is(NodeKind.BinaryOperation)
+                .Equal(Token.Division.ToString());
+        }
+        
+        [Fact] 
+        public void Check_Binary_Modulo()
+        {
+            var code = @"А = Variable%Variable;";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+
+            var assignment = batch
+                .NextChild().Is(NodeKind.Assignment);
+            assignment.NextChild();
+            var node = assignment.NextChild();
+            node.Is(NodeKind.BinaryOperation)
+                .Equal(Token.Modulo.ToString());
+        }
+        
+        [Fact]
         public void Check_Logical_Expressions()
         {
             var code = @"Переменная >= 2 ИЛИ Не Переменная < 1";
@@ -457,6 +489,47 @@ namespace OneScript.Language.Tests
                 .Equal(Token.And.ToString());
         }
 
+        [Fact]
+        public void Check_Keywords_As_PropertyNames()
+        {
+            var code = @"ТипЗначенияJson.Null";
+            
+            var expr = ParseExpressionAndGetValidator(code);
+            expr.Is(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.Identifier);
+        }
+        
+        [Fact]
+        public void Can_Dereference_After_Construction()
+        {
+            var code = @"ТекПуть = Новый Файл(ТекущийСценарий().Источник).Путь;";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Assignment);
+            node.NextChild();
+            var rightSide = node.NextChild();
+            rightSide.Is(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.NewObject)
+                .NextChildIs(NodeKind.Identifier);
+
+        }
+        
+        [Fact]
+        public void Explicit_Parameter_Skipping()
+        {
+            var code = @"Метод(,)";
+            
+            var call = ParseExpressionAndGetValidator(code);
+            call.Is(NodeKind.GlobalCall);
+            call.NextChild();
+            call.NextChild()
+                .CurrentNode.Children.Should().HaveCount(2);
+        }
+        
         [Fact]
         public void Check_If_With_No_Alternatives()
         {
