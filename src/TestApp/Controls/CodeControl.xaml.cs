@@ -20,7 +20,6 @@ using System.Windows.Shapes;
 using System.Xml;
 using ICSharpCode.AvalonEdit.Folding;
 using ICSharpCode.AvalonEdit.Highlighting;
-using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Search;
 
 using System.Windows.Threading;
@@ -54,7 +53,7 @@ namespace V8Reader.Controls
             SearchPanel.Install(editor.TextArea);
             editor.ShowLineNumbers = true;
 
-            foldingManager = FoldingManager.Install(editor.TextArea);
+            _foldingManager = FoldingManager.Install(editor.TextArea);
 
             editor.TextChanged += editor_TextChanged;
             editor.TextArea.Options.EnableHyperlinks = false;
@@ -63,10 +62,10 @@ namespace V8Reader.Controls
             editor.TextArea.SelectionCornerRadius = 0;
             editor.TextArea.Caret.PositionChanged += Caret_PositionChanged;
             
-            foldingUpdateTimer = new DispatcherTimer(DispatcherPriority.ContextIdle);
-            foldingUpdateTimer.Interval = TimeSpan.FromSeconds(2);
-            foldingUpdateTimer.Tick += foldingUpdateTimer_Tick;
-            foldingUpdateTimer.Start();
+            _foldingUpdateTimer = new DispatcherTimer(DispatcherPriority.ContextIdle);
+            _foldingUpdateTimer.Interval = TimeSpan.FromSeconds(2);
+            _foldingUpdateTimer.Tick += foldingUpdateTimer_Tick;
+            _foldingUpdateTimer.Start();
 
         }
 
@@ -156,50 +155,42 @@ namespace V8Reader.Controls
         void editor_TextChanged(object sender, EventArgs e)
         {
            // m_ModifyFlag = true;
-            if (foldingUpdateTimer!= null && !foldingUpdateTimer.IsEnabled)
+            if (_foldingUpdateTimer!= null && !_foldingUpdateTimer.IsEnabled)
             {
-                foldingUpdateTimer.Start();
+                _foldingUpdateTimer.Start();
             }
         }
 
         void foldingUpdateTimer_Tick(object sender, EventArgs e)
         {
             ((DispatcherTimer)sender).Stop();
-            foldingStrategy.UpdateFoldings(foldingManager, editor.Document);
-            _procList = ((V8ModuleFoldingStrategy)foldingStrategy).ProcedureList;
+            _foldingStrategy.UpdateFoldings(_foldingManager, editor.Document);
+            _procList = _foldingStrategy.ProcedureList;
 
-            if (_procList != null)
+            if (_procList == null) return;
+            cbProcList.Items.Clear();
+
+            var names = from lst in _procList select lst.Name;
+            foreach (var item in names)
             {
-                cbProcList.Items.Clear();
-
-                var Names = from lst in _procList select lst.Name;
-                foreach (var item in Names)
-                {
-                    cbProcList.Items.Add(item);
-                }
-                
-                UpdateCurrentProc();
+                cbProcList.Items.Add(item);
             }
+                
+            UpdateCurrentProc();
 
             //m_ModifyFlag = false;
         }
 
-        public String Text 
+        public string Text 
         { 
-            get 
-            {
-                return editor.Text; 
-            }
-            set
-            {
-                editor.Text = value;
-            }
+            get => editor.Text;
+            set => editor.Text = value;
         }
 
-        FoldingManager foldingManager;
-        AbstractFoldingStrategy foldingStrategy = new V8ModuleFoldingStrategy();
+        FoldingManager _foldingManager;
+        V8ModuleFoldingStrategy _foldingStrategy = new V8ModuleFoldingStrategy();
         //bool m_ModifyFlag;
-        DispatcherTimer foldingUpdateTimer;
+        DispatcherTimer _foldingUpdateTimer;
         List<ProcListItem> _procList;
 
         bool _userMethodSelect = false;
@@ -259,9 +250,9 @@ namespace V8Reader.Controls
 
         private void PerformNodeFolding(bool SetCollapsed)
         {
-            if (foldingManager != null)
+            if (_foldingManager != null)
             {
-                foreach (var folding in foldingManager.AllFoldings)
+                foreach (var folding in _foldingManager.AllFoldings)
                 {
                     folding.IsFolded = SetCollapsed;
                 }
@@ -319,267 +310,4 @@ namespace V8Reader.Controls
             return Name;
         }
     }
-
-    class V8ModuleFoldingStrategy : AbstractFoldingStrategy
-	{
-		
-        public V8ModuleFoldingStrategy()
-		{
-			
-		}
-		
-		/// <summary>
-		/// Create <see cref="NewFolding"/>s for the specified document.
-		/// </summary>
-		public override IEnumerable<NewFolding> CreateNewFoldings(TextDocument document, out int firstErrorOffset)
-		{
-			firstErrorOffset = -1;
-			return CreateNewFoldings(document);
-		}
-		
-		/// <summary>
-		/// Create <see cref="NewFolding"/>s for the specified document.
-		/// </summary>
-
-        private struct TextFragment
-        {
-            public int offset;
-            public int len;
-        }
-
-        private List<ProcListItem> _procList;
-
-        public List<ProcListItem> ProcedureList
-        {
-            get
-            {
-                return _procList;
-            }
-        }
-
-		public IEnumerable<NewFolding> CreateNewFoldings(ITextSource document)
-		{
-			List<NewFolding> newFoldings = new List<NewFolding>();
-            _procList = new List<ProcListItem>();
-
-            int startPos = 0;
-            int len = document.TextLength;
-
-            int currentStart = 0;
-
-            bool MethodIsOpen = false;
-            string MethodName ="";
-            string EndToken = null;
-
-            int PreCommentStart = -1;
-
-            //var Reader = document.CreateReader();
-
-            string FullText = document.Text;
-            int DocLine = 0;
-            int MethodStart = 0;
-
-            const string kProcStart = "ПРОЦЕДУРА";
-            const string kProcEnd = "КОНЕЦПРОЦЕДУРЫ";
-            const string kFuncStart = "ФУНКЦИЯ";
-            const string kFuncEnd = "КОНЕЦФУНКЦИИ";
-
-            char[] trimArr = new char[]{' ','\t'};
-
-            do
-            {
-                int prev_start = startPos;
-                string lineText = ReadLine(FullText, ref startPos);
-                
-                DocLine++;
-
-                if (lineText == null)
-                {
-                    break;
-                }
-                
-                TextFragment tf = new TextFragment();
-                tf.offset = prev_start;
-                tf.len = lineText.Length;
-
-                //startPos += lineText.Length + 2;
-
-                if (!MethodIsOpen)
-                {
-                    bool CommentBreak = false;
-                    
-                    if (lineText.StartsWith("//"))
-                    {
-                        if (PreCommentStart < 0)
-                        {
-                            PreCommentStart = tf.offset + tf.len;
-                        }
-                    }
-                    else
-                    {
-                        CommentBreak = true;
-                    }
-                    
-                    if (LineIsKeyword(lineText.TrimStart(trimArr), kProcStart))
-                    {
-                        MethodIsOpen = true;
-                        MethodName = ScanForParamList(FullText, prev_start+kProcStart.Length);
-                        EndToken = kProcEnd;
-                        MethodStart = DocLine;
-                    }
-                    else if(LineIsKeyword(lineText.TrimStart(trimArr), kFuncStart))
-                    {
-                        MethodIsOpen = true;
-                        MethodName = ScanForParamList(FullText, prev_start + kFuncStart.Length);
-                        EndToken = kFuncEnd;
-                        MethodStart = DocLine;
-                    }
-
-                    if (MethodIsOpen)
-                    {
-                        currentStart = tf.offset + tf.len;
-
-                        if (PreCommentStart >= 0)
-                        {
-                            var Folding = new NewFolding(PreCommentStart, tf.offset-1);
-                            newFoldings.Add(Folding);
-                            PreCommentStart = -1;
-                        }
-                    }
-                    else if(CommentBreak)
-                    {
-                        PreCommentStart = -1;
-                    }
-                    
-                }
-                else if (LineIsKeyword(lineText.TrimStart(trimArr), EndToken))
-                {
-                    var Folding = new NewFolding(currentStart, tf.offset + tf.len);
-                    newFoldings.Add(Folding);
-
-                    if (MethodName != "")
-                    {
-                        ProcListItem pli = new ProcListItem();
-                        pli.Name = MethodName;
-                        pli.StartLine = MethodStart;
-                        pli.EndLine = DocLine;
-                        pli.ListIndex = _procList.Count;
-
-                        _procList.Add(pli);
-                        
-                        MethodName = "";
-                    }
-
-                    MethodIsOpen = false;
-                }
-                
-            }
-            while (true);
-
-			return newFoldings;
-		}
-
-        private string ScanForParamList(string FullText, int Start)
-        {
-            int nameLen = 0;
-            int i = Start;
-            bool found = false;
-            bool ltrFound = false;
-
-            while (i < FullText.Length)
-            {
-                nameLen++;
-                char currentLtr = FullText[i++];
-
-                if (!Char.IsLetterOrDigit(currentLtr))
-                {
-                    if (ltrFound && !Char.IsWhiteSpace(currentLtr) && currentLtr != '(')
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    ltrFound = true;
-                }
-
-                if (currentLtr == '(')
-                {
-                    found = true;
-                    nameLen--;
-                    break;
-                }
-
-            }
-
-            if (found)
-            {
-                return FullText.Substring(Start, nameLen).Trim();
-            }
-            else
-            {
-                return "";
-            }
-        }
-
-        private bool LineIsKeyword(string Line, string Keyword)
-        {
-            if (Line.StartsWith(Keyword, StringComparison.OrdinalIgnoreCase))
-            {
-                if (Line.Length > Keyword.Length)
-                {
-                    return (Char.IsWhiteSpace(Line[Keyword.Length]));
-                }
-                else
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private string ReadLine(string Content, ref int Position)
-        {
-            if (Position >= Content.Length)
-            {
-                Position = -1;
-                return null;
-            }
-            
-            int StartPoint = Position;
-            int EndPoint = Position;
-
-            while (Position < Content.Length)
-            {
-                if (Content[Position] == '\n')
-                {
-                    Position++;
-                    break;
-                }
-                
-                if (Content[Position] != '\r')
-                {
-                    EndPoint = Position;
-                }
-
-                Position++;
-
-            }
-
-            int len = EndPoint == StartPoint ? 0 : EndPoint - StartPoint + 1;
-            
-            string result = Content.Substring(StartPoint, len);
-            return result;
-
-        }
-
-        
-
-
-
-	}
-
 }
