@@ -40,6 +40,7 @@ VersionInfoVersion={#VerMajor}.{#VerMinor}.{#VerRelease}.{#Build}
 
 [InstallDelete]
 Type: files; Name: {app}\*.dll
+Type: files; Name: {app}\*.json
 Type: files; Name: {app}\*.exe
 Type: files; Name: {app}\*.bat
 Type: files; Name: {app}\*.cmd
@@ -50,7 +51,6 @@ Name: "custom"; Description: "Выборочная установка"; Flags: i
 
 [Components]
 Name: "main"; Description: "Основные файлы"; Types: normal custom; Flags: fixed
-Name: "isapi"; Description: "Обработчик HTTP-сервисов"; Types: normal custom;
 Name: "stdlib"; Description: "Стандартная библиотека скриптов"; Types: normal custom;
 Name: "testapp"; Description: "Тестовая консоль (TestApp)";
 Name: "docs"; Description: "Документация по свойствам и методам (синтакс-помощник)";
@@ -60,6 +60,7 @@ Source: "{#ArtifactRoot}\{#Binaries}\oscript.exe"; DestDir: "{app}\bin"; Compone
 Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\OneScript.StandardLibrary.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.DebugServices.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.Language.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\DotNetZip.dll"; DestDir: "{app}\bin"; Components: main
@@ -68,12 +69,10 @@ Source: "{#ArtifactRoot}\{#Binaries}\oscript.cfg"; DestDir: "{app}\bin"; Compone
 
 Source: "{#ArtifactRoot}\examples\*"; DestDir: "{app}\examples"; Components: main
 
-;isapi
-Source: "{#ArtifactRoot}\{#Binaries}\ASPNETHandler.dll"; DestDir: "{app}\bin"; Components: isapi;
-
 ; testapp
 Source: "{#ArtifactRoot}\{#Binaries}\TestApp.exe"; DestDir: "{app}\bin"; Components: testapp
 Source: "{#ArtifactRoot}\{#Binaries}\ICSharpCode.AvalonEdit.dll"; DestDir: "{app}\bin"; Components: testapp
+Source: "{#ArtifactRoot}\{#Binaries}\System.*.dll"; DestDir: "{app}\bin"; Components: testapp
 
 ; библиотека
 Source: "{#ArtifactRoot}\lib\*"; DestDir: "{app}\lib"; Components: stdlib; Flags: recursesubdirs
