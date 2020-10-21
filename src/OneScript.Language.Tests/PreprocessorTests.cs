@@ -335,6 +335,58 @@ namespace OneScript.Language.Tests
             Assert.Equal(Token.EndOfText, lex.Token);
         }
 
+        [Fact]
+        public void PreprocessingLexer_Unclosed_ElseBlock()
+        {
+            var pp = new PreprocessingLexer();
+            pp.Define("Да");
+
+            var code = @"
+            #Если Да и Не Да Тогда
+                F;
+            #Иначе
+                G;
+            ";
+
+            pp.Code = code;
+
+            Assert.Throws<SyntaxErrorException>(() => {while (pp.NextLexem().Token != Token.EndOfText);});
+        }
+
+        [Fact]
+        public void PreprocessingLexer_Endif_Without_If()
+        {
+            var pp = new PreprocessingLexer();
+            pp.Define("Да");
+
+            var code = @"
+            #КонецЕсли
+                H;
+            ";
+
+            pp.Code = code;
+
+            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+
+        [Fact]
+        public void PreprocessingLexer_Extra_Endif()
+        {
+            var pp = new PreprocessingLexer();
+            pp.Define("Да");
+
+            var code = @"
+            #Если Да Тогда
+                F;
+            #КонецЕсли
+            #КонецЕсли
+            ";
+
+            pp.Code = code;
+
+            Assert.Throws<SyntaxErrorException>(() => {while (pp.NextLexem().Token != Token.EndOfText);});
+        }
+
         private string GetPreprocessedContent(PreprocessingLexer pp, string code)
         {
             pp.Code = code;
