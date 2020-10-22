@@ -76,17 +76,15 @@
         <ItemGroup>
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/**">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/$(TargetFramework)/**">
                 <Dest>$(TempFolder)/bin</Dest>
             </BinaryFiles>
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/$(TargetFramework)/**">
                 <Dest>$(TempFolder)/bin32</Dest>
             </BinaryFiles>
-            <AspFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/ASPNETHandler.dll"/>
         </ItemGroup>
         
         <Copy SourceFiles="@(BinaryFiles)" DestinationFiles="@(BinaryFiles->'%(Dest)/%(Filename)%(Extension)')" />
-        <Copy SourceFiles="@(AspFiles)" DestinationFolder="%(BinaryFiles.Dest)"/>
         <!-- Копирование скрипта запуска для opm -->
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(BinaryFiles.Dest)"/>
 
@@ -106,7 +104,8 @@
         <Copy SourceFiles="@(DbgPackageFiles)" DestinationFolder="$(DebugDest)"/>
         <Copy SourceFiles="@(DbgImageFiles)" DestinationFolder="$(DebugDest)/images"/>
 
-        <Exec WorkingDirectory="$(TempFolder)" Command="&quot;$(ToolFolder)/oscript.exe&quot; -version > VERSION"/>
+        <Message Text="Writing version $(ReleaseNumber).$(BuildNumber)"/>
+        <WriteLinesToFile File="$(TempFolder)/VERSION" Overwrite="true" Lines="$(ReleaseNumber).$(BuildNumber)"/>
     </Target>
 
     <!-- Собирает в целевой папке содержимое папки lib -->
