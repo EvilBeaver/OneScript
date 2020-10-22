@@ -95,20 +95,11 @@ namespace VSCode.DebugAdapter
             try
             {
                 IDebuggerService service;
-                if (_process.DebugProtocol == "wcf")
-                {
-                    var wcfConnector = new WcfDebuggerConnection(_process.DebugPort, this);
-                    wcfConnector.Connect();
-                    service = wcfConnector;
-                }
-                else
-                {
-                    var tcpConnector = new TcpDebugConnector(_process.DebugPort, this);
-                    tcpConnector.Connect();
-                    service = tcpConnector;
-                }
-                
-                _process.SetConnection(service);
+                var tcpConnector = new TcpDebugConnector(_process.DebugPort, this);
+                tcpConnector.Connect();
+                service = tcpConnector;
+
+                    _process.SetConnection(service);
             }
             catch (Exception e)
             {
