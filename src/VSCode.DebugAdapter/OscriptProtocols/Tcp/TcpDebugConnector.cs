@@ -31,7 +31,7 @@ namespace VSCode.DebugAdapter
         
         public void Connect()
         {
-            var debuggerUri = Binder.GetDebuggerUri(_port); 
+            var debuggerUri = GetDebuggerUri(_port); 
             
             SessionLog.WriteLine("Creating commands tcp channel");
             _commandsChannel = new BinaryChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
@@ -39,6 +39,16 @@ namespace VSCode.DebugAdapter
             SessionLog.WriteLine("connected");
 
             RunEventsListener(_commandsChannel);
+        }
+
+        private static Uri GetDebuggerUri(int port)
+        {
+            var builder = new UriBuilder();
+            builder.Scheme = "net.tcp";
+            builder.Port = port;
+            builder.Host = "localhost";
+
+            return builder.Uri;
         }
 
         private void RunEventsListener(ICommunicationChannel channelToListen)
