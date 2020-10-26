@@ -1,0 +1,6 @@
+LIBRARY NativeApiProxy
+EXPORTS
+	PxGetClassObject
+	PxDestroyObject
+	PxGetClassNames
+	PxGetNProps
