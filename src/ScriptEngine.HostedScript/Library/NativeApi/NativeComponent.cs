@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 using System;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -9,12 +10,30 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     {
         private readonly IntPtr ptr;
 
+        public static bool Register(String library, String identifier) {
+            IntPtr ptr = NativeApiProxy.GetClassNames(library);
+            String names = NativeApiProxy.Str(ptr);
+            if (String.IsNullOrWhiteSpace(names)) return false;
+            char[] separator = new char[] { '|' };
+            String[] list = names.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            foreach (String name in list) {
+                TypeManager.RegisterType($"AddIn.{identifier}.{name}", typeof(NativeApiComponent));
+            }
+            return true;
+        }
+
         public static String[] ClassNames(String library)
         {
             IntPtr ptr = NativeApiProxy.GetClassNames(library);
             String names = NativeApiProxy.Str(ptr);
             char[] separator = new char[] { '|' };
             return names.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        [ScriptConstructor(Name = "По имени компоненты")]
+        public static IRuntimeContextInstance Constructor(String name)
+        {
+            throw new NotImplementedException();
         }
 
         public NativeApiComponent(String library, String component)

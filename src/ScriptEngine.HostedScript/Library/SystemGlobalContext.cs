@@ -166,17 +166,26 @@ namespace ScriptEngine.HostedScript.Library
         /// Подключает внешнюю сборку среды .NET (*.dll) и регистрирует классы 1Script, объявленные в этой сборке.
         /// Публичные классы, отмеченные в dll атрибутом ContextClass, будут импортированы аналогично встроенным классам 1Script.
         /// Загружаемая сборка должна ссылаться на сборку ScriptEngine.dll
-	/// </summary>
+	    /// </summary>
         /// <example>
         /// ПодключитьВнешнююКомпоненту("C:\MyAssembly.dll");
         /// КлассИзКомпоненты = Новый КлассИзКомпоненты(); // тип объявлен внутри компоненты
         /// </example>
         /// <param name="dllPath">Путь к внешней компоненте</param>
+        /// <param name="name">Символическое имя подключаемой внешней компоненты</param>
+        /// <param name="type">Тип подключаемой внешней компоненты</param>
         [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
-        public void AttachAddIn(string dllPath)
+        public bool AttachAddIn(string dllPath, string name = "", NativeApi.NativeApiEnums type = NativeApi.NativeApiEnums.Native)
         {
-            var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
-            EngineInstance.AttachExternalAssembly(assembly, EngineInstance.Environment);
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
+                EngineInstance.AttachExternalAssembly(assembly, EngineInstance.Environment);
+                return true;
+            }
+            else {
+                return NativeApi.NativeApiComponent.Register(dllPath, name);
+            }
         }
 
         /// <summary>
