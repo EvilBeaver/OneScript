@@ -17,10 +17,12 @@ namespace ScriptEngine.HostedScript.Library.Regex
     public class MatchCollection : AutoContext<MatchCollection>, ICollectionContext, IEnumerable<MatchImpl>
     {
         private readonly RegExp.MatchCollection _matches;
+        private readonly RegExp.Regex _regex;
 
-        public MatchCollection(RegExp.MatchCollection matches)
+        public MatchCollection(RegExp.MatchCollection matches, RegExp.Regex regex)
         {
             _matches = matches;
+            _regex = regex;
         }
 
         #region ICollectionContext Members
@@ -48,12 +50,12 @@ namespace ScriptEngine.HostedScript.Library.Regex
         {
             foreach (RegExp.Match item in _matches)
             {
-                yield return new MatchImpl(item);
+                yield return new MatchImpl(item, _regex);
             }
         }
         public override IValue GetIndexedValue(IValue index)
         {
-            return new MatchImpl(_matches[(int)index.AsNumber()]);
+            return new MatchImpl(_matches[(int)index.AsNumber()], _regex);
         }
 
         #endregion
@@ -73,10 +75,12 @@ namespace ScriptEngine.HostedScript.Library.Regex
     public class GroupCollection : AutoContext<GroupCollection>, ICollectionContext, IEnumerable<GroupImpl>
     {
         private readonly RegExp.GroupCollection _groups;
+        private readonly RegExp.Regex _regex;
 
-        public GroupCollection(RegExp.GroupCollection groups)
+        public GroupCollection(RegExp.GroupCollection groups, RegExp.Regex regex)
         {
             _groups = groups;
+            _regex = regex;
         }
 
         #region ICollectionContext Members
@@ -102,14 +106,16 @@ namespace ScriptEngine.HostedScript.Library.Regex
 
         public IEnumerator<GroupImpl> GetEnumerator()
         {
+            int i = 0;
             foreach (RegExp.Group item in _groups)
             {
-                yield return new GroupImpl(item);
+                yield return new GroupImpl(item, i, _regex);
+                i++;
             }
         }
         public override IValue GetIndexedValue(IValue index)
         {
-            return new GroupImpl(_groups[(int)index.AsNumber()]);
+            return new GroupImpl(_groups[(int)index.AsNumber()], (int)index.AsNumber(), _regex);
         }
 
         #endregion
