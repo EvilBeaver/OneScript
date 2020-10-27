@@ -58,5 +58,11 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool HasRetVal(IntPtr ptr, long lMethodNum);
+
+        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CallAsProc(IntPtr ptr, long lMethodNum, ref NativeApiVariant paParams, long lSizeArray);
+
+        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CallAsFunc(IntPtr ptr, long lMethodNum, ref NativeApiVariant paParams, long lSizeArray, VariantDelegate response);
     }
 }
