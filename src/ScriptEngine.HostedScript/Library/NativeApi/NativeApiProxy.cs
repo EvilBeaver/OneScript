@@ -40,7 +40,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public static extern void GetPropVal(IntPtr ptr, long lPropNum, PointerDelegate response);
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern void SetPropVal(IntPtr ptr, long lPropNum, ref NativeApiVariant value);
+        public static extern void SetPropVal(IntPtr ptr, long lPropNum, PointerDelegate response);
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern long GetNMethods(IntPtr ptr);

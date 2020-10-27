@@ -77,7 +77,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         {
             NativeApiVariant variant = new NativeApiVariant();
             variant.SetValue(newVal);
-            NativeApiProxy.SetPropVal(_object, propNum, ref variant);
+            NativeApiProxy.SetPropVal(_object, propNum, var => NativeApiVariant.SetValue(var, newVal));
         }
 
         public int GetMethodsCount()

@@ -1,5 +1,6 @@
 ﻿using ScriptEngine.Machine;
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
@@ -95,7 +96,8 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public void SetValue(IValue value)
         {
-            switch (value.DataType) {
+            switch (value.DataType)
+            {
                 case DataType.String:
                     String str = value.AsString();
                     pwstrVal = Marshal.StringToHGlobalUni(str);
@@ -108,10 +110,13 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                     return;
                 case DataType.Number:
                     Decimal num = value.AsNumber();
-                    if (num % 1 == 0) {
+                    if (num % 1 == 0)
+                    {
                         lVal = Convert.ToInt32(num);
                         vt = (UInt16)VarTypes.VTYPE_I4;
-                    } else {
+                    }
+                    else
+                    {
                         dblVal = Convert.ToDouble(num);
                         vt = (UInt16)VarTypes.VTYPE_R8;
                     }
@@ -125,6 +130,31 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         static public IValue GetValue(IntPtr ptr)
         {
             return Marshal.PtrToStructure<NativeApiVariant>(ptr).GetValue();
+        }
+
+        static public void SetValue(IntPtr ptr, IValue value)
+        {
+            Marshal.PtrToStructure<NativeApiVariant>(ptr).SetValue(value);
+        }
+
+        public void Clear()
+        {
+            switch ((VarTypes)vt)
+            {
+                case VarTypes.VTYPE_PSTR:
+                    Marshal.FreeHGlobal(pstrVal);
+                    pstrVal = IntPtr.Zero;
+                    strLen = 0;
+                    break;
+                case VarTypes.VTYPE_PWSTR:
+                    Marshal.FreeHGlobal(pwstrVal);
+                    pwstrVal = IntPtr.Zero;
+                    wstrLen = 0;
+                    break;
+                default:
+                    break;
+            }
+            vt = (UInt16)VarTypes.VTYPE_EMPTY;
         }
     }
 }

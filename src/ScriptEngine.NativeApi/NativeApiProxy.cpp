@@ -46,9 +46,29 @@ public:
 	}
 };
 
+static void ClearVariant(tVariant &variant) 
+{
+	switch (variant.vt) {
+	case VT_BLOB:
+	case VT_LPSTR:
+		free(variant.pstrVal);
+		variant.pstrVal = nullptr;
+		variant.strLen = 0;
+		break;
+	case VT_LPWSTR:
+		free(variant.pwstrVal);
+		variant.pwstrVal = nullptr;
+		variant.wstrLen = 0;
+		break;
+	}
+	variant.vt = VT_EMPTY;
+}
+
 typedef void(_stdcall* StringFuncRespond) (const WCHAR_T* s);
 
-typedef void(_stdcall* VariantFuncRespond) (const tVariant* variant);
+typedef void(_stdcall* VariantFuncRespond) (tVariant* variant);
+
+typedef void(_stdcall* VariantListRespond) (tVariant* variant, long number);
 
 DllExport ProxyComponent* GetClassObject(HMODULE hModule, const WCHAR_T* wsName)
 {
@@ -82,8 +102,10 @@ DllExport void GetPropName(ProxyComponent* proxy, long lPropNum, long lPropAlias
 {
 	if (proxy == nullptr) return;
 	auto name = proxy->Interface().GetPropName(lPropNum, lPropAlias);
-	if (name) respond(name);
-	delete name;
+	if (name) {
+		respond(name);
+		delete name;
+	}
 }
 
 DllExport bool GetPropVal(ProxyComponent* proxy, long lPropNum, VariantFuncRespond respond)
@@ -92,13 +114,17 @@ DllExport bool GetPropVal(ProxyComponent* proxy, long lPropNum, VariantFuncRespo
 	tVariant variant = { 0 };
 	auto ok = proxy->Interface().GetPropVal(lPropNum, &variant);
 	if (ok) respond(&variant);
+	ClearVariant(variant);
 	return ok;
 }
 
-DllExport bool SetPropVal(ProxyComponent* proxy, long lPropNum, tVariant* variant)
+DllExport bool SetPropVal(ProxyComponent* proxy, long lPropNum, VariantFuncRespond respond)
 {
 	if (proxy == nullptr) return false;
-	auto ok = proxy->Interface().SetPropVal(lPropNum, variant);
+	tVariant variant = { 0 };
+	respond(&variant);
+	auto ok = proxy->Interface().SetPropVal(lPropNum, &variant);
+	ClearVariant(variant);
 	return ok;
 }
 
@@ -131,8 +157,10 @@ DllExport void GetMethodName(ProxyComponent* proxy, long lMethodNum, long lMetho
 {
 	if (proxy == nullptr) return;
 	auto name = proxy->Interface().GetMethodName(lMethodNum, lMethodAlias);
-	if (name) respond(name);
-	delete name;
+	if (name) {
+		respond(name);
+		delete name;
+	}
 }
 
 DllExport long GetNParams(ProxyComponent* proxy, long lMethodNum)
@@ -147,17 +175,41 @@ DllExport bool HasRetVal(ProxyComponent* proxy, long lMethodNum)
 	return proxy->Interface().HasRetVal(lMethodNum);
 }
 
-DllExport bool ADDIN_API CallAsProc(ProxyComponent* proxy, long lMethodNum, tVariant* paParams, long lSizeArray)
+DllExport bool ADDIN_API CallAsProc(ProxyComponent* proxy, long lMethodNum, VariantListRespond getter, VariantListRespond setter, long lSizeArray)
 {
 	if (proxy == nullptr) return false;
+	tVariant* paParams = new tVariant[lSizeArray];
+	for (long i = 0; i < lSizeArray; i++) {
+		ZeroMemory(&paParams[i], sizeof(tVariant));
+		getter(&paParams[i], i);
+	}
 	bool ok = proxy->Interface().CallAsProc(lMethodNum, paParams, lSizeArray);
+	for (long i = 0; i < lSizeArray; i++) {
+		setter(&paParams[i], i);
+		ClearVariant(paParams[i]);
+	}
+	delete[] paParams;
+	return ok;
 }
 
-DllExport bool ADDIN_API CallAsFunc(ProxyComponent* proxy, long lMethodNum, tVariant* paParams, long lSizeArray, VariantFuncRespond respond)
+DllExport bool ADDIN_API CallAsFunc(ProxyComponent* proxy, long lMethodNum, VariantListRespond getter, VariantListRespond setter, long lSizeArray, VariantFuncRespond respond)
 {
 	if (proxy == nullptr) return false;
 	tVariant variant = { 0 };
+	tVariant* paParams = new tVariant[lSizeArray];
+	for (long i = 0; i < lSizeArray; i++) {
+		ZeroMemory(&paParams[i], sizeof(tVariant));
+		getter(&paParams[i], i);
+	}
 	bool ok = proxy->Interface().CallAsFunc(lMethodNum, &variant, paParams, lSizeArray);
-	if (ok) respond(&variant);
+	if (ok) {
+		respond(&variant);
+		for (long i = 0; i < lSizeArray; i++) {
+			setter(&paParams[i], i);
+			ClearVariant(paParams[i]);
+		}
+	}
+	ClearVariant(variant);
+	delete[] paParams;
 	return ok;
 }
