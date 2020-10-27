@@ -46,20 +46,12 @@ public:
 	}
 };
 
-typedef void(_stdcall* LPEXTFUNCRESPOND) (const WCHAR_T* s);
+typedef void(_stdcall* StringFuncRespond) (const WCHAR_T* s);
 
-DllExport const WCHAR_T* GetClassNames(const WCHAR_T* wsLibrary)
-{
-	auto hModule = LoadLibrary(wsLibrary);
-	if (hModule == nullptr) return nullptr;
-	auto proc = (GetClassNamesPtr)GetProcAddress(hModule, "GetClassNames");
-	return proc();
-}
+typedef void(_stdcall* VariantFuncRespond) (const tVariant* variant);
 
-DllExport ProxyComponent* GetClassObject(const WCHAR_T* wsLibrary, const WCHAR_T* wsName)
+DllExport ProxyComponent* GetClassObject(HMODULE hModule, const WCHAR_T* wsName)
 {
-	auto hModule = LoadLibrary(wsLibrary);
-	if (hModule == nullptr) return nullptr;
 	auto proc = (GetClassObjectPtr)GetProcAddress(hModule, "GetClassObject");
 	if (proc == nullptr) return nullptr;
 	IComponentBase* pComponent = nullptr;
@@ -86,12 +78,28 @@ DllExport long FindProp(ProxyComponent* proxy, const WCHAR_T* wsPropName)
 	return proxy->Interface().FindProp(wsPropName);
 }
 
-DllExport void GetPropName(ProxyComponent* proxy, long lPropNum, long lPropAlias, LPEXTFUNCRESPOND respond)
+DllExport void GetPropName(ProxyComponent* proxy, long lPropNum, long lPropAlias, StringFuncRespond respond)
 {
 	if (proxy == nullptr) return;
 	auto name = proxy->Interface().GetPropName(lPropNum, lPropAlias);
 	if (name) respond(name);
 	delete name;
+}
+
+DllExport bool GetPropVal(ProxyComponent* proxy, long lPropNum, VariantFuncRespond respond)
+{
+	if (proxy == nullptr) return false;
+	tVariant variant = { 0 };
+	auto ok = proxy->Interface().GetPropVal(lPropNum, &variant);
+	if (ok) respond(&variant);
+	return ok;
+}
+
+DllExport bool SetPropVal(ProxyComponent* proxy, long lPropNum, tVariant* variant)
+{
+	if (proxy == nullptr) return false;
+	auto ok = proxy->Interface().SetPropVal(lPropNum, variant);
+	return ok;
 }
 
 DllExport bool IsPropReadable(ProxyComponent* proxy, long lPropNum)
@@ -119,7 +127,7 @@ DllExport long FindMethod(ProxyComponent* proxy, const WCHAR_T* wsMethodName)
 	return proxy->Interface().FindMethod(wsMethodName);
 }
 
-DllExport void GetMethodName(ProxyComponent* proxy, long lMethodNum, long lMethodAlias, LPEXTFUNCRESPOND respond)
+DllExport void GetMethodName(ProxyComponent* proxy, long lMethodNum, long lMethodAlias, StringFuncRespond respond)
 {
 	if (proxy == nullptr) return;
 	auto name = proxy->Interface().GetMethodName(lMethodNum, lMethodAlias);

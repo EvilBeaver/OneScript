@@ -52,6 +52,7 @@ namespace ScriptEngine.HostedScript.Library
         public void InitInstance()
         {
             InitContextVariables();
+            NativeApi.NativeApiLibrary.Initialize();
         }
 
         private void InitContextVariables()
@@ -184,7 +185,7 @@ namespace ScriptEngine.HostedScript.Library
                 return true;
             }
             else {
-                return NativeApi.NativeApiComponent.Register(dllPath, name);
+                return NativeApi.NativeApiLibrary.Register(dllPath, name);
             }
         }
 
