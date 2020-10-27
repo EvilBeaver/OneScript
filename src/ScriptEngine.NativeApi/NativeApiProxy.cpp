@@ -146,3 +146,8 @@ DllExport bool HasRetVal(ProxyComponent* proxy, long lMethodNum)
 	if (proxy == nullptr) return false;
 	return proxy->Interface().HasRetVal(lMethodNum);
 }
+
+DllExport bool ADDIN_API CallAsProc(ProxyComponent* proxy, long lMethodNum, tVariant* paParams, long lSizeArray)
+{
+	return true;
+}

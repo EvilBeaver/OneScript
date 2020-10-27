@@ -17,24 +17,14 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             get { return Machine.DataType.Object; }
         }
 
+        protected void DefineType(TypeDescriptor type)
+        {
+            _type = type;
+        }
+
         public TypeDescriptor SystemType
         {
-            get
-            {
-                if (_type.Name == null)
-                {
-                    if (TypeManager.IsKnownType(this.GetType()))
-                    {
-                        _type = TypeManager.GetTypeByFrameworkType(this.GetType());
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Type {GetType()} is not defined");
-                    }
-                }
-
-                return _type;
-            }
+            get => _type;
         }
 
         public decimal AsNumber()

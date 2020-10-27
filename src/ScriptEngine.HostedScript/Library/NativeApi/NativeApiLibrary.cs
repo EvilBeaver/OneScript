@@ -69,7 +69,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             String[] names = typeName.Split(separator, StringSplitOptions.RemoveEmptyEntries);
             if (names.Length == 3 && _libraries.TryGetValue(names[1], out NativeApiLibrary library))
             {
-                NativeApiComponent comp = new NativeApiComponent(library, names[2]);
+                NativeApiComponent comp = new NativeApiComponent(library, typeName, names[2]);
                 return ValueFactory.Create(comp);
             }
             throw new NotImplementedException();

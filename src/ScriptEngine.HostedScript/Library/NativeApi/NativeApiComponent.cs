@@ -15,9 +15,10 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             return this;
         }
 
-        public NativeApiComponent(NativeApiLibrary library, String component)
+        public NativeApiComponent(NativeApiLibrary library, String typeName, String component)
         {
             _object = NativeApiProxy.GetClassObject(library.Module, component);
+            DefineType(TypeManager.GetTypeByName(typeName));
         }
 
         ~NativeApiComponent()
