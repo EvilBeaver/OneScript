@@ -1,4 +1,11 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Runtime.InteropServices;
@@ -21,12 +28,13 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             DefineType(TypeManager.GetTypeByName(typeName));
         }
 
-        ~NativeApiComponent()
+        public void Dispose()
         {
-            NativeApiProxy.DestroyObject(_object);
+            try { NativeApiProxy.DestroyObject(_object); } catch (Exception) { }
         }
 
         public bool IsIndexed => false;
+
         public bool DynamicMethodSignatures => false;
 
         public IValue GetIndexedValue(IValue index)
@@ -77,7 +85,8 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         {
             NativeApiVariant variant = new NativeApiVariant();
             variant.SetValue(newVal);
-            NativeApiProxy.SetPropVal(_object, propNum, var => NativeApiVariant.SetValue(var, newVal));
+            NativeApiProxy.SetPropVal(_object, propNum, ref variant);
+            variant.Clear();
         }
 
         public int GetMethodsCount()
@@ -96,6 +105,8 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             string alias = String.Empty;
             NativeApiProxy.GetMethodName(_object, methodNumber, 0, s => name = NativeApiProxy.Str(s));
             NativeApiProxy.GetMethodName(_object, methodNumber, 1, s => alias = NativeApiProxy.Str(s));
+            long paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
+            ParameterDefinition[] paramArray = new ParameterDefinition[paramCount];
             return new MethodInfo
             {
                 Name = name,
@@ -104,19 +115,35 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                 IsDeprecated = false,
                 IsExport = false,
                 ThrowOnUseDeprecated = false,
+                Params = paramArray,
             };
 
         }
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
-            throw new NotImplementedException();
+            IntPtr param = IntPtr.Zero;
+            int paramCount = (int)NativeApiProxy.GetNParams(_object, methodNumber);
+            if (paramCount > 0) param = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
+            NativeApiVariant.SetValue(param, arguments, paramCount);
+            NativeApiProxy.CallAsProc(_object, methodNumber, param);
+            NativeApiVariant.Clear(param, paramCount);
+            Marshal.FreeHGlobal(param);
         }
 
         public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
-            throw new NotImplementedException();
+            IntPtr param = IntPtr.Zero;
+            int paramCount = (int)NativeApiProxy.GetNParams(_object, methodNumber);
+            if (paramCount > 0) param = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
+            NativeApiVariant.SetValue(param, arguments, paramCount);
+            IValue result = retValue = ValueFactory.Create();
+            bool ok = NativeApiProxy.CallAsFunc(_object, methodNumber, param,
+                var => result = NativeApiVariant.GetValue(var)
+            );
+            NativeApiVariant.Clear(param, paramCount);
+            Marshal.FreeHGlobal(param);
+            if (ok) retValue = result;
         }
     }
-
 }

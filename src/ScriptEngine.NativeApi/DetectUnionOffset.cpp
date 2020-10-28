@@ -1,4 +1,11 @@
-﻿#include <windows.h>
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+#include <windows.h>
 
 #include "include/types.h"
 #include "include/ComponentBase.h"
@@ -20,5 +27,6 @@ int main()
 	printf("offsetof(struct tVariant, pwstrVal) is %d\n", (int)offsetof(struct tVariant, pwstrVal));
 	printf("offsetof(struct tVariant, wstrLen) is %d\n", (int)offsetof(struct tVariant, wstrLen));
 	printf("offsetof(struct tVariant, vt) is %d\n", (int)offsetof(struct tVariant, vt));
+	printf("sizeof(struct tVariant) is %d\n", (int)sizeof(tVariant));
 	return 0;
 }

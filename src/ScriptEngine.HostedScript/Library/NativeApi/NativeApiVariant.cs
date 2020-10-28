@@ -1,10 +1,20 @@
-﻿using ScriptEngine.Machine;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.HostedScript.Library.Binary;
+using ScriptEngine.Machine;
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
+    /// <summary>
+    /// Трансляция значений IValue и tVariant из состава Native API
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     public struct NativeApiVariant
     {
@@ -60,15 +70,33 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         private Int32 strLen
         {
             get => IntPtr.Size == 8 ? strLen64 : strLen32;
-            set { if (IntPtr.Size == 8) wstrLen64 = value; else wstrLen32 = value; }
+            set
+            {
+                if (IntPtr.Size == 8)
+                    wstrLen64 = value;
+                else
+                    wstrLen32 = value;
+            }
         }
 
         private Int32 wstrLen
         {
             get => IntPtr.Size == 8 ? wstrLen64 : wstrLen32;
-            set { if (IntPtr.Size == 8) wstrLen64 = value; else wstrLen32 = value; }
+            set
+            {
+                if (IntPtr.Size == 8)
+                    wstrLen64 = value;
+                else
+                    wstrLen32 = value;
+            }
         }
+
 #pragma warning restore IDE1006 // Стили именования
+
+        public static Int32 Size
+        {
+            get => 48;
+        }
 
         public IValue GetValue()
         {
@@ -89,6 +117,10 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                     return ValueFactory.Create(Marshal.PtrToStringAnsi(pstrVal, strLen));
                 case VarTypes.VTYPE_PWSTR:
                     return ValueFactory.Create(Marshal.PtrToStringUni(pwstrVal, wstrLen));
+                case VarTypes.VTYPE_BLOB:
+                    byte[] buffer = new byte[strLen];
+                    Marshal.Copy(pstrVal, buffer, 0, strLen);
+                    return ValueFactory.Create(new BinaryDataContext(buffer));
                 default:
                     return ValueFactory.Create();
             }
@@ -105,8 +137,8 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                     vt = (UInt16)VarTypes.VTYPE_PWSTR;
                     return;
                 case DataType.Boolean:
-                    vt = (UInt16)VarTypes.VTYPE_BOOL;
                     bVal = value.AsBoolean();
+                    vt = (UInt16)VarTypes.VTYPE_BOOL;
                     return;
                 case DataType.Number:
                     Decimal num = value.AsNumber();
@@ -120,6 +152,12 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                         dblVal = Convert.ToDouble(num);
                         vt = (UInt16)VarTypes.VTYPE_R8;
                     }
+                    return;
+                case DataType.Object when value is BinaryDataContext binaryData:
+                    strLen = binaryData.Buffer.Length;
+                    pstrVal = Marshal.AllocHGlobal(strLen);
+                    Marshal.Copy(binaryData.Buffer, 0, pstrVal, strLen);
+                    vt = (UInt16)VarTypes.VTYPE_BLOB;
                     return;
                 default:
                     vt = (UInt16)VarTypes.VTYPE_EMPTY;
@@ -135,6 +173,27 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         static public void SetValue(IntPtr ptr, IValue value)
         {
             Marshal.PtrToStructure<NativeApiVariant>(ptr).SetValue(value);
+        }
+
+        static public void SetValue(IntPtr ptr, IValue[] values, int count)
+        {
+            for (int i = 0; i < values.Length && i < count; i++)
+            {
+                NativeApiVariant variant = new NativeApiVariant();
+                variant.SetValue(values[i]);
+                Marshal.StructureToPtr(variant, ptr + i * Size, false);
+            }
+        }
+
+        static public void Clear(IntPtr ptr)
+        {
+            Marshal.PtrToStructure<NativeApiVariant>(ptr).Clear();
+        }
+
+        static public void Clear(IntPtr ptr, int count)
+        {
+            for (int i = 0; i < count; i++)
+                Clear(ptr + i * Size);
         }
 
         public void Clear()

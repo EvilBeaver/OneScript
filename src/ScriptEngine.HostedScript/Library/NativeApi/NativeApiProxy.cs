@@ -1,18 +1,29 @@
-﻿using System;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
+    /// <summary>
+    /// Трансляция вызовов C# для взаимодействия с NativeApi
+    /// </summary>
     static class NativeApiProxy
     {
         private const String ProxyDll = "ScriptEngine.NativeApi.dll";
 
         public delegate void PointerDelegate(IntPtr ptr);
 
+        public delegate void ArrayDelegate(IntPtr ptr, long number);
+
         public static String Str(IntPtr p)
         {
-            if (p == IntPtr.Zero) return "";
-            return Marshal.PtrToStringUni(p);
+            return p != IntPtr.Zero ? Marshal.PtrToStringUni(p) : String.Empty;
         }
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
@@ -40,7 +51,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public static extern void GetPropVal(IntPtr ptr, long lPropNum, PointerDelegate response);
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern void SetPropVal(IntPtr ptr, long lPropNum, PointerDelegate response);
+        public static extern void SetPropVal(IntPtr ptr, long lPropNum, ref NativeApiVariant value);
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern long GetNMethods(IntPtr ptr);
@@ -58,9 +69,9 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public static extern bool HasRetVal(IntPtr ptr, long lMethodNum);
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool CallAsProc(IntPtr ptr, long lMethodNum, ref NativeApiVariant paParams, long lSizeArray);
+        public static extern bool CallAsProc(IntPtr ptr, long lMethodNum, IntPtr value);
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool CallAsFunc(IntPtr ptr, long lMethodNum, ref NativeApiVariant paParams, long lSizeArray, PointerDelegate response);
+        public static extern bool CallAsFunc(IntPtr ptr, long lMethodNum, IntPtr value, PointerDelegate response);
     }
 }
