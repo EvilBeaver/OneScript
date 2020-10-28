@@ -95,6 +95,18 @@ namespace ScriptEngine.HostedScript.Library.Regex
             return _groups.Count;
         }
 
+        /// <summary>
+        /// Получает группу по имени
+        /// </summary>
+        /// <param name="inputName">Имя группы.</param>
+        /// <returns>Группа.</returns>
+        [ContextMethod("ПоИмени", "FromName")]
+        public GroupImpl FromName(string inputName)
+        {
+            int index = _regex.GroupNumberFromName(inputName);
+            return new GroupImpl(_groups[(int)index], (int)index, _regex);
+        }
+
         public CollectionEnumerator GetManagedIterator()
         {
             return new CollectionEnumerator(GetEnumerator());
