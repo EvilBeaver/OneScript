@@ -66,6 +66,9 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public static extern long GetNParams(IntPtr ptr, long lMethodNum);
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool GetParamDefValue(IntPtr ptr, long lMethodNum, long lParamNum, PointerDelegate response);
+
+        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool HasRetVal(IntPtr ptr, long lMethodNum);
 
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]

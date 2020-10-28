@@ -165,6 +165,16 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             }
         }
 
+        bool IsEmpty()
+        {
+            return (VarTypes)vt == VarTypes.VTYPE_EMPTY;
+        }
+
+        bool NotEmpty()
+        {
+            return (VarTypes)vt != VarTypes.VTYPE_EMPTY;
+        }
+
         static public IValue GetValue(IntPtr ptr)
         {
             return Marshal.PtrToStructure<NativeApiVariant>(ptr).GetValue();
@@ -188,6 +198,16 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         static public void Clear(IntPtr ptr)
         {
             Marshal.PtrToStructure<NativeApiVariant>(ptr).Clear();
+        }
+
+        static public bool IsEmpty(IntPtr ptr)
+        {
+            return Marshal.PtrToStructure<NativeApiVariant>(ptr).IsEmpty();
+        }
+
+        static public bool NotEmpty(IntPtr ptr)
+        {
+            return Marshal.PtrToStructure<NativeApiVariant>(ptr).NotEmpty();
         }
 
         static public void Clear(IntPtr ptr, int count)

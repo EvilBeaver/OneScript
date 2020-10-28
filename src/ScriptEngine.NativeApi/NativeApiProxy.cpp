@@ -171,6 +171,16 @@ DllExport long GetNParams(ProxyComponent* proxy, long lMethodNum)
 	return proxy->Interface().GetNParams(lMethodNum);
 }
 
+DllExport bool ADDIN_API GetParamDefValue(ProxyComponent* proxy, long lMethodNum, long lParamNum, VariantFuncRespond respond)
+{
+	CHECK_PROXY(false);
+	tVariant variant = { 0 };
+	auto ok = proxy->Interface().GetParamDefValue(lMethodNum, lParamNum, &variant);
+	if (ok) respond(&variant);
+	ClearVariant(variant);
+	return ok;
+}
+
 DllExport bool HasRetVal(ProxyComponent* proxy, long lMethodNum)
 {
 	CHECK_PROXY(false);

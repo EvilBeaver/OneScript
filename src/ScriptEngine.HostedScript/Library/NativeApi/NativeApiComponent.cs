@@ -102,11 +102,21 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public MethodInfo GetMethodInfo(int methodNumber)
         {
             String name = String.Empty;
-            string alias = String.Empty;
+            String alias = String.Empty;
             NativeApiProxy.GetMethodName(_object, methodNumber, 0, s => name = NativeApiProxy.Str(s));
             NativeApiProxy.GetMethodName(_object, methodNumber, 1, s => alias = NativeApiProxy.Str(s));
             long paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
             ParameterDefinition[] paramArray = new ParameterDefinition[paramCount];
+            for (int i = 0; i < paramCount; i++)
+                NativeApiProxy.GetParamDefValue(_object, methodNumber, i, var =>
+                {
+                    if (NativeApiVariant.NotEmpty(var))
+                    {
+                        paramArray[i].HasDefaultValue = true;
+                        paramArray[i].DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX;
+                    }
+                });
+
             return new MethodInfo
             {
                 Name = name,
@@ -117,7 +127,15 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                 ThrowOnUseDeprecated = false,
                 Params = paramArray,
             };
+        }
 
+        private void SetDefValues(int methodNumber, int paramCount, IValue[] arguments)
+        {
+            for (int i = 0; i < paramCount; i++)
+                if (arguments[i] == null)
+                    NativeApiProxy.GetParamDefValue(_object, methodNumber, i,
+                        var => arguments[i] = NativeApiVariant.GetValue(var)
+                    );
         }
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments)
@@ -125,6 +143,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             IntPtr param = IntPtr.Zero;
             int paramCount = (int)NativeApiProxy.GetNParams(_object, methodNumber);
             if (paramCount > 0) param = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
+            SetDefValues(methodNumber, paramCount, arguments);
             NativeApiVariant.SetValue(param, arguments, paramCount);
             NativeApiProxy.CallAsProc(_object, methodNumber, param);
             NativeApiVariant.Clear(param, paramCount);
@@ -136,6 +155,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             IntPtr param = IntPtr.Zero;
             int paramCount = (int)NativeApiProxy.GetNParams(_object, methodNumber);
             if (paramCount > 0) param = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
+            SetDefValues(methodNumber, paramCount, arguments);
             NativeApiVariant.SetValue(param, arguments, paramCount);
             IValue result = retValue = ValueFactory.Create();
             bool ok = NativeApiProxy.CallAsFunc(_object, methodNumber, param,
