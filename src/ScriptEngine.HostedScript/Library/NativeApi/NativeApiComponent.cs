@@ -76,7 +76,6 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public void SetPropValue(int propNum, IValue newVal)
         {
             NativeApiVariant variant = new NativeApiVariant();
-            variant.SetValue(newVal);
             NativeApiProxy.SetPropVal(_object, propNum, var => NativeApiVariant.SetValue(var, newVal));
         }
 
