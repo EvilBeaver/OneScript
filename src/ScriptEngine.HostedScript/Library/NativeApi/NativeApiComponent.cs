@@ -13,6 +13,9 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
+    /// <summary>
+    /// Экземпляр внешней компоненты Native API
+    /// </summary>
     class NativeApiComponent : NativeApiValue, IRuntimeContextInstance, IValue
     {
         private readonly IntPtr _object;

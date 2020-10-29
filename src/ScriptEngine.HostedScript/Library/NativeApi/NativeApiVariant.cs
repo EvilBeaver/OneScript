@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
     /// <summary>
-    /// Трансляция значений IValue и tVariant из состава Native API
+    /// Трансляция значений между IValue и tVariant из состава Native API
     /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     public struct NativeApiVariant

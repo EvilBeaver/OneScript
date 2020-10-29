@@ -10,6 +10,9 @@ using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
+    /// <summary>
+    /// Подключение DLL-файлов библиотеки внешних компонент Native API
+    /// </summary>
     class NativeApiKernel
     {
         protected const String KernelDll = "kernel32.dll";

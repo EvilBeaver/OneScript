@@ -13,6 +13,10 @@ using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
+    /// <summary>
+    /// Фабрика, осуществляющая регистрацию библиотеки внешних 
+    /// компонент Native API и создания экземпляров компонент.
+    /// </summary>
     class NativeApiFactory : NativeApiKernel
     {
         public static bool Register(String filepath, String identifier)

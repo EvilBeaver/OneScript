@@ -10,6 +10,9 @@ using System;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
+    /// <summary>
+    /// Абстрактный класс, реализующий типовые методы интерфейса IValue
+    /// </summary>
     abstract class NativeApiValue: IValue
     {
         private TypeDescriptor _type;

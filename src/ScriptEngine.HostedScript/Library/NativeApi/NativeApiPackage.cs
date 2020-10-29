@@ -14,7 +14,7 @@ using System.Xml;
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
     /// <summary>
-    /// Загрузчик библиотеки внешних компонент, упакованной в zip-файл.
+    /// Загрузчик для библиотеки внешних компонент, упакованной в zip-файл.
     /// </summary>
     static class NativeApiPackage
     {

@@ -13,6 +13,10 @@ using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
+    /// <summary>
+    /// Класс, ассоциированный с экземпляром библиотеки внешних компонент 
+    /// Native API и осуществляющий непосредственное создание экземпляра компоненты.
+    /// </summary>
     class NativeApiLibrary : NativeApiKernel
     {
         private delegate IntPtr GetClassNames();
