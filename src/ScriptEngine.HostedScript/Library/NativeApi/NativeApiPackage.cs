@@ -16,7 +16,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// <summary>
     /// Загрузчик библиотеки внешних компонент, упакованной в zip-файл.
     /// </summary>
-    static class NativeApiLoader
+    static class NativeApiPackage
     {
         public static bool IsZip(Stream stream)
         {
@@ -37,7 +37,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             }
         }
 
-        public static String GetEntryName(ZipFile zip)
+        private static String GetEntryName(ZipFile zip)
         {
             foreach (var entry in zip.Entries)
             {
@@ -47,7 +47,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                     {
                         entry.Extract(stream);
                         stream.Seek(0, 0);
-                        using (XmlReader reader = XmlReader.Create(stream))
+                        using (var reader = XmlReader.Create(stream))
                         {
                             while (reader.ReadToFollowing("component"))
                             {
@@ -73,7 +73,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             {
                 if (string.Equals(entry.FileName, filename, StringComparison.OrdinalIgnoreCase))
                 {
-                    using (FileStream stream = File.OpenWrite(tempfile))
+                    using (var stream = File.OpenWrite(tempfile))
                         entry.Extract(stream);
                     return;
                 }

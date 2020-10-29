@@ -22,9 +22,9 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             return this;
         }
 
-        public NativeApiComponent(NativeApiLibrary library, String typeName, String component)
+        public NativeApiComponent(NativeApiLibrary library, String typeName, String componentName)
         {
-            _object = NativeApiProxy.GetClassObject(library.Module, component);
+            _object = NativeApiProxy.GetClassObject(library.Module, componentName);
             DefineType(TypeManager.GetTypeByName(typeName));
         }
 
@@ -69,21 +69,25 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public string GetPropName(int propNum)
         {
-            string name = String.Empty;
-            NativeApiProxy.GetPropName(_object, propNum, 0, n => name = NativeApiProxy.Str(n));
+            var name = String.Empty;
+            NativeApiProxy.GetPropName(_object, propNum, 0,
+                n => name = NativeApiProxy.Str(n)
+            );
             return name;
         }
 
         public IValue GetPropValue(int propNum)
         {
-            IValue result = ValueFactory.Create();
-            NativeApiProxy.GetPropVal(_object, propNum, var => result = NativeApiVariant.GetValue(var));
+            var result = ValueFactory.Create();
+            NativeApiProxy.GetPropVal(_object, propNum,
+                variant => result = NativeApiVariant.GetValue(variant)
+            );
             return result;
         }
 
         public void SetPropValue(int propNum, IValue newVal)
         {
-            NativeApiVariant variant = new NativeApiVariant();
+            var variant = new NativeApiVariant();
             variant.SetValue(newVal);
             NativeApiProxy.SetPropVal(_object, propNum, ref variant);
             variant.Clear();
@@ -101,16 +105,20 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public MethodInfo GetMethodInfo(int methodNumber)
         {
-            String name = String.Empty;
-            String alias = String.Empty;
-            NativeApiProxy.GetMethodName(_object, methodNumber, 0, s => name = NativeApiProxy.Str(s));
-            NativeApiProxy.GetMethodName(_object, methodNumber, 1, s => alias = NativeApiProxy.Str(s));
-            long paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
-            ParameterDefinition[] paramArray = new ParameterDefinition[paramCount];
+            var name = String.Empty;
+            var alias = String.Empty;
+            NativeApiProxy.GetMethodName(_object, methodNumber, 0,
+                str => name = NativeApiProxy.Str(str)
+            );
+            NativeApiProxy.GetMethodName(_object, methodNumber, 1,
+                str => alias = NativeApiProxy.Str(str)
+            );
+            var paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
+            var paramArray = new ParameterDefinition[paramCount];
             for (int i = 0; i < paramCount; i++)
-                NativeApiProxy.GetParamDefValue(_object, methodNumber, i, var =>
+                NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
                 {
-                    if (NativeApiVariant.NotEmpty(var))
+                    if (NativeApiVariant.NotEmpty(variant))
                     {
                         paramArray[i].HasDefaultValue = true;
                         paramArray[i].DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX;
@@ -134,36 +142,39 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             for (int i = 0; i < paramCount; i++)
                 if (arguments[i] == null)
                     NativeApiProxy.GetParamDefValue(_object, methodNumber, i,
-                        var => arguments[i] = NativeApiVariant.GetValue(var)
+                        variant => arguments[i] = NativeApiVariant.GetValue(variant)
                     );
         }
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
-            IntPtr param = IntPtr.Zero;
+            var paramArray = IntPtr.Zero;
             int paramCount = (int)NativeApiProxy.GetNParams(_object, methodNumber);
-            if (paramCount > 0) param = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
+            if (paramCount > 0)
+                paramArray = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
             SetDefValues(methodNumber, paramCount, arguments);
-            NativeApiVariant.SetValue(param, arguments, paramCount);
-            NativeApiProxy.CallAsProc(_object, methodNumber, param);
-            NativeApiVariant.Clear(param, paramCount);
-            Marshal.FreeHGlobal(param);
+            NativeApiVariant.SetValue(paramArray, arguments, paramCount);
+            NativeApiProxy.CallAsProc(_object, methodNumber, paramArray);
+            NativeApiVariant.Clear(paramArray, paramCount);
+            Marshal.FreeHGlobal(paramArray);
         }
 
         public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
-            IntPtr param = IntPtr.Zero;
+            var paramArray = IntPtr.Zero;
             int paramCount = (int)NativeApiProxy.GetNParams(_object, methodNumber);
-            if (paramCount > 0) param = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
+            if (paramCount > 0)
+                paramArray = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
             SetDefValues(methodNumber, paramCount, arguments);
-            NativeApiVariant.SetValue(param, arguments, paramCount);
+            NativeApiVariant.SetValue(paramArray, arguments, paramCount);
             IValue result = retValue = ValueFactory.Create();
-            bool ok = NativeApiProxy.CallAsFunc(_object, methodNumber, param,
-                var => result = NativeApiVariant.GetValue(var)
+            bool ok = NativeApiProxy.CallAsFunc(_object, methodNumber, paramArray,
+                variant => result = NativeApiVariant.GetValue(variant)
             );
-            NativeApiVariant.Clear(param, paramCount);
-            Marshal.FreeHGlobal(param);
-            if (ok) retValue = result;
+            NativeApiVariant.Clear(paramArray, paramCount);
+            Marshal.FreeHGlobal(paramArray);
+            if (ok)
+                retValue = result;
         }
     }
 }

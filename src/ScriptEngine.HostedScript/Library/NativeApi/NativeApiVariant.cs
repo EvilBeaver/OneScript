@@ -189,7 +189,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         {
             for (int i = 0; i < values.Length && i < count; i++)
             {
-                NativeApiVariant variant = new NativeApiVariant();
+                var variant = new NativeApiVariant();
                 variant.SetValue(values[i]);
                 Marshal.StructureToPtr(variant, ptr + i * Size, false);
             }

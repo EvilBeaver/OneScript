@@ -25,6 +25,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
 #define CHECK_PROXY(result) { if (proxy == nullptr) return result; }
 
+#define EMPTY_DEF
+
 #include "include/types.h"
 #include "include/ComponentBase.h"
 #include "include/AddInDefBase.h"
@@ -43,10 +45,10 @@ public:
 		delete pInterface;
 	}
 	virtual bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) override {
-		return *pMemory = malloc(ulCountByte);
+		return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
 	}
 	virtual void ADDIN_API FreeMemory(void** pMemory) override {
-		free(*pMemory);
+		LocalFree(*pMemory);
 	}
 	IComponentBase& Interface() {
 		return *pInterface;
@@ -105,11 +107,11 @@ DllExport long FindProp(ProxyComponent* proxy, const WCHAR_T* wsPropName)
 
 DllExport void GetPropName(ProxyComponent* proxy, long lPropNum, long lPropAlias, StringFuncRespond respond)
 {
-	CHECK_PROXY();
+	CHECK_PROXY(EMPTY_DEF);
 	auto name = proxy->Interface().GetPropName(lPropNum, lPropAlias);
 	if (name) {
 		respond(name);
-		delete name;
+		proxy->FreeMemory((void**)&name);
 	}
 }
 
@@ -157,11 +159,11 @@ DllExport long FindMethod(ProxyComponent* proxy, const WCHAR_T* wsMethodName)
 
 DllExport void GetMethodName(ProxyComponent* proxy, long lMethodNum, long lMethodAlias, StringFuncRespond respond)
 {
-	CHECK_PROXY();
+	CHECK_PROXY(EMPTY_DEF);
 	auto name = proxy->Interface().GetMethodName(lMethodNum, lMethodAlias);
 	if (name) {
 		respond(name);
-		delete name;
+		proxy->FreeMemory((void**)&name);
 	}
 }
 
