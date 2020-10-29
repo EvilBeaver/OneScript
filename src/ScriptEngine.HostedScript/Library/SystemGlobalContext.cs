@@ -167,14 +167,27 @@ namespace ScriptEngine.HostedScript.Library
         /// Подключает внешнюю сборку среды .NET (*.dll) и регистрирует классы 1Script, объявленные в этой сборке.
         /// Публичные классы, отмеченные в dll атрибутом ContextClass, будут импортированы аналогично встроенным классам 1Script.
         /// Загружаемая сборка должна ссылаться на сборку ScriptEngine.dll
-	    /// </summary>
+        ///
+        /// Также подключает вншение компонеты, разработанные по технологии Native API,
+        /// поставляемые в виде отдельных DLL или упакованные в ZIP-архив.
+        ///
+        /// </summary>
+        /// <param name="dllPath">Путь к внешней компоненте</param>
+        /// <param name="name">Символическое имя подключаемой внешней компоненты (только для Native API)</param>
+        /// <param name="type">Тип подключаемой внешней компоненты (для совместимости, необязательно)</param>
         /// <example>
+        /// //Подключает внешнюю сборку среды .NET (*.dll)
         /// ПодключитьВнешнююКомпоненту("C:\MyAssembly.dll");
         /// КлассИзКомпоненты = Новый КлассИзКомпоненты(); // тип объявлен внутри компоненты
-        /// </example>
-        /// <param name="dllPath">Путь к внешней компоненте</param>
-        /// <param name="name">Символическое имя подключаемой внешней компоненты</param>
-        /// <param name="type">Тип подключаемой внешней компоненты</param>
+        ///
+        /// //Подключает вншение компонеты Native API, упакованные в ZIP-архив
+        /// ПодключитьВнешнююКомпоненту("C:\AddInNative.zip", "AddInNative");
+        /// ЭкземплярВнешнейКомпоненты = Новый ("AddIn.AddInNative.NativeComponent");
+        ///
+        /// //Подключает вншение компонеты Native API в виде отдельных DLL-файлов
+        /// ПодключитьВнешнююКомпоненту("C:\AddInNative.dll", "SimpleAddIn", ТипВнешнейКомпоненты.Native);
+        /// ЭкземплярВнешнейКомпоненты = Новый ("AddIn.SimpleAddIn.SimpleComponent");
+        /// </example>        
         [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
         public bool AttachAddIn(string dllPath, string name = "", NativeApi.NativeApiEnums type = NativeApi.NativeApiEnums.Native)
         {
