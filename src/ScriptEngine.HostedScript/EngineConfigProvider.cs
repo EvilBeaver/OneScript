@@ -43,10 +43,14 @@ namespace ScriptEngine.HostedScript
 
             var assemblyPath = System.IO.Path.GetDirectoryName(asmLocation);
             var configFile = System.IO.Path.Combine(assemblyPath, CONFIG_FILE_NAME);
-            if (System.IO.File.Exists(configFile))
+            if (System.IO.File.Exists(configFile)) {
+                LibraryResolver.TraceLoadLibrary(String.Format("Файл настроек по умолчанию для загрузки библиотек, расположен {0}", configFile));
                 return configFile;
-            else
+            } else {
+                LibraryResolver.TraceLoadLibrary(String.Format("Файл настроек по умолчанию для загрузки библиотек, НЕ НАЙДЕН в каталоге {0} ", assemblyPath));
                 return null;
+            }
+                
         }
 
         private void ReadDefaultConfig()
