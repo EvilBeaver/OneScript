@@ -5,5 +5,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NativeApiProxy.cpp" />
+    <ClCompile Include="NativeInterface.cpp" />
+    <ClInclude Include="NativeInterface.h" />
   </ItemGroup>
 </Project>

@@ -6,10 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
@@ -27,7 +25,11 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public NativeApiComponent(NativeApiLibrary library, String typeName, String componentName)
         {
-            _object = NativeApiProxy.GetClassObject(library.Module, componentName);
+            _object = NativeApiProxy.GetClassObject(library.Module, componentName, 
+                (wcode, source, descr, scode) => { },
+                (source, message, data) => { },
+                (status) => { }
+            );
             DefineType(TypeManager.GetTypeByName(typeName));
         }
 
@@ -52,7 +54,10 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public int FindProperty(string name)
         {
-            return (int)NativeApiProxy.FindProp(_object, name);
+            var propNumber = NativeApiProxy.FindProp(_object, name);
+            if (propNumber < 0)
+                throw RuntimeException.PropNotFoundException(name);
+            return propNumber;
         }
 
         public bool IsPropReadable(int propNum)
@@ -67,7 +72,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public int GetPropCount()
         {
-            return (int)NativeApiProxy.GetNProps(_object);
+            return NativeApiProxy.GetNProps(_object);
         }
 
         public string GetPropName(int propNum)
@@ -98,16 +103,21 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public int GetMethodsCount()
         {
-            return (int)NativeApiProxy.GetNMethods(_object);
+            return NativeApiProxy.GetNMethods(_object);
         }
 
         public int FindMethod(string name)
         {
-            return (int)NativeApiProxy.FindMethod(_object, name);
+            var methodNumber = NativeApiProxy.FindMethod(_object, name);
+            if (methodNumber < 0)
+                throw RuntimeException.MethodNotFoundException(name);
+            return methodNumber;
         }
 
         public MethodInfo GetMethodInfo(int methodNumber)
         {
+            if (methodNumber < 0)
+                throw new RuntimeException("Метод не найден");
             var name = String.Empty;
             var alias = String.Empty;
             NativeApiProxy.GetMethodName(_object, methodNumber, 0,
@@ -152,7 +162,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             var paramArray = IntPtr.Zero;
-            int paramCount = (int)NativeApiProxy.GetNParams(_object, methodNumber);
+            int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
             if (paramCount > 0)
                 paramArray = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
             SetDefValues(methodNumber, paramCount, arguments);
@@ -165,7 +175,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
             var paramArray = IntPtr.Zero;
-            int paramCount = (int)NativeApiProxy.GetNParams(_object, methodNumber);
+            int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
             if (paramCount > 0)
                 paramArray = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
             SetDefValues(methodNumber, paramCount, arguments);

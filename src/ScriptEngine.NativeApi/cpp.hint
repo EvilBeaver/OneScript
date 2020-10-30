@@ -2,3 +2,4 @@
 // (например, имена функций и макросов).
 // Дополнительные сведения: https://go.microsoft.com/fwlink/?linkid=865984
 #define DllExport extern "C" __declspec(dllexport)
+#define WCHAR_T

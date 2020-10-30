@@ -31,18 +31,31 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 #include "include/ComponentBase.h"
 #include "include/AddInDefBase.h"
 #include "include/IMemoryManager.h"
+#include "NativeInterface.h"
+
+typedef void(_stdcall* StringFuncRespond) (const WCHAR_T* s);
+typedef void(_stdcall* VariantFuncRespond) (const tVariant* variant);
 
 class ProxyComponent : public IMemoryManager {
 private:
-	IComponentBase* pInterface = nullptr;
+	IComponentBase* pComponent = nullptr;
+	NativeInterface mInterface;
 public:
-	ProxyComponent(IComponentBase* pInterface) : pInterface(pInterface) {
-		//		pInterface->Init(this);
-		pInterface->setMemManager(this);
+	ProxyComponent(
+		IComponentBase* pComponent, 
+		ErrorFuncRespond onError,
+		EventFuncRespond onEvent,
+		StatusFuncRespond onStatus
+	): 
+		pComponent(pComponent), 
+		mInterface(onError, onEvent, onStatus)
+	{
+		pComponent->setMemManager(this);
+		pComponent->Init(&mInterface);
 	}
 	virtual ~ProxyComponent() override {
-		pInterface->Done();
-		delete pInterface;
+		pComponent->Done();
+		delete pComponent;
 	}
 	virtual bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) override {
 		return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
@@ -50,8 +63,8 @@ public:
 	virtual void ADDIN_API FreeMemory(void** pMemory) override {
 		LocalFree(*pMemory);
 	}
-	IComponentBase& Interface() {
-		return *pInterface;
+	IComponentBase& Component() {
+		return *pComponent;
 	}
 };
 
@@ -73,136 +86,137 @@ static void ClearVariant(tVariant& variant)
 	variant.vt = VT_EMPTY;
 }
 
-typedef void(_stdcall* StringFuncRespond) (const WCHAR_T* s);
-
-typedef void(_stdcall* VariantFuncRespond) (const tVariant* variant);
-
-DllExport ProxyComponent* GetClassObject(HMODULE hModule, const WCHAR_T* wsName)
+DllExport ProxyComponent* GetClassObject(
+	HMODULE hModule, 
+	const WCHAR_T* wsName, 
+	ErrorFuncRespond onError = nullptr,
+	EventFuncRespond onEvent = nullptr,
+	StatusFuncRespond onStatus = nullptr
+)
 {
 	auto proc = (GetClassObjectPtr)GetProcAddress(hModule, "GetClassObject");
 	if (proc == nullptr) return nullptr;
 	IComponentBase* pComponent = nullptr;
 	auto ok = proc(wsName, &pComponent);
 	if (ok == 0) return nullptr;
-	return new ProxyComponent(pComponent);
+	return new ProxyComponent(pComponent, onError, onEvent, onStatus);
 }
 
-DllExport long DestroyObject(ProxyComponent* proxy)
+DllExport void DestroyObject(ProxyComponent* proxy)
 {
 	if (proxy) delete proxy;
-	return 0;
 }
 
-DllExport long GetNProps(ProxyComponent* proxy)
+DllExport int32_t GetNProps(ProxyComponent* proxy)
 {
 	CHECK_PROXY(0);
-	return proxy->Interface().GetNProps();
+	return (int32_t)proxy->Component().GetNProps();
 }
 
-DllExport long FindProp(ProxyComponent* proxy, const WCHAR_T* wsPropName)
+DllExport int32_t FindProp(ProxyComponent* proxy, const WCHAR_T* wsPropName)
 {
 	CHECK_PROXY(-1);
-	return proxy->Interface().FindProp(wsPropName);
+	return (int32_t)proxy->Component().FindProp(wsPropName);
 }
 
-DllExport void GetPropName(ProxyComponent* proxy, long lPropNum, long lPropAlias, StringFuncRespond respond)
+DllExport void GetPropName(ProxyComponent* proxy, int32_t lPropNum, int32_t lPropAlias, StringFuncRespond respond)
 {
 	CHECK_PROXY(EMPTY_DEF);
-	auto name = proxy->Interface().GetPropName(lPropNum, lPropAlias);
+	auto name = proxy->Component().GetPropName(lPropNum, lPropAlias);
 	if (name) {
 		respond(name);
 		proxy->FreeMemory((void**)&name);
 	}
 }
 
-DllExport bool GetPropVal(ProxyComponent* proxy, long lPropNum, VariantFuncRespond respond)
+DllExport bool GetPropVal(ProxyComponent* proxy, int32_t lPropNum, VariantFuncRespond respond)
 {
 	CHECK_PROXY(false);
 	tVariant variant = { 0 };
-	auto ok = proxy->Interface().GetPropVal(lPropNum, &variant);
+	auto ok = proxy->Component().GetPropVal(lPropNum, &variant);
 	if (ok) respond(&variant);
 	ClearVariant(variant);
 	return ok;
 }
 
-DllExport bool SetPropVal(ProxyComponent* proxy, long lPropNum, tVariant* variant)
+DllExport bool SetPropVal(ProxyComponent* proxy, int32_t lPropNum, tVariant* variant)
 {
 	CHECK_PROXY(false);
-	auto ok = proxy->Interface().SetPropVal(lPropNum, variant);
+	auto ok = proxy->Component().SetPropVal(lPropNum, variant);
 	return ok;
 }
 
-DllExport bool IsPropReadable(ProxyComponent* proxy, long lPropNum)
+DllExport bool IsPropReadable(ProxyComponent* proxy, int32_t lPropNum)
 {
 	CHECK_PROXY(false);
-	return proxy->Interface().IsPropReadable(lPropNum);
+	return proxy->Component().IsPropReadable(lPropNum);
 }
 
-DllExport bool IsPropWritable(ProxyComponent* proxy, long lPropNum)
+DllExport bool IsPropWritable(ProxyComponent* proxy, int32_t lPropNum)
 {
 	CHECK_PROXY(false);
-	auto res = proxy->Interface().IsPropWritable(lPropNum);
+	auto res = proxy->Component().IsPropWritable(lPropNum);
 	return res;
 }
 
-DllExport long GetNMethods(ProxyComponent* proxy)
+DllExport int32_t GetNMethods(ProxyComponent* proxy)
 {
 	CHECK_PROXY(0);
-	return proxy->Interface().GetNMethods();
+	return (int32_t)proxy->Component().GetNMethods();
 }
 
-DllExport long FindMethod(ProxyComponent* proxy, const WCHAR_T* wsMethodName)
+DllExport int32_t FindMethod(ProxyComponent* proxy, const WCHAR_T* wsMethodName)
 {
 	CHECK_PROXY(-1);
-	return proxy->Interface().FindMethod(wsMethodName);
+	return (int32_t)proxy->Component().FindMethod(wsMethodName);
 }
 
-DllExport void GetMethodName(ProxyComponent* proxy, long lMethodNum, long lMethodAlias, StringFuncRespond respond)
+DllExport void GetMethodName(ProxyComponent* proxy, int32_t lMethodNum, int32_t lMethodAlias, StringFuncRespond respond)
 {
 	CHECK_PROXY(EMPTY_DEF);
-	auto name = proxy->Interface().GetMethodName(lMethodNum, lMethodAlias);
+	auto name = proxy->Component().GetMethodName(lMethodNum, lMethodAlias);
 	if (name) {
 		respond(name);
 		proxy->FreeMemory((void**)&name);
 	}
 }
 
-DllExport long GetNParams(ProxyComponent* proxy, long lMethodNum)
+DllExport int32_t GetNParams(ProxyComponent* proxy, int32_t lMethodNum)
 {
 	CHECK_PROXY(0);
-	return proxy->Interface().GetNParams(lMethodNum);
+	return (int32_t)proxy->Component().GetNParams(lMethodNum);
 }
 
-DllExport bool ADDIN_API GetParamDefValue(ProxyComponent* proxy, long lMethodNum, long lParamNum, VariantFuncRespond respond)
+DllExport bool ADDIN_API GetParamDefValue(ProxyComponent* proxy, int32_t lMethodNum, int32_t lParamNum, VariantFuncRespond respond)
 {
 	CHECK_PROXY(false);
 	tVariant variant = { 0 };
-	auto ok = proxy->Interface().GetParamDefValue(lMethodNum, lParamNum, &variant);
+	auto ok = proxy->Component().GetParamDefValue(lMethodNum, lParamNum, &variant);
 	if (ok) respond(&variant);
 	ClearVariant(variant);
 	return ok;
 }
 
-DllExport bool HasRetVal(ProxyComponent* proxy, long lMethodNum)
+DllExport bool HasRetVal(ProxyComponent* proxy, int32_t lMethodNum)
 {
 	CHECK_PROXY(false);
-	return proxy->Interface().HasRetVal(lMethodNum);
+	return proxy->Component().HasRetVal(lMethodNum);
 }
 
-DllExport bool ADDIN_API CallAsProc(ProxyComponent* proxy, long lMethodNum, tVariant* paParams)
+DllExport bool ADDIN_API CallAsProc(ProxyComponent* proxy, int32_t lMethodNum, tVariant* paParams)
 {
 	CHECK_PROXY(false);
 	auto lSizeArray = GetNParams(proxy, lMethodNum);
-	bool ok = proxy->Interface().CallAsProc(lMethodNum, paParams, lSizeArray);
+	bool ok = proxy->Component().CallAsProc(lMethodNum, paParams, lSizeArray);
 	return ok;
 }
 
-DllExport bool ADDIN_API CallAsFunc(ProxyComponent* proxy, long lMethodNum, tVariant* paParams, VariantFuncRespond respond)
+DllExport bool ADDIN_API CallAsFunc(ProxyComponent* proxy, int32_t lMethodNum, tVariant* paParams, VariantFuncRespond respond)
 {
 	CHECK_PROXY(false);
 	tVariant variant = { 0 };
 	auto lSizeArray = GetNParams(proxy, lMethodNum);
-	bool ok = proxy->Interface().CallAsFunc(lMethodNum, &variant, paParams, lSizeArray);
+	bool ok = proxy->Component().CallAsFunc(lMethodNum, &variant, paParams, lSizeArray);
 	if (ok) respond(&variant);
 	ClearVariant(variant);
 	return ok;
