@@ -172,10 +172,12 @@ namespace ScriptEngine.HostedScript
             
             if(!_customized)
             {
+                LibraryResolver.TraceLoadLibrary(String.Format("Использую штатный package loader"));
                 success = DefaultProcessing(libraryPath);
             }
             else
             {
+                LibraryResolver.TraceLoadLibrary(String.Format("Использую НЕ штатный package loader"));
                 success = CustomizedProcessing(libraryPath);
             }
 
@@ -183,6 +185,8 @@ namespace ScriptEngine.HostedScript
             {
                 var library = new ExternalLibraryDef(Path.GetFileName(libraryPath));
                 CompileDelayedModules(library);
+            } else {
+                LibraryResolver.TraceLoadLibrary(String.Format("!!! - Ошибка работы Package LOADER - библиотека не будет загружена "));
             }
 
             return success;
@@ -214,14 +218,17 @@ namespace ScriptEngine.HostedScript
 
         private bool DefaultProcessing(string libraryPath)
         {
-            var files = Directory.EnumerateFiles(libraryPath, "*.os")
+            var files = Directory.EnumerateFiles(libraryPath, "*.os", SearchOption.AllDirectories)
                 .Select(x => new { Name = Path.GetFileNameWithoutExtension(x), Path = x })
                 .Where(x => Utils.IsValidIdentifier(x.Name));
 
             bool hasFiles = false;
 
+            LibraryResolver.TraceLoadLibrary(String.Format("Модулей в библиотеке {0} - {1}", libraryPath, files.Count()));
+
             foreach (var file in files)
             {
+                LibraryResolver.TraceLoadLibrary(String.Format("Загружаю модуль библиотеки {0}", file.Path));
                 hasFiles = true;
                 AddModule(file.Path, file.Name);
             }

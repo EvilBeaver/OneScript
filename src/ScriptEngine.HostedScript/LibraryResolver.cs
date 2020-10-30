@@ -158,7 +158,9 @@ namespace ScriptEngine.HostedScript
                 loaded = LoadByName(value);
 
             if(!loaded)
-                throw new CompilerException(String.Format("Библиотека не найдена {0}", value));
+                throw new CompilerException(
+                    String.Format("Библиотека не найдена {0}. Текущий каталог {1}", value, Source.SourceDescription)
+                );
 
         }
 
@@ -208,10 +210,13 @@ namespace ScriptEngine.HostedScript
         {
             if (Directory.Exists(libraryPath))
             {
+                TraceLoadLibrary(String.Format("Гружу библиотеку {0}", libraryPath));
                 return LoadLibraryInternal(libraryPath);
             }
 
-            return false;
+            throw new CompilerException(
+                String.Format("Отсутствует библиотека по указанному пути {0}", libraryPath)
+            );
         }
 
         private bool LoadByName(string value)
@@ -246,6 +251,7 @@ namespace ScriptEngine.HostedScript
                                                $"{libStack}");
                 }
                 
+                TraceLoadLibrary(String.Format("Использую уже загруженную библиотеку {0}", existedLib.id));
                 return true;
             }
 
@@ -260,8 +266,10 @@ namespace ScriptEngine.HostedScript
             try
             {
                 _libs.Add(newLib);
+                TraceLoadLibrary(String.Format("Начинаю процессинг {0}", newLib.id));
                 hasFiles = ProcessLibrary(newLib);
                 newLib.state = ProcessingState.Processed;
+                TraceLoadLibrary(String.Format("Окончание процессинга {0}", newLib.state));
             }
             catch (Exception)
             {
@@ -269,6 +277,7 @@ namespace ScriptEngine.HostedScript
                 throw;
             }
 
+            TraceLoadLibrary(String.Format("Библиоткека {0} будет загружена - {1}", newLib.id, hasFiles));
             return hasFiles;
         }
 
@@ -305,6 +314,15 @@ namespace ScriptEngine.HostedScript
                 loader = this.DefaultLoader;
 
             return loader.ProcessLibrary(lib.id);
+        }
+
+        public static void TraceLoadLibrary(string message)
+        {
+            //OSLIB_LOADER_TRACE - по аналогии с Package loader
+            var isTrace = System.Environment.GetEnvironmentVariable("OSLIB_LOADER_TRACE");
+            if (isTrace == "1") {
+                Console.WriteLine(message);
+            }
         }
 
     }
