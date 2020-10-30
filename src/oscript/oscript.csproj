@@ -110,9 +110,15 @@
        TargetPath="..\lib\opm\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <Target AfterTargets="Publish" Name="Install">
+  <Target AfterTargets="Publish" Name="InstallStandartLibrary">
     <Message Importance="High" Text="Installing standart library directly from hub.oscript"/>
     <Exec Command="echo ending publish" />
   </Target>
+
+  <Target Name="ZipArtifacts" AfterTargets="InstallStandartLibrary">
+        <ZipDirectory
+            SourceDirectory="$(PublishDir)..\"
+            DestinationFile="$(PublishDir)\..\..\oscript-$(RuntimeIdentifier).zip" />
+    </Target>
 
 </Project>
