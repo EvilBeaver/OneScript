@@ -58,6 +58,12 @@
        CopyToOutputDirectory="PreserveNewest"
        TargetPath="%(Filename)%(Extension)" />
   </ItemGroup>
+  <ItemGroup>
+     <ContentWithTargetPath 
+       Include="$(OutputPath)oscript.cfg"
+       CopyToOutputDirectory="PreserveNewest"
+       TargetPath="runtime\%(Filename)%(Extension)" />
+  </ItemGroup>
 
   <ItemGroup>
      <ContentWithTargetPath 
