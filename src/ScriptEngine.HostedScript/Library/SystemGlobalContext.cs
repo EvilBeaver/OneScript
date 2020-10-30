@@ -52,7 +52,7 @@ namespace ScriptEngine.HostedScript.Library
         public void InitInstance()
         {
             InitContextVariables();
-            NativeApi.NativeApiFactory.Initialize();
+            NativeApi.NativeApiFactory.Initialize(ApplicationHost);
         }
 
         private void InitContextVariables()

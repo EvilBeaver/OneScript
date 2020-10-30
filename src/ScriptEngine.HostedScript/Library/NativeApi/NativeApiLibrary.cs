@@ -72,9 +72,9 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                 TypeManager.RegisterType($"AddIn.{identifier}.{name}", typeof(NativeApiFactory));
         }
 
-        public IValue CreateComponent(String typeName, String componentName)
+        public IValue CreateComponent(IHostApplication host, String typeName, String componentName)
         {
-            var component = new NativeApiComponent(this, typeName, componentName);
+            var component = new NativeApiComponent(host, this, typeName, componentName);
             _components.Add(component);
             return ValueFactory.Create(component);
         }

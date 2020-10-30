@@ -31,11 +31,14 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         private static readonly Dictionary<string, NativeApiLibrary> _libraries = new Dictionary<string, NativeApiLibrary>();
 
-        internal static void Initialize()
+        private static IHostApplication _host; 
+
+        internal static void Initialize(IHostApplication host)
         {
             foreach (var item in _libraries) 
                 item.Value.Dispose();
             _libraries.Clear();
+            _host = host;
         }
 
         [Machine.Contexts.ScriptConstructor(ParametrizeWithClassName = true)]
@@ -44,7 +47,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             var separator = new char[] { '.' };
             var names = typeName.Split(separator, StringSplitOptions.RemoveEmptyEntries);
             if (names.Length == 3 && _libraries.TryGetValue(names[1], out NativeApiLibrary library))
-                return library.CreateComponent(typeName, names[2]);
+                return library.CreateComponent(_host, typeName, names[2]);
             throw new NotImplementedException();
         }
     }

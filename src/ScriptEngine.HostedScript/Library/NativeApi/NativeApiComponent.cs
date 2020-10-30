@@ -16,6 +16,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// </summary>
     class NativeApiComponent : NativeApiValue, IRuntimeContextInstance, IValue
     {
+        private readonly IHostApplication _host;
         private readonly IntPtr _object;
 
         public override IRuntimeContextInstance AsObject()
@@ -23,12 +24,62 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             return this;
         }
 
-        public NativeApiComponent(NativeApiLibrary library, String typeName, String componentName)
+        private enum ErrorCodes
         {
-            _object = NativeApiProxy.GetClassObject(library.Module, componentName, 
-                (wcode, source, descr, scode) => { },
-                (source, message, data) => { },
-                (status) => { }
+            ADDIN_E_NONE = 1000,
+            ADDIN_E_ORDINARY = 1001,
+            ADDIN_E_ATTENTION = 1002,
+            ADDIN_E_IMPORTANT = 1003,
+            ADDIN_E_VERY_IMPORTANT = 1004,
+            ADDIN_E_INFO = 1005,
+            ADDIN_E_FAIL = 1006,
+            ADDIN_E_MSGBOX_ATTENTION = 1007,
+            ADDIN_E_MSGBOX_INFO = 1008,
+            ADDIN_E_MSGBOX_FAIL = 1009,
+        }
+
+        private String S(IntPtr ptr)
+        {
+            return NativeApiProxy.Str(ptr);
+        }
+
+        private MessageStatusEnum Status(UInt16 wcode)
+        {
+            switch ((ErrorCodes)wcode)
+            {
+                case ErrorCodes.ADDIN_E_NONE:
+                    return MessageStatusEnum.WithoutStatus;
+                case ErrorCodes.ADDIN_E_ORDINARY:
+                    return MessageStatusEnum.Ordinary;
+                case ErrorCodes.ADDIN_E_IMPORTANT:
+                    return MessageStatusEnum.Important;
+                case ErrorCodes.ADDIN_E_INFO:
+                    return MessageStatusEnum.Information;
+                case ErrorCodes.ADDIN_E_VERY_IMPORTANT:
+                    return MessageStatusEnum.VeryImportant;
+                case ErrorCodes.ADDIN_E_ATTENTION:
+                case ErrorCodes.ADDIN_E_MSGBOX_INFO:
+                case ErrorCodes.ADDIN_E_MSGBOX_FAIL:
+                    return MessageStatusEnum.Attention;
+                default:
+                    return MessageStatusEnum.Ordinary;
+            }
+        }
+
+        public NativeApiComponent(IHostApplication host, NativeApiLibrary library, String typeName, String componentName)
+        {
+            _host = host;
+            _object = NativeApiProxy.GetClassObject(library.Module, componentName,
+                (wcode, source, descr, scode) =>
+                {
+                    _host.Echo("ОШИБКА: " + S(source) + " - " + S(descr), Status(wcode));
+                },
+                (source, message, data) => {
+                    _host.Echo("СОБЫТИЕ: " + S(source) + " - " + S(message) + " - " + S(data));
+                },
+                (status) => {
+                    _host.Echo("СТАТУС: " + S(status));
+                }
             );
             DefineType(TypeManager.GetTypeByName(typeName));
         }
