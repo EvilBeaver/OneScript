@@ -115,12 +115,15 @@ namespace ScriptEngine.HostedScript
         {
 
             var loaderscript = Path.Combine(LibraryRoot, PREDEFINED_LOADER_FILE);
+            TraceLoadLibrary(String.Format("Путь поиска package-loader.os {0}", loaderscript));
             if (File.Exists(loaderscript))
             {
+                TraceLoadLibrary(String.Format("Загружен package-loader по адресу {0}", loaderscript));
                 _defaultLoader = LibraryLoader.Create(_engine, _env, loaderscript);
             }
             else
             {
+                TraceLoadLibrary(String.Format("Загружен package-loader по умолчанию"));
                 _defaultLoader = LibraryLoader.Create(_engine, _env);
             }
         }

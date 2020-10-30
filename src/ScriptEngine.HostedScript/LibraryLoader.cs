@@ -106,6 +106,7 @@ namespace ScriptEngine.HostedScript
 
             try
             {
+                LibraryResolver.TraceLoadLibrary(String.Format("Гружу модуль в область видимости {0}", moduleName));
                 _env.InjectGlobalProperty(null, moduleName, true);
             }
             catch (InvalidOperationException e)

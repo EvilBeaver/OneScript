@@ -35,6 +35,12 @@ namespace ScriptEngine.HostedScript
             if (String.IsNullOrEmpty(asmLocation))
                 asmLocation = System.Reflection.Assembly.GetEntryAssembly().Location;
 
+            if (String.IsNullOrEmpty(asmLocation))
+                asmLocation = System.Reflection.Assembly.GetCallingAssembly().Location;
+
+            if (String.IsNullOrEmpty(asmLocation))
+                asmLocation = AppDomain.CurrentDomain.BaseDirectory;
+
             var assemblyPath = System.IO.Path.GetDirectoryName(asmLocation);
             var configFile = System.IO.Path.Combine(assemblyPath, CONFIG_FILE_NAME);
             if (System.IO.File.Exists(configFile))
