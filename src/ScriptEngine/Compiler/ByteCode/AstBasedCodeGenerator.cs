@@ -203,8 +203,8 @@ namespace ScriptEngine.Compiler.ByteCode
                 var anotherMethod = _ctx.GetMethod(signature.MethodName);
                 
                 var err = new CompilerException(
-                    Locale.NStr($"ru = 'AST: Метод с таким именем уже определен: {signature.MethodName} в контексте {anotherMethod.ContextIndex}' по коду {anotherMethod.CodeIndex};"+
-                                $"en = 'AST: Method is already defined {signature.MethodName} in context {anotherMethod.ContextIndex}' with code {anotherMethod.CodeIndex}")
+                    Locale.NStr($"ru = 'AST: Метод с таким именем уже определен: {signature.MethodName} в контексте {anotherMethod.ContextIndex} по коду {anotherMethod.CodeIndex};'"+
+                                $"en = 'AST: Method is already defined {signature.MethodName} in context {anotherMethod.ContextIndex}' with code {anotherMethod.CodeIndex}'")
                 );
                 AddError(CompilerException.AppendCodeInfo(err, MakeCodePosition(signature.Location)));
                 return;
