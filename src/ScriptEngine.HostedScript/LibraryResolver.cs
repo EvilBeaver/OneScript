@@ -269,6 +269,7 @@ namespace ScriptEngine.HostedScript
             try
             {
                 _libs.Add(newLib);
+                
                 TraceLoadLibrary(String.Format("Начинаю процессинг {0}", newLib.id));
                 hasFiles = ProcessLibrary(newLib);
                 newLib.state = ProcessingState.Processed;
@@ -280,7 +281,10 @@ namespace ScriptEngine.HostedScript
                 throw;
             }
 
-            TraceLoadLibrary(String.Format("Библиоткека {0} будет загружена - {1}", newLib.id, hasFiles));
+            TraceLoadLibrary(
+                Locale.NStr($"ru = 'LRE: Библиоткека {newLib.id} будет загружена - {hasFiles}';"+
+                            $"en = 'LRE: Library {newLib.id} will be loaded - {hasFiles}'")    
+            );
             return hasFiles;
         }
 
