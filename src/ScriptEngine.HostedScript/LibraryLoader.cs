@@ -173,7 +173,6 @@ namespace ScriptEngine.HostedScript
             
             if(!_customized)
             {
-                LibraryResolver.TraceLoadLibrary(String.Format("Использую штатный package loader"));
                 LibraryResolver.TraceLoadLibrary(
                     Locale.NStr($"ru = 'LRE: Использую не кастомизированный загрузчик пакетов по умолчанию';"+
                                 $"en = 'LRE: Use NOT customized package loader'")    

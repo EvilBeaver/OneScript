@@ -197,10 +197,15 @@ namespace ScriptEngine.Compiler.ByteCode
         {
             _isCodeEntered = true;
             var signature = methodNode.Signature;
+            
             if (_ctx.TryGetMethod(signature.MethodName, out _))
             {
-                var err = new CompilerException(Locale.NStr($"ru = 'AST: Метод с таким именем уже определен: {signature.MethodName}';"+
-                                                            $"en = 'AST: Method is already defined {signature.MethodName}'"));
+                var anotherMethod = _ctx.GetMethod(signature.MethodName);
+                
+                var err = new CompilerException(
+                    Locale.NStr($"ru = 'AST: Метод с таким именем уже определен: {signature.MethodName} в контексте {anotherMethod.ContextIndex}' по коду {anotherMethod.CodeIndex};"+
+                                $"en = 'AST: Method is already defined {signature.MethodName} in context {anotherMethod.ContextIndex}' with code {anotherMethod.CodeIndex}")
+                );
                 AddError(CompilerException.AppendCodeInfo(err, MakeCodePosition(signature.Location)));
                 return;
             }
