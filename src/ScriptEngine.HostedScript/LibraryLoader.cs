@@ -174,11 +174,18 @@ namespace ScriptEngine.HostedScript
             if(!_customized)
             {
                 LibraryResolver.TraceLoadLibrary(String.Format("Использую штатный package loader"));
+                LibraryResolver.TraceLoadLibrary(
+                    Locale.NStr($"ru = 'LRE: Использую не кастомизированный загрузчик пакетов по умолчанию';"+
+                                $"en = 'LRE: Use NOT customized package loader'")    
+                );
                 success = DefaultProcessing(libraryPath);
             }
             else
             {
-                LibraryResolver.TraceLoadLibrary(String.Format("Использую НЕ штатный package loader"));
+                LibraryResolver.TraceLoadLibrary(
+                    Locale.NStr($"ru = 'LRE: Использую Кастомизированный загрузчик пакетов';"+
+                                $"en = 'LRE: Use Customized package loader'")
+                );
                 success = CustomizedProcessing(libraryPath);
             }
 
