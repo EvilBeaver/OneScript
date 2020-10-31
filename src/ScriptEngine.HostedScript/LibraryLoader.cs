@@ -219,7 +219,7 @@ namespace ScriptEngine.HostedScript
 
         private bool DefaultProcessing(string libraryPath)
         {
-            var files = Directory.EnumerateFiles(libraryPath, "*.os", SearchOption.AllDirectories)
+            var files = Directory.EnumerateFiles(libraryPath, "*.os")
                 .Select(x => new { Name = Path.GetFileNameWithoutExtension(x), Path = x })
                 .Where(x => Utils.IsValidIdentifier(x.Name));
 
