@@ -89,6 +89,8 @@ namespace OneScript.Language.LexicalAnalysis
         {
             if (_blocks.Count > 0)
                 _blocks.Pop();
+            else
+                throw PreprocessorError("Пропущена директива #Если");
         }
 
         private int BlockLevel()
@@ -222,6 +224,12 @@ namespace OneScript.Language.LexicalAnalysis
 
             if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
                 return Preprocess(_lastExtractedLexem);
+
+            if (_lastExtractedLexem.Type == LexemType.EndOfText)
+            {
+                if (BlockLevel()!=0)
+                    throw PreprocessorError("Ожидается директива препроцессора #КонецЕсли");
+            }
 
             return _lastExtractedLexem;
         }

@@ -29,13 +29,7 @@ namespace ScriptEngine.Environment
             }
         }
 
-        string ICodeSource.SourceDescription
-        {
-            get
-            {
-                return "<string>";
-            }
-        }
+        string ICodeSource.SourceDescription => $"<string {_src.GetHashCode().ToString("X8")}>" ;
 
         #endregion
 
