@@ -15,7 +15,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// </summary>
     class NativeApiKernel
     {
-        protected const String KernelDll = "kernel32.dll";
+        private const String KernelDll = "kernel32.dll";
 
         [DllImport(KernelDll, SetLastError = true, CharSet = CharSet.Unicode)]
         protected static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPWStr)] string lpLibFileName);
@@ -25,5 +25,16 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         [DllImport(KernelDll, SetLastError = true, CharSet = CharSet.Unicode)]
         protected static extern bool FreeLibrary(IntPtr _module);
+
+        private const String libdl = "libdl.so";
+
+        [DllImport(libdl)]
+        protected static extern IntPtr dlopen(string filename, int flags);
+
+        [DllImport(libdl)]
+        protected static extern IntPtr dlsym(IntPtr handle, string symbol);
+
+        [DllImport(libdl)]
+        protected static extern IntPtr dlclose(IntPtr handle);
     }
 }
