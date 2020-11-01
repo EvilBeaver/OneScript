@@ -1,6 +1,10 @@
 #ifndef NATIVEINTERFACE_H
 #define NATIVEINTERFACE_H
 
+#ifndef _WINDOWS
+#define _stdcall
+#endif//_WINDOWS
+
 #include "include/AddInDefBase.h"
 
 typedef void(_stdcall* ErrorFuncRespond) (unsigned short wcode, const WCHAR_T* source, const WCHAR_T* descr, long scode);

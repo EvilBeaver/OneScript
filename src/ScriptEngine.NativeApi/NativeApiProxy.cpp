@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+#ifdef _WINDOWS
+
 #include <windows.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
@@ -22,6 +24,15 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 }
 
 #define DllExport extern "C" __declspec(dllexport)
+
+#else
+
+#define DllExport extern "C"
+
+#include <unistd.h>
+#include <stdlib.h>
+
+#endif//_WINDOWS
 
 #define CHECK_PROXY(result) { if (proxy == nullptr) return result; }
 
@@ -58,10 +69,20 @@ public:
 		delete pComponent;
 	}
 	virtual bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) override {
+		#ifdef _WINDOWS
 		return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
+		#else
+		return *pMemory = calloc(1, ulCountByte);
+		#endif//_WINDOWS
 	}
 	virtual void ADDIN_API FreeMemory(void** pMemory) override {
+		#ifdef _WINDOWS
 		LocalFree(*pMemory);
+		*pMemory = nullptr;
+		#else
+		free(*pMemory);
+		*pMemory = nullptr;
+		#endif//_WINDOWS
 	}
 	IComponentBase& Component() {
 		return *pComponent;
@@ -71,19 +92,19 @@ public:
 static void ClearVariant(tVariant& variant)
 {
 	switch (variant.vt) {
-	case VT_BLOB:
-	case VT_LPSTR:
+	case VTYPE_BLOB:
+	case VTYPE_PSTR:
 		free(variant.pstrVal);
 		variant.pstrVal = nullptr;
 		variant.strLen = 0;
 		break;
-	case VT_LPWSTR:
+	case VTYPE_PWSTR:
 		free(variant.pwstrVal);
 		variant.pwstrVal = nullptr;
 		variant.wstrLen = 0;
 		break;
 	}
-	variant.vt = VT_EMPTY;
+	variant.vt = VTYPE_EMPTY;
 }
 
 DllExport ProxyComponent* GetClassObject(
