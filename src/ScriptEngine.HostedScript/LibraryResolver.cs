@@ -270,10 +270,12 @@ namespace ScriptEngine.HostedScript
             {
                 _libs.Add(newLib);
                 
-                TraceLoadLibrary(String.Format("Начинаю процессинг {0}", newLib.id));
+                TraceLoadLibrary(
+                    Locale.NStr($"ru = 'LRE: Начинаю процессинг {newLib.id}';"+
+                                $"en = 'LRE: Start processing {newLib.id}'")
+                );
                 hasFiles = ProcessLibrary(newLib);
                 newLib.state = ProcessingState.Processed;
-                TraceLoadLibrary(String.Format("Окончание процессинга {0}", newLib.state));
             }
             catch (Exception)
             {
