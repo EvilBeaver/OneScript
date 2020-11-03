@@ -118,7 +118,7 @@ namespace ScriptEngine.HostedScript.Library
                 {
                     return (CLREnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.ForegroundColor);
                 }
-                catch
+                catch (InvalidOperationException)
                 {
                     return null;
                 }
@@ -139,7 +139,7 @@ namespace ScriptEngine.HostedScript.Library
                 {
                     return (CLREnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
                 }
-                catch
+                catch (InvalidOperationException)
                 {
                     return null;
                 }
