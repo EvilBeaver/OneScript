@@ -62,7 +62,7 @@
      <ContentWithTargetPath 
        Include="$(OutputPath)oscript.cfg"
        CopyToOutputDirectory="PreserveNewest"
-       TargetPath="runtime\%(Filename)%(Extension)" />
+       TargetPath="%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
