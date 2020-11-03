@@ -3,8 +3,8 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
-    <BeautyLibsDir>runtime</BeautyLibsDir>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <!--<BeautyLibsDir>runtime</BeautyLibsDir>-->
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>oscript.Program</StartupObject>
@@ -29,7 +29,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="nulastudio.NetCoreBeauty" Version="1.2.9"/>
+    <!--<PackageReference Include="nulastudio.NetCoreBeauty" Version="1.2.9"/>-->
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
