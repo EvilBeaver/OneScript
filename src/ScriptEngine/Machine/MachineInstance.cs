@@ -168,6 +168,8 @@ namespace ScriptEngine.Machine
             return asyncTask;
         }
         
+        public bool IsRunning => _callStack.Count != 0;
+        
         internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
             PrepareReentrantMethodExecution(sdo, methodIndex);

@@ -16,6 +16,9 @@ namespace ScriptEngine.Environment
         [NonSerialized]
         private ISourceCodeIndexer _codeIndexer;
 
+        /// <summary>
+        /// Имя модуля с точки зрения приложения. Справочник.Контрагенты.МодульОбъекта
+        /// </summary>
         public string ModuleName { get; set; }
 
         public ISourceCodeIndexer CodeIndexer
@@ -24,6 +27,9 @@ namespace ScriptEngine.Environment
             set => _codeIndexer = value;
         }
 
+        /// <summary>
+        /// Происхождение-расположение модуля. Файловый путь или какой-то другой идентификатор места
+        /// </summary>
         public string Origin { get; set; }
 
         public override string ToString()

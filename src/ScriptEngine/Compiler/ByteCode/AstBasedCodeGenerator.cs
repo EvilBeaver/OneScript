@@ -198,18 +198,6 @@ namespace ScriptEngine.Compiler.ByteCode
             _isCodeEntered = true;
             var signature = methodNode.Signature;
             
-            if (_ctx.TryGetMethod(signature.MethodName, out _))
-            {
-                var anotherMethod = _ctx.GetMethod(signature.MethodName);
-                
-                var err = new CompilerException(
-                    Locale.NStr($"ru = 'AST: Метод с таким именем уже определен: {signature.MethodName} в контексте {anotherMethod.ContextIndex} по коду {anotherMethod.CodeIndex};'"+
-                                $"en = 'AST: Method is already defined {signature.MethodName} in context {anotherMethod.ContextIndex}' with code {anotherMethod.CodeIndex}'")
-                );
-                AddError(CompilerException.AppendCodeInfo(err, MakeCodePosition(signature.Location)));
-                return;
-            }
-            
             MethodInfo method = new MethodInfo();
             method.Name = signature.MethodName;
             method.IsFunction = signature.IsFunction;
@@ -257,7 +245,17 @@ namespace ScriptEngine.Compiler.ByteCode
             FillVariablesFrame(ref descriptor, methodCtx);
 
             SymbolBinding binding;
-            binding = _ctx.DefineMethod(method);
+            try
+            {
+                binding = _ctx.DefineMethod(method);
+            }
+            catch (CompilerException)
+            {
+                var err = new CompilerException(Locale.NStr($"ru = 'Метод с таким именем уже определен: {signature.MethodName}';"+
+                                                            $"en = 'Method is already defined {signature.MethodName}'"));
+                AddError(CompilerException.AppendCodeInfo(err, MakeCodePosition(signature.Location)));
+                binding = default;
+            }
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(descriptor);
 
@@ -849,16 +847,30 @@ namespace ScriptEngine.Compiler.ByteCode
 
         protected override void VisitHandlerOperation(BslSyntaxNode node)
         {
-            var (srcValue, eventName) = SplitExpressionAndName(node);
+            var (srcValue, eventName) = SplitExpressionAndName(node.Children[0]);
             VisitExpression(srcValue);
             VisitConstant(eventName);
+
+            var handlerNode = node.Children[1];
+            if(handlerNode.Kind == NodeKind.Identifier)
+                VisitConstant((TerminalNode)handlerNode);
+            else
+            {
+                var (handler, procedureName) = SplitExpressionAndName(node.Children[1]);
+                VisitExpression(handler);
+                VisitConstant(procedureName);
+            }
+
             AddCommand(node.Kind == NodeKind.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static (BslSyntaxNode, TerminalNode) SplitExpressionAndName(BslSyntaxNode node)
+        private static (BslSyntaxNode, Lexem) SplitExpressionAndName(BslSyntaxNode node)
         {
-            return (node.Children[0], (TerminalNode) node.Children[1]);
+            var term = (TerminalNode) node.Children[1];
+            var lex = term.Lexem;
+            lex.Type = LexemType.StringLiteral;
+            return (node.Children[0], lex);
         }
 
         protected override void VisitNewObjectCreation(NewObjectNode node)
@@ -986,6 +998,13 @@ namespace ScriptEngine.Compiler.ByteCode
         protected override void VisitConstant(TerminalNode node)
         {
             var cDef = CreateConstDefinition(node.Lexem);
+            var num = GetConstNumber(cDef);
+            AddCommand(OperationCode.PushConst, num);
+        }
+        
+        private void VisitConstant(in Lexem constant)
+        {
+            var cDef = CreateConstDefinition(constant);
             var num = GetConstNumber(cDef);
             AddCommand(OperationCode.PushConst, num);
         }
