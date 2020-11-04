@@ -98,9 +98,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)x64\Debug\ScriptEngine.NativeApi.dll" "$(SolutionDir)TestApp\bin\Debug\net452\"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -121,9 +118,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)x64\Debug\ScriptEngine.NativeApi.dll" "$(SolutionDir)TestApp\bin\Debug\net452\"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -163,9 +157,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)x64\Debug\ScriptEngine.NativeApi.dll" "$(SolutionDir)TestApp\bin\Debug\net452\"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="NativeApiProxy.cpp" />
