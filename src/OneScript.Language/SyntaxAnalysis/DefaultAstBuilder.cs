@@ -100,37 +100,5 @@ namespace OneScript.Language.SyntaxAnalysis
             if(ThrowOnError)
                 throw new SyntaxErrorException(error);
         }
-
-        public BslSyntaxNode ParsePreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)
-        {
-            var node = new PreprocessorDirectiveNode(lastExtractedLexem);
-            ReadToLineEnd(lexer);
-
-            var value = lexer.Iterator.GetContents().TrimEnd();
-            if (!string.IsNullOrEmpty(value))
-            {
-                var lex = new Lexem
-                {
-                    Location = new CodeRange(lexer.CurrentLine, lexer.CurrentColumn),
-                    Type = LexemType.NotALexem,
-                    Content = value
-                };
-
-                node.AddChild(new TerminalNode(NodeKind.Unknown, lex));
-            }
-
-            lastExtractedLexem = lexer.NextLexem();
-
-            return node;
-        }
-        
-        private void ReadToLineEnd(ILexemGenerator lexer)
-        {
-            char cs;
-            do
-            {
-                cs = lexer.Iterator.CurrentSymbol;
-            } while (cs != '\n' && lexer.Iterator.MoveNext());
-        }
     }
 }

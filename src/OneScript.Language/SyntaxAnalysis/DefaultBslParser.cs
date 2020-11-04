@@ -28,7 +28,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private bool _isInFunctionScope = false;
         private bool _lastDereferenceIsWritable = false;
 
-        private Stack<BslSyntaxNode> _parsingContext = new Stack<BslSyntaxNode>();
+        private readonly Stack<BslSyntaxNode> _parsingContext = new Stack<BslSyntaxNode>();
         
         private readonly List<ParseError> _errors = new List<ParseError>();
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
@@ -103,6 +103,8 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private BslSyntaxNode CurrentParent => _parsingContext.Peek();
 
+        public Stack<BslSyntaxNode> ParsingContext => _parsingContext;
+
         private void ParseModuleSections()
         {
             BuildVariableSection();
@@ -119,7 +121,6 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildVariableSection()
         {
-            ParseDirectives();
             if (_lastExtractedLexem.Token != Token.VarDef && _lastExtractedLexem.Type != LexemType.Annotation)
             {
                 return;
@@ -153,18 +154,6 @@ namespace OneScript.Language.SyntaxAnalysis
             finally
             {
                 PopContext();
-            }
-        }
-
-        private void ParseDirectives()
-        {
-            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-            {
-                var node = _builder.ParsePreprocessorDirective(_lexer, ref _lastExtractedLexem);
-                if (node != default)
-                {
-                    _builder.AddChild(CurrentParent, node);
-                }
             }
         }
 
@@ -253,7 +242,6 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildMethodsSection()
         {
-            ParseDirectives();
             if (_lastExtractedLexem.Type != LexemType.Annotation 
                 && _lastExtractedLexem.Token != Token.Procedure 
                 && _lastExtractedLexem.Token != Token.Function)
@@ -553,7 +541,6 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildCodeBatch(params Token[] endTokens)
         {
-            ParseDirectives();
             PushStructureToken(endTokens);
 
             while (true)
@@ -1425,11 +1412,6 @@ namespace OneScript.Language.SyntaxAnalysis
                 if(additionalStops != null && additionalStops.Contains(_lastExtractedLexem.Token) )
                 {
                     break;
-                }
-                
-                if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-                {
-                    _builder.ParsePreprocessorDirective(_lexer, ref _lastExtractedLexem);
                 }
             }
         }
