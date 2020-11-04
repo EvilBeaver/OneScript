@@ -197,13 +197,6 @@ namespace ScriptEngine.Compiler.ByteCode
         {
             _isCodeEntered = true;
             var signature = methodNode.Signature;
-            if (_ctx.TryGetMethod(signature.MethodName, out _))
-            {
-                var err = new CompilerException(Locale.NStr($"ru = 'Метод с таким именем уже определен: {signature.MethodName}';"+
-                                                            $"en = 'Method is already defined {signature.MethodName}'"));
-                AddError(CompilerException.AppendCodeInfo(err, MakeCodePosition(signature.Location)));
-                return;
-            }
             
             MethodInfo method = new MethodInfo();
             method.Name = signature.MethodName;
@@ -252,7 +245,17 @@ namespace ScriptEngine.Compiler.ByteCode
             FillVariablesFrame(ref descriptor, methodCtx);
 
             SymbolBinding binding;
-            binding = _ctx.DefineMethod(method);
+            try
+            {
+                binding = _ctx.DefineMethod(method);
+            }
+            catch (CompilerException)
+            {
+                var err = new CompilerException(Locale.NStr($"ru = 'Метод с таким именем уже определен: {signature.MethodName}';"+
+                                                            $"en = 'Method is already defined {signature.MethodName}'"));
+                AddError(CompilerException.AppendCodeInfo(err, MakeCodePosition(signature.Location)));
+                binding = default;
+            }
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(descriptor);
 
