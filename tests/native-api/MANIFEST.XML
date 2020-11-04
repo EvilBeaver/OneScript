@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<bundle xmlns="http://v8.1c.ru/8.2/addin/bundle">
+  <component os="Windows" path="AddInNativeWin32.dll" type="native" arch="i386"/>
+  <component os="Windows" path="AddInNativeWin64.dll" type="native" arch="x86_64"/>
+  <component os="Linux" path="libAddInNativeLin32.so" type="native" arch="i386"/>
+  <component os="Linux" path="libAddInNativeLin64.so" type="native" arch="x86_64"/>
+</bundle>
