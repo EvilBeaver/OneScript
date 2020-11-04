@@ -27,7 +27,6 @@
 
 static const wchar_t *g_PropNames[] = {
     L"IsEnabled", 
-    L"IsTimerPresent"
 };
 
 static const wchar_t *g_MethodNames[] = {
@@ -43,7 +42,6 @@ static const wchar_t *g_MethodNames[] = {
 
 static const wchar_t *g_PropNamesRu[] = {
     L"Включен", 
-    L"ЕстьТаймер"
 };
 static const wchar_t *g_MethodNamesRu[] = {
     L"Включить", 
@@ -108,9 +106,6 @@ CAddInNative::CAddInNative()
 {
     m_iMemory = 0;
     m_iConnect = 0;
-#if !defined( __linux__ ) && !defined(__APPLE__)
-    m_hTimerQueue = 0;
-#endif //__linux__
 }
 //---------------------------------------------------------------------------//
 CAddInNative::~CAddInNative()
@@ -132,13 +127,6 @@ long CAddInNative::GetInfo()
 //---------------------------------------------------------------------------//
 void CAddInNative::Done()
 {
-#if !defined( __linux__ ) && !defined(__APPLE__)
-    if(m_hTimerQueue )
-    {
-        DeleteTimerQueue(m_hTimerQueue);
-        m_hTimerQueue = 0;
-    }
-#endif //__linux__
 }
 /////////////////////////////////////////////////////////////////////////////
 // ILanguageExtenderBase
@@ -219,11 +207,7 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
     {
     case ePropIsEnabled:
         TV_VT(pvarPropVal) = VTYPE_BOOL;
-        TV_BOOL(pvarPropVal) = m_boolEnabled;
-        break;
-    case ePropIsTimerPresent:
-        TV_VT(pvarPropVal) = VTYPE_BOOL;
-        TV_BOOL(pvarPropVal) = true;
+        TV_BOOL(pvarPropVal) = m_Enabled;
         break;
     default:
         return false;
@@ -239,9 +223,8 @@ bool CAddInNative::SetPropVal(const long lPropNum, tVariant *varPropVal)
     case ePropIsEnabled:
         if (TV_VT(varPropVal) != VTYPE_BOOL)
             return false;
-        m_boolEnabled = TV_BOOL(varPropVal);
+        m_Enabled = TV_BOOL(varPropVal);
         break;
-    case ePropIsTimerPresent:
     default:
         return false;
     }
@@ -254,7 +237,6 @@ bool CAddInNative::IsPropReadable(const long lPropNum)
     switch(lPropNum)
     { 
     case ePropIsEnabled:
-    case ePropIsTimerPresent:
         return true;
     default:
         return false;
@@ -269,8 +251,6 @@ bool CAddInNative::IsPropWritable(const long lPropNum)
     { 
     case ePropIsEnabled:
         return true;
-    case ePropIsTimerPresent:
-        return false;
     default:
         return false;
     }
@@ -359,8 +339,6 @@ bool CAddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum,
     case eMethEnable:
     case eMethDisable:
     case eMethShowInStatusLine:
-    case eMethStartTimer:
-    case eMethStopTimer:
     case eMethShowMsgBox:
         // There are no parameter values by default 
         break;
@@ -391,10 +369,10 @@ bool CAddInNative::CallAsProc(const long lMethodNum,
     switch(lMethodNum)
     { 
     case eMethEnable:
-        m_boolEnabled = true;
+        m_Enabled = true;
         break;
     case eMethDisable:
-        m_boolEnabled = false;
+        m_Enabled = false;
         break;
     case eMethShowInStatusLine:
         if (m_iConnect && lSizeArray)
@@ -402,44 +380,6 @@ bool CAddInNative::CallAsProc(const long lMethodNum,
             tVariant *var = paParams;
             m_iConnect->SetStatusLine(var->pwstrVal);
         }
-        break;
-    case eMethStartTimer:
-        pAsyncEvent = m_iConnect;
-        /* The task of length of turn of messages
-        if (m_iConnect)
-            m_iConnect->SetEventBufferDepth(4000);
-        */
-#if !defined( __linux__ ) && !defined(__APPLE__)
-        m_hTimerQueue = CreateTimerQueue();
-        CreateTimerQueueTimer( &m_hTimer, m_hTimerQueue, 
-            (WAITORTIMERCALLBACK)MyTimerProc, 0, 1000, 1000, 0);
-#else
-        struct sigaction sa;
-        struct itimerval tv;
-        memset(&tv, 0, sizeof(tv));
-
-        sa.sa_handler = MyTimerProc;
-        sigemptyset(&sa.sa_mask);
-        sa.sa_flags = SA_RESTART; 
-        sigaction(SIGALRM, &sa, NULL);
-        tv.it_interval.tv_sec = 1;
-        tv.it_value.tv_sec = 1;
-        setitimer(ITIMER_REAL, &tv, NULL);
-#endif
-        break;
-    case eMethStopTimer:
-#if !defined( __linux__ ) && !defined(__APPLE__)
-        if (m_hTimer != 0)
-        {
-            DeleteTimerQueue(m_hTimerQueue);
-            m_hTimerQueue = 0;
-            m_hTimer = 0;
-        }
-#else
-        alarm(0);
-#endif
-        m_uiTimer = 0;
-        pAsyncEvent = NULL;
         break;
     case eMethShowMsgBox:
         {
@@ -587,56 +527,6 @@ bool CAddInNative::CallAsFunc(const long lMethodNum,
     }
     return ret; 
 }
-//---------------------------------------------------------------------------//
-// This code will work only on the client!
-#if !defined( __linux__ ) && !defined(__APPLE__)
-VOID CALLBACK MyTimerProc(PVOID lpParam, BOOLEAN TimerOrWaitFired)
-{
-    if (!pAsyncEvent)
-        return;
-    DWORD dwTime = 0;
-    wchar_t *who = L"ComponentNative", *what = L"Timer";
-
-    wchar_t *wstime = new wchar_t[TIME_LEN];
-    if (wstime)
-    {
-        wmemset(wstime, 0, TIME_LEN);
-        time_t vtime;
-        time(&vtime);
-        ::_ui64tow_s(vtime, wstime, TIME_LEN, 10);
-        pAsyncEvent->ExternalEvent(who, what, wstime);
-        delete[] wstime;
-    }
-}
-#else
-void MyTimerProc(int sig)
-{
-    if (!pAsyncEvent)
-        return;
-
-    WCHAR_T *who = 0, *what = 0, *wdata = 0;
-    wchar_t *data = 0;
-    time_t dwTime = time(NULL);
-
-    data = new wchar_t[TIME_LEN];
-    
-    if (data)
-    {
-        wmemset(data, 0, TIME_LEN);
-        swprintf(data, TIME_LEN, L"%ul", dwTime);
-        ::convToShortWchar(&who, L"ComponentNative");
-        ::convToShortWchar(&what, L"Timer");
-        ::convToShortWchar(&wdata, data);
-
-        pAsyncEvent->ExternalEvent(who, what, wdata);
-
-        delete[] who;
-        delete[] what;
-        delete[] wdata;
-        delete[] data;
-    }
-}
-#endif
 //---------------------------------------------------------------------------//
 void CAddInNative::SetLocale(const WCHAR_T* loc)
 {

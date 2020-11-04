@@ -13,7 +13,6 @@ public:
     enum Props
     {
         ePropIsEnabled = 0,
-        ePropIsTimerPresent,
         ePropLast      // Always last
     };
 
@@ -22,8 +21,6 @@ public:
         eMethEnable = 0,
         eMethDisable,
         eMethShowInStatusLine,
-        eMethStartTimer,
-        eMethStopTimer,
         eMethLoadPicture,
         eMethShowMsgBox,
         eLoopback,
@@ -59,18 +56,10 @@ public:
     
 private:
     long findName(const wchar_t* names[], const wchar_t* name, const uint32_t size) const;
-    void addError(uint32_t wcode, const wchar_t* source, 
-                    const wchar_t* descriptor, long code);
-    // Attributes
+    void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
     IAddInDefBase      *m_iConnect;
     IMemoryManager     *m_iMemory;
-
-    bool                m_boolEnabled;
-    uint32_t            m_uiTimer;
-#if !defined( __linux__ ) && !defined(__APPLE__)
-    HANDLE              m_hTimer;
-    HANDLE              m_hTimerQueue;
-#endif //__linux__
+    bool m_Enabled = false;
 };
 
 class WcharWrapper
