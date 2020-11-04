@@ -47,7 +47,7 @@ namespace ScriptEngine.HostedScript.Library.Regex
         [ContextMethod("НайтиСовпадения", "Matches")]
         public MatchCollection Matches(string inputString, int startAt = 0)
         {
-            return new MatchCollection(_regex.Matches(inputString, startAt));
+            return new MatchCollection(_regex.Matches(inputString, startAt), _regex);
         }
 
         /// <summary>
