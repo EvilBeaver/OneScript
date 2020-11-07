@@ -21,9 +21,12 @@ namespace OneScript.Language.LexicalAnalysis
                 throw CreateExceptionOnCurrentLine("Недопустимое начало директивы препроцессора", iterator);
 
             iterator.MoveNext();
+            var position = iterator.GetPositionInfo();
             if (!iterator.MoveToContent())
-                throw CreateExceptionOnCurrentLine("Ожидается директива", iterator);
-            
+                throw CreateExceptionOnCurrentLine("Ожидается директива препроцессора", iterator);
+            if (position.LineNumber != iterator.CurrentLine)
+                throw new SyntaxErrorException(position, "Ожидается директива препроцессора");
+
             if (!Char.IsLetter(iterator.CurrentSymbol))
                 throw CreateExceptionOnCurrentLine("Ожидается директива препроцессора", iterator);
             
@@ -32,7 +35,6 @@ namespace OneScript.Language.LexicalAnalysis
             lex.Type = LexemType.PreprocessorDirective;
 
             return lex;
-
         }
     }
 }
