@@ -44,8 +44,6 @@ static const wchar_t* g_MethodNames[] = {
 	L"Disable",
 	L"DefaultParam",
 	L"ShowInStatusLine",
-	L"StartTimer",
-	L"StopTimer",
 	L"LoadPicture",
 	L"ShowMessageBox",
 	L"Loopback"
@@ -56,8 +54,6 @@ static const wchar_t* g_MethodNamesRu[] = {
 	L"Выключить",
 	L"ПараметрПоУмолчанию",
 	L"ПоказатьВСтрокеСтатуса",
-	L"СтартТаймер",
-	L"СтопТаймер",
 	L"ЗагрузитьКартинку",
 	L"ПоказатьСообщение",
 	L"Петля"

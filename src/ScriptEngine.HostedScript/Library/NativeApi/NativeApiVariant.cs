@@ -153,7 +153,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                         vt = (UInt16)VarTypes.VTYPE_R8;
                     }
                     return;
-                case DataType.Object when value is BinaryDataContext binaryData:
+                case DataType.Object when value.AsObject() is BinaryDataContext binaryData:
                     strLen = binaryData.Buffer.Length;
                     pstrVal = Marshal.AllocHGlobal(strLen);
                     Marshal.Copy(binaryData.Buffer, 0, pstrVal, strLen);
