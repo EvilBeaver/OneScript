@@ -24,6 +24,7 @@ public:
 	{
 		eMethEnable = 0,
 		eMethDisable,
+		eMethDefaultParam,
 		eMethShowInStatusLine,
 		eMethLoadPicture,
 		eMethShowMsgBox,

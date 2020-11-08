@@ -42,6 +42,7 @@ static const wchar_t* g_PropNamesRu[] = {
 static const wchar_t* g_MethodNames[] = {
 	L"Enable",
 	L"Disable",
+	L"DefaultParam",
 	L"ShowInStatusLine",
 	L"StartTimer",
 	L"StopTimer",
@@ -53,6 +54,7 @@ static const wchar_t* g_MethodNames[] = {
 static const wchar_t* g_MethodNamesRu[] = {
 	L"Включить",
 	L"Выключить",
+	L"ПараметрПоУмолчанию",
 	L"ПоказатьВСтрокеСтатуса",
 	L"СтартТаймер",
 	L"СтопТаймер",
@@ -337,6 +339,8 @@ long CAddInNative::GetNParams(const long lMethodNum)
 {
 	switch (lMethodNum)
 	{
+	case eMethDefaultParam:
+		return 1;
 	case eMethShowInStatusLine:
 		return 1;
 	case eMethLoadPicture:
@@ -357,6 +361,12 @@ bool CAddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum,
 
 	switch (lMethodNum)
 	{
+	case eMethDefaultParam:
+		if (lParamNum != 0) 
+			return false;
+		TV_VT(pvarParamDefValue) = VTYPE_BOOL;
+		TV_BOOL(pvarParamDefValue) = true;
+		return true;
 	case eMethEnable:
 	case eMethDisable:
 	case eMethShowInStatusLine:
@@ -374,6 +384,8 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 {
 	switch (lMethodNum)
 	{
+	case eMethDefaultParam:
+		return true;
 	case eMethLoadPicture:
 	case eLoopback:
 		return true;
@@ -455,6 +467,12 @@ bool CAddInNative::CallAsFunc(const long lMethodNum,
 
 	switch (lMethodNum)
 	{
+	case eMethDefaultParam:
+		if (lSizeArray != 1 || TV_VT(paParams) != VTYPE_BOOL)
+			return false;
+		TV_VT(pvarRetValue) = VTYPE_BOOL;
+		TV_BOOL(pvarRetValue) = TV_BOOL(paParams);
+		return true;
 		// Method acceps one argument of type BinaryData ant returns its copy
 	case eLoopback:
 	{
