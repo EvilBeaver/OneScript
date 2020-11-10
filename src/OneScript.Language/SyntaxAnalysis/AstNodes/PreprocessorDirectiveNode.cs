@@ -20,5 +20,15 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         }
         
         public string DirectiveName { get; }
+        
+        public string DirectiveContents { get; private set; }
+
+        protected override void OnChildAdded(BslSyntaxNode child)
+        {
+            if (child is TerminalNode t)
+            {
+                DirectiveContents = t.Lexem.Content;
+            }
+        }
     }
 }

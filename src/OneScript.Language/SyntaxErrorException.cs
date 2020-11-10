@@ -11,12 +11,17 @@ namespace OneScript.Language
 {
     public class SyntaxErrorException : ScriptException
     {
-        internal SyntaxErrorException(ErrorPositionInfo codeInfo, string message):base(codeInfo, message)
+        public SyntaxErrorException(ErrorPositionInfo codeInfo, string message):base(codeInfo, message)
         {
 
         }
 
         internal SyntaxErrorException(ParseError error) : base(error.Position, error.Description)
+        {
+            
+        }
+        
+        internal SyntaxErrorException(ErrorPositionInfo codeInfo, ParseError error) : base(codeInfo, error.Description)
         {
             
         }

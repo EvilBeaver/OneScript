@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using OneScript.Language.LexicalAnalysis;
@@ -37,10 +36,23 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private readonly List<BslSyntaxNode> _annotations = new List<BslSyntaxNode>();
 
+        private readonly ILexemGenerator _preprocessorParametersParser;
+
         public DefaultBslParser(IAstBuilder builder, ILexemGenerator lexer)
         {
             _builder = builder;
             _lexer = lexer;
+            _preprocessorParametersParser = BuildPreprocessorParser();
+        }
+
+        private ILexemGenerator BuildPreprocessorParser()
+        {
+            var builder = new LexerBuilder();
+            
+            builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
+                .HandleWith(new NonWhitespaceLexerState());
+
+            return builder.Build();
         }
 
         public static DefaultBslParser PrepareParser(string code)
@@ -104,9 +116,38 @@ namespace OneScript.Language.SyntaxAnalysis
         private BslSyntaxNode CurrentParent => _parsingContext.Peek();
 
         public Stack<BslSyntaxNode> ParsingContext => _parsingContext;
+        
+        private void ParseImportDirectives()
+        {
+            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+            {
+                var directive = _lastExtractedLexem.Content;
+                if (!DirectiveSupported(directive))
+                {
+                    AddError(LocalizedErrors.DirectiveNotSupported(directive));
+                    continue;
+                }
+                var node = _builder.CreateNode(NodeKind.Preprocessor, _lastExtractedLexem);
+                
+                var arg = _preprocessorParametersParser.NextLexem();
+                if (!arg.Equals(Lexem.EndOfText()))
+                {
+                    CreateChild(node, NodeKind.Constant, arg);
+                }
+                
+                _builder.AddChild(CurrentParent, node);
+            }
+        }
 
+        private bool DirectiveSupported(string directive)
+        {
+            return StringComparer.InvariantCultureIgnoreCase.Compare(directive, "использовать") == 0
+                   || StringComparer.InvariantCultureIgnoreCase.Compare(directive, "use") == 0;
+        }
+        
         private void ParseModuleSections()
         {
+            ParseImportDirectives();
             BuildVariableSection();
             BuildMethodsSection();
             BuildModuleBody();
