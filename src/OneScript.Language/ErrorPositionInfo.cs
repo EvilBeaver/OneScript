@@ -9,10 +9,12 @@ namespace OneScript.Language
 {
     public class ErrorPositionInfo
     {
-        public ErrorPositionInfo()
+        public const int OUT_OF_TEXT = -1;
+
+        public CodePositionInfo()
         {
-            LineNumber = -1;
-            ColumnNumber = -1;
+            LineNumber = OUT_OF_TEXT;
+            ColumnNumber = OUT_OF_TEXT;
         }
 
         public int LineNumber { get; set; }
@@ -20,6 +22,5 @@ namespace OneScript.Language
         public string Code { get; set; }
         public string ModuleName { get; set; }
 
-        public const int OUT_OF_TEXT = -1;
     }
 }

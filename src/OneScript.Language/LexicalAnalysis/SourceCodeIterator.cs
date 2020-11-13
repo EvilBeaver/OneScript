@@ -1,4 +1,4 @@
-/*----------------------------------------------------------
+﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -19,6 +19,9 @@ namespace OneScript.Language.LexicalAnalysis
         private int _startPosition;
 
         private List<int> _lineBounds;
+        private bool _onNewLine;
+
+        public bool OnNewLine { get; private set; }
 
         private const int OUT_OF_TEXT = -1;
 
@@ -28,7 +31,7 @@ namespace OneScript.Language.LexicalAnalysis
 
         public SourceCodeIterator(string code)
         {
-            if(code == null)
+            if (code == null)
                 throw new ArgumentNullException(nameof(code));
 
             _code = code;
@@ -37,6 +40,8 @@ namespace OneScript.Language.LexicalAnalysis
             _index = OUT_OF_TEXT;
             _startPosition = OUT_OF_TEXT;
             _currentSymbol = '\0';
+            _onNewLine = true;
+            OnNewLine = true;
 
             if (!String.IsNullOrEmpty(code))
             {
@@ -47,7 +52,6 @@ namespace OneScript.Language.LexicalAnalysis
             {
                 _lineCounter = OUT_OF_TEXT;
             }
-
         }
 
         public int Position => _index;
@@ -96,9 +100,9 @@ namespace OneScript.Language.LexicalAnalysis
         public char PeekNext()
         {
             char result = '\0';
-            if(_index+1 < _code.Length)
+            if (_index + 1 < _code.Length)
             {
-                result = _code[_index+1];
+                result = _code[_index + 1];
             }
 
             return result;
@@ -110,6 +114,7 @@ namespace OneScript.Language.LexicalAnalysis
             if (SkipSpaces())
             {
                 _startPosition = _index;
+                OnNewLine = _onNewLine;
                 return true;
             }
             else
@@ -127,6 +132,11 @@ namespace OneScript.Language.LexicalAnalysis
 
             while (Char.IsWhiteSpace(_currentSymbol))
             {
+                if (_currentSymbol == '\n')
+                {
+                    _onNewLine = true;
+                }
+
                 if (!MoveNext())
                 {
                     return false;
@@ -139,6 +149,22 @@ namespace OneScript.Language.LexicalAnalysis
             }
 
             return true;
+        }
+
+        public string ReadToLineEnd()
+        {
+            while (MoveNext())
+            {
+                if (_currentSymbol == '\n')
+                    break;
+            }
+
+            var res = GetContents();
+
+            _onNewLine = true;
+            OnNewLine = true;
+
+            return res.Trim();
         }
 
         public string GetCodeLine(int lineNumber)
@@ -181,6 +207,9 @@ namespace OneScript.Language.LexicalAnalysis
 
             _startPosition = _index + 1;
             
+            OnNewLine = _onNewLine;
+            _onNewLine = false;
+
             return contents;
         }
         

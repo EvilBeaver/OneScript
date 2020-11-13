@@ -35,19 +35,6 @@ namespace ScriptEngine
             
             _scriptFactory = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
-
-            SetupDirectiveResolution();
-        }
-
-        private void SetupDirectiveResolution()
-        {
-            var ignoreDirectiveResolver = new DirectiveIgnorer
-            {
-                {"Region", "Область"},
-                {"EndRegion", "КонецОбласти"}
-            };
-
-            DirectiveResolvers.Add(ignoreDirectiveResolver);
         }
 
         public CodeGenerationFlags ProduceExtraCode { get; set; }
