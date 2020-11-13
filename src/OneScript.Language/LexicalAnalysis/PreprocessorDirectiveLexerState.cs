@@ -22,7 +22,7 @@ namespace OneScript.Language.LexicalAnalysis
                 throw CreateExceptionOnCurrentLine("Недопустимое начало директивы препроцессора", iterator);
 
             iterator.MoveNext();
-            var position = iterator.GetPositionInfo();
+            var position = iterator.GetErrorPosition();
             if (!iterator.MoveToContent())
                 throw CreateExceptionOnCurrentLine(MESSAGE_DIRECTIVE_EXPECTED, iterator);
             if (position.LineNumber != iterator.CurrentLine)

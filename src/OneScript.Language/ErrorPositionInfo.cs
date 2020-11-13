@@ -11,7 +11,7 @@ namespace OneScript.Language
     {
         public const int OUT_OF_TEXT = -1;
 
-        public CodePositionInfo()
+        public ErrorPositionInfo()
         {
             LineNumber = OUT_OF_TEXT;
             ColumnNumber = OUT_OF_TEXT;
