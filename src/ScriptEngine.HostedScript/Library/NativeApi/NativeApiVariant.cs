@@ -180,6 +180,12 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             return Marshal.PtrToStructure<NativeApiVariant>(ptr).GetValue();
         }
 
+        static public void GetValue(IValue[] values, IntPtr ptr, int count)
+        {
+            for (int i = 0; i < values.Length && i < count; i++)
+                values[i] = GetValue(ptr + i * Size);
+        }
+
         static public void SetValue(IntPtr ptr, IValue value)
         {
             Marshal.PtrToStructure<NativeApiVariant>(ptr).SetValue(value);

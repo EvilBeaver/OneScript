@@ -28,7 +28,8 @@ public:
 		eMethShowInStatusLine,
 		eMethLoadPicture,
 		eMethShowMsgBox,
-		eLoopback,
+		eMethExchange,
+		eMethLoopback,
 		eMethLast      // Always last
 	};
 

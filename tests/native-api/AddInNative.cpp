@@ -46,6 +46,7 @@ static const wchar_t* g_MethodNames[] = {
 	L"ShowInStatusLine",
 	L"LoadPicture",
 	L"ShowMessageBox",
+	L"Exchange",
 	L"Loopback"
 };
 
@@ -56,7 +57,8 @@ static const wchar_t* g_MethodNamesRu[] = {
 	L"ПоказатьВСтрокеСтатуса",
 	L"ЗагрузитьКартинку",
 	L"ПоказатьСообщение",
-	L"Петля"
+	L"ОбменПараметров",
+	L"Петля",
 };
 
 static const wchar_t g_kClassNames[] = L"CAddInNative"; //"|OtherClass1|OtherClass2";
@@ -341,7 +343,9 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 1;
 	case eMethLoadPicture:
 		return 1;
-	case eLoopback:
+	case eMethExchange:
+		return 2;
+	case eMethLoopback:
 		return 1;
 	default:
 		return 0;
@@ -383,7 +387,7 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 	case eMethDefaultParam:
 		return true;
 	case eMethLoadPicture:
-	case eLoopback:
+	case eMethLoopback:
 		return true;
 	default:
 		return false;
@@ -409,6 +413,12 @@ bool CAddInNative::CallAsProc(const long lMethodNum,
 			tVariant* var = paParams;
 			m_iConnect->SetStatusLine(var->pwstrVal);
 		}
+		break;
+	case eMethExchange:
+		tVariant variant;
+		memcpy(&variant, paParams, sizeof(tVariant));
+		memcpy(paParams, paParams + 1, sizeof(tVariant));
+		memcpy(paParams + 1, &variant, sizeof(tVariant));
 		break;
 	case eMethShowMsgBox:
 	{
@@ -470,7 +480,7 @@ bool CAddInNative::CallAsFunc(const long lMethodNum,
 		TV_BOOL(pvarRetValue) = TV_BOOL(paParams);
 		return true;
 		// Method acceps one argument of type BinaryData ant returns its copy
-	case eLoopback:
+	case eMethLoopback:
 	{
 		if (lSizeArray != 1 || !paParams)
 			return false;
