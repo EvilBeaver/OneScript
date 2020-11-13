@@ -279,7 +279,8 @@ namespace OneScript.Language.Tests
         [Fact]
         public void Preprocessor_Lexem_ProcessedCorrectly()
         {
-            string code = "#Если #КонецЕсли";
+            string code = @"#Если
+                #КонецЕсли";
 
             var iterator = new SourceCodeIterator(code);
             var wordParser = new PreprocessorDirectiveLexerState();

@@ -19,6 +19,7 @@ namespace OneScript.Language.LexicalAnalysis
         Lexem _lastExtractedLexem;
 
         Stack<PreprocessorBlock> _blocks = new Stack<PreprocessorBlock>();
+        private int _regionsNesting = 0;
 
         private class PreprocessorBlock
         {
@@ -233,8 +234,10 @@ namespace OneScript.Language.LexicalAnalysis
 
             if (_lastExtractedLexem.Type == LexemType.EndOfText)
             {
-                if (BlockLevel()!=0)
-                    throw PreprocessorError("Ожидается директива препроцессора #КонецЕсли");
+                if (BlockLevel() != 0)
+                    throw PreprocessorError("Ожидается завершение директивы препроцессора #Если");
+                if (_regionsNesting != 0)
+                    throw PreprocessorError("Ожидается завершение директивы препроцессора #Область");
             }
 
             return _lastExtractedLexem;
@@ -311,10 +314,45 @@ namespace OneScript.Language.LexicalAnalysis
                 PopBlock();
                 return NextLexem();
             }
+            else
+            {
+                if (LanguageDef.IsPreprocRegion(directive.Content))
+                {
+                    MoveNext();
+                    if (_lexer.Iterator.OnNewLine)
+                        throw PreprocessorError("Ожидается имя области");
+
+                    if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                        throw PreprocessorError($"Недопустимое имя Области: {_lastExtractedLexem.Content}");
+
+                    _regionsNesting++;
+
+                    return LexemFromNewLine();
+                }
+                else if (LanguageDef.IsPreprocEndRegion(directive.Content))
+                {
+                    if (_regionsNesting == 0)
+                        throw PreprocessorError("Пропущена директива препроцессора #Область");
+
+                    _regionsNesting--;
+
+                    return LexemFromNewLine();
+                }
+            }
 
             HandleUnknownDirective(_lastExtractedLexem);
 
             return _lastExtractedLexem;
+        }
+
+        private Lexem LexemFromNewLine()
+        {
+            var lex = NextLexem();
+
+            if (!_lexer.Iterator.OnNewLine)
+                throw PreprocessorError("Недопустимые символы в директиве");
+
+            return lex;
         }
 
         private void SkipTillNextDirective()
