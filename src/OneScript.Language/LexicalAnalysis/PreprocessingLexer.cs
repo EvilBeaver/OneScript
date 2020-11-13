@@ -32,8 +32,10 @@ namespace OneScript.Language.LexicalAnalysis
             _lexer = new DefaultLexer();
         }
 
+        [Obsolete]
         public event EventHandler<PreprocessorUnknownTokenEventArgs> UnknownDirective;
 
+        [Obsolete]
         public bool EmitUnknownDirectives { get; set; }
             
         public void Define(string param)
