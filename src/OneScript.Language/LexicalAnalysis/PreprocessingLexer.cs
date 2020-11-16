@@ -23,7 +23,6 @@ namespace OneScript.Language.LexicalAnalysis
 
         private class PreprocessorBlock
         {
-            public bool OutputIsOn;
             public bool IsSolved;
         }
 
@@ -49,20 +48,12 @@ namespace OneScript.Language.LexicalAnalysis
             _definitions.Remove(param);
         }
 
-        private bool OutputIsOn()
+        private void PushBlock()
         {
-            if (_blocks.Count > 0)
-                return _blocks.Peek().OutputIsOn;
-            else
-                return true;
-        }
-
-        private void PushBlock(bool isOn)
-        {
-            var block = new PreprocessorBlock();
-            block.OutputIsOn = isOn;
-            if (block.OutputIsOn)
-                block.IsSolved = true;
+            var block = new PreprocessorBlock()
+            {
+                IsSolved = false
+            };
             _blocks.Push(block);
         }
 
@@ -77,11 +68,6 @@ namespace OneScript.Language.LexicalAnalysis
         private void MarkAsSolved()
         {
             _blocks.Peek().IsSolved = true;
-        }
-
-        private void SetOutput(bool output)
-        {
-            _blocks.Peek().OutputIsOn = output;
         }
 
         private void PopBlock()
@@ -210,20 +196,10 @@ namespace OneScript.Language.LexicalAnalysis
             }
         }
 
-        public int CurrentColumn
-        {
-            get { return _lexer.CurrentColumn; }
-        }
-
-        public int CurrentLine
-        {
-            get { return _lexer.CurrentLine; }
-        }
-
-        public CodePositionInfo GetCodePosition()
-        {
-            return _lexer.GetCodePosition();
-        }
+        public int CurrentColumn => _lexer.CurrentColumn;
+        public int CurrentLine => _lexer.CurrentLine;
+        public CodePositionInfo GetCodePosition() => _lexer.GetCodePosition();
+        public SourceCodeIterator Iterator => _lexer.Iterator;
 
         public Lexem NextLexem()
         {
@@ -243,8 +219,6 @@ namespace OneScript.Language.LexicalAnalysis
             return _lastExtractedLexem;
         }
 
-        public SourceCodeIterator Iterator => _lexer.Iterator;
-
         private void MoveNext()
         {
             _lastExtractedLexem = _lexer.NextLexem();
@@ -254,53 +228,23 @@ namespace OneScript.Language.LexicalAnalysis
         {
             if(directive.Token == Token.If)
             {
-                var enterBlock = SolveExpression();
-                PushBlock(enterBlock);
-
-                if (_lastExtractedLexem.Token != Token.Then)
-                    throw PreprocessorError("Ошибка в выражении препроцессора");
-
-                if (enterBlock)
-                    return NextLexem();
-
-                SkipTillNextDirective();
-
-                return Preprocess(_lastExtractedLexem);
-
+                PushBlock();
+                return ResolveCondition();
             }
             else if(directive.Token == Token.ElseIf)
             {
                 if (BlockIsSolved())
                 {
+                    SolveExpression(); // проверить корректность условия
                     SkipTillNextDirective();
                     return Preprocess(_lastExtractedLexem);
                 }
-                else
-                {
-                    var enterBlock = SolveExpression();
-                    if (_lastExtractedLexem.Token != Token.Then)
-                        throw PreprocessorError("Ошибка в выражении препроцессора");
 
-                    if (enterBlock)
-                    {
-                        MarkAsSolved();
-                        return NextLexem();
-                    }
-                    else
-                    {
-                        SkipTillNextDirective();
-                        return Preprocess(_lastExtractedLexem);
-                    }
-                }
-
+                return ResolveCondition();
             }
             else if(directive.Token == Token.Else)
             {
-                SetOutput(!BlockIsSolved());
-
-                if (OutputIsOn())
-                    return NextLexem();
-                else
+                if (BlockIsSolved())
                 {
                     SkipTillNextDirective();
                     if (_lastExtractedLexem.Token != Token.EndIf)
@@ -308,11 +252,13 @@ namespace OneScript.Language.LexicalAnalysis
 
                     return Preprocess(_lastExtractedLexem);
                 }
+
+                return LexemFromNewLine();
             }
             else if(directive.Token == Token.EndIf)
             {
                 PopBlock();
-                return NextLexem();
+                return LexemFromNewLine();
             }
             else
             {
@@ -345,20 +291,43 @@ namespace OneScript.Language.LexicalAnalysis
             return _lastExtractedLexem;
         }
 
+        private Lexem ResolveCondition()
+        {
+            var enterBlock = SolveExpression();
+            if (_lastExtractedLexem.Token != Token.Then)
+                throw PreprocessorError("Ошибка в директиве препроцессора: ожидается ключевое слово Тогда");
+
+            if (enterBlock)
+            {
+                MarkAsSolved();
+                return LexemFromNewLine();
+            }
+            else
+            {
+                SkipTillNextDirective();
+                return Preprocess(_lastExtractedLexem);
+            }
+        }
+
         private Lexem LexemFromNewLine()
         {
             var lex = NextLexem();
-
-            if (!_lexer.Iterator.OnNewLine)
-                throw PreprocessorError("Недопустимые символы в директиве");
+            CheckNewLine();
 
             return lex;
+        }
+
+        private void CheckNewLine()
+        {
+            if (!_lexer.Iterator.OnNewLine)
+                throw PreprocessorError("Недопустимые символы в директиве");
         }
 
         private void SkipTillNextDirective()
         {
             int currentLevel = BlockLevel();
             MoveNext();
+            CheckNewLine();
 
             while (true)
             {
@@ -371,14 +340,13 @@ namespace OneScript.Language.LexicalAnalysis
                 }
 
                 if (_lastExtractedLexem.Token == Token.If)
-                    PushBlock(false);
+                    PushBlock();
                 else if (_lastExtractedLexem.Token == Token.EndIf && BlockLevel() > currentLevel)
                     PopBlock();
                 else if (BlockLevel() == currentLevel)
                     break;
 
                 MoveNext();
-
             }
         }
     }
