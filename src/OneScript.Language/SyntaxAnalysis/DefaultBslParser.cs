@@ -18,41 +18,29 @@ namespace OneScript.Language.SyntaxAnalysis
     public class DefaultBslParser
     {
         private readonly IAstBuilder _builder;
-        private ILexemGenerator _lexer;
+        private readonly ILexer _lexer;
         private Lexem _lastExtractedLexem;
         
-        private bool _inMethodScope = false;
-        private bool _isMethodsDefined = false;
-        private bool _isStatementsDefined = false;
-        private bool _isInFunctionScope = false;
-        private bool _lastDereferenceIsWritable = false;
+        private bool _inMethodScope;
+        private bool _isMethodsDefined;
+        private bool _isStatementsDefined;
+        private bool _isInFunctionScope;
+        private bool _lastDereferenceIsWritable;
 
         private readonly Stack<BslSyntaxNode> _parsingContext = new Stack<BslSyntaxNode>();
         
         private readonly List<ParseError> _errors = new List<ParseError>();
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private bool _isInLoopScope;
-        private bool _enableException = false;
+        private bool _enableException;
         
         private readonly List<BslSyntaxNode> _annotations = new List<BslSyntaxNode>();
 
-        private readonly ILexemGenerator _preprocessorParametersParser;
-
-        public DefaultBslParser(IAstBuilder builder, ILexemGenerator lexer)
+        public DefaultBslParser(IAstBuilder builder, ILexer lexer)
         {
             _builder = builder;
             _lexer = lexer;
-            _preprocessorParametersParser = BuildPreprocessorParser();
-        }
-
-        private ILexemGenerator BuildPreprocessorParser()
-        {
-            var builder = new LexerBuilder();
-            
-            builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
-                .HandleWith(new NonWhitespaceLexerState());
-
-            return builder.Build();
+            DirectiveHandlers = new PreprocessorHandlerChain();
         }
 
         public static DefaultBslParser PrepareParser(string code)
@@ -66,9 +54,11 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public IEnumerable<ParseError> Errors => _errors; 
         
+        public PreprocessorHandlerChain DirectiveHandlers { get; }
+        
         public BslSyntaxNode ParseStatefulModule()
         {
-            NextLexem();
+            _lastExtractedLexem = _lexer.NextLexem();
             var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             PushContext(node);
             
@@ -86,7 +76,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public BslSyntaxNode ParseCodeBatch()
         {
-            NextLexem();
+            _lastExtractedLexem = _lexer.NextLexem();
             var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             PushContext(node);
             try
@@ -103,7 +93,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public BslSyntaxNode ParseExpression()
         {
-            NextLexem();
+            _lastExtractedLexem = _lexer.NextLexem();
             var parent = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             BuildExpression(parent, Token.EndOfText);
             return parent;
@@ -119,32 +109,21 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void ParseImportDirectives()
         {
-            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+            var importHandler = new ImportDirectivesHandler(_builder);
+            try
             {
-                var directive = _lastExtractedLexem.Content;
-                if (!DirectiveSupported(directive))
+                DirectiveHandlers.Add(importHandler);
+                while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
                 {
-                    AddError(LocalizedErrors.DirectiveNotSupported(directive));
-                    continue;
+                    HandleDirective();
                 }
-                var node = _builder.CreateNode(NodeKind.Preprocessor, _lastExtractedLexem);
-                
-                var arg = _preprocessorParametersParser.NextLexem();
-                if (!arg.Equals(Lexem.EndOfText()))
-                {
-                    CreateChild(node, NodeKind.Constant, arg);
-                }
-                
-                _builder.AddChild(CurrentParent, node);
+            }
+            finally
+            {
+                DirectiveHandlers.Remove(importHandler);
             }
         }
 
-        private bool DirectiveSupported(string directive)
-        {
-            return StringComparer.InvariantCultureIgnoreCase.Compare(directive, "использовать") == 0
-                   || StringComparer.InvariantCultureIgnoreCase.Compare(directive, "use") == 0;
-        }
-        
         private void ParseModuleSections()
         {
             ParseImportDirectives();
@@ -305,6 +284,7 @@ namespace OneScript.Language.SyntaxAnalysis
                         if (!sectionExist)
                         {
                             sectionExist = true;
+                            _isMethodsDefined = true;
                             _builder.AddChild(parent, allMethodsSection);
                         }
 
@@ -1435,6 +1415,41 @@ namespace OneScript.Language.SyntaxAnalysis
         private void NextLexem()
         {
             _lastExtractedLexem = _lexer.NextLexem();
+
+            if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+            {
+                HandleDirective();
+            }
+        }
+
+        private BslSyntaxNode HandleDirective()
+        {
+            var directive = _lastExtractedLexem.Content;
+            BslSyntaxNode node;
+            try
+            {
+                node = ((IDirectiveHandler) DirectiveHandlers).HandleDirective(
+                    CurrentParent,
+                    _lexer,
+                    ref _lastExtractedLexem);
+            }
+            catch (SyntaxErrorException e)
+            {
+                AddError(new ParseError()
+                {
+                    Description = e.Message,
+                    Position = _lexer.GetErrorPosition(),
+                    ErrorId = nameof(HandleDirective)
+                });
+                return default;
+            }
+
+            if (node == default)
+            {
+                AddError(LocalizedErrors.DirectiveNotSupported(directive));
+            }
+
+            return node;
         }
 
         private bool NextExpected(Token expected)
@@ -1446,6 +1461,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void SkipToNextStatement(Token[] additionalStops = null)
         {
+            _lexer.ReadToLineEnd();
             while (!(_lastExtractedLexem.Token == Token.EndOfText
                      || LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token)))
             {

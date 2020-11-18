@@ -24,7 +24,7 @@ namespace OneScript.Language.Tests
         
         public static SyntaxTreeValidator Is(this SyntaxTreeValidator validator, NodeKind type)
         {
-            type.Should().Be(validator.CurrentNode.Kind);
+            validator.CurrentNode.Kind.Should().Be(type);
             return validator;
         }
         
