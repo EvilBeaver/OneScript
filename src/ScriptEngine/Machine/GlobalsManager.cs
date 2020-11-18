@@ -13,7 +13,8 @@ namespace ScriptEngine.Machine
 {
     public static class GlobalsManager
     {
-        public static readonly IGlobalsManager Instance = new GlobalInstancesManager();
+        // FIXME: вынужденно writable, т.к. потребители пользуются статическим инстансом
+        public static IGlobalsManager Instance { get; set; } = new GlobalInstancesManager();
 
         internal static void Reset()
         {

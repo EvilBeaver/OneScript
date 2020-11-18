@@ -23,6 +23,7 @@ namespace ScriptEngine
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
 
+        [Obsolete]
         public ScriptingEngine()
         {
             _machine = MachineInstance.Current;
@@ -38,7 +39,23 @@ namespace ScriptEngine
             ContextDiscoverer = new ContextDiscoverer(TypeManager.Instance, GlobalsManager.Instance);
         }
 
+        public ScriptingEngine(ITypeManager types, IGlobalsManager globals, RuntimeEnvironment env)
+        {
+            // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
+            TypeManager.Initialize(types);
+            TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
+
+            GlobalsManager.Instance = globals;
+            Environment = env;
+            
+            _scriptFactory = new ScriptSourceFactory();
+            DirectiveResolvers = new DirectiveMultiResolver();
+            ContextDiscoverer = new ContextDiscoverer(types, globals);
+        }
+        
         private ContextDiscoverer ContextDiscoverer { get; }
+        
+        public RuntimeEnvironment Environment { get; set; }
         
         public CodeGenerationFlags ProduceExtraCode { get; set; }
 
@@ -67,8 +84,6 @@ namespace ScriptEngine
                 ++lastCount;
             }
         }
-
-        public RuntimeEnvironment Environment { get; set; }
 
         public void Initialize()
         {
@@ -99,6 +114,7 @@ namespace ScriptEngine
             }
         }
 
+        [Obsolete]
         public IList<IDirectiveResolver> DirectiveResolvers { get; }
 
         public CompilerService GetCompilerService()
