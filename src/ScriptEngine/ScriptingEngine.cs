@@ -32,11 +32,12 @@ namespace ScriptEngine
             TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
             
             GlobalsManager.Reset();
-            AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
             
             _scriptFactory = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
             ContextDiscoverer = new ContextDiscoverer(TypeManager.Instance, GlobalsManager.Instance);
+            
+            AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
         }
 
         public ScriptingEngine(ITypeManager types, IGlobalsManager globals, RuntimeEnvironment env)
