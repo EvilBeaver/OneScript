@@ -74,6 +74,7 @@
     <!-- Собирает отовсюду содержимое папки bin -->
     <Target Name="GatherBinaries" DependsOnTargets="Make;PrepareArtifactsRoot">
         <ItemGroup>
+            <Exec Command="&quot;$(MSBuildProjectDirectory)/build.cmd&quot;"/>
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
             <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/**">
