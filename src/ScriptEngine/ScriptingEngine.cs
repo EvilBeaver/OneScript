@@ -35,8 +35,11 @@ namespace ScriptEngine
             
             _scriptFactory = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
+            ContextDiscoverer = new ContextDiscoverer(TypeManager.Instance, GlobalsManager.Instance);
         }
 
+        private ContextDiscoverer ContextDiscoverer { get; }
+        
         public CodeGenerationFlags ProduceExtraCode { get; set; }
 
         public void AttachAssembly(System.Reflection.Assembly asm)
