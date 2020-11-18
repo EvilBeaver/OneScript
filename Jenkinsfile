@@ -38,11 +38,6 @@ pipeline {
                     }
 
                     steps {
-                        bat """
-                            cd src\\ScriptEngine.NativeApi
-                            build.cmd
-                            cd ..\\..
-                        """
                         
                         // в среде Multibranch Pipeline Jenkins первращает имена веток в папки
                         // а для веток Gitflow вида release/* экранирует в слэш в %2F
@@ -60,7 +55,7 @@ pipeline {
                             step([$class: 'WsCleanup'])
                             checkout scm
 
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool && build.cmd"
                             bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent /p:OneScriptDocumenter=\"%WORKSPACE%/doctool/OneScriptDocumenter.exe\""
                             stash includes: 'tests, built/**', name: 'buildResults'
