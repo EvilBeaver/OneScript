@@ -58,6 +58,7 @@ pipeline {
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
                             bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent /p:OneScriptDocumenter=\"%WORKSPACE%/doctool/OneScriptDocumenter.exe\""
+                            bat "chcp $outputEnc > nul\r\n\"cd src\\ScriptEngine.NativeApi\r\nbuild.cmd"
                             
                             stash includes: 'tests, built/**', name: 'buildResults'
                         }
