@@ -16,6 +16,6 @@ namespace OneScript.Language.SyntaxAnalysis
 
         void AddChild(BslSyntaxNode parent, BslSyntaxNode child);
 
-        void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer);
+        void HandleParseError(in ParseError error, in Lexem lexem, ILexer lexer);
     }
 }

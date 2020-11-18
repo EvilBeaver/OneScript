@@ -9,7 +9,7 @@ namespace OneScript.Language.LexicalAnalysis
 {
     public static class LexerExtensions
     {
-        public static int ReadToLineEnd(this ILexemGenerator lexer)
+        public static int ReadToLineEnd(this ILexer lexer)
         {
             char cs;
             var charsRead = 0;
@@ -24,7 +24,7 @@ namespace OneScript.Language.LexicalAnalysis
             return charsRead;
         }
 
-        public static Lexem NextLexemOnSameLine(this ILexemGenerator lexer)
+        public static Lexem NextLexemOnSameLine(this ILexer lexer)
         {
             var currentLine = lexer.Iterator.CurrentLine;
             if (lexer.Iterator.MoveToContent())

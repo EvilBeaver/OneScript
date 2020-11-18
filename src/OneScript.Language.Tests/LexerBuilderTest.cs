@@ -27,7 +27,7 @@ namespace OneScript.Language.Tests
 
             var lexer = builder.Build();
 
-            lexer.Code = "1 Hello 2 (";
+            lexer.Iterator = MakeCodeIterator("1 Hello 2 (");
 
             var lexem1 = lexer.NextLexem();
             var lexem2 = lexer.NextLexem();
@@ -46,6 +46,11 @@ namespace OneScript.Language.Tests
             Assert.Equal(LexemType.NumberLiteral, lexem1.Type);
             Assert.Equal(LexemType.Identifier, lexem2.Type);
             Assert.Equal(LexemType.NumberLiteral, lexem3.Type);
+        }
+
+        private SourceCodeIterator MakeCodeIterator(string code)
+        {
+            return new SourceCodeIterator(code);
         }
     }
 }

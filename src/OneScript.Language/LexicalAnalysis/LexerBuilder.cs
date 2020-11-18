@@ -23,7 +23,7 @@ namespace OneScript.Language.LexicalAnalysis
             return detector;
         }
 
-        public ILexemGenerator Build()
+        public ILexer Build()
         {
             Expression expr;
             var charParam = Expression.Parameter(typeof(char), "cs");

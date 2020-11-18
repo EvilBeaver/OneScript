@@ -23,5 +23,10 @@ namespace OneScript.Language.LexicalAnalysis
         {
             return lexer.Iterator.GetErrorPosition();
         }
+
+        public static ErrorPositionInfo GetErrorPosition(this ILexer lexer)
+        {
+            return lexer.Iterator.GetErrorPosition();
+        }
     }
 }

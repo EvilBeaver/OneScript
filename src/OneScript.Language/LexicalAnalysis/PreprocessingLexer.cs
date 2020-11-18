@@ -205,8 +205,6 @@ namespace OneScript.Language.LexicalAnalysis
 
         public int CurrentColumn => _lexer.CurrentColumn;
         public int CurrentLine => _lexer.CurrentLine;
-        public CodePositionInfo GetCodePosition() => _lexer.GetCodePosition();
-        public SourceCodeIterator Iterator => _lexer.Iterator;
 
         public Lexem NextLexem()
         {
@@ -226,6 +224,12 @@ namespace OneScript.Language.LexicalAnalysis
             return _lastExtractedLexem;
         }
 
+        public SourceCodeIterator Iterator
+        {
+            get => _lexer.Iterator;
+            set => throw new NotSupportedException();
+        }
+        
         private void MoveNext()
         {
             _lastExtractedLexem = _lexer.NextLexem();

@@ -50,6 +50,6 @@ namespace OneScript.Language.LexicalAnalysis
             return Lexem.EndOfText();
         }
 
-        public SourceCodeIterator Iterator { get; private set; }
+        public SourceCodeIterator Iterator { get; set; }
     }
 }

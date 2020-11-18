@@ -480,7 +480,7 @@ namespace OneScript.Language.Tests
 
             var lexer = lb.Build();
 
-            lexer.Code = code;
+            lexer.Iterator = new SourceCodeIterator(code);
             
             var lex = lexer.NextLexem();
             
@@ -506,7 +506,7 @@ namespace OneScript.Language.Tests
 
             var lexer = lb.Build();
 
-            lexer.Code = code;
+            lexer.Iterator = new SourceCodeIterator(code);
             
             var lex = lexer.NextLexem();
             
@@ -529,7 +529,7 @@ namespace OneScript.Language.Tests
 
             var lexer = lb.Build();
 
-            lexer.Code = code;
+            lexer.Iterator = new SourceCodeIterator(code);
             var lex = lexer.NextLexem();
             Assert.Equal("\"Quoted space //and comment\"", lex.Content);
             

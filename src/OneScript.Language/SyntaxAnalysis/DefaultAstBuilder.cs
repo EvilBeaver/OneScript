@@ -95,7 +95,7 @@ namespace OneScript.Language.SyntaxAnalysis
             parentNonTerm.AddChild(child);
         }
 
-        public virtual void HandleParseError(in ParseError error, in Lexem lexem, ILexemGenerator lexer)
+        public virtual void HandleParseError(in ParseError error, in Lexem lexem, ILexer lexer)
         {
             if(ThrowOnError)
                 throw new SyntaxErrorException(error);
