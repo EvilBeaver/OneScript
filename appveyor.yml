@@ -24,7 +24,7 @@ build_script:
     msbuild Build.csproj /t:CleanAll;PrepareDistributionContent;CreateDistributions /p:ReleaseNumber=%ReleaseNumber% /p:InnoSetupPath="%InnoSetupPath%" /p:OneScriptDocumenter="doctool\OneScriptDocumenter.exe"
     
 test_script:
-- sh: |
+- cmd: |
     set oscript=built\tmp\bin\oscript.exe
     set opm=built\tmp\lib\opm\src\cmd\opm.os
     %oscript% %opm% install asserts
