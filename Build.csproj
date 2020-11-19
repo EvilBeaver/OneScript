@@ -75,7 +75,7 @@
         <ItemGroup>
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
-            <BuiltProjects Include="ScriptEngine.NativaApi" />
+            <BuiltProjects Include="ScriptEngine.NativeApi" />
             <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/**">
                 <Dest>$(TempFolder)/bin</Dest>
             </BinaryFiles>
