@@ -76,10 +76,10 @@
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
             <BuiltProjects Include="ScriptEngine.NativeApi" />
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/**">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/**" Exclude="*.lib">
                 <Dest>$(TempFolder)/bin</Dest>
             </BinaryFiles>
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**" Exclude="*.lib">
                 <Dest>$(TempFolder)/bin32</Dest>
             </BinaryFiles>
             <AspFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/ASPNETHandler.dll"/>
