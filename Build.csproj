@@ -35,7 +35,6 @@
         
     </Target>  
         <Target Name="Make">
-        <Exec Command="&quot;$(MSBuildProjectDirectory)/build.cmd&quot;"/>
         <MSBuild Projects="$(Solution)" Targets="restore;Build" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildName);"/>
     </Target>
 
