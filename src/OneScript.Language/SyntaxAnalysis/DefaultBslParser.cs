@@ -1057,8 +1057,64 @@ namespace OneScript.Language.SyntaxAnalysis
                 return default;
             }
 
-            var op = BuildLogicalOr();
+            var op = BuildBinaryOperation(LanguageDef.GetPriority(Token.Or));
             _builder.AddChild(parent, op);
+            return op;
+        }
+
+        private BslSyntaxNode BuildBinaryOperation(int acceptablePriority)
+        {
+            if (acceptablePriority == LanguageDef.MAX_OPERATION_PRIORITY)
+                return BuildParenthesis();
+
+            var isUnary = LanguageDef.IsUnaryOperator(_lastExtractedLexem.Token);
+            BslSyntaxNode firstArg;
+            if (isUnary)
+            {
+                firstArg = BuildUnaryOperation();
+            }
+            else
+            {
+                firstArg = BuildBinaryOperation(acceptablePriority + 1);
+            }
+            
+            var priority = GetBinaryPriority(_lastExtractedLexem.Token);
+            while (priority >= acceptablePriority)
+            {
+                var token = _lastExtractedLexem;
+                NextLexem();
+                var secondArg = BuildBinaryOperation(acceptablePriority + 1);
+                priority = GetBinaryPriority(_lastExtractedLexem.Token);
+                firstArg = MakeBinaryOperationNode(firstArg, secondArg, token);
+            }
+
+            return firstArg;
+        }
+
+        private static int GetBinaryPriority(Token newOp)
+        {
+            int newPriority;
+            if (LanguageDef.IsBinaryOperator(newOp))
+                newPriority = LanguageDef.GetPriority(newOp);
+            else
+                newPriority = -1;
+
+            return newPriority;
+        }
+        
+        private BslSyntaxNode BuildUnaryOperation()
+        {
+            if (_lastExtractedLexem.Token == Token.Plus)
+                _lastExtractedLexem.Token = Token.UnaryPlus;
+            else if (_lastExtractedLexem.Token == Token.Minus)
+                _lastExtractedLexem.Token = Token.UnaryMinus;
+
+            var unaryPriority = LanguageDef.GetPriority(_lastExtractedLexem.Token);
+            var operation = _lastExtractedLexem;
+            NextLexem();
+            var argument = BuildBinaryOperation(unaryPriority);
+            var op = _builder.CreateNode(NodeKind.UnaryOperation, operation);
+            _builder.AddChild(op, argument);
             return op;
         }
         
@@ -1080,109 +1136,11 @@ namespace OneScript.Language.SyntaxAnalysis
                 return;
             }
 
-            var op = BuildLogicalOr();
+            var op = BuildBinaryOperation(LanguageDef.GetPriority(Token.Or));
             _builder.AddChild(parent, op);
         }
 
         #region Operators
-
-         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private BslSyntaxNode BuildLogicalOr()
-        {
-            var firstArg = BuildLogicalAnd();
-            if (_lastExtractedLexem.Token == Token.Or)
-            {
-                var token = _lastExtractedLexem;
-                NextLexem();
-                var secondArg = BuildLogicalOr();
-                return MakeBinaryOperationNode(firstArg, secondArg, token);
-            }
-            
-            return firstArg;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private BslSyntaxNode BuildLogicalAnd()
-        {
-            var firstArg = BuildLogicalNot();
-            if (_lastExtractedLexem.Token == Token.And)
-            {
-                var token = _lastExtractedLexem;
-                NextLexem();
-                var secondArg = BuildLogicalAnd();
-                return MakeBinaryOperationNode(firstArg, secondArg, token);
-            }
-
-            return firstArg;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private BslSyntaxNode BuildLogicalNot()
-        {
-            bool hasNegative = _lastExtractedLexem.Token == Token.Not;
-            if (hasNegative)
-            {
-                var operation = _builder.CreateNode(NodeKind.UnaryOperation, _lastExtractedLexem);
-                NextLexem();
-                _builder.AddChild(operation, BuildLogicalComparison());
-                return operation;
-            }
-
-            return BuildLogicalComparison();
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private BslSyntaxNode BuildLogicalComparison()
-        {
-            var firstArg = BuildAddition();
-            var operatorSign = _lastExtractedLexem.Token;
-            if (operatorSign == Token.LessThan
-                || operatorSign == Token.LessOrEqual
-                || operatorSign == Token.MoreThan
-                || operatorSign == Token.MoreOrEqual
-                || operatorSign == Token.Equal
-                || operatorSign == Token.NotEqual)
-            {
-                var token = _lastExtractedLexem;
-                NextLexem();
-                var secondArg = BuildLogicalComparison();
-                return MakeBinaryOperationNode(firstArg, secondArg, token);
-            }
-
-            return firstArg;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private BslSyntaxNode BuildAddition()
-        {
-            var firstArg = BuildMultiplication();
-            if (_lastExtractedLexem.Token == Token.Plus || _lastExtractedLexem.Token == Token.Minus)
-            {
-                var token = _lastExtractedLexem;
-                NextLexem();
-                var secondArg = BuildAddition();
-                return MakeBinaryOperationNode(firstArg, secondArg, token);
-            }
-
-            return firstArg;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private BslSyntaxNode BuildMultiplication()
-        {
-            var firstArg = BuildUnaryArifmetics();
-            if (_lastExtractedLexem.Token == Token.Multiply 
-                || _lastExtractedLexem.Token == Token.Division
-                ||_lastExtractedLexem.Token == Token.Modulo)
-            {
-                var token = _lastExtractedLexem;
-                NextLexem();
-                var secondArg = BuildMultiplication();
-                return MakeBinaryOperationNode(firstArg, secondArg, token);
-            }
-
-            return firstArg;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private BslSyntaxNode MakeBinaryOperationNode(BslSyntaxNode firstArg, BslSyntaxNode secondArg, in Lexem lexem)
@@ -1194,32 +1152,12 @@ namespace OneScript.Language.SyntaxAnalysis
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private BslSyntaxNode BuildUnaryArifmetics()
-        {
-            var hasUnarySign = _lastExtractedLexem.Token == Token.Minus || _lastExtractedLexem.Token == Token.Plus;
-            var operation = _lastExtractedLexem;
-            if(hasUnarySign)
-                NextLexem();
-
-            var arg = BuildParenthesis();
-            if (hasUnarySign)
-            {
-                operation.Token = operation.Token == Token.Plus ? Token.UnaryPlus : Token.UnaryMinus;
-                var op = _builder.CreateNode(NodeKind.UnaryOperation, operation);
-                _builder.AddChild(op, arg);
-                return op;
-            }
-
-            return arg;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private BslSyntaxNode BuildParenthesis()
         {
             if (_lastExtractedLexem.Token == Token.OpenPar)
             {
                 NextLexem();
-                var expr = BuildLogicalOr();
+                var expr = BuildBinaryOperation(LanguageDef.GetPriority(Token.Or));
                 if (_lastExtractedLexem.Token != Token.ClosePar)
                 {
                     AddError(LocalizedErrors.TokenExpected(Token.ClosePar));

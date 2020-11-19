@@ -16,6 +16,7 @@ namespace OneScript.Language
     public static class LanguageDef
     {
         static readonly Dictionary<Token, int> _priority = new Dictionary<Token, int>();
+        public const int MAX_OPERATION_PRIORITY = 8;
 
         private static readonly LexemTrie<Token> _stringToToken = new LexemTrie<Token>();
 
@@ -274,6 +275,12 @@ namespace OneScript.Language
         public static bool IsLogicalBinaryOperator(Token token)
         {
             return token == Token.And || token == Token.Or;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsUnaryOperator(Token token)
+        {
+            return token == Token.Plus || token == Token.Minus || token == Token.Not;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

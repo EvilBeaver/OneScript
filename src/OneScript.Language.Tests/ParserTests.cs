@@ -386,10 +386,33 @@ namespace OneScript.Language.Tests
             assignment.NextChild();
             var node = assignment.NextChild();
             node.Is(NodeKind.BinaryOperation)
-                .Equal(Token.Plus.ToString());
-            node.NextChildIs(NodeKind.Constant)
-                .NextChildIs(NodeKind.BinaryOperation);
+                .Equal(Token.Minus.ToString());
+            node.NextChildIs(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.Constant);
         }
+
+        [Fact]
+        public void AdditionPriority_For_Strings()
+        {
+            var code = @"А = ""Стр1"" + Сч + ""Стр2""";
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+
+            var assignment = batch
+                .NextChild().Is(NodeKind.Assignment);
+            assignment.NextChild();
+            var node = assignment.NextChild();
+            node.Is(NodeKind.BinaryOperation).Equal(Token.Plus.ToString());
+
+            var firstAddition = node.NextChild();
+            firstAddition.Is(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.Constant)
+                .NextChildIs(NodeKind.Identifier);
+            
+            node.NextChild().Is(NodeKind.Constant)
+                .Equal("Стр2");
+        }
+        
         
         [Fact]
         public void Check_Binary_Expressions_Priority()
