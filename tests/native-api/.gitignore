@@ -1,0 +1,10 @@
+/build*
+/bind64
+/bind
+/bin64
+/bin
+/.vc
+/.vs
+*.o
+*.d
+*.so
