@@ -228,7 +228,8 @@ namespace ScriptEngine.Machine.Contexts
             if (_ownProperties == null)
                 return base.IsOwnPropReadable(index);
 
-            if (index > base.GetOwnVariableCount() && index < _ownProperties.Count)
+            var baseProps = base.GetOwnVariableCount(); 
+            if (index >= baseProps)
                 return true;
             else
                 return base.IsOwnPropReadable(index);
@@ -236,15 +237,16 @@ namespace ScriptEngine.Machine.Contexts
 
         protected override IValue GetOwnPropValue(int index)
         {
-            if (index > base.GetOwnVariableCount() && index < _ownProperties.Count)
-                return _ownProperties[index];
+            var baseProps = base.GetOwnVariableCount(); 
+            if (index >= baseProps)
+                return _ownProperties[index-baseProps];
             else
                 return base.GetOwnPropValue(index);
         }
         
         protected override string GetOwnPropName(int index)
         {
-            if (_ownProperties == null || index <= base.GetOwnVariableCount())
+            if (_ownProperties == null || index < base.GetOwnVariableCount())
                 return base.GetOwnPropName(index);
             
             return _ownPropertyIndexes.First(x => x.Value == index).Key;
