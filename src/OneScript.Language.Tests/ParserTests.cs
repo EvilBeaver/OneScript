@@ -552,6 +552,24 @@ namespace OneScript.Language.Tests
             call.NextChild()
                 .CurrentNode.Children.Should().HaveCount(2);
         }
+
+        [Fact]
+        public void Throws_When_Last_ParameterDefinition_IsMissing()
+        {
+            var code = @"Процедура ПодключитьсяКХранилищу(Знач СтрокаСоединения, 
+                                            Знач ПользовательХранилища,
+                                            Знач ПарольХранилища = """",
+                                            Знач ИгнорироватьНаличиеПодключеннойБД = Ложь,
+                                            Знач ЗаменитьКонфигурациюБД = Истина,
+                                           	) Экспорт
+            КонецПроцедуры";
+
+            var parser = DefaultBslParser.PrepareParser(code);
+            parser.ParseStatefulModule();
+
+            parser.Errors.Should().NotBeEmpty("last parameter is missing");
+            parser.Errors.First().ErrorId.Should().Be("IdentifierExpected");
+        }
         
         [Fact]
         public void Check_If_With_No_Alternatives()

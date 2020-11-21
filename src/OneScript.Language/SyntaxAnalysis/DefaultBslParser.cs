@@ -383,6 +383,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 node, NodeKind.MethodParameters, _lastExtractedLexem);
             NextLexem(); // (
 
+            var expectParameter = false;
             while (_lastExtractedLexem.Token != Token.ClosePar)
             {
                 BuildAnnotations();
@@ -400,7 +401,6 @@ namespace OneScript.Language.SyntaxAnalysis
                     AddError(LocalizedErrors.IdentifierExpected());
                     return;
                 }
-
                 CreateChild(param, NodeKind.Identifier, _lastExtractedLexem);
                 NextLexem();
                 if (_lastExtractedLexem.Token == Token.Equal)
@@ -409,13 +409,20 @@ namespace OneScript.Language.SyntaxAnalysis
                     if(!BuildDefaultParameterValue(param))
                         return;
                 }
-                
+
+                expectParameter = false;
                 if (_lastExtractedLexem.Token == Token.Comma)
                 {
                     NextLexem();
+                    expectParameter = true;
                 }
             }
 
+            if (expectParameter)
+            {
+                AddError(LocalizedErrors.IdentifierExpected(), false);
+            }
+            
             NextLexem(); // )
 
         }
@@ -1411,16 +1418,19 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        private void AddError(ParseError err)
+        private void AddError(ParseError err, bool doFastForward = true)
         {
             err.Position = _lexer.GetErrorPosition();
             _errors.Add(err);
             _builder.HandleParseError(err, _lastExtractedLexem, _lexer);
-            if(_tokenStack.Count > 0)
-                SkipToNextStatement(_tokenStack.Peek());
-            else
-                SkipToNextStatement();
-            
+            if (doFastForward)
+            {
+                if (_tokenStack.Count > 0)
+                    SkipToNextStatement(_tokenStack.Peek());
+                else
+                    SkipToNextStatement();
+            }
+
             if(_enableException)
                 throw new InternalParseException(err);
         }
