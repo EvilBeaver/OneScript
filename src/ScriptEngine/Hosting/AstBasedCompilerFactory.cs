@@ -5,17 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.Machine;
+using System;
+using ScriptEngine.Compiler;
 
 namespace ScriptEngine.Hosting
 {
-    public interface IEngineBuilder
+    public class AstBasedCompilerFactory : ICompilerServiceFactory
     {
-        RuntimeEnvironment Environment { get; set; }
-        ITypeManager TypeManager { get; set; }
-        IGlobalsManager GlobalInstances { get; set; }
-        ICompilerServiceFactory CompilerFactory { get; set; }
-
-        ScriptingEngine Build();
+        public CompilerService CreateInstance(ICompilerContext context)
+        {
+            return new AstBasedCompilerService(context);
+        }
     }
 }

@@ -123,7 +123,7 @@ namespace ScriptEngine.Machine.Contexts
                 _ownPropertyIndexes = new Dictionary<string, int>();
             }
 
-            var newIndex = _ownProperties.Count;
+            var newIndex = _ownProperties.Count + base.GetOwnVariableCount();
             _ownPropertyIndexes.Add(name, newIndex);
             if (!string.IsNullOrEmpty(alias))
             {
@@ -152,6 +152,16 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             return base.FindOwnMethod(name);
+        }
+
+        protected override int FindOwnProperty(string name)
+        {
+            if (_ownPropertyIndexes != default && _ownPropertyIndexes.TryGetValue(name, out var index))
+            {
+                return index;
+            }
+
+            return base.FindOwnProperty(name);
         }
 
         protected override MethodInfo GetOwnMethod(int index)
@@ -233,6 +243,14 @@ namespace ScriptEngine.Machine.Contexts
                 return true;
             else
                 return base.IsOwnPropReadable(index);
+        }
+
+        protected override bool IsOwnPropWritable(int index)
+        {
+            if (_ownProperties == null)
+                return base.IsOwnPropReadable(index);
+
+            return false;
         }
 
         protected override IValue GetOwnPropValue(int index)
