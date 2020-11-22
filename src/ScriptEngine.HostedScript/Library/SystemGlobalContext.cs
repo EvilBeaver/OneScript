@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library.Binary;
+using ScriptEngine.HostedScript.Library.NativeApi;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -182,23 +183,27 @@ namespace ScriptEngine.HostedScript.Library
         ///
         /// //Подключает вншение компонеты Native API, упакованные в ZIP-архив
         /// ПодключитьВнешнююКомпоненту("C:\AddInNative.zip", "AddInNative");
-        /// ЭкземплярВнешнейКомпоненты = Новый ("AddIn.AddInNative.NativeComponent");
+        /// ЭкземплярВнешнейКомпоненты = Новый ("AddIn.AddInNative.NativeComponent", ТипВнешнейКомпоненты.Native);
         ///
         /// //Подключает вншение компонеты Native API в виде отдельных DLL-файлов
         /// ПодключитьВнешнююКомпоненту("C:\AddInNative.dll", "SimpleAddIn", ТипВнешнейКомпоненты.Native);
         /// ЭкземплярВнешнейКомпоненты = Новый ("AddIn.SimpleAddIn.SimpleComponent");
         /// </example>        
         [ContextMethod("ПодключитьВнешнююКомпоненту", "AttachAddIn")]
-        public bool AttachAddIn(string dllPath, string name = "", NativeApi.NativeApiEnums type = NativeApi.NativeApiEnums.Native)
+        public bool AttachAddIn(string dllPath, string name = "", NativeApiEnums type = NativeApiEnums.OneScript)
         {
-            if (String.IsNullOrWhiteSpace(name))
+            if (type == NativeApiEnums.OneScript)
             {
                 var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
                 EngineInstance.AttachExternalAssembly(assembly, EngineInstance.Environment);
                 return true;
             }
             else {
-                return NativeApi.NativeApiFactory.Register(dllPath, name);
+                if (!Utils.IsValidIdentifier(name))
+                {
+                    throw RuntimeException.InvalidArgumentValue(name);
+                }
+                return NativeApiFactory.Register(dllPath, name);
             }
         }
 
