@@ -118,17 +118,17 @@ namespace ScriptEngine.HostedScript.Library
             try
             {
                 File.GetAttributes(FullName);
+                return true;
             }
-            catch (FileNotFoundException)
-            {
-                return false;
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return false;
-            }
+            catch (FileNotFoundException) { }
+            catch (DirectoryNotFoundException) { }
+            catch (ArgumentException) { }
+            catch (NotSupportedException) { }
+            catch (PathTooLongException) { }
+            catch (UnauthorizedAccessException) { }
+            catch (IOException) { }
 
-            return true;
+            return false;
         }
 
         [ContextMethod("Размер", "Size")]
