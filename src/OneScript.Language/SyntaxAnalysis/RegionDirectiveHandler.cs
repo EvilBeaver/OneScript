@@ -26,7 +26,7 @@ namespace OneScript.Language.SyntaxAnalysis
             _preprocEndRegion.Add("EndRegion", true);
         }
 
-        public void OnModuleEnter(ILexer lexemStream)
+        public void OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream)
         {
         }
 

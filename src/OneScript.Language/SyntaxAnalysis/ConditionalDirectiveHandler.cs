@@ -40,7 +40,7 @@ namespace OneScript.Language.SyntaxAnalysis
             _definitions.Remove(param);
         }
         
-        public void OnModuleEnter(ILexer lexemStream)
+        public void OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream)
         {
         }
 

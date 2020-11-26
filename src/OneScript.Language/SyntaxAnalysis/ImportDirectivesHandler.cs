@@ -13,12 +13,11 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class ImportDirectivesHandler : IDirectiveHandler
     {
-        private readonly IAstBuilder _nodeBuilder;
+        private IAstBuilder _nodeBuilder;
         private readonly ILexer _importClauseLexer;
 
-        public ImportDirectivesHandler(IAstBuilder nodeBuilder)
+        public ImportDirectivesHandler()
         {
-            _nodeBuilder = nodeBuilder;
             var builder = new LexerBuilder();
             builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
                 .HandleWith(new NonWhitespaceLexerState());
@@ -26,8 +25,9 @@ namespace OneScript.Language.SyntaxAnalysis
             _importClauseLexer = builder.Build();
         }
         
-        public void OnModuleEnter(ILexer lexemStream)
+        public void OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream)
         {
+            _nodeBuilder = nodeBuilder;
         }
 
         public void OnModuleLeave(ILexer lexemStream)

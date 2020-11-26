@@ -12,7 +12,7 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public interface IDirectiveHandler
     {
-        void OnModuleEnter(ILexer lexemStream);
+        void OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream);
         void OnModuleLeave(ILexer lexemStream);
 
         BslSyntaxNode HandleDirective(BslSyntaxNode parent, ILexer lexemStream, ref Lexem lastExtractedLexem);

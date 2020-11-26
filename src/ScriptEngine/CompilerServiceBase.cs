@@ -11,7 +11,7 @@ namespace ScriptEngine
     {
         private SymbolScope _scope;
         private readonly ModuleCompilerContext _currentContext;
-        private readonly PreprocessorHandlerChain _handlers = new PreprocessorHandlerChain();
+        private readonly PreprocessorHandlers _handlers = new PreprocessorHandlers();
         private readonly List<string> _preprocessorVariables = new List<string>();
 
         protected CompilerServiceBase(ICompilerContext outerContext)

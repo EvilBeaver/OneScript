@@ -21,7 +21,6 @@ namespace ScriptEngine
         SymbolScope _scope;
 
         private readonly ModuleCompilerContext _currentContext;
-        private readonly List<int> _predefinedVariables = new List<int>();
         private readonly List<string> _preprocessorVariables = new List<string>();
         
 
@@ -44,7 +43,6 @@ namespace ScriptEngine
                 else
                     varIdx = _currentContext.DefineProperty(name, alias).CodeIndex;
 
-                _predefinedVariables.Add(varIdx);
                 return varIdx;
             }
             catch
@@ -184,12 +182,15 @@ namespace ScriptEngine
 
         public void AddDirectiveHandler(IDirectiveHandler handler)
         {
-            throw new NotImplementedException();
+            if (handler is LegacyDirectiveAdapter adapter)
+            {
+                //Resharper disable CS0612
+                DirectiveResolver = adapter.RealResolver;
+            }
         }
 
         public void RemoveDirectiveHandler(IDirectiveHandler handler)
         {
-            throw new NotImplementedException();
         }
     }
 }

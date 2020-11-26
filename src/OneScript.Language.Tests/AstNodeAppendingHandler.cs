@@ -26,7 +26,7 @@ namespace OneScript.Language.Tests
             _allLineContentLexer = builder.Build();
         }
 
-        public void OnModuleEnter(ILexer lexemStream)
+        public void OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream)
         {
         }
 

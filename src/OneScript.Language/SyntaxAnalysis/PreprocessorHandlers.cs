@@ -5,13 +5,15 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class PreprocessorHandlerChain : IDirectiveHandler
+    public class PreprocessorHandlers : IDirectiveHandler
     {
         private readonly IList<IDirectiveHandler> _handlers = new List<IDirectiveHandler>();
         
@@ -24,12 +26,22 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             _handlers.Remove(handler);
         }
+        
+        public IDirectiveHandler Get(Type type)
+        {
+            return _handlers.FirstOrDefault(type.IsInstanceOfType);
+        }
 
-        void IDirectiveHandler.OnModuleEnter(ILexer lexemStream)
+        public T Get<T>() where T : IDirectiveHandler
+        {
+            return (T)Get(typeof(T));
+        }
+
+        void IDirectiveHandler.OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream)
         {
             foreach (var handler in _handlers)
             {
-                handler.OnModuleEnter(lexemStream);
+                handler.OnModuleEnter(nodeBuilder, lexemStream);
             }
         }
 

@@ -36,7 +36,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private readonly List<BslSyntaxNode> _annotations = new List<BslSyntaxNode>();
 
-        public DefaultBslParser(IAstBuilder builder, ILexer lexer) : this(builder, lexer, new PreprocessorHandlerChain())
+        public DefaultBslParser(IAstBuilder builder, ILexer lexer) : this(builder, lexer, new PreprocessorHandlers())
         {
         }
         
@@ -44,7 +44,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             _builder = builder;
             _lexer = lexer;
-            DirectiveHandlers = directiveHandler as PreprocessorHandlerChain;
+            DirectiveHandlers = directiveHandler as PreprocessorHandlers;
         }
 
         public static DefaultBslParser PrepareParser(string code)
@@ -58,7 +58,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public IEnumerable<ParseError> Errors => _errors; 
         
-        public PreprocessorHandlerChain DirectiveHandlers { get; }
+        public PreprocessorHandlers DirectiveHandlers { get; }
         
         public BslSyntaxNode ParseStatefulModule()
         {
@@ -113,9 +113,10 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void ParseImportDirectives()
         {
-            var importHandler = new ImportDirectivesHandler(_builder);
+            var importHandler = new ImportDirectivesHandler();
             try
             {
+                importHandler.OnModuleEnter(_builder, _lexer);
                 DirectiveHandlers.Add(importHandler);
                 while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
                 {
@@ -124,6 +125,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             finally
             {
+                importHandler.OnModuleLeave(_lexer);
                 DirectiveHandlers.Remove(importHandler);
             }
         }
