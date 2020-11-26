@@ -263,6 +263,7 @@ namespace ScriptEngine.Compiler
 
         private void DispatchModuleBuild()
         {
+            HandleImportDirectives();
             while (_lastExtractedLexem.Type != LexemType.EndOfText)
             {
                 if (_lastExtractedLexem.Type == LexemType.Identifier)
@@ -425,14 +426,24 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void HandleDirective(bool codeEntered)
+        private void HandleDirective()
         {
             var directive = _lastExtractedLexem.Content;
-
             var value = _lexer.Iterator.ReadToLineEnd();
 
-            if (DirectiveHandler == null || !DirectiveHandler(directive, value, codeEntered))
+            if (DirectiveHandler == null || !DirectiveHandler(directive, value, _isCodeEntered))
                 throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
+        }
+
+        private void HandleImportDirectives()
+        {
+            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+            {
+                HandleDirective();
+                UpdateCompositeContext(); // костыль для #330
+
+                _lastExtractedLexem = _lexer.NextLexem();
+            }
         }
 
         private void BuildSingleMethod()
@@ -711,6 +722,11 @@ namespace ScriptEngine.Compiler
                 {
                     NextToken();
                     continue;
+                }
+
+                if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                {
+                    throw new CompilerException(String.Format("Недопустимая директива: {0}", _lastExtractedLexem.Content));
                 }
 
                 if (_lastExtractedLexem.Type != LexemType.Identifier && _lastExtractedLexem.Token != Token.EndOfText)
@@ -1973,13 +1989,6 @@ namespace ScriptEngine.Compiler
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
                 _lastExtractedLexem = _lexer.NextLexem();
-                while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-                {
-                    HandleDirective(_isCodeEntered);
-                    UpdateCompositeContext(); // костыль для #330
-
-                    _lastExtractedLexem = _lexer.NextLexem();
-                }
             }
             else
             {
