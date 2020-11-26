@@ -9,13 +9,14 @@ using System;
 using System.Collections.Generic;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine
 {
-    public class CompilerService
+    public class CompilerService : ICompilerService
     {
         SymbolScope _scope;
 
@@ -125,16 +126,18 @@ namespace ScriptEngine
             return compiledImage;
         }
 
-        protected static ModuleInformation CreateModuleInformation(ICodeSource source, ILexemGenerator parser)
+        protected static ModuleInformation CreateModuleInformation(ICodeSource source, ILexer parser)
         {
-            var mi = new ModuleInformation();
-            mi.CodeIndexer = parser.Iterator;
-            // пока у модулей нет собственных имен, будет совпадать с источником модуля
-            mi.ModuleName = source.SourceDescription;
-            mi.Origin = source.SourceDescription;
+            var mi = new ModuleInformation
+            {
+                CodeIndexer = parser.Iterator,
+                ModuleName = source.SourceDescription,// пока у модулей нет собственных имен, будет совпадать с источником модуля
+                Origin = source.SourceDescription
+            };
+            
             return mi;
         }
-
+        
         protected virtual ModuleImage CreateImage(ICompilerContext context, ICodeSource source, ILexemGenerator lexer)
         {
             try
@@ -178,5 +181,15 @@ namespace ScriptEngine
         
         [Obsolete]
         public IDirectiveResolver DirectiveResolver { get; set; }
+
+        public void AddDirectiveHandler(IDirectiveHandler handler)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveDirectiveHandler(IDirectiveHandler handler)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections.Generic;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
@@ -14,7 +15,7 @@ using ScriptEngine.Environment;
 
 namespace ScriptEngine
 {
-    internal class AstBasedCompilerService : CompilerService
+    internal class AstBasedCompilerService : CompilerServiceBase
     {
         internal AstBasedCompilerService(ICompilerContext outerContext) 
             : base(outerContext)
@@ -23,58 +24,39 @@ namespace ScriptEngine
 
         private DefaultBslParser Parser { get; set; }
         
-        protected override ModuleImage CreateImage(ICompilerContext context, ICodeSource source, ILexemGenerator lexer)
+        protected override ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var codeGen = new AstBasedCodeGenerator(context)
             {
-                ThrowErrors = true,
-                DirectiveResolver = DirectiveResolver,
-                ProduceExtraCode = ProduceExtraCode
+                ProduceExtraCode = ProduceExtraCode,
+                ThrowErrors = true
             };
+            
             var astBuilder = new DefaultAstBuilder()
             {
                 ThrowOnError = true
             };
-            
+
+            var lexer = new DefaultLexer()
+            {
+                Code = source.Code
+            };
+
             Parser = new DefaultBslParser(astBuilder, lexer);
-            var node = Parser.ParseStatefulModule();
-            return codeGen.CreateImage(node, CreateModuleInformation(source, lexer));
-        }
-
-        protected override bool ResolveDirective(ILexemGenerator lexer, ref Lexem lexem)
-        {
-            var (name, value) = ParsePreprocessorDirective(lexer, ref lexem);
-            if (DirectiveResolver != default)
-            {
-                return DirectiveResolver.Resolve(name, value, Parser.ParsingContext.Count > 1);
-            }
-
-            return false;
-        }
-        
-        private (string directiveName, string value) ParsePreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)
-        {
-            var directiveName = lastExtractedLexem.Content;
-            ReadToLineEnd(lexer);
             
-            var value = lexer.Iterator.GetContents().TrimEnd();
-            if (string.IsNullOrEmpty(value))
+            var conditionalCompilation = new ConditionalDirectiveHandler();
+            foreach (var constant in preprocessorConstants)
             {
-                value = default;
+                conditionalCompilation.Define(constant);
             }
+            
+            Parser.DirectiveHandlers.Add(new RegionDirectiveHandler());
+            Parser.DirectiveHandlers.Add(conditionalCompilation);
+            
+            var moduleNode = Parser.ParseStatefulModule();
+            var mi = CreateModuleInformation(source, lexer);
 
-            lastExtractedLexem = lexer.NextLexem();
-
-            return (directiveName, value);
-        }
-        
-        private void ReadToLineEnd(ILexemGenerator lexer)
-        {
-            char cs;
-            do
-            {
-                cs = lexer.Iterator.CurrentSymbol;
-            } while (cs != '\n' && lexer.Iterator.MoveNext());
+            return codeGen.CreateImage(moduleNode, mi);
         }
     }
 }

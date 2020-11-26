@@ -36,11 +36,15 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private readonly List<BslSyntaxNode> _annotations = new List<BslSyntaxNode>();
 
-        public DefaultBslParser(IAstBuilder builder, ILexer lexer)
+        public DefaultBslParser(IAstBuilder builder, ILexer lexer) : this(builder, lexer, new PreprocessorHandlerChain())
+        {
+        }
+        
+        public DefaultBslParser(IAstBuilder builder, ILexer lexer, IDirectiveHandler directiveHandler)
         {
             _builder = builder;
             _lexer = lexer;
-            DirectiveHandlers = new PreprocessorHandlerChain();
+            DirectiveHandlers = directiveHandler as PreprocessorHandlerChain;
         }
 
         public static DefaultBslParser PrepareParser(string code)

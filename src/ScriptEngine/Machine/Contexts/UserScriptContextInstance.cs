@@ -171,7 +171,7 @@ namespace ScriptEngine.Machine.Contexts
             return GetOwnMethodsDefinition()[RAIZEEVENT_INDEX];
         }
 
-        public static void PrepareCompilation(CompilerService compiler)
+        public static void PrepareCompilation(ICompilerService compiler)
         {
             RegisterSymbols(compiler);
             GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x));

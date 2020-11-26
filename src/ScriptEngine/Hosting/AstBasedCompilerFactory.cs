@@ -12,7 +12,7 @@ namespace ScriptEngine.Hosting
 {
     public class AstBasedCompilerFactory : ICompilerServiceFactory
     {
-        public CompilerService CreateInstance(ICompilerContext context)
+        public ICompilerService CreateInstance(ICompilerContext context)
         {
             return new AstBasedCompilerService(context);
         }

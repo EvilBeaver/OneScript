@@ -47,7 +47,7 @@ namespace ScriptEngine.Machine.Contexts
             return sBuilder.ToString();
         }
 
-        public void AttachByPath(CompilerService compiler, string path, string typeName)
+        public void AttachByPath(ICompilerService compiler, string path, string typeName)
         {
             if (!Utils.IsValidIdentifier(typeName))
                 throw RuntimeException.InvalidArgumentValue();
@@ -60,7 +60,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        public void AttachFromString(CompilerService compiler, string text, string typeName)
+        public void AttachFromString(ICompilerService compiler, string text, string typeName)
         {
             var code = _engine.Loader.FromString(text);
             ThrowIfTypeExist(typeName, code);
@@ -68,18 +68,18 @@ namespace ScriptEngine.Machine.Contexts
             LoadAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
         }
 
-        public IRuntimeContextInstance LoadFromPath(CompilerService compiler, string path)
+        public IRuntimeContextInstance LoadFromPath(ICompilerService compiler, string path)
         {
             return LoadFromPath(compiler, path, null);
         }
 
-        public IRuntimeContextInstance LoadFromPath(CompilerService compiler, string path, ExternalContextData externalContext)
+        public IRuntimeContextInstance LoadFromPath(ICompilerService compiler, string path, ExternalContextData externalContext)
         {
             var code = _engine.Loader.FromFile(path);
             return LoadAndCreate(compiler, code, externalContext);
         }
 
-        public IRuntimeContextInstance LoadFromString(CompilerService compiler, string text, ExternalContextData externalContext = null)
+        public IRuntimeContextInstance LoadFromString(ICompilerService compiler, string text, ExternalContextData externalContext = null)
         {
             var code = _engine.Loader.FromString(text);
             return LoadAndCreate(compiler, code, externalContext);
@@ -105,7 +105,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private void LoadAndRegister(Type type, CompilerService compiler, string typeName, Environment.ICodeSource code)
+        private void LoadAndRegister(Type type, ICompilerService compiler, string typeName, Environment.ICodeSource code)
         {
             if(_loadedModules.ContainsKey(typeName))
             {
@@ -146,14 +146,14 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private IRuntimeContextInstance LoadAndCreate(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
+        private IRuntimeContextInstance LoadAndCreate(ICompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
             var module = CompileModuleFromSource(compiler, code, externalContext);
             var loadedHandle = new LoadedModule(module);
             return _engine.NewObject(loadedHandle, externalContext);
         }
 
-        public ModuleImage CompileModuleFromSource(CompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
+        public ModuleImage CompileModuleFromSource(ICompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
         {
             UserScriptContextInstance.PrepareCompilation(compiler);
                 

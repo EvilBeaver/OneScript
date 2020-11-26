@@ -119,7 +119,7 @@ namespace ScriptEngine
         [Obsolete]
         public IList<IDirectiveResolver> DirectiveResolvers { get; }
 
-        public CompilerService GetCompilerService()
+        public ICompilerService GetCompilerService()
         {
             var cs = _compilerFactory.CreateInstance(Environment.SymbolsContext);
             switch (System.Environment.OSVersion.Platform)
@@ -136,7 +136,7 @@ namespace ScriptEngine
             }
             
             cs.ProduceExtraCode = ProduceExtraCode;
-            cs.DirectiveResolver = (IDirectiveResolver)DirectiveResolvers;
+            //cs.DirectiveResolver = (IDirectiveResolver)DirectiveResolvers;
             return cs;
         }
         

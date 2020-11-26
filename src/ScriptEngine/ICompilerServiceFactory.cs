@@ -11,6 +11,6 @@ namespace ScriptEngine
 {
     public interface ICompilerServiceFactory
     {
-        CompilerService CreateInstance(ICompilerContext context);
+        ICompilerService CreateInstance(ICompilerContext context);
     }
 }
