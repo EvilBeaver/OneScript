@@ -5,20 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace OneScript.Language.LexicalAnalysis
+using System;
+using ScriptEngine.Compiler;
+
+namespace ScriptEngine.Hosting
 {
-    public class FixedLexerState : LexerState
+    public class AstBasedCompilerFactory : ICompilerServiceFactory
     {
-        private Lexem Lex { get; set; }
-
-        public void SetOutput(Lexem lex)
+        public CompilerService CreateInstance(ICompilerContext context)
         {
-            Lex = lex;
-        }
-
-        public override Lexem ReadNextLexem(SourceCodeIterator iterator)
-        {
-            return Lex;
+            return new AstBasedCompilerService(context);
         }
     }
 }

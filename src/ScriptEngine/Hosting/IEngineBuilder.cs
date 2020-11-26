@@ -14,7 +14,8 @@ namespace ScriptEngine.Hosting
         RuntimeEnvironment Environment { get; set; }
         ITypeManager TypeManager { get; set; }
         IGlobalsManager GlobalInstances { get; set; }
-        
         ICompilerServiceFactory CompilerFactory { get; set; }
+
+        ScriptingEngine Build();
     }
 }
