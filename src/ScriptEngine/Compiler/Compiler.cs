@@ -294,6 +294,10 @@ namespace ScriptEngine.Compiler
                 {
                     BuildAnnotations();
                 }
+                else if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                {
+                    throw CompilerException.IllegalDirective(_lastExtractedLexem.Content);
+                }
                 else
                 {
                     throw CompilerException.UnexpectedOperation();
@@ -432,7 +436,7 @@ namespace ScriptEngine.Compiler
             var value = _lexer.Iterator.ReadToLineEnd();
 
             if (DirectiveHandler == null || !DirectiveHandler(directive, value, _isCodeEntered))
-                throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
+                throw CompilerException.UnknownDirective(directive, value);
         }
 
         private void HandleImportDirectives()
@@ -726,7 +730,7 @@ namespace ScriptEngine.Compiler
 
                 if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
                 {
-                    throw new CompilerException(String.Format("Недопустимая директива: {0}", _lastExtractedLexem.Content));
+                    throw CompilerException.IllegalDirective(_lastExtractedLexem.Content);
                 }
 
                 if (_lastExtractedLexem.Type != LexemType.Identifier && _lastExtractedLexem.Token != Token.EndOfText)
