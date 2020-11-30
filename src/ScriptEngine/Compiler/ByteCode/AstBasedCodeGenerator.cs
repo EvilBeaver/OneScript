@@ -61,6 +61,7 @@ namespace ScriptEngine.Compiler.ByteCode
             VisitModule(moduleNode);
             CheckForwardedDeclarations();
             _module.LoadAddress = _ctx.TopIndex();
+            _module.ModuleInfo = _moduleInfo;
             return _module;
         }
 
