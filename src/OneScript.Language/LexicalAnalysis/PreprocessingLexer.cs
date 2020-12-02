@@ -13,7 +13,7 @@ namespace OneScript.Language.LexicalAnalysis
     public class PreprocessingLexer : ILexemGenerator
     {
         HashSet<string> _definitions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        ILexemGenerator _lexer;
+        FullSourceLexer _lexer;
         string _code;
 
         Lexem _lastExtractedLexem;
@@ -333,14 +333,34 @@ namespace OneScript.Language.LexicalAnalysis
                 throw PreprocessorError("Недопустимые символы в директиве");
         }
 
+        private void SkipComment()
+        {
+            _lexer.Iterator.MoveToContent();
+            if (!_lexer.Iterator.OnNewLine)
+            {
+                MoveNext();
+                if (_lastExtractedLexem.Type != LexemType.Comment)
+                    throw PreprocessorError("Недопустимые символы в директиве");
+            }
+        }
+        
+        private void SkipErrors(object sender, LexerErrorEventArgs args)
+        {
+            args.Iterator.MoveNext();
+            args.IsHandled = true;
+        }
+
         private void SkipTillNextDirective()
         {
-            int currentLevel = BlockLevel();
-            MoveNext();
-            CheckNewLine();
+            SkipComment();
 
+            _lexer.UnexpectedCharacterFound += SkipErrors;
+
+            int currentLevel = BlockLevel();
             while (true)
             {
+                MoveNext();
+
                 while (_lastExtractedLexem.Type != LexemType.PreprocessorDirective)
                 {
                     if (_lastExtractedLexem.Token == Token.EndOfText)
@@ -351,13 +371,16 @@ namespace OneScript.Language.LexicalAnalysis
 
                 if (_lastExtractedLexem.Token == Token.If)
                     PushBlock();
-                else if (_lastExtractedLexem.Token == Token.EndIf && BlockLevel() > currentLevel)
-                    PopBlock();
-                else if (BlockLevel() == currentLevel)
-                    break;
-
-                MoveNext();
+                else if (_lastExtractedLexem.Token == Token.EndIf)
+                {
+                    if (BlockLevel() > currentLevel)
+                        PopBlock();
+                    else if (BlockLevel() == currentLevel)
+                        break;
+                }
             }
+
+            _lexer.UnexpectedCharacterFound -= SkipErrors;
         }
     }
 }
