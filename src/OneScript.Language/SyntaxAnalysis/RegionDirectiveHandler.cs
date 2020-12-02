@@ -26,20 +26,21 @@ namespace OneScript.Language.SyntaxAnalysis
             _preprocEndRegion.Add("EndRegion", true);
         }
 
-        public void OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream)
+        public void OnModuleEnter(ParserContext context)
         {
         }
 
-        public void OnModuleLeave(ILexer lexemStream)
+        public void OnModuleLeave(ParserContext context)
         {
             if (_regionsNesting != 0)
-                throw new SyntaxErrorException(lexemStream.GetErrorPosition(), "Ожидается завершение директивы препроцессора #Область");
+                throw new SyntaxErrorException(context.Lexer.GetErrorPosition(), "Ожидается завершение директивы препроцессора #Область");
         }
 
-        public BslSyntaxNode HandleDirective(BslSyntaxNode parent, ILexer lexemStream, ref Lexem lastExtractedLexem)
+        public bool HandleDirective(ParserContext context)
         {
-            BslSyntaxNode result = default;
-            var directive = lastExtractedLexem;
+            var result = false;
+            var directive = context.LastExtractedLexem;
+            var lexemStream = context.Lexer;
             if (IsPreprocRegion(directive.Content))
             {
                 var regionName = lexemStream.NextLexemOnSameLine();
@@ -51,8 +52,8 @@ namespace OneScript.Language.SyntaxAnalysis
 
                 _regionsNesting++;
 
-                lastExtractedLexem = LexemFromNewLine(lexemStream);
-                result = parent;
+                context.LastExtractedLexem = LexemFromNewLine(lexemStream);
+                result = true;
             }
             else if (IsPreprocEndRegion(directive.Content))
             {
@@ -61,8 +62,8 @@ namespace OneScript.Language.SyntaxAnalysis
 
                 _regionsNesting--;
 
-                lastExtractedLexem = LexemFromNewLine(lexemStream);
-                result = parent;
+                context.LastExtractedLexem = LexemFromNewLine(lexemStream);
+                result = true;
             }
 
             return result;

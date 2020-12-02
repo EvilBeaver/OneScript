@@ -13,7 +13,6 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class ImportDirectivesHandler : IDirectiveHandler
     {
-        private IAstBuilder _nodeBuilder;
         private readonly ILexer _importClauseLexer;
 
         public ImportDirectivesHandler()
@@ -25,23 +24,25 @@ namespace OneScript.Language.SyntaxAnalysis
             _importClauseLexer = builder.Build();
         }
         
-        public void OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream)
-        {
-            _nodeBuilder = nodeBuilder;
-        }
-
-        public void OnModuleLeave(ILexer lexemStream)
+        public void OnModuleEnter(ParserContext context)
         {
         }
 
-        public BslSyntaxNode HandleDirective(BslSyntaxNode parent, ILexer lexemStream, ref Lexem lastExtractedLexem)
+        public void OnModuleLeave(ParserContext context)
         {
+        }
+
+        public bool HandleDirective(ParserContext context)
+        {
+            var lastExtractedLexem = context.LastExtractedLexem;
+            var lexemStream = context.Lexer;
+            var nodeBuilder = context.NodeBuilder;
             if (!DirectiveSupported(lastExtractedLexem.Content))
             {
                 return default;
             }
             
-            var node = _nodeBuilder.CreateNode(NodeKind.Preprocessor, lastExtractedLexem);
+            var node = nodeBuilder.CreateNode(NodeKind.Preprocessor, lastExtractedLexem);
             _importClauseLexer.Iterator = lexemStream.Iterator;
             
             var lex = _importClauseLexer.NextLexem();
@@ -51,9 +52,9 @@ namespace OneScript.Language.SyntaxAnalysis
                     "Ожидается имя библиотеки");
             }
 
-            var argumentNode = _nodeBuilder.CreateNode(NodeKind.Unknown, lex);
-            _nodeBuilder.AddChild(node, argumentNode);
-            _nodeBuilder.AddChild(parent, node);
+            var argumentNode = nodeBuilder.CreateNode(NodeKind.Unknown, lex);
+            nodeBuilder.AddChild(node, argumentNode);
+            nodeBuilder.AddChild(context.NodeContext.Peek(), node);
 
             lex = _importClauseLexer.NextLexemOnSameLine();
             if (lex.Type != LexemType.EndOfText)
@@ -62,9 +63,9 @@ namespace OneScript.Language.SyntaxAnalysis
                     LocalizedErrors.UnexpectedOperation());
             }
 
-            lastExtractedLexem = lexemStream.NextLexem(); 
+            context.LastExtractedLexem = lexemStream.NextLexem(); 
 
-            return parent;
+            return true;
         }
         
         private bool DirectiveSupported(string directive)

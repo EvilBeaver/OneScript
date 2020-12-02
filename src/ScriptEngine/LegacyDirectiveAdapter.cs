@@ -27,25 +27,26 @@ namespace ScriptEngine
             return RealResolver.Resolve(directive, value, codeEntered);
         }
 
-        public void OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream)
+        public void OnModuleEnter(ParserContext context)
         {
         }
 
-        public void OnModuleLeave(ILexer lexemStream)
+        public void OnModuleLeave(ParserContext context)
         {
         }
 
-        public BslSyntaxNode HandleDirective(BslSyntaxNode parent, ILexer lexemStream, ref Lexem lastExtractedLexem)
+        public bool HandleDirective(ParserContext context)
         {
-            var directive = lastExtractedLexem.Content;
+            var directive = context.LastExtractedLexem.Content;
+            var lexemStream = context.Lexer;
             lexemStream.ReadToLineEnd();
             var content = lexemStream.Iterator.GetContents();
 
-            var handled = RealResolver.Resolve(directive, content, parent?.Kind == NodeKind.Module);
+            var handled = RealResolver.Resolve(directive, content, context.NodeContext.Peek()?.Kind == NodeKind.Module);
             
-            lastExtractedLexem = lexemStream.NextLexem();
+            context.LastExtractedLexem = lexemStream.NextLexem();
 
-            return handled ? parent : default;
+            return handled;
         }
     }
 }

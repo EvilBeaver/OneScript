@@ -748,8 +748,7 @@ namespace OneScript.Language.Tests
                         #ЧтоТоЕще АбраКадабра(>= 18, ??)";
             
             var module = ParseModuleAndGetValidator(code);
-            var batch = new SyntaxTreeValidator(new TestAstNode(module.CurrentNode.RealNode.Parent));
-            batch.Is(NodeKind.Module);
+            var batch = module.NextChild();
             
             var node = batch.NextChild();
             node.Is(NodeKind.Preprocessor)
@@ -812,7 +811,7 @@ namespace OneScript.Language.Tests
 
             var client = new DefaultAstBuilder();
             var parser = new DefaultBslParser(client, lexer);
-            parser.DirectiveHandlers.Add(new AstNodeAppendingHandler(client));
+            parser.DirectiveHandlers.Add(new AstNodeAppendingHandler());
             var node = action(parser) as BslSyntaxNode;
 
             node.Should().NotBeNull();

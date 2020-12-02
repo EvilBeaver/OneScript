@@ -37,33 +37,25 @@ namespace OneScript.Language.SyntaxAnalysis
             return (T)Get(typeof(T));
         }
 
-        void IDirectiveHandler.OnModuleEnter(IAstBuilder nodeBuilder, ILexer lexemStream)
+        void IDirectiveHandler.OnModuleEnter(ParserContext context)
         {
             foreach (var handler in _handlers)
             {
-                handler.OnModuleEnter(nodeBuilder, lexemStream);
+                handler.OnModuleEnter(context);
             }
         }
 
-        void IDirectiveHandler.OnModuleLeave(ILexer lexemStream)
+        void IDirectiveHandler.OnModuleLeave(ParserContext context)
         {
             foreach (var handler in _handlers)
             {
-                handler.OnModuleLeave(lexemStream);
+                handler.OnModuleLeave(context);
             }
         }
 
-        BslSyntaxNode IDirectiveHandler.HandleDirective(BslSyntaxNode parent, ILexer lexemStream, ref Lexem lastExtractedLexem)
+        bool IDirectiveHandler.HandleDirective(ParserContext context)
         {
-            BslSyntaxNode result = default;
-            foreach (var handler in _handlers)
-            {
-                result = handler.HandleDirective(parent, lexemStream, ref lastExtractedLexem);
-                if (result != default)
-                    break;
-            }
-
-            return result;
+            return _handlers.Any(handler => handler.HandleDirective(context));
         }
     }
 }
