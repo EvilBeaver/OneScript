@@ -14,6 +14,7 @@ namespace OneScript.Language.SyntaxAnalysis
     public class ImportDirectivesHandler : IDirectiveHandler
     {
         private readonly ILexer _importClauseLexer;
+        private bool _enabled;
 
         public ImportDirectivesHandler()
         {
@@ -26,14 +27,22 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public void OnModuleEnter(ParserContext context)
         {
+            _enabled = true;
         }
 
         public void OnModuleLeave(ParserContext context)
         {
+            _enabled = false;
         }
 
         public bool HandleDirective(ParserContext context)
         {
+            if(!_enabled)
+                throw new SyntaxErrorException(
+                    context.Lexer.GetErrorPosition(),
+                    LocalizedErrors.DirectiveNotSupported(context.LastExtractedLexem.Content)
+                    );
+                
             var lastExtractedLexem = context.LastExtractedLexem;
             var lexemStream = context.Lexer;
             var nodeBuilder = context.NodeBuilder;
