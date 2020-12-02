@@ -148,17 +148,15 @@ namespace ScriptEngine.HostedScript
 
         private void LoadLibrary(string value)
         {
-            if (String.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Ошибка в имени библиотеки", "value");
-
+            bool quoted = PrepareQuoted(ref value);
             bool loaded;
-            if (IsQuoted(value))
-                loaded = LoadByRelativePath(value.Substring(1, value.Length - 2));
+            if (quoted)
+                loaded = LoadByRelativePath(value);
             else
                 loaded = LoadByName(value);
 
             if(!loaded)
-                throw new CompilerException(String.Format("Библиотека не найдена {0}", value));
+                throw new CompilerException(String.Format("Библиотека не найдена: '{0}'", value));
 
         }
 
@@ -192,16 +190,44 @@ namespace ScriptEngine.HostedScript
             return (!string.IsNullOrEmpty(path) && path.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0);
         }
 
-        private bool IsQuoted(string value)
+        private bool PrepareQuoted(ref string value)
         {
+            const string COMMENT = "//";
             const char QUOTE = '"';
-            if(value[0] == QUOTE && value.Length > 1)
+
+            bool quoted = false;
+            if (value.IndexOf(QUOTE)==0)
             {
-                return value[0] == QUOTE && value[value.Length - 1] == QUOTE;
+                var secondQuote = value.Substring(1).IndexOf(QUOTE);
+                if (secondQuote > 0)
+                {
+                    if (secondQuote+2 < value.Length)
+                    {
+                        var tail = value.Substring(secondQuote+2, value.Length-secondQuote-2).TrimStart();
+                        if (!String.IsNullOrWhiteSpace(tail) && tail.IndexOf(COMMENT) != 0)
+                            throw new CompilerException($"Недопустимые символы после имени библиотеки: '{tail}'");
+                    }
+                    value = value.Substring(1, secondQuote);
+                    quoted = true;
+                }
+                else
+                {
+                    throw new CompilerException($"Ошибка в имени библиотеки: '{value}'");
+                }
             }
             else
-                return false;
-            
+            {
+                var comment = value.IndexOf(COMMENT);
+                if( comment>=0 )
+                {
+                    value = value.Substring(0,comment).TrimEnd();
+                }
+            }
+
+            if (String.IsNullOrWhiteSpace(value))
+                throw new CompilerException("Отсутствует имя библиотеки");
+
+            return quoted;
         }
 
         private bool LoadByPath(string libraryPath)
