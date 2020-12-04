@@ -371,13 +371,13 @@ namespace OneScript.Language.LexicalAnalysis
 
                 if (_lastExtractedLexem.Token == Token.If)
                     PushBlock();
-                else if (_lastExtractedLexem.Token == Token.EndIf)
-                {
-                    if (BlockLevel() > currentLevel)
-                        PopBlock();
-                    else if (BlockLevel() == currentLevel)
-                        break;
-                }
+                else if (_lastExtractedLexem.Token == Token.EndIf && BlockLevel() > currentLevel)
+                    PopBlock();
+                else if (BlockLevel() == currentLevel &&
+                        (_lastExtractedLexem.Token == Token.EndIf || 
+                         _lastExtractedLexem.Token == Token.ElseIf ||
+                         _lastExtractedLexem.Token == Token.Else) )
+                    break;
             }
 
             _lexer.UnexpectedCharacterFound -= SkipErrors;
