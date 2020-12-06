@@ -115,7 +115,14 @@ namespace OneScript.StandardLibrary.Text
         {
             get
             {
-                return (CLREnumValueWrapper<ConsoleColor> )GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.ForegroundColor);
+                try
+                {
+                    return (CLREnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.ForegroundColor);
+                }
+                catch (InvalidOperationException)
+                {
+                    return null;
+                }
             }
             set
             {
@@ -129,7 +136,14 @@ namespace OneScript.StandardLibrary.Text
         {
             get
             {
-                return (CLREnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
+                try
+                {
+                    return (CLREnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
+                }
+                catch (InvalidOperationException)
+                {
+                    return null;
+                }
             }
             set
             {

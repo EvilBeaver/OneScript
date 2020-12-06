@@ -16,12 +16,16 @@ namespace OneScript.Language
     public static class LanguageDef
     {
         static readonly Dictionary<Token, int> _priority = new Dictionary<Token, int>();
+        public const int MAX_OPERATION_PRIORITY = 8;
 
         private static readonly LexemTrie<Token> _stringToToken = new LexemTrie<Token>();
 
         private static readonly LexemTrie<bool> _undefined = new LexemTrie<bool>();
         private static readonly LexemTrie<bool> _booleans = new LexemTrie<bool>();
         private static readonly LexemTrie<bool> _logicalOp = new LexemTrie<bool>();
+
+        private static readonly LexemTrie<bool> _preprocRegion = new LexemTrie<bool>();
+        private static readonly LexemTrie<bool> _preprocEndRegion = new LexemTrie<bool>();
 
         const int BUILTINS_INDEX = (int)Token.ByValParam;
 
@@ -206,6 +210,11 @@ namespace OneScript.Language
             AddToken(Token.ModuleInfo, "текущийсценарий", "currentscript");
 
             #endregion
+
+            _preprocRegion.Add("Область",true);
+            _preprocRegion.Add("Region", true);
+            _preprocEndRegion.Add("КонецОбласти", true);
+            _preprocEndRegion.Add("EndRegion", true);
         }
 
         private static void AddToken(Token token, string name)
@@ -266,6 +275,12 @@ namespace OneScript.Language
         public static bool IsLogicalBinaryOperator(Token token)
         {
             return token == Token.And || token == Token.Or;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsUnaryOperator(Token token)
+        {
+            return token == Token.Plus || token == Token.Minus || token == Token.Not;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -384,5 +399,18 @@ namespace OneScript.Language
         {
             return _logicalOp.TryGetValue(content, out var nodeIsFilled) && nodeIsFilled;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsPreprocRegion(string value)
+        {
+            return _preprocRegion.TryGetValue(value, out var nodeIsFilled) && nodeIsFilled;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsPreprocEndRegion(string value)
+        {
+            return _preprocEndRegion.TryGetValue(value, out var nodeIsFilled) && nodeIsFilled;
+        }
+
+        
     }
 }

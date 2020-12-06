@@ -10,12 +10,11 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public interface IAstBuilder
+    public interface IDirectiveHandler
     {
-        BslSyntaxNode CreateNode(NodeKind kind, in Lexem startLexem);
+        void OnModuleEnter(ILexer lexemStream);
+        void OnModuleLeave(ILexer lexemStream);
 
-        void AddChild(BslSyntaxNode parent, BslSyntaxNode child);
-
-        void HandleParseError(in ParseError error, in Lexem lexem, ILexer lexer);
+        BslSyntaxNode HandleDirective(BslSyntaxNode parent, ILexer lexemStream, ref Lexem lastExtractedLexem);
     }
 }

@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
@@ -96,11 +97,8 @@ namespace ScriptEngine
             {
                 parser.Define(variable);
             }
-            parser.UnknownDirective += (sender, args) =>
-            {
-                // все неизвестные директивы возвращать назад и обрабатывать старым кодом
-                args.IsHandled = true;
-            };
+
+            parser.UnknownDirective += UnknownDirectiveHandler;
             parser.Code = source.Code;
 
             if (DirectiveResolver != null)
@@ -165,6 +163,20 @@ namespace ScriptEngine
                 return false;
         }
 
+        private void UnknownDirectiveHandler(object sender, PreprocessorUnknownTokenEventArgs args)
+        {
+            var localLex = args.Lexem;
+            args.IsHandled = ResolveDirective(args.Lexer, ref localLex);
+            args.Lexem = localLex;
+        }
+
+        protected virtual bool ResolveDirective(ILexemGenerator lexer, ref Lexem lexem)
+        {
+            // все неизвестные директивы возвращать назад в результат лексера
+            return true;
+        }
+        
+        [Obsolete]
         public IDirectiveResolver DirectiveResolver { get; set; }
     }
 }

@@ -91,5 +91,11 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public static ParseError WrongHandlerName() =>
             Create("ru = 'Ожидается имя обработчика события'; en = 'Event handler name expected'");
+        
+        public static ParseError UnexpectedSymbol(char c) =>
+            Create($"ru = 'Неизвестный символ {c}'; en = 'Unexpected character {c}'");
+
+        public static ParseError DirectiveNotSupported(string directive) =>
+            Create($"ru ='Директива {directive} не разрешена в данном месте'; en = 'Directive {directive} is not supported here'");
     }
 }

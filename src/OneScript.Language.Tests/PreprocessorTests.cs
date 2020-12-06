@@ -387,6 +387,178 @@ namespace OneScript.Language.Tests
             Assert.Throws<SyntaxErrorException>(() => {while (pp.NextLexem().Token != Token.EndOfText);});
         }
 
+        [Fact]
+        public void PreprocessingLexer_SimpleRegion()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область reg1
+            
+            #КонецОбласти
+            F";
+
+            pp.Code = code;
+            var lex = pp.NextLexem();
+            Assert.Equal("F", lex.Content);
+        }
+
+        [Fact]
+        public void PreprocessingLexer_MultipleNestedRegions()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Region reg1
+            #Область reg2
+            
+            #Область if // keywords are ok
+            
+            #endRegion
+            #КонецОбласти // reg 1
+            
+            #endRegion
+            # Область  reg1 // same name is ok
+
+            #КонецОбласти
+            F";
+
+            pp.Code = code;
+            var lex = pp.NextLexem();
+            Assert.Equal("F", lex.Content);
+        }
+
+
+        [Fact]
+        public void PreprocessingLexer_NoEndRegion()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область reg1
+            #Область reg2
+            #КонецОбласти
+            F";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => { while (pp.NextLexem().Token != Token.EndOfText) ; });
+        }
+
+        [Fact]
+        public void PreprocessingLexer_ExtraEndRegion()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область reg1
+            #КонецОбласти
+            #КонецОбласти
+            F";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+
+        [Fact]
+        public void PreprocessingLexer_BadRegionName()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область -reg
+            #КонецОбласти
+            F";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+
+        [Fact]
+        public void PreprocessingLexer_NoRegionName()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область
+            #КонецОбласти
+            F";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+
+        [Fact]
+        public void PreprocessingLexer_NoRegionNameWithComment()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область // no name
+            #КонецОбласти
+            F";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+
+        [Fact]
+        public void PreprocessingLexer_SymbolsAfterName()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область reg 00
+            #КонецОбласти
+            F";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+
+        [Fact]
+        public void PreprocessingLexer_SymbolsAfterEndRegion()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область reg
+            #КонецОбласти reg
+            F";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+        }
+
+        [Fact]
+        public void PreprocessingLexer_DirectiveAfterLineBreak()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область reg
+            #
+
+            КонецОбласти
+            F";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => { while (pp.NextLexem().Token != Token.EndOfText) ; });
+        }
+
+        [Fact]
+        public void PreprocessingLexer_DirectiveNotOnNewLine()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Область reg
+            F; #КонецОбласти
+            ";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => { while (pp.NextLexem().Token != Token.EndOfText) ; });
+        }
+
         private string GetPreprocessedContent(PreprocessingLexer pp, string code)
         {
             pp.Code = code;

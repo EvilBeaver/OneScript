@@ -19,10 +19,10 @@ namespace OneScript.Language.LexicalAnalysis
         Lexem _lastExtractedLexem;
 
         Stack<PreprocessorBlock> _blocks = new Stack<PreprocessorBlock>();
+        private int _regionsNesting = 0;
 
         private class PreprocessorBlock
         {
-            public bool OutputIsOn;
             public bool IsSolved;
         }
 
@@ -31,8 +31,10 @@ namespace OneScript.Language.LexicalAnalysis
             _lexer = new DefaultLexer();
         }
 
+        [Obsolete]
         public event EventHandler<PreprocessorUnknownTokenEventArgs> UnknownDirective;
 
+        [Obsolete]
         public bool EmitUnknownDirectives { get; set; }
             
         public void Define(string param)
@@ -50,20 +52,12 @@ namespace OneScript.Language.LexicalAnalysis
             _definitions.Remove(param);
         }
 
-        private bool OutputIsOn()
+        private void PushBlock()
         {
-            if (_blocks.Count > 0)
-                return _blocks.Peek().OutputIsOn;
-            else
-                return true;
-        }
-
-        private void PushBlock(bool isOn)
-        {
-            var block = new PreprocessorBlock();
-            block.OutputIsOn = isOn;
-            if (block.OutputIsOn)
-                block.IsSolved = true;
+            var block = new PreprocessorBlock()
+            {
+                IsSolved = false
+            };
             _blocks.Push(block);
         }
 
@@ -78,11 +72,6 @@ namespace OneScript.Language.LexicalAnalysis
         private void MarkAsSolved()
         {
             _blocks.Peek().IsSolved = true;
-        }
-
-        private void SetOutput(bool output)
-        {
-            _blocks.Peek().OutputIsOn = output;
         }
 
         private void PopBlock()
@@ -215,7 +204,6 @@ namespace OneScript.Language.LexicalAnalysis
         }
 
         public int CurrentColumn => _lexer.CurrentColumn;
-
         public int CurrentLine => _lexer.CurrentLine;
 
         public Lexem NextLexem()
@@ -227,15 +215,21 @@ namespace OneScript.Language.LexicalAnalysis
 
             if (_lastExtractedLexem.Type == LexemType.EndOfText)
             {
-                if (BlockLevel()!=0)
-                    throw PreprocessorError("Ожидается директива препроцессора #КонецЕсли");
+                if (BlockLevel() != 0)
+                    throw PreprocessorError("Ожидается завершение директивы препроцессора #Если");
+                if (_regionsNesting != 0)
+                    throw PreprocessorError("Ожидается завершение директивы препроцессора #Область");
             }
 
             return _lastExtractedLexem;
         }
 
-        public SourceCodeIterator Iterator => _lexer.Iterator;
-
+        public SourceCodeIterator Iterator
+        {
+            get => _lexer.Iterator;
+            set => throw new NotSupportedException();
+        }
+        
         private void MoveNext()
         {
             _lastExtractedLexem = _lexer.NextLexem();
@@ -245,53 +239,23 @@ namespace OneScript.Language.LexicalAnalysis
         {
             if(directive.Token == Token.If)
             {
-                var enterBlock = SolveExpression();
-                PushBlock(enterBlock);
-
-                if (_lastExtractedLexem.Token != Token.Then)
-                    throw PreprocessorError("Ошибка в выражении препроцессора");
-
-                if (enterBlock)
-                    return NextLexem();
-
-                SkipTillNextDirective();
-
-                return Preprocess(_lastExtractedLexem);
-
+                PushBlock();
+                return ResolveCondition();
             }
             else if(directive.Token == Token.ElseIf)
             {
                 if (BlockIsSolved())
                 {
+                    SolveExpression(); // проверить корректность условия
                     SkipTillNextDirective();
                     return Preprocess(_lastExtractedLexem);
                 }
-                else
-                {
-                    var enterBlock = SolveExpression();
-                    if (_lastExtractedLexem.Token != Token.Then)
-                        throw PreprocessorError("Ошибка в выражении препроцессора");
 
-                    if (enterBlock)
-                    {
-                        MarkAsSolved();
-                        return NextLexem();
-                    }
-                    else
-                    {
-                        SkipTillNextDirective();
-                        return Preprocess(_lastExtractedLexem);
-                    }
-                }
-
+                return ResolveCondition();
             }
             else if(directive.Token == Token.Else)
             {
-                SetOutput(!BlockIsSolved());
-
-                if (OutputIsOn())
-                    return NextLexem();
-                else
+                if (BlockIsSolved())
                 {
                     SkipTillNextDirective();
                     if (_lastExtractedLexem.Token != Token.EndIf)
@@ -299,11 +263,38 @@ namespace OneScript.Language.LexicalAnalysis
 
                     return Preprocess(_lastExtractedLexem);
                 }
+
+                return LexemFromNewLine();
             }
             else if(directive.Token == Token.EndIf)
             {
                 PopBlock();
-                return NextLexem();
+                return LexemFromNewLine();
+            }
+            else
+            {
+                if (LanguageDef.IsPreprocRegion(directive.Content))
+                {
+                    MoveNext();
+                    if (_lexer.Iterator.OnNewLine)
+                        throw PreprocessorError("Ожидается имя области");
+
+                    if (!LanguageDef.IsIdentifier(ref _lastExtractedLexem))
+                        throw PreprocessorError($"Недопустимое имя Области: {_lastExtractedLexem.Content}");
+
+                    _regionsNesting++;
+
+                    return LexemFromNewLine();
+                }
+                else if (LanguageDef.IsPreprocEndRegion(directive.Content))
+                {
+                    if (_regionsNesting == 0)
+                        throw PreprocessorError("Пропущена директива препроцессора #Область");
+
+                    _regionsNesting--;
+
+                    return LexemFromNewLine();
+                }
             }
 
             HandleUnknownDirective(_lastExtractedLexem);
@@ -311,10 +302,43 @@ namespace OneScript.Language.LexicalAnalysis
             return _lastExtractedLexem;
         }
 
+        private Lexem ResolveCondition()
+        {
+            var enterBlock = SolveExpression();
+            if (_lastExtractedLexem.Token != Token.Then)
+                throw PreprocessorError("Ошибка в директиве препроцессора: ожидается ключевое слово Тогда");
+
+            if (enterBlock)
+            {
+                MarkAsSolved();
+                return LexemFromNewLine();
+            }
+            else
+            {
+                SkipTillNextDirective();
+                return Preprocess(_lastExtractedLexem);
+            }
+        }
+
+        private Lexem LexemFromNewLine()
+        {
+            var lex = NextLexem();
+            CheckNewLine();
+
+            return lex;
+        }
+
+        private void CheckNewLine()
+        {
+            if (!_lexer.Iterator.OnNewLine)
+                throw PreprocessorError("Недопустимые символы в директиве");
+        }
+
         private void SkipTillNextDirective()
         {
             int currentLevel = BlockLevel();
             MoveNext();
+            CheckNewLine();
 
             while (true)
             {
@@ -327,14 +351,13 @@ namespace OneScript.Language.LexicalAnalysis
                 }
 
                 if (_lastExtractedLexem.Token == Token.If)
-                    PushBlock(false);
+                    PushBlock();
                 else if (_lastExtractedLexem.Token == Token.EndIf && BlockLevel() > currentLevel)
                     PopBlock();
                 else if (BlockLevel() == currentLevel)
                     break;
 
                 MoveNext();
-
             }
         }
     }

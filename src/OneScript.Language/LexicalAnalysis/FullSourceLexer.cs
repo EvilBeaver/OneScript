@@ -25,40 +25,26 @@ namespace OneScript.Language.LexicalAnalysis
         private LexerState _annotationState = new AnnotationLexerState();
         private LexerState _directiveState = new PreprocessorDirectiveLexerState();
         
-        private FixedParserState _fixedState = new FixedParserState();
-
-        private class FixedParserState : LexerState
-        {
-            Lexem _lex;
-
-            public void SetOutput(Lexem lex)
-            {
-                _lex = lex;
-            }
-
-            public override Lexem ReadNextLexem(SourceCodeIterator iterator)
-            {
-                return _lex;
-            }
-        }
+        private FixedLexerState _fixedState = new FixedLexerState();
 
         public FullSourceLexer()
         {
             _iterator = new SourceCodeIterator();
         }
 
-        public SourceCodeIterator Iterator => _iterator;
+        public SourceCodeIterator Iterator
+        {
+            get => _iterator;
+            set => _iterator = value;
+        }
 
         public int CurrentColumn => _iterator.CurrentColumn;
 
         public int CurrentLine => _iterator.CurrentLine;
 
-        public virtual string Code
+        public string Code
         {
-            get
-            {
-                return _code;
-            }
+            get => _code;
             set
             {
                 _code = value;

@@ -15,6 +15,7 @@ using System.Text;
 
 namespace ScriptEngine.HostedScript
 {
+    [Obsolete]
     public class LibraryResolver : IDirectiveResolver
     {
         private const string USE_DIRECTIVE_RU = "использовать";

@@ -14,10 +14,12 @@ namespace OneScript.StandardLibrary.Regex
     public class MatchImpl : AutoContext<MatchImpl>
     {
         private readonly RegExp.Match _match;
+        private readonly RegExp.Regex _regex;
 
-        public MatchImpl(RegExp.Match match)
+        public MatchImpl(RegExp.Match match, RegExp.Regex regex)
         {
             _match = match;
+            _regex = regex;
         }
 
         /// <summary>
@@ -53,7 +55,7 @@ namespace OneScript.StandardLibrary.Regex
         [ContextProperty("Группы", "Groups")]
         public GroupCollection Groups
         {
-            get { return new GroupCollection(_match.Groups); }
+            get { return new GroupCollection(_match.Groups, _regex); }
         }
     }
 
@@ -61,10 +63,14 @@ namespace OneScript.StandardLibrary.Regex
     public class GroupImpl : AutoContext<GroupImpl>
     {
         private readonly RegExp.Group _group;
+        private readonly int _group_index;
+        private readonly RegExp.Regex _regex;
 
-        public GroupImpl(RegExp.Group group)
+        public GroupImpl(RegExp.Group group, int group_index, RegExp.Regex regex)
         {
             _group = group;
+            _group_index = group_index;
+            _regex = regex;
         }
 
         /// <summary>
@@ -92,6 +98,15 @@ namespace OneScript.StandardLibrary.Regex
         public int Length
         {
             get { return _group.Length; }
+        }
+
+        /// <summary>
+        /// Имя группы
+        /// </summary>
+        [ContextProperty("Имя", "Name")]
+        public string Name
+        {
+            get { return _regex.GroupNameFromNumber(_group_index); }
         }
     }
 }

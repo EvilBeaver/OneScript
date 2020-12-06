@@ -386,10 +386,33 @@ namespace OneScript.Language.Tests
             assignment.NextChild();
             var node = assignment.NextChild();
             node.Is(NodeKind.BinaryOperation)
-                .Equal(Token.Plus.ToString());
-            node.NextChildIs(NodeKind.Constant)
-                .NextChildIs(NodeKind.BinaryOperation);
+                .Equal(Token.Minus.ToString());
+            node.NextChildIs(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.Constant);
         }
+
+        [Fact]
+        public void AdditionPriority_For_Strings()
+        {
+            var code = @"А = ""Стр1"" + Сч + ""Стр2""";
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+
+            var assignment = batch
+                .NextChild().Is(NodeKind.Assignment);
+            assignment.NextChild();
+            var node = assignment.NextChild();
+            node.Is(NodeKind.BinaryOperation).Equal(Token.Plus.ToString());
+
+            var firstAddition = node.NextChild();
+            firstAddition.Is(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.Constant)
+                .NextChildIs(NodeKind.Identifier);
+            
+            node.NextChild().Is(NodeKind.Constant)
+                .Equal("Стр2");
+        }
+        
         
         [Fact]
         public void Check_Binary_Expressions_Priority()
@@ -528,6 +551,24 @@ namespace OneScript.Language.Tests
             call.NextChild();
             call.NextChild()
                 .CurrentNode.Children.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public void Throws_When_Last_ParameterDefinition_IsMissing()
+        {
+            var code = @"Процедура ПодключитьсяКХранилищу(Знач СтрокаСоединения, 
+                                            Знач ПользовательХранилища,
+                                            Знач ПарольХранилища = """",
+                                            Знач ИгнорироватьНаличиеПодключеннойБД = Ложь,
+                                            Знач ЗаменитьКонфигурациюБД = Истина,
+                                           	) Экспорт
+            КонецПроцедуры";
+
+            var parser = DefaultBslParser.PrepareParser(code);
+            parser.ParseStatefulModule();
+
+            parser.Errors.Should().NotBeEmpty("last parameter is missing");
+            parser.Errors.First().ErrorId.Should().Be("IdentifierExpected");
         }
         
         [Fact]
@@ -706,8 +747,9 @@ namespace OneScript.Language.Tests
                         #ВерсияЯзыка 2.0.8
                         #ЧтоТоЕще АбраКадабра(>= 18, ??)";
             
-            var batch = ParseBatchAndGetValidator(code);
-            batch.Is(NodeKind.CodeBatch);
+            var module = ParseModuleAndGetValidator(code);
+            var batch = new SyntaxTreeValidator(new TestAstNode(module.CurrentNode.RealNode.Parent));
+            batch.Is(NodeKind.Module);
             
             var node = batch.NextChild();
             node.Is(NodeKind.Preprocessor)
@@ -770,6 +812,7 @@ namespace OneScript.Language.Tests
 
             var client = new DefaultAstBuilder();
             var parser = new DefaultBslParser(client, lexer);
+            parser.DirectiveHandlers.Add(new AstNodeAppendingHandler(client));
             var node = action(parser) as BslSyntaxNode;
 
             node.Should().NotBeNull();

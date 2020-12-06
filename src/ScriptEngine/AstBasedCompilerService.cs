@@ -21,22 +21,60 @@ namespace ScriptEngine
         {
         }
 
+        private DefaultBslParser Parser { get; set; }
+        
         protected override ModuleImage CreateImage(ICompilerContext context, ICodeSource source, ILexemGenerator lexer)
         {
             var codeGen = new AstBasedCodeGenerator(context)
             {
                 ThrowErrors = true,
-                DirectiveResolver = DirectiveResolver
+                DirectiveResolver = DirectiveResolver,
+                ProduceExtraCode = ProduceExtraCode
             };
             var astBuilder = new DefaultAstBuilder()
             {
                 ThrowOnError = true
             };
             
-            var parser = new DefaultBslParser(astBuilder, lexer);
-            var node = (BslSyntaxNode)parser.ParseStatefulModule();
-            codeGen.ProduceExtraCode = ProduceExtraCode;
+            Parser = new DefaultBslParser(astBuilder, lexer);
+            var node = Parser.ParseStatefulModule();
             return codeGen.CreateImage(node, CreateModuleInformation(source, lexer));
+        }
+
+        protected override bool ResolveDirective(ILexemGenerator lexer, ref Lexem lexem)
+        {
+            var (name, value) = ParsePreprocessorDirective(lexer, ref lexem);
+            if (DirectiveResolver != default)
+            {
+                return DirectiveResolver.Resolve(name, value, Parser.ParsingContext.Count > 1);
+            }
+
+            return false;
+        }
+        
+        private (string directiveName, string value) ParsePreprocessorDirective(ILexemGenerator lexer, ref Lexem lastExtractedLexem)
+        {
+            var directiveName = lastExtractedLexem.Content;
+            ReadToLineEnd(lexer);
+            
+            var value = lexer.Iterator.GetContents().TrimEnd();
+            if (string.IsNullOrEmpty(value))
+            {
+                value = default;
+            }
+
+            lastExtractedLexem = lexer.NextLexem();
+
+            return (directiveName, value);
+        }
+        
+        private void ReadToLineEnd(ILexemGenerator lexer)
+        {
+            char cs;
+            do
+            {
+                cs = lexer.Iterator.CurrentSymbol;
+            } while (cs != '\n' && lexer.Iterator.MoveNext());
         }
     }
 }

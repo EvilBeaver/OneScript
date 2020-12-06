@@ -6,16 +6,17 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using ScriptEngine.Machine.Contexts;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace ScriptEngine.Machine
 {
-    public static class GlobalsManager
+    public class GlobalInstancesManager : IGlobalsManager
     {
-        static readonly Dictionary<Type, object> _instances = new Dictionary<Type, object>();
+        private readonly Dictionary<Type, object> _instances = new Dictionary<Type, object>();
 
-        internal static void Reset()
+        public void Dispose()
         {
             foreach (var disposable in _instances
                 .Select(x=>x.Value)                   
@@ -27,34 +28,34 @@ namespace ScriptEngine.Machine
             _instances.Clear();
         }
 
-        public static void RegisterInstance(object instance)
+        public void RegisterInstance(object instance)
         {
             _instances.Add(instance.GetType(), instance);
         }
 
-        public static void RegisterInstance(Type type, object instance)
+        public void RegisterInstance(Type type, object instance)
         {
             _instances.Add(type, instance);
         }
 
-        public static T GetGlobalContext<T>()
+        public object GetInstance(Type type)
         {
-            return InternalGetInstance<T>();
+            return _instances[type];
         }
 
-        public static T GetEnum<T>()
-        {
-            return InternalGetInstance<T>();
-        }
-
-        public static EnumerationContext GetSimpleEnum(Type type)
-        {
-            return (EnumerationContext)_instances[type];
-        }
-
-        private static T InternalGetInstance<T>()
+        public T GetInstance<T>()
         {
             return (T)_instances[typeof(T)];
+        }
+
+        public IEnumerator<KeyValuePair<Type, object>> GetEnumerator()
+        {
+            return _instances.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

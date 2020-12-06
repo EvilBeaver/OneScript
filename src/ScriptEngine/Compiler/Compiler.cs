@@ -28,6 +28,7 @@ namespace ScriptEngine.Compiler
         private bool _isMethodsDefined = false;
         private bool _isStatementsDefined = false;
         private bool _isFunctionProcessed = false;
+        private bool _isCodeEntered = false;
         
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
@@ -254,38 +255,31 @@ namespace ScriptEngine.Compiler
 
         private void DispatchModuleBuild()
         {
-            bool isCodeEntered = false;
-
             while (_lastExtractedLexem.Type != LexemType.EndOfText)
             {
                 if (_lastExtractedLexem.Type == LexemType.Identifier)
                 {
                     if (_lastExtractedLexem.Token == Token.VarDef)
                     {
-                        isCodeEntered = true;
+                        _isCodeEntered = true;
                         BuildVariableDefinitions();
                     }
                     else if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
                     {
-                        isCodeEntered = true;
+                        _isCodeEntered = true;
                         _isMethodsDefined = true;
                         BuildSingleMethod();
                     }
                     else
                     {
-                        isCodeEntered = true;
+                        _isCodeEntered = true;
                         BuildModuleBody();
                     }
                 }
                 else if (_lastExtractedLexem.Type == LexemType.EndOperator)
                 {
-                    isCodeEntered = true;
+                    _isCodeEntered = true;
                     BuildModuleBody();
-                }
-                else if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-                {
-                    HandleDirective(isCodeEntered);
-                    UpdateCompositeContext(); // костыль для #330
                 }
                 else if (_lastExtractedLexem.Type == LexemType.Annotation)
                 {
@@ -426,23 +420,11 @@ namespace ScriptEngine.Compiler
         private void HandleDirective(bool codeEntered)
         {
             var directive = _lastExtractedLexem.Content;
-            
-            ReadToLineEnd();
 
-            var value = _lexer.Iterator.GetContents().Trim();
-            NextToken();
+            var value = _lexer.Iterator.ReadToLineEnd();
 
             if (DirectiveHandler == null || !DirectiveHandler(directive, value, codeEntered))
                 throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
-        }
-
-        private void ReadToLineEnd()
-        {
-            char cs;
-            do
-            {
-                cs = _lexer.Iterator.CurrentSymbol;
-            } while (cs != '\n' && _lexer.Iterator.MoveNext());
         }
 
         private void BuildSingleMethod()
@@ -1983,6 +1965,13 @@ namespace ScriptEngine.Compiler
             if (_lastExtractedLexem.Token != Token.EndOfText)
             {
                 _lastExtractedLexem = _lexer.NextLexem();
+                while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                {
+                    HandleDirective(_isCodeEntered);
+                    UpdateCompositeContext(); // костыль для #330
+
+                    _lastExtractedLexem = _lexer.NextLexem();
+                }
             }
             else
             {

@@ -279,7 +279,8 @@ namespace OneScript.Language.Tests
         [Fact]
         public void Preprocessor_Lexem_ProcessedCorrectly()
         {
-            string code = "#Если #КонецЕсли";
+            string code = @"#Если
+                #КонецЕсли";
 
             var iterator = new SourceCodeIterator(code);
             var wordParser = new PreprocessorDirectiveLexerState();
@@ -468,6 +469,77 @@ namespace OneScript.Language.Tests
             Assert.Equal("]", lex.Content);
         }
 
+        [Fact]
+        public void NonWhiteSpaceLexer_Reads_UnquotedStrings()
+        {
+            var code = "AA.BB()--Data Second";
+            
+            var lb = new LexerBuilder();
+            lb.Detect((cs,i) => !char.IsWhiteSpace(cs))
+                .HandleWith(new NonWhitespaceLexerState());
+
+            var lexer = lb.Build();
+
+            lexer.Iterator = new SourceCodeIterator(code);
+            
+            var lex = lexer.NextLexem();
+            
+            Assert.Equal(LexemType.NotALexem, lex.Type);
+            Assert.Equal(Token.NotAToken, lex.Token);
+            Assert.Equal("AA.BB()--Data", lex.Content);
+
+            lex = lexer.NextLexem();
+            Assert.Equal("Second", lex.Content);
+
+            lex = lexer.NextLexem();
+            Assert.Equal(Lexem.EndOfText(), lex);
+        }
+        
+        [Fact]
+        public void NonWhiteSpaceLexer_Discards_Comments()
+        {
+            var code = "AA.BB()-// comment";
+            
+            var lb = new LexerBuilder();
+            lb.Detect((cs,i) => !char.IsWhiteSpace(cs))
+                .HandleWith(new NonWhitespaceLexerState());
+
+            var lexer = lb.Build();
+
+            lexer.Iterator = new SourceCodeIterator(code);
+            
+            var lex = lexer.NextLexem();
+            
+            Assert.Equal(LexemType.NotALexem, lex.Type);
+            Assert.Equal(Token.NotAToken, lex.Token);
+            Assert.Equal("AA.BB()-", lex.Content);
+
+            lex = lexer.NextLexem();
+            Assert.Equal(Lexem.EndOfText(), lex);
+        }
+        
+        [Fact]
+        public void NonWhiteSpaceLexer_Reads_QuotedStrings()
+        {
+            var code = @"""Quoted space //and comment"" next";
+            
+            var lb = new LexerBuilder();
+            lb.Detect((cs,i) => !char.IsWhiteSpace(cs))
+                .HandleWith(new NonWhitespaceLexerState());
+
+            var lexer = lb.Build();
+
+            lexer.Iterator = new SourceCodeIterator(code);
+            var lex = lexer.NextLexem();
+            Assert.Equal("\"Quoted space //and comment\"", lex.Content);
+            
+            lex = lexer.NextLexem();
+            Assert.Equal("next", lex.Content);
+            
+            lex = lexer.NextLexem();
+            Assert.Equal(Lexem.EndOfText(), lex);
+        }
+        
         [Fact]
         public void Code_Walkthrough()
         {

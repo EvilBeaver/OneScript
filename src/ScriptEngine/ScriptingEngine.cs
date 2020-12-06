@@ -12,44 +12,53 @@ using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Compiler;
+using ScriptEngine.Hosting;
 
 namespace ScriptEngine
 {
     public class ScriptingEngine : IDisposable
     {
-        // TODO выпилить инстанс машины отсюда, т.к. он привязан к потоку, а не к engine
-        private readonly MachineInstance _machine;
+        private readonly ICompilerServiceFactory _compilerFactory;
+        
         private readonly ScriptSourceFactory _scriptFactory;
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
 
+        [Obsolete]
         public ScriptingEngine()
         {
-            _machine = MachineInstance.Current;
-
             TypeManager.Initialize(new StandartTypeManager());
             TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
             
             GlobalsManager.Reset();
-            AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
             
             _scriptFactory = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
-
-            SetupDirectiveResolution();
+            ContextDiscoverer = new ContextDiscoverer(TypeManager.Instance, GlobalsManager.Instance);
+            _compilerFactory = new AstBasedCompilerFactory();
+            
+            AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
         }
 
-        private void SetupDirectiveResolution()
+        public ScriptingEngine(ITypeManager types, IGlobalsManager globals, RuntimeEnvironment env, ICompilerServiceFactory compilerFactory)
         {
-            var ignoreDirectiveResolver = new DirectiveIgnorer
-            {
-                {"Region", "Область"},
-                {"EndRegion", "КонецОбласти"}
-            };
+            _compilerFactory = compilerFactory;
+            // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
+            TypeManager.Initialize(types);
+            TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
 
-            DirectiveResolvers.Add(ignoreDirectiveResolver);
+            GlobalsManager.Instance = globals;
+            Environment = env;
+            
+            _scriptFactory = new ScriptSourceFactory();
+            DirectiveResolvers = new DirectiveMultiResolver();
+            ContextDiscoverer = new ContextDiscoverer(types, globals);
         }
-
+        
+        private ContextDiscoverer ContextDiscoverer { get; }
+        
+        public RuntimeEnvironment Environment { get; set; }
+        
         public CodeGenerationFlags ProduceExtraCode { get; set; }
 
         public void AttachAssembly(System.Reflection.Assembly asm)
@@ -73,12 +82,10 @@ namespace ScriptEngine
             var newCount = globalEnvironment.AttachedContexts.Count();
             while (lastCount < newCount)
             {
-                _machine.AttachContext(globalEnvironment.AttachedContexts[lastCount]);
+                MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount]);
                 ++lastCount;
             }
         }
-
-        public RuntimeEnvironment Environment { get; set; }
 
         public void Initialize()
         {
@@ -92,7 +99,7 @@ namespace ScriptEngine
 
         public void UpdateContexts()
         {
-            Environment.LoadMemory(_machine);
+            Environment.LoadMemory(MachineInstance.Current);
         }
 
         private void SetDefaultEnvironmentIfNeeded()
@@ -109,12 +116,12 @@ namespace ScriptEngine
             }
         }
 
+        [Obsolete]
         public IList<IDirectiveResolver> DirectiveResolvers { get; }
 
         public CompilerService GetCompilerService()
         {
-            var cs = new AstBasedCompilerService(Environment.SymbolsContext);
-            //var cs = new CompilerService(Environment.SymbolsContext);
+            var cs = _compilerFactory.CreateInstance(Environment.SymbolsContext);
             switch (System.Environment.OSVersion.Platform)
             {
                 case PlatformID.Unix:
@@ -177,8 +184,6 @@ namespace ScriptEngine
             InitializeSDO(scriptContext);
         }
 
-        public MachineInstance Machine => _machine;
-
         public AttachedScriptsFactory AttachedScriptsFactory => _attachedScriptsFactory;
 
         public IDebugController DebugController
@@ -190,7 +195,7 @@ namespace ScriptEngine
                 if (value != null)
                 {
                     ProduceExtraCode = CodeGenerationFlags.DebugCode;
-                    _machine.SetDebugMode(_debugController.BreakpointManager);
+                    MachineInstance.Current.SetDebugMode(_debugController.BreakpointManager);
                 }
             }
         }
@@ -198,7 +203,7 @@ namespace ScriptEngine
         public void SetCodeStatisticsCollector(ICodeStatCollector collector)
         {
             ProduceExtraCode = CodeGenerationFlags.CodeStatistics;
-            _machine.SetCodeStatisticsCollector(collector);
+            MachineInstance.Current.SetCodeStatisticsCollector(collector);
         }
 
         #region IDisposable Members
