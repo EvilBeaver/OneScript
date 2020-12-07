@@ -6,12 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class PreprocessorHandlers : IDirectiveHandler
+    public class PreprocessorHandlers : IDirectiveHandler, IEnumerable<IDirectiveHandler>
     {
         private readonly IList<IDirectiveHandler> _handlers;
 
@@ -70,6 +71,16 @@ namespace OneScript.Language.SyntaxAnalysis
         bool IDirectiveHandler.HandleDirective(ParserContext context)
         {
             return _handlers.Any(handler => handler.HandleDirective(context));
+        }
+
+        public IEnumerator<IDirectiveHandler> GetEnumerator()
+        {
+            return _handlers.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable) _handlers).GetEnumerator();
         }
     }
 }

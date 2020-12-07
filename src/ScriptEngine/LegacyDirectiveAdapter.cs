@@ -1,6 +1,12 @@
-﻿using OneScript.Language.LexicalAnalysis;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
-using OneScript.Language.SyntaxAnalysis.AstNodes;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 
@@ -40,9 +46,9 @@ namespace ScriptEngine
             var directive = context.LastExtractedLexem.Content;
             var lexemStream = context.Lexer;
             lexemStream.ReadToLineEnd();
-            var content = lexemStream.Iterator.GetContents();
+            var content = lexemStream.Iterator.GetContents().Trim();
 
-            var handled = RealResolver.Resolve(directive, content, context.NodeContext.Peek()?.Kind == NodeKind.Module);
+            var handled = RealResolver.Resolve(directive, content, context.NodeContext.Peek()?.Kind != NodeKind.Module);
             
             context.LastExtractedLexem = lexemStream.NextLexem();
 

@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Language.LexicalAnalysis;
-using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
@@ -34,7 +33,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 return default;
             }
             
-            var node = nodeBuilder.CreateNode(NodeKind.Annotation, lastExtractedLexem);
+            var node = nodeBuilder.CreateNode(NodeKind.Import, lastExtractedLexem);
             _importClauseLexer.Iterator = lexemStream.Iterator;
             
             var lex = _importClauseLexer.NextLexem();
@@ -63,7 +62,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return true;
         }
         
-        private bool DirectiveSupported(string directive)
+        private static bool DirectiveSupported(string directive)
         {
             return StringComparer.InvariantCultureIgnoreCase.Compare(directive, "использовать") == 0
                    || StringComparer.InvariantCultureIgnoreCase.Compare(directive, "use") == 0;

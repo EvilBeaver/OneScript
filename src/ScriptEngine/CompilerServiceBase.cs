@@ -1,4 +1,12 @@
-﻿using System.Collections.Generic;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using System.Collections.Generic;
+using System.Linq;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
@@ -59,6 +67,7 @@ namespace ScriptEngine
         {
             try
             {
+                RegisterScopeIfNeeded();
                 return CompileInternal(source, _preprocessorVariables, _currentContext);
             }
             finally
@@ -87,6 +96,11 @@ namespace ScriptEngine
                 _scope = new SymbolScope();
                 _currentContext.PushScope(_scope);
             }
+        }
+
+        protected PreprocessorHandlers GetHandlers()
+        {
+            return new PreprocessorHandlers(_handlers.OrderBy(x => x is LegacyDirectiveAdapter? 1 : 0));
         }
         
         protected static ModuleInformation CreateModuleInformation(ICodeSource source, ILexer parser)

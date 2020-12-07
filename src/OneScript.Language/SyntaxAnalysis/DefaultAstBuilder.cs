@@ -43,7 +43,8 @@ namespace OneScript.Language.SyntaxAnalysis
             switch (kind)
             {
                 case NodeKind.Annotation:
-                    return new AnnotationNode
+                case NodeKind.Import:
+                    return new AnnotationNode(kind)
                     {
                         Name = startLexem.Content
                     };

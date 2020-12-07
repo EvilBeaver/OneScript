@@ -46,6 +46,8 @@ namespace ScriptEngine.Compiler
 
         protected ICompilerContext CompilerContext => _ctx;
         
+        public IDependencyResolver DependencyResolver { get; set; }
+        
         public ModuleImage CreateImage(ModuleNode moduleNode, ModuleInformation moduleInfo)
         {
             if (moduleNode.Kind != NodeKind.Module)
@@ -69,7 +71,28 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitModuleAnnotation(AnnotationNode node)
         {
+            if (node.Kind == NodeKind.Import)
+                HandleImportClause(node);
+        }
+
+        private void HandleImportClause(AnnotationNode node)
+        {
+            var libName = node.Children
+                .Cast<AnnotationParameterNode>()
+                .First()
+                .Value
+                .Content;
             
+            try
+            {
+                DependencyResolver.Resolve(libName, _ctx);
+                if(_ctx is ModuleCompilerContext moduleContext)
+                    moduleContext.Update();
+            }
+            catch (CompilerException e)
+            {
+                AddError(e);
+            }
         }
 
         private void CheckForwardedDeclarations()

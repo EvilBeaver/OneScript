@@ -47,7 +47,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 if (regionName.Type == LexemType.EndOfText)
                     throw new SyntaxErrorException(lexemStream.GetErrorPosition(), "Ожидается имя области");
 
-                if (!LanguageDef.IsIdentifier(ref directive))
+                if (!LanguageDef.IsValidIdentifier(directive.Content))
                     throw new SyntaxErrorException(lexemStream.GetErrorPosition(), $"Недопустимое имя Области: {directive.Content}");
 
                 _regionsNesting++;

@@ -5,15 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Language.LexicalAnalysis;
-
-namespace OneScript.Language.SyntaxAnalysis.AstNodes
+namespace ScriptEngine.Compiler
 {
-    public class ModuleNode : AnnotatableNode
+    public interface IDependencyResolver
     {
-        public ModuleNode(Lexem startLexem) : base(NodeKind.Module)
-        {
-            Location = startLexem.Location;
-        }
+        ExternalLibraryDef Resolve(string library, ICompilerContext context);
     }
 }

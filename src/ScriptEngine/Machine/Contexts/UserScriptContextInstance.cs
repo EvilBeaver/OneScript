@@ -248,7 +248,7 @@ namespace ScriptEngine.Machine.Contexts
         protected override bool IsOwnPropWritable(int index)
         {
             if (_ownProperties == null)
-                return base.IsOwnPropReadable(index);
+                return base.IsOwnPropWritable(index);
 
             return false;
         }

@@ -73,6 +73,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 switch (child.Kind)
                 {
                     case NodeKind.Annotation:
+                    case NodeKind.Import:
                         VisitModuleAnnotation((AnnotationNode) child);
                         break;
                     case NodeKind.VariablesSection:

@@ -42,16 +42,16 @@ namespace ScriptEngine.Compiler
                 Code = source.Code
             };
 
-            Parser = new DefaultBslParser(astBuilder, lexer);
-            
             var conditionalCompilation = new ConditionalDirectiveHandler();
             foreach (var constant in preprocessorConstants)
             {
                 conditionalCompilation.Define(constant);
             }
             
-            Parser.DirectiveHandlers.Add(new RegionDirectiveHandler());
-            Parser.DirectiveHandlers.Add(conditionalCompilation);
+            AddDirectiveHandler(new RegionDirectiveHandler());
+            AddDirectiveHandler(conditionalCompilation);
+            //AddDirectiveHandler(new ImportDirectivesHandler());
+            Parser = new DefaultBslParser(astBuilder, lexer, GetHandlers());
             
             var moduleNode = (ModuleNode)Parser.ParseStatefulModule();
             var mi = CreateModuleInformation(source, lexer);

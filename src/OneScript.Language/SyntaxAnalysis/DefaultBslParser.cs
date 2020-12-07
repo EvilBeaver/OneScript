@@ -111,6 +111,9 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void ParseModuleAnnotation()
         {
+            if (_lastExtractedLexem.Type != LexemType.PreprocessorDirective)
+                return;
+            
             var importHandler = DirectiveHandlers
                 .Slice(x => x is ModuleAnnotationDirectiveHandler)
                 as IDirectiveHandler;
