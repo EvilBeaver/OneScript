@@ -11,10 +11,9 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class ImportDirectivesHandler : IDirectiveHandler
+    public class ImportDirectivesHandler : ModuleAnnotationDirectiveHandler
     {
         private readonly ILexer _importClauseLexer;
-        private bool _enabled;
 
         public ImportDirectivesHandler()
         {
@@ -25,24 +24,8 @@ namespace OneScript.Language.SyntaxAnalysis
             _importClauseLexer = builder.Build();
         }
         
-        public void OnModuleEnter(ParserContext context)
+        protected override bool HandleDirectiveInternal(ParserContext context)
         {
-            _enabled = true;
-        }
-
-        public void OnModuleLeave(ParserContext context)
-        {
-            _enabled = false;
-        }
-
-        public bool HandleDirective(ParserContext context)
-        {
-            if(!_enabled)
-                throw new SyntaxErrorException(
-                    context.Lexer.GetErrorPosition(),
-                    LocalizedErrors.DirectiveNotSupported(context.LastExtractedLexem.Content)
-                    );
-                
             var lastExtractedLexem = context.LastExtractedLexem;
             var lexemStream = context.Lexer;
             var nodeBuilder = context.NodeBuilder;
@@ -51,7 +34,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 return default;
             }
             
-            var node = nodeBuilder.CreateNode(NodeKind.Preprocessor, lastExtractedLexem);
+            var node = nodeBuilder.CreateNode(NodeKind.Annotation, lastExtractedLexem);
             _importClauseLexer.Iterator = lexemStream.Iterator;
             
             var lex = _importClauseLexer.NextLexem();
@@ -61,7 +44,10 @@ namespace OneScript.Language.SyntaxAnalysis
                     "Ожидается имя библиотеки");
             }
 
-            var argumentNode = nodeBuilder.CreateNode(NodeKind.Unknown, lex);
+            var argumentNode = nodeBuilder.CreateNode(NodeKind.AnnotationParameter, lex);
+            var value = nodeBuilder.CreateNode(NodeKind.AnnotationParameterValue, lex);
+            nodeBuilder.AddChild(argumentNode, value);
+            
             nodeBuilder.AddChild(node, argumentNode);
             nodeBuilder.AddChild(context.NodeContext.Peek(), node);
 

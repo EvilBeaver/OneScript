@@ -9,11 +9,9 @@ using System.Collections.Generic;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using ScriptEngine.Compiler;
-using ScriptEngine.Compiler.ByteCode;
 using ScriptEngine.Environment;
 
-namespace ScriptEngine
+namespace ScriptEngine.Compiler
 {
     internal class AstBasedCompilerService : CompilerServiceBase
     {
@@ -23,6 +21,8 @@ namespace ScriptEngine
         }
 
         private DefaultBslParser Parser { get; set; }
+        
+        
         
         protected override ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
@@ -53,7 +53,7 @@ namespace ScriptEngine
             Parser.DirectiveHandlers.Add(new RegionDirectiveHandler());
             Parser.DirectiveHandlers.Add(conditionalCompilation);
             
-            var moduleNode = Parser.ParseStatefulModule();
+            var moduleNode = (ModuleNode)Parser.ParseStatefulModule();
             var mi = CreateModuleInformation(source, lexer);
 
             return codeGen.CreateImage(moduleNode, mi);

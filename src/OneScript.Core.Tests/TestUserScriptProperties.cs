@@ -10,7 +10,6 @@ using FluentAssertions;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
-using ScriptEngine.Compiler.ByteCode;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

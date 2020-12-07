@@ -8,14 +8,22 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OneScript.Language.LexicalAnalysis;
-using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
     public class PreprocessorHandlers : IDirectiveHandler
     {
-        private readonly IList<IDirectiveHandler> _handlers = new List<IDirectiveHandler>();
+        private readonly IList<IDirectiveHandler> _handlers;
+
+        public PreprocessorHandlers()
+        {
+           _handlers = new List<IDirectiveHandler>();
+        }
+        
+        public PreprocessorHandlers(IEnumerable<IDirectiveHandler> handlers)
+        {
+            _handlers = new List<IDirectiveHandler>(handlers);
+        }
         
         public void Add(IDirectiveHandler handler)
         {
@@ -31,10 +39,16 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             return _handlers.FirstOrDefault(type.IsInstanceOfType);
         }
-
+        
         public T Get<T>() where T : IDirectiveHandler
         {
             return (T)Get(typeof(T));
+        }
+
+        public PreprocessorHandlers Slice(Func<IDirectiveHandler, bool> predicate)
+        {
+            var slice = _handlers.Where(predicate);
+            return new PreprocessorHandlers(slice);
         }
 
         void IDirectiveHandler.OnModuleEnter(ParserContext context)

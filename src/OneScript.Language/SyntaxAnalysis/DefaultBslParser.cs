@@ -109,11 +109,15 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private BslSyntaxNode CurrentParent => _nodeContext.Peek();
 
-        private void ParseImportDirectives()
+        private void ParseModuleAnnotation()
         {
-            var importHandler = DirectiveHandlers.Get<ImportDirectivesHandler>();
+            var importHandler = DirectiveHandlers
+                .Slice(x => x is ModuleAnnotationDirectiveHandler)
+                as IDirectiveHandler;
+            
             if (importHandler == default)
                 return;
+            
             var ctx = CreateParserContext();
             try
             {
@@ -131,7 +135,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void ParseModuleSections()
         {
-            ParseImportDirectives();
+            ParseModuleAnnotation();
             BuildVariableSection();
             BuildMethodsSection();
             BuildModuleBody();

@@ -29,7 +29,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 typeof(NodeKind).GetFields(BindingFlags.Static|BindingFlags.Public).Length
             ];
 
-            _nodeVisitors[(int)NodeKind.Module] = VisitModule;
+            _nodeVisitors[(int)NodeKind.Module] = x => VisitModule((ModuleNode)x);
             _nodeVisitors[(int)NodeKind.Assignment] = VisitAssignment;
             _nodeVisitors[(int)NodeKind.DereferenceOperation] = VisitDereferenceOperation;
             _nodeVisitors[(int)NodeKind.IndexAccess] = VisitIndexAccess;
@@ -66,12 +66,15 @@ namespace OneScript.Language.SyntaxAnalysis
 
         protected Action<BslSyntaxNode>[] GetVisitorsDispatch() => _nodeVisitors;
         
-        protected virtual void VisitModule(BslSyntaxNode node)
+        protected virtual void VisitModule(ModuleNode node)
         {
             foreach (var child in node.Children)
             {
                 switch (child.Kind)
                 {
+                    case NodeKind.Annotation:
+                        VisitModuleAnnotation((AnnotationNode) child);
+                        break;
                     case NodeKind.VariablesSection:
                         foreach (var varNode in child.Children)
                         {
@@ -93,6 +96,10 @@ namespace OneScript.Language.SyntaxAnalysis
                 }
             }
 
+        }
+
+        protected virtual void VisitModuleAnnotation(AnnotationNode node)
+        {
         }
 
         protected virtual void VisitModuleVariable(VariableDefinitionNode varNode)

@@ -12,9 +12,9 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using ScriptEngine;
 using ScriptEngine.Compiler;
-using ScriptEngine.Compiler.ByteCode;
 using ScriptEngine.Environment;
 using Xunit;
+using AstBasedCodeGenerator = ScriptEngine.Compiler.AstBasedCodeGenerator;
 
 namespace OneScript.Core.Tests
 {
@@ -55,7 +55,7 @@ namespace OneScript.Core.Tests
         private static ModuleImage BuildImage(string code)
         {
             var parser = DefaultBslParser.PrepareParser(code);
-            var node = parser.ParseStatefulModule() as BslSyntaxNode;
+            var node = parser.ParseStatefulModule() as ModuleNode;
 
             var compiler = new AstBasedCodeGenerator(Mock.Of<ICompilerContext>());
             return compiler.CreateImage(node, new ModuleInformation());

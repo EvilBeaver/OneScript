@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
-namespace ScriptEngine.Compiler.ByteCode
+namespace ScriptEngine.Compiler
 {
     public partial class AstBasedCodeGenerator
     {

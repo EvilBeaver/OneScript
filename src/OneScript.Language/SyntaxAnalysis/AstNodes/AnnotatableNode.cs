@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
-using ScriptEngine.Compiler.ByteCode;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {

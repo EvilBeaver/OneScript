@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using ScriptEngine.Compiler;
 
-namespace ScriptEngine.Hosting
+namespace ScriptEngine
 {
     public class AstBasedCompilerFactory : ICompilerServiceFactory
     {
