@@ -5,6 +5,9 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine
 {
+    /// <summary>
+    /// Сервис компиляции единичного модуля.
+    /// </summary>
     public interface ICompilerService
     {
         CodeGenerationFlags ProduceExtraCode { get; set; }

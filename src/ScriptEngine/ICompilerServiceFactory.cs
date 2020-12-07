@@ -9,6 +9,11 @@ using ScriptEngine.Compiler;
 
 namespace ScriptEngine
 {
+    /// <summary>
+    /// Фасад для разделения старого компилятора и нового компилятора.
+    /// Потенциально может быть удален после рефакторинга.
+    /// Предоставляет CompilerService для Engine и оттуда - прикладному коду
+    /// </summary>
     public interface ICompilerServiceFactory
     {
         ICompilerService CreateInstance(ICompilerContext context);
