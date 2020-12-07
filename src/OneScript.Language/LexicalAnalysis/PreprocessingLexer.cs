@@ -13,7 +13,7 @@ namespace OneScript.Language.LexicalAnalysis
     public class PreprocessingLexer : ILexemGenerator
     {
         HashSet<string> _definitions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        ILexemGenerator _lexer;
+        FullSourceLexer _lexer;
         string _code;
 
         Lexem _lastExtractedLexem;
@@ -28,7 +28,7 @@ namespace OneScript.Language.LexicalAnalysis
 
         public PreprocessingLexer()
         {
-            _lexer = new Lexer();
+            _lexer = new FullSourceLexer();
         }
 
         public event EventHandler<PreprocessorUnknownTokenEventArgs> UnknownDirective;
@@ -113,7 +113,7 @@ namespace OneScript.Language.LexicalAnalysis
 
         private bool SolveExpression()
         {
-            NextLexem();
+            MoveNextSameLine();
 
             return SolveOrExpression();
         }
@@ -128,7 +128,7 @@ namespace OneScript.Language.LexicalAnalysis
 
             if (_lastExtractedLexem.Token == Token.Or)
             {
-                NextLexem();
+                MoveNextSameLine();
                 var secondArgument = SolveOrExpression();
                 return argument || secondArgument; // здесь нужны НЕ-сокращенные вычисления
             }
@@ -142,7 +142,7 @@ namespace OneScript.Language.LexicalAnalysis
 
             if (_lastExtractedLexem.Token == Token.And)
             {
-                NextLexem();
+                MoveNextSameLine();
                 var secondArgument = SolveAndExpression();
                 return argument && secondArgument; // здесь нужны НЕ-сокращенные вычисления
             }
@@ -154,7 +154,7 @@ namespace OneScript.Language.LexicalAnalysis
         {
             if (_lastExtractedLexem.Token == Token.Not)
             {
-                NextLexem();
+                MoveNextSameLine();
                 return !GetArgument();
             }
 
@@ -165,11 +165,11 @@ namespace OneScript.Language.LexicalAnalysis
         {
             if (_lastExtractedLexem.Token == Token.OpenPar)
             {
-                NextLexem();
+                MoveNextSameLine();
                 var result = SolveOrExpression();
                 if (_lastExtractedLexem.Token == Token.ClosePar)
                 {
-                    NextLexem();
+                    MoveNextSameLine();
                     return result;
                 }
                 throw PreprocessorError("Ожидается закрывающая скобка");
@@ -179,7 +179,7 @@ namespace OneScript.Language.LexicalAnalysis
                 throw PreprocessorError("Ожидается объявление препроцессора");
             
             var expression = IsDefined(_lastExtractedLexem.Content);
-            NextLexem();
+            MoveNextSameLine();
             return expression;
         }
 
@@ -203,10 +203,13 @@ namespace OneScript.Language.LexicalAnalysis
 
         public Lexem NextLexem()
         {
-            MoveNext();
-
-            if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-                return Preprocess(_lastExtractedLexem);
+            do
+            {
+                MoveNext();
+                if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                    _lastExtractedLexem = Preprocess(_lastExtractedLexem);
+            }
+            while (_lastExtractedLexem.Type == LexemType.Comment);
 
             if (_lastExtractedLexem.Type == LexemType.EndOfText)
             {
@@ -222,6 +225,13 @@ namespace OneScript.Language.LexicalAnalysis
         private void MoveNext()
         {
             _lastExtractedLexem = _lexer.NextLexem();
+        }
+
+        private void MoveNextSameLine()
+        {
+            _lastExtractedLexem = _lexer.NextLexem();
+            if (_lexer.Iterator.OnNewLine)
+                throw PreprocessorError("Неожиданное завершение директивы");
         }
 
         private Lexem Preprocess(Lexem directive)
@@ -323,14 +333,34 @@ namespace OneScript.Language.LexicalAnalysis
                 throw PreprocessorError("Недопустимые символы в директиве");
         }
 
+        private void SkipComment()
+        {
+            _lexer.Iterator.MoveToContent();
+            if (!_lexer.Iterator.OnNewLine)
+            {
+                MoveNext();
+                if (_lastExtractedLexem.Type != LexemType.Comment)
+                    throw PreprocessorError("Недопустимые символы в директиве");
+            }
+        }
+        
+        private void SkipErrors(object sender, LexerErrorEventArgs args)
+        {
+            args.Iterator.MoveNext();
+            args.IsHandled = true;
+        }
+
         private void SkipTillNextDirective()
         {
-            int currentLevel = BlockLevel();
-            MoveNext();
-            CheckNewLine();
+            SkipComment();
 
+            _lexer.UnexpectedCharacterFound += SkipErrors;
+
+            int currentLevel = BlockLevel();
             while (true)
             {
+                MoveNext();
+
                 while (_lastExtractedLexem.Type != LexemType.PreprocessorDirective)
                 {
                     if (_lastExtractedLexem.Token == Token.EndOfText)
@@ -343,11 +373,14 @@ namespace OneScript.Language.LexicalAnalysis
                     PushBlock();
                 else if (_lastExtractedLexem.Token == Token.EndIf && BlockLevel() > currentLevel)
                     PopBlock();
-                else if (BlockLevel() == currentLevel)
+                else if (BlockLevel() == currentLevel &&
+                        (_lastExtractedLexem.Token == Token.EndIf || 
+                         _lastExtractedLexem.Token == Token.ElseIf ||
+                         _lastExtractedLexem.Token == Token.Else) )
                     break;
-
-                MoveNext();
             }
+
+            _lexer.UnexpectedCharacterFound -= SkipErrors;
         }
     }
 }
