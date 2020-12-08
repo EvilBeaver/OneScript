@@ -227,7 +227,7 @@ namespace ScriptEngine.HostedScript
             throw new CompilerException(
                 
                 String.Format(
-                    "Отсутствует библиотека по указанному пути {0} поиск шел полному пути {1} источник запуска {2}",
+                    "Отсутствует библиотека по указанному пути {0} поиск шел полному пути {1} source: {2}",
                      libraryPath, Path.GetFullPath(libraryPath),SourceDescription
                 )
             );
