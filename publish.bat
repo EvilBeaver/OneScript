@@ -17,6 +17,7 @@ cd distrs\net31\win-x64\bin
 
 set OSLIB_LOADER_TRACE=1
 
+echo "Testing run opm - install libs from hub"
 call opm install asserts
 call opm install tempfiles
 call opm install delegate
