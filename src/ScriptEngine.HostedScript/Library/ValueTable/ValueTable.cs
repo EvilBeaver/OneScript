@@ -362,16 +362,18 @@ namespace ScriptEngine.HostedScript.Library.ValueTable
                 }
                 else
                 {
-                    uniqueRows.Add(row, row);
-
                     ValueTableRow new_row = _rows[new_idx++];
 
                     foreach (var Column in GroupColumns)
                         new_row.Set(Column, row.Get(Column));
 
                     foreach (var Column in AggregateColumns)
-                        if (new_row.Get(Column).DataType != DataType.Number)
+                        if (row.Get(Column).DataType != DataType.Number)
                             new_row.Set(Column, ValueFactory.Create(0));
+                        else
+                            new_row.Set(Column, row.Get(Column));
+
+                    uniqueRows.Add(new_row, new_row);
                 }
             }
 

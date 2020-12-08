@@ -23,7 +23,7 @@ namespace ScriptEngine.Compiler
         internal static CompilerException AppendCodeInfo(CompilerException exc, CodePositionInfo codePosInfo)
         {
             exc.LineNumber = codePosInfo.LineNumber;
-            exc.ColumnNumber = codePosInfo.LineNumber;
+            exc.ColumnNumber = codePosInfo.ColumnNumber;
             exc.Code = codePosInfo.Code;
             exc.ModuleName = codePosInfo.ModuleName;
             
@@ -135,6 +135,16 @@ namespace ScriptEngine.Compiler
         public static CompilerException NumberExpected()
         {
             return new CompilerException(Locale.NStr("ru='Ожидается числовая константа';en='Numeric constant expected'"));
+        }
+
+        public static CompilerException IllegalDirective(string name)
+        {
+            return new CompilerException(Locale.NStr("ru='Недопустимая директива:';en='Illegal directive'")+name);
+        }
+
+        public static CompilerException UnknownDirective(string name, string arg)
+        {
+            return new CompilerException(Locale.NStr("ru='Неизвестная директива:';en='Unknown directive'") + $"{name} ({arg})");
         }
 
     }

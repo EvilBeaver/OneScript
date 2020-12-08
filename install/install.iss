@@ -58,6 +58,7 @@ Name: "docs"; Description: "Документация по свойствам и 
 [Files]              
 Source: "{#ArtifactRoot}\{#Binaries}\oscript.exe"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.NativeApi.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.DebugServices.dll"; DestDir: "{app}\bin"; Components: main

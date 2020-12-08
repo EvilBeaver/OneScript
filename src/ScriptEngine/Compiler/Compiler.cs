@@ -36,6 +36,7 @@ namespace ScriptEngine.Compiler
         private bool _isMethodsDefined = false;
         private bool _isStatementsDefined = false;
         private bool _isFunctionProcessed = false;
+        private bool _isCodeEntered = false;
         
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
@@ -262,42 +263,40 @@ namespace ScriptEngine.Compiler
 
         private void DispatchModuleBuild()
         {
-            bool isCodeEntered = false;
-
+            HandleImportDirectives();
             while (_lastExtractedLexem.Type != LexemType.EndOfText)
             {
                 if (_lastExtractedLexem.Type == LexemType.Identifier)
                 {
                     if (_lastExtractedLexem.Token == Token.VarDef)
                     {
-                        isCodeEntered = true;
+                        _isCodeEntered = true;
                         BuildVariableDefinitions();
                     }
                     else if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
                     {
-                        isCodeEntered = true;
+                        _isCodeEntered = true;
                         _isMethodsDefined = true;
                         BuildSingleMethod();
                     }
                     else
                     {
-                        isCodeEntered = true;
+                        _isCodeEntered = true;
                         BuildModuleBody();
                     }
                 }
                 else if (_lastExtractedLexem.Type == LexemType.EndOperator)
                 {
-                    isCodeEntered = true;
+                    _isCodeEntered = true;
                     BuildModuleBody();
-                }
-                else if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-                {
-                    HandleDirective(isCodeEntered);
-                    UpdateCompositeContext(); // костыль для #330
                 }
                 else if (_lastExtractedLexem.Type == LexemType.Annotation)
                 {
                     BuildAnnotations();
+                }
+                else if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                {
+                    throw CompilerException.IllegalDirective(_lastExtractedLexem.Content);
                 }
                 else
                 {
@@ -431,26 +430,24 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void HandleDirective(bool codeEntered)
+        private void HandleDirective()
         {
             var directive = _lastExtractedLexem.Content;
-            
-            ReadToLineEnd();
+            var value = _lexer.Iterator.ReadToLineEnd();
 
-            var value = _lexer.Iterator.GetContents().Trim();
-            NextToken();
-
-            if (DirectiveHandler == null || !DirectiveHandler(directive, value, codeEntered))
-                throw new CompilerException(String.Format("Неизвестная директива: {0}({1})", directive, value));
+            if (DirectiveHandler == null || !DirectiveHandler(directive, value, _isCodeEntered))
+                throw CompilerException.UnknownDirective(directive, value);
         }
 
-        private void ReadToLineEnd()
+        private void HandleImportDirectives()
         {
-            char cs;
-            do
+            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
             {
-                cs = _lexer.Iterator.CurrentSymbol;
-            } while (cs != '\n' && _lexer.Iterator.MoveNext());
+                HandleDirective();
+                UpdateCompositeContext(); // костыль для #330
+
+                _lastExtractedLexem = _lexer.NextLexem();
+            }
         }
 
         private void BuildSingleMethod()
@@ -729,6 +726,11 @@ namespace ScriptEngine.Compiler
                 {
                     NextToken();
                     continue;
+                }
+
+                if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                {
+                    throw CompilerException.IllegalDirective(_lastExtractedLexem.Content);
                 }
 
                 if (_lastExtractedLexem.Type != LexemType.Identifier && _lastExtractedLexem.Token != Token.EndOfText)
