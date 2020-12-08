@@ -228,8 +228,7 @@ namespace ScriptEngine.HostedScript
                 
                 String.Format(
                     "Отсутствует библиотека по указанному пути {0} поиск шел полному пути {1} источник запуска {2}",
-                     libraryPath, Path.GetFullPath(libraryPath,
-                     SourceDescription) 
+                     libraryPath, Path.GetFullPath(libraryPath),SourceDescription
                 )
             );
         }
