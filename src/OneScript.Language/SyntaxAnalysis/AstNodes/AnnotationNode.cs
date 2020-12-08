@@ -5,15 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Language.SyntaxAnalysis;
-using OneScript.Language.SyntaxAnalysis.AstNodes;
+using System;
 
-namespace ScriptEngine.Compiler.ByteCode
+namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class AnnotationNode : NonTerminalNode
     {
-        public AnnotationNode() : base(NodeKind.Annotation)
+        public AnnotationNode(NodeKind kind) : base(kind)
         {
+            if(Kind != NodeKind.Annotation && Kind != NodeKind.Import)
+                throw new ArgumentException(nameof(kind));
         }
         
         public string Name { get; set; }

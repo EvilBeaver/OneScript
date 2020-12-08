@@ -29,8 +29,7 @@ namespace ScriptEngine
                 Type = UserAddedScriptType.Class,
                 Image = image,
                 Symbol = identifier,
-                FilePath = filePath,
-                LibraryName = LibraryName
+                FilePath = filePath
             };
             
             Classes.Add(item);
@@ -45,8 +44,7 @@ namespace ScriptEngine
                 Type = UserAddedScriptType.Module,
                 Image = image,
                 Symbol = identifier,
-                FilePath = filePath,
-                LibraryName = LibraryName
+                FilePath = filePath
             };
             
             Modules.Add(item);
@@ -66,12 +64,9 @@ namespace ScriptEngine
         [NonSerialized]
         public string FilePath;
         
-        [NonSerialized]
-        public string LibraryName;
-
         public string ModuleName()
         {
-            return $"{LibraryName}.{Type}.{Symbol}";
+            return Image.ModuleInfo.ModuleName;
         }
     }
 

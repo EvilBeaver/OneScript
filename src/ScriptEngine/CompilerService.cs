@@ -9,18 +9,18 @@ using System;
 using System.Collections.Generic;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine
 {
-    public class CompilerService
+    public class CompilerService : ICompilerService
     {
         SymbolScope _scope;
 
         private readonly ModuleCompilerContext _currentContext;
-        private readonly List<int> _predefinedVariables = new List<int>();
         private readonly List<string> _preprocessorVariables = new List<string>();
         
 
@@ -43,7 +43,6 @@ namespace ScriptEngine
                 else
                     varIdx = _currentContext.DefineProperty(name, alias).CodeIndex;
 
-                _predefinedVariables.Add(varIdx);
                 return varIdx;
             }
             catch
@@ -125,16 +124,18 @@ namespace ScriptEngine
             return compiledImage;
         }
 
-        protected static ModuleInformation CreateModuleInformation(ICodeSource source, ILexemGenerator parser)
+        protected static ModuleInformation CreateModuleInformation(ICodeSource source, ILexer parser)
         {
-            var mi = new ModuleInformation();
-            mi.CodeIndexer = parser.Iterator;
-            // пока у модулей нет собственных имен, будет совпадать с источником модуля
-            mi.ModuleName = source.SourceDescription;
-            mi.Origin = source.SourceDescription;
+            var mi = new ModuleInformation
+            {
+                CodeIndexer = parser.Iterator,
+                ModuleName = source.SourceDescription,// пока у модулей нет собственных имен, будет совпадать с источником модуля
+                Origin = source.SourceDescription
+            };
+            
             return mi;
         }
-
+        
         protected virtual ModuleImage CreateImage(ICompilerContext context, ICodeSource source, ILexemGenerator lexer)
         {
             try
@@ -178,5 +179,18 @@ namespace ScriptEngine
         
         [Obsolete]
         public IDirectiveResolver DirectiveResolver { get; set; }
+
+        public void AddDirectiveHandler(IDirectiveHandler handler)
+        {
+            if (handler is LegacyDirectiveAdapter adapter)
+            {
+                //Resharper disable CS0612
+                DirectiveResolver = adapter.RealResolver;
+            }
+        }
+
+        public void RemoveDirectiveHandler(IDirectiveHandler handler)
+        {
+        }
     }
 }

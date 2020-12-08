@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
-namespace ScriptEngine.Compiler.ByteCode
+namespace ScriptEngine.Compiler.Extensions
 {
     public static class AstNodesExtensions
     {

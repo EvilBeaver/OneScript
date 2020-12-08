@@ -40,26 +40,27 @@ namespace OneScript.Language.SyntaxAnalysis
             _definitions.Remove(param);
         }
         
-        public void OnModuleEnter(ILexer lexemStream)
+        public void OnModuleEnter(ParserContext context)
         {
         }
 
-        public void OnModuleLeave(ILexer lexemStream)
+        public void OnModuleLeave(ParserContext context)
         {
             if (BlockLevel() != 0)
-                throw PreprocessorError(lexemStream, "Ожидается завершение директивы препроцессора #Если");
+                throw PreprocessorError(context.Lexer, "Ожидается завершение директивы препроцессора #Если");
         }
 
-        public BslSyntaxNode HandleDirective(BslSyntaxNode parent, ILexer lexemStream, ref Lexem lastExtractedLexem)
+        public bool HandleDirective(ParserContext context)
         {
-            if (!IsConditional(lastExtractedLexem))
+            var lexem = context.LastExtractedLexem;
+            if (!IsConditional(lexem))
                 return default;
             
-            _lexer = lexemStream;
-            _lastExtractedLexem = lastExtractedLexem;
+            _lexer = context.Lexer;
+            _lastExtractedLexem = lexem;
             
-            lastExtractedLexem = Preprocess(_lastExtractedLexem);
-            return parent;
+            context.LastExtractedLexem = Preprocess(_lastExtractedLexem);
+            return true;
         }
 
         private static bool IsConditional(in Lexem lastExtractedLexem)

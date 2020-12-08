@@ -7,18 +7,15 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Language.LexicalAnalysis;
-using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class ImportDirectivesHandler : IDirectiveHandler
+    public class ImportDirectivesHandler : ModuleAnnotationDirectiveHandler
     {
-        private readonly IAstBuilder _nodeBuilder;
         private readonly ILexer _importClauseLexer;
 
-        public ImportDirectivesHandler(IAstBuilder nodeBuilder)
+        public ImportDirectivesHandler()
         {
-            _nodeBuilder = nodeBuilder;
             var builder = new LexerBuilder();
             builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
                 .HandleWith(new NonWhitespaceLexerState());
@@ -26,22 +23,17 @@ namespace OneScript.Language.SyntaxAnalysis
             _importClauseLexer = builder.Build();
         }
         
-        public void OnModuleEnter(ILexer lexemStream)
+        protected override bool HandleDirectiveInternal(ParserContext context)
         {
-        }
-
-        public void OnModuleLeave(ILexer lexemStream)
-        {
-        }
-
-        public BslSyntaxNode HandleDirective(BslSyntaxNode parent, ILexer lexemStream, ref Lexem lastExtractedLexem)
-        {
+            var lastExtractedLexem = context.LastExtractedLexem;
+            var lexemStream = context.Lexer;
+            var nodeBuilder = context.NodeBuilder;
             if (!DirectiveSupported(lastExtractedLexem.Content))
             {
                 return default;
             }
             
-            var node = _nodeBuilder.CreateNode(NodeKind.Preprocessor, lastExtractedLexem);
+            var node = nodeBuilder.CreateNode(NodeKind.Import, lastExtractedLexem);
             _importClauseLexer.Iterator = lexemStream.Iterator;
             
             var lex = _importClauseLexer.NextLexem();
@@ -51,9 +43,12 @@ namespace OneScript.Language.SyntaxAnalysis
                     "Ожидается имя библиотеки");
             }
 
-            var argumentNode = _nodeBuilder.CreateNode(NodeKind.Unknown, lex);
-            _nodeBuilder.AddChild(node, argumentNode);
-            _nodeBuilder.AddChild(parent, node);
+            var argumentNode = nodeBuilder.CreateNode(NodeKind.AnnotationParameter, lex);
+            var value = nodeBuilder.CreateNode(NodeKind.AnnotationParameterValue, lex);
+            nodeBuilder.AddChild(argumentNode, value);
+            
+            nodeBuilder.AddChild(node, argumentNode);
+            nodeBuilder.AddChild(context.NodeContext.Peek(), node);
 
             lex = _importClauseLexer.NextLexemOnSameLine();
             if (lex.Type != LexemType.EndOfText)
@@ -62,12 +57,12 @@ namespace OneScript.Language.SyntaxAnalysis
                     LocalizedErrors.UnexpectedOperation());
             }
 
-            lastExtractedLexem = lexemStream.NextLexem(); 
+            context.LastExtractedLexem = lexemStream.NextLexem(); 
 
-            return parent;
+            return true;
         }
         
-        private bool DirectiveSupported(string directive)
+        private static bool DirectiveSupported(string directive)
         {
             return StringComparer.InvariantCultureIgnoreCase.Compare(directive, "использовать") == 0
                    || StringComparer.InvariantCultureIgnoreCase.Compare(directive, "use") == 0;

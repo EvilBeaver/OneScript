@@ -81,30 +81,6 @@ namespace ScriptEngine
             }
         }
 
-        // public void NotifyClassAdded(ModuleImage module, string symbol, string libraryName)
-        // {
-        //     _externalScripts.Add(new UserAddedScript()
-        //         {
-        //             Type = UserAddedScriptType.Class,
-        //             Symbol = symbol,
-        //             Image = module,
-        //             LibraryName = libraryName
-        //         });
-        // }
-        //
-        // public void NotifyModuleAdded(ModuleImage module, string symbol, string libraryName)
-        // {
-        //     var script = new UserAddedScript()
-        //     {
-        //         Type = UserAddedScriptType.Module,
-        //         Symbol = symbol,
-        //         Image = module,
-        //         LibraryName = libraryName
-        //     };
-        //
-        //     _externalScripts.Add(script);
-        // }
-        
         public IEnumerable<ExternalLibraryDef> GetUserAddedScripts()
         { 
             return _externalLibs.ToArray();

@@ -167,7 +167,7 @@ namespace ScriptEngine.HostedScript
             set => _engine.DebugController = value;
         }
 
-        public CompilerService GetCompilerService()
+        public ICompilerService GetCompilerService()
         {
             InitLibraries(GetWorkingConfig());
 
@@ -223,7 +223,7 @@ namespace ScriptEngine.HostedScript
             return InitProcess(host, module);
         }
 
-        private void DefineConstants(CompilerService compilerSvc)
+        private void DefineConstants(ICompilerService compilerSvc)
         {
             var definitions = GetWorkingConfig()["preprocessor.define"]?.Split(',') ?? new string[0];
             foreach (var val in definitions)

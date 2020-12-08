@@ -1,4 +1,4 @@
-/*----------------------------------------------------------
+﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -9,14 +9,11 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
-    public class PreprocessorDirectiveNode : NonTerminalNode
+    public class ModuleNode : AnnotatableNode
     {
-        public PreprocessorDirectiveNode(Lexem startLexem) 
-            : base (NodeKind.Preprocessor, startLexem)
+        public ModuleNode(Lexem startLexem) : base(NodeKind.Module)
         {
-            DirectiveName = startLexem.Content;
+            Location = startLexem.Location;
         }
-        
-        public string DirectiveName { get; }
     }
 }

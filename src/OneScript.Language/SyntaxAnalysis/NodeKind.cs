@@ -59,6 +59,7 @@ namespace OneScript.Language.SyntaxAnalysis
         ExecuteStatement,
         AddHandler,
         RemoveHandler,
-        Preprocessor
+        Preprocessor,
+        Import
     }
 }

@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Hosting
@@ -20,6 +21,8 @@ namespace ScriptEngine.Hosting
         public ITypeManager TypeManager { get; set; }
         public IGlobalsManager GlobalInstances { get; set; }
         public ICompilerServiceFactory CompilerFactory { get; set; }
+        
+        public PreprocessorHandlers PreprocessorHandlers { get; set; }
         
         public ScriptingEngine Build()
         {

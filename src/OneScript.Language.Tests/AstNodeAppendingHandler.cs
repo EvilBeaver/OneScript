@@ -13,12 +13,10 @@ namespace OneScript.Language.Tests
 {
     public class AstNodeAppendingHandler : IDirectiveHandler
     {
-        private readonly IAstBuilder _nodeBuilder;
         private readonly ILexer _allLineContentLexer;
         
-        public AstNodeAppendingHandler(IAstBuilder nodeBuilder)
+        public AstNodeAppendingHandler()
         {
-            _nodeBuilder = nodeBuilder;
             var builder = new LexerBuilder();
             builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
                 .HandleWith(new FullLineLexerState());
@@ -26,29 +24,31 @@ namespace OneScript.Language.Tests
             _allLineContentLexer = builder.Build();
         }
 
-        public void OnModuleEnter(ILexer lexemStream)
+        public void OnModuleEnter(ParserContext context)
         {
         }
 
-        public void OnModuleLeave(ILexer lexemStream)
+        public void OnModuleLeave(ParserContext context)
         {
         }
 
-        public BslSyntaxNode HandleDirective(BslSyntaxNode parent, ILexer lexemStream, ref Lexem lastExtractedLexem)
+        public bool HandleDirective(ParserContext context)
         {
-            var node = _nodeBuilder.CreateNode(NodeKind.Preprocessor, lastExtractedLexem);
+            var lastExtractedLexem = context.LastExtractedLexem;
+            var lexemStream = context.Lexer;
+            var node = context.NodeBuilder.CreateNode(NodeKind.Preprocessor, lastExtractedLexem);
             _allLineContentLexer.Iterator = lexemStream.Iterator;
 
             lastExtractedLexem = _allLineContentLexer.NextLexemOnSameLine();
             if (lastExtractedLexem.Type != LexemType.EndOfText)
             {
-                var child = _nodeBuilder.CreateNode(NodeKind.Unknown, lastExtractedLexem);
-                _nodeBuilder.AddChild(node, child);
+                var child = context.NodeBuilder.CreateNode(NodeKind.Unknown, lastExtractedLexem);
+                context.NodeBuilder.AddChild(node, child);
             }
 
-            lastExtractedLexem = lexemStream.NextLexem();
-            _nodeBuilder.AddChild(parent, node);
-            return parent;
+            context.LastExtractedLexem = lexemStream.NextLexem();
+            context.NodeBuilder.AddChild(context.NodeContext.Peek(), node);
+            return true;
         }
     }
 }

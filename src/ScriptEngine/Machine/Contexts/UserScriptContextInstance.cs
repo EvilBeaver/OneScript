@@ -171,7 +171,7 @@ namespace ScriptEngine.Machine.Contexts
             return GetOwnMethodsDefinition()[RAIZEEVENT_INDEX];
         }
 
-        public static void PrepareCompilation(CompilerService compiler)
+        public static void PrepareCompilation(ICompilerService compiler)
         {
             RegisterSymbols(compiler);
             GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x));
@@ -248,7 +248,7 @@ namespace ScriptEngine.Machine.Contexts
         protected override bool IsOwnPropWritable(int index)
         {
             if (_ownProperties == null)
-                return base.IsOwnPropReadable(index);
+                return base.IsOwnPropWritable(index);
 
             return false;
         }

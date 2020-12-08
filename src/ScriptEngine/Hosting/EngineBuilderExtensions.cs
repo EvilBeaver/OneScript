@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Reflection;
+using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -62,6 +63,27 @@ namespace ScriptEngine.Hosting
         {
             b.CompilerFactory = factory;
             return b;
+        }
+
+        public static IEngineBuilder WithHandler(this IEngineBuilder b, IDirectiveHandler handler)
+        {
+            b.PreprocessorHandlers.Add(handler);
+            return b;
+        }
+
+        public static IEngineBuilder UseConditionalCompilation(this IEngineBuilder b)
+        {
+            return b.WithHandler(new ConditionalDirectiveHandler());
+        }
+        
+        public static IEngineBuilder UseRegions(this IEngineBuilder b)
+        {
+            return b.WithHandler(new RegionDirectiveHandler());
+        }
+        
+        public static IEngineBuilder UseImports(this IEngineBuilder b)
+        {
+            return b.WithHandler(new ImportDirectivesHandler());
         }
     }
 }

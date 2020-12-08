@@ -74,7 +74,7 @@ namespace ScriptEngine.Machine.Contexts
             return Locale.NStr($"ru='{THISOBJ_RU}';en='{THISOBJ_EN}'");
         }
 
-        protected static void RegisterSymbols(CompilerService compiler)
+        protected static void RegisterSymbols(ICompilerService compiler)
         {
             compiler.DefineVariable(THISOBJ_RU, THISOBJ_EN, SymbolType.ContextProperty);
         }

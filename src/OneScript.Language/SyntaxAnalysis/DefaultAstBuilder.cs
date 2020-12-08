@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using ScriptEngine.Compiler.ByteCode;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
@@ -44,7 +43,8 @@ namespace OneScript.Language.SyntaxAnalysis
             switch (kind)
             {
                 case NodeKind.Annotation:
-                    return new AnnotationNode
+                case NodeKind.Import:
+                    return new AnnotationNode(kind)
                     {
                         Name = startLexem.Content
                     };
@@ -81,6 +81,8 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.GlobalCall:
                 case NodeKind.MethodCall:
                     return new CallNode(kind, startLexem);
+                case NodeKind.Module:
+                    return new ModuleNode(startLexem);
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }
