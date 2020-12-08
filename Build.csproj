@@ -33,9 +33,8 @@
 
         <MSBuild Projects="$(Solution)" Targets="Clean" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildName)"/>
         
-    </Target>
-    
-    <Target Name="Make">
+    </Target>  
+        <Target Name="Make">
         <MSBuild Projects="$(Solution)" Targets="restore;Build" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildName);"/>
     </Target>
 
@@ -83,7 +82,17 @@
                 <Dest>$(TempFolder)/bin32</Dest>
             </BinaryFiles>
         </ItemGroup>
-        
+
+        <ItemGroup>
+            <BuiltProjects Include="ScriptEngine.NativeApi" />
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/*.dll">
+                <Dest>$(TempFolder)/bin</Dest>
+            </BinaryFiles>
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/*.dll">
+                <Dest>$(TempFolder)/bin32</Dest>
+            </BinaryFiles>
+        </ItemGroup>
+           
         <Copy SourceFiles="@(BinaryFiles)" DestinationFiles="@(BinaryFiles->'%(Dest)/%(Filename)%(Extension)')" />
         <!-- Копирование скрипта запуска для opm -->
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(BinaryFiles.Dest)"/>

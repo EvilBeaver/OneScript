@@ -559,6 +559,43 @@ namespace OneScript.Language.Tests
             Assert.Throws<SyntaxErrorException>(() => { while (pp.NextLexem().Token != Token.EndOfText) ; });
         }
 
+        [Fact]
+        public void PreprocessingLexer_DirectiveNotOnSingleLine()
+        {
+            var pp = new PreprocessingLexer();
+
+            var code = @"
+            #Если Нет
+            Тогда
+            F;
+            #КонецОбласти
+            ";
+
+            pp.Code = code;
+            Assert.Throws<SyntaxErrorException>(() => { while (pp.NextLexem().Token != Token.EndOfText) ; });
+        }
+
+        [Fact]
+        public void PreprocessingLexer_ExcludedLines()
+        {
+            var pp = new PreprocessingLexer();
+            pp.Define("Да");
+
+            var code = @"
+            #Если Да Тогда
+            F;
+            #Иначе
+            !!
+            #КонецЕсли
+            ";
+
+            pp.Code = code;
+
+            Lexem lex;
+            do { lex = pp.NextLexem(); } while (pp.NextLexem().Token != Token.EndOfText);
+            Assert.Equal(Token.EndOfText, lex.Token);
+        }
+
         private string GetPreprocessedContent(PreprocessingLexer pp, string code)
         {
             pp.Code = code;
