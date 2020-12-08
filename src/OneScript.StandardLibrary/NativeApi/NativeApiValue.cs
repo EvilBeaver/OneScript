@@ -15,24 +15,16 @@ namespace OneScript.StandardLibrary.NativeApi
     /// </summary>
     public abstract class NativeApiValue: IValue
     {
-        private TypeDescriptor _type;
-
         #region IValue Members
 
-        public DataType DataType
-        {
-            get { return ScriptEngine.Machine.DataType.Object; }
-        }
+        public DataType DataType => DataType.Object;
 
         protected void DefineType(TypeDescriptor type)
         {
-            _type = type;
+            SystemType = type;
         }
 
-        public TypeDescriptor SystemType
-        {
-            get => _type;
-        }
+        public TypeDescriptor SystemType { get; private set; }
 
         public decimal AsNumber()
         {
