@@ -8,15 +8,18 @@ call rmdir distrs /s /q
 
 echo {  "sdk": {    "version": "3.1.403"  } } > global.json
 
+echo "Run engine Unit Tests"
+dotnet test src\1Script.sln
+
 call dotnet publish -p:PublishTrimmed=false -p:PublishReadyToRun=false -p:PublishReadyToRunShowWarnings=true -f netcoreapp3.1 -p:DebugType=None -r win-x64  -c Release --self-contained true --force -p:IncludeNativeLibrariesInSingleFile=true -p:CopyOutputSymbolsToPublishDirectory=false .\src\oscript\oscript.csproj -o distrs\net31\win-x64\bin
+
+set OSLIB_LOADER_TRACE=1
 
 cd tests
 echo "Old tests run"
 ..\distrs\net31\win-x64\bin\oscript.exe testrunner.os -runall
 
 cd ..\distrs\net31\win-x64\bin
-
-set OSLIB_LOADER_TRACE=1
 
 echo "Testing run opm - install libs from hub"
 opm install asserts
