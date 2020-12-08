@@ -180,7 +180,12 @@ namespace ScriptEngine.HostedScript
                 // немного костыльно, ага ((
                 //
                 if (!PathHasInvalidChars(currentPath))
-                    realPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(currentPath), libraryPath));
+                    realPath = Path.GetFullPath(
+                        Path.Combine(
+                            Path.GetDirectoryName(currentPath),
+                             libraryPath
+                        )
+                    );
                 else
                     realPath = libraryPath;
             }
@@ -212,6 +217,7 @@ namespace ScriptEngine.HostedScript
 
         private bool LoadByPath(string libraryPath)
         {
+            String SourceDescription = Source != null ? Source.SourceDescription : "Источник не указан";
             if (Directory.Exists(libraryPath))
             {
                 TraceLoadLibrary(String.Format("Гружу библиотеку {0}", libraryPath));
@@ -219,7 +225,12 @@ namespace ScriptEngine.HostedScript
             }
 
             throw new CompilerException(
-                String.Format("Отсутствует библиотека по указанному пути {0}", libraryPath)
+                
+                String.Format(
+                    "Отсутствует библиотека по указанному пути {0} поиск шел полному пути {1} источник запуска {2}",
+                     libraryPath, Path.GetFullPath(libraryPath,
+                     SourceDescription) 
+                )
             );
         }
 

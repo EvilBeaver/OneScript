@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
-    <!--<BeautyLibsDir>runtime</BeautyLibsDir>-->
+    <BeautyLibsDir>runtime</BeautyLibsDir>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>oscript.Program</StartupObject>
@@ -29,7 +29,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <!--<PackageReference Include="nulastudio.NetCoreBeauty" Version="1.2.9"/>-->
+    <PackageReference Include="nulastudio.NetCoreBeauty" Version="1.2.9"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
@@ -62,7 +62,7 @@
      <ContentWithTargetPath 
        Include="$(OutputPath)oscript.cfg"
        CopyToOutputDirectory="PreserveNewest"
-       TargetPath="%(Filename)%(Extension)" />
+       TargetPath="runtime\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
