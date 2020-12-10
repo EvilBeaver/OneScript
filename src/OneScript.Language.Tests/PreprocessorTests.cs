@@ -5,8 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections.Generic;
 using System.Text;
+using Moq;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Language.SyntaxAnalysis;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 using Xunit;
 
 namespace OneScript.Language.Tests
@@ -576,6 +580,31 @@ namespace OneScript.Language.Tests
         }
 
         [Fact]
+        public void ConditionalsCompiler_DirectiveNotOnSingleLine()
+        {
+            var code = @"
+            #Если Нет
+            Тогда
+            F;
+            #КонецОбласти
+            ";
+
+            var handler = new ConditionalDirectiveHandler();
+            
+            var lexer = new FullSourceLexer();
+            lexer.Code = code;
+            var builder = Mock.Of<IAstBuilder>();
+            var lexem = lexer.NextLexem();
+            var pc = new ParserContext(
+                lexer,
+                new Stack<BslSyntaxNode>(),
+                builder,
+                lexem);
+
+            Assert.Throws<SyntaxErrorException>(() => handler.HandleDirective(pc));
+        }
+
+        [Fact]
         public void PreprocessingLexer_ExcludedLines()
         {
             var pp = new PreprocessingLexer();
@@ -596,6 +625,42 @@ namespace OneScript.Language.Tests
             Assert.Equal(Token.EndOfText, lex.Token);
         }
 
+        [Fact]
+        public void ConditionalsCompiler_ExcludedLines()
+        {
+            var code = @"
+            #Если Да Тогда
+            F;
+            #Иначе
+            !!
+            #КонецЕсли
+            ";
+
+            var handler = new ConditionalDirectiveHandler();
+            handler.Define("Да");
+            
+            var lexer = new FullSourceLexer();
+            lexer.Code = code;
+            var builder = Mock.Of<IAstBuilder>();
+            var lexem = lexer.NextLexem();
+
+            while (lexem.Token != Token.EndOfText)
+            {
+                var pc = new ParserContext(
+                    lexer,
+                    new Stack<BslSyntaxNode>(),
+                    builder,
+                    lexem);
+
+                handler.HandleDirective(pc);
+                lexem = pc.LastExtractedLexem;
+                while (lexem.Type != LexemType.PreprocessorDirective && lexem.Type != LexemType.EndOfText)
+                    lexem = lexer.NextLexem();
+            }
+            
+            Assert.Equal(Token.EndOfText, lexem.Token);
+        }
+        
         private string GetPreprocessedContent(PreprocessingLexer pp, string code)
         {
             pp.Code = code;

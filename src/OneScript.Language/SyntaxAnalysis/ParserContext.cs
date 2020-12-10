@@ -21,7 +21,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public Lexem LastExtractedLexem { get; set; }
 
-        internal ParserContext(ILexer lexer, Stack<BslSyntaxNode> nodeContext, IAstBuilder builder, Lexem lastLexem)
+        public ParserContext(ILexer lexer, Stack<BslSyntaxNode> nodeContext, IAstBuilder builder, Lexem lastLexem)
         {
             Lexer = lexer;
             NodeContext = nodeContext;

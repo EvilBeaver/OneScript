@@ -142,7 +142,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private bool SolveExpression()
         {
-            NextLexem();
+            MoveNextSameLine();
 
             return SolveOrExpression();
         }
@@ -157,7 +157,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
             if (_lastExtractedLexem.Token == Token.Or)
             {
-                NextLexem();
+                MoveNextSameLine();
                 var secondArgument = SolveOrExpression();
                 return argument || secondArgument; // здесь нужны НЕ-сокращенные вычисления
             }
@@ -171,7 +171,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
             if (_lastExtractedLexem.Token == Token.And)
             {
-                NextLexem();
+                MoveNextSameLine();
                 var secondArgument = SolveAndExpression();
                 return argument && secondArgument; // здесь нужны НЕ-сокращенные вычисления
             }
@@ -183,7 +183,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             if (_lastExtractedLexem.Token == Token.Not)
             {
-                NextLexem();
+                MoveNextSameLine();
                 return !GetArgument();
             }
 
@@ -194,11 +194,11 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             if (_lastExtractedLexem.Token == Token.OpenPar)
             {
-                NextLexem();
+                MoveNextSameLine();
                 var result = SolveOrExpression();
                 if (_lastExtractedLexem.Token == Token.ClosePar)
                 {
-                    NextLexem();
+                    MoveNextSameLine();
                     return result;
                 }
                 throw PreprocessorError("Ожидается закрывающая скобка");
@@ -208,13 +208,19 @@ namespace OneScript.Language.SyntaxAnalysis
                 throw PreprocessorError("Ожидается объявление препроцессора");
             
             var expression = IsDefined(_lastExtractedLexem.Content);
-            NextLexem();
+            MoveNextSameLine();
             return expression;
         }
         
         private void NextLexem()
         {
-            MoveNext();
+            do
+            {
+                MoveNext();
+                if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                    _lastExtractedLexem = Preprocess(_lastExtractedLexem);
+            }
+            while (_lastExtractedLexem.Type == LexemType.Comment);
 
             switch (_lastExtractedLexem.Type)
             {
@@ -224,6 +230,13 @@ namespace OneScript.Language.SyntaxAnalysis
                 case LexemType.EndOfText when BlockLevel() != 0:
                     throw PreprocessorError("Ожидается завершение директивы препроцессора #Если");
             }
+        }
+        
+        private void MoveNextSameLine()
+        {
+            _lastExtractedLexem = _lexer.NextLexem();
+            if (_lexer.Iterator.OnNewLine)
+                throw PreprocessorError("Неожиданное завершение директивы");
         }
         
         private int BlockLevel()
