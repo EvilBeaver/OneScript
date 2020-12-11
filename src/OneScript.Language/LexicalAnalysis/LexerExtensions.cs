@@ -11,17 +11,8 @@ namespace OneScript.Language.LexicalAnalysis
     {
         public static int ReadToLineEnd(this ILexer lexer)
         {
-            char cs;
-            var charsRead = 0;
-            do
-            {
-                cs = lexer.Iterator.CurrentSymbol;
-                if(!char.IsWhiteSpace(cs))
-                    ++charsRead;
-                
-            } while (cs != '\n' && lexer.Iterator.MoveNext());
-
-            return charsRead;
+            var data = lexer.Iterator.ReadToLineEnd();
+            return data.Length;
         }
 
         public static Lexem NextLexemOnSameLine(this ILexer lexer)

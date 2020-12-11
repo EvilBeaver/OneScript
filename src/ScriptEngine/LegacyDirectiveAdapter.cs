@@ -45,8 +45,7 @@ namespace ScriptEngine
         {
             var directive = context.LastExtractedLexem.Content;
             var lexemStream = context.Lexer;
-            lexemStream.ReadToLineEnd();
-            var content = lexemStream.Iterator.GetContents().Trim();
+            var content = lexemStream.Iterator.ReadToLineEnd();
 
             var handled = RealResolver.Resolve(directive, content, context.NodeContext.Peek()?.Kind != NodeKind.Module);
             

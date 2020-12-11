@@ -298,43 +298,46 @@ namespace OneScript.Language.SyntaxAnalysis
         private void SkipTillNextDirective()
         {
             int currentLevel = BlockLevel();
-            MoveNext();
-            CheckNewLine();
+            var lineTail = _lexer.Iterator.ReadToLineEnd();
+            if(lineTail.Length > 0 && !lineTail.StartsWith("//"))
+                throw PreprocessorError("Недопустимые символы в директиве");
 
             while (true)
             {
-                while (_lastExtractedLexem.Type != LexemType.PreprocessorDirective)
+                if (!FindHashSign())
                 {
-                    if (_lastExtractedLexem.Token == Token.EndOfText)
-                        throw PreprocessorError("Ожидается директива препроцессора #КонецЕсли");
-
-                    MoveNext();
+                    throw PreprocessorError("Ожидается директива препроцессора #КонецЕсли");
                 }
-
-                var doBreak = false;
-                switch (_lastExtractedLexem.Token)
-                {
-                    case Token.If:
-                        PushBlock();
-                        break;
-                    case Token.ElseIf:
-                    case Token.Else:
-                        if (BlockLevel() == currentLevel)
-                            doBreak = true;
-                        break;
-                    case Token.EndIf:
-                        if(BlockLevel() > currentLevel)
-                            PopBlock();
-                        break;
-                }
-                
-                if(doBreak)
-                    break;
-                
                 MoveNext();
+                
+                if (_lastExtractedLexem.Token == Token.If)
+                    PushBlock();
+                else if (_lastExtractedLexem.Token == Token.EndIf && BlockLevel() > currentLevel)
+                    PopBlock();
+                else if (BlockLevel() == currentLevel &&
+                         (_lastExtractedLexem.Token == Token.EndIf || 
+                          _lastExtractedLexem.Token == Token.ElseIf ||
+                          _lastExtractedLexem.Token == Token.Else) )
+                    break;
             }
         }
-        
+
+        private bool FindHashSign()
+        {
+            var iterator = _lexer.Iterator;
+
+            while (true)
+            {
+                if (iterator.CurrentSymbol == '#')
+                    return true;
+                
+                if (!iterator.MoveNext())
+                    break;
+            }
+
+            return false;
+        }
+
         private Lexem LexemFromNewLine()
         {
             NextLexem();
