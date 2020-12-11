@@ -193,15 +193,5 @@ namespace OneScript.Language.LexicalAnalysis
         }
 
         public event EventHandler<LexerErrorEventArgs> UnexpectedCharacterFound;
-
-        public const int OUT_OF_TEXT = -1;
-    }
-
-    public class LexerErrorEventArgs : EventArgs
-    {
-        public bool IsHandled { get; set; }
-        public SourceCodeIterator Iterator { get; set; }
-        public LexerState CurrentState { get; set; }
-        public SyntaxErrorException Exception{ get; set; }
     }
 }
