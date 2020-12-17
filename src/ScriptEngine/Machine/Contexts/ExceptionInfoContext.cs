@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Text;
 using OneScript.Language;
 
 namespace ScriptEngine.Machine.Contexts
@@ -57,7 +58,20 @@ namespace ScriptEngine.Machine.Contexts
 
         public string DetailedDescription
         {
-            get { return _exc.Message; }
+            get
+            {
+                var sb = new StringBuilder(_exc.Message);
+                var inner = _exc.InnerException;
+                while (inner != default)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine(Locale.NStr("ru = 'по причине:';en = 'caused by:'"));
+                    sb.AppendLine(inner.Message);
+                    inner = inner.InnerException;
+                }
+
+                return sb.ToString();
+            }
         }
 
         /// <summary>

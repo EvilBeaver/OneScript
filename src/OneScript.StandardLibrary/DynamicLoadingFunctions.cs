@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.NativeApi;
 using ScriptEngine;
@@ -38,7 +40,17 @@ namespace OneScript.StandardLibrary
         public void AttachScript(string path, string typeName)
         {
             var compiler = _engine.GetCompilerService();
-            _engine.AttachedScriptsFactory.AttachByPath(compiler, path, typeName);
+            try
+            {
+                _engine.AttachedScriptsFactory.AttachByPath(compiler, path, typeName);
+            }
+            catch (SyntaxErrorException e)
+            {
+                // обернем в RuntimeException
+                throw new RuntimeException(
+                    Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
+                    e);
+            }
         }
 
         /// <summary>
