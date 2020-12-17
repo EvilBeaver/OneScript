@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 
-namespace ScriptEngine.HostedScript
+namespace ScriptEngine.Hosting
 {
     public class KeyValueConfig
     {
@@ -18,12 +18,12 @@ namespace ScriptEngine.HostedScript
         { 
         }
 
-        public KeyValueConfig(Dictionary<string, string> source)
+        public KeyValueConfig(IDictionary<string, string> source)
         {
             Merge(source);
         }
 
-        public void Merge(Dictionary<string, string> source)
+        public void Merge(IDictionary<string, string> source)
         {
             foreach (var keyValue in source)
             {
@@ -35,11 +35,10 @@ namespace ScriptEngine.HostedScript
         {
             get
             {
-                if (String.IsNullOrWhiteSpace(key))
+                if (string.IsNullOrWhiteSpace(key))
                     throw BadKeyException(key);
 
-                string value = null;
-                _values.TryGetValue(key, out value);
+                _values.TryGetValue(key, out var value);
                 
                 return value;
 
@@ -55,7 +54,7 @@ namespace ScriptEngine.HostedScript
 
         private static ArgumentException BadKeyException(string key)
         {
-            return new ArgumentException(String.Format("wrong config key format: {0}", key));
+            return new ArgumentException($"wrong config key format: {key}");
         }
 
     }

@@ -35,9 +35,9 @@ namespace ScriptEngine
             _scriptFactory = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
             ContextDiscoverer = new ContextDiscoverer(TypeManager.Instance, GlobalsManager.Instance);
-            _compilerFactory = new AstBasedCompilerFactory();
+            _compilerFactory = new LegacyCompilerFactory();
             
-            AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            AttachAssembly(GetType().Assembly);
         }
 
         public ScriptingEngine(ITypeManager types, IGlobalsManager globals, RuntimeEnvironment env, ICompilerServiceFactory compilerFactory)
@@ -53,6 +53,7 @@ namespace ScriptEngine
             _scriptFactory = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
             ContextDiscoverer = new ContextDiscoverer(types, globals);
+            AttachAssembly(GetType().Assembly);
         }
         
         private ContextDiscoverer ContextDiscoverer { get; }

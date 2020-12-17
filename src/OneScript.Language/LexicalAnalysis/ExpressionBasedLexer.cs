@@ -10,7 +10,7 @@ using OneScript.Language.SyntaxAnalysis;
 
 namespace OneScript.Language.LexicalAnalysis
 {
-    public class ExpressionBasedLexer : ILexemGenerator
+    public class ExpressionBasedLexer : ILexer
     {
         private readonly Func<char, LexerState> _selector;
         private string _code;

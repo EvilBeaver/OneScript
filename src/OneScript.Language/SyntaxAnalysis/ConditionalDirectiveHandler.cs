@@ -19,6 +19,11 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private ILexer _lexer;
         Lexem _lastExtractedLexem;
+
+        public ConditionalDirectiveHandler()
+        {
+            _lexer = new FullSourceLexer();
+        }
         
         private class PreprocessorBlock
         {
@@ -42,6 +47,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public void OnModuleEnter(ParserContext context)
         {
+            _blocks.Clear();
         }
 
         public void OnModuleLeave(ParserContext context)
@@ -56,7 +62,7 @@ namespace OneScript.Language.SyntaxAnalysis
             if (!IsConditional(lexem))
                 return default;
             
-            _lexer = context.Lexer;
+            _lexer.Iterator = context.Lexer.Iterator;
             _lastExtractedLexem = lexem;
             
             context.LastExtractedLexem = Preprocess(_lastExtractedLexem);
@@ -328,7 +334,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
             while (true)
             {
-                if (iterator.CurrentSymbol == '#')
+                if (iterator.CurrentSymbol == SpecialChars.Preprocessor)
                     return true;
                 
                 if (!iterator.MoveNext())

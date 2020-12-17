@@ -27,8 +27,8 @@ namespace ScriptEngine.Compiler
         private readonly List<CompilerException> _errors = new List<CompilerException>();
         private ModuleInformation _moduleInfo;
 
-        private readonly List<AstBasedCodeGenerator.ForwardedMethodDecl> _forwardedMethods = new List<AstBasedCodeGenerator.ForwardedMethodDecl>();
-        private readonly Stack<AstBasedCodeGenerator.NestedLoopInfo> _nestedLoops = new Stack<AstBasedCodeGenerator.NestedLoopInfo>();
+        private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
+        private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
 
         public AstBasedCodeGenerator(ICompilerContext context)
         {
@@ -77,6 +77,9 @@ namespace ScriptEngine.Compiler
 
         private void HandleImportClause(AnnotationNode node)
         {
+            if(DependencyResolver == default)
+                return;
+            
             var libName = node.Children
                 .Cast<AnnotationParameterNode>()
                 .First()
@@ -85,7 +88,7 @@ namespace ScriptEngine.Compiler
             
             try
             {
-                DependencyResolver.Resolve(libName, _ctx);
+                DependencyResolver.Resolve(libName);
                 if(_ctx is ModuleCompilerContext moduleContext)
                     moduleContext.Update();
             }

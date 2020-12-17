@@ -11,9 +11,7 @@ using System.IO;
 using System.Net.Configuration;
 using System.Reflection;
 #endif
-using System.Text;
 
-using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 
 namespace oscript
@@ -76,14 +74,14 @@ namespace oscript
 #endif
 		public static void OnBeforeScriptRead(HostedScriptEngine engine)
 		{
-			var cfg = engine.GetWorkingConfig();
-
-			var openerEncoding = cfg["encoding.script"];
-			if (!string.IsNullOrWhiteSpace(openerEncoding))
-				if (StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") == 0)
-					engine.Loader.ReaderEncoding = FileOpener.SystemSpecificEncoding();
-				else
-					engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
+			// var cfg = engine.GetWorkingConfig();
+			//
+			// var openerEncoding = cfg["encoding.script"];
+			// if (!string.IsNullOrWhiteSpace(openerEncoding))
+			// 	if (StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") == 0)
+			// 		engine.Loader.ReaderEncoding = FileOpener.SystemSpecificEncoding();
+			// 	else
+			// 		engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
 
 #if NETFRAMEWORK
 			var strictWebRequest = ConvertSettingValueToBool(cfg["http.strictWebRequest"]);

@@ -14,7 +14,9 @@ using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.HostedScript.Library;
+using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 
 namespace oscript
@@ -42,12 +44,19 @@ namespace oscript
 
             SystemLogger.SetWriter(this);
 
-            var hostedScript = new HostedScriptEngine();
-            hostedScript.DebugController = DebugController;
-            hostedScript.CustomConfig = ScriptFileHelper.CustomConfigPath(_path);
-            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
-            var source = hostedScript.Loader.FromFile(_path);
+            var builder = ConsoleHostBuilder.Create();
+            builder
+                 .UseEntrypointConfigFile(_path)
+                 .WithDebugger(DebugController);
 
+            var hostedScript = ConsoleHostBuilder.Build(builder);
+            // var hostedScript = new HostedScriptEngine();
+            // hostedScript.DebugController = DebugController;
+            // hostedScript.Configuration = builder.ConfigurationProviders;//ScriptFileHelper.CustomConfigPath(_path);
+            
+            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
+            
+            var source = hostedScript.Loader.FromFile(_path);
             Process process;
             try
             {

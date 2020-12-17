@@ -68,10 +68,24 @@ namespace OneScript.Language.SyntaxAnalysis
             
             try
             {
+                foreach (var preprocessorHandler in DirectiveHandlers)
+                {
+                    var context = CreateParserContext();
+                    preprocessorHandler.OnModuleEnter(context);
+                    ApplyContext(context);
+                }
+
                 ParseModuleSections();
             }
             finally
             {
+                foreach (var preprocessorHandler in DirectiveHandlers)
+                {
+                    var context = CreateParserContext();
+                    preprocessorHandler.OnModuleLeave(context);
+                    ApplyContext(context);
+                }
+                
                 PopContext();
             }
 

@@ -62,5 +62,12 @@ namespace OneScript.Language.LexicalAnalysis
                 .HandleWith(new NumberLexerState());
             return builder;
         }
+        
+        public static LexerBuilder DetectPreprocessorDirectives(this LexerBuilder builder)
+        {
+            builder.Detect((cs, i) => cs == SpecialChars.Preprocessor)
+                .HandleWith(new PreprocessorDirectiveLexerState());
+            return builder;
+        }
     }
 }

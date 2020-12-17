@@ -90,9 +90,10 @@ namespace OneScript.StandardLibrary.Hash
         }
 
 
-        public static HashFunctionEnum CreateInstance()
+        public static HashFunctionEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateEnumInstance<HashFunctionEnum>((t, v) => new HashFunctionEnum(t, v));
+            return EnumContextHelper.CreateEnumInstance<HashFunctionEnum>(typeManager,
+                (t, v) => new HashFunctionEnum(t, v));
         }
 
         public static HashAlgorithm GetProvider(IValue provider)

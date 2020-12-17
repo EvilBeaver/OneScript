@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Language.SyntaxAnalysis;
+using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Hosting
@@ -16,8 +16,11 @@ namespace ScriptEngine.Hosting
         ITypeManager TypeManager { get; set; }
         IGlobalsManager GlobalInstances { get; set; }
         ICompilerServiceFactory CompilerFactory { get; set; }
-        PreprocessorHandlers PreprocessorHandlers { get; set; }
-
+        CompilerBuildOptions CompilerOptions { get; set; }
+        IDebugController DebugController { get; set; }
+        
+        ConfigurationProviders ConfigurationProviders { get; }
+        
         ScriptingEngine Build();
     }
 }

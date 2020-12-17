@@ -28,6 +28,11 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public bool HandleDirective(ParserContext context)
         {
+            if (!DirectiveSupported(context.LastExtractedLexem.Content))
+            {
+                return default;
+            }
+            
             if(!_enabled)
                 throw new SyntaxErrorException(
                     context.Lexer.GetErrorPosition(),
@@ -38,5 +43,7 @@ namespace OneScript.Language.SyntaxAnalysis
         }
 
         protected abstract bool HandleDirectiveInternal(ParserContext context);
+        
+        protected abstract bool DirectiveSupported(string directive);
     }
 }

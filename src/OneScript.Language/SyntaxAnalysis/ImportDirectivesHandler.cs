@@ -28,10 +28,6 @@ namespace OneScript.Language.SyntaxAnalysis
             var lastExtractedLexem = context.LastExtractedLexem;
             var lexemStream = context.Lexer;
             var nodeBuilder = context.NodeBuilder;
-            if (!DirectiveSupported(lastExtractedLexem.Content))
-            {
-                return default;
-            }
             
             var node = nodeBuilder.CreateNode(NodeKind.Import, lastExtractedLexem);
             _importClauseLexer.Iterator = lexemStream.Iterator;
@@ -62,7 +58,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return true;
         }
         
-        private static bool DirectiveSupported(string directive)
+        protected override bool DirectiveSupported(string directive)
         {
             return StringComparer.InvariantCultureIgnoreCase.Compare(directive, "использовать") == 0
                    || StringComparer.InvariantCultureIgnoreCase.Compare(directive, "use") == 0;

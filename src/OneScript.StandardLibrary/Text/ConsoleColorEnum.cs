@@ -40,11 +40,11 @@ namespace OneScript.StandardLibrary.Text
             return val;
         }
 
-        public static ConsoleColorEnum CreateInstance()
+        public static ConsoleColorEnum CreateInstance(ITypeManager typeManager)
         {
             ConsoleColorEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеЦветКонсоли", typeof(ConsoleColorEnum));
-            var enumValueType = TypeManager.RegisterType("ЦветКонсоли", typeof(CLREnumValueWrapper<ConsoleColor>));
+            var type = typeManager.RegisterType("ПеречислениеЦветКонсоли", typeof(ConsoleColorEnum));
+            var enumValueType = typeManager.RegisterType("ЦветКонсоли", typeof(CLREnumValueWrapper<ConsoleColor>));
 
             instance = new ConsoleColorEnum(type, enumValueType);
 

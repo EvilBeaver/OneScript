@@ -12,9 +12,19 @@ namespace ScriptEngine
 {
     public class AstBasedCompilerFactory : ICompilerServiceFactory
     {
+        private readonly CompilerBuildOptions _compilerOptions;
+
+        public AstBasedCompilerFactory(CompilerBuildOptions compilerOptions)
+        {
+            if(compilerOptions == default)
+                compilerOptions = new CompilerBuildOptions();
+            
+            _compilerOptions = compilerOptions;
+        }
+
         public ICompilerService CreateInstance(ICompilerContext context)
         {
-            return new AstBasedCompilerService(context);
+            return new AstBasedCompilerService(_compilerOptions, context);
         }
     }
 }

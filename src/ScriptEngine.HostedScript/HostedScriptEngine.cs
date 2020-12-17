@@ -13,6 +13,7 @@ using OneScript.StandardLibrary;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine.Contexts;
 using OneScript.StandardLibrary.Collections;
+using ScriptEngine.Hosting;
 
 
 namespace ScriptEngine.HostedScript
@@ -20,7 +21,7 @@ namespace ScriptEngine.HostedScript
     public class HostedScriptEngine : IDisposable
     {
         private readonly ScriptingEngine _engine;
-        private readonly SystemGlobalContext _globalCtx;
+        private SystemGlobalContext _globalCtx;
         private readonly RuntimeEnvironment _env;
         private bool _isInitialized;
         private bool _configInitialized;
@@ -28,6 +29,7 @@ namespace ScriptEngine.HostedScript
 
         private CodeStatProcessor _codeStat;
 
+        [Obsolete]
         public HostedScriptEngine()
         {
             _engine = new ScriptingEngine();
@@ -35,6 +37,22 @@ namespace ScriptEngine.HostedScript
             _engine.AttachAssembly(typeof(ArrayImpl).Assembly, _env);
             _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly(), _env);
 
+            SetGlobalContexts();
+
+            _engine.Environment = _env;
+        }
+
+        public HostedScriptEngine(ScriptingEngine engine)
+        {
+            _engine = engine;
+            _env = _engine.Environment;
+            _engine.AttachAssembly(typeof(HostedScriptEngine).Assembly, _env);
+            
+            SetGlobalContexts();
+        }
+
+        private void SetGlobalContexts()
+        {
             _globalCtx = new SystemGlobalContext();
             _globalCtx.EngineInstance = _engine;
 
@@ -44,7 +62,7 @@ namespace ScriptEngine.HostedScript
             var dynLoader = new DynamicLoadingFunctions(_engine);
             _env.InjectObject(dynLoader, false);
             GlobalsManager.RegisterInstance(dynLoader);
-            
+
             InitializationCallback = (eng, env) =>
             {
                 var templateFactory = new DefaultTemplatesFactory();
@@ -52,10 +70,8 @@ namespace ScriptEngine.HostedScript
                 env.InjectObject(storage);
                 GlobalsManager.RegisterInstance(storage);
             };
-
-            _engine.Environment = _env;
         }
-
+        
         public ScriptingEngine EngineInstance => _engine;
 
         public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
@@ -80,7 +96,10 @@ namespace ScriptEngine.HostedScript
             var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
             if (!_configInitialized)
             {
-                cfgAccessor.Provider = new EngineConfigProvider(CustomConfig);
+                if(Configuration == default)
+                    Configuration = new ConfigurationProviders();
+                
+                cfgAccessor.Provider = new EngineConfigProvider(Configuration);
                 cfgAccessor.Refresh();
                 _configInitialized = true;
             }
@@ -88,6 +107,8 @@ namespace ScriptEngine.HostedScript
         }
 
         public string CustomConfig { get; set; }
+        
+        public ConfigurationProviders Configuration { get; set; }
 
         public Action<ScriptingEngine, RuntimeEnvironment> InitializationCallback { get; set; }
         
@@ -122,11 +143,6 @@ namespace ScriptEngine.HostedScript
             {
                 InitExternalLibraries(null, null);
             }
-        }
-
-        private static string ConfigFilePath()
-        {
-            return EngineConfigProvider.DefaultConfigFilePath();
         }
 
         private void InitLibrariesFromConfig(KeyValueConfig config)

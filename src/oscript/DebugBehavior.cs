@@ -30,7 +30,8 @@ namespace oscript
             var executor = new ExecuteScriptBehavior(_path, _args);
             SystemLogger.SetWriter(executor);
             var tcpDebugServer = new BinaryTcpDebugServer(_port);
-                    executor.DebugController = tcpDebugServer.CreateDebugController();
+                    
+            executor.DebugController = tcpDebugServer.CreateDebugController();
             
             return executor.Execute();
         }

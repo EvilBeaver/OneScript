@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using System.Linq;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
@@ -15,9 +16,13 @@ namespace ScriptEngine.Compiler
 {
     internal class AstBasedCompilerService : CompilerServiceBase
     {
-        internal AstBasedCompilerService(ICompilerContext outerContext) 
+        private readonly CompilerBuildOptions _сompilerOptions;
+
+        internal AstBasedCompilerService(CompilerBuildOptions сompilerOptions, ICompilerContext outerContext) 
             : base(outerContext)
         {
+            _сompilerOptions = сompilerOptions;
+            ProduceExtraCode = _сompilerOptions.ProduceExtraCode;
         }
 
         private DefaultBslParser Parser { get; set; }
@@ -29,7 +34,8 @@ namespace ScriptEngine.Compiler
             var codeGen = new AstBasedCodeGenerator(context)
             {
                 ProduceExtraCode = ProduceExtraCode,
-                ThrowErrors = true
+                ThrowErrors = true,
+                DependencyResolver = _сompilerOptions.DependencyResolver
             };
             
             var astBuilder = new DefaultAstBuilder()
@@ -37,21 +43,21 @@ namespace ScriptEngine.Compiler
                 ThrowOnError = true
             };
 
-            var lexer = new DefaultLexer()
+            var lexer = new DefaultLexer
             {
                 Code = source.Code
             };
 
-            var conditionalCompilation = new ConditionalDirectiveHandler();
-            foreach (var constant in preprocessorConstants)
+            var conditionals = _сompilerOptions.PreprocessorHandlers.Get<ConditionalDirectiveHandler>();
+            if (conditionals != default)
             {
-                conditionalCompilation.Define(constant);
+                foreach (var constant in preprocessorConstants)
+                {
+                    conditionals.Define(constant);
+                }
             }
-            
-            AddDirectiveHandler(new RegionDirectiveHandler());
-            AddDirectiveHandler(conditionalCompilation);
-            //AddDirectiveHandler(new ImportDirectivesHandler());
-            Parser = new DefaultBslParser(astBuilder, lexer, GetHandlers());
+
+            Parser = new DefaultBslParser(astBuilder, lexer, _сompilerOptions.PreprocessorHandlers);
             
             var moduleNode = (ModuleNode)Parser.ParseStatefulModule();
             var mi = CreateModuleInformation(source, lexer);

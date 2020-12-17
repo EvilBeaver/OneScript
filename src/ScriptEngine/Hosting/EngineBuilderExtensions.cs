@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Reflection;
 using OneScript.Language.SyntaxAnalysis;
+using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -64,26 +65,59 @@ namespace ScriptEngine.Hosting
             b.CompilerFactory = factory;
             return b;
         }
+        
+        public static IEngineBuilder UseCompilerOptions(this IEngineBuilder b, Action<CompilerBuildOptions> getOptions)
+        {
+            EnsureCompilerOptions(b);
+            getOptions(b.CompilerOptions);
+            
+            b.UseCompiler(new AstBasedCompilerFactory(b.CompilerOptions));
+            return b;
+        }
 
-        public static IEngineBuilder WithHandler(this IEngineBuilder b, IDirectiveHandler handler)
+        private static void EnsureCompilerOptions(IEngineBuilder b)
+        {
+            if(b.CompilerOptions == default)
+                b.CompilerOptions = new CompilerBuildOptions();
+        }
+        
+        public static CompilerBuildOptions WithHandler(this CompilerBuildOptions b, IDirectiveHandler handler)
         {
             b.PreprocessorHandlers.Add(handler);
             return b;
         }
 
-        public static IEngineBuilder UseConditionalCompilation(this IEngineBuilder b)
+        public static CompilerBuildOptions UseConditionalCompilation(this CompilerBuildOptions b)
         {
             return b.WithHandler(new ConditionalDirectiveHandler());
         }
         
-        public static IEngineBuilder UseRegions(this IEngineBuilder b)
+        public static CompilerBuildOptions UseRegions(this CompilerBuildOptions b)
         {
             return b.WithHandler(new RegionDirectiveHandler());
         }
         
-        public static IEngineBuilder UseImports(this IEngineBuilder b)
+        public static CompilerBuildOptions UseImports(this CompilerBuildOptions b)
         {
             return b.WithHandler(new ImportDirectivesHandler());
+        }
+        
+        public static IEngineBuilder SetDefaultOptions(this IEngineBuilder builder)
+        {
+            builder.UseCompilerOptions(o =>
+            {
+                o.UseConditionalCompilation()
+                    .UseRegions()
+                    .UseImports();
+            });
+
+            return builder;
+        }
+
+        public static IEngineBuilder WithDebugger(this IEngineBuilder b, IDebugController debugger)
+        {
+            b.DebugController = debugger;
+            return b;
         }
     }
 }

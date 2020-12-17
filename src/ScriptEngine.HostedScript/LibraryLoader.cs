@@ -239,7 +239,7 @@ namespace ScriptEngine.HostedScript
                 }
                 else
                 {
-                    var module = library.AddModule(scriptFile.identifier, scriptFile.path);
+                    library.AddModule(scriptFile.identifier, scriptFile.path);
                 }
             }
 

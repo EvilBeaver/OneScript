@@ -7,8 +7,11 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.Compiler
 {
-    public interface IDependencyResolver
+    public class LegacyCompilerFactory : ICompilerServiceFactory
     {
-        ExternalLibraryDef Resolve(string library, ICompilerContext context);
+        public ICompilerService CreateInstance(ICompilerContext context)
+        {
+            return new CompilerService(context);
+        }
     }
 }

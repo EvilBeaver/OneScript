@@ -5,7 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using System.Text;
 using OneScript.Language.SyntaxAnalysis;
+using ScriptEngine.Compiler;
+using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Hosting
@@ -17,28 +21,21 @@ namespace ScriptEngine.Hosting
             return new DefaultEngineBuilder();
         }
         
-        public RuntimeEnvironment Environment { get; set; }
-        public ITypeManager TypeManager { get; set; }
-        public IGlobalsManager GlobalInstances { get; set; }
+        public RuntimeEnvironment Environment { get; set; } = new RuntimeEnvironment();
+        public ITypeManager TypeManager { get; set; } = new StandartTypeManager();
+        public IGlobalsManager GlobalInstances { get; set; } = new GlobalInstancesManager();
         public ICompilerServiceFactory CompilerFactory { get; set; }
-        
-        public PreprocessorHandlers PreprocessorHandlers { get; set; }
-        
+        public CompilerBuildOptions CompilerOptions { get; set; }
+        public IDebugController DebugController { get; set; }
+        public ConfigurationProviders ConfigurationProviders { get; } = new ConfigurationProviders();
+
         public ScriptingEngine Build()
         {
-            if(Environment == default)
-                Environment = new RuntimeEnvironment();
-            
             if(CompilerFactory == default)
-                CompilerFactory = new AstBasedCompilerFactory();
-            
-            if(GlobalInstances == default)
-                GlobalInstances = new GlobalInstancesManager();
-            
-            if(TypeManager == default)
-                TypeManager = new StandartTypeManager();
+                CompilerFactory = new AstBasedCompilerFactory(CompilerOptions);
             
             var engine = new ScriptingEngine(TypeManager, GlobalInstances, Environment, CompilerFactory);
+            
             return engine;
         }
     }
