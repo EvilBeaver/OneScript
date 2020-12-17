@@ -9,6 +9,7 @@ using System;
 using System.Text;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Text;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -37,16 +38,15 @@ namespace OneScript.StandardLibrary
         /// <param name="codeType"></param>
         /// <param name="encoding"></param>
         [ContextMethod("КодироватьСтроку", "EncodeString")]
-        public string EncodeString(string sourceString, SelfAwareEnumValue<StringEncodingMethodEnum> codeType, IValue encoding = null)
+        public string EncodeString(string sourceString, StringEncodingMethod encMethod, IValue encoding = null)
         {
-            var encMethod = GlobalsManager.GetEnum<StringEncodingMethodEnum>();
             Encoding enc;
             if (encoding != null)
                 enc = TextEncodingEnum.GetEncoding(encoding);
             else
                 enc = Encoding.UTF8;
 
-            if (codeType == encMethod.URLEncoding)
+            if (encMethod == StringEncodingMethod.UrlEncoding)
                 return EncodeStringImpl(sourceString, enc, false);
             else
                 return EncodeStringImpl(sourceString, enc, true);
@@ -129,7 +129,7 @@ namespace OneScript.StandardLibrary
         /// <param name="encoding"></param>
         /// <returns></returns>
         [ContextMethod("РаскодироватьСтроку", "DecodeString")]
-        public string DecodeString(string encodedString, SelfAwareEnumValue<StringEncodingMethodEnum> codeType, IValue encoding = null)
+        public string DecodeString(string encodedString, StringEncodingMethod codeType, IValue encoding = null)
         {
             if (encoding != null)
                 throw new NotSupportedException("Явное указание кодировки в данной версии не поддерживается (только utf-8 согласно RFC 3986)");
@@ -144,38 +144,12 @@ namespace OneScript.StandardLibrary
         }
     }
 
-    [SystemEnum("СпособКодированияСтроки", "StringEncodingMethod")]
-    public class StringEncodingMethodEnum : EnumerationContext
+    [EnumerationType("СпособКодированияСтроки", "StringEncodingMethod")]
+    public enum StringEncodingMethod
     {
-        private const string EV_SIMPLE = "КодировкаURL";
-        private const string EV_URL = "URLВКодировкеURL";
-
-        public StringEncodingMethodEnum(TypeDescriptor enumType, TypeDescriptor valuesType) : base(enumType, valuesType)
-        {
-
-        }
-
-        [EnumValue(EV_SIMPLE, "URLEncoding")]
-        public EnumerationValue URLEncoding
-        {
-            get
-            {
-                return this[EV_SIMPLE];
-            }
-        }
-
-        [EnumValue(EV_URL, "URLInURLEncoding")]
-        public EnumerationValue URLInURLEncoding
-        {
-            get
-            {
-                return this[EV_URL];
-            }
-        }
-
-        public static StringEncodingMethodEnum CreateInstance()
-        {
-            return EnumContextHelper.CreateEnumInstance<StringEncodingMethodEnum>((t, v) => new StringEncodingMethodEnum(t, v));
-        }
+        [EnumItem("КодировкаURL", "URLEncoding")]
+        UrlEncoding,
+        [EnumItem("URLВКодировкеURL", "URLInURLEncoding")]
+        UrlInUrlEncoding
     }
 }

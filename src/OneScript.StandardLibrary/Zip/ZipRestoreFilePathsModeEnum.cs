@@ -5,43 +5,19 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Zip
 {
-    [SystemEnum("РежимВосстановленияПутейФайловZIP", "ZIPRestoreFilePathsMode")]
-    public class ZipRestoreFilePathsModeEnum : EnumerationContext
+    [EnumerationType("РежимВосстановленияПутейФайловZIP", "ZIPRestoreFilePathsMode")]
+    public enum ZipRestoreFilePathsMode
     {
-        private const string RESTORE_PATHS_NAME = "Восстанавливать";
-        private const string DONT_RESTORE_PATHS_NAME = "НеВосстанавливать";
+        [EnumItem("Восстанавливать", "Restore")]
+        Restore,
 
-        private ZipRestoreFilePathsModeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-            : base(typeRepresentation, valuesType)
-        {
-        }
-
-        [EnumValue(RESTORE_PATHS_NAME, "Restore")]
-        public EnumerationValue Restore
-        {
-            get
-            {
-                return this[RESTORE_PATHS_NAME];
-            }
-        }
-
-        [EnumValue(DONT_RESTORE_PATHS_NAME, "DontRestore")]
-        public EnumerationValue DoNotRestore
-        {
-            get
-            {
-                return this[DONT_RESTORE_PATHS_NAME];
-            }
-        }
-
-        public static ZipRestoreFilePathsModeEnum CreateInstance()
-        {
-            return EnumContextHelper.CreateEnumInstance<ZipRestoreFilePathsModeEnum>((t, v) => new ZipRestoreFilePathsModeEnum(t, v));
-        }
+        [EnumItem("НеВосстанавливать", "DontRestore")]
+        DontRestore
     }
 }

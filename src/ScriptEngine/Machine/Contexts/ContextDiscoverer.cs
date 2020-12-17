@@ -109,16 +109,23 @@ namespace ScriptEngine.Machine.Contexts
         {
             var method = enumType.GetMethod(INSTANCE_RETRIEVER_NAME, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
             
-            System.Diagnostics.Trace.Assert(method != null, "System enum must have a static method " + INSTANCE_RETRIEVER_NAME);
+            if(method == default)
+                throw new ArgumentException($"System enum must have a static method {INSTANCE_RETRIEVER_NAME}");
+            
+            var parameters = method.GetParameters();
+            if(parameters.Length != 1 || parameters[0].ParameterType != typeof(ITypeManager))
+                throw new ArgumentException($"Method {enumType}::{INSTANCE_RETRIEVER_NAME} must accept ITypeManager as an argument");
 
-            var instance = (IValue)method.Invoke(null, null);
-            Globals.RegisterInstance(instance);
             var enumMetadata = (SystemEnumAttribute)enumType.GetCustomAttributes(typeof(SystemEnumAttribute), false)[0];
+            var instance = (IValue)method.Invoke(null, new object[]{Types});
+            
+            Globals.RegisterInstance(instance);
+            
             environment.InjectGlobalProperty(instance, enumMetadata.GetName(), true);
             if(enumMetadata.GetAlias() != String.Empty)
                 environment.InjectGlobalProperty(instance, enumMetadata.GetAlias(), true);
         }
-
+        
         private void RegisterSimpleEnum(Type enumType, RuntimeEnvironment environment)
         {
             var enumTypeAttribute = (EnumerationTypeAttribute)enumType.GetCustomAttributes (typeof (EnumerationTypeAttribute), false)[0];

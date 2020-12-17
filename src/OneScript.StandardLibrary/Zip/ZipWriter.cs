@@ -45,9 +45,9 @@ namespace OneScript.StandardLibrary.Zip
             string filename, 
             string password = null, 
             string comment = null, 
-            SelfAwareEnumValue<ZipCompressionMethodEnum> compressionMethod = null, 
-            SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel = null,
-            SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod = null,
+            ZipCompressionMethod compressionMethod = default, 
+            ZipCompressionLevel compressionLevel = ZipCompressionLevel.Optimal,
+            ZipEncryptionMethod? encryptionMethod = default,
             FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
             ZipFile.DefaultEncoding = Encoding.GetEncoding(866); // fuck non-russian encodings on non-ascii files
@@ -92,13 +92,13 @@ namespace OneScript.StandardLibrary.Zip
         /// <param name="storePathMode">РежимСохраненияПутейZIP (НеСохранятьПути/СохранятьОтносительныеПути/СохранятьПолныеПути)</param>
         /// <param name="recurseSubdirectories">РежимОбработкиПодкаталоговZIP (НеОбрабатывать/ОбрабатыватьРекурсивно)</param>
         [ContextMethod("Добавить", "Add")]
-        public void Add(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode = null, SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories = null)
+        public void Add(string file, ZipStorePathMode? storePathMode = default, ZipSubDirProcessingMode recurseSubdirectories = default)
         {
             CheckIfOpened();
 
             var pathIsMasked = file.IndexOfAny(new[] { '*', '?' }) >= 0;
 
-            var recursiveFlag = GetRecursiveFlag(recurseSubdirectories);
+            var recursiveFlag = recurseSubdirectories == ZipSubDirProcessingMode.DontRecurse;
             var searchOption = recursiveFlag ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
             if(pathIsMasked)
@@ -116,7 +116,7 @@ namespace OneScript.StandardLibrary.Zip
             
         }
 
-        private void AddDirectory(string dir, SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddDirectory(string dir, SearchOption searchOption, ZipStorePathMode? storePathMode)
         {
             string allFilesMask;
 
@@ -139,18 +139,17 @@ namespace OneScript.StandardLibrary.Zip
             return rootPath;
         }
 
-        private void AddSingleFile(string file, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddSingleFile(string file, ZipStorePathMode? storePathMode)
         {
-            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
             if (storePathMode == null)
-                storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.StoreRelativePath;
+                storePathMode = ZipStorePathMode.StoreRelativePath;
 
             var currDir = Directory.GetCurrentDirectory();
 
             string pathInArchive;
-            if (storePathMode == storeModeEnum.StoreFullPath)
+            if (storePathMode == ZipStorePathMode.StoreFullPath)
                 pathInArchive = null;
-            else if (storePathMode == storeModeEnum.StoreRelativePath)
+            else if (storePathMode == ZipStorePathMode.StoreRelativePath)
             {
                 var relativePath = GetRelativePath(file, currDir);
                 if (relativePath == "")
@@ -164,7 +163,7 @@ namespace OneScript.StandardLibrary.Zip
             _zip.AddFile(file, pathInArchive);
         }
 
-        private void AddFilesByMask(string file, SearchOption searchOption, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddFilesByMask(string file, SearchOption searchOption, ZipStorePathMode? storePathMode)
         {
             // надо разделить на каталог и маску
             var pathEnd = file.LastIndexOfAny(new[] { '\\', '/' });
@@ -206,18 +205,17 @@ namespace OneScript.StandardLibrary.Zip
 
         }
 
-        private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, string relativePath, SelfAwareEnumValue<ZipStorePathModeEnum> storePathMode)
+        private void AddEnumeratedFiles(IEnumerable<string> filesToAdd, string relativePath, ZipStorePathMode? storePathMode)
         {
-            var storeModeEnum = GlobalsManager.GetEnum<ZipStorePathModeEnum>();
             if (storePathMode == null)
-                storePathMode = (SelfAwareEnumValue<ZipStorePathModeEnum>)storeModeEnum.DontStorePath;
+                storePathMode = ZipStorePathMode.DontStorePath;
 
             foreach (var item in filesToAdd)
             {
                 string pathInArchive;
-                if (storePathMode == storeModeEnum.StoreRelativePath)
+                if (storePathMode == ZipStorePathMode.StoreRelativePath)
                     pathInArchive = Path.GetDirectoryName(GetRelativePath(item, relativePath));
-                else if (storePathMode == storeModeEnum.StoreFullPath)
+                else if (storePathMode == ZipStorePathMode.StoreFullPath)
                     pathInArchive = null;
                 else
                     pathInArchive = "";
@@ -254,58 +252,43 @@ namespace OneScript.StandardLibrary.Zip
                 res = ".";
             return res;
         }
-
-        private static bool GetRecursiveFlag(SelfAwareEnumValue<ZIPSubDirProcessingModeEnum> recurseSubdirectories)
+        
+        private CompressionMethod MakeZipCompressionMethod(ZipCompressionMethod compressionMethod)
         {
-            if (recurseSubdirectories == null)
-                return false;
-            else
-                return recurseSubdirectories == ((ZIPSubDirProcessingModeEnum)recurseSubdirectories.Owner).Recurse;
-        }
-
-        private CompressionMethod MakeZipCompressionMethod(SelfAwareEnumValue<ZipCompressionMethodEnum> compressionMethod)
-        {
-            if (compressionMethod == null)
+            if (compressionMethod == ZipCompressionMethod.Deflate)
                 return CompressionMethod.Deflate;
-
-            var owner = (ZipCompressionMethodEnum)compressionMethod.Owner;
-            if (compressionMethod == owner.Deflate)
-                return CompressionMethod.Deflate;
-            if (compressionMethod == owner.Copy)
+            if (compressionMethod == ZipCompressionMethod.Copy)
                 return CompressionMethod.None;
 
             throw RuntimeException.InvalidArgumentValue();
 
         }
 
-        private CompressionLevel MakeZipCompressionLevel(SelfAwareEnumValue<ZipCompressionLevelEnum> compressionLevel)
+        private CompressionLevel MakeZipCompressionLevel(ZipCompressionLevel compressionLevel)
         {
-            if (compressionLevel == null)
+            if (compressionLevel == default)
                 return CompressionLevel.Default;
 
-            var owner = (ZipCompressionLevelEnum)compressionLevel.Owner;
-            if (compressionLevel == owner.Minimal)
+            if (compressionLevel == ZipCompressionLevel.Minimal)
                 return CompressionLevel.BestSpeed;
-            if (compressionLevel == owner.Optimal)
+            if (compressionLevel == ZipCompressionLevel.Optimal)
                 return CompressionLevel.Default;
-            if (compressionLevel == owner.Maximal)
+            if (compressionLevel == ZipCompressionLevel.Maximal)
                 return CompressionLevel.BestCompression;
 
             throw RuntimeException.InvalidArgumentValue();
         }
 
-        private EncryptionAlgorithm MakeZipEncryption(SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod)
+        private EncryptionAlgorithm MakeZipEncryption(ZipEncryptionMethod? encryptionMethod)
         {
             if (encryptionMethod == null)
                 return EncryptionAlgorithm.PkzipWeak;
             
-            var enumOwner = (ZipEncryptionMethodEnum)encryptionMethod.Owner;
-
-            if(encryptionMethod == enumOwner.Zip20)
+            if(encryptionMethod == ZipEncryptionMethod.Zip20)
                 return EncryptionAlgorithm.PkzipWeak;
-            if (encryptionMethod == enumOwner.Aes128)
+            if (encryptionMethod == ZipEncryptionMethod.Aes128)
                 return EncryptionAlgorithm.WinZipAes128;
-            if (encryptionMethod == enumOwner.Aes256)
+            if (encryptionMethod == ZipEncryptionMethod.Aes256)
                 return EncryptionAlgorithm.WinZipAes256;
 
             throw RuntimeException.InvalidArgumentValue();
@@ -338,9 +321,9 @@ namespace OneScript.StandardLibrary.Zip
             zip.Open(filename.AsString(),
                 ConvertParam<string>(password),
                 ConvertParam<string>(comment),
-                ConvertParam<SelfAwareEnumValue<ZipCompressionMethodEnum>>(compressionMethod),
-                ConvertParam<SelfAwareEnumValue<ZipCompressionLevelEnum>>(compressionLevel),
-                ConvertParam<SelfAwareEnumValue<ZipEncryptionMethodEnum>>(encryptionMethod),
+                ConvertParam<ZipCompressionMethod>(compressionMethod),
+                ConvertParam<ZipCompressionLevel>(compressionLevel),
+                ConvertParam<ZipEncryptionMethod>(encryptionMethod),
                     encoding);
             return zip;
         }

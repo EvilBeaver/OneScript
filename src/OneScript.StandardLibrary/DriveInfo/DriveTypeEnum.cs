@@ -30,11 +30,11 @@ namespace OneScript.StandardLibrary.DriveInfo
 
         }
 
-        public static DriveTypeEnum CreateInstance()
+        public static DriveTypeEnum CreateInstance(ITypeManager typeManager)
         {
             DriveTypeEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеТипДиска", typeof(DriveTypeEnum));
-            var enumValueType = TypeManager.RegisterType("ТипДиска", typeof(CLREnumValueWrapper<System.IO.DriveType>));
+            var type = typeManager.RegisterType("ПеречислениеТипДиска", typeof(DriveTypeEnum));
+            var enumValueType = typeManager.RegisterType("ТипДиска", typeof(CLREnumValueWrapper<System.IO.DriveType>));
 
             instance = new DriveTypeEnum(type, enumValueType);
 

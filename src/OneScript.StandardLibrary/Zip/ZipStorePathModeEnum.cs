@@ -5,54 +5,18 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
+using ScriptEngine;
 
 namespace OneScript.StandardLibrary.Zip
 {
-    [SystemEnum("РежимСохраненияПутейZIP", "ZIPStorePathsMode")]
-    public class ZipStorePathModeEnum : EnumerationContext
+    [EnumerationType("РежимСохраненияПутейZIP", "ZIPStorePathsMode")]
+    public enum ZipStorePathMode
     {
-        const string DONT_SAVE = "НеСохранятьПути";
-        const string SAVE_RELATIVE = "СохранятьОтносительныеПути";
-        const string SAVE_FULL = "СохранятьПолныеПути";
-
-        public ZipStorePathModeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-            : base(typeRepresentation, valuesType)
-        {
-
-        }
-
-        [EnumValue(DONT_SAVE, "DontStorePath")]
-        public EnumerationValue DontStorePath
-        {
-            get
-            {
-                return this[DONT_SAVE];
-            }
-        }
-
-        [EnumValue(SAVE_RELATIVE, "StoreRelativePath")]
-        public EnumerationValue StoreRelativePath
-        {
-            get
-            {
-                return this[SAVE_RELATIVE];
-            }
-        }
-
-        [EnumValue(SAVE_FULL, "StoreFullPath")]
-        public EnumerationValue StoreFullPath
-        {
-            get
-            {
-                return this[SAVE_FULL];
-            }
-        }
-
-        public static ZipStorePathModeEnum CreateInstance()
-        {
-             return EnumContextHelper.CreateEnumInstance<ZipStorePathModeEnum>((t, v) => new ZipStorePathModeEnum(t, v));
-        }
+        [EnumItem("НеСохранятьПути", "DontStorePath")]
+        DontStorePath,
+        [EnumItem("СохранятьОтносительныеПути", "StoreRelativePath")]
+        StoreRelativePath,
+        [EnumItem("СохранятьПолныеПути", "StoreFullPath")]
+        StoreFullPath
     }
 }

@@ -63,14 +63,14 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
             }
         }
 
-        public static EnumerationXSSchemaFinal CreateInstance()
+        public static EnumerationXSSchemaFinal CreateInstance(ITypeManager typeManager)
         {
 
-            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSSchemaFinal", typeof(EnumerationXSSchemaFinal));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("XSSchemaFinal", typeof(XSSchemaFinal));
+            TypeDescriptor type = typeManager.RegisterType("EnumerationXSSchemaFinal", typeof(EnumerationXSSchemaFinal));
+            TypeDescriptor enumValueType = typeManager.RegisterType("XSSchemaFinal", typeof(XSSchemaFinal));
 
-            TypeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьСхемыXS");
-            TypeManager.RegisterAliasFor(enumValueType, "ЗавершенностьСхемыXS");
+            typeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьСхемыXS");
+            typeManager.RegisterAliasFor(enumValueType, "ЗавершенностьСхемыXS");
 
             EnumerationXSSchemaFinal instance = new EnumerationXSSchemaFinal(type, enumValueType);
 

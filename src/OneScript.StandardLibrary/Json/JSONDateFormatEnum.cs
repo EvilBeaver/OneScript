@@ -45,9 +45,10 @@ namespace OneScript.StandardLibrary.Json
             }
         }
 
-        public static JSONDateFormatEnum CreateInstance()
+        public static JSONDateFormatEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateEnumInstance<JSONDateFormatEnum>((t, v) => new JSONDateFormatEnum(t, v));
+            return EnumContextHelper.CreateEnumInstance<JSONDateFormatEnum>(typeManager, 
+                (t, v) => new JSONDateFormatEnum(t, v));
         }
 
     }

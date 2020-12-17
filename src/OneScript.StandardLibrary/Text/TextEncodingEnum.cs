@@ -103,9 +103,10 @@ namespace OneScript.StandardLibrary.Text
             throw RuntimeException.InvalidArgumentValue();
         }
 
-        public static TextEncodingEnum CreateInstance()
+        public static TextEncodingEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateEnumInstance<TextEncodingEnum>((t,v)=>new TextEncodingEnum(t,v));
+            return EnumContextHelper.CreateEnumInstance<TextEncodingEnum>(typeManager, 
+                (t,v)=>new TextEncodingEnum(t,v));
         }
 
         public static Encoding GetEncodingByName(string encoding, bool addBOM = true)

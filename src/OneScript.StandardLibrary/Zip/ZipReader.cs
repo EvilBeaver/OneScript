@@ -69,10 +69,10 @@ namespace OneScript.StandardLibrary.Zip
         /// <param name="where">Строка. Каталог в который извлекаются файлы</param>
         /// <param name="restorePaths">РежимВосстановленияПутейФайловZIP</param>
         [ContextMethod("ИзвлечьВсе","ExtractAll")]
-        public void ExtractAll(string where, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null)
+        public void ExtractAll(string where, ZipRestoreFilePathsMode restorePaths = default)
         {
             CheckIfOpened();
-            _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
+            _zip.FlattenFoldersOnExtract = restorePaths == ZipRestoreFilePathsMode.DontRestore;
             _zip.ExtractExistingFile = ExtractExistingFileAction.OverwriteSilently;
             _zip.ExtractAll(where);
         }
@@ -85,11 +85,11 @@ namespace OneScript.StandardLibrary.Zip
         /// <param name="restorePaths">РежимВосстановленияПутейФайлов</param>
         /// <param name="password">Пароль элемента (если отличается от пароля к архиву)</param>
         [ContextMethod("Извлечь", "Extract")]
-        public void Extract(ZipFileEntryContext entry, string destination, SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths = null, string password = null)
+        public void Extract(ZipFileEntryContext entry, string destination, ZipRestoreFilePathsMode restorePaths = default, string password = null)
         {
             CheckIfOpened();
             var realEntry = entry.GetZipEntry();
-            _zip.FlattenFoldersOnExtract = FlattenPathsOnExtraction(restorePaths);
+            _zip.FlattenFoldersOnExtract = restorePaths == ZipRestoreFilePathsMode.DontRestore;
             realEntry.Password = password;
 
             using (FileStream streamToExtract = new FileStream(Path.Combine(destination, entry.Name), FileMode.Create))
@@ -123,19 +123,7 @@ namespace OneScript.StandardLibrary.Zip
                 return _entriesWrapper;
             }
         }
-
-        private static bool FlattenPathsOnExtraction(SelfAwareEnumValue<ZipRestoreFilePathsModeEnum> restorePaths)
-        {
-            bool flattenFlag = false;
-            if (restorePaths != null)
-            {
-                var zipEnum = (ZipRestoreFilePathsModeEnum)restorePaths.Owner;
-                flattenFlag = restorePaths == zipEnum.DoNotRestore;
-            }
-
-            return flattenFlag;
-        }
-
+        
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static ZipReader Construct()
         {

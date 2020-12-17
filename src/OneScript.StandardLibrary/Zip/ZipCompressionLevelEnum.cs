@@ -5,53 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Zip
 {
-    [SystemEnum("УровеньСжатияZIP", "ZIPCompressionLevel")]
-    public class ZipCompressionLevelEnum : EnumerationContext
+    [EnumerationType("УровеньСжатияZIP", "ZIPCompressionLevel")]
+    public enum ZipCompressionLevel
     {
-        private const string EV_MINIMAL_NAME = "Минимальный";
-        private const string EV_OPTIMAL_NAME = "Оптимальный";
-        private const string EV_MAXIMAL_NAME = "Максимальный";
-
-        private ZipCompressionLevelEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-            : base(typeRepresentation, valuesType)
-        {
-        }
-        
-        [EnumValue(EV_MINIMAL_NAME, "Minimum")]
-        public EnumerationValue Minimal
-        {
-            get
-            {
-                return this[EV_MINIMAL_NAME];
-            }
-        }
-
-        [EnumValue(EV_OPTIMAL_NAME, "Optimal")]
-        public EnumerationValue Optimal
-        {
-            get
-            {
-                return this[EV_OPTIMAL_NAME];
-            }
-        }
-
-        [EnumValue(EV_MAXIMAL_NAME, "Maximum")]
-        public EnumerationValue Maximal
-        {
-            get
-            {
-                return this[EV_MAXIMAL_NAME];
-            }
-        }
-
-        public static ZipCompressionLevelEnum CreateInstance()
-        {
-            return EnumContextHelper.CreateEnumInstance<ZipCompressionLevelEnum>((t, v) => new ZipCompressionLevelEnum(t, v));
-        }
+        [EnumItem("Минимальный", "Minimum")]
+        Minimal,
+        [EnumItem("Оптимальный", "Optimal")]
+        Optimal,
+        [EnumItem("Максимальный", "Maximum")]
+        Maximal
     }
 }

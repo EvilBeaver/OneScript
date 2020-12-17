@@ -53,14 +53,14 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
             } 
         }
 
-        public static EnumerationXSForm CreateInstance()
+        public static EnumerationXSForm CreateInstance(ITypeManager typeManager)
         {
  
-            TypeDescriptor type          = TypeManager.RegisterType("EnumerationXSForm",  typeof(EnumerationXSForm));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("XSForm",             typeof(XSForm));
+            TypeDescriptor type          = typeManager.RegisterType("EnumerationXSForm",  typeof(EnumerationXSForm));
+            TypeDescriptor enumValueType = typeManager.RegisterType("XSForm",             typeof(XSForm));
 
-            TypeManager.RegisterAliasFor(type,          "ПеречислениеФормаПредставленияXS"); 
-            TypeManager.RegisterAliasFor(enumValueType, "ФормаПредставленияXS");
+            typeManager.RegisterAliasFor(type,          "ПеречислениеФормаПредставленияXS"); 
+            typeManager.RegisterAliasFor(enumValueType, "ФормаПредставленияXS");
 
             EnumerationXSForm instance = new EnumerationXSForm(type, enumValueType);
 

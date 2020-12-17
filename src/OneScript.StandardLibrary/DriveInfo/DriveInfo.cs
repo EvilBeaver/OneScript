@@ -53,8 +53,9 @@ namespace OneScript.StandardLibrary.DriveInfo
         [ContextProperty("ТипДиска", "DriveType")]
         public IValue DriveTypeProp
         {
-            get {
-                var dte = DriveTypeEnum.CreateInstance();
+            get
+            {
+                var dte = GlobalsManager.GetEnum<DriveTypeEnum>();
                 return dte.GetPropValue((int)_driveInfo.DriveType);
             }
         }

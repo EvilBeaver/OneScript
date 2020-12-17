@@ -45,9 +45,10 @@ namespace OneScript.StandardLibrary.Json
             }
         }
 
-        public static JSONCharactersEscapeModeEnum CreateInstance()
+        public static JSONCharactersEscapeModeEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateEnumInstance<JSONCharactersEscapeModeEnum>((t, v) => new JSONCharactersEscapeModeEnum(t, v));
+            return EnumContextHelper.CreateEnumInstance<JSONCharactersEscapeModeEnum>(typeManager,
+                (t, v) => new JSONCharactersEscapeModeEnum(t, v));
         }
 
     }

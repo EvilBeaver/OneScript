@@ -47,13 +47,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
             return value;
         }
 
-        public static EnumerationXSComplexFinal CreateInstance()
+        public static EnumerationXSComplexFinal CreateInstance(ITypeManager typeManager)
         {
-            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSComplexFinal", typeof(EnumerationXSComplexFinal));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("XSComplexFinal", typeof(XSComplexFinal));
+            TypeDescriptor type = typeManager.RegisterType("EnumerationXSComplexFinal", typeof(EnumerationXSComplexFinal));
+            TypeDescriptor enumValueType = typeManager.RegisterType("XSComplexFinal", typeof(XSComplexFinal));
 
-            TypeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьСоставногоТипаXS");
-            TypeManager.RegisterAliasFor(enumValueType, "ЗавершенностьСоставногоТипаXS");
+            typeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьСоставногоТипаXS");
+            typeManager.RegisterAliasFor(enumValueType, "ЗавершенностьСоставногоТипаXS");
 
             EnumerationXSComplexFinal instance = new EnumerationXSComplexFinal(type, enumValueType);
             instance.AddValue("Все", "All", new XSComplexFinal(instance, XmlSchemaDerivationMethod.All));

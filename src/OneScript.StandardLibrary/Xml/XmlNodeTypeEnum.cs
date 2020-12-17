@@ -43,11 +43,11 @@ namespace OneScript.StandardLibrary.Xml
             return val;
         }
 
-        public static XmlNodeTypeEnum CreateInstance()
+        public static XmlNodeTypeEnum CreateInstance(ITypeManager typeManager)
         {
             XmlNodeTypeEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеТипУзлаXML", typeof(XmlNodeTypeEnum));
-            var enumValueType = TypeManager.RegisterType("ТипУзлаXML", typeof(CLREnumValueWrapper<XmlNodeType>));
+            var type = typeManager.RegisterType("ПеречислениеТипУзлаXML", typeof(XmlNodeTypeEnum));
+            var enumValueType = typeManager.RegisterType("ТипУзлаXML", typeof(CLREnumValueWrapper<XmlNodeType>));
 
             instance = new XmlNodeTypeEnum(type, enumValueType);
 

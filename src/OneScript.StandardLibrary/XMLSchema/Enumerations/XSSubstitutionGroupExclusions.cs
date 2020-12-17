@@ -60,14 +60,14 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
             }
         }
 
-        public static EnumerationXSSubstitutionGroupExclusions CreateInstance()
+        public static EnumerationXSSubstitutionGroupExclusions CreateInstance(ITypeManager typeManager)
         {
 
-            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSSubstitutionGroupExclusions", typeof(EnumerationXSSubstitutionGroupExclusions));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("XSSubstitutionGroupExclusions", typeof(XSSubstitutionGroupExclusions));
+            TypeDescriptor type = typeManager.RegisterType("EnumerationXSSubstitutionGroupExclusions", typeof(EnumerationXSSubstitutionGroupExclusions));
+            TypeDescriptor enumValueType = typeManager.RegisterType("XSSubstitutionGroupExclusions", typeof(XSSubstitutionGroupExclusions));
 
-            TypeManager.RegisterAliasFor(type, "ПеречислениеИсключенияГруппПодстановкиXS");
-            TypeManager.RegisterAliasFor(enumValueType, "ИсключенияГруппПодстановкиXS");
+            typeManager.RegisterAliasFor(type, "ПеречислениеИсключенияГруппПодстановкиXS");
+            typeManager.RegisterAliasFor(enumValueType, "ИсключенияГруппПодстановкиXS");
 
             EnumerationXSSubstitutionGroupExclusions instance = new EnumerationXSSubstitutionGroupExclusions(type, enumValueType);
 

@@ -117,9 +117,10 @@ namespace OneScript.StandardLibrary.Json
             }
         }
 
-        public static JSONValueTypeEnum CreateInstance()
+        public static JSONValueTypeEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateEnumInstance<JSONValueTypeEnum>((t, v) => new JSONValueTypeEnum(t, v));
+            return EnumContextHelper.CreateEnumInstance<JSONValueTypeEnum>(typeManager,
+                (t, v) => new JSONValueTypeEnum(t, v));
         }
 
     }

@@ -6,21 +6,15 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using ScriptEngine;
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Zip
 {
-    [EnumerationType("МетодШифрованияZIP", "ZIPEncryptionMethod")]
-    public enum ZipEncryptionMethod
+    [EnumerationType("РежимОбработкиПодкаталоговZIP", "ZIPSubDirProcessingMode")]
+    public enum ZipSubDirProcessingMode
     {
-        [EnumItem("AES128")]
-        Aes128,
-        [EnumItem("AES192")]
-        Aes192,
-        [EnumItem("AES256")]
-        Aes256,
-        [EnumItem("Zip20")]
-        Zip20
+        [EnumItem("НеОбрабатывать", "DontProcess")]
+        DontRecurse,
+        [EnumItem("ОбрабатыватьРекурсивно", "ProcessRecursively")]
+        Recurse
     }
 }

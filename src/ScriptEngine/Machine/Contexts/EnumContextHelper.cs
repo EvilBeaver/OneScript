@@ -11,7 +11,7 @@ namespace ScriptEngine.Machine.Contexts
 {
     public static class EnumContextHelper
     {
-        public static void RegisterValues<T>(T instance) where T : EnumerationContext
+        private static void RegisterValues<T>(T instance) where T : EnumerationContext
         {
             var enumType = typeof(T);
             var values = enumType.GetProperties()
@@ -24,7 +24,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public static void RegisterEnumType<T>(out TypeDescriptor enumType, out TypeDescriptor enumValueType) where T : EnumerationContext
+        private static void RegisterEnumType<T>(ITypeManager typeManager, out TypeDescriptor enumType, out TypeDescriptor enumValueType) where T : EnumerationContext
         {
             var enumClassType = typeof(T);
             var attribs = enumClassType.GetCustomAttributes(typeof(SystemEnumAttribute), false);
@@ -34,18 +34,18 @@ namespace ScriptEngine.Machine.Contexts
 
             var enumMetadata = (SystemEnumAttribute)attribs[0];
 
-            enumType = TypeManager.RegisterType("Перечисление" + enumMetadata.GetName(), typeof(T));
-            enumValueType = TypeManager.RegisterType(enumMetadata.GetName(), typeof(SelfAwareEnumValue<T>));
+            enumType = typeManager.RegisterType("Перечисление" + enumMetadata.GetName(), typeof(T));
+            enumValueType = typeManager.RegisterType(enumMetadata.GetName(), typeof(SelfAwareEnumValue<T>));
         }
 
-        public static T CreateEnumInstance<T>(EnumCreationDelegate<T> creator) where T : EnumerationContext
+        public static T CreateEnumInstance<T>(ITypeManager typeManager, EnumCreationDelegate<T> creator) where T : EnumerationContext
         {
             T instance;
 
             TypeDescriptor enumType;
             TypeDescriptor enumValType;
 
-            EnumContextHelper.RegisterEnumType<T>(out enumType, out enumValType);
+            EnumContextHelper.RegisterEnumType<T>(typeManager, out enumType, out enumValType);
 
             instance = creator(enumType, enumValType);
 

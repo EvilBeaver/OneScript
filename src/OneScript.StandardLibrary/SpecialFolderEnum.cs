@@ -23,11 +23,11 @@ namespace OneScript.StandardLibrary
 
         }
 
-        public static SpecialFolderEnum CreateInstance()
+        public static SpecialFolderEnum CreateInstance(ITypeManager typeManager)
         {
             SpecialFolderEnum instance;
-            var type = TypeManager.RegisterType("ПеречислениеСпециальнаяПапка", typeof(SpecialFolderEnum));
-            var enumValueType = TypeManager.RegisterType("СпециальнаяПапка", typeof(CLREnumValueWrapper<sysFolder>));
+            var type = typeManager.RegisterType("ПеречислениеСпециальнаяПапка", typeof(SpecialFolderEnum));
+            var enumValueType = typeManager.RegisterType("СпециальнаяПапка", typeof(CLREnumValueWrapper<sysFolder>));
 
             instance = new SpecialFolderEnum(type, enumValueType);
 
