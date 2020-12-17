@@ -46,7 +46,7 @@ namespace OneScript.StandardLibrary.Zip
             string password = null, 
             string comment = null, 
             ZipCompressionMethod compressionMethod = default, 
-            ZipCompressionLevel compressionLevel = ZipCompressionLevel.Optimal,
+            ZipCompressionLevel compressionLevel = default,
             ZipEncryptionMethod? encryptionMethod = default,
             FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
@@ -98,7 +98,7 @@ namespace OneScript.StandardLibrary.Zip
 
             var pathIsMasked = file.IndexOfAny(new[] { '*', '?' }) >= 0;
 
-            var recursiveFlag = recurseSubdirectories == ZipSubDirProcessingMode.DontRecurse;
+            var recursiveFlag = recurseSubdirectories != ZipSubDirProcessingMode.DontRecurse;
             var searchOption = recursiveFlag ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
             if(pathIsMasked)

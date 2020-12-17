@@ -14,10 +14,10 @@ namespace OneScript.StandardLibrary.Zip
     [EnumerationType("УровеньСжатияZIP", "ZIPCompressionLevel")]
     public enum ZipCompressionLevel
     {
-        [EnumItem("Минимальный", "Minimum")]
-        Minimal,
         [EnumItem("Оптимальный", "Optimal")]
         Optimal,
+        [EnumItem("Минимальный", "Minimum")]
+        Minimal,
         [EnumItem("Максимальный", "Maximum")]
         Maximal
     }
