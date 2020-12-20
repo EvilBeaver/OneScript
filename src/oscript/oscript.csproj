@@ -3,7 +3,8 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <BeautyLibsDir>runtime</BeautyLibsDir>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>oscript.Program</StartupObject>
@@ -28,6 +29,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="nulastudio.NetCoreBeauty" Version="1.2.9"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
@@ -42,4 +44,82 @@
     <Folder Include="Properties\" />
   </ItemGroup>
 
+  <ItemGroup>
+     <ContentWithTargetPath 
+       Condition="'$(RuntimeIdentifier)' == 'win-x64' Or '$(RuntimeIdentifier)' == 'win-x86'"
+       Include="$(MSBuildThisFileDirectory)Resources\opm\opm.bat"
+       CopyToOutputDirectory="PreserveNewest"
+       TargetPath="%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+     <ContentWithTargetPath 
+       Condition="'$(RuntimeIdentifier)' != 'win-x64' And '$(RuntimeIdentifier)' != 'win-x86'"
+       Include="$(MSBuildThisFileDirectory)Resources\opm\opm"
+       CopyToOutputDirectory="PreserveNewest"
+       TargetPath="%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+     <ContentWithTargetPath 
+       Include="$(OutputPath)oscript.cfg"
+       CopyToOutputDirectory="PreserveNewest"
+       TargetPath="%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+     <ContentWithTargetPath 
+       Include="$(MSBuildThisFileDirectory)Resources\examples\*.*"
+       CopyToOutputDirectory="PreserveNewest"
+       TargetPath="..\examples\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+     <ContentWithTargetPath 
+       Include="$(MSBuildThisFileDirectory)Resources\doc\*.*"
+       CopyToOutputDirectory="PreserveNewest"
+       TargetPath="..\docs\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+     <ContentWithTargetPath 
+       Include="$(MSBuildThisFileDirectory)Resources\lib\*.*"
+       CopyToOutputDirectory="PreserveNewest"
+       TargetPath="..\lib\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+    <Target Name="UnzipArchiveOSPX" BeforeTargets="Build">
+      <Unzip
+          SourceFiles="Resources\opm\opm-1.0.2.ospx"
+          DestinationFolder="$(OutputPath)\lib\"
+          OverwriteReadOnlyFiles="true"
+       />
+    </Target>
+
+  <Target Name="UnzipArchive" AfterTargets="UnzipArchiveOSPX">
+      <Unzip
+            SourceFiles="$(OutputPath)\lib\content.zip"
+          DestinationFolder="$(OutputPath)\lib\opm-distr"
+          OverwriteReadOnlyFiles="true"
+       />
+    </Target>
+
+  <ItemGroup>
+     <ContentWithTargetPath
+       AfterTargets="UnzipArchive"
+       Include="$(OutputPath)\lib\opm-distr\**"
+       CopyToOutputDirectory="PreserveNewest"
+       TargetPath="..\lib\opm\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <Target AfterTargets="Publish" Name="InstallStandartLibrary">
+    <Message Importance="High" Text="Installing standart library directly from hub.oscript"/>
+    <Exec Command="echo ending publish" />
+  </Target>
+
+  <Target Name="ZipArtifacts" AfterTargets="InstallStandartLibrary">
+        <ZipDirectory
+            SourceDirectory="$(PublishDir)..\"
+            DestinationFile="$(PublishDir)\..\..\oscript-$(RuntimeIdentifier).zip" />
+    </Target>
+
 </Project>
+    
