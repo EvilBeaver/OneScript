@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <StartupObject>VSCode.DebugAdapter.Program</StartupObject>
     <Configurations>Debug;Release</Configurations>
@@ -15,7 +15,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.ServiceModel" />
-	<PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.0" />
+	  <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   <ItemGroup>
     <None Include="package.json">
