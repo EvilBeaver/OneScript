@@ -368,7 +368,7 @@ namespace ScriptEngine.HostedScript
             //OS_LRE_TRACE - по аналогии с Package loader OSLIB_LOADER_TRACE
             var isTrace = System.Environment.GetEnvironmentVariable("OS_LRE_TRACE");
             if (isTrace == "1") {
-                Console.WriteLine("LRE: " + message);
+                SystemLogger.Write("LRE: " + message);
             }
         }
 
