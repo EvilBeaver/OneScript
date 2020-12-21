@@ -25,7 +25,7 @@ namespace oscript
         public string Next()
         {
             _index++;
-            if (_index == _args.Length)
+            if (_index >= _args.Length)
                 return null;
 
             return _args[_index];
