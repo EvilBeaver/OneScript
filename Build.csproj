@@ -9,6 +9,7 @@
         <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
         <Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
         <Configuration>Release</Configuration>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
     
     <ItemGroup>
