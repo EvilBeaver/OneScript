@@ -88,7 +88,7 @@ namespace ScriptEngine.Compiler
             
             try
             {
-                DependencyResolver.Resolve(libName);
+                DependencyResolver.Resolve(_moduleInfo, libName);
                 if(_ctx is ModuleCompilerContext moduleContext)
                     moduleContext.Update();
             }

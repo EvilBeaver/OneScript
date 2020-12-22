@@ -5,12 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.Compiler;
+using ScriptEngine.Environment;
 
 namespace ScriptEngine
 {
     public interface IDependencyResolver
     {
-        ExternalLibraryDef Resolve(string library);
+        ExternalLibraryDef Resolve(ModuleInformation module, string libraryName);
     }
 }
