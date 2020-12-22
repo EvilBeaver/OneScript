@@ -9,7 +9,7 @@ using System.Text;
 
 namespace ScriptEngine.Environment
 {
-    class ScriptSourceFactory : ICodeSourceFactory
+    public class ScriptSourceFactory
     {
         public ScriptSourceFactory()
         {

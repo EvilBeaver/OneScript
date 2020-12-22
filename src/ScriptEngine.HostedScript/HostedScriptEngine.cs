@@ -175,7 +175,7 @@ namespace ScriptEngine.HostedScript
             _env.InjectObject(obj, asDynamicScope);
         }
 
-        public ICodeSourceFactory Loader => _engine.Loader;
+        public ScriptSourceFactory Loader => _engine.Loader;
 
         public IDebugController DebugController
         {

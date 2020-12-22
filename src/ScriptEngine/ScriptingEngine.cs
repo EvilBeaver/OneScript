@@ -19,8 +19,7 @@ namespace ScriptEngine
     public class ScriptingEngine : IDisposable
     {
         private readonly ICompilerServiceFactory _compilerFactory;
-        
-        private readonly ScriptSourceFactory _scriptFactory;
+
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
 
@@ -32,7 +31,7 @@ namespace ScriptEngine
             
             GlobalsManager.Reset();
             
-            _scriptFactory = new ScriptSourceFactory();
+            Loader = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
             ContextDiscoverer = new ContextDiscoverer(TypeManager.Instance, GlobalsManager.Instance);
             _compilerFactory = new LegacyCompilerFactory();
@@ -50,8 +49,7 @@ namespace ScriptEngine
             GlobalsManager.Instance = globals;
             Environment = env;
             
-            _scriptFactory = new ScriptSourceFactory();
-            DirectiveResolvers = new DirectiveMultiResolver();
+            Loader = new ScriptSourceFactory();
             ContextDiscoverer = new ContextDiscoverer(types, globals);
             AttachAssembly(GetType().Assembly);
         }
@@ -109,13 +107,7 @@ namespace ScriptEngine
                 Environment = new RuntimeEnvironment();
         }
 
-        public ICodeSourceFactory Loader
-        {
-            get
-            {
-                return _scriptFactory;
-            }
-        }
+        public ScriptSourceFactory Loader { get; }
 
         [Obsolete]
         public IList<IDirectiveResolver> DirectiveResolvers { get; }
