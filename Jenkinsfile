@@ -57,6 +57,7 @@ pipeline {
 
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
                             bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
+                            bat "chcp $outputEnc > nul\r\n dotnet publish -p:PublishTrimmed=true -f netcoreapp3.1 -p:DebugType=None -r linux-x64  -c Release --self-contained true --force -p:IncludeNativeLibrariesInSingleFile=true -p:CopyOutputSymbolsToPublishDirectory=false .\src\oscript\oscript.csproj -o built\distrs\net31\linux-x64\bin"
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent /p:OneScriptDocumenter=\"%WORKSPACE%/doctool/OneScriptDocumenter.exe\""
                             
                             stash includes: 'tests, built/**', name: 'buildResults'
@@ -126,7 +127,7 @@ pipeline {
                         fi
                         rm lintests/*.xml -f
                         cd tests
-                        mono ../built/tmp/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
+                        ../built/distrs/net31/linux-x64/bin/oscript testrunner.os -runall . xddReportPath ../lintests || true
                         exit 0
                         '''.stripIndent()
 
