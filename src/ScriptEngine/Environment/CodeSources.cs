@@ -10,7 +10,7 @@ using System.IO;
 
 namespace ScriptEngine.Environment
 {
-    class StringBasedSource : ICodeSource
+    public class StringBasedSource : ICodeSource
     {
         readonly string _src;
 
@@ -35,7 +35,7 @@ namespace ScriptEngine.Environment
 
     }
 
-    class FileBasedSource : ICodeSource
+    public class FileBasedSource : ICodeSource
     {
         readonly string _path;
         string _code;
