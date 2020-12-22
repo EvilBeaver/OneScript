@@ -19,7 +19,6 @@ namespace ScriptEngine
     {
         private SymbolScope _scope;
         private readonly ModuleCompilerContext _currentContext;
-        private readonly PreprocessorHandlers _handlers = new PreprocessorHandlers();
         private readonly List<string> _preprocessorVariables = new List<string>();
 
         protected CompilerServiceBase(ICompilerContext outerContext)
@@ -79,16 +78,6 @@ namespace ScriptEngine
 
         protected abstract ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
 
-        public void AddDirectiveHandler(IDirectiveHandler handler)
-        {
-            _handlers.Add(handler);
-        }
-
-        public void RemoveDirectiveHandler(IDirectiveHandler handler)
-        {
-            _handlers.Remove(handler);
-        }
-        
         private void RegisterScopeIfNeeded()
         {
             if (_scope == null)
@@ -98,11 +87,6 @@ namespace ScriptEngine
             }
         }
 
-        protected PreprocessorHandlers GetHandlers()
-        {
-            return new PreprocessorHandlers(_handlers.OrderBy(x => x is LegacyDirectiveAdapter? 1 : 0));
-        }
-        
         protected static ModuleInformation CreateModuleInformation(ICodeSource source, ILexer parser)
         {
             var mi = new ModuleInformation();

@@ -7,11 +7,22 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.Compiler
 {
+    // Resharper disable CS0612
     public class LegacyCompilerFactory : ICompilerServiceFactory
     {
+        private readonly IDirectiveResolver _directiveResolver;
+
+        public LegacyCompilerFactory(IDirectiveResolver directiveResolver)
+        {
+            _directiveResolver = directiveResolver;
+        }
+
         public ICompilerService CreateInstance(ICompilerContext context)
         {
-            return new CompilerService(context);
+            return new CompilerService(context)
+            {
+                DirectiveResolver = _directiveResolver
+            };
         }
     }
 }

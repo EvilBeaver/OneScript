@@ -179,18 +179,5 @@ namespace ScriptEngine
         
         [Obsolete]
         public IDirectiveResolver DirectiveResolver { get; set; }
-
-        public void AddDirectiveHandler(IDirectiveHandler handler)
-        {
-            if (handler is LegacyDirectiveAdapter adapter)
-            {
-                //Resharper disable CS0612
-                DirectiveResolver = adapter.RealResolver;
-            }
-        }
-
-        public void RemoveDirectiveHandler(IDirectiveHandler handler)
-        {
-        }
     }
 }

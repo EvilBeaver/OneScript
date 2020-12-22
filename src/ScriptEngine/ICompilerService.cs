@@ -26,9 +26,5 @@ namespace ScriptEngine
         void DefinePreprocessorValue(string name);
         
         ModuleImage Compile(ICodeSource source);
-
-        void AddDirectiveHandler(IDirectiveHandler handler);
-        
-        void RemoveDirectiveHandler(IDirectiveHandler handler);
     }
 }

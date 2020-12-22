@@ -34,7 +34,7 @@ namespace ScriptEngine
             Loader = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
             ContextDiscoverer = new ContextDiscoverer(TypeManager.Instance, GlobalsManager.Instance);
-            _compilerFactory = new LegacyCompilerFactory();
+            _compilerFactory = new LegacyCompilerFactory((IDirectiveResolver)DirectiveResolvers);
             
             AttachAssembly(GetType().Assembly);
         }
@@ -129,9 +129,6 @@ namespace ScriptEngine
             }
             
             cs.ProduceExtraCode = ProduceExtraCode;
-            //Resharper disable CS0612
-            var adapter = new LegacyDirectiveAdapter((IDirectiveResolver)DirectiveResolvers);
-            cs.AddDirectiveHandler(adapter);
             return cs;
         }
         
