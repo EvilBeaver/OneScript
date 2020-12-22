@@ -99,7 +99,7 @@
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(BinaryFiles.Dest)"/>
 
         <PropertyGroup>
-            <DebugSrc>$(MSBuildProjectDirectory)/src/VSCode.DebugAdapter/bin/$(Configuration)/$(TargetFramework)</DebugSrc>
+            <DebugSrc>$(MSBuildProjectDirectory)/src/VSCode.DebugAdapter/bin/$(Configuration)/net452</DebugSrc>
         </PropertyGroup>
         <ItemGroup>
             <DbgBinFiles Include="$(DebugSrc)/*.dll"/>
