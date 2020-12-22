@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
 
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <OutputType>Exe</OutputType>
     <StartupObject>VSCode.DebugAdapter.Program</StartupObject>
     <Configurations>Debug;Release</Configurations>
