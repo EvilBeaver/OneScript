@@ -16,9 +16,9 @@ namespace ScriptEngine.Compiler
 {
     internal class AstBasedCompilerService : CompilerServiceBase
     {
-        private readonly CompilerBuildOptions _сompilerOptions;
+        private readonly CompilerOptions _сompilerOptions;
 
-        internal AstBasedCompilerService(CompilerBuildOptions сompilerOptions, ICompilerContext outerContext) 
+        internal AstBasedCompilerService(CompilerOptions сompilerOptions, ICompilerContext outerContext) 
             : base(outerContext)
         {
             _сompilerOptions = сompilerOptions;

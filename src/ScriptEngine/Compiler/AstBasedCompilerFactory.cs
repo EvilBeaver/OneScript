@@ -5,19 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using ScriptEngine.Compiler;
-
-namespace ScriptEngine
+namespace ScriptEngine.Compiler
 {
     public class AstBasedCompilerFactory : ICompilerServiceFactory
     {
-        private readonly CompilerBuildOptions _compilerOptions;
+        private readonly CompilerOptions _compilerOptions;
 
-        public AstBasedCompilerFactory(CompilerBuildOptions compilerOptions)
+        public AstBasedCompilerFactory(CompilerOptions compilerOptions)
         {
             if(compilerOptions == default)
-                compilerOptions = new CompilerBuildOptions();
+                compilerOptions = new CompilerOptions();
             
             _compilerOptions = compilerOptions;
         }

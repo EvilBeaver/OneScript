@@ -25,7 +25,7 @@ namespace oscript
             builder.SetDefaultOptions()
                 .AddAssembly(typeof(ArrayImpl).Assembly)
                 .UseSystemConfigFile()
-                .UseEnvironmentVariable("OSCRIPT_CONFIG");
+                .UseEnvironmentVariableConfig("OSCRIPT_CONFIG");
             
             return builder;
         }

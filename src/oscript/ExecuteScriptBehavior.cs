@@ -50,10 +50,7 @@ namespace oscript
                  .WithDebugger(DebugController);
 
             var hostedScript = ConsoleHostBuilder.Build(builder);
-            // var hostedScript = new HostedScriptEngine();
-            // hostedScript.DebugController = DebugController;
-            // hostedScript.Configuration = builder.ConfigurationProviders;//ScriptFileHelper.CustomConfigPath(_path);
-            
+
             ScriptFileHelper.OnBeforeScriptRead(hostedScript);
             
             var source = hostedScript.Loader.FromFile(_path);

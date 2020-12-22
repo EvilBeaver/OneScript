@@ -66,7 +66,7 @@ namespace ScriptEngine.Hosting
             return b;
         }
         
-        public static IEngineBuilder UseCompilerOptions(this IEngineBuilder b, Action<CompilerBuildOptions> getOptions)
+        public static IEngineBuilder UseCompilerOptions(this IEngineBuilder b, Action<CompilerOptions> getOptions)
         {
             EnsureCompilerOptions(b);
             getOptions(b.CompilerOptions);
@@ -78,28 +78,31 @@ namespace ScriptEngine.Hosting
         private static void EnsureCompilerOptions(IEngineBuilder b)
         {
             if(b.CompilerOptions == default)
-                b.CompilerOptions = new CompilerBuildOptions();
+                b.CompilerOptions = new CompilerOptions();
         }
         
-        public static CompilerBuildOptions WithHandler(this CompilerBuildOptions b, IDirectiveHandler handler)
+        public static CompilerOptions WithHandler(this CompilerOptions b, IDirectiveHandler handler)
         {
             b.PreprocessorHandlers.Add(handler);
             return b;
         }
 
-        public static CompilerBuildOptions UseConditionalCompilation(this CompilerBuildOptions b)
+        public static CompilerOptions UseConditionalCompilation(this CompilerOptions b)
         {
             return b.WithHandler(new ConditionalDirectiveHandler());
         }
         
-        public static CompilerBuildOptions UseRegions(this CompilerBuildOptions b)
+        public static CompilerOptions UseRegions(this CompilerOptions b)
         {
             return b.WithHandler(new RegionDirectiveHandler());
         }
         
-        public static CompilerBuildOptions UseImports(this CompilerBuildOptions b)
+        public static CompilerOptions UseImports(this CompilerOptions b, IDependencyResolver resolver)
         {
-            return b.WithHandler(new ImportDirectivesHandler());
+            var opts = b.WithHandler(new ImportDirectivesHandler());
+            opts.DependencyResolver = resolver;
+
+            return opts;
         }
         
         public static IEngineBuilder SetDefaultOptions(this IEngineBuilder builder)
@@ -107,8 +110,7 @@ namespace ScriptEngine.Hosting
             builder.UseCompilerOptions(o =>
             {
                 o.UseConditionalCompilation()
-                    .UseRegions()
-                    .UseImports();
+                    .UseRegions();
             });
 
             return builder;

@@ -9,7 +9,7 @@ using OneScript.Language.SyntaxAnalysis;
 
 namespace ScriptEngine.Compiler
 {
-    public class CompilerBuildOptions
+    public class CompilerOptions
     {
         public CodeGenerationFlags ProduceExtraCode { get; set; }
         

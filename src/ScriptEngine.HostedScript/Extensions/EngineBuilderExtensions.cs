@@ -5,6 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections.Generic;
+using System.IO;
+using ScriptEngine.Compiler;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 
@@ -53,7 +56,7 @@ namespace ScriptEngine.HostedScript.Extensions
             return b;
         }
         
-        public static IEngineBuilder UseEnvironmentVariable(this IEngineBuilder b, string varName)
+        public static IEngineBuilder UseEnvironmentVariableConfig(this IEngineBuilder b, string varName)
         {
             var env = System.Environment.GetEnvironmentVariable(varName);
             if(env == null)

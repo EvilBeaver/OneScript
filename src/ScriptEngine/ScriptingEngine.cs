@@ -39,7 +39,11 @@ namespace ScriptEngine
             AttachAssembly(GetType().Assembly);
         }
 
-        public ScriptingEngine(ITypeManager types, IGlobalsManager globals, RuntimeEnvironment env, ICompilerServiceFactory compilerFactory)
+        public ScriptingEngine(
+            ITypeManager types,
+            IGlobalsManager globals,
+            RuntimeEnvironment env,
+            ICompilerServiceFactory compilerFactory)
         {
             _compilerFactory = compilerFactory;
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь

@@ -16,7 +16,7 @@ namespace ScriptEngine.Hosting
         ITypeManager TypeManager { get; set; }
         IGlobalsManager GlobalInstances { get; set; }
         ICompilerServiceFactory CompilerFactory { get; set; }
-        CompilerBuildOptions CompilerOptions { get; set; }
+        CompilerOptions CompilerOptions { get; set; }
         IDebugController DebugController { get; set; }
         
         ConfigurationProviders ConfigurationProviders { get; }
