@@ -16,6 +16,7 @@ using System.Text;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.Machine;
 
 namespace oscript
@@ -57,11 +58,10 @@ namespace oscript
 	    private void CreateDump(Stream output)
 	    {
 	        var offset = (int)output.Length;
-
-	        var engine = new HostedScriptEngine
-	        {
-	            CustomConfig = ScriptFileHelper.CustomConfigPath(_codePath)
-	        };
+	        
+	        var builder = ConsoleHostBuilder.Create();
+	        builder.UseEntrypointConfigFile(_codePath);
+	        var engine = ConsoleHostBuilder.Build(builder);
 	        engine.Initialize();
 	        ScriptFileHelper.OnBeforeScriptRead(engine);
 	        var source = engine.Loader.FromFile(_codePath);

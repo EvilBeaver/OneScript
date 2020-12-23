@@ -29,24 +29,11 @@ namespace ScriptEngine.HostedScript
 
         private CodeStatProcessor _codeStat;
 
-        [Obsolete]
-        public HostedScriptEngine()
-        {
-            _engine = new ScriptingEngine();
-            _env = new RuntimeEnvironment();
-            _engine.AttachAssembly(typeof(ArrayImpl).Assembly, _env);
-            _engine.AttachAssembly(System.Reflection.Assembly.GetExecutingAssembly(), _env);
-
-            SetGlobalContexts();
-
-            _engine.Environment = _env;
-        }
-
         public HostedScriptEngine(ScriptingEngine engine)
         {
             _engine = engine;
             _env = _engine.Environment;
-            _engine.AttachAssembly(typeof(HostedScriptEngine).Assembly, _env);
+            _engine.AttachAssembly(typeof(HostedScriptEngine).Assembly);
             
             SetGlobalContexts();
         }
@@ -76,16 +63,6 @@ namespace ScriptEngine.HostedScript
 
         public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
         {
-            var libLoader = new LibraryResolver(_engine, _env);
-            _engine.DirectiveResolvers.Add(libLoader);
-
-            libLoader.LibraryRoot = systemLibrary;
-            libLoader.SearchDirectories.Clear();
-            if (searchDirs != null)
-            {
-                libLoader.SearchDirectories.AddRange(searchDirs);
-            }
-
             _librariesInitialized = true;
         }
 
@@ -158,7 +135,7 @@ namespace ScriptEngine.HostedScript
 
         public void AttachAssembly(System.Reflection.Assembly asm)
         {
-            _engine.AttachAssembly(asm, _env);
+            _engine.AttachAssembly(asm);
         }
 
         public void InjectGlobalProperty(string name, IValue value, bool readOnly)

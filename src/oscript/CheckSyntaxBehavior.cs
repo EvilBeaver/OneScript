@@ -12,6 +12,7 @@ using System.Text;
 using OneScript.Language;
 using ScriptEngine;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.Machine;
 
 namespace oscript
@@ -33,10 +34,9 @@ namespace oscript
 
 		public override int Execute()
 		{
-			var hostedScript = new HostedScriptEngine
-			{
-				CustomConfig = ScriptFileHelper.CustomConfigPath(_path)
-			};
+			var builder = ConsoleHostBuilder.Create();
+			builder.UseEntrypointConfigFile(_path);
+			var hostedScript = ConsoleHostBuilder.Build(builder);
 			hostedScript.Initialize();
 
 			if (_isCgi)

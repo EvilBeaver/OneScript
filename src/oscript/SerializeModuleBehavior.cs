@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 
 using ScriptEngine;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Extensions;
 
 namespace oscript
 {
@@ -29,10 +30,10 @@ namespace oscript
 
         public override int Execute()
         {
-            var engine = new HostedScriptEngine
-            {
-                CustomConfig = ScriptFileHelper.CustomConfigPath(_path)
-            };
+            var builder = ConsoleHostBuilder.Create();
+            builder.UseEntrypointConfigFile(_path);
+            var engine = ConsoleHostBuilder.Build(builder);
+            
             engine.Initialize();
             ScriptFileHelper.OnBeforeScriptRead(engine);
             var source = engine.Loader.FromFile(_path);

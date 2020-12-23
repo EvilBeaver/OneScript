@@ -35,8 +35,11 @@ namespace oscript
         public static HostedScriptEngine Build(IEngineBuilder builder)
         {
             var engine = builder.Build(); 
-            
-            return new HostedScriptEngine(engine);
+            var mainEngine = new HostedScriptEngine(engine);
+
+            builder.CompilerOptions?.DependencyResolver?.Initialize(engine);
+
+            return mainEngine;
         }
     }
 }

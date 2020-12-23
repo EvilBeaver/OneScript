@@ -45,9 +45,9 @@ namespace ScriptEngine.HostedScript
 
         #endregion
 
-        public LibraryResolver(ScriptingEngine engine, RuntimeEnvironment env)
+        public LibraryResolver(ScriptingEngine engine)
         {
-            _env = env;
+            _env = engine.Environment;
             _engine = engine;
             _libs = new List<Library>();
 
@@ -118,11 +118,11 @@ namespace ScriptEngine.HostedScript
             var loaderscript = Path.Combine(LibraryRoot, PREDEFINED_LOADER_FILE);
             if (File.Exists(loaderscript))
             {
-                _defaultLoader = LibraryLoader.Create(_engine, _env, loaderscript);
+                _defaultLoader = LibraryLoader.Create(_engine, loaderscript);
             }
             else
             {
-                _defaultLoader = LibraryLoader.Create(_engine, _env);
+                _defaultLoader = LibraryLoader.Create(_engine);
             }
         }
 
@@ -282,7 +282,7 @@ namespace ScriptEngine.HostedScript
             
             var customLoaderFile = Path.Combine(libraryPath, PREDEFINED_LOADER_FILE);
             if (File.Exists(customLoaderFile))
-                newLib.customLoader = LibraryLoader.Create(_engine, _env, customLoaderFile);
+                newLib.customLoader = LibraryLoader.Create(_engine, customLoaderFile);
 
             try
             {
@@ -331,7 +331,7 @@ namespace ScriptEngine.HostedScript
             else
                 loader = this.DefaultLoader;
 
-            return loader.ProcessLibrary(lib.id);
+            return loader.ProcessLibrary(lib.id) != default;
         }
 
     }

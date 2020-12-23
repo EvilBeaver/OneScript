@@ -15,7 +15,9 @@ using OneScript.StandardLibrary;
 using oscript.Web;
 
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.HostedScript.Library;
+using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -59,12 +61,12 @@ namespace oscript
 
 		private int RunCGIMode(string scriptFile)
 		{
-			var engine = new HostedScriptEngine
-			{
-				CustomConfig = ScriptFileHelper.CustomConfigPath(scriptFile)
-			};
-			engine.AttachAssembly(Assembly.GetExecutingAssembly());
+			var builder = ConsoleHostBuilder.Create();
+			builder.UseEntrypointConfigFile(scriptFile)
+				.AddAssembly(Assembly.GetExecutingAssembly());
 
+			var engine = ConsoleHostBuilder.Build(builder);
+			
 			var request = new WebRequestContext();
 			engine.InjectGlobalProperty("ВебЗапрос", request, true);
 			engine.InjectGlobalProperty("WebRequest", request, true);

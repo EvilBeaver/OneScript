@@ -51,7 +51,7 @@ namespace ScriptEngine.HostedScript
 
         private static readonly ContextMethodsMapper<LibraryLoader> _methods = new ContextMethodsMapper<LibraryLoader>();
 
-        public static LibraryLoader Create(ScriptingEngine engine, RuntimeEnvironment env, string processingScript)
+        public static LibraryLoader Create(ScriptingEngine engine, string processingScript)
         {
             var code = engine.Loader.FromFile(processingScript);
             var compiler = engine.GetCompilerService();
@@ -66,13 +66,13 @@ namespace ScriptEngine.HostedScript
             var module = compiler.Compile(code);
             var loadedModule = engine.LoadModuleImage(module);
 
-            return new LibraryLoader(loadedModule, env, engine);
+            return new LibraryLoader(loadedModule, engine.Environment, engine);
 
         }
 
-        public static LibraryLoader Create(ScriptingEngine engine, RuntimeEnvironment env)
+        public static LibraryLoader Create(ScriptingEngine engine)
         {
-            return new LibraryLoader(env, engine);
+            return new LibraryLoader(engine.Environment, engine);
         }
 
         #endregion
@@ -165,7 +165,7 @@ namespace ScriptEngine.HostedScript
             return _methods.GetMethod(index)(this, arguments);
         }
 
-        public bool ProcessLibrary(string libraryPath)
+        public ExternalLibraryDef ProcessLibrary(string libraryPath)
         {
             bool success;
             _delayLoadedScripts.Clear();
@@ -179,13 +179,14 @@ namespace ScriptEngine.HostedScript
                 success = CustomizedProcessing(libraryPath);
             }
 
-            if (success)
-            {
-                var library = new ExternalLibraryDef(Path.GetFileName(libraryPath));
-                CompileDelayedModules(library);
-            }
+            if (!success)
+                return default;
+            
+            
+            var library = new ExternalLibraryDef(Path.GetFileName(libraryPath));
+            CompileDelayedModules(library);
 
-            return success;
+            return library;
         }
 
         private bool CustomizedProcessing(string libraryPath)

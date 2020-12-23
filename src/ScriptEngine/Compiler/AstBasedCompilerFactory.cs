@@ -13,9 +13,6 @@ namespace ScriptEngine.Compiler
 
         public AstBasedCompilerFactory(CompilerOptions compilerOptions)
         {
-            if(compilerOptions == default)
-                compilerOptions = new CompilerOptions();
-            
             _compilerOptions = compilerOptions;
         }
 

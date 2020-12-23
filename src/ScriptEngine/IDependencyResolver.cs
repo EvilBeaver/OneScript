@@ -13,6 +13,6 @@ namespace ScriptEngine
     {
         ExternalLibraryDef Resolve(ModuleInformation module, string libraryName);
 
-        void SetEngine(ScriptingEngine engine);
+        void Initialize(ScriptingEngine engine);
     }
 }

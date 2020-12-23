@@ -13,10 +13,13 @@ using System.Windows.Input;
 using ScriptEngine.HostedScript;
 using System.Collections.Generic;
 using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
+using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.HostedScript.Library;
+using ScriptEngine.Hosting;
 
 namespace TestApp
 {
@@ -128,10 +131,27 @@ namespace TestApp
             }
         }
 
+        private HostedScriptEngine CreateEngine()
+        {
+            var builder = new DefaultEngineBuilder();
+            builder.SetDefaultOptions()
+                .AddAssembly(typeof(ArrayImpl).Assembly)
+                .UseSystemConfigFile()
+                .UseEntrypointConfigFile(_currentDocPath);
+            
+            builder.CompilerOptions.UseFileSystemLibraries();
+            var engine = builder.Build();
+            var mainEngine = new HostedScriptEngine(engine);
+
+            builder.CompilerOptions?.DependencyResolver?.Initialize(engine);
+
+            return mainEngine;
+        }
+        
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var hostedScript = new HostedScriptEngine();
-            hostedScript.CustomConfig = CustomConfigPath(_currentDocPath);
+            var hostedScript = CreateEngine();
+            
             hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
             using (var writer = new StringWriter())
@@ -178,8 +198,7 @@ namespace TestApp
 
             var host = new Host(result, l_args.ToArray());
             SystemLogger.SetWriter(host);
-            var hostedScript = new HostedScriptEngine();
-            hostedScript.CustomConfig = CustomConfigPath(_currentDocPath);
+            var hostedScript = CreateEngine();
             SetEncodingFromConfig(hostedScript);
 
             var src = new EditedFileSource(txtCode.Text, _currentDocPath);
@@ -250,14 +269,13 @@ namespace TestApp
             dlg.Multiselect = false;
             if (dlg.ShowDialog() == true  )
             {
-                var hostedScript = new HostedScriptEngine();
-                hostedScript.CustomConfig = CustomConfigPath(dlg.FileName);
+                _currentDocPath = dlg.FileName;
+                var hostedScript = CreateEngine();
                 SetEncodingFromConfig(hostedScript);
 
                 using (var fs = FileOpener.OpenReader(dlg.FileName))
                 {
                     txtCode.Text = fs.ReadToEnd();
-                    _currentDocPath = dlg.FileName;
                     this.Title = _currentDocPath;
                 }
             }

@@ -9,9 +9,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Extensions;
+using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -22,7 +25,13 @@ namespace StandaloneRunner
         public Process CreateProcess(Stream sourceStream, IHostApplication host)
         {
             var appDump = DeserializeAppDump(sourceStream);
-            var engine = new HostedScriptEngine();
+            
+            var engineBuilder = new DefaultEngineBuilder();
+            engineBuilder
+                .AddAssembly(typeof(ArrayImpl).Assembly)
+                .UseEnvironmentVariableConfig("OSCRIPT_CONFIG");
+
+            var engine = new HostedScriptEngine(engineBuilder.Build());
             var src = new BinaryCodeSource();
             var templateStorage = new TemplateStorage(new StandaloneTemplateFactory());
 

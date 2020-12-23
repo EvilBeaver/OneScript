@@ -85,16 +85,10 @@ namespace ScriptEngine
         
         public CodeGenerationFlags ProduceExtraCode { get; set; }
 
-        public void AttachAssembly(System.Reflection.Assembly asm)
-        {
-            ContextDiscoverer.DiscoverClasses(asm);
-        }
-
-        [Obsolete]
-        public void AttachAssembly(System.Reflection.Assembly asm, RuntimeEnvironment globalEnvironment, Predicate<Type> filter = null)
+        public void AttachAssembly(System.Reflection.Assembly asm, Predicate<Type> filter = null)
         {
             ContextDiscoverer.DiscoverClasses(asm, filter);
-            ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm, filter);
+            ContextDiscoverer.DiscoverGlobalContexts(Environment, asm, filter);
         }
 
         public void AttachExternalAssembly(System.Reflection.Assembly asm, RuntimeEnvironment globalEnvironment)
@@ -110,6 +104,11 @@ namespace ScriptEngine
                 MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount]);
                 ++lastCount;
             }
+        }
+        
+        public void AttachExternalAssembly(System.Reflection.Assembly asm)
+        {
+            AttachExternalAssembly(asm, Environment);
         }
 
         public void Initialize()

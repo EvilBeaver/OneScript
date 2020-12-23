@@ -13,6 +13,8 @@ using OneScript.Language;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
+using ScriptEngine.HostedScript.Extensions;
+using ScriptEngine.Hosting;
 
 namespace oscript
 {
@@ -27,12 +29,13 @@ namespace oscript
 
 		public override int Execute()
 		{
-			var hostedScript = new HostedScriptEngine
-			{
-				CustomConfig = ScriptFileHelper.CustomConfigPath(_path)
-			};
+			var builder = ConsoleHostBuilder.Create();
+			builder.UseEntrypointConfigFile(_path);
+
+			var hostedScript = ConsoleHostBuilder.Build(builder);
 			hostedScript.Initialize();
 			ScriptFileHelper.OnBeforeScriptRead(hostedScript);
+			
 			var source = hostedScript.Loader.FromFile(_path);
 			var compiler = hostedScript.GetCompilerService();
 			hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);

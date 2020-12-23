@@ -145,7 +145,7 @@ namespace OneScript.StandardLibrary
             if (type == NativeApiEnums.OneScript)
             {
                 var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
-                _engine.AttachExternalAssembly(assembly, _engine.Environment);
+                _engine.AttachExternalAssembly(assembly);
                 return true;
             }
             else {
