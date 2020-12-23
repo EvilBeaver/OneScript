@@ -227,19 +227,6 @@ namespace TestApp
             
         }
 
-        public static string CustomConfigPath(string scriptPath)
-        {
-            if (scriptPath == null || !File.Exists(scriptPath))
-                return null;
-
-            var dir = Path.GetDirectoryName(scriptPath);
-            var cfgPath = Path.Combine(dir, HostedScriptEngine.ConfigFileName);
-            if (File.Exists(cfgPath))
-                return cfgPath;
-            else
-                return null;
-        }
-
         private static string GetFileDialogFilter()
         {
             return "Поддерживаемые файлы|*.os;*.txt|Все файлы|*.*";

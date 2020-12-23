@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using OneScript.StandardLibrary;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine.Contexts;
-using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Hosting;
 
 
@@ -66,9 +65,6 @@ namespace ScriptEngine.HostedScript
             _librariesInitialized = true;
         }
 
-        [Obsolete]
-        public static string ConfigFileName => CfgFileConfigProvider.CONFIG_FILE_NAME;
-
         public KeyValueConfig GetWorkingConfig()
         {
             var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
@@ -80,8 +76,6 @@ namespace ScriptEngine.HostedScript
             }
             return cfgAccessor.GetConfig();
         }
-
-        public string CustomConfig { get; set; }
 
         public Action<ScriptingEngine, RuntimeEnvironment> InitializationCallback { get; set; }
         

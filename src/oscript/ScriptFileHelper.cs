@@ -22,13 +22,6 @@ namespace oscript
 
 		public static string CodeStatisticsFileName { get; private set; }
 
-		public static string CustomConfigPath(string scriptPath)
-		{
-			var dir = Path.GetDirectoryName(scriptPath);
-			var cfgPath = Path.Combine(dir, HostedScriptEngine.ConfigFileName);
-			return File.Exists(cfgPath) ? cfgPath : null;
-		}
-
 		public static void EnableCodeStatistics(string fileName)
 		{
 			CodeStatisticsEnabled = fileName != null;
