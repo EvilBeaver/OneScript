@@ -16,7 +16,7 @@ namespace ScriptEngine.HostedScript.Library
     {
         private KeyValueConfig _config;
 
-        internal EngineConfigProvider Provider { get; set; }
+        internal ConfigurationProviders Provider { get; set; }
 
         public SystemConfigAccessor()
         {
@@ -35,7 +35,7 @@ namespace ScriptEngine.HostedScript.Library
         public void Refresh()
         {
             if (Provider != null)
-                _config = Provider.ReadConfig();
+                _config = Provider.CreateConfig();
         }
 
         /// <summary>

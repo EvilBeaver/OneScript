@@ -12,6 +12,7 @@ using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTree;
 using ScriptEngine;
+using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using Xunit;
 
@@ -28,7 +29,8 @@ namespace OneScript.DebugProtocol.Test
         public DebugVariablesTest()
         {
             // для инициализации долбаного глобального TypeManager
-            var e = new ScriptingEngine();
+            var builder = new DefaultEngineBuilder();
+            var e = builder.Build();
             if (!TypeManager.IsKnownType(typeof(FileContext)))
             {
                 e.AttachAssembly(typeof(FileContext).Assembly);

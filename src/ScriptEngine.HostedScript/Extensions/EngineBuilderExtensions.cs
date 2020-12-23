@@ -39,7 +39,7 @@ namespace ScriptEngine.HostedScript.Extensions
                 System.IO.Path.GetDirectoryName(asmLocation) :
                 System.Environment.CurrentDirectory;
             
-            var configFile = System.IO.Path.Combine(pathPrefix, EngineConfigProvider.CONFIG_FILE_NAME);
+            var configFile = System.IO.Path.Combine(pathPrefix, CfgFileConfigProvider.CONFIG_FILE_NAME);
 
             return b.UseConfigFile(configFile);
         }
@@ -47,7 +47,7 @@ namespace ScriptEngine.HostedScript.Extensions
         public static IEngineBuilder UseEntrypointConfigFile(this IEngineBuilder b, string entryPoint)
         {
             var dir = System.IO.Path.GetDirectoryName(entryPoint);
-            var cfgPath = System.IO.Path.Combine(dir, EngineConfigProvider.CONFIG_FILE_NAME);
+            var cfgPath = System.IO.Path.Combine(dir, CfgFileConfigProvider.CONFIG_FILE_NAME);
             if (System.IO.File.Exists(cfgPath))
             {
                 return b.UseConfigFile(cfgPath); 
@@ -69,6 +69,11 @@ namespace ScriptEngine.HostedScript.Extensions
             
             b.ConfigurationProviders.Add(reader.GetProvider());
             return b;
+        }
+        
+        public static CompilerOptions UseFileSystemLibraries(this CompilerOptions b)
+        {
+            return b.UseImports(new FileSystemDependencyResolver());
         }
     }
 }

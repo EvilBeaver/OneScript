@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
@@ -39,12 +40,13 @@ namespace ScriptEngine
             AttachAssembly(GetType().Assembly);
         }
 
-        public ScriptingEngine(
-            ITypeManager types,
+        public ScriptingEngine(ITypeManager types,
             IGlobalsManager globals,
             RuntimeEnvironment env,
-            ICompilerServiceFactory compilerFactory)
+            ICompilerServiceFactory compilerFactory, 
+            ConfigurationProviders configurationProviders)
         {
+            Configuration = configurationProviders;
             _compilerFactory = compilerFactory;
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
             TypeManager.Initialize(types);
@@ -56,8 +58,27 @@ namespace ScriptEngine
             Loader = new ScriptSourceFactory();
             ContextDiscoverer = new ContextDiscoverer(types, globals);
             AttachAssembly(GetType().Assembly);
+
+            ApplyConfiguration(Configuration.CreateConfig());
         }
-        
+
+        private void ApplyConfiguration(KeyValueConfig config)
+        {
+            var openerEncoding = config[OneScriptOptions.FILE_READER_ENCODING];
+            
+            if (!string.IsNullOrWhiteSpace(openerEncoding))
+            {    
+                if (StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") == 0)
+                    Loader.ReaderEncoding = FileOpener.SystemSpecificEncoding();
+                else
+                    Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
+            }
+            
+            
+        }
+
+        public ConfigurationProviders Configuration { get; }
+
         private ContextDiscoverer ContextDiscoverer { get; }
         
         public RuntimeEnvironment Environment { get; set; }
@@ -69,6 +90,7 @@ namespace ScriptEngine
             ContextDiscoverer.DiscoverClasses(asm);
         }
 
+        [Obsolete]
         public void AttachAssembly(System.Reflection.Assembly asm, RuntimeEnvironment globalEnvironment, Predicate<Type> filter = null)
         {
             ContextDiscoverer.DiscoverClasses(asm, filter);

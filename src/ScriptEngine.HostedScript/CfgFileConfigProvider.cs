@@ -14,6 +14,8 @@ namespace ScriptEngine.HostedScript
 {
     public class CfgFileConfigProvider : IConfigProvider
     {
+        public const string CONFIG_FILE_NAME = "oscript.cfg";
+        
         public string FilePath { get; set; }
         
         public Func<IDictionary<string, string>> GetProvider()
@@ -49,21 +51,21 @@ namespace ScriptEngine.HostedScript
         private static void ExpandRelativePaths(IDictionary<string, string> conf, string configFile)
         {
             string sysDir = null;
-            conf.TryGetValue(EngineConfigProvider.SYSTEM_LIB_KEY, out sysDir);
+            conf.TryGetValue(OneScriptOptions.SYSTEM_LIBRARY_DIR, out sysDir);
 
             var confDir = System.IO.Path.GetDirectoryName(configFile);
             if (sysDir != null && !System.IO.Path.IsPathRooted(sysDir))
             {
                 sysDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(confDir, sysDir));
-                conf[EngineConfigProvider.SYSTEM_LIB_KEY] = sysDir;
+                conf[OneScriptOptions.SYSTEM_LIBRARY_DIR] = sysDir;
             }
 
             string additionals;
-            if (conf.TryGetValue(EngineConfigProvider.ADDITIONAL_LIB_KEY, out additionals))
+            if (conf.TryGetValue(OneScriptOptions.ADDITIONAL_LIBRARIES, out additionals))
             {
                 var fullPaths = additionals.Split(new[]{";"}, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => Path.GetFullPath(Path.Combine(confDir, x)));
-                conf[EngineConfigProvider.ADDITIONAL_LIB_KEY] = string.Join(";",fullPaths);
+                conf[OneScriptOptions.ADDITIONAL_LIBRARIES] = string.Join(";",fullPaths);
             }
         }
     }

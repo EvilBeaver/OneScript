@@ -12,5 +12,7 @@ namespace ScriptEngine
     public interface IDependencyResolver
     {
         ExternalLibraryDef Resolve(ModuleInformation module, string libraryName);
+
+        void SetEngine(ScriptingEngine engine);
     }
 }

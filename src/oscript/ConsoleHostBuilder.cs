@@ -26,6 +26,8 @@ namespace oscript
                 .AddAssembly(typeof(ArrayImpl).Assembly)
                 .UseSystemConfigFile()
                 .UseEnvironmentVariableConfig("OSCRIPT_CONFIG");
+
+            builder.CompilerOptions.UseFileSystemLibraries();
             
             return builder;
         }
@@ -33,21 +35,8 @@ namespace oscript
         public static HostedScriptEngine Build(IEngineBuilder builder)
         {
             var engine = builder.Build(); 
-            var config = builder.ConfigurationProviders.CreateConfig();
-            var openerEncoding = config["encoding.script"];
             
-            if (!string.IsNullOrWhiteSpace(openerEncoding))
-            {    
-                if (StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") == 0)
-                    engine.Loader.ReaderEncoding = FileOpener.SystemSpecificEncoding();
-                else
-                    engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
-            }
-
-            return new HostedScriptEngine(engine)
-            {
-                Configuration = builder.ConfigurationProviders
-            };
+            return new HostedScriptEngine(engine);
         }
     }
 }

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Reflection;
 using ScriptEngine;
+using ScriptEngine.Hosting;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Reflection;
@@ -20,7 +21,9 @@ namespace OneScript.Core.Tests
 
         public TypeReflectionTests()
         {
-            host = new ScriptingEngine();
+            var builder = new DefaultEngineBuilder();
+            builder.WithEnvironment(new RuntimeEnvironment());
+            host = builder.Build();
             host.Environment = new RuntimeEnvironment();
         }
         

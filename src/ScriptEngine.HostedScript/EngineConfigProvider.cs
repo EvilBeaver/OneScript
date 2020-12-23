@@ -18,10 +18,6 @@ namespace ScriptEngine.HostedScript
         private readonly ConfigurationProviders _providers;
         KeyValueConfig _currentConfig;
 
-        public const string CONFIG_FILE_NAME = "oscript.cfg";
-        public const string SYSTEM_LIB_KEY = "lib.system";
-        public const string ADDITIONAL_LIB_KEY = "lib.additional";
-
         public EngineConfigProvider(ConfigurationProviders providers)
         {
             _providers = providers;

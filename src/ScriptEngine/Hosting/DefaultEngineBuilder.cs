@@ -34,7 +34,18 @@ namespace ScriptEngine.Hosting
             if(CompilerFactory == default)
                 CompilerFactory = new AstBasedCompilerFactory(CompilerOptions);
             
-            var engine = new ScriptingEngine(TypeManager, GlobalInstances, Environment, CompilerFactory);
+            var engine = new ScriptingEngine(
+                TypeManager,
+                GlobalInstances,
+                Environment,
+                CompilerFactory,
+                ConfigurationProviders);
+            
+            // TODO: должно быть где-то в другом месте
+            if (CompilerOptions.DependencyResolver != default)
+            {
+                CompilerOptions.DependencyResolver.SetEngine(engine);
+            }
             
             return engine;
         }

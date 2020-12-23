@@ -89,17 +89,15 @@ namespace ScriptEngine.HostedScript
             _librariesInitialized = true;
         }
 
-        public static string ConfigFileName => EngineConfigProvider.CONFIG_FILE_NAME;
+        [Obsolete]
+        public static string ConfigFileName => CfgFileConfigProvider.CONFIG_FILE_NAME;
 
         public KeyValueConfig GetWorkingConfig()
         {
             var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
             if (!_configInitialized)
             {
-                if(Configuration == default)
-                    Configuration = new ConfigurationProviders();
-                
-                cfgAccessor.Provider = new EngineConfigProvider(Configuration);
+                cfgAccessor.Provider = _engine.Configuration;
                 cfgAccessor.Refresh();
                 _configInitialized = true;
             }
@@ -107,8 +105,6 @@ namespace ScriptEngine.HostedScript
         }
 
         public string CustomConfig { get; set; }
-        
-        public ConfigurationProviders Configuration { get; set; }
 
         public Action<ScriptingEngine, RuntimeEnvironment> InitializationCallback { get; set; }
         
@@ -147,8 +143,8 @@ namespace ScriptEngine.HostedScript
 
         private void InitLibrariesFromConfig(KeyValueConfig config)
         {
-            string sysDir = config[EngineConfigProvider.SYSTEM_LIB_KEY];
-            string additionalDirsList = config[EngineConfigProvider.ADDITIONAL_LIB_KEY];
+            string sysDir = config[OneScriptOptions.SYSTEM_LIBRARY_DIR];
+            string additionalDirsList = config[OneScriptOptions.ADDITIONAL_LIBRARIES];
             string[] addDirs = null;
             
             if(additionalDirsList != null)

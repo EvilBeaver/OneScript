@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using FluentAssertions;
 using ScriptEngine;
+using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using Xunit;
@@ -18,7 +19,8 @@ namespace OneScript.Core.Tests
         [Fact]
         public void ThisObjectCanBeFoundForUserScript()
         {
-            var engine = new ScriptingEngine();
+            var builder = new DefaultEngineBuilder();
+            var engine = builder.Build();
             engine.Initialize();
             var instance = engine.AttachedScriptsFactory.LoadFromString(engine.GetCompilerService(), "");
             
