@@ -65,7 +65,7 @@ namespace OneScript.Language.SyntaxAnalysis
             _lastExtractedLexem = _lexer.NextLexem();
             var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             PushContext(node);
-            
+
             try
             {
                 foreach (var preprocessorHandler in DirectiveHandlers)
@@ -76,6 +76,13 @@ namespace OneScript.Language.SyntaxAnalysis
                 }
 
                 ParseModuleSections();
+
+                foreach (var preprocessorHandler in DirectiveHandlers)
+                {
+                    var context = CreateParserContext();
+                    preprocessorHandler.OnModuleLeave(context);
+                    ApplyContext(context);
+                }
             }
             finally
             {
@@ -1395,7 +1402,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             _lastExtractedLexem = _lexer.NextLexem();
 
-            if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
             {
                 HandleDirective(CreateParserContext());
             }

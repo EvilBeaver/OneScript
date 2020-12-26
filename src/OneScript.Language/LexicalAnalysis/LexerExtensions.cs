@@ -17,6 +17,11 @@ namespace OneScript.Language.LexicalAnalysis
 
         public static Lexem NextLexemOnSameLine(this ILexer lexer)
         {
+            if (lexer.Iterator.CurrentSymbol == '\n')
+            {
+                return Lexem.EndOfText();
+            }
+            
             var currentLine = lexer.Iterator.CurrentLine;
             if (lexer.Iterator.MoveToContent())
             {
