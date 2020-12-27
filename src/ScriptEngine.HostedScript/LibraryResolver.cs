@@ -116,12 +116,24 @@ namespace ScriptEngine.HostedScript
         {
 
             var loaderscript = Path.Combine(LibraryRoot, PREDEFINED_LOADER_FILE);
+            TraceLoadLibrary(
+                Locale.NStr($"ru = 'Путь поиска package-loader - {loaderscript}';"+
+                            $"en = 'Package-loader path search - {loaderscript}'")
+            );
+
             if (File.Exists(loaderscript))
             {
-                _defaultLoader = LibraryLoader.Create(_engine, loaderscript);
-            }
+                TraceLoadLibrary(
+                    Locale.NStr($"ru = 'Загружен package-loader по адресу {loaderscript}';"+
+                                $"en = 'Load package-loader from {loaderscript}'")
+                );
+                _defaultLoader = LibraryLoader.Create(_engine, loaderscript);            }
             else
             {
+                TraceLoadLibrary(
+                    Locale.NStr($"ru = 'Загружен package-loader по умолчанию';"+
+                                $"en = 'Default package-loader is used'")
+                );
                 _defaultLoader = LibraryLoader.Create(_engine);
             }
         }
@@ -235,6 +247,10 @@ namespace ScriptEngine.HostedScript
         {
             if (Directory.Exists(libraryPath))
             {
+                TraceLoadLibrary(
+                    Locale.NStr($"ru = 'Загружаю библиотеку по пути {libraryPath}';"+
+                                $"en = 'Load library from path {libraryPath}'")
+                );
                 return LoadLibraryInternal(libraryPath);
             }
 
@@ -272,7 +288,10 @@ namespace ScriptEngine.HostedScript
                     throw new RuntimeException($"Ошибка загрузки библиотеки {id}. Обнаружены циклические зависимости.\n" +
                                                $"{libStack}");
                 }
-                
+                TraceLoadLibrary(
+                    Locale.NStr($"ru = 'Использую уже загруженную библиотеку {existedLib.id}';"+
+                                $"en = 'Use allready loaded library {existedLib.id}'")
+                );
                 return true;
             }
 
@@ -287,6 +306,11 @@ namespace ScriptEngine.HostedScript
             try
             {
                 _libs.Add(newLib);
+                TraceLoadLibrary(
+                    Locale.NStr($"ru = 'Начинаю процессинг {newLib.id}';"+
+                                $"en = 'Start processing {newLib.id}'")
+                );
+
                 hasFiles = ProcessLibrary(newLib);
                 newLib.state = ProcessingState.Processed;
             }
@@ -295,6 +319,11 @@ namespace ScriptEngine.HostedScript
                 _libs.RemoveAt(newLibIndex);
                 throw;
             }
+
+            TraceLoadLibrary(
+                Locale.NStr($"ru = 'Библиотека {newLib.id} будет загружена - {hasFiles}';"+
+                            $"en = 'Library {newLib.id} will be loaded - {hasFiles}'")    
+            );
 
             return hasFiles;
         }
@@ -332,6 +361,15 @@ namespace ScriptEngine.HostedScript
                 loader = this.DefaultLoader;
 
             return loader.ProcessLibrary(lib.id) != default;
+        }
+
+        public static void TraceLoadLibrary(string message)
+        {
+            //OS_LRE_TRACE - по аналогии с Package loader OSLIB_LOADER_TRACE
+            var isTrace = System.Environment.GetEnvironmentVariable("OS_LRE_TRACE");
+            if (isTrace == "1") {
+                SystemLogger.Write("LRE: " + message);
+            }
         }
 
     }

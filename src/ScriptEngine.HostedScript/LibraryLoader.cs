@@ -106,6 +106,10 @@ namespace ScriptEngine.HostedScript
 
             try
             {
+                LibraryResolver.TraceLoadLibrary(
+                    Locale.NStr($"ru = 'Загружаю модуль ={moduleName}= в область видимости из файла {file}';"+
+                                $"en = 'Load module ={moduleName}= in to context from file {file}'")    
+                );
                 _env.InjectGlobalProperty(null, moduleName, true);
             }
             catch (InvalidOperationException e)
@@ -172,10 +176,20 @@ namespace ScriptEngine.HostedScript
             
             if(!_customized)
             {
+                LibraryResolver.TraceLoadLibrary(
+                    Locale.NStr($"ru = 'Использую НЕ кастомизированный загрузчик пакетов по умолчанию для библиотеки {libraryPath}';"+
+                                $"en = 'Use NOT customized package loader for library {libraryPath}'")    
+                );
+
                 success = DefaultProcessing(libraryPath);
             }
             else
             {
+                LibraryResolver.TraceLoadLibrary(
+                    Locale.NStr($"ru = 'Использую КАСТОМИЗИРОВАННЫЙ загрузчик пакетов для библиотеки {libraryPath}';"+
+                                $"en = 'Use CUSTOMIZED package loader for library {libraryPath}'")
+                );
+
                 success = CustomizedProcessing(libraryPath);
             }
 
@@ -221,8 +235,17 @@ namespace ScriptEngine.HostedScript
 
             bool hasFiles = false;
 
+            LibraryResolver.TraceLoadLibrary(
+                Locale.NStr($"ru = 'Обнаружено {files.Count()} модулей в библиотеке {libraryPath}';"+
+                            $"en = 'Found {files.Count()} modules in library {libraryPath}'")    
+            );
+
             foreach (var file in files)
             {
+                LibraryResolver.TraceLoadLibrary(
+                    Locale.NStr($"ru = 'Загружаю модуль библиотеки из {file.Path}';"+
+                                $"en = 'Load library module from {file.Path}'")    
+                );
                 hasFiles = true;
                 AddModule(file.Path, file.Name);
             }
