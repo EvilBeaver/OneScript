@@ -106,7 +106,7 @@ namespace ScriptEngine.HostedScript
 
             try
             {
-                LibraryResolver.TraceLoadLibrary(
+                TraceLoadLibrary(
                     Locale.NStr($"ru = 'Загружаю модуль ={moduleName}= в область видимости из файла {file}';"+
                                 $"en = 'Load module ={moduleName}= in to context from file {file}'")    
                 );
@@ -176,7 +176,7 @@ namespace ScriptEngine.HostedScript
             
             if(!_customized)
             {
-                LibraryResolver.TraceLoadLibrary(
+                TraceLoadLibrary(
                     Locale.NStr($"ru = 'Использую НЕ кастомизированный загрузчик пакетов по умолчанию для библиотеки {libraryPath}';"+
                                 $"en = 'Use NOT customized package loader for library {libraryPath}'")    
                 );
@@ -185,7 +185,7 @@ namespace ScriptEngine.HostedScript
             }
             else
             {
-                LibraryResolver.TraceLoadLibrary(
+                TraceLoadLibrary(
                     Locale.NStr($"ru = 'Использую КАСТОМИЗИРОВАННЫЙ загрузчик пакетов для библиотеки {libraryPath}';"+
                                 $"en = 'Use CUSTOMIZED package loader for library {libraryPath}'")
                 );
@@ -235,14 +235,14 @@ namespace ScriptEngine.HostedScript
 
             bool hasFiles = false;
 
-            LibraryResolver.TraceLoadLibrary(
+            TraceLoadLibrary(
                 Locale.NStr($"ru = 'Обнаружено {files.Count()} модулей в библиотеке {libraryPath}';"+
                             $"en = 'Found {files.Count()} modules in library {libraryPath}'")    
             );
 
             foreach (var file in files)
             {
-                LibraryResolver.TraceLoadLibrary(
+                TraceLoadLibrary(
                     Locale.NStr($"ru = 'Загружаю модуль библиотеки из {file.Path}';"+
                                 $"en = 'Load library module from {file.Path}'")    
                 );
@@ -291,6 +291,15 @@ namespace ScriptEngine.HostedScript
             var module = _engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null);
 
             return module;
+        }
+        
+        public static void TraceLoadLibrary(string message)
+        {
+            //OS_LRE_TRACE - по аналогии с Package loader OSLIB_LOADER_TRACE
+            var isTrace = System.Environment.GetEnvironmentVariable("OS_LRE_TRACE");
+            if (isTrace == "1") {
+                SystemLogger.Write("LRE: " + message);
+            }
         }
     }
 }
