@@ -292,12 +292,13 @@ namespace ScriptEngine.HostedScript
 
             return module;
         }
+
+        private static Lazy<bool> TraceEnabled =
+            new Lazy<bool>(() => System.Environment.GetEnvironmentVariable("OS_LRE_TRACE") == "1");
         
         public static void TraceLoadLibrary(string message)
         {
-            //OS_LRE_TRACE - по аналогии с Package loader OSLIB_LOADER_TRACE
-            var isTrace = System.Environment.GetEnvironmentVariable("OS_LRE_TRACE");
-            if (isTrace == "1") {
+            if (TraceEnabled.Value) {
                 SystemLogger.Write("LRE: " + message);
             }
         }
