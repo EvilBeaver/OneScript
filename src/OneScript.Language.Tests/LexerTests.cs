@@ -612,8 +612,7 @@ namespace OneScript.Language.Tests
         public void Comments_Are_Retrieved_Correctly()
         {
             string code = "а //comment\r\n// another comment";
-            var lexer = new FullSourceLexer();
-            lexer.Code = code;
+            var lexer = GetLexerForCode(code);
             Lexem lex;
 
             lexer.NextLexem();
@@ -646,6 +645,14 @@ namespace OneScript.Language.Tests
             lex = lexer.NextLexem();
             Assert.Equal(LexemType.Identifier, lex.Type);
             Assert.Equal("value", lex.Content);
+        }
+        
+        private ILexer GetLexerForCode(string code)
+        {
+            return new FullSourceLexer
+            {
+                Iterator = new SourceCodeIterator(code)
+            };
         }
     }
 }

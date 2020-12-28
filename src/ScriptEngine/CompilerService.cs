@@ -171,7 +171,7 @@ namespace ScriptEngine
             args.Lexem = localLex;
         }
 
-        protected virtual bool ResolveDirective(ILexemGenerator lexer, ref Lexem lexem)
+        protected virtual bool ResolveDirective(ILexer lexer, ref Lexem lexem)
         {
             // все неизвестные директивы возвращать назад в результат лексера
             return true;

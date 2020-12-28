@@ -20,20 +20,6 @@ namespace OneScript.Language.LexicalAnalysis
             _selector = selector;
         }
         
-        public string Code
-        {
-            get => _code;
-            set
-            {
-                _code = value;
-                Iterator = new SourceCodeIterator(value);
-            }
-        }
-
-        public int CurrentColumn => Iterator.CurrentColumn;
-
-        public int CurrentLine => Iterator.CurrentLine;
-
         public Lexem NextLexem()
         {
             if (Iterator.MoveToContent())

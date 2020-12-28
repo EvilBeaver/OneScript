@@ -12,7 +12,7 @@ namespace OneScript.Language.LexicalAnalysis
     public class PreprocessorUnknownTokenEventArgs : EventArgs
     {
         public bool IsHandled { get; set; }
-        public ILexemGenerator Lexer { get; set; }
+        public ILexer Lexer { get; set; }
         public Lexem Lexem { get; set; }
     }
 }

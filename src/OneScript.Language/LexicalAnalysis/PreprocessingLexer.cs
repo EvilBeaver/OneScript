@@ -193,12 +193,12 @@ namespace OneScript.Language.LexicalAnalysis
             set
             {
                 _code = value;
-                _lexer.Code = _code;
+                _lexer.Iterator = new SourceCodeIterator(_code);
             }
         }
 
-        public int CurrentColumn => _lexer.CurrentColumn;
-        public int CurrentLine => _lexer.CurrentLine;
+        public int CurrentColumn => _lexer.Iterator.CurrentColumn;
+        public int CurrentLine => _lexer.Iterator.CurrentLine;
 
         public Lexem NextLexem()
         {

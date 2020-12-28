@@ -9,23 +9,22 @@ using System;
 
 namespace OneScript.Language.LexicalAnalysis
 {
-    public class FullSourceLexer : ILexemGenerator
+    public class FullSourceLexer : ILexer
     {
-        private string _code;
         private SourceCodeIterator _iterator;
         private LexerState _state;
 
-        private LexerState _emptyState = new EmptyLexerState();
-        private LexerState _wordState = new WordLexerState();
-        private LexerState _numberState = new NumberLexerState();
-        private LexerState _stringState = new StringLexerState();
-        private LexerState _operatorState = new OperatorLexerState();
-        private LexerState _dateState = new DateLexerState();
-        private LexerState _commentState = new CommentLexerState();
-        private LexerState _annotationState = new AnnotationLexerState();
-        private LexerState _directiveState = new PreprocessorDirectiveLexerState();
+        private readonly LexerState _emptyState = new EmptyLexerState();
+        private readonly LexerState _wordState = new WordLexerState();
+        private readonly LexerState _numberState = new NumberLexerState();
+        private readonly LexerState _stringState = new StringLexerState();
+        private readonly LexerState _operatorState = new OperatorLexerState();
+        private readonly LexerState _dateState = new DateLexerState();
+        private readonly LexerState _commentState = new CommentLexerState();
+        private readonly LexerState _annotationState = new AnnotationLexerState();
+        private readonly LexerState _directiveState = new PreprocessorDirectiveLexerState();
         
-        private FixedLexerState _fixedState = new FixedLexerState();
+        private readonly FixedLexerState _fixedState = new FixedLexerState();
 
         public FullSourceLexer()
         {
@@ -36,20 +35,6 @@ namespace OneScript.Language.LexicalAnalysis
         {
             get => _iterator;
             set => _iterator = value;
-        }
-
-        public int CurrentColumn => _iterator.CurrentColumn;
-
-        public int CurrentLine => _iterator.CurrentLine;
-
-        public string Code
-        {
-            get => _code;
-            set
-            {
-                _code = value;
-                _iterator = new SourceCodeIterator(value);
-            }
         }
 
         public virtual Lexem NextLexem()
@@ -164,7 +149,7 @@ namespace OneScript.Language.LexicalAnalysis
             {
                 Type = lexemType,
                 Token = token,
-                Location = new CodeRange(CurrentLine, CurrentColumn)
+                Location = new CodeRange(Iterator.CurrentLine, Iterator.CurrentColumn)
             });
 
             _state = _fixedState;

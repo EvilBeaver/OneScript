@@ -7,8 +7,10 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.Language.LexicalAnalysis
 {
-    public class DefaultLexer : FullSourceLexer
+    public class DefaultLexer : FullSourceLexer, ILexemGenerator
     {
+        private string _code;
+
         public override Lexem NextLexem()
         {
             Lexem lex;
@@ -16,6 +18,20 @@ namespace OneScript.Language.LexicalAnalysis
                 ; // skip
 
             return lex;
+        }
+        
+        public int CurrentColumn => Iterator.CurrentColumn;
+
+        public int CurrentLine => Iterator.CurrentLine;
+
+        public string Code
+        {
+            get => _code;
+            set
+            {
+                _code = value;
+                Iterator = new SourceCodeIterator(value);
+            }
         }
     }
 }

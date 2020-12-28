@@ -2453,7 +2453,7 @@ namespace ScriptEngine.Machine
 
             ICodeSource stringSource = new StringBasedSource(expression);
             var parser = new DefaultLexer();
-            parser.Code = stringSource.Code;
+            parser.Iterator = new SourceCodeIterator(stringSource.Code);
             var compiler = new Compiler.Compiler();
             ctx.PushScope(new SymbolScope()); // скоуп выражения
             var modImg = compiler.CompileExpression(parser, ctx);

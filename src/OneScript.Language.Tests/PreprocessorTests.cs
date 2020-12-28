@@ -591,8 +591,7 @@ namespace OneScript.Language.Tests
 
             var handler = new ConditionalDirectiveHandler();
             
-            var lexer = new FullSourceLexer();
-            lexer.Code = code;
+            var lexer = GetLexerForCode(code);
             var builder = Mock.Of<IAstBuilder>();
             var lexem = lexer.NextLexem();
             var pc = new ParserContext(
@@ -639,8 +638,7 @@ namespace OneScript.Language.Tests
             var handler = new ConditionalDirectiveHandler();
             handler.Define("Да");
             
-            var lexer = new FullSourceLexer();
-            lexer.Code = code;
+            var lexer = GetLexerForCode(code);
             var builder = Mock.Of<IAstBuilder>();
             var lexem = lexer.NextLexem();
 
@@ -677,6 +675,14 @@ namespace OneScript.Language.Tests
 
             }
             return builder.ToString().Trim();
+        }
+
+        private ILexer GetLexerForCode(string code)
+        {
+            return new FullSourceLexer
+            {
+                Iterator = new SourceCodeIterator(code)
+            };
         }
     }
 }
