@@ -645,6 +645,8 @@ namespace OneScript.Language.SyntaxAnalysis
             PopStructureToken();
         }
 
+        #region Statements
+
         private void BuildStatement()
         {
             if (_lastExtractedLexem.Token == Token.NotAToken)
@@ -1095,6 +1097,8 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
+        #endregion
+        
         #region Expression
 
         private BslSyntaxNode BuildExpression(BslSyntaxNode parent, Token stopToken)
