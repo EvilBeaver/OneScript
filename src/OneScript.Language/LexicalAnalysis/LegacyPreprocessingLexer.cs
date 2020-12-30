@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace OneScript.Language.LexicalAnalysis
 {
-    public class PreprocessingLexer : ILexemGenerator
+    public class LegacyPreprocessingLexer : ILexemGenerator
     {
         HashSet<string> _definitions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
         FullSourceLexer _lexer;
@@ -26,7 +26,7 @@ namespace OneScript.Language.LexicalAnalysis
             public bool IsSolved;
         }
 
-        public PreprocessingLexer()
+        public LegacyPreprocessingLexer()
         {
             _lexer = new FullSourceLexer();
         }

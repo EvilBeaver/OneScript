@@ -91,7 +91,7 @@ namespace ScriptEngine
         {
             RegisterScopeIfNeeded();
 
-            var parser = new PreprocessingLexer();
+            var parser = new LegacyPreprocessingLexer();
             foreach (var variable in _preprocessorVariables)
             {
                 parser.Define(variable);

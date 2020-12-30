@@ -20,7 +20,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void Definitions_Are_Defined()
         {
-            var pp = new PreprocessingLexer();;
+            var pp = new LegacyPreprocessingLexer();;
             pp.Define("Сервер");
             pp.Define("ВебКлиент");
             Assert.True(pp.IsDefined("сервер"));
@@ -33,7 +33,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_If_True()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Сервер");
             pp.Define("Клиент");
 
@@ -59,7 +59,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_If_False()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Сервер");
 
             var code = @"
@@ -79,7 +79,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_IfElse()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Сервер");
             pp.Define("Клиент");
             pp.Define("ВебКлиент");
@@ -109,7 +109,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_CompositeTest()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             string code = @"
             #Если Клиент Тогда
@@ -142,7 +142,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void Folded_PreprocessingLexer_Items()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Сервер");
             pp.Define("Клиент");
             pp.Define("ВебКлиент");
@@ -191,7 +191,7 @@ namespace OneScript.Language.Tests
             тут ничего нет
             #КонецЕсли";
 
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var preprocessed = GetPreprocessedContent(pp, code);
             Assert.Equal("Привет,тутничегонет", preprocessed);
@@ -208,7 +208,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_Unclosed_IfBlock()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Сервер");
 
             var code = @"
@@ -224,7 +224,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_IfElse_Without_If()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Сервер");
 
             var code = @"
@@ -240,7 +240,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_ExpressionInterrupted()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Сервер");
 
             var code = @"
@@ -256,7 +256,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_ExpressionUnexpected()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Сервер");
 
             var code = @"
@@ -272,7 +272,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_Else_Without_If()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Сервер");
 
             var code = @"
@@ -288,7 +288,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PriorityOperators()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Да");
 
             var code = @"
@@ -306,7 +306,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PriorityOperators_WithParenthesis()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Да");
 
             var code = @"
@@ -324,7 +324,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void ParsingFirstNot()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Да");
 
             var code = @"
@@ -342,7 +342,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_Unclosed_ElseBlock()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Да");
 
             var code = @"
@@ -360,7 +360,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_Endif_Without_If()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Да");
 
             var code = @"
@@ -376,7 +376,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_Extra_Endif()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Да");
 
             var code = @"
@@ -394,7 +394,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_SimpleRegion()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область reg1
@@ -410,7 +410,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_MultipleNestedRegions()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Region reg1
@@ -436,7 +436,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_NoEndRegion()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область reg1
@@ -451,7 +451,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_ExtraEndRegion()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область reg1
@@ -466,7 +466,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_BadRegionName()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область -reg
@@ -480,7 +480,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_NoRegionName()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область
@@ -494,7 +494,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_NoRegionNameWithComment()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область // no name
@@ -508,7 +508,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_SymbolsAfterName()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область reg 00
@@ -522,7 +522,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_SymbolsAfterEndRegion()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область reg
@@ -536,7 +536,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_DirectiveAfterLineBreak()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область reg
@@ -552,7 +552,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_DirectiveNotOnNewLine()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Область reg
@@ -566,7 +566,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_DirectiveNotOnSingleLine()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
 
             var code = @"
             #Если Нет
@@ -606,7 +606,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_ExcludedLines()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new LegacyPreprocessingLexer();
             pp.Define("Да");
 
             var code = @"
@@ -659,7 +659,7 @@ namespace OneScript.Language.Tests
             Assert.Equal(Token.EndOfText, lexem.Token);
         }
         
-        private string GetPreprocessedContent(PreprocessingLexer pp, string code)
+        private string GetPreprocessedContent(LegacyPreprocessingLexer pp, string code)
         {
             pp.Code = code;
             Lexem lex = Lexem.Empty();
