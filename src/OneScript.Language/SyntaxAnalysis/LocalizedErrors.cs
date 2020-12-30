@@ -97,5 +97,18 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public static ParseError DirectiveNotSupported(string directive) =>
             Create($"ru ='Директива {directive} не разрешена в данном месте'; en = 'Directive {directive} is not supported here'");
+        
+        public static ParseError EndOfDirectiveExpected(string directive) =>
+            Create($"ru ='Ожидается завершение директивы препроцессора #{directive}'; en = 'End of directive #{directive} expected'");
+
+        public static ParseError RegionNameExpected() =>
+            Create("ru = 'Ожидается имя области';en = 'Region name expected'");
+        
+        public static ParseError InvalidRegionName(string name) =>
+            Create($"ru = 'Недопустимое имя Области: {name}';en = 'Invalid Region name {name}'");
+
+        public static ParseError DirectiveIsMissing(string directive) =>
+            Create(
+                $"ru ='Пропущена директива #{directive}'; en = 'Directive #{directive} is missing'");
     }
 }

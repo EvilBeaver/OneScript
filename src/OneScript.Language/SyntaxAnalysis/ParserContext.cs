@@ -13,6 +13,8 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class ParserContext
     {
+        private List<ParseError> _errors;
+        
         public ILexer Lexer { get; }
         
         public Stack<BslSyntaxNode> NodeContext { get; }
@@ -20,6 +22,18 @@ namespace OneScript.Language.SyntaxAnalysis
         public IAstBuilder NodeBuilder { get; }
         
         public Lexem LastExtractedLexem { get; set; }
+
+        public IEnumerable<ParseError> Errors => _errors;
+
+        public bool HasErrors => _errors != default && _errors.Count > 0;
+
+        public void AddError(ParseError err)
+        {
+            if (_errors == default)
+                _errors = new List<ParseError>();
+            
+            _errors.Add(err);
+        }
 
         public ParserContext(ILexer lexer, Stack<BslSyntaxNode> nodeContext, IAstBuilder builder, Lexem lastLexem)
         {

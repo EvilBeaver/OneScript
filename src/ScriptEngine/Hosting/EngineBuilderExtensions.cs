@@ -81,7 +81,7 @@ namespace ScriptEngine.Hosting
                 b.CompilerOptions = new CompilerOptions();
         }
         
-        public static CompilerOptions WithHandler(this CompilerOptions b, IDirectiveHandler handler)
+        public static CompilerOptions UseDirectiveHandler(this CompilerOptions b, IDirectiveHandler handler)
         {
             b.PreprocessorHandlers.Add(handler);
             return b;
@@ -89,17 +89,17 @@ namespace ScriptEngine.Hosting
 
         public static CompilerOptions UseConditionalCompilation(this CompilerOptions b)
         {
-            return b.WithHandler(new ConditionalDirectiveHandler());
+            return b.UseDirectiveHandler(new ConditionalDirectiveHandler());
         }
         
         public static CompilerOptions UseRegions(this CompilerOptions b)
         {
-            return b.WithHandler(new RegionDirectiveHandler());
+            return b.UseDirectiveHandler(new RegionDirectiveHandler());
         }
         
-        public static CompilerOptions UseImports(this CompilerOptions b, IDependencyResolver resolver)
+        public static CompilerOptions UseImports(this CompilerOptions opts, IDependencyResolver resolver)
         {
-            var opts = b.WithHandler(new ImportDirectivesHandler());
+            opts.UseDirectiveHandler(new ImportDirectivesHandler());
             opts.DependencyResolver = resolver;
 
             return opts;

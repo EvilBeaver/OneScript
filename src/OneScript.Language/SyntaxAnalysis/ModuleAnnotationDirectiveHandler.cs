@@ -32,12 +32,12 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 return default;
             }
-            
-            if(!_enabled)
-                throw new SyntaxErrorException(
-                    context.Lexer.GetErrorPosition(),
-                    LocalizedErrors.DirectiveNotSupported(context.LastExtractedLexem.Content)
-                );
+
+            if (!_enabled)
+            {
+                context.AddError(LocalizedErrors.DirectiveNotSupported(context.LastExtractedLexem.Content));
+                return true;
+            }
 
             return HandleDirectiveInternal(context);
         }

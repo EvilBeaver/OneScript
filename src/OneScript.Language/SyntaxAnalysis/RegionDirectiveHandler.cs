@@ -33,7 +33,9 @@ namespace OneScript.Language.SyntaxAnalysis
         public void OnModuleLeave(ParserContext context)
         {
             if (_regionsNesting != 0)
-                throw new SyntaxErrorException(context.Lexer.GetErrorPosition(), "Ожидается завершение директивы препроцессора #Область");
+            {
+                context.AddError(LocalizedErrors.EndOfDirectiveExpected("Область"));
+            }
         }
 
         public bool HandleDirective(ParserContext context)
@@ -45,10 +47,16 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 var regionName = lexemStream.NextLexemOnSameLine();
                 if (regionName.Type == LexemType.EndOfText)
-                    throw new SyntaxErrorException(lexemStream.GetErrorPosition(), "Ожидается имя области");
+                {
+                    context.AddError(LocalizedErrors.RegionNameExpected());
+                    return true;
+                }
 
                 if (!LanguageDef.IsValidIdentifier(directive.Content))
-                    throw new SyntaxErrorException(lexemStream.GetErrorPosition(), $"Недопустимое имя Области: {directive.Content}");
+                {
+                    context.AddError(LocalizedErrors.InvalidRegionName(directive.Content));
+                    return true;
+                }
 
                 _regionsNesting++;
 
@@ -58,7 +66,10 @@ namespace OneScript.Language.SyntaxAnalysis
             else if (IsPreprocEndRegion(directive.Content))
             {
                 if (_regionsNesting == 0)
-                    throw new SyntaxErrorException(lexemStream.GetErrorPosition(), "Пропущена директива препроцессора #Область");
+                {
+                    context.AddError(LocalizedErrors.DirectiveIsMissing("Область"));
+                    return true;
+                }
 
                 _regionsNesting--;
 
