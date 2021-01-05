@@ -9,6 +9,7 @@ using System;
 using System.Dynamic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using OneScript.Commons;
 using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis
@@ -37,7 +38,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return new ParseError
             {
                 ErrorId = errorId,
-                Description = description
+                Description = Locale.NStr(description)
             };  
         }
 
