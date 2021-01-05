@@ -10,7 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScriptEngine
+// ReSharper disable once CheckNamespace
+namespace OneScript.Commons
 {
     public class FormatParametersList
     {

@@ -9,6 +9,7 @@ using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using System.Collections.Generic;
+using OneScript.Commons;
 using OneScript.StandardLibrary;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine.Contexts;
