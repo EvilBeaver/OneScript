@@ -52,7 +52,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             BslSyntaxNode node;
             
-            _parserContext.DirectiveHandlers.OnModuleEnter(_parserContext);
+            _parserContext.DirectiveHandlers?.OnModuleEnter(_parserContext);
             NextLexem();
             
             try
@@ -66,7 +66,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 PopContext();
             }
 
-            _parserContext.DirectiveHandlers.OnModuleLeave(_parserContext);
+            _parserContext.DirectiveHandlers?.OnModuleLeave(_parserContext);
             
             return node;
         }

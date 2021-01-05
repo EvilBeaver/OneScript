@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Commons;
 using OneScript.Language.LexicalAnalysis;
 using Xunit;
 using Xunit.Sdk;
@@ -40,7 +41,8 @@ namespace OneScript.Language.Tests
             }
             catch (SyntaxErrorException e)
             {
-                Assert.Contains("Неизвестный символ", e.Message);
+                var localeString = Locale.NStr("ru = 'Неизвестный символ'; en = 'Unexpected character");
+                Assert.Contains(localeString, e.Message);
             }
             
             Assert.Equal(LexemType.NumberLiteral, lexem1.Type);
