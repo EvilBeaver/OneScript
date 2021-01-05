@@ -819,12 +819,13 @@ namespace OneScript.Language.Tests
         {
             var lexer = new DefaultLexer();
             lexer.Code = code;
+            lexer.Handlers = new PreprocessorHandlers(
+                new[] {new AstNodeAppendingHandler()});
 
             var treeBuilder = new DefaultAstBuilder();
             var context = new ParserContext(lexer, treeBuilder)
             {
-                DirectiveHandlers = new PreprocessorHandlers(
-                    new[] {new AstNodeAppendingHandler()})
+                DirectiveHandlers = lexer.Handlers 
             };
             var parser = new DefaultBslParser(context);
             return parser;
