@@ -64,16 +64,9 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 handled = HandleDirective(ref lex, context.Lexer);
             }
-            catch (SyntaxErrorException e)
+            catch (SyntaxErrorException)
             {
-                // context.AddError(new ParseError
-                // {
-                //     Description = e.Message,
-                //     ErrorId = nameof(SyntaxErrorException),
-                //     Position = context.Lexer.GetErrorPosition()
-                // });
                 _blocks.Clear();
-                handled = true;
                 throw;
             }
 

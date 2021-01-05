@@ -50,21 +50,24 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public BslSyntaxNode ParseStatefulModule()
         {
+            BslSyntaxNode node;
+            
+            _parserContext.DirectiveHandlers.OnModuleEnter(_parserContext);
             NextLexem();
-            var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
-            PushContext(node);
-
+            
             try
             {
-                _parserContext.DirectiveHandlers.OnModuleEnter(_parserContext);
+                node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
+                PushContext(node);
                 ParseModuleSections();
-                _parserContext.DirectiveHandlers.OnModuleLeave(_parserContext);
             }
             finally
             {
                 PopContext();
             }
 
+            _parserContext.DirectiveHandlers.OnModuleLeave(_parserContext);
+            
             return node;
         }
 
