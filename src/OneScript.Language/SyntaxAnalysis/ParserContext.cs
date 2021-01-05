@@ -11,7 +11,7 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class ParserContext
+    public class ParserContext : IErrorSink
     {
         private List<ParseError> _errors;
         private Lexem _lastLexem;
