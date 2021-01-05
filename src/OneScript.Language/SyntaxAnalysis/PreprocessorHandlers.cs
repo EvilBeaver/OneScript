@@ -48,11 +48,14 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public PreprocessorHandlers Slice(Func<IDirectiveHandler, bool> predicate)
         {
-            var slice = _handlers.Where(predicate);
+            var slice = _handlers.Where(predicate).ToArray();
+            if (slice.Length == 0)
+                return default;
+            
             return new PreprocessorHandlers(slice);
         }
 
-        void IDirectiveHandler.OnModuleEnter(ParserContext context)
+        public void OnModuleEnter(ParserContext context)
         {
             foreach (var handler in _handlers)
             {
@@ -60,7 +63,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        void IDirectiveHandler.OnModuleLeave(ParserContext context)
+        public void OnModuleLeave(ParserContext context)
         {
             foreach (var handler in _handlers)
             {
@@ -68,7 +71,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        bool IDirectiveHandler.HandleDirective(ParserContext context)
+        public bool HandleDirective(ParserContext context)
         {
             return _handlers.Any(handler => handler.HandleDirective(context));
         }

@@ -23,20 +23,19 @@ namespace OneScript.Language.SyntaxAnalysis
             _importClauseLexer = builder.Build();
         }
         
-        protected override bool HandleDirectiveInternal(ParserContext context)
+        protected override void ParseAnnotationInternal(string directiveName, ParserContext context)
         {
-            var lastExtractedLexem = context.LastExtractedLexem;
             var lexemStream = context.Lexer;
             var nodeBuilder = context.NodeBuilder;
             
-            var node = nodeBuilder.CreateNode(NodeKind.Import, lastExtractedLexem);
+            var node = nodeBuilder.CreateNode(NodeKind.Import, context.LastExtractedLexem);
             _importClauseLexer.Iterator = lexemStream.Iterator;
             
             var lex = _importClauseLexer.NextLexem();
             if (lex.Type == LexemType.EndOfText)
             {
-                throw new SyntaxErrorException(lexemStream.GetErrorPosition(),
-                    "Ожидается имя библиотеки");
+                context.AddError(LocalizedErrors.LibraryNameExpected());
+                return;
             }
 
             var argumentNode = nodeBuilder.CreateNode(NodeKind.AnnotationParameter, lex);
@@ -49,19 +48,16 @@ namespace OneScript.Language.SyntaxAnalysis
             lex = _importClauseLexer.NextLexemOnSameLine();
             if (lex.Type != LexemType.EndOfText)
             {
-                throw new SyntaxErrorException(lexemStream.GetErrorPosition(),
-                    LocalizedErrors.UnexpectedOperation());
+                context.AddError(LocalizedErrors.UnexpectedOperation());
+                return;
             }
 
-            context.LastExtractedLexem = lexemStream.NextLexem(); 
-
-            return true;
+            context.NextLexem();
         }
         
         protected override bool DirectiveSupported(string directive)
         {
-            return StringComparer.InvariantCultureIgnoreCase.Compare(directive, "использовать") == 0
-                   || StringComparer.InvariantCultureIgnoreCase.Compare(directive, "use") == 0;
+            return LanguageDef.IsImportDirective(directive);
         }
     }
 }

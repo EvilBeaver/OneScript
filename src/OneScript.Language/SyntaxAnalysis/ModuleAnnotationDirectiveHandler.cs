@@ -42,8 +42,24 @@ namespace OneScript.Language.SyntaxAnalysis
             return HandleDirectiveInternal(context);
         }
 
-        protected abstract bool HandleDirectiveInternal(ParserContext context);
+        protected virtual bool HandleDirectiveInternal(ParserContext context)
+        {
+            return true; // не сдвигаем лексер, выдаем на уровень парсера
+        }
         
         protected abstract bool DirectiveSupported(string directive);
+        
+        protected abstract void ParseAnnotationInternal(string content, ParserContext parserContext);
+
+        public bool ParseAnnotation(Lexem lastExtractedLexem, ParserContext parserContext)
+        {
+            if (!DirectiveSupported(lastExtractedLexem.Content))
+            {
+                return false;
+            }
+
+            ParseAnnotationInternal(lastExtractedLexem.Content, parserContext);
+            return true;
+        }
     }
 }

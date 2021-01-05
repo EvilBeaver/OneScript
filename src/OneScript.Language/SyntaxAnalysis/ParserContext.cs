@@ -14,19 +14,32 @@ namespace OneScript.Language.SyntaxAnalysis
     public class ParserContext
     {
         private List<ParseError> _errors;
+        private Lexem _lastLexem;
         
         public ILexer Lexer { get; }
         
-        public Stack<BslSyntaxNode> NodeContext { get; }
+        public Stack<BslSyntaxNode> NodeContext { get; } = new Stack<BslSyntaxNode>();
         
         public IAstBuilder NodeBuilder { get; }
         
-        public Lexem LastExtractedLexem { get; set; }
+        public PreprocessorHandlers DirectiveHandlers { get; set; }
+
+        public Lexem LastExtractedLexem
+        {
+            get => _lastLexem;
+            set => _lastLexem = value;
+        }
 
         public IEnumerable<ParseError> Errors => _errors;
 
         public bool HasErrors => _errors != default && _errors.Count > 0;
 
+        public ref Lexem NextLexem()
+        {
+            _lastLexem = Lexer.NextLexem();
+            return ref _lastLexem;
+        }
+        
         public void AddError(ParseError err)
         {
             if (_errors == default)
@@ -35,12 +48,22 @@ namespace OneScript.Language.SyntaxAnalysis
             _errors.Add(err);
         }
 
-        public ParserContext(ILexer lexer, Stack<BslSyntaxNode> nodeContext, IAstBuilder builder, Lexem lastLexem)
+        public ParserContext(ILexer lexer,IAstBuilder builder)
         {
             Lexer = lexer;
-            NodeContext = nodeContext;
             NodeBuilder = builder;
-            LastExtractedLexem = lastLexem;
+        }
+
+        public ParserContext(ILexer lexer, IAstBuilder builder, Lexem lexem)
+            :this(lexer, builder)
+        {
+            _lastLexem = lexem;
+        }
+
+        public ParserContext(ILexer lexer, IAstBuilder astBuilder, PreprocessorHandlers preprocessorHandlers)
+            : this(lexer, astBuilder)
+        {
+            DirectiveHandlers = preprocessorHandlers;
         }
     }
 }

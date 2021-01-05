@@ -596,7 +596,6 @@ namespace OneScript.Language.Tests
             var lexem = lexer.NextLexem();
             var pc = new ParserContext(
                 lexer,
-                new Stack<BslSyntaxNode>(),
                 builder,
                 lexem);
 
@@ -646,7 +645,6 @@ namespace OneScript.Language.Tests
             {
                 var pc = new ParserContext(
                     lexer,
-                    new Stack<BslSyntaxNode>(),
                     builder,
                     lexem);
 

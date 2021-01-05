@@ -44,11 +44,6 @@ namespace ScriptEngine.Compiler
                 ThrowOnError = true
             };
 
-            var lexer = new DefaultLexer
-            {
-                Code = source.Code
-            };
-
             var conditionals = _сompilerOptions.PreprocessorHandlers.Get<ConditionalDirectiveHandler>();
             if (conditionals != default)
             {
@@ -57,8 +52,17 @@ namespace ScriptEngine.Compiler
                     conditionals.Define(constant);
                 }
             }
+            
+            var lexer = new DefaultLexer
+            {
+                Iterator = new SourceCodeIterator(source.Code),
+                Handlers = _сompilerOptions.PreprocessorHandlers
+            };
 
-            Parser = new DefaultBslParser(astBuilder, lexer, _сompilerOptions.PreprocessorHandlers);
+            var parseContext = new ParserContext(lexer, astBuilder, _сompilerOptions.PreprocessorHandlers);
+            parseContext.DirectiveHandlers = _сompilerOptions.PreprocessorHandlers;
+            
+            Parser = new DefaultBslParser(parseContext);
 
             ModuleNode moduleNode;
             var mi = CreateModuleInformation(source, lexer);

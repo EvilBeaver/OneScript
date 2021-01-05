@@ -110,5 +110,8 @@ namespace OneScript.Language.SyntaxAnalysis
         public static ParseError DirectiveIsMissing(string directive) =>
             Create(
                 $"ru ='Пропущена директива #{directive}'; en = 'Directive #{directive} is missing'");
+
+        public static ParseError LibraryNameExpected() =>
+            Create("ru = 'Ожидается имя библиотеки;en='Library name expected'");
     }
 }

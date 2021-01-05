@@ -564,7 +564,7 @@ namespace OneScript.Language.Tests
                                            	) Экспорт
             КонецПроцедуры";
 
-            var parser = DefaultBslParser.PrepareParser(code);
+            var parser = PrepareParser(code);
             parser.ParseStatefulModule();
 
             parser.Errors.Should().NotBeEmpty("last parameter is missing");
@@ -806,12 +806,7 @@ namespace OneScript.Language.Tests
 
         private static SyntaxTreeValidator MakeValidator(string code, Func<DefaultBslParser, BslSyntaxNode> action)
         {
-            var lexer = new DefaultLexer();
-            lexer.Code = code;
-
-            var client = new DefaultAstBuilder();
-            var parser = new DefaultBslParser(client, lexer);
-            parser.DirectiveHandlers.Add(new AstNodeAppendingHandler());
+            var parser = PrepareParser(code);
             var node = action(parser);
 
             node.Should().NotBeNull();
@@ -820,5 +815,19 @@ namespace OneScript.Language.Tests
             return treeValidator;
         }
 
+        private static DefaultBslParser PrepareParser(string code)
+        {
+            var lexer = new DefaultLexer();
+            lexer.Code = code;
+
+            var treeBuilder = new DefaultAstBuilder();
+            var context = new ParserContext(lexer, treeBuilder)
+            {
+                DirectiveHandlers = new PreprocessorHandlers(
+                    new[] {new AstNodeAppendingHandler()})
+            };
+            var parser = new DefaultBslParser(context);
+            return parser;
+        }
     }
 }

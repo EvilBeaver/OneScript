@@ -20,6 +20,8 @@ namespace OneScript.Language.SyntaxAnalysis
         private readonly IAstBuilder _builder;
         private readonly ILexer _lexer;
         private Lexem _lastExtractedLexem;
+
+        private ParserContext _parserContext;
         
         private bool _inMethodScope;
         private bool _isMethodsDefined;
@@ -27,7 +29,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private bool _isInFunctionScope;
         private bool _lastDereferenceIsWritable;
 
-        private readonly Stack<BslSyntaxNode> _nodeContext = new Stack<BslSyntaxNode>();
+        private readonly Stack<BslSyntaxNode> _nodeContext;
         
         private readonly List<ParseError> _errors = new List<ParseError>();
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
@@ -36,63 +38,30 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private readonly List<BslSyntaxNode> _annotations = new List<BslSyntaxNode>();
 
-        public DefaultBslParser(IAstBuilder builder, ILexer lexer) : this(builder, lexer, new PreprocessorHandlers())
+        public DefaultBslParser(ParserContext parserContext)
         {
-        }
-        
-        public DefaultBslParser(IAstBuilder builder, ILexer lexer, IDirectiveHandler directiveHandler)
-        {
-            _builder = builder;
-            _lexer = lexer;
-            DirectiveHandlers = directiveHandler as PreprocessorHandlers;
+            _lexer = parserContext.Lexer;
+            _builder = parserContext.NodeBuilder;
+            _nodeContext = parserContext.NodeContext;
+            _parserContext = parserContext;
         }
 
-        public static DefaultBslParser PrepareParser(string code)
-        {
-            var lexer = new DefaultLexer();
-            lexer.Code = code;
-            var treeBuilder = new DefaultAstBuilder();
-            var parser = new DefaultBslParser(treeBuilder, lexer);
-            return parser;
-        }
-        
         public IEnumerable<ParseError> Errors => _errors; 
-        
-        public PreprocessorHandlers DirectiveHandlers { get; }
         
         public BslSyntaxNode ParseStatefulModule()
         {
-            _lastExtractedLexem = _lexer.NextLexem();
+            NextLexem();
             var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             PushContext(node);
 
             try
             {
-                foreach (var preprocessorHandler in DirectiveHandlers)
-                {
-                    var context = CreateParserContext();
-                    preprocessorHandler.OnModuleEnter(context);
-                    ApplyContext(context);
-                }
-
+                _parserContext.DirectiveHandlers.OnModuleEnter(_parserContext);
                 ParseModuleSections();
-
-                foreach (var preprocessorHandler in DirectiveHandlers)
-                {
-                    var context = CreateParserContext();
-                    preprocessorHandler.OnModuleLeave(context);
-                    ApplyContext(context);
-                }
+                _parserContext.DirectiveHandlers.OnModuleLeave(_parserContext);
             }
             finally
             {
-                foreach (var preprocessorHandler in DirectiveHandlers)
-                {
-                    var context = CreateParserContext();
-                    preprocessorHandler.OnModuleLeave(context);
-                    ApplyContext(context);
-                }
-                
                 PopContext();
             }
 
@@ -101,7 +70,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public BslSyntaxNode ParseCodeBatch()
         {
-            _lastExtractedLexem = _lexer.NextLexem();
+            NextLexem();
             var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             PushContext(node);
             try
@@ -118,7 +87,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public BslSyntaxNode ParseExpression()
         {
-            _lastExtractedLexem = _lexer.NextLexem();
+            NextLexem();
             var parent = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             BuildExpression(parent, Token.EndOfText);
             return parent;
@@ -135,26 +104,46 @@ namespace OneScript.Language.SyntaxAnalysis
             if (_lastExtractedLexem.Type != LexemType.PreprocessorDirective)
                 return;
             
-            var importHandler = DirectiveHandlers
-                .Slice(x => x is ModuleAnnotationDirectiveHandler)
-                as IDirectiveHandler;
+            var annotationParser = _parserContext.DirectiveHandlers
+                .Slice(x => x is ModuleAnnotationDirectiveHandler);
             
-            if (importHandler == default)
+            if (annotationParser == default)
                 return;
-            
-            var ctx = CreateParserContext();
-            try
+
+            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
             {
-                importHandler.OnModuleEnter(ctx);
-                while (ctx.LastExtractedLexem.Type == LexemType.PreprocessorDirective)
+                bool handled = false;
+                var directive = _lastExtractedLexem.Content;
+                foreach (var handler in annotationParser.Cast<ModuleAnnotationDirectiveHandler>())
                 {
-                    HandleDirective(ctx);
+                    handled = handler.ParseAnnotation(_lastExtractedLexem, _parserContext);
+                    _lastExtractedLexem = _parserContext.LastExtractedLexem;
+                }
+
+                if (!handled)
+                {
+                    AddError(LocalizedErrors.DirectiveNotSupported(directive));
                 }
             }
-            finally
+            
+            foreach (var handler in annotationParser)
             {
-                importHandler.OnModuleLeave(ctx);
+                handler.OnModuleLeave(_parserContext);
             }
+
+            // var ctx = CreateParserContext();
+            // try
+            // {
+            //     importHandler.OnModuleEnter(ctx);
+            //     while (ctx.LastExtractedLexem.Type == LexemType.PreprocessorDirective)
+            //     {
+            //         HandleDirective(ctx);
+            //     }
+            // }
+            // finally
+            // {
+            //     importHandler.OnModuleLeave(ctx);
+            // }
         }
 
         private void ParseModuleSections()
@@ -611,13 +600,6 @@ namespace OneScript.Language.SyntaxAnalysis
                     break;
                 }
 
-                if (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-                {
-                    var ctx = CreateParserContext();
-                    HandleDirective(ctx);
-                    continue;
-                }
-                
                 if (_lastExtractedLexem.Token == Token.Semicolon)
                 {
                     NextLexem();
@@ -1404,49 +1386,14 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void NextLexem()
         {
-            _lastExtractedLexem = _lexer.NextLexem();
-
-            while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-            {
-                HandleDirective(CreateParserContext());
-            }
+            _lastExtractedLexem = _parserContext.NextLexem();
+            //
+            // while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
+            // {
+            //     HandleDirective(CreateParserContext());
+            // }
         }
 
-        private void HandleDirective(ParserContext context)
-        {
-            var directive = context.LastExtractedLexem.Content;
-            bool handled;
-            try
-            {
-                var handler = (IDirectiveHandler) DirectiveHandlers;
-                handled = handler.HandleDirective(context);
-                ApplyContext(context);
-            }
-            catch (SyntaxErrorException e)
-            {
-                ApplyContext(context);
-                AddError(new ParseError()
-                {
-                    Description = e.Message,
-                    Position = _lexer.GetErrorPosition(),
-                    ErrorId = nameof(HandleDirective)
-                }, false);
-                return;
-            }
-            if (!handled)
-               AddError(LocalizedErrors.DirectiveNotSupported(directive));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ParserContext CreateParserContext() => 
-            new ParserContext(_lexer, _nodeContext, _builder, _lastExtractedLexem);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ApplyContext(ParserContext context)
-        {
-            _lastExtractedLexem = context.LastExtractedLexem;
-        }
-        
         private bool NextExpected(Token expected)
         {
             NextLexem();

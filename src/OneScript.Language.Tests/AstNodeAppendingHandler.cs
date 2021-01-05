@@ -11,7 +11,7 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.Tests
 {
-    public class AstNodeAppendingHandler : IDirectiveHandler
+    public class AstNodeAppendingHandler : ModuleAnnotationDirectiveHandler
     {
         private readonly ILexer _allLineContentLexer;
         
@@ -24,15 +24,12 @@ namespace OneScript.Language.Tests
             _allLineContentLexer = builder.Build();
         }
 
-        public void OnModuleEnter(ParserContext context)
+        protected override bool DirectiveSupported(string directive)
         {
+            return true;
         }
 
-        public void OnModuleLeave(ParserContext context)
-        {
-        }
-
-        public bool HandleDirective(ParserContext context)
+        protected override void ParseAnnotationInternal(string content, ParserContext context)
         {
             var lastExtractedLexem = context.LastExtractedLexem;
             var lexemStream = context.Lexer;
@@ -48,7 +45,6 @@ namespace OneScript.Language.Tests
 
             context.LastExtractedLexem = lexemStream.NextLexem();
             context.NodeBuilder.AddChild(context.NodeContext.Peek(), node);
-            return true;
         }
     }
 }

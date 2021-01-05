@@ -54,11 +54,21 @@ namespace OneScript.Core.Tests
 
         private static ModuleImage BuildImage(string code)
         {
-            var parser = DefaultBslParser.PrepareParser(code);
+            var parser = PrepareParser(code);
             var node = parser.ParseStatefulModule() as ModuleNode;
 
             var compiler = new AstBasedCodeGenerator(Mock.Of<ICompilerContext>());
             return compiler.CreateImage(node, new ModuleInformation());
+        }
+        
+        public static DefaultBslParser PrepareParser(string code)
+        {
+            var lexer = new DefaultLexer();
+            lexer.Code = code;
+            var treeBuilder = new DefaultAstBuilder();
+            var context = new ParserContext(lexer, treeBuilder);
+            var parser = new DefaultBslParser(context);
+            return parser;
         }
     }
 }
