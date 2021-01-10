@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// Фабрика, осуществляющая регистрацию библиотеки внешних 
     /// компонент Native API и создания экземпляров компонент.
     /// </summary>
-    class NativeApiFactory : NativeApiKernel
+    class NativeApiFactory
     {
         public static bool Register(String filepath, String identifier)
         {

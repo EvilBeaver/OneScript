@@ -32,6 +32,15 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             return p != IntPtr.Zero ? Marshal.PtrToStringUni(p) : String.Empty;
         }
 
+        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "ProxyLoadLibrary")]
+        public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPWStr)] string lpLibFileName);
+
+        [DllImport(ProxyDll, SetLastError = true, ExactSpelling = true, CharSet = CharSet.Ansi, EntryPoint = "ProxyGetProcAddress")]
+        public static extern IntPtr GetProcAddress(IntPtr _module, string procName);
+
+        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "ProxyFreeLibrary")]
+        public static extern bool FreeLibrary(IntPtr _module);
+
         [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern IntPtr GetClassObject(IntPtr module, string name, OnErrorDelegate onError, OnEventDelegate onEvent, OnStatusDelegate onStatus);
 

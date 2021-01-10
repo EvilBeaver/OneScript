@@ -64,7 +64,8 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         [FieldOffset(0)] private IntPtr pwstrVal;
         [FieldOffset(4)] private Int32 wstrLen32;
         [FieldOffset(8)] private Int32 wstrLen64;
-        [FieldOffset(44)] private UInt16 vt;
+        [FieldOffset(44)] private UInt16 vtWindows;
+        [FieldOffset(60)] private UInt16 vtLinux;
 
 #pragma warning disable IDE1006 // Стили именования
         private Int32 strLen
@@ -88,6 +89,27 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                     wstrLen64 = value;
                 else
                     wstrLen32 = value;
+            }
+        }
+
+        public static bool IsLinux
+        {
+            get
+            {
+                int p = (int)System.Environment.OSVersion.Platform;
+                return (p == 4) || (p == 6) || (p == 128);
+            }
+        }
+
+        private UInt16 vt
+        {
+            get => IsLinux ? vtLinux : vtWindows;
+            set
+            {
+                if (IsLinux)
+                    vtLinux = value;
+                else
+                    vtWindows = value;
             }
         }
 

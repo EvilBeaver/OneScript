@@ -242,3 +242,53 @@ DllExport bool ADDIN_API CallAsFunc(ProxyComponent* proxy, int32_t lMethodNum, t
 	ClearVariant(variant);
 	return ok;
 }
+
+#ifdef _WINDOWS
+
+DllExport HMODULE ADDIN_API ProxyLoadLibrary(const WCHAR_T* lpLibFileName)
+{
+	return ::LoadLibraryW(lpLibFileName);
+}
+
+DllExport FARPROC ADDIN_API ProxyGetProc(HMODULE hModule, LPCSTR lpProcName)
+{
+	return ::GetProcAddress(hModule, lpProcName);
+}
+
+DllExport BOOL ADDIN_API ProxyFreeLibrary(HMODULE hModule)
+{
+	return ::FreeLibrary(hModule);
+}
+
+#else
+
+#include <dlfcn.h>
+#include <string>
+#include <locale> 
+#include <codecvt>
+
+std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src)
+{
+	static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> cvt_utf8_utf16;
+	return cvt_utf8_utf16.to_bytes(reinterpret_cast<const char16_t*>(src.data()),
+		reinterpret_cast<const char16_t*>(src.data() + src.size()));
+}
+
+DllExport void* ADDIN_API ProxyLoadLibrary(const WCHAR_T* filename)
+{
+	std::string name = WCHAR2MB(filename);
+	return dlopen(name.c_str(), RTLD_LAZY);
+}
+
+DllExport void* ADDIN_API ProxyGetProcAddress(void* handle, char* symbol)
+{
+	return dlsym(handle, symbol);
+
+}
+
+DllExport int ADDIN_API ProxyFreeLibrary(void* handle)
+{
+	return dlclose(handle);
+}
+
+#endif//_WINDOWS

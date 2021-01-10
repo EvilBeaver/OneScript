@@ -8,6 +8,11 @@ add_library(${TARGET} SHARED
 	NativeInterface.cpp
 	NativeInterface.h)
 
+set_target_properties(${TARGET} PROPERTIES
+   POSITION_INDEPENDENT_CODE ON 
+   CXX_STANDARD_REQUIRED ON
+   CXX_STANDARD 17)
+
 target_compile_definitions(${TARGET} PRIVATE UNICODE _UNICODE)
 target_include_directories(${TARGET} PRIVATE include)
 
@@ -17,6 +22,8 @@ if (UNIX)
 	else(UNIX)
 		set(CMAKE_CXX_FLAGS "-m64 ${CMAKE_CXX_FLAGS}")
 	endif ()
+	set_target_properties(${TARGET} PROPERTIES PREFIX "")
+	set_target_properties(${TARGET} PROPERTIES SUFFIX ".dll")
 else(UNIX)
 	if (NOT MSVC)
 		message(FATAL_ERROR "Must be compiled with MSVC on Windows")
