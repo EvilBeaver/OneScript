@@ -8,7 +8,6 @@ using System;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    [Obsolete("Use EnumerationType and EnumItem instead")]
     [AttributeUsage(AttributeTargets.Class)]
     public class SystemEnumAttribute : Attribute
     {
