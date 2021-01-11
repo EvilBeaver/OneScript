@@ -45,6 +45,44 @@ namespace OneScript.Language.Tests
             throw new XunitException("should throw unknown symbol");
         }
 
+        [Fact]
+        public void NextStatement_Strategy_Rewinds_Through_Errors()
+        {
+            var code = "ths is a line with error\n" +
+                       "#$e d0-f %^ Если\n" +
+                       "!@-2 Пока\n" +
+                       "!@-2 Перем\n" +
+                       "!@-2 Для\n" +
+                       "!@-2 Попытка\n";
+
+            var testLexer = BuildLexer();
+            
+            testLexer.Iterator = new SourceCodeIterator(code);
+            var strategy = new NextStatementRecoveryStrategy();
+            Lexem lex;
+
+            testLexer.Iterator.MoveToContent();
+            
+            lex = strategy.Recover(testLexer);
+            lex.Token.Should().Be(Token.If);
+            
+            testLexer.Iterator.MoveNext();
+            lex = strategy.Recover(testLexer);
+            lex.Token.Should().Be(Token.While);
+            
+            testLexer.Iterator.MoveNext();
+            lex = strategy.Recover(testLexer);
+            lex.Token.Should().Be(Token.VarDef);
+            
+            testLexer.Iterator.MoveNext();
+            lex = strategy.Recover(testLexer);
+            lex.Token.Should().Be(Token.For);
+            
+            testLexer.Iterator.MoveNext();
+            lex = strategy.Recover(testLexer);
+            lex.Token.Should().Be(Token.Try);
+        }
+
         private ILexer BuildLexer()
         {
             var lb = new LexerBuilder();

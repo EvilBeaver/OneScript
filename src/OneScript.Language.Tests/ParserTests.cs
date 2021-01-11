@@ -825,7 +825,8 @@ namespace OneScript.Language.Tests
             var treeBuilder = new DefaultAstBuilder();
             var context = new ParserContext(lexer, treeBuilder)
             {
-                DirectiveHandlers = lexer.Handlers 
+                DirectiveHandlers = lexer.Handlers,
+                ErrorSink = new ListErrorSink()
             };
             var parser = new DefaultBslParser(context);
             return parser;

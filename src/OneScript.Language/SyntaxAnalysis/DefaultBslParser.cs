@@ -21,7 +21,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private readonly ILexer _lexer;
         private Lexem _lastExtractedLexem;
 
-        private ParserContext _parserContext;
+        private readonly ParserContext _parserContext;
         
         private bool _inMethodScope;
         private bool _isMethodsDefined;
@@ -30,8 +30,6 @@ namespace OneScript.Language.SyntaxAnalysis
         private bool _lastDereferenceIsWritable;
 
         private readonly Stack<BslSyntaxNode> _nodeContext;
-        
-        private readonly List<ParseError> _errors = new List<ParseError>();
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private bool _isInLoopScope;
         private bool _enableException;
@@ -46,7 +44,7 @@ namespace OneScript.Language.SyntaxAnalysis
             _parserContext = parserContext;
         }
 
-        public IEnumerable<ParseError> Errors => _errors; 
+        public IEnumerable<ParseError> Errors => _parserContext.ErrorSink.Errors ?? new ParseError[0]; 
         
         public BslSyntaxNode ParseStatefulModule()
         {
@@ -133,20 +131,6 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 handler.OnModuleLeave(_parserContext);
             }
-
-            // var ctx = CreateParserContext();
-            // try
-            // {
-            //     importHandler.OnModuleEnter(ctx);
-            //     while (ctx.LastExtractedLexem.Type == LexemType.PreprocessorDirective)
-            //     {
-            //         HandleDirective(ctx);
-            //     }
-            // }
-            // finally
-            // {
-            //     importHandler.OnModuleLeave(ctx);
-            // }
         }
 
         private void ParseModuleSections()
@@ -1390,11 +1374,6 @@ namespace OneScript.Language.SyntaxAnalysis
         private void NextLexem()
         {
             _lastExtractedLexem = _parserContext.NextLexem();
-            //
-            // while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
-            // {
-            //     HandleDirective(CreateParserContext());
-            // }
         }
 
         private bool NextExpected(Token expected)
@@ -1406,32 +1385,19 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void SkipToNextStatement(Token[] additionalStops = null)
         {
-            _lexer.ReadToLineEnd();
-            while (!(_lastExtractedLexem.Token == Token.EndOfText
-                     || LanguageDef.IsBeginOfStatement(_lastExtractedLexem.Token)))
+            var recovery = new NextStatementRecoveryStrategy
             {
-                try
-                {
-                    // поскольку мы пропускаем блок с ошибкой
-                    // все новые ошибки, возникающие в процессе пропуска, также будем игнорировать
-                    NextLexem();
-                }
-                catch (SyntaxErrorException)
-                {
-                }
-                
-                if(additionalStops != null && additionalStops.Contains(_lastExtractedLexem.Token) )
-                {
-                    break;
-                }
-            }
+                AdditionalStops = additionalStops
+            };
+
+            _lastExtractedLexem = recovery.Recover(_lexer);
         }
 
         private void AddError(ParseError err, bool doFastForward = true)
         {
             err.Position = _lexer.GetErrorPosition();
-            _errors.Add(err);
-            _builder.HandleParseError(err, _lastExtractedLexem, _lexer);
+            _parserContext.AddError(err);
+
             if (doFastForward)
             {
                 if (_tokenStack.Count > 0)

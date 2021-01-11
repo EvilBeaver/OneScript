@@ -39,10 +39,7 @@ namespace ScriptEngine.Compiler
                 DependencyResolver = _сompilerOptions.DependencyResolver
             };
             
-            var astBuilder = new DefaultAstBuilder()
-            {
-                ThrowOnError = true
-            };
+            var astBuilder = new DefaultAstBuilder();
 
             var conditionals = _сompilerOptions.PreprocessorHandlers.Get<ConditionalDirectiveHandler>();
             if (conditionals != default)

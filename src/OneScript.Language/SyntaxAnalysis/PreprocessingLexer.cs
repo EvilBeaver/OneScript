@@ -12,6 +12,8 @@ namespace OneScript.Language.SyntaxAnalysis
     public class PreprocessingLexer : FullSourceLexer
     {
         public PreprocessorHandlers Handlers { get; set; }
+
+        public IErrorSink ErrorSink { get; set; }
         
         public override Lexem NextLexem()
         {
@@ -25,8 +27,10 @@ namespace OneScript.Language.SyntaxAnalysis
                     return fakeContext.LastExtractedLexem;
                 }
 
-                throw new SyntaxErrorException(this.GetErrorPosition(), 
-                    LocalizedErrors.DirectiveNotSupported(lex.Content));
+                var err = LocalizedErrors.DirectiveNotSupported(lex.Content);
+                err.Position = this.GetErrorPosition();
+                
+                ErrorSink?.AddError(err);
             }
 
             return lex;

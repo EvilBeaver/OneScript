@@ -11,12 +11,24 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class ParserContext : IErrorSink
+    public class ParserContext
     {
-        private List<ParseError> _errors;
         private Lexem _lastLexem;
+
+        private class ThrowingErrorSink : IErrorSink
+        {
+            public IEnumerable<ParseError> Errors { get; set; }
+            public bool HasErrors { get; set; }
+            
+            public void AddError(ParseError err)
+            {
+                throw new SyntaxErrorException(err);
+            }
+        }
         
         public ILexer Lexer { get; }
+        
+        public IErrorSink ErrorSink { get; set; } = new ThrowingErrorSink();
         
         public Stack<BslSyntaxNode> NodeContext { get; } = new Stack<BslSyntaxNode>();
         
@@ -30,10 +42,6 @@ namespace OneScript.Language.SyntaxAnalysis
             set => _lastLexem = value;
         }
 
-        public IEnumerable<ParseError> Errors => _errors;
-
-        public bool HasErrors => _errors != default && _errors.Count > 0;
-
         public ref Lexem NextLexem()
         {
             _lastLexem = Lexer.NextLexem();
@@ -42,10 +50,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public void AddError(ParseError err)
         {
-            if (_errors == default)
-                _errors = new List<ParseError>();
-            
-            _errors.Add(err);
+            ErrorSink?.AddError(err);
         }
 
         public ParserContext(ILexer lexer,IAstBuilder builder)

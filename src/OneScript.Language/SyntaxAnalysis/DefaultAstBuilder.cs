@@ -12,8 +12,6 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class DefaultAstBuilder : IAstBuilder
     {
-        public bool ThrowOnError { get; set; }
-        
         public virtual BslSyntaxNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
             switch (kind)
@@ -95,12 +93,6 @@ namespace OneScript.Language.SyntaxAnalysis
             
             var parentNonTerm = (NonTerminalNode) parent;
             parentNonTerm.AddChild(child);
-        }
-
-        public virtual void HandleParseError(in ParseError error, in Lexem lexem, ILexer lexer)
-        {
-            if(ThrowOnError)
-                throw new SyntaxErrorException(error);
         }
     }
 }

@@ -13,7 +13,6 @@ namespace OneScript.Language.LexicalAnalysis
     public class ExpressionBasedLexer : ILexer
     {
         private readonly Func<char, LexerState> _selector;
-        private string _code;
 
         internal ExpressionBasedLexer(Func<char, LexerState> selector)
         {

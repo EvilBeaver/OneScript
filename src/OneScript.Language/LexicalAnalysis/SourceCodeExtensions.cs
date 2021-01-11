@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+
 namespace OneScript.Language.LexicalAnalysis
 {
     public static class SourceCodeExtensions
@@ -19,6 +21,7 @@ namespace OneScript.Language.LexicalAnalysis
             };
         }
         
+        [Obsolete]
         public static ErrorPositionInfo GetErrorPosition(this ILexemGenerator lexer)
         {
             return lexer.Iterator.GetErrorPosition();

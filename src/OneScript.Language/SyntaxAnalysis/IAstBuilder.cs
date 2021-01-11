@@ -15,7 +15,5 @@ namespace OneScript.Language.SyntaxAnalysis
         BslSyntaxNode CreateNode(NodeKind kind, in Lexem startLexem);
 
         void AddChild(BslSyntaxNode parent, BslSyntaxNode child);
-
-        void HandleParseError(in ParseError error, in Lexem lexem, ILexer lexer);
     }
 }
