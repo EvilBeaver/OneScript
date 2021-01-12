@@ -357,8 +357,11 @@ namespace OneScript.Language.SyntaxAnalysis
             while (true)
             {
                 if (iterator.CurrentSymbol == SpecialChars.Preprocessor)
-                    return true;
-                
+                {
+                    if(iterator.OnNewLine)
+                        return true;
+                }
+
                 if (!iterator.MoveNext())
                     break;
             }
