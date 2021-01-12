@@ -9,7 +9,7 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class PreprocessingLexer : FullSourceLexer
+    public class PreprocessingLexer : DefaultLexer
     {
         public PreprocessorHandlers Handlers { get; set; }
 
@@ -28,7 +28,8 @@ namespace OneScript.Language.SyntaxAnalysis
                 }
 
                 var err = LocalizedErrors.DirectiveNotSupported(lex.Content);
-                err.Position = this.GetErrorPosition();
+                var l = (ILexer) this;
+                err.Position = l.GetErrorPosition();
                 
                 ErrorSink?.AddError(err);
             }

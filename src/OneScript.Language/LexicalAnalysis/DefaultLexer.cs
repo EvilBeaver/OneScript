@@ -9,7 +9,7 @@ using OneScript.Language.SyntaxAnalysis;
 
 namespace OneScript.Language.LexicalAnalysis
 {
-    public class DefaultLexer : PreprocessingLexer, ILexemGenerator
+    public class DefaultLexer : FullSourceLexer, ILexemGenerator
     {
         private string _code;
 
