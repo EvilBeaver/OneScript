@@ -15,17 +15,6 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         private Lexem _lastLexem;
 
-        private class ThrowingErrorSink : IErrorSink
-        {
-            public IEnumerable<ParseError> Errors { get; set; }
-            public bool HasErrors { get; set; }
-            
-            public void AddError(ParseError err)
-            {
-                throw new SyntaxErrorException(err);
-            }
-        }
-        
         public ILexer Lexer { get; }
         
         public IErrorSink ErrorSink { get; set; } = new ThrowingErrorSink();
