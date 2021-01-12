@@ -25,10 +25,6 @@ namespace ScriptEngine.Compiler
             _сompilerOptions = сompilerOptions;
             ProduceExtraCode = _сompilerOptions.ProduceExtraCode;
         }
-
-        private DefaultBslParser Parser { get; set; }
-        
-        
         
         protected override ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
@@ -41,7 +37,9 @@ namespace ScriptEngine.Compiler
             
             var astBuilder = new DefaultAstBuilder();
 
-            var conditionals = _сompilerOptions.PreprocessorHandlers.Get<ConditionalDirectiveHandler>();
+            var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
+            
+            var conditionals = handlers.Get<ConditionalDirectiveHandler>();
             if (conditionals != default)
             {
                 foreach (var constant in preprocessorConstants)
@@ -50,22 +48,21 @@ namespace ScriptEngine.Compiler
                 }
             }
             
-            var lexer = new DefaultLexer
+            var lexer = new PreprocessingLexer
             {
                 Iterator = new SourceCodeIterator(source.Code),
-                Handlers = _сompilerOptions.PreprocessorHandlers
+                Handlers = handlers,
+                ErrorSink = _сompilerOptions.ErrorSink
             };
 
-            var parseContext = new ParserContext(lexer, astBuilder, _сompilerOptions.PreprocessorHandlers);
-            parseContext.DirectiveHandlers = _сompilerOptions.PreprocessorHandlers;
-            
-            Parser = new DefaultBslParser(parseContext);
+            var parseContext = new ParserContext(lexer, astBuilder, handlers);
+            var parser = new DefaultBslParser(parseContext);
 
             ModuleNode moduleNode;
             var mi = CreateModuleInformation(source, lexer);
             try
             {
-                moduleNode = (ModuleNode)Parser.ParseStatefulModule();
+                moduleNode = (ModuleNode)parser.ParseStatefulModule();
             }
             catch (SyntaxErrorException e)
             {

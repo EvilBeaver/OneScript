@@ -9,11 +9,9 @@ using OneScript.Language.SyntaxAnalysis;
 
 namespace ScriptEngine.Compiler
 {
-    public class CompilerOptions
+    public class CompilerOptions : ParserOptions
     {
         public CodeGenerationFlags ProduceExtraCode { get; set; }
-        
-        public PreprocessorHandlers PreprocessorHandlers { get; set; } = new PreprocessorHandlers();
         
         public IDependencyResolver DependencyResolver { get; set; }
     }

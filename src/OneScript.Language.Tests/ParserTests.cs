@@ -817,7 +817,7 @@ namespace OneScript.Language.Tests
 
         private static DefaultBslParser PrepareParser(string code)
         {
-            var lexer = new DefaultLexer();
+            var lexer = new PreprocessingLexer();
             lexer.Code = code;
             lexer.Handlers = new PreprocessorHandlers(
                 new[] {new AstNodeAppendingHandler()});

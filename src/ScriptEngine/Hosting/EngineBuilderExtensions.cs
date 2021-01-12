@@ -83,23 +83,31 @@ namespace ScriptEngine.Hosting
         
         public static CompilerOptions UseDirectiveHandler(this CompilerOptions b, IDirectiveHandler handler)
         {
-            b.PreprocessorHandlers.Add(handler);
+            b.PreprocessorFactory.Add(o => handler);
+            return b;
+        }
+        
+        public static CompilerOptions UseDirectiveHandler(
+            this CompilerOptions b, 
+            Func<ParserOptions, IDirectiveHandler> handlerFactory)
+        {
+            b.PreprocessorFactory.Add(handlerFactory);
             return b;
         }
 
         public static CompilerOptions UseConditionalCompilation(this CompilerOptions b)
         {
-            return b.UseDirectiveHandler(new ConditionalDirectiveHandler());
+            return b.UseDirectiveHandler(o => new ConditionalDirectiveHandler());
         }
         
         public static CompilerOptions UseRegions(this CompilerOptions b)
         {
-            return b.UseDirectiveHandler(new RegionDirectiveHandler());
+            return b.UseDirectiveHandler(o => new RegionDirectiveHandler());
         }
         
         public static CompilerOptions UseImports(this CompilerOptions opts, IDependencyResolver resolver)
         {
-            opts.UseDirectiveHandler(new ImportDirectivesHandler());
+            opts.UseDirectiveHandler(o => new ImportDirectivesHandler());
             opts.DependencyResolver = resolver;
 
             return opts;
