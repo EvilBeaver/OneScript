@@ -250,7 +250,7 @@ DllExport HMODULE ADDIN_API ProxyLoadLibrary(const WCHAR_T* lpLibFileName)
 	return ::LoadLibraryW(lpLibFileName);
 }
 
-DllExport FARPROC ADDIN_API ProxyGetProc(HMODULE hModule, LPCSTR lpProcName)
+DllExport FARPROC ADDIN_API ProxyGetProcAddress(HMODULE hModule, LPCSTR lpProcName)
 {
 	return ::GetProcAddress(hModule, lpProcName);
 }
