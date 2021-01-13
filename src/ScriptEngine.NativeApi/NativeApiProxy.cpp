@@ -42,6 +42,24 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 typedef void(_stdcall* StringFuncRespond) (const WCHAR_T* s);
 typedef void(_stdcall* VariantFuncRespond) (const tVariant* variant);
 
+static bool AllocMemory(void** pMemory, unsigned long ulCountByte) {
+#ifdef _WINDOWS
+	return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
+#else
+	return *pMemory = calloc(1, ulCountByte);
+#endif//_WINDOWS
+}
+
+void ADDIN_API FreeMemory(void** pMemory) {
+#ifdef _WINDOWS
+	LocalFree(*pMemory);
+	*pMemory = nullptr;
+#else
+	free(*pMemory);
+	*pMemory = nullptr;
+#endif//_WINDOWS
+}
+
 class ProxyComponent : public IMemoryManager {
 private:
 	IComponentBase* pComponent = nullptr;
@@ -64,20 +82,10 @@ public:
 		delete pComponent;
 	}
 	virtual bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) override {
-#ifdef _WINDOWS
-		return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
-#else
-		return *pMemory = calloc(1, ulCountByte);
-#endif//_WINDOWS
+		return ::AllocMemory(pMemory, ulCountByte);
 	}
 	virtual void ADDIN_API FreeMemory(void** pMemory) override {
-#ifdef _WINDOWS
-		LocalFree(*pMemory);
-		*pMemory = nullptr;
-#else
-		free(*pMemory);
-		*pMemory = nullptr;
-#endif//_WINDOWS
+		::FreeMemory(pMemory);
 	}
 	IComponentBase& Component() {
 		return *pComponent;
@@ -89,13 +97,11 @@ static void ClearVariant(tVariant& variant)
 	switch (variant.vt) {
 	case VTYPE_BLOB:
 	case VTYPE_PSTR:
-		free(variant.pstrVal);
-		variant.pstrVal = nullptr;
+		FreeMemory((void**)&variant.pstrVal);
 		variant.strLen = 0;
 		break;
 	case VTYPE_PWSTR:
-		free(variant.pwstrVal);
-		variant.pwstrVal = nullptr;
+		FreeMemory((void**)&variant.pwstrVal);
 		variant.wstrLen = 0;
 		break;
 	}

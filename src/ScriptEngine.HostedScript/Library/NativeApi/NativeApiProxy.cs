@@ -15,22 +15,54 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// </summary>
     class NativeApiProxy
     {
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate IntPtr TGetClassObject(IntPtr module, string name, OnErrorDelegate onError, OnEventDelegate onEvent, OnStatusDelegate onStatus);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate void TDestroyObject(IntPtr ptr);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate Int32 TGetNProps(IntPtr ptr);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate Int32 TFindProp(IntPtr ptr, string wsPropName);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool TIsPropReadable(IntPtr ptr, Int32 lPropNum);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool TIsPropWritable(IntPtr ptr, Int32 lPropNum);
+
         public delegate void TGetPropName(IntPtr ptr, Int32 lPropNum, Int32 lPropAlias, PointerDelegate response);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate void TGetPropVal(IntPtr ptr, Int32 lPropNum, PointerDelegate response);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate void TSetPropVal(IntPtr ptr, Int32 lPropNum, ref NativeApiVariant value);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate Int32 TGetNMethods(IntPtr ptr);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate Int32 TFindMethod(IntPtr ptr, string wsMethodName);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate void TGetMethodName(IntPtr ptr, Int32 lMethodNum, Int32 lMethodAlias, PointerDelegate response);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate Int32 TGetNParams(IntPtr ptr, Int32 lMethodNum);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool TGetParamDefValue(IntPtr ptr, Int32 lMethodNum, Int32 lParamNum, PointerDelegate response);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool THasRetVal(IntPtr ptr, Int32 lMethodNum);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool TCallAsProc(IntPtr ptr, Int32 lMethodNum, IntPtr value);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool TCallAsFunc(IntPtr ptr, Int32 lMethodNum, IntPtr value, PointerDelegate response);
 
         public TGetClassObject GetClassObject;
@@ -55,7 +87,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         {
             string location = System.Reflection.Assembly.GetExecutingAssembly().Location;
             string filename = System.IO.Path.GetDirectoryName(location)
-                + System.IO.Path.DirectorySeparatorChar + "ScriptEngine.NativeApi."
+                + System.IO.Path.DirectorySeparatorChar + "ScriptEngine.NativeApi"
                 + (NativeApiKernel.IsLinux ? (IntPtr.Size == 8 ? "64" : "32") + ".so" : ".dll");
             IntPtr module = NativeApiKernel.LoadLibrary(filename);
             GetClassObject = Marshal.GetDelegateForFunctionPointer<TGetClassObject>(NativeApiKernel.GetProcAddress(module, "GetClassObject"));
