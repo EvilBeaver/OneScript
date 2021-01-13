@@ -5,9 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-#ifdef _WINDOWS
+#include "include/types.h"
+#include "include/ComponentBase.h"
+#include "include/AddInDefBase.h"
+#include "include/IMemoryManager.h"
+#include "NativeInterface.h"
 
-#include <windows.h>
+#ifdef _WINDOWS
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
@@ -25,24 +29,28 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
 #define DllExport extern "C" __declspec(dllexport)
 
-#else
+#else//_WINDOWS
 
 #define DllExport extern "C"
+#define FARPROC void*
+#define HANDLE void*
+#define LPSTR char*
 
-#include <unistd.h>
-#include <stdlib.h>
+#include <locale> 
+#include <codecvt>
+
+std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src)
+{
+	static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> cvt_utf8_utf16;
+	return cvt_utf8_utf16.to_bytes(reinterpret_cast<const char16_t*>(src.data()),
+		reinterpret_cast<const char16_t*>(src.data() + src.size()));
+}
 
 #endif//_WINDOWS
 
 #define CHECK_PROXY(result) { if (proxy == nullptr) return result; }
 
 #define EMPTY_DEF
-
-#include "include/types.h"
-#include "include/ComponentBase.h"
-#include "include/AddInDefBase.h"
-#include "include/IMemoryManager.h"
-#include "NativeInterface.h"
 
 typedef void(_stdcall* StringFuncRespond) (const WCHAR_T* s);
 typedef void(_stdcall* VariantFuncRespond) (const tVariant* variant);
@@ -53,12 +61,12 @@ private:
 	NativeInterface mInterface;
 public:
 	ProxyComponent(
-		IComponentBase* pComponent, 
+		IComponentBase* pComponent,
 		ErrorFuncRespond onError,
 		EventFuncRespond onEvent,
 		StatusFuncRespond onStatus
-	): 
-		pComponent(pComponent), 
+	) :
+		pComponent(pComponent),
 		mInterface(onError, onEvent, onStatus)
 	{
 		pComponent->setMemManager(this);
@@ -69,24 +77,24 @@ public:
 		delete pComponent;
 	}
 	virtual bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) override {
-		#ifdef _WINDOWS
+#ifdef _WINDOWS
 		return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
-		#else
+#else
 		return *pMemory = calloc(1, ulCountByte);
-		#endif//_WINDOWS
+#endif//_WINDOWS
 	}
 	virtual void ADDIN_API FreeMemory(void** pMemory) override {
-		#ifdef _WINDOWS
+#ifdef _WINDOWS
 		LocalFree(*pMemory);
 		*pMemory = nullptr;
-		#else
+#else
 		free(*pMemory);
 		*pMemory = nullptr;
-		#endif//_WINDOWS
+#endif//_WINDOWS
 	}
 	IComponentBase& Component() {
 		return *pComponent;
-	}
+}
 };
 
 static void ClearVariant(tVariant& variant)
@@ -108,8 +116,8 @@ static void ClearVariant(tVariant& variant)
 }
 
 DllExport ProxyComponent* GetClassObject(
-	HMODULE hModule, 
-	const WCHAR_T* wsName, 
+	HMODULE hModule,
+	const WCHAR_T* wsName,
 	ErrorFuncRespond onError = nullptr,
 	EventFuncRespond onEvent = nullptr,
 	StatusFuncRespond onStatus = nullptr
@@ -243,52 +251,30 @@ DllExport bool ADDIN_API CallAsFunc(ProxyComponent* proxy, int32_t lMethodNum, t
 	return ok;
 }
 
-#ifdef _WINDOWS
-
 DllExport HMODULE ADDIN_API ProxyLoadLibrary(const WCHAR_T* lpLibFileName)
 {
+#ifdef _WINDOWS
 	return ::LoadLibraryW(lpLibFileName);
+#else
+	std::string name = WCHAR2MB(lpLibFileName);
+	return ::dlopen(name.c_str(), RTLD_LAZY);
+#endif
 }
 
 DllExport FARPROC ADDIN_API ProxyGetProcAddress(HMODULE hModule, LPCSTR lpProcName)
 {
+#ifdef _WINDOWS
 	return ::GetProcAddress(hModule, lpProcName);
+#else
+	return ::dlsym(hModule, lpProcName);
+#endif
 }
 
 DllExport BOOL ADDIN_API ProxyFreeLibrary(HMODULE hModule)
 {
+#ifdef _WINDOWS
 	return ::FreeLibrary(hModule);
-}
-
 #else
-
-#include <dlfcn.h>
-#include <string>
-#include <locale> 
-#include <codecvt>
-
-std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src)
-{
-	static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> cvt_utf8_utf16;
-	return cvt_utf8_utf16.to_bytes(reinterpret_cast<const char16_t*>(src.data()),
-		reinterpret_cast<const char16_t*>(src.data() + src.size()));
+	return ::dlclose(hModule);
+#endif
 }
-
-DllExport void* ADDIN_API ProxyLoadLibrary(const WCHAR_T* filename)
-{
-	std::string name = WCHAR2MB(filename);
-	return dlopen(name.c_str(), RTLD_LAZY);
-}
-
-DllExport void* ADDIN_API ProxyGetProcAddress(void* handle, char* symbol)
-{
-	return dlsym(handle, symbol);
-
-}
-
-DllExport int ADDIN_API ProxyFreeLibrary(void* handle)
-{
-	return dlclose(handle);
-}
-
-#endif//_WINDOWS
