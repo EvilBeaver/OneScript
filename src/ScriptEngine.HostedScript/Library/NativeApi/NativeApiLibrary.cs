@@ -33,10 +33,10 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                 {
                     _tempfile = Path.GetTempFileName();
                     NativeApiPackage.Extract(stream, _tempfile);
-                    Module = NativeApiProxy.LoadLibrary(_tempfile);
+                    Module = NativeApiKernel.LoadLibrary(_tempfile);
                 }
                 else 
-                    Module = NativeApiProxy.LoadLibrary(filepath);
+                    Module = NativeApiKernel.LoadLibrary(filepath);
             }
             if (Loaded) 
                 RegisterComponents(identifier);
@@ -46,7 +46,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         {
             foreach (var component in _components)
                 component.Dispose();
-            if (Loaded && NativeApiProxy.FreeLibrary(Module))
+            if (Loaded && NativeApiKernel.FreeLibrary(Module))
                 if (!String.IsNullOrEmpty(_tempfile))
                     try { File.Delete(_tempfile); } catch (Exception) { }
         }
@@ -60,7 +60,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         private void RegisterComponents(String identifier)
         {
-            var funcPtr = NativeApiProxy.GetProcAddress(Module, "GetClassNames");
+            var funcPtr = NativeApiKernel.GetProcAddress(Module, "GetClassNames");
             if (funcPtr == IntPtr.Zero) 
                 throw new RuntimeException("В библиотеке внешних компонент не обнаружена функция: GetClassNames()");
             var namesPtr = Marshal.GetDelegateForFunctionPointer<GetClassNames>(funcPtr)();

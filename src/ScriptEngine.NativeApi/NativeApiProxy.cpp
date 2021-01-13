@@ -32,19 +32,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 #else//_WINDOWS
 
 #define DllExport extern "C"
-#define FARPROC void*
-#define HANDLE void*
-#define LPSTR char*
-
-#include <locale> 
-#include <codecvt>
-
-std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src)
-{
-	static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> cvt_utf8_utf16;
-	return cvt_utf8_utf16.to_bytes(reinterpret_cast<const char16_t*>(src.data()),
-		reinterpret_cast<const char16_t*>(src.data() + src.size()));
-}
 
 #endif//_WINDOWS
 
@@ -94,7 +81,7 @@ public:
 	}
 	IComponentBase& Component() {
 		return *pComponent;
-}
+	}
 };
 
 static void ClearVariant(tVariant& variant)
@@ -249,32 +236,4 @@ DllExport bool ADDIN_API CallAsFunc(ProxyComponent* proxy, int32_t lMethodNum, t
 	if (ok) respond(&variant);
 	ClearVariant(variant);
 	return ok;
-}
-
-DllExport HMODULE ADDIN_API ProxyLoadLibrary(const WCHAR_T* lpLibFileName)
-{
-#ifdef _WINDOWS
-	return ::LoadLibraryW(lpLibFileName);
-#else
-	std::string name = WCHAR2MB(lpLibFileName);
-	return ::dlopen(name.c_str(), RTLD_LAZY);
-#endif
-}
-
-DllExport FARPROC ADDIN_API ProxyGetProcAddress(HMODULE hModule, LPCSTR lpProcName)
-{
-#ifdef _WINDOWS
-	return ::GetProcAddress(hModule, lpProcName);
-#else
-	return ::dlsym(hModule, lpProcName);
-#endif
-}
-
-DllExport BOOL ADDIN_API ProxyFreeLibrary(HMODULE hModule)
-{
-#ifdef _WINDOWS
-	return ::FreeLibrary(hModule);
-#else
-	return ::dlclose(hModule);
-#endif
 }
