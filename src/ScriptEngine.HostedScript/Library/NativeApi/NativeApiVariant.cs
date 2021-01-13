@@ -92,21 +92,12 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             }
         }
 
-        public static bool IsLinux
-        {
-            get
-            {
-                int p = (int)System.Environment.OSVersion.Platform;
-                return (p == 4) || (p == 6) || (p == 128);
-            }
-        }
-
         private UInt16 vt
         {
-            get => IsLinux ? vtLinux : vtWindows;
+            get => NativeApiProxy.IsLinux ? vtLinux : vtWindows;
             set
             {
-                if (IsLinux)
+                if (NativeApiProxy.IsLinux)
                     vtLinux = value;
                 else
                     vtWindows = value;

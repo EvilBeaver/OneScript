@@ -49,7 +49,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                         stream.Seek(0, 0);
                         using (var reader = XmlReader.Create(stream))
                         {
-                            var thisOs = NativeApiVariant.IsLinux ? "Linux" : "Windows";
+                            var thisOs = NativeApiProxy.IsLinux ? "Linux" : "Windows";
                             var thisArch = System.Environment.Is64BitOperatingSystem ? "x86_64" : "i386";
                             while (reader.ReadToFollowing("component"))
                             {

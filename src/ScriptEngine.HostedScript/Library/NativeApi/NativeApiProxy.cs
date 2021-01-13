@@ -17,6 +17,11 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     {
         private const String ProxyDll = "ScriptEngine.NativeApi.dll";
 
+        public static bool IsLinux
+        {
+            get => System.Environment.OSVersion.Platform == PlatformID.Unix;
+        }
+
         public delegate void PointerDelegate(IntPtr ptr);
 
         public delegate void ArrayDelegate(IntPtr ptr, Int32 number);
