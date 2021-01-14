@@ -109,6 +109,8 @@ namespace OneScript.Language
             AddToken(Token.Not, "не", "not");
             AddToken(Token.AddHandler, "ДобавитьОбработчик", "AddHandler");
             AddToken(Token.RemoveHandler, "УдалитьОбработчик", "RemoveHandler");
+            AddToken(Token.Async, "Асинх", "Async");
+            AddToken(Token.Await, "Ждать", "Await");
 
             #endregion
 

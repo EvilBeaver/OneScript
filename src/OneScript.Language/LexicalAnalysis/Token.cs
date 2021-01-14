@@ -41,6 +41,8 @@ namespace OneScript.Language.LexicalAnalysis
         Execute,
         AddHandler,
         RemoveHandler,
+        Async,
+        Await,
 
         // operators
         Plus,
