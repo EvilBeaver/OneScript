@@ -16,7 +16,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     class NativeApiProxy
     {
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate IntPtr TGetClassObject(IntPtr module, string name, OnErrorDelegate onError, OnEventDelegate onEvent, OnStatusDelegate onStatus);
+        public delegate IntPtr TGetClassObject(IntPtr module, [MarshalAs(UnmanagedType.LPWStr)] string name, OnErrorDelegate onError, OnEventDelegate onEvent, OnStatusDelegate onStatus);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate void TDestroyObject(IntPtr ptr);
@@ -25,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public delegate Int32 TGetNProps(IntPtr ptr);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate Int32 TFindProp(IntPtr ptr, string wsPropName);
+        public delegate Int32 TFindProp(IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string wsPropName);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool TIsPropReadable(IntPtr ptr, Int32 lPropNum);
@@ -45,7 +45,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public delegate Int32 TGetNMethods(IntPtr ptr);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate Int32 TFindMethod(IntPtr ptr, string wsMethodName);
+        public delegate Int32 TFindMethod(IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string wsMethodName);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate void TGetMethodName(IntPtr ptr, Int32 lMethodNum, Int32 lMethodAlias, PointerDelegate response);

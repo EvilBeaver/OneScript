@@ -33,6 +33,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
 #define DllExport extern "C"
 
+#include <stdlib.h>
+
 #endif//_WINDOWS
 
 #define CHECK_PROXY(result) { if (proxy == nullptr) return result; }
