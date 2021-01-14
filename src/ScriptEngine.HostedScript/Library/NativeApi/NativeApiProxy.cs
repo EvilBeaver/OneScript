@@ -13,7 +13,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// <summary>
     /// Трансляция вызовов C# для взаимодействия с NativeApi
     /// </summary>
-    class NativeApiProxy
+    static class NativeApiProxy
     {
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate IntPtr TGetClassObject(IntPtr module, [MarshalAs(UnmanagedType.LPWStr)] string name, OnErrorDelegate onError, OnEventDelegate onEvent, OnStatusDelegate onStatus);
@@ -65,25 +65,25 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool TCallAsFunc(IntPtr ptr, Int32 lMethodNum, IntPtr value, PointerDelegate response);
 
-        public TGetClassObject GetClassObject;
-        public TDestroyObject DestroyObject;
-        public TGetNProps GetNProps;
-        public TFindProp FindProp;
-        public TIsPropReadable IsPropReadable;
-        public TIsPropWritable IsPropWritable;
-        public TGetPropName GetPropName;
-        public TGetPropVal GetPropVal;
-        public TSetPropVal SetPropVal;
-        public TGetNMethods GetNMethods;
-        public TFindMethod FindMethod;
-        public TGetMethodName GetMethodName;
-        public TGetNParams GetNParams;
-        public TGetParamDefValue GetParamDefValue;
-        public THasRetVal HasRetVal;
-        public TCallAsProc CallAsProc;
-        public TCallAsFunc CallAsFunc;
+        public static TGetClassObject GetClassObject;
+        public static TDestroyObject DestroyObject;
+        public static TGetNProps GetNProps;
+        public static TFindProp FindProp;
+        public static TIsPropReadable IsPropReadable;
+        public static TIsPropWritable IsPropWritable;
+        public static TGetPropName GetPropName;
+        public static TGetPropVal GetPropVal;
+        public static TSetPropVal SetPropVal;
+        public static TGetNMethods GetNMethods;
+        public static TFindMethod FindMethod;
+        public static TGetMethodName GetMethodName;
+        public static TGetNParams GetNParams;
+        public static TGetParamDefValue GetParamDefValue;
+        public static THasRetVal HasRetVal;
+        public static TCallAsProc CallAsProc;
+        public static TCallAsFunc CallAsFunc;
 
-        public NativeApiProxy()
+        static NativeApiProxy()
         {
             string location = System.Reflection.Assembly.GetExecutingAssembly().Location;
             string filename = System.IO.Path.GetDirectoryName(location)

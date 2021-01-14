@@ -16,18 +16,8 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// </summary>
     class NativeApiComponent : NativeApiValue, IRuntimeContextInstance, IValue
     {
-        private static NativeApiProxy _proxy = null;
         private readonly IHostApplication _host;
         private readonly IntPtr _object;
-
-        public static NativeApiProxy proxy
-        {
-            get {
-                if (_proxy == null)
-                    _proxy = new NativeApiProxy();
-                return _proxy;
-            }
-        }
 
         public override IRuntimeContextInstance AsObject()
         {
@@ -79,7 +69,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public NativeApiComponent(IHostApplication host, NativeApiLibrary library, String typeName, String componentName)
         {
             _host = host;
-            _object = proxy.GetClassObject(library.Module, componentName,
+            _object = NativeApiProxy.GetClassObject(library.Module, componentName,
                 (wcode, source, descr, scode) =>
                 {
                     _host.Echo("ОШИБКА: " + S(source) + " - " + S(descr), Status(wcode));
@@ -96,7 +86,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public void Dispose()
         {
-            try { proxy.DestroyObject(_object); } catch (Exception) { }
+            try { NativeApiProxy.DestroyObject(_object); } catch (Exception) { }
         }
 
         public bool IsIndexed => false;
@@ -115,7 +105,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public int FindProperty(string name)
         {
-            var propNumber = proxy.FindProp(_object, name);
+            var propNumber = NativeApiProxy.FindProp(_object, name);
             if (propNumber < 0)
                 throw RuntimeException.PropNotFoundException(name);
             return propNumber;
@@ -123,23 +113,23 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public bool IsPropReadable(int propNum)
         {
-            return proxy.IsPropReadable(_object, propNum);
+            return NativeApiProxy.IsPropReadable(_object, propNum);
         }
 
         public bool IsPropWritable(int propNum)
         {
-            return proxy.IsPropWritable(_object, propNum);
+            return NativeApiProxy.IsPropWritable(_object, propNum);
         }
 
         public int GetPropCount()
         {
-            return proxy.GetNProps(_object);
+            return NativeApiProxy.GetNProps(_object);
         }
 
         public string GetPropName(int propNum)
         {
             var name = String.Empty;
-            proxy.GetPropName(_object, propNum, 0,
+            NativeApiProxy.GetPropName(_object, propNum, 0,
                 n => name = NativeApiProxy.Str(n)
             );
             return name;
@@ -148,7 +138,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public IValue GetPropValue(int propNum)
         {
             var result = ValueFactory.Create();
-            proxy.GetPropVal(_object, propNum,
+            NativeApiProxy.GetPropVal(_object, propNum,
                 variant => result = NativeApiVariant.GetValue(variant)
             );
             return result;
@@ -158,18 +148,18 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         {
             var variant = new NativeApiVariant();
             variant.SetValue(newVal);
-            proxy.SetPropVal(_object, propNum, ref variant);
+            NativeApiProxy.SetPropVal(_object, propNum, ref variant);
             variant.Clear();
         }
 
         public int GetMethodsCount()
         {
-            return proxy.GetNMethods(_object);
+            return NativeApiProxy.GetNMethods(_object);
         }
 
         public int FindMethod(string name)
         {
-            var methodNumber = proxy.FindMethod(_object, name);
+            var methodNumber = NativeApiProxy.FindMethod(_object, name);
             if (methodNumber < 0)
                 throw RuntimeException.MethodNotFoundException(name);
             return methodNumber;
@@ -181,16 +171,16 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                 throw new RuntimeException("Метод не найден");
             var name = String.Empty;
             var alias = String.Empty;
-            proxy.GetMethodName(_object, methodNumber, 0,
+            NativeApiProxy.GetMethodName(_object, methodNumber, 0,
                 str => name = NativeApiProxy.Str(str)
             );
-            proxy.GetMethodName(_object, methodNumber, 1,
+            NativeApiProxy.GetMethodName(_object, methodNumber, 1,
                 str => alias = NativeApiProxy.Str(str)
             );
-            var paramCount = proxy.GetNParams(_object, methodNumber);
+            var paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
             var paramArray = new ParameterDefinition[paramCount];
             for (int i = 0; i < paramCount; i++)
-                proxy.GetParamDefValue(_object, methodNumber, i, variant =>
+                NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
                 {
                     if (NativeApiVariant.NotEmpty(variant))
                     {
@@ -203,7 +193,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             {
                 Name = name,
                 Alias = alias,
-                IsFunction = proxy.HasRetVal(_object, methodNumber),
+                IsFunction = NativeApiProxy.HasRetVal(_object, methodNumber),
                 IsDeprecated = false,
                 IsExport = false,
                 ThrowOnUseDeprecated = false,
@@ -215,7 +205,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         {
             for (int i = 0; i < paramCount; i++)
                 if (arguments[i] == null)
-                    proxy.GetParamDefValue(_object, methodNumber, i,
+                    NativeApiProxy.GetParamDefValue(_object, methodNumber, i,
                         variant => arguments[i] = NativeApiVariant.GetValue(variant)
                     );
         }
@@ -223,12 +213,12 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             var paramArray = IntPtr.Zero;
-            int paramCount = proxy.GetNParams(_object, methodNumber);
+            int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
             if (paramCount > 0)
                 paramArray = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
             SetDefValues(methodNumber, paramCount, arguments);
             NativeApiVariant.SetValue(paramArray, arguments, paramCount);
-            proxy.CallAsProc(_object, methodNumber, paramArray);
+            NativeApiProxy.CallAsProc(_object, methodNumber, paramArray);
             NativeApiVariant.GetValue(arguments, paramArray, paramCount);
             NativeApiVariant.Clear(paramArray, paramCount);
             Marshal.FreeHGlobal(paramArray);
@@ -237,13 +227,13 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
             var paramArray = IntPtr.Zero;
-            int paramCount = proxy.GetNParams(_object, methodNumber);
+            int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
             if (paramCount > 0)
                 paramArray = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
             SetDefValues(methodNumber, paramCount, arguments);
             NativeApiVariant.SetValue(paramArray, arguments, paramCount);
             IValue result = retValue = ValueFactory.Create();
-            bool ok = proxy.CallAsFunc(_object, methodNumber, paramArray,
+            bool ok = NativeApiProxy.CallAsFunc(_object, methodNumber, paramArray,
                 variant => result = NativeApiVariant.GetValue(variant)
             );
             NativeApiVariant.GetValue(arguments, paramArray, paramCount);
