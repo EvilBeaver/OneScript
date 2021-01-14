@@ -97,17 +97,17 @@ namespace ScriptEngine.Hosting
 
         public static CompilerOptions UseConditionalCompilation(this CompilerOptions b)
         {
-            return b.UseDirectiveHandler(o => new ConditionalDirectiveHandler());
+            return b.UseDirectiveHandler(o => new ConditionalDirectiveHandler(o.ErrorSink));
         }
         
         public static CompilerOptions UseRegions(this CompilerOptions b)
         {
-            return b.UseDirectiveHandler(o => new RegionDirectiveHandler());
+            return b.UseDirectiveHandler(o => new RegionDirectiveHandler(o.ErrorSink));
         }
         
         public static CompilerOptions UseImports(this CompilerOptions opts, IDependencyResolver resolver)
         {
-            opts.UseDirectiveHandler(o => new ImportDirectivesHandler());
+            opts.UseDirectiveHandler(o => new ImportDirectivesHandler(opts.NodeBuilder, opts.ErrorSink));
             opts.DependencyResolver = resolver;
 
             return opts;

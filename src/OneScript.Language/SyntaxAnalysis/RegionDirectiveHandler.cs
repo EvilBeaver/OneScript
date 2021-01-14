@@ -11,14 +11,14 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class RegionDirectiveHandler : IDirectiveHandler
+    public class RegionDirectiveHandler : DirectiveHandlerBase
     {
         private readonly LexemTrie<bool> _preprocRegion = new LexemTrie<bool>();
         private readonly LexemTrie<bool> _preprocEndRegion = new LexemTrie<bool>();
 
         private int _regionsNesting = 0;
         
-        public RegionDirectiveHandler()
+        public RegionDirectiveHandler(IErrorSink errorSink) : base(errorSink)
         {
             _preprocRegion.Add("Область",true);
             _preprocRegion.Add("Region", true);
@@ -26,11 +26,7 @@ namespace OneScript.Language.SyntaxAnalysis
             _preprocEndRegion.Add("EndRegion", true);
         }
 
-        public void OnModuleEnter(ParserContext context)
-        {
-        }
-
-        public void OnModuleLeave(ParserContext context)
+        public override void OnModuleLeave(ParserContext context)
         {
             if (_regionsNesting != 0)
             {
@@ -38,42 +34,40 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        public bool HandleDirective(ParserContext context)
+        public override bool HandleDirective(ref Lexem lastExtractedLexem, ILexer lexer)
         {
             var result = false;
-            var directive = context.LastExtractedLexem;
-            var lexemStream = context.Lexer;
-            if (IsPreprocRegion(directive.Content))
+            if (IsPreprocRegion(lastExtractedLexem.Content))
             {
-                var regionName = lexemStream.NextLexemOnSameLine();
+                var regionName = lexer.NextLexemOnSameLine();
                 if (regionName.Type == LexemType.EndOfText)
                 {
-                    context.AddError(LocalizedErrors.RegionNameExpected());
+                    ErrorSink.AddError(LocalizedErrors.RegionNameExpected());
                     return true;
                 }
 
-                if (!LanguageDef.IsValidIdentifier(directive.Content))
+                if (!LanguageDef.IsValidIdentifier(lastExtractedLexem.Content))
                 {
-                    context.AddError(LocalizedErrors.InvalidRegionName(directive.Content));
+                    ErrorSink.AddError(LocalizedErrors.InvalidRegionName(lastExtractedLexem.Content));
                     return true;
                 }
 
                 _regionsNesting++;
 
-                context.LastExtractedLexem = LexemFromNewLine(lexemStream);
+                lastExtractedLexem = LexemFromNewLine(lexer);
                 result = true;
             }
-            else if (IsPreprocEndRegion(directive.Content))
+            else if (IsPreprocEndRegion(lastExtractedLexem.Content))
             {
                 if (_regionsNesting == 0)
                 {
-                    context.AddError(LocalizedErrors.DirectiveIsMissing("Область"));
+                    ErrorSink.AddError(LocalizedErrors.DirectiveIsMissing("Область"));
                     return true;
                 }
 
                 _regionsNesting--;
 
-                context.LastExtractedLexem = LexemFromNewLine(lexemStream);
+                lastExtractedLexem = LexemFromNewLine(lexer);
                 result = true;
             }
 

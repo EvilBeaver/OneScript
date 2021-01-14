@@ -36,25 +36,10 @@ namespace ScriptEngine.Compiler
             };
             
             var astBuilder = new DefaultAstBuilder();
-
+            _сompilerOptions.NodeBuilder = astBuilder;
+            
             var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
-            
-            var conditionals = handlers.Get<ConditionalDirectiveHandler>();
-            if (conditionals != default)
-            {
-                foreach (var constant in preprocessorConstants)
-                {
-                    conditionals.Define(constant);
-                }
-            }
-            
-            var lexer = new PreprocessingLexer
-            {
-                Iterator = new SourceCodeIterator(source.Code),
-                Handlers = handlers,
-                ErrorSink = _сompilerOptions.ErrorSink
-            };
-
+            var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
             var parseContext = new ParserContext(lexer, astBuilder, handlers);
             var parser = new DefaultBslParser(parseContext);
 
@@ -74,6 +59,35 @@ namespace ScriptEngine.Compiler
             }
 
             return codeGen.CreateImage(moduleNode, mi);
+        }
+
+        private PreprocessingLexer CreatePreprocessor(
+            ICodeSource source,
+            IEnumerable<string> preprocessorConstants,
+            PreprocessorHandlers handlers)
+        {
+            var baseLexer = new DefaultLexer
+            {
+                Iterator = new SourceCodeIterator(source.Code)
+            };
+
+            var conditionals = handlers.Get<ConditionalDirectiveHandler>();
+            if (conditionals != default)
+            {
+                foreach (var constant in preprocessorConstants)
+                {
+                    conditionals.Define(constant);
+                }
+            }
+
+            var preprocessorContext = new ParserContext(baseLexer, _сompilerOptions.NodeBuilder, handlers);
+
+            var lexer = new PreprocessingLexer(preprocessorContext)
+            {
+                Handlers = handlers,
+                ErrorSink = _сompilerOptions.ErrorSink
+            };
+            return lexer;
         }
     }
 }

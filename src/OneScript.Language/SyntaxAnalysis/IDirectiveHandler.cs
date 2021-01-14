@@ -14,6 +14,6 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         void OnModuleEnter(ParserContext context);
         void OnModuleLeave(ParserContext context);
-        bool HandleDirective(ParserContext context);
+        bool HandleDirective(ref Lexem lastExtractedLexem, ILexer lexer);
     }
 }

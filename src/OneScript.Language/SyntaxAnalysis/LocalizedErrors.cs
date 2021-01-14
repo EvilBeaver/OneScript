@@ -101,6 +101,9 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public static ParseError EndOfDirectiveExpected(string directive) =>
             Create($"ru ='Ожидается завершение директивы препроцессора #{directive}'; en = 'End of directive #{directive} expected'");
+        
+        public static ParseError DirectiveExpected(string directive) =>
+            Create($"ru ='Ожидается директива препроцессора #{directive}'; en = 'Preprocessor directive #{directive} expected'");
 
         public static ParseError RegionNameExpected() =>
             Create("ru = 'Ожидается имя области';en = 'Region name expected'");
@@ -114,5 +117,8 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public static ParseError LibraryNameExpected() =>
             Create("ru = 'Ожидается имя библиотеки;en='Library name expected'");
+        
+        public static ParseError PreprocessorDefinitionExpected() =>
+            Create("ru = 'Ожидается объявление препроцессора;en='Preprocessor definition expected'");
     }
 }

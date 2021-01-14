@@ -12,7 +12,7 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class ConditionalDirectiveHandler : IDirectiveHandler
+    public class ConditionalDirectiveHandler : DirectiveHandlerBase, IDirectiveHandler
     {
         private readonly HashSet<string> _definitions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
         private readonly Stack<PreprocessorBlock> _blocks = new Stack<PreprocessorBlock>();
@@ -20,7 +20,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private ILexer _lexer;
         Lexem _lastExtractedLexem;
 
-        public ConditionalDirectiveHandler()
+        public ConditionalDirectiveHandler(IErrorSink errorSink) : base(errorSink)
         {
             _lexer = new FullSourceLexer();
         }
@@ -45,36 +45,20 @@ namespace OneScript.Language.SyntaxAnalysis
             _definitions.Remove(param);
         }
         
-        public void OnModuleEnter(ParserContext context)
+        public override void OnModuleEnter(ParserContext context)
         {
+            base.OnModuleEnter(context);
             _blocks.Clear();
         }
 
-        public void OnModuleLeave(ParserContext context)
+        public override void OnModuleLeave(ParserContext context)
         {
+            base.OnModuleLeave(context);
             if (BlockLevel != 0)
-                throw PreprocessorError(context.Lexer, "Ожидается завершение директивы препроцессора #Если");
+                AddError(LocalizedErrors.EndOfDirectiveExpected("Если")); // FIXME: назвать на том языке, на котором началась директива
         }
 
-        public bool HandleDirective(ParserContext context)
-        {
-            var lex = context.LastExtractedLexem;
-            bool handled;
-            try
-            {
-                handled = HandleDirective(ref lex, context.Lexer);
-            }
-            catch (SyntaxErrorException)
-            {
-                _blocks.Clear();
-                throw;
-            }
-
-            context.LastExtractedLexem = lex;
-            return handled;
-        }
-        
-        public bool HandleDirective(ref Lexem lexem, ILexer lexer)
+        public override bool HandleDirective(ref Lexem lexem, ILexer lexer)
         {
             if (!IsConditional(lexem))
                 return default;
@@ -137,7 +121,9 @@ namespace OneScript.Language.SyntaxAnalysis
                 {
                     SkipTillNextDirective();
                     if (_lastExtractedLexem.Token != Token.EndIf)
-                        throw PreprocessorError("Ожидается директива препроцессора #КонецЕсли");
+                    {
+                        return LexemFromNewLine();
+                    }
 
                     return Preprocess(_lastExtractedLexem);
                 }
@@ -157,7 +143,10 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             var enterBlock = SolveExpression();
             if (_lastExtractedLexem.Token != Token.Then)
-                throw PreprocessorError("Ошибка в директиве препроцессора: ожидается ключевое слово Тогда");
+            {
+                AddError(LocalizedErrors.TokenExpected(Token.Then));
+                return LexemFromNewLine();
+            }
 
             if (enterBlock)
             {
@@ -232,11 +221,16 @@ namespace OneScript.Language.SyntaxAnalysis
                     MoveNextSameLine();
                     return result;
                 }
-                throw PreprocessorError("Ожидается закрывающая скобка");
+                
+                AddError(LocalizedErrors.TokenExpected(Token.OpenPar));
+                return true; // если ошибка и не было исключения от ErrorSink то войдем в блок
             }
 
             if (!LanguageDef.IsUserSymbol(_lastExtractedLexem))
-                throw PreprocessorError("Ожидается объявление препроцессора");
+            {
+                AddError(LocalizedErrors.PreprocessorDefinitionExpected());
+                return true;
+            }
             
             var expression = IsDefined(_lastExtractedLexem.Content);
             MoveNextSameLine();
@@ -259,7 +253,8 @@ namespace OneScript.Language.SyntaxAnalysis
                     Preprocess(_lastExtractedLexem);
                     break;
                 case LexemType.EndOfText when BlockLevel != 0:
-                    throw PreprocessorError("Ожидается завершение директивы препроцессора #Если");
+                    AddError(LocalizedErrors.EndOfDirectiveExpected("Если"));
+                    break;
             }
         }
         
@@ -267,7 +262,11 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             _lastExtractedLexem = _lexer.NextLexem();
             if (_lexer.Iterator.OnNewLine)
-                throw PreprocessorError("Неожиданное завершение директивы");
+            {
+                AddError("Неожиданное завершение директивы");
+                var recovery = new NextLineRecoveryStrategy();
+                recovery.Recover(_lexer);
+            }
         }
         
         private int BlockLevel => _blocks.Count;
@@ -284,7 +283,10 @@ namespace OneScript.Language.SyntaxAnalysis
         private bool BlockIsSolved()
         {
             if (_blocks.Count == 0)
-                throw PreprocessorError("Ожидается директива #Если");
+            {
+                AddError(LocalizedErrors.DirectiveExpected("Если"));
+                return true; // зайдем внутрь для синтаксического контроля
+            }
 
             return _blocks.Peek().IsSolved;
         }
@@ -299,19 +301,27 @@ namespace OneScript.Language.SyntaxAnalysis
             if (_blocks.Count > 0)
                 _blocks.Pop();
             else
-                throw PreprocessorError("Пропущена директива #Если");
+                AddError(LocalizedErrors.DirectiveIsMissing("Если"));
         }
-        
-        private static SyntaxErrorException PreprocessorError(ILexer lexer, string message)
+
+        private void AddError(string message)
         {
-            return new SyntaxErrorException(lexer.GetErrorPosition(), message);
+            var err = new ParseError
+            {
+                Description = message,
+                Position = _lexer.GetErrorPosition(),
+                ErrorId = "PreprocessorError"
+            };
+            
+            ErrorSink.AddError(err);
         }
         
-        private SyntaxErrorException PreprocessorError(string message)
+        private void AddError(ParseError err)
         {
-            return PreprocessorError(_lexer, message);
+            err.Position = _lexer.GetErrorPosition();
+            ErrorSink.AddError(err);
         }
-        
+
         private void MoveNext()
         {
             _lastExtractedLexem = _lexer.NextLexem();
@@ -320,7 +330,10 @@ namespace OneScript.Language.SyntaxAnalysis
         private void CheckNewLine()
         {
             if (!_lexer.Iterator.OnNewLine)
-                throw PreprocessorError("Недопустимые символы в директиве");
+            {
+                AddError("Недопустимые символы в директиве");
+                _lexer.ReadToLineEnd();
+            }
         }
 
         private void SkipTillNextDirective()
@@ -328,13 +341,17 @@ namespace OneScript.Language.SyntaxAnalysis
             int currentLevel = BlockLevel;
             var lineTail = _lexer.Iterator.ReadToLineEnd();
             if(lineTail.Length > 0 && !lineTail.StartsWith("//"))
-                throw PreprocessorError("Недопустимые символы в директиве");
+            {
+                AddError("Недопустимые символы в директиве");
+                _lexer.ReadToLineEnd();
+            }
 
             while (true)
             {
                 if (!FindHashSign())
                 {
-                    throw PreprocessorError("Ожидается директива препроцессора #КонецЕсли");
+                    AddError(LocalizedErrors.DirectiveExpected("КонецЕсли"));
+                    return;
                 }
                 MoveNext();
                 

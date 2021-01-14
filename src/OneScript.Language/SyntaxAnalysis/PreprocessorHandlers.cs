@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
@@ -71,9 +72,15 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        public bool HandleDirective(ParserContext context)
+        public bool HandleDirective(ref Lexem lexem, ILexer lexer)
         {
-            return _handlers.Any(handler => handler.HandleDirective(context));
+            foreach (var handler in _handlers)
+            {
+                if (handler.HandleDirective(ref lexem, lexer))
+                    return true;
+            }
+
+            return false;
         }
 
         public IEnumerator<IDirectiveHandler> GetEnumerator()

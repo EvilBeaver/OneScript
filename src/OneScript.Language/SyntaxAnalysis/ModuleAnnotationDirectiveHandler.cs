@@ -12,37 +12,46 @@ namespace OneScript.Language.SyntaxAnalysis
     /// <summary>
     /// Используется в os.web для создания аннотаций на уровне класса
     /// </summary>
-    public abstract class ModuleAnnotationDirectiveHandler : IDirectiveHandler
+    public abstract class ModuleAnnotationDirectiveHandler : DirectiveHandlerBase
     {
         private bool _enabled;
         
-        public virtual void OnModuleEnter(ParserContext context)
+        protected ModuleAnnotationDirectiveHandler(IAstBuilder nodeBuilder, IErrorSink errorSink) : base(errorSink)
+        {
+            NodeBuilder = nodeBuilder;
+        }
+        
+        protected IAstBuilder NodeBuilder { get; }
+        
+        public override void OnModuleEnter(ParserContext context)
         {
             _enabled = true;
+            base.OnModuleEnter(context);
         }
 
-        public virtual void OnModuleLeave(ParserContext context)
+        public override void OnModuleLeave(ParserContext context)
         {
             _enabled = false;
+            base.OnModuleLeave(context);
         }
 
-        public bool HandleDirective(ParserContext context)
+        public sealed override bool HandleDirective(ref Lexem lastExtractedLexem, ILexer lexer)
         {
-            if (!DirectiveSupported(context.LastExtractedLexem.Content))
+            if (!DirectiveSupported(lastExtractedLexem.Content))
             {
                 return default;
             }
 
             if (!_enabled)
             {
-                context.AddError(LocalizedErrors.DirectiveNotSupported(context.LastExtractedLexem.Content));
+                ErrorSink.AddError(LocalizedErrors.DirectiveNotSupported(lastExtractedLexem.Content));
                 return true;
             }
 
-            return HandleDirectiveInternal(context);
+            return HandleDirectiveInternal(ref lastExtractedLexem, lexer);
         }
 
-        protected virtual bool HandleDirectiveInternal(ParserContext context)
+        protected virtual bool HandleDirectiveInternal(ref Lexem lastExtractedLexem, ILexer lexer)
         {
             return true; // не сдвигаем лексер, выдаем на уровень парсера
         }

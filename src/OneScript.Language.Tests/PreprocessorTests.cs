@@ -589,17 +589,15 @@ namespace OneScript.Language.Tests
             #КонецОбласти
             ";
 
-            var handler = new ConditionalDirectiveHandler();
+            var sinkMock = new Mock<IErrorSink>();
+            var handler = new ConditionalDirectiveHandler(sinkMock.Object);
             
             var lexer = GetLexerForCode(code);
-            var builder = Mock.Of<IAstBuilder>();
             var lexem = lexer.NextLexem();
-            var pc = new ParserContext(
-                lexer,
-                builder,
-                lexem);
 
-            Assert.Throws<SyntaxErrorException>(() => handler.HandleDirective(pc));
+            handler.HandleDirective(ref lexem, lexer);
+
+            sinkMock.Verify(sink => sink.AddError(It.IsAny<ParseError>()), Times.Exactly(2));
         }
 
         [Fact]
@@ -634,22 +632,15 @@ namespace OneScript.Language.Tests
             #КонецЕсли
             ";
 
-            var handler = new ConditionalDirectiveHandler();
+            var handler = new ConditionalDirectiveHandler(Mock.Of<IErrorSink>());
             handler.Define("Да");
             
             var lexer = GetLexerForCode(code);
-            var builder = Mock.Of<IAstBuilder>();
             var lexem = lexer.NextLexem();
 
             while (lexem.Token != Token.EndOfText)
             {
-                var pc = new ParserContext(
-                    lexer,
-                    builder,
-                    lexem);
-
-                handler.HandleDirective(pc);
-                lexem = pc.LastExtractedLexem;
+                handler.HandleDirective(ref lexem, lexer);
                 while (lexem.Type != LexemType.PreprocessorDirective && lexem.Type != LexemType.EndOfText)
                     lexem = lexer.NextLexem();
             }
