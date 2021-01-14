@@ -17,7 +17,7 @@ using OneScript.StandardLibrary.Processes;
 using OneScript.StandardLibrary.Text;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.Zip;
-using ScriptEngine.HostedScript.Library;
+using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 
 namespace Component
