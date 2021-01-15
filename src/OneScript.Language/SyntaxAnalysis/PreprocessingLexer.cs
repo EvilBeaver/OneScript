@@ -11,11 +11,11 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class PreprocessingLexer : ILexer
     {
-        private readonly ParserContext _preprocessingContext;
-        
-        public PreprocessingLexer(ParserContext preprocessingContext)
+        private readonly ILexer _baseLexer;
+
+        public PreprocessingLexer(ILexer baseLexer)
         {
-            _preprocessingContext = preprocessingContext;
+            _baseLexer = baseLexer;
         }
         
         public PreprocessorHandlers Handlers { get; set; }
@@ -25,7 +25,7 @@ namespace OneScript.Language.SyntaxAnalysis
         public Lexem NextLexem()
         {
             Lexem lex;
-            while ((lex = _preprocessingContext.NextLexem()).Type == LexemType.PreprocessorDirective)
+            while ((lex = _baseLexer.NextLexem()).Type == LexemType.PreprocessorDirective)
             {
                 var handled = Handlers.HandleDirective(ref lex, this);
                 if (handled)
@@ -44,8 +44,8 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public SourceCodeIterator Iterator
         {
-            get => _preprocessingContext.Lexer.Iterator;
-            set => _preprocessingContext.Lexer.Iterator = value;
+            get => _baseLexer.Iterator;
+            set => _baseLexer.Iterator = value;
         }
     }
 }

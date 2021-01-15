@@ -15,5 +15,11 @@ namespace OneScript.Language.SyntaxAnalysis
         BslSyntaxNode CreateNode(NodeKind kind, in Lexem startLexem);
 
         void AddChild(BslSyntaxNode parent, BslSyntaxNode child);
+
+        void PushContext(BslSyntaxNode node);
+
+        BslSyntaxNode PopContext();
+        
+        BslSyntaxNode CurrentNode { get; }
     }
 }

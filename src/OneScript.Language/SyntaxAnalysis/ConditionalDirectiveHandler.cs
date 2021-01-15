@@ -45,15 +45,15 @@ namespace OneScript.Language.SyntaxAnalysis
             _definitions.Remove(param);
         }
         
-        public override void OnModuleEnter(ParserContext context)
+        public override void OnModuleEnter()
         {
-            base.OnModuleEnter(context);
+            base.OnModuleEnter();
             _blocks.Clear();
         }
 
-        public override void OnModuleLeave(ParserContext context)
+        public override void OnModuleLeave()
         {
-            base.OnModuleLeave(context);
+            base.OnModuleLeave();
             if (BlockLevel != 0)
                 AddError(LocalizedErrors.EndOfDirectiveExpected("Если")); // FIXME: назвать на том языке, на котором началась директива
         }

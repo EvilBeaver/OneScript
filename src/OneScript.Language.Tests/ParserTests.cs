@@ -820,7 +820,7 @@ namespace OneScript.Language.Tests
             var defaultLex = new DefaultLexer();
             defaultLex.Code = code;
             
-            var lexer = new PreprocessingLexer(new ParserContext(defaultLex, default));
+            var lexer = new PreprocessingLexer(defaultLex);
             lexer.Handlers = new PreprocessorHandlers(
                 new[] {new AstNodeAppendingHandler()});
 
@@ -828,7 +828,6 @@ namespace OneScript.Language.Tests
             var context = new ParserContext(lexer, treeBuilder)
             {
                 DirectiveHandlers = lexer.Handlers,
-                ErrorSink = new ListErrorSink()
             };
             var parser = new DefaultBslParser(context);
             return parser;

@@ -29,7 +29,6 @@ namespace OneScript.Language.SyntaxAnalysis
         private bool _isInFunctionScope;
         private bool _lastDereferenceIsWritable;
 
-        private readonly Stack<BslSyntaxNode> _nodeContext;
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
         private bool _isInLoopScope;
         private bool _enableException;
@@ -39,18 +38,24 @@ namespace OneScript.Language.SyntaxAnalysis
         public DefaultBslParser(ParserContext parserContext)
         {
             _lexer = parserContext.Lexer;
-            _builder = parserContext.NodeBuilder;
-            _nodeContext = parserContext.NodeContext;
-            _parserContext = parserContext;
         }
 
-        public IEnumerable<ParseError> Errors => _parserContext.ErrorSink.Errors ?? new ParseError[0]; 
+        public DefaultBslParser(ILexer lexer, IAstBuilder astBuilder, IErrorSink errorSink)
+        {
+            _lexer = lexer;
+            _builder = astBuilder;
+            ErrorSink = errorSink;
+        }
+
+        private IErrorSink ErrorSink { get; }
+        
+        public IEnumerable<ParseError> Errors => ErrorSink.Errors ?? new ParseError[0]; 
         
         public BslSyntaxNode ParseStatefulModule()
         {
             BslSyntaxNode node;
             
-            _parserContext.DirectiveHandlers?.OnModuleEnter(_parserContext);
+            _parserContext.DirectiveHandlers?.OnModuleEnter();
             NextLexem();
             
             try
@@ -64,7 +69,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 PopContext();
             }
 
-            _parserContext.DirectiveHandlers?.OnModuleLeave(_parserContext);
+            _parserContext.DirectiveHandlers?.OnModuleLeave();
             
             return node;
         }
@@ -94,11 +99,11 @@ namespace OneScript.Language.SyntaxAnalysis
             return parent;
         }
 
-        private void PushContext(BslSyntaxNode node) => _nodeContext.Push(node);
+        private void PushContext(BslSyntaxNode node) => _builder.PushContext(node);
         
-        private BslSyntaxNode PopContext() => _nodeContext.Pop();
+        private BslSyntaxNode PopContext() => _builder.PopContext();
 
-        private BslSyntaxNode CurrentParent => _nodeContext.Peek();
+        private BslSyntaxNode CurrentParent => _builder.CurrentNode;
 
         private void ParseModuleAnnotation()
         {
@@ -117,8 +122,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 var directive = _lastExtractedLexem.Content;
                 foreach (var handler in annotationParser.Cast<ModuleAnnotationDirectiveHandler>())
                 {
-                    handled = handler.ParseAnnotation(_lastExtractedLexem, _parserContext);
-                    _lastExtractedLexem = _parserContext.LastExtractedLexem;
+                    handled = handler.ParseAnnotation(ref _lastExtractedLexem, _lexer);
                 }
 
                 if (!handled)
@@ -129,7 +133,7 @@ namespace OneScript.Language.SyntaxAnalysis
             
             foreach (var handler in annotationParser)
             {
-                handler.OnModuleLeave(_parserContext);
+                handler.OnModuleLeave();
             }
         }
 
@@ -1373,7 +1377,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void NextLexem()
         {
-            _lastExtractedLexem = _parserContext.NextLexem();
+            _lastExtractedLexem = _lexer.NextLexem();
         }
 
         private bool NextExpected(Token expected)
@@ -1396,7 +1400,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private void AddError(ParseError err, bool doFastForward = true)
         {
             err.Position = _lexer.GetErrorPosition();
-            _parserContext.AddError(err);
+            ErrorSink.AddError(err);
 
             if (doFastForward)
             {

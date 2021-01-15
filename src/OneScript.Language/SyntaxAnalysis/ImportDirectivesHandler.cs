@@ -14,7 +14,7 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         private readonly ILexer _importClauseLexer;
 
-        public ImportDirectivesHandler(IAstBuilder nodeBuilder, IErrorSink errorSink) : base(nodeBuilder, errorSink)
+        public ImportDirectivesHandler(IAstBuilder NodeBuilder, IErrorSink errorSink) : base(NodeBuilder, errorSink)
         {
             var builder = new LexerBuilder();
             builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
@@ -23,13 +23,10 @@ namespace OneScript.Language.SyntaxAnalysis
             _importClauseLexer = builder.Build();
         }
 
-        protected override void ParseAnnotationInternal(string directiveName, ParserContext context)
+        protected override void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer)
         {
-            var lexemStream = context.Lexer;
-            var nodeBuilder = context.NodeBuilder;
-            
-            var node = nodeBuilder.CreateNode(NodeKind.Import, context.LastExtractedLexem);
-            _importClauseLexer.Iterator = lexemStream.Iterator;
+            var node = NodeBuilder.CreateNode(NodeKind.Import, lastExtractedLexem);
+            _importClauseLexer.Iterator = lexer.Iterator;
             
             var lex = _importClauseLexer.NextLexem();
             if (lex.Type == LexemType.EndOfText)
@@ -38,12 +35,12 @@ namespace OneScript.Language.SyntaxAnalysis
                 return;
             }
 
-            var argumentNode = nodeBuilder.CreateNode(NodeKind.AnnotationParameter, lex);
-            var value = nodeBuilder.CreateNode(NodeKind.AnnotationParameterValue, lex);
-            nodeBuilder.AddChild(argumentNode, value);
+            var argumentNode = NodeBuilder.CreateNode(NodeKind.AnnotationParameter, lex);
+            var value = NodeBuilder.CreateNode(NodeKind.AnnotationParameterValue, lex);
+            NodeBuilder.AddChild(argumentNode, value);
             
-            nodeBuilder.AddChild(node, argumentNode);
-            nodeBuilder.AddChild(context.NodeContext.Peek(), node);
+            NodeBuilder.AddChild(node, argumentNode);
+            NodeBuilder.AddChild(NodeBuilder.CurrentNode, node);
 
             lex = _importClauseLexer.NextLexemOnSameLine();
             if (lex.Type != LexemType.EndOfText)
@@ -52,7 +49,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 return;
             }
 
-            context.NextLexem();
+            lastExtractedLexem = lexer.NextLexem();
         }
         
         protected override bool DirectiveSupported(string directive)

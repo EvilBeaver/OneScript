@@ -40,8 +40,7 @@ namespace ScriptEngine.Compiler
             
             var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
-            var parseContext = new ParserContext(lexer, astBuilder, handlers);
-            var parser = new DefaultBslParser(parseContext);
+            var parser = new DefaultBslParser(lexer, astBuilder, _сompilerOptions.ErrorSink);
 
             ModuleNode moduleNode;
             var mi = CreateModuleInformation(source, lexer);
@@ -80,9 +79,7 @@ namespace ScriptEngine.Compiler
                 }
             }
 
-            var preprocessorContext = new ParserContext(baseLexer, _сompilerOptions.NodeBuilder, handlers);
-
-            var lexer = new PreprocessingLexer(preprocessorContext)
+            var lexer = new PreprocessingLexer(baseLexer)
             {
                 Handlers = handlers,
                 ErrorSink = _сompilerOptions.ErrorSink

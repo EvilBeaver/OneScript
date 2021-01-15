@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections.Generic;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
@@ -12,6 +13,8 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class DefaultAstBuilder : IAstBuilder
     {
+        private Stack<BslSyntaxNode> _nodeContext { get; } = new Stack<BslSyntaxNode>();
+        
         public virtual BslSyntaxNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
             switch (kind)
@@ -94,5 +97,17 @@ namespace OneScript.Language.SyntaxAnalysis
             var parentNonTerm = (NonTerminalNode) parent;
             parentNonTerm.AddChild(child);
         }
+
+        public void PushContext(BslSyntaxNode node)
+        {
+            _nodeContext.Push(node);
+        }
+
+        public BslSyntaxNode PopContext()
+        {
+            return _nodeContext.Pop();
+        }
+
+        public BslSyntaxNode CurrentNode => _nodeContext.Count == 0? default : _nodeContext.Peek();
     }
 }

@@ -18,11 +18,11 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public IErrorSink ErrorSink { get; }
 
-        public virtual void OnModuleEnter(ParserContext context)
+        public virtual void OnModuleEnter()
         {
         }
 
-        public virtual void OnModuleLeave(ParserContext context)
+        public virtual void OnModuleLeave()
         {
         }
         

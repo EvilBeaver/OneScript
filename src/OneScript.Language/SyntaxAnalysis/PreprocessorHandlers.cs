@@ -56,19 +56,19 @@ namespace OneScript.Language.SyntaxAnalysis
             return new PreprocessorHandlers(slice);
         }
 
-        public void OnModuleEnter(ParserContext context)
+        public void OnModuleEnter()
         {
             foreach (var handler in _handlers)
             {
-                handler.OnModuleEnter(context);
+                handler.OnModuleEnter();
             }
         }
 
-        public void OnModuleLeave(ParserContext context)
+        public void OnModuleLeave()
         {
             foreach (var handler in _handlers)
             {
-                handler.OnModuleLeave(context);
+                handler.OnModuleLeave();
             }
         }
 

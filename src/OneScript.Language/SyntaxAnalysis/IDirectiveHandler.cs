@@ -12,8 +12,8 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public interface IDirectiveHandler
     {
-        void OnModuleEnter(ParserContext context);
-        void OnModuleLeave(ParserContext context);
+        void OnModuleEnter();
+        void OnModuleLeave();
         bool HandleDirective(ref Lexem lastExtractedLexem, ILexer lexer);
     }
 }

@@ -29,22 +29,20 @@ namespace OneScript.Language.Tests
             return true;
         }
 
-        protected override void ParseAnnotationInternal(string content, ParserContext context)
+        protected override void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer)
         {
-            var lastExtractedLexem = context.LastExtractedLexem;
-            var lexemStream = context.Lexer;
-            var node = context.NodeBuilder.CreateNode(NodeKind.Preprocessor, lastExtractedLexem);
-            _allLineContentLexer.Iterator = lexemStream.Iterator;
+            var node = NodeBuilder.CreateNode(NodeKind.Preprocessor, lastExtractedLexem);
+            _allLineContentLexer.Iterator = lexer.Iterator;
 
             lastExtractedLexem = _allLineContentLexer.NextLexemOnSameLine();
             if (lastExtractedLexem.Type != LexemType.EndOfText)
             {
-                var child = context.NodeBuilder.CreateNode(NodeKind.Unknown, lastExtractedLexem);
-                context.NodeBuilder.AddChild(node, child);
+                var child = NodeBuilder.CreateNode(NodeKind.Unknown, lastExtractedLexem);
+                NodeBuilder.AddChild(node, child);
             }
 
-            context.LastExtractedLexem = lexemStream.NextLexem();
-            context.NodeBuilder.AddChild(context.NodeContext.Peek(), node);
+            lastExtractedLexem = lexer.NextLexem();
+            NodeBuilder.AddChild(NodeBuilder.CurrentNode, node);
         }
     }
 }

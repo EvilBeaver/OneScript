@@ -23,16 +23,16 @@ namespace OneScript.Language.SyntaxAnalysis
         
         protected IAstBuilder NodeBuilder { get; }
         
-        public override void OnModuleEnter(ParserContext context)
+        public override void OnModuleEnter()
         {
             _enabled = true;
-            base.OnModuleEnter(context);
+            base.OnModuleEnter();
         }
 
-        public override void OnModuleLeave(ParserContext context)
+        public override void OnModuleLeave()
         {
             _enabled = false;
-            base.OnModuleLeave(context);
+            base.OnModuleLeave();
         }
 
         public sealed override bool HandleDirective(ref Lexem lastExtractedLexem, ILexer lexer)
@@ -58,16 +58,16 @@ namespace OneScript.Language.SyntaxAnalysis
         
         protected abstract bool DirectiveSupported(string directive);
         
-        protected abstract void ParseAnnotationInternal(string content, ParserContext parserContext);
+        protected abstract void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer);
 
-        public bool ParseAnnotation(Lexem lastExtractedLexem, ParserContext parserContext)
+        public bool ParseAnnotation(ref Lexem lastExtractedLexem, ILexer lexer)
         {
             if (!DirectiveSupported(lastExtractedLexem.Content))
             {
                 return false;
             }
 
-            ParseAnnotationInternal(lastExtractedLexem.Content, parserContext);
+            ParseAnnotationInternal(ref lastExtractedLexem, lexer);
             return true;
         }
     }

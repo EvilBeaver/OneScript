@@ -26,11 +26,11 @@ namespace OneScript.Language.SyntaxAnalysis
             _preprocEndRegion.Add("EndRegion", true);
         }
 
-        public override void OnModuleLeave(ParserContext context)
+        public override void OnModuleLeave()
         {
             if (_regionsNesting != 0)
             {
-                context.AddError(LocalizedErrors.EndOfDirectiveExpected("Область"));
+                ErrorSink.AddError(LocalizedErrors.EndOfDirectiveExpected("Область"));
             }
         }
 
