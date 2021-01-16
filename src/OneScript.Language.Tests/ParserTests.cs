@@ -11,6 +11,7 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using Xunit;
 using FluentAssertions;
+using Moq;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.Tests
@@ -821,15 +822,17 @@ namespace OneScript.Language.Tests
             defaultLex.Code = code;
             
             var lexer = new PreprocessingLexer(defaultLex);
-            lexer.Handlers = new PreprocessorHandlers(
-                new[] {new AstNodeAppendingHandler()});
-
             var treeBuilder = new DefaultAstBuilder();
-            var context = new ParserContext(lexer, treeBuilder)
-            {
-                DirectiveHandlers = lexer.Handlers,
-            };
-            var parser = new DefaultBslParser(context);
+        
+            lexer.Handlers = new PreprocessorHandlers(
+                new[] {new AstNodeAppendingHandler(treeBuilder, Mock.Of<IErrorSink>())});
+            
+            var parser = new DefaultBslParser(
+                lexer,
+                treeBuilder,
+                new ListErrorSink(),
+                lexer.Handlers);
+
             return parser;
         }
     }

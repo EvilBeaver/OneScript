@@ -15,7 +15,7 @@ namespace OneScript.Language.Tests
     {
         private readonly ILexer _allLineContentLexer;
         
-        public AstNodeAppendingHandler() : base(default, default)
+        public AstNodeAppendingHandler(IAstBuilder nodeBuilder, IErrorSink errorSink) : base(nodeBuilder, errorSink)
         {
             var builder = new LexerBuilder();
             builder.Detect((cs, i) => !char.IsWhiteSpace(cs))

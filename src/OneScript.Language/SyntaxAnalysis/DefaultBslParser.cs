@@ -19,9 +19,9 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         private readonly IAstBuilder _builder;
         private readonly ILexer _lexer;
-        private Lexem _lastExtractedLexem;
+        private readonly PreprocessorHandlers _preprocessorHandlers;
 
-        private readonly ParserContext _parserContext;
+        private Lexem _lastExtractedLexem;
         
         private bool _inMethodScope;
         private bool _isMethodsDefined;
@@ -35,15 +35,15 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private readonly List<BslSyntaxNode> _annotations = new List<BslSyntaxNode>();
 
-        public DefaultBslParser(ParserContext parserContext)
-        {
-            _lexer = parserContext.Lexer;
-        }
-
-        public DefaultBslParser(ILexer lexer, IAstBuilder astBuilder, IErrorSink errorSink)
+        public DefaultBslParser(
+            ILexer lexer,
+            IAstBuilder astBuilder,
+            IErrorSink errorSink,
+            PreprocessorHandlers preprocessorHandlers)
         {
             _lexer = lexer;
             _builder = astBuilder;
+            _preprocessorHandlers = preprocessorHandlers;
             ErrorSink = errorSink;
         }
 
@@ -55,7 +55,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             BslSyntaxNode node;
             
-            _parserContext.DirectiveHandlers?.OnModuleEnter();
+            _preprocessorHandlers.OnModuleEnter();
             NextLexem();
             
             try
@@ -69,7 +69,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 PopContext();
             }
 
-            _parserContext.DirectiveHandlers?.OnModuleLeave();
+            _preprocessorHandlers.OnModuleLeave();
             
             return node;
         }
@@ -110,17 +110,19 @@ namespace OneScript.Language.SyntaxAnalysis
             if (_lastExtractedLexem.Type != LexemType.PreprocessorDirective)
                 return;
             
-            var annotationParser = _parserContext.DirectiveHandlers
-                .Slice(x => x is ModuleAnnotationDirectiveHandler);
+            var annotationParser = _preprocessorHandlers
+                .Slice(x => x is ModuleAnnotationDirectiveHandler)
+                .Cast<ModuleAnnotationDirectiveHandler>()
+                .ToList();
             
-            if (annotationParser == default)
+            if (!annotationParser.Any())
                 return;
 
             while (_lastExtractedLexem.Type == LexemType.PreprocessorDirective)
             {
                 bool handled = false;
                 var directive = _lastExtractedLexem.Content;
-                foreach (var handler in annotationParser.Cast<ModuleAnnotationDirectiveHandler>())
+                foreach (var handler in annotationParser)
                 {
                     handled = handler.ParseAnnotation(ref _lastExtractedLexem, _lexer);
                 }

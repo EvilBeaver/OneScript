@@ -66,7 +66,11 @@ namespace OneScript.Core.Tests
             var lexer = new DefaultLexer();
             lexer.Code = code;
             var treeBuilder = new DefaultAstBuilder();
-            var parser = new DefaultBslParser(lexer, treeBuilder, Mock.Of<IErrorSink>());
+            var parser = new DefaultBslParser(
+                lexer,
+                treeBuilder,
+                Mock.Of<IErrorSink>(),
+                Mock.Of<PreprocessorHandlers>());
             return parser;
         }
     }

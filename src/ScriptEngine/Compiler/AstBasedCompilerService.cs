@@ -40,7 +40,11 @@ namespace ScriptEngine.Compiler
             
             var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
-            var parser = new DefaultBslParser(lexer, astBuilder, _сompilerOptions.ErrorSink);
+            var parser = new DefaultBslParser(
+                lexer,
+                astBuilder,
+                _сompilerOptions.ErrorSink,
+                handlers);
 
             ModuleNode moduleNode;
             var mi = CreateModuleInformation(source, lexer);
