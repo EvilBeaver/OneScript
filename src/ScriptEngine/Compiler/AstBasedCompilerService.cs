@@ -23,15 +23,14 @@ namespace ScriptEngine.Compiler
             : base(outerContext)
         {
             _сompilerOptions = сompilerOptions;
-            ProduceExtraCode = _сompilerOptions.ProduceExtraCode;
         }
         
         protected override ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var codeGen = new AstBasedCodeGenerator(context)
             {
-                ProduceExtraCode = ProduceExtraCode,
                 ThrowErrors = true,
+                ProduceExtraCode = ProduceExtraCode,
                 DependencyResolver = _сompilerOptions.DependencyResolver
             };
             

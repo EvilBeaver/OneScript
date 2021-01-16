@@ -11,8 +11,6 @@ namespace ScriptEngine.Compiler
 {
     public class CompilerOptions : ParserOptions
     {
-        public CodeGenerationFlags ProduceExtraCode { get; set; }
-        
         public IDependencyResolver DependencyResolver { get; set; }
     }
 }
