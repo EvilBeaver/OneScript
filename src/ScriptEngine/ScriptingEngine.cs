@@ -27,7 +27,7 @@ namespace ScriptEngine
         [Obsolete]
         public ScriptingEngine()
         {
-            TypeManager.Initialize(new StandartTypeManager());
+            TypeManager.Initialize(new DefaultTypeManager());
             TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
             
             GlobalsManager.Reset();

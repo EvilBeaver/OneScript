@@ -74,6 +74,12 @@ namespace ScriptEngine.Compiler
         {
             if (node.Kind == NodeKind.Import)
                 HandleImportClause(node);
+            
+            _module.Annotations.Add(new AnnotationDefinition
+            {
+                Name = node.Name,
+                Parameters = GetAnnotationParameters(node)
+            });
         }
 
         private void HandleImportClause(AnnotationNode node)

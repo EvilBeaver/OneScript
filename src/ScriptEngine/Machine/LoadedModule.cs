@@ -23,6 +23,8 @@ namespace ScriptEngine.Machine
             Variables = new VariablesFrame(image.Variables);
             ExportedProperies = image.ExportedProperties.ToArray();
             ExportedMethods = image.ExportedMethods.ToArray();
+            Annotations = image.Annotations.ToArray();
+            
             ModuleInfo = image.ModuleInfo;
             LoadAddress = image.LoadAddress;
             for (int i = 0; i < image.Constants.Count; i++)
@@ -36,6 +38,8 @@ namespace ScriptEngine.Machine
 
         private void ResolveAnnotationConstants()
         {
+            EvaluateAnnotationParametersValues(Annotations);
+            
             for (int i = 0; i < Variables.Count; i++)
             {
                 EvaluateAnnotationParametersValues(Variables[i].Annotations);
@@ -76,6 +80,7 @@ namespace ScriptEngine.Machine
         public IValue[] Constants { get; }
         public ExportedSymbol[] ExportedProperies { get; }
         public ExportedSymbol[] ExportedMethods { get; }
+        public AnnotationDefinition[] Annotations { get; }
         public ModuleInformation ModuleInfo { get; }
         public int LoadAddress { get; }
     }

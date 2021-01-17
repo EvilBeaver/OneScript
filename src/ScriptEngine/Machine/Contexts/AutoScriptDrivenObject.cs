@@ -125,7 +125,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-        protected new static void RegisterSymbols(CompilerService compiler)
+        protected new static void RegisterSymbols(ICompilerService compiler)
         {
             for (int i = 0; i < _ownProperties.Count; i++)
             {
@@ -139,7 +139,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
         
-        public static ModuleImage CompileModule(CompilerService compiler, ICodeSource src)
+        public static ModuleImage CompileModule(ICompilerService compiler, ICodeSource src)
         {
             ThisAwareScriptedObjectBase.RegisterSymbols(compiler);
             RegisterSymbols(compiler);

@@ -155,7 +155,7 @@ namespace ScriptEngine.Compiler
 
         public static CompilerException UnknownDirective(string name, string arg)
         {
-            return new CompilerException(Locale.NStr("ru='Неизвестная директива:';en='Unknown directive'") + $"{name} ({arg})");
+            return new CompilerException(Locale.NStr($"ru='Неизвестная директива: {name} ({arg})';en='Unknown directive: {name} ({arg})'"));
         }
 
     }

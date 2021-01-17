@@ -26,7 +26,7 @@ namespace ScriptEngine.Machine
         Type NewInstanceHandler { get; set; }
     }
 
-    class StandartTypeManager : ITypeManager
+    public class DefaultTypeManager : ITypeManager
     {
         private readonly Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private readonly List<KnownType> _knownTypes = new List<KnownType>();
@@ -38,7 +38,7 @@ namespace ScriptEngine.Machine
             public TypeDescriptor Descriptor;
         }
 
-        public StandartTypeManager()
+        public DefaultTypeManager()
         {
             foreach (var item in Enum.GetValues(typeof(DataType)))
             {

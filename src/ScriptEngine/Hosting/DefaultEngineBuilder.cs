@@ -22,7 +22,7 @@ namespace ScriptEngine.Hosting
         }
         
         public RuntimeEnvironment Environment { get; set; } = new RuntimeEnvironment();
-        public ITypeManager TypeManager { get; set; } = new StandartTypeManager();
+        public ITypeManager TypeManager { get; set; } = new DefaultTypeManager();
         public IGlobalsManager GlobalInstances { get; set; } = new GlobalInstancesManager();
         public ICompilerServiceFactory CompilerFactory { get; set; }
         public CompilerOptions CompilerOptions { get; set; }
@@ -46,6 +46,8 @@ namespace ScriptEngine.Hosting
                 Environment,
                 CompilerFactory,
                 ConfigurationProviders);
+
+            engine.DebugController = DebugController;
             
             return engine;
         }
