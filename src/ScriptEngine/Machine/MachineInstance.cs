@@ -559,7 +559,7 @@ namespace ScriptEngine.Machine
                     _commands[(int)command.Code](command.Argument);
                 }
             }
-            catch (RuntimeException)
+            catch (ScriptException)
             {
                 throw;
             }

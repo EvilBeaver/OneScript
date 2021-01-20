@@ -125,6 +125,8 @@ namespace OneScript.Language.SyntaxAnalysis
                 foreach (var handler in annotationParser)
                 {
                     handled = handler.ParseAnnotation(ref _lastExtractedLexem, _lexer);
+                    if(handled)
+                        break;
                 }
 
                 if (!handled)
