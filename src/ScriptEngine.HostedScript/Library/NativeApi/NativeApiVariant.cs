@@ -64,7 +64,9 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         [FieldOffset(0)] private IntPtr pwstrVal;
         [FieldOffset(4)] private Int32 wstrLen32;
         [FieldOffset(8)] private Int32 wstrLen64;
-        [FieldOffset(44)] private UInt16 vt;
+        [FieldOffset(44)] private UInt16 vtWindows;
+        [FieldOffset(48)] private UInt16 vtLinux32;
+        [FieldOffset(60)] private UInt16 vtLinux64;
 
 #pragma warning disable IDE1006 // Стили именования
         private Int32 strLen
@@ -88,6 +90,21 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                     wstrLen64 = value;
                 else
                     wstrLen32 = value;
+            }
+        }
+
+        private UInt16 vt
+        {
+            get => NativeApiProxy.IsLinux ? (IntPtr.Size == 8 ? vtLinux64 : vtLinux32) : vtWindows;
+            set
+            {
+                if (NativeApiProxy.IsLinux)
+                    if (IntPtr.Size == 8)
+                        vtLinux64 = value;
+                    else
+                        vtLinux32 = value;
+                else
+                    vtWindows = value;
             }
         }
 

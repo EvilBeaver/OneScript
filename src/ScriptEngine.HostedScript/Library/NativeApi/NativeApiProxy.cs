@@ -15,16 +15,109 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// </summary>
     static class NativeApiProxy
     {
-        private const String ProxyDll = "ScriptEngine.NativeApi.dll";
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate IntPtr TGetClassObject(IntPtr module, [MarshalAs(UnmanagedType.LPWStr)] string name, OnErrorDelegate onError, OnEventDelegate onEvent, OnStatusDelegate onStatus);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TDestroyObject(IntPtr ptr);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate Int32 TGetNProps(IntPtr ptr);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate Int32 TFindProp(IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string wsPropName);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate bool TIsPropReadable(IntPtr ptr, Int32 lPropNum);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate bool TIsPropWritable(IntPtr ptr, Int32 lPropNum);
+
+        public delegate void TGetPropName(IntPtr ptr, Int32 lPropNum, Int32 lPropAlias, PointerDelegate response);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TGetPropVal(IntPtr ptr, Int32 lPropNum, PointerDelegate response);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TSetPropVal(IntPtr ptr, Int32 lPropNum, ref NativeApiVariant value);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate Int32 TGetNMethods(IntPtr ptr);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate Int32 TFindMethod(IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string wsMethodName);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TGetMethodName(IntPtr ptr, Int32 lMethodNum, Int32 lMethodAlias, PointerDelegate response);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate Int32 TGetNParams(IntPtr ptr, Int32 lMethodNum);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate bool TGetParamDefValue(IntPtr ptr, Int32 lMethodNum, Int32 lParamNum, PointerDelegate response);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate bool THasRetVal(IntPtr ptr, Int32 lMethodNum);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate bool TCallAsProc(IntPtr ptr, Int32 lMethodNum, IntPtr value);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate bool TCallAsFunc(IntPtr ptr, Int32 lMethodNum, IntPtr value, PointerDelegate response);
+
+        public static TGetClassObject GetClassObject;
+        public static TDestroyObject DestroyObject;
+        public static TGetNProps GetNProps;
+        public static TFindProp FindProp;
+        public static TIsPropReadable IsPropReadable;
+        public static TIsPropWritable IsPropWritable;
+        public static TGetPropName GetPropName;
+        public static TGetPropVal GetPropVal;
+        public static TSetPropVal SetPropVal;
+        public static TGetNMethods GetNMethods;
+        public static TFindMethod FindMethod;
+        public static TGetMethodName GetMethodName;
+        public static TGetNParams GetNParams;
+        public static TGetParamDefValue GetParamDefValue;
+        public static THasRetVal HasRetVal;
+        public static TCallAsProc CallAsProc;
+        public static TCallAsFunc CallAsFunc;
+
+        static NativeApiProxy()
+        {
+            string location = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string filename = System.IO.Path.GetDirectoryName(location)
+                + System.IO.Path.DirectorySeparatorChar + "ScriptEngine.NativeApi"
+                + (NativeApiKernel.IsLinux ? (IntPtr.Size == 8 ? "64" : "32") + ".so" : ".dll");
+            IntPtr module = NativeApiKernel.LoadLibrary(filename);
+            GetClassObject = Marshal.GetDelegateForFunctionPointer<TGetClassObject>(NativeApiKernel.GetProcAddress(module, "GetClassObject"));
+            DestroyObject = Marshal.GetDelegateForFunctionPointer<TDestroyObject>(NativeApiKernel.GetProcAddress(module, "DestroyObject"));
+            GetNProps = Marshal.GetDelegateForFunctionPointer<TGetNProps>(NativeApiKernel.GetProcAddress(module, "GetNProps"));
+            FindProp = Marshal.GetDelegateForFunctionPointer<TFindProp>(NativeApiKernel.GetProcAddress(module, "FindProp"));
+            IsPropReadable = Marshal.GetDelegateForFunctionPointer<TIsPropReadable>(NativeApiKernel.GetProcAddress(module, "IsPropReadable"));
+            IsPropWritable = Marshal.GetDelegateForFunctionPointer<TIsPropWritable>(NativeApiKernel.GetProcAddress(module, "IsPropWritable"));
+            GetPropName = Marshal.GetDelegateForFunctionPointer<TGetPropName>(NativeApiKernel.GetProcAddress(module, "GetPropName"));
+            GetPropVal = Marshal.GetDelegateForFunctionPointer<TGetPropVal>(NativeApiKernel.GetProcAddress(module, "GetPropVal"));
+            SetPropVal = Marshal.GetDelegateForFunctionPointer<TSetPropVal>(NativeApiKernel.GetProcAddress(module, "SetPropVal"));
+            GetNMethods = Marshal.GetDelegateForFunctionPointer<TGetNMethods>(NativeApiKernel.GetProcAddress(module, "GetNMethods"));
+            FindMethod = Marshal.GetDelegateForFunctionPointer<TFindMethod>(NativeApiKernel.GetProcAddress(module, "FindMethod"));
+            GetMethodName = Marshal.GetDelegateForFunctionPointer<TGetMethodName>(NativeApiKernel.GetProcAddress(module, "GetMethodName"));
+            GetNParams = Marshal.GetDelegateForFunctionPointer<TGetNParams>(NativeApiKernel.GetProcAddress(module, "GetNParams"));
+            GetParamDefValue = Marshal.GetDelegateForFunctionPointer<TGetParamDefValue>(NativeApiKernel.GetProcAddress(module, "GetParamDefValue"));
+            HasRetVal = Marshal.GetDelegateForFunctionPointer<THasRetVal>(NativeApiKernel.GetProcAddress(module, "HasRetVal"));
+            CallAsProc = Marshal.GetDelegateForFunctionPointer<TCallAsProc>(NativeApiKernel.GetProcAddress(module, "CallAsProc"));
+            CallAsFunc = Marshal.GetDelegateForFunctionPointer<TCallAsFunc>(NativeApiKernel.GetProcAddress(module, "CallAsFunc"));
+        }
+
+        public static bool IsLinux
+        {
+            get => System.Environment.OSVersion.Platform == PlatformID.Unix;
+        }
 
         public delegate void PointerDelegate(IntPtr ptr);
-
         public delegate void ArrayDelegate(IntPtr ptr, Int32 number);
-
         public delegate void OnErrorDelegate(UInt16 wcode, IntPtr source, IntPtr descr, Int32 scode);
-
         public delegate void OnEventDelegate(IntPtr source, IntPtr message, IntPtr data);
-
         public delegate void OnStatusDelegate(IntPtr status);
 
         public static String Str(IntPtr p)
@@ -32,55 +125,5 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             return p != IntPtr.Zero ? Marshal.PtrToStringUni(p) : String.Empty;
         }
 
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern IntPtr GetClassObject(IntPtr module, string name, OnErrorDelegate onError, OnEventDelegate onEvent, OnStatusDelegate onStatus);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern void DestroyObject(IntPtr ptr);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern Int32 GetNProps(IntPtr ptr);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern Int32 FindProp(IntPtr ptr, string wsPropName);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool IsPropReadable(IntPtr ptr, Int32 lPropNum);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool IsPropWritable(IntPtr ptr, Int32 lPropNum);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern void GetPropName(IntPtr ptr, Int32 lPropNum, Int32 lPropAlias, PointerDelegate response);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern void GetPropVal(IntPtr ptr, Int32 lPropNum, PointerDelegate response);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern void SetPropVal(IntPtr ptr, Int32 lPropNum, ref NativeApiVariant value);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern Int32 GetNMethods(IntPtr ptr);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern Int32 FindMethod(IntPtr ptr, string wsMethodName);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern void GetMethodName(IntPtr ptr, Int32 lMethodNum, Int32 lMethodAlias, PointerDelegate response);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern Int32 GetNParams(IntPtr ptr, Int32 lMethodNum);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool GetParamDefValue(IntPtr ptr, Int32 lMethodNum, Int32 lParamNum, PointerDelegate response);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool HasRetVal(IntPtr ptr, Int32 lMethodNum);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool CallAsProc(IntPtr ptr, Int32 lMethodNum, IntPtr value);
-
-        [DllImport(ProxyDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool CallAsFunc(IntPtr ptr, Int32 lMethodNum, IntPtr value, PointerDelegate response);
     }
 }

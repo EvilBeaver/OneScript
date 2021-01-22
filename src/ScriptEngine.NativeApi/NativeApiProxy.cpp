@@ -5,9 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-#ifdef _WINDOWS
+#include "include/types.h"
+#include "include/ComponentBase.h"
+#include "include/AddInDefBase.h"
+#include "include/IMemoryManager.h"
+#include "NativeInterface.h"
 
-#include <windows.h>
+#ifdef _WINDOWS
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
@@ -25,11 +29,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
 #define DllExport extern "C" __declspec(dllexport)
 
-#else
+#else//_WINDOWS
 
 #define DllExport extern "C"
 
-#include <unistd.h>
 #include <stdlib.h>
 
 #endif//_WINDOWS
@@ -38,14 +41,26 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
 #define EMPTY_DEF
 
-#include "include/types.h"
-#include "include/ComponentBase.h"
-#include "include/AddInDefBase.h"
-#include "include/IMemoryManager.h"
-#include "NativeInterface.h"
-
 typedef void(_stdcall* StringFuncRespond) (const WCHAR_T* s);
 typedef void(_stdcall* VariantFuncRespond) (const tVariant* variant);
+
+static bool AllocMemory(void** pMemory, unsigned long ulCountByte) {
+#ifdef _WINDOWS
+	return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
+#else
+	return *pMemory = calloc(1, ulCountByte);
+#endif//_WINDOWS
+}
+
+void ADDIN_API FreeMemory(void** pMemory) {
+#ifdef _WINDOWS
+	LocalFree(*pMemory);
+	*pMemory = nullptr;
+#else
+	free(*pMemory);
+	*pMemory = nullptr;
+#endif//_WINDOWS
+}
 
 class ProxyComponent : public IMemoryManager {
 private:
@@ -53,12 +68,12 @@ private:
 	NativeInterface mInterface;
 public:
 	ProxyComponent(
-		IComponentBase* pComponent, 
+		IComponentBase* pComponent,
 		ErrorFuncRespond onError,
 		EventFuncRespond onEvent,
 		StatusFuncRespond onStatus
-	): 
-		pComponent(pComponent), 
+	) :
+		pComponent(pComponent),
 		mInterface(onError, onEvent, onStatus)
 	{
 		pComponent->setMemManager(this);
@@ -69,20 +84,10 @@ public:
 		delete pComponent;
 	}
 	virtual bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) override {
-		#ifdef _WINDOWS
-		return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
-		#else
-		return *pMemory = calloc(1, ulCountByte);
-		#endif//_WINDOWS
+		return ::AllocMemory(pMemory, ulCountByte);
 	}
 	virtual void ADDIN_API FreeMemory(void** pMemory) override {
-		#ifdef _WINDOWS
-		LocalFree(*pMemory);
-		*pMemory = nullptr;
-		#else
-		free(*pMemory);
-		*pMemory = nullptr;
-		#endif//_WINDOWS
+		::FreeMemory(pMemory);
 	}
 	IComponentBase& Component() {
 		return *pComponent;
@@ -94,13 +99,11 @@ static void ClearVariant(tVariant& variant)
 	switch (variant.vt) {
 	case VTYPE_BLOB:
 	case VTYPE_PSTR:
-		free(variant.pstrVal);
-		variant.pstrVal = nullptr;
+		FreeMemory((void**)&variant.pstrVal);
 		variant.strLen = 0;
 		break;
 	case VTYPE_PWSTR:
-		free(variant.pwstrVal);
-		variant.pwstrVal = nullptr;
+		FreeMemory((void**)&variant.pwstrVal);
 		variant.wstrLen = 0;
 		break;
 	}
@@ -108,8 +111,8 @@ static void ClearVariant(tVariant& variant)
 }
 
 DllExport ProxyComponent* GetClassObject(
-	HMODULE hModule, 
-	const WCHAR_T* wsName, 
+	HMODULE hModule,
+	const WCHAR_T* wsName,
 	ErrorFuncRespond onError = nullptr,
 	EventFuncRespond onEvent = nullptr,
 	StatusFuncRespond onStatus = nullptr
