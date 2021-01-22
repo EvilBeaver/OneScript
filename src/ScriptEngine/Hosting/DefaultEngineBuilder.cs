@@ -48,6 +48,7 @@ namespace ScriptEngine.Hosting
                 ConfigurationProviders);
 
             engine.DebugController = DebugController;
+            CompilerOptions.DependencyResolver?.Initialize(engine);
             
             return engine;
         }
