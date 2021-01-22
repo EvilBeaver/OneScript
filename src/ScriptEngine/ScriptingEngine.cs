@@ -211,7 +211,7 @@ namespace ScriptEngine
                 _debugController = value;
                 if (value != null)
                 {
-                    ProduceExtraCode = CodeGenerationFlags.DebugCode;
+                    ProduceExtraCode |= CodeGenerationFlags.DebugCode;
                     MachineInstance.Current.SetDebugMode(_debugController.BreakpointManager);
                 }
             }
@@ -219,7 +219,7 @@ namespace ScriptEngine
 
         public void SetCodeStatisticsCollector(ICodeStatCollector collector)
         {
-            ProduceExtraCode = CodeGenerationFlags.CodeStatistics;
+            ProduceExtraCode |= CodeGenerationFlags.CodeStatistics;
             MachineInstance.Current.SetCodeStatisticsCollector(collector);
         }
 

@@ -22,12 +22,7 @@ namespace ScriptEngine
 
         private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
 
-        public void InjectObject(IAttachableContext context)
-        {
-            InjectObject(context, false);
-        }
-
-        public void InjectObject(IAttachableContext context, bool asDynamicScope)
+        public void InjectObject(IAttachableContext context, bool asDynamicScope = false)
         {
             RegisterSymbolScope(context, asDynamicScope);
             RegisterObject(context);
@@ -43,7 +38,6 @@ namespace ScriptEngine
             if (_globalScope == null)
             {
                 _globalScope = new SymbolScope();
-                //TypeManager.RegisterType("__globalPropertiesHolder", typeof(PropertyBag));
                 _injectedProperties = new PropertyBag();
                 _symbolScopes.PushScope(_globalScope);
                 RegisterObject(_injectedProperties);
@@ -73,13 +67,7 @@ namespace ScriptEngine
             }
         }
 
-        internal IList<IAttachableContext> AttachedContexts
-        {
-            get
-            {
-                return _objects;
-            }
-        }
+        internal IList<IAttachableContext> AttachedContexts => _objects;
 
         public IEnumerable<ExternalLibraryDef> GetUserAddedScripts()
         { 
