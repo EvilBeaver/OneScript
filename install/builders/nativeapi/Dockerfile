@@ -1,9 +1,8 @@
 FROM gcc:latest
 
-VOLUME [ "/build/out" ]
 VOLUME [ "/build/src" ]
 
-WORKDIR /build/out
+WORKDIR /build/src
 
 RUN apt-get update && \
     apt-get install -y cmake && \
