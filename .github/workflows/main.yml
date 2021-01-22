@@ -1,0 +1,52 @@
+name: Build .NET Core
+
+on:
+  push:
+    branches:
+      - compiler-v2-with-publish
+
+env:
+  MAIN_PROJECT: ./src/oscript/oscript.csproj
+  SOLUTION: 1Script.sln
+
+jobs: 
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        dotnet-version: [3.1.301]
+        include:
+          - os: windows-latest
+            RID: win-x64
+            target: netcoreapp3.1
+          - os: ubuntu-latest
+            RID: linux-x64
+            target: netcoreapp3.1
+    defaults:
+      run: 
+        working-directory: src
+    steps:
+
+    # актуализация с сабмодулями
+    - uses: actions/checkout@v2
+      with: 
+        submodules: true
+    
+    # установка дотнет
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+
+    # публикация
+    - name: BuildAndPublish
+      run: dotnet publish -p:PublishTrimmed=true -f ${{ matrix.target }} -p:DebugType=None -r ${{matrix.RID}}  -c Release --self-contained true --force -p:IncludeNativeLibrariesInSingleFile=true -p:CopyOutputSymbolsToPublishDirectory=false ${{env.MAIN_PROJECT}} -o distrs/${{matrix.target}}/${{matrix.RID}}/bin
+
+    # Заливка в артефакты
+    - name: Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: oscript.v2-${{matrix.RID}}.zip
+        path: ./distrs/${{matrix.target}}/${{matrix.RID}}
