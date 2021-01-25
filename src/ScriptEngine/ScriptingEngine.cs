@@ -73,8 +73,6 @@ namespace ScriptEngine
                 else
                     Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
             }
-            
-            
         }
 
         public ConfigurationProviders Configuration { get; }
@@ -82,8 +80,8 @@ namespace ScriptEngine
         private ContextDiscoverer ContextDiscoverer { get; }
         
         public RuntimeEnvironment Environment { get; set; }
-        
-        public CodeGenerationFlags ProduceExtraCode { get; set; }
+
+        private CodeGenerationFlags ProduceExtraCode { get; set; }
 
         public void AttachAssembly(System.Reflection.Assembly asm, Predicate<Type> filter = null)
         {
