@@ -11,6 +11,7 @@ using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.NativeApi;
 using ScriptEngine;
+using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -52,6 +53,13 @@ namespace OneScript.StandardLibrary
                     Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
                     e);
             }
+            catch (CompilerException e)
+            {
+                // обернем в RuntimeException
+                throw new RuntimeException(
+                    Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
+                    e);
+            }
         }
 
         /// <summary>
@@ -79,8 +87,24 @@ namespace OneScript.StandardLibrary
                     extData.Add(item.Key.AsString(), item.Value);
                 }
 
-                return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, extData);
-
+                try
+                {
+                    return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, extData);
+                }
+                catch (SyntaxErrorException e)
+                {
+                    // обернем в RuntimeException
+                    throw new RuntimeException(
+                        Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
+                        e);
+                }
+                catch (CompilerException e)
+                {
+                    // обернем в RuntimeException
+                    throw new RuntimeException(
+                        Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
+                        e);
+                }
             }
         }
         
