@@ -286,18 +286,16 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// <param name="filter">Структура - Условия поиска. Ключ - имя колонки, значение - искомое значение</param>
         /// <returns>Массив - Массив ссылок на строки, удовлетворяющих условию поиска</returns>
         [ContextMethod("НайтиСтроки", "FindRows")]
-        public ArrayImpl FindRows(IValue filter)
+        public ArrayImpl FindRows(StructureImpl filter)
         {
-            var filterStruct = filter.GetRawValue() as StructureImpl;
-
-            if (filterStruct == null)
+            if (filter == null)
                 throw RuntimeException.InvalidArgumentType();
 
             ArrayImpl Result = new ArrayImpl();
 
             foreach (ValueTableRow row in _rows)
             {
-                if (CheckFilterCriteria(row, filterStruct))
+                if (CheckFilterCriteria(row, filter))
                     Result.Add(row);
             }
 
@@ -525,10 +523,11 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             }
             else
             {
-                if (rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(StructureImpl))))
-                    requestedRows = FindRows(rows).Select(x => x as ValueTableRow);
-                else if (rows.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(ArrayImpl))))
-                    requestedRows = GetRowsEnumByArray(rows);
+                var rowsRaw = rows.GetRawValue();
+                if (rowsRaw is StructureImpl structure)
+                    requestedRows = FindRows(structure).Select(x => x as ValueTableRow);
+                else if (rowsRaw is ArrayImpl array)
+                    requestedRows = GetRowsEnumByArray(array);
                 else
                     throw RuntimeException.InvalidArgumentType();
             }

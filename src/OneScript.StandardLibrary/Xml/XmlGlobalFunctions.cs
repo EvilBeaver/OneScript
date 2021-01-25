@@ -10,6 +10,7 @@ using System.Xml;
 using OneScript.StandardLibrary.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 
 namespace OneScript.StandardLibrary.Xml
 {
@@ -31,9 +32,8 @@ namespace OneScript.StandardLibrary.Xml
                     return XmlConvert.ToString(value.AsNumber());
                 default:
                     
-                    if(value.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext))))
+                    if(value.GetRawValue() is BinaryDataContext bdc)
                     {
-                        var bdc = value.GetRawValue() as BinaryDataContext;
                         System.Diagnostics.Debug.Assert(bdc != null);
 
                         return Convert.ToBase64String(bdc.Buffer, Base64FormattingOptions.InsertLineBreaks);
