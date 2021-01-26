@@ -10,6 +10,7 @@ using System.Linq;
 using System.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Xml
 {
@@ -46,8 +47,8 @@ namespace OneScript.StandardLibrary.Xml
         public static XmlNodeTypeEnum CreateInstance(ITypeManager typeManager)
         {
             XmlNodeTypeEnum instance;
-            var type = typeManager.RegisterType("ПеречислениеТипУзлаXML", typeof(XmlNodeTypeEnum));
-            var enumValueType = typeManager.RegisterType("ТипУзлаXML", typeof(CLREnumValueWrapper<XmlNodeType>));
+            var type = typeManager.RegisterType("ПеречислениеТипУзлаXML", default,typeof(XmlNodeTypeEnum));
+            var enumValueType = typeManager.RegisterType("ТипУзлаXML", default,typeof(CLREnumValueWrapper<XmlNodeType>));
 
             instance = new XmlNodeTypeEnum(type, enumValueType);
 

@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Linq;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -34,8 +35,15 @@ namespace ScriptEngine.Machine.Contexts
 
             var enumMetadata = (SystemEnumAttribute)attribs[0];
 
-            enumType = typeManager.RegisterType("Перечисление" + enumMetadata.GetName(), typeof(T));
-            enumValueType = typeManager.RegisterType(enumMetadata.GetName(), typeof(SelfAwareEnumValue<T>));
+            enumType = typeManager.RegisterType(
+                "Перечисление" + enumMetadata.GetName(),
+                "Enum" + enumMetadata.GetAlias(),
+                typeof(T));
+            
+            enumValueType = typeManager.RegisterType(
+                enumMetadata.GetName(),
+                enumMetadata.GetAlias(),
+                typeof(SelfAwareEnumValue<T>));
         }
 
         public static T CreateEnumInstance<T>(ITypeManager typeManager, EnumCreationDelegate<T> creator) where T : EnumerationContext

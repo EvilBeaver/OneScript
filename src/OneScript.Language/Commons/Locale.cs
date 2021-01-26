@@ -26,6 +26,8 @@ namespace OneScript.Commons
             }
         }
 
+        public static bool UseAliasedPresentations => SystemLanguageISOName != default && SystemLanguageISOName == "ru"; 
+
         public static event Action SystemLocaleChanged;
 
         /// <summary>

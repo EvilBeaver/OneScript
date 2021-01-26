@@ -8,14 +8,23 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary
 {
     [ContextClass("УникальныйИдентификатор","UUID")]
-    public class GuidWrapper : IValue, IObjectWrapper
+    public class GuidWrapper : GenericValue, IObjectWrapper
     {
         Guid _value;
+        private TypeDescriptor _instanceType;
 
+        // private static ValueType _instanceType = new ValueType(
+        //     new Guid("B35D7F7B-DF1C-4D6C-A755-6C97A60BB345"),
+        //     "УникальныйИдентификатор",
+        //     "UUID",
+        //     typeof(GuidWrapper));
+        
         public GuidWrapper()
         {
             _value = Guid.NewGuid();
@@ -26,7 +35,7 @@ namespace OneScript.StandardLibrary
             _value = Guid.Parse(uuidString);
         }
 
-        [ScriptConstructor]
+        [TypeConstructor]
         public static GuidWrapper Create()
         {
             return new GuidWrapper();
@@ -37,51 +46,15 @@ namespace OneScript.StandardLibrary
         {
             return new GuidWrapper(uuidString.AsString());
         }
+        
+        public override TypeDescriptor SystemType => _instanceType;
 
-        public DataType DataType
-        {
-            get { return ScriptEngine.Machine.DataType.GenericValue; }
-        }
-
-        public TypeDescriptor SystemType
-        {
-            get
-            {
-                return TypeManager.GetTypeByFrameworkType(typeof(GuidWrapper));
-            }
-        }
-
-        public decimal AsNumber()
-        {
-            throw RuntimeException.ConvertToNumberException();
-        }
-
-        public DateTime AsDate()
-        {
-            throw RuntimeException.ConvertToDateException();
-        }
-
-        public bool AsBoolean()
-        {
-            throw RuntimeException.ConvertToBooleanException();
-        }
-
-        public string AsString()
+        public override string AsString()
         {
             return _value.ToString();
         }
 
-        public IRuntimeContextInstance AsObject()
-        {
-            throw RuntimeException.ValueIsNotObjectException();
-        }
-
-        public IValue GetRawValue()
-        {
-            return this;
-        }
-
-        public int CompareTo(IValue other)
+        public override int CompareTo(IValue other)
         {
             GuidWrapper otherUuid = other.GetRawValue() as GuidWrapper;
             if (otherUuid == null)
@@ -90,7 +63,7 @@ namespace OneScript.StandardLibrary
             return _value.CompareTo(otherUuid._value);
         }
 
-        public bool Equals(IValue other)
+        public override bool Equals(IValue other)
         {
             GuidWrapper otherUuid = other.GetRawValue() as GuidWrapper;
             if (otherUuid == null)
@@ -100,9 +73,6 @@ namespace OneScript.StandardLibrary
         }
 
 
-        object IObjectWrapper.UnderlyingObject
-        {
-            get { return _value; }
-        }
+        object IObjectWrapper.UnderlyingObject => _value;
     }
 }

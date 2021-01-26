@@ -96,6 +96,7 @@ namespace ScriptEngine
             _objects.Add(context);
         }
 
+        [Obsolete]
         public void LoadMemory(MachineInstance machine)
         {
             machine.Cleanup();

@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,8 @@ namespace ScriptEngine.Machine
         }
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
+        
+        private ITypeManager _typeManager;
 
         public void AttachContext(IAttachableContext context)
         {
@@ -77,6 +80,20 @@ namespace ScriptEngine.Machine
             _scopes.Add(default(Scope));
         }
 
+        public ITypeManager TypeManager => _typeManager ?? Machine.TypeManager.Instance;
+        
+        public void SetMemory(ITypeManager types, IEnumerable<IAttachableContext> contexts)
+        {
+            Cleanup();
+            foreach (var item in contexts)
+            {
+                AttachContext(item);
+            }
+            ContextsAttached();
+
+            _typeManager = types;
+        }
+        
         internal MachineStoredState SaveState()
         {
             return new MachineStoredState()
@@ -553,17 +570,17 @@ namespace ScriptEngine.Machine
             try
             {
                 while (_currentFrame.InstructionPointer >= 0
-                    && _currentFrame.InstructionPointer < _module.Code.Length)
+                       && _currentFrame.InstructionPointer < _module.Code.Length)
                 {
                     var command = _module.Code[_currentFrame.InstructionPointer];
-                    _commands[(int)command.Code](command.Argument);
+                    _commands[(int) command.Code](command.Argument);
                 }
             }
-            catch (ScriptException)
+            catch (RuntimeException)
             {
                 throw;
             }
-            catch(ScriptInterruptionException)
+            catch (ScriptInterruptionException)
             {
                 throw;
             }
@@ -1334,7 +1351,8 @@ namespace ScriptEngine.Machine
             }
 
             var typeName = _operationStack.Pop().AsString();
-            var factory = TypeManager.GetFactoryFor(typeName);
+            var type = TypeManager.GetTypeByName(typeName);
+            var factory = TypeManager.GetFactoryFor(type);
 
             var constructor = factory.GetConstructor(typeName, argValues);
             if(constructor == null)
@@ -1646,7 +1664,8 @@ namespace ScriptEngine.Machine
         private void Type(int arg)
         {
             var typeName = _operationStack.Pop().AsString();
-            var value = new TypeTypeValue(typeName);
+            var type = TypeManager.GetTypeByName(typeName);
+            var value = new TypeTypeValue(type);
             _operationStack.Push(value);
             NextInstruction();
         }

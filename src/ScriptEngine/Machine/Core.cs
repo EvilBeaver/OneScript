@@ -5,7 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine
 {
@@ -304,7 +306,7 @@ namespace ScriptEngine.Machine
         }
     }
 
-    public struct TypeDescriptor : IEquatable<TypeDescriptor>
+    public struct TypeDescriptor_ : IEquatable<TypeDescriptor_>
     {
         public int ID;
         public string Name;
@@ -316,18 +318,27 @@ namespace ScriptEngine.Machine
 
         public static TypeDescriptor FromDataType(DataType srcType)
         {
-            System.Diagnostics.Debug.Assert(
-                   srcType == DataType.Boolean
-                || srcType == DataType.Date
-                || srcType == DataType.Number
-                || srcType == DataType.String
-                || srcType == DataType.Undefined
-                || srcType == DataType.Type);
-
-            return TypeManager.GetTypeById((int)srcType);
+            switch (srcType)
+            {
+                case DataType.Boolean:
+                    return BasicTypes.Boolean;
+                case DataType.Date:
+                    return BasicTypes.Date;
+                case DataType.Number:
+                    return BasicTypes.Number;
+                case DataType.String:
+                    return BasicTypes.String;
+                case DataType.Undefined:
+                    return BasicTypes.Undefined;
+                case DataType.Type:
+                    return BasicTypes.Type;
+                default:
+                    Debug.Assert(false, "Can be used only for primitive types");
+                    return default;
+            }
         }
 
-        public bool Equals(TypeDescriptor other)
+        public bool Equals(TypeDescriptor_ other)
         {
             return other.ID == this.ID;
         }

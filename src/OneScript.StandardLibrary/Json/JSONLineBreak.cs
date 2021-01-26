@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Json
 {

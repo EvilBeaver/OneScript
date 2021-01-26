@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -49,11 +50,15 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 
         public static EnumerationXSComplexFinal CreateInstance(ITypeManager typeManager)
         {
-            TypeDescriptor type = typeManager.RegisterType("EnumerationXSComplexFinal", typeof(EnumerationXSComplexFinal));
-            TypeDescriptor enumValueType = typeManager.RegisterType("XSComplexFinal", typeof(XSComplexFinal));
-
-            typeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьСоставногоТипаXS");
-            typeManager.RegisterAliasFor(enumValueType, "ЗавершенностьСоставногоТипаXS");
+            var type = typeManager.RegisterType(
+                "ПеречислениеЗавершенностьСоставногоТипаXS",
+                "EnumerationXSComplexFinal",
+                typeof(EnumerationXSComplexFinal));
+            
+            var enumValueType = typeManager.RegisterType(
+                "ЗавершенностьСоставногоТипаXS",
+                "XSComplexFinal", 
+                typeof(XSComplexFinal));
 
             EnumerationXSComplexFinal instance = new EnumerationXSComplexFinal(type, enumValueType);
             instance.AddValue("Все", "All", new XSComplexFinal(instance, XmlSchemaDerivationMethod.All));

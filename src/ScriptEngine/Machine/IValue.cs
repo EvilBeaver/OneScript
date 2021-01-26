@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine
 {
@@ -12,7 +13,7 @@ namespace ScriptEngine.Machine
     {
         DataType DataType { get; }
         TypeDescriptor SystemType { get; }
-        
+
         decimal AsNumber();
         DateTime AsDate();
         bool AsBoolean();

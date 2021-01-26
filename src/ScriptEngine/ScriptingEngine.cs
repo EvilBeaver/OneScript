@@ -27,14 +27,15 @@ namespace ScriptEngine
         [Obsolete]
         public ScriptingEngine()
         {
-            TypeManager.Initialize(new DefaultTypeManager());
-            TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
+            TypeManager = new DefaultTypeManager();
+            TypeManager.RegisterType("Сценарий", "Script", typeof(UserScriptContextInstance));
             
+            Machine.TypeManager.Initialize(TypeManager);
             GlobalsManager.Reset();
             
             Loader = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
-            ContextDiscoverer = new ContextDiscoverer(TypeManager.Instance, GlobalsManager.Instance);
+            ContextDiscoverer = new ContextDiscoverer(TypeManager, GlobalsManager.Instance);
             _compilerFactory = new LegacyCompilerFactory((IDirectiveResolver)DirectiveResolvers);
             
             AttachAssembly(GetType().Assembly);
@@ -48,9 +49,13 @@ namespace ScriptEngine
         {
             Configuration = configurationProviders;
             _compilerFactory = compilerFactory;
+            TypeManager = types;
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
-            TypeManager.Initialize(types);
-            TypeManager.RegisterType("Сценарий", typeof(UserScriptContextInstance));
+            Machine.TypeManager.Initialize(types);
+            TypeManager.RegisterType(
+                "Сценарий",
+                "Script",
+                typeof(UserScriptContextInstance));
 
             GlobalsManager.Instance = globals;
             Environment = env;
@@ -82,6 +87,8 @@ namespace ScriptEngine
         public RuntimeEnvironment Environment { get; set; }
 
         private CodeGenerationFlags ProduceExtraCode { get; set; }
+        
+        private ITypeManager TypeManager { get; set; }
 
         public void AttachAssembly(System.Reflection.Assembly asm, Predicate<Type> filter = null)
         {
@@ -121,7 +128,7 @@ namespace ScriptEngine
 
         public void UpdateContexts()
         {
-            Environment.LoadMemory(MachineInstance.Current);
+            MachineInstance.Current.SetMemory(TypeManager, Environment.AttachedContexts);
         }
 
         private void SetDefaultEnvironmentIfNeeded()

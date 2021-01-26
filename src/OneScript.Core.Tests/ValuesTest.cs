@@ -9,6 +9,7 @@ using OneScript.Commons;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Values;
+using ScriptEngine.Types;
 using Xunit;
 
 namespace OneScript.Core.Tests
@@ -137,13 +138,9 @@ namespace OneScript.Core.Tests
         [Fact]
         public void Type_Value_Test()
         {
-            var typeValue = new TypeTypeValue(new TypeDescriptor
-            {
-                Name = "Строка",
-                ID = 1899
-            });
+            var typeValue = new TypeTypeValue(BasicTypes.String);
             Assert.True(typeValue.DataType == DataType.Type);
-            Assert.True(typeValue.AsString() == "Строка");
+            Assert.Equal("Строка", typeValue.AsString());
 
             Assert.Throws<RuntimeException>(() => typeValue.AsNumber());
             Assert.Throws<RuntimeException>(() => typeValue.AsBoolean());

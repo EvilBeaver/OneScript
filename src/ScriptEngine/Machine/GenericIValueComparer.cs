@@ -38,7 +38,10 @@ namespace ScriptEngine.Machine
 
         public int Compare(IValue x, IValue y)
         {
-            if (x.SystemType.ID == y.SystemType.ID)
+            if (ReferenceEquals(x, default) && ReferenceEquals(y, default))
+                return 0;
+            
+            if (x.SystemType == y.SystemType)
                 return x.CompareTo(y);
             else
                 return x.AsString().CompareTo(y.AsString());

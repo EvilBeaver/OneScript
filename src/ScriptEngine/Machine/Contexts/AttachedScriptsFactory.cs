@@ -122,7 +122,7 @@ namespace ScriptEngine.Machine.Contexts
                 _fileHashes.Add(typeName, hash);
             }
 
-            TypeManager.RegisterType(typeName, type);
+            TypeManager.RegisterType(typeName, default, type);
 
         }
 
@@ -142,7 +142,7 @@ namespace ScriptEngine.Machine.Contexts
             var loadedModule = new LoadedModule(moduleImage);
             _loadedModules.Add(typeName, loadedModule);
             
-            TypeManager.RegisterType(typeName, typeof(AttachedScriptsFactory));
+            TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
 
         }
 

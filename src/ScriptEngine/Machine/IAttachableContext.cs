@@ -14,7 +14,7 @@ namespace ScriptEngine.Machine
                       out MethodInfo[] methods);
     }
 
-    internal interface IRunnable : IAttachableContext
+    public interface IRunnable : IAttachableContext
     {
         LoadedModule Module { get; }
     }

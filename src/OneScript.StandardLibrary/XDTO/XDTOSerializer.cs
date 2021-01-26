@@ -12,17 +12,22 @@ using OneScript.StandardLibrary.Xml;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XDTO
 {
     [ContextClass("СериализаторXDTO", "XDTOSerializer")]
     public class XDTOSerializer : AutoContext<XDTOSerializer>
     {
+        private readonly ITypeManager _typeManager;
         private static readonly XmlGlobalFunctions xmlGlobalFunctions = GlobalsManager.GetGlobalContext<XmlGlobalFunctions>();
         private static readonly XmlNodeTypeEnum xmlNodeEnum = GlobalsManager.GetEnum<XmlNodeTypeEnum>();
 
 
-        private XDTOSerializer() { }
+        private XDTOSerializer(ITypeManager typeManager)
+        {
+            _typeManager = typeManager;
+        }
 
         private void WriteXMLSimpleData(XmlWriterImpl xmlWriter,
                                         string name,
@@ -237,19 +242,19 @@ namespace OneScript.StandardLibrary.XDTO
                     switch (xsiType.AsString())
                     {
                         case "string":
-                            typeValue = new TypeTypeValue("String");
+                            typeValue = new TypeTypeValue(BasicTypes.String);
                             break;
 
                         case "decimal":
-                            typeValue = new TypeTypeValue("Number");
+                            typeValue = new TypeTypeValue(BasicTypes.Number);
                             break;
 
                         case "boolean":
-                            typeValue = new TypeTypeValue("Boolean");
+                            typeValue = new TypeTypeValue(BasicTypes.Boolean);
                             break;
 
                         case "dateTime":
-                            typeValue = new TypeTypeValue("Date");
+                            typeValue = new TypeTypeValue(BasicTypes.Number);
                             break;
 
                         default:
@@ -257,22 +262,22 @@ namespace OneScript.StandardLibrary.XDTO
                     }
                 }
                 else if (xsiNil.DataType == DataType.String)
-                    typeValue = new TypeTypeValue("Undefined");
+                    typeValue = new TypeTypeValue(BasicTypes.Undefined);
             };
 
             if (typeValue == null)
                 throw RuntimeException.InvalidArgumentValue();
 
-            Type implType = TypeManager.GetImplementingClass(typeValue.Value.ID);
+            Type implType = typeValue.TypeValue.ImplementingClass;
 
             IValue result = ValueFactory.Create();
 
-            if (typeValue.Equals(new TypeTypeValue("Undefined")))
+            if (typeValue.Equals(new TypeTypeValue(BasicTypes.Undefined)))
             {
                 result = ValueFactory.Create();
                 xmlReader.Skip();
             }
-            else if (implType == typeof(DataType))
+            else if (implType == typeof(DataType)) // TODO: такого не должно быть.
             {
                 xmlReader.Read();
                 if (xmlReader.NodeType == xmlNodeEnum.FromNativeValue(XmlNodeType.Text))
@@ -294,9 +299,9 @@ namespace OneScript.StandardLibrary.XDTO
 
         #region Constructors
 
-        [ScriptConstructor(Name = "По умолчанию")]
-        public static XDTOSerializer CreateInstance() => new XDTOSerializer();
-
+        [TypeConstructor(Name = "По умолчанию", InjectActivationContext = true)]
+        public static XDTOSerializer CreateInstance(TypeActivationContext context) => new XDTOSerializer(context.TypeManager);
+        
         #endregion
 
         #endregion

@@ -12,6 +12,10 @@ namespace ScriptEngine.Machine.Contexts
 {
     public abstract class AutoContext<TInstance> : PropertyNameIndexAccessor where TInstance : AutoContext<TInstance>
     {
+        private static readonly ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
+        private static readonly ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();
+        private static readonly HashSet<int> _warnedDeprecatedMethods = new HashSet<int>();
+        
         public override bool IsPropReadable(int propNum)
         {
             return _properties.GetProperty(propNum).CanRead;
@@ -48,6 +52,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.Reflection.TargetInvocationException e)
             {
+                Debug.Assert(e.InnerException != null);
                 throw e.InnerException;
             }
         }
@@ -128,9 +133,5 @@ namespace ScriptEngine.Machine.Contexts
                 throw e.InnerException;
             }
         }
-
-        private static readonly ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
-        private static readonly ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();
-        private static readonly HashSet<int> _warnedDeprecatedMethods = new HashSet<int>();
     }
 }

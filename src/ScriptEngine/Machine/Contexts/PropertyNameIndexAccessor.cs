@@ -5,16 +5,18 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using ScriptEngine.Types;
+
 namespace ScriptEngine.Machine.Contexts
 {
     public abstract class PropertyNameIndexAccessor : ContextIValueImpl
     {
-        public PropertyNameIndexAccessor()
+        protected PropertyNameIndexAccessor()
         {
 
         }
 
-        public PropertyNameIndexAccessor(TypeDescriptor type):base(type)
+        protected PropertyNameIndexAccessor(TypeDescriptor type):base(type)
         {
         }
 

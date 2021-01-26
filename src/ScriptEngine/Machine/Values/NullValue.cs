@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using ScriptEngine.Types;
+
 namespace ScriptEngine.Machine.Values
 {
     public class NullValue : GenericValue
@@ -21,7 +23,7 @@ namespace ScriptEngine.Machine.Values
             DataType = DataType.GenericValue;
         }
 
-        public override TypeDescriptor SystemType => TypeManager.GetTypeByFrameworkType(typeof(NullValue));
+        public override TypeDescriptor SystemType => BasicTypes.Null;
 
         public override string AsString()
         {

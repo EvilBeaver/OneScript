@@ -5,29 +5,25 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using ScriptEngine.Types;
+
 namespace ScriptEngine.Machine.Values
 {
     public class TypeTypeValue : GenericValue
     {
-        readonly TypeDescriptor _instance;
-
-        public TypeTypeValue(string name)
-        {
-            _instance = TypeManager.GetTypeByName(name);
-            DataType = DataType.Type;
-        }
+        private readonly TypeDescriptor _type;
 
         public TypeTypeValue(TypeDescriptor type)
         {
-            _instance = type;
+            _type = type;
             DataType = DataType.Type;
         }
 
-        public override TypeDescriptor SystemType => TypeDescriptor.FromDataType(DataType.Type);
+        public override TypeDescriptor SystemType => BasicTypes.Type;
 
         public override string AsString()
         {
-            return _instance.ToString();
+            return _type.ToString();
         }
 
         public override bool Equals(IValue other)
@@ -35,7 +31,7 @@ namespace ScriptEngine.Machine.Values
             if(other?.DataType == DataType)
             {
                 var otherVal = other.GetRawValue() as TypeTypeValue;
-                return otherVal._instance.ID == this._instance.ID;
+                return otherVal._type == this._type;
             }
 
             return false;
@@ -50,9 +46,9 @@ namespace ScriptEngine.Machine.Values
 
 		public override int GetHashCode()
 		{
-			return _instance.GetHashCode();
+			return _type.GetHashCode();
 		}
 
-        public TypeDescriptor Value => _instance;
+        public TypeDescriptor TypeValue => _type;
     }
 }

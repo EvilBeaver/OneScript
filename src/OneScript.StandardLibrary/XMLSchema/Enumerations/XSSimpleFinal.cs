@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -63,11 +64,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         public static EnumerationXSSimpleFinal CreateInstance(ITypeManager typeManager)
         {
 
-            TypeDescriptor type = typeManager.RegisterType("EnumerationXSSimpleFinal", typeof(EnumerationXSSimpleFinal));
-            TypeDescriptor enumValueType = typeManager.RegisterType("XSSimpleFinal", typeof(XSSimpleFinal));
-
-            typeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьПростогоТипаXS");
-            typeManager.RegisterAliasFor(enumValueType, "ЗавершенностьПростогоТипаXS");
+            var type = typeManager.RegisterType(
+                "ПеречислениеЗавершенностьПростогоТипаXS",
+                "EnumerationXSSimpleFinal", typeof(EnumerationXSSimpleFinal));
+            
+            var enumValueType = typeManager.RegisterType(
+                "ЗавершенностьПростогоТипаXS",
+                "XSSimpleFinal", typeof(XSSimpleFinal));
 
             EnumerationXSSimpleFinal instance = new EnumerationXSSimpleFinal(type, enumValueType);
 

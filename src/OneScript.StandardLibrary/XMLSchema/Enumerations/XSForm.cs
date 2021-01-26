@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -56,11 +57,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         public static EnumerationXSForm CreateInstance(ITypeManager typeManager)
         {
  
-            TypeDescriptor type          = typeManager.RegisterType("EnumerationXSForm",  typeof(EnumerationXSForm));
-            TypeDescriptor enumValueType = typeManager.RegisterType("XSForm",             typeof(XSForm));
-
-            typeManager.RegisterAliasFor(type,          "ПеречислениеФормаПредставленияXS"); 
-            typeManager.RegisterAliasFor(enumValueType, "ФормаПредставленияXS");
+            var type          = typeManager.RegisterType(
+                "ПеречислениеФормаПредставленияXS",
+                "EnumerationXSForm",  typeof(EnumerationXSForm));
+            
+            var enumValueType = typeManager.RegisterType(
+                "ФормаПредставленияXS",
+                "XSForm",             typeof(XSForm));
 
             EnumerationXSForm instance = new EnumerationXSForm(type, enumValueType);
 
