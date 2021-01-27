@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine
 {
@@ -16,8 +17,6 @@ namespace ScriptEngine.Machine
 
     public class Variable : IVariable
     {
-        private IValue _val;
-        
         public string Name { get; private set; }
 
         private Variable()
@@ -31,7 +30,7 @@ namespace ScriptEngine.Machine
         {
             return new Variable()
             {
-                _val = val,
+                Value = val,
                 Name = symbol
             };
         }
@@ -40,7 +39,7 @@ namespace ScriptEngine.Machine
         {
             return new Variable()
             {
-                _val = val,
+                Value = val,
                 Name = metadata.Identifier
             };
         }
@@ -64,32 +63,16 @@ namespace ScriptEngine.Machine
 
         #region IVariable Members
 
-        public IValue Value
-        {
-            get
-            {
-                return _val;
-            }
-            set
-            {
-                _val = value;
-            }
-        }
+        public IValue Value { get; set; }
 
         #endregion
 
         #region IValue Members
 
-        public DataType DataType
-        {
-            get { return Value.DataType; }
-        }
+        public DataType DataType => Value.DataType;
 
-        public TypeDescriptor SystemType
-        {
-            get { return Value.SystemType; }
-        }
-
+        public TypeDescriptor SystemType => Value.SystemType; 
+        
         public decimal AsNumber()
         {
             return Value.AsNumber();
@@ -228,15 +211,9 @@ namespace ScriptEngine.Machine
 
             #region IValue Members
 
-            public DataType DataType
-            {
-                get { return Value.DataType; }
-            }
+            public DataType DataType => Value.DataType;
 
-            public TypeDescriptor SystemType
-            {
-                get { return Value.SystemType; }
-            }
+            public TypeDescriptor SystemType => Value.SystemType;
 
             public decimal AsNumber()
             {

@@ -23,19 +23,12 @@ namespace OneScript.Language
         public ScriptException(string message)
             : this(new ErrorPositionInfo(), message, null)
         {
-
         }
 
-        public ScriptException(ErrorPositionInfo errorInfo, string message)
-            : this(errorInfo, message, null)
-        {
-
-        }
-
-        public ScriptException(ErrorPositionInfo errorInfo, string message, Exception innerException)
+        public ScriptException(ErrorPositionInfo errorInfo, string message, Exception innerException = null)
             : base(message, innerException)
         {
-            _codePosition = errorInfo;
+            _codePosition = errorInfo ?? throw new ArgumentNullException(nameof(errorInfo));
         }
 
         public int LineNumber

@@ -10,6 +10,7 @@ using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.TypeDescriptions
 {
@@ -17,7 +18,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 	public class TypeDescription : AutoContext<TypeDescription>
 	{
 		private readonly List<TypeTypeValue> _types = new List<TypeTypeValue>();
-
+		
 		public TypeDescription(IEnumerable<TypeTypeValue> types = null,
 		                           NumberQualifiers numberQualifiers = null,
 		                           StringQualifiers stringQualifiers = null,
@@ -69,16 +70,18 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 		IValueAdjuster GetAdjusterForType(TypeTypeValue type)
 		{
-			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.Number)))
+			var value = type.TypeValue;
+			
+			if (value.Equals(BasicTypes.Number))
 				return NumberQualifiers;
 
-			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.String)))
+			if (value.Equals(BasicTypes.String))
 				return StringQualifiers;
 
-			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.Date)))
+			if (value.Equals(BasicTypes.Date))
 				return DateQualifiers;
 			
-			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.Boolean)))
+			if (value.Equals(BasicTypes.Boolean))
 				return new BooleanTypeAdjuster();
 
 			return null;
@@ -122,7 +125,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return adjuster?.Adjust(value) ?? ValueFactory.Create();
 		}
 
-		private static IList<TypeTypeValue> ConstructTypeList(IValue types)
+		private static IList<TypeTypeValue> ConstructTypeList(ITypeManager typeManager, IValue types)
 		{
 			var _types = new List<TypeTypeValue>();
 			if (types == null)
@@ -134,11 +137,12 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				var typeNames = types.AsString().Split(',');
 				foreach (var typeName in typeNames)
 				{
-					_types.Add(new TypeTypeValue(typeName.Trim()));
+					var type = typeManager.GetTypeByName(typeName.Trim());
+					_types.Add(new TypeTypeValue(type));
 				}
-			} else if (types is ArrayImpl)
+			} else if (types is ArrayImpl arrayOfTypes)
 			{
-				foreach (var type in (types as ArrayImpl))
+				foreach (var type in arrayOfTypes)
 				{
 					var rawType = type.GetRawValue() as TypeTypeValue;
 					if (rawType == null)
@@ -155,17 +159,17 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 		static TypeTypeValue TypeNumber()
 		{
-			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.Number));
+			return new TypeTypeValue(BasicTypes.Number);
 		}
 
 		static TypeTypeValue TypeBoolean()
 		{
-			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.Boolean));
+			return new TypeTypeValue(BasicTypes.Boolean);
 		}
 
 		static TypeTypeValue TypeString()
 		{
-			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.String));
+			return new TypeTypeValue(BasicTypes.String);
 		}
 
 		public static TypeDescription StringType(int length = 0,
@@ -187,8 +191,9 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return new TypeDescription(new TypeTypeValue[] { TypeBoolean() });
 		}
 
-		[ScriptConstructor]
+		[TypeConstructor(InjectActivationContext = true)]
 		public static TypeDescription Constructor(
+			TypeActivationContext context,
 			IValue source = null,
 			IValue p1 = null,
 			IValue p2 = null,
@@ -202,31 +207,30 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			if (rawSource == null || rawSource.DataType == DataType.Undefined)
 			{
 				// первый параметр имеет право быть не задан только в таком конструкторе
-				return ConstructByOtherDescription(null, p1, p2, p3, p4, p5, p6);
+				return ConstructByOtherDescription(context.TypeManager, null, p1, p2, p3, p4, p5, p6);
 			}
 
 			if (rawSource is TypeDescription)
 			{
-				return ConstructByOtherDescription(rawSource, p1, p2, p3, p4, p5, p6);
+				return ConstructByOtherDescription(context.TypeManager, rawSource, p1, p2, p3, p4, p5, p6);
 			}
 
 			if (rawSource.DataType == DataType.String || rawSource is ArrayImpl)
 			{
 				// TODO: проверить, что p5 и p6 не заданы
-				return ConstructByQualifiers(rawSource, p1, p2, p3, p4);
+				return ConstructByQualifiers(context.TypeManager, rawSource, p1, p2, p3, p4);
 			}
 
 			throw RuntimeException.InvalidArgumentValue();
 		}
 
-		public static TypeDescription ConstructByQualifiers(
-			IValue types,
+		public static TypeDescription ConstructByQualifiers(ITypeManager typeManager, IValue types,
 			IValue numberQualifiers = null,
 			IValue stringQualifiers = null,
 			IValue dateQualifiers = null,
 			IValue binaryDataQualifiers = null)
 		{
-			var _types = ConstructTypeList(types);
+			var _types = ConstructTypeList(typeManager, types);
 			if (_types == null)
 				throw RuntimeException.InvalidArgumentType(nameof(types));
 
@@ -238,7 +242,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return new TypeDescription(_types, paramNumberQ, paramStringQ, paramDateQ, paramBinaryDataQ);
 		}
 
-		public static TypeDescription ConstructByOtherDescription(
+		public static TypeDescription ConstructByOtherDescription(ITypeManager typeManager,
 			IValue typeDescription = null,
 			IValue addTypes = null,
 			IValue removeTypes = null,
@@ -249,7 +253,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		{
 			var td = typeDescription as TypeDescription;
 
-			var removeTypesList = ConstructTypeList(removeTypes);
+			var removeTypesList = ConstructTypeList(typeManager, removeTypes);
 			if (removeTypesList == null)
 				throw RuntimeException.InvalidArgumentType(nameof(removeTypes));
 
@@ -267,7 +271,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				}
 			}
 
-			var addTypesList = ConstructTypeList(addTypes);
+			var addTypesList = ConstructTypeList(typeManager, addTypes);
 			if (addTypesList == null)
 				throw RuntimeException.InvalidArgumentType(nameof(addTypes));
 			_types.AddRange(addTypesList);

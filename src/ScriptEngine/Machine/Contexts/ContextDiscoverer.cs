@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -99,10 +100,8 @@ namespace ScriptEngine.Machine.Contexts
             System.Diagnostics.Trace.Assert(attribData.Length > 0, "Class is not marked as context");
 
             var attr = (ContextClassAttribute)attribData[0];
-            var newType = Types.RegisterType(attr.GetName(), stdClass);
-            string alias = attr.GetAlias();
-            if(!String.IsNullOrEmpty(alias))
-                Types.RegisterAliasFor(newType, alias);
+
+            Types.RegisterType(attr.GetName(), attr.GetAlias(), stdClass);
         }
 
         private void RegisterSystemEnum(Type enumType, RuntimeEnvironment environment)
@@ -130,11 +129,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             var enumTypeAttribute = (EnumerationTypeAttribute)enumType.GetCustomAttributes (typeof (EnumerationTypeAttribute), false)[0];
 
-            var type = Types.RegisterType ("Перечисление" + enumTypeAttribute.Name, typeof (EnumerationContext));
-            if (enumTypeAttribute.Alias != null)
-                Types.RegisterAliasFor (type, "Enum" + enumTypeAttribute.Alias);
-
-            var enumValueType = Types.RegisterType (enumTypeAttribute.Name, enumType);
+            var type = Types.RegisterType (
+                "Перечисление" + enumTypeAttribute.Name,
+                "Enum" + enumTypeAttribute.Alias,
+                typeof (EnumerationContext));
+            
+            var enumValueType = Types.RegisterType (enumTypeAttribute.Name, enumTypeAttribute.Alias, enumType);
 
             var instance = new EnumerationContext (type, enumValueType);
 

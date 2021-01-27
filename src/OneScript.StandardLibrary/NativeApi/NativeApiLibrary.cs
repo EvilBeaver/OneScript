@@ -69,7 +69,7 @@ namespace OneScript.StandardLibrary.NativeApi
             var separator = new char[] { '|' };
             var names = NativeApiProxy.Str(namesPtr).Split(separator, StringSplitOptions.RemoveEmptyEntries);
             foreach (String name in names)
-                TypeManager.RegisterType($"AddIn.{identifier}.{name}", typeof(NativeApiFactory));
+                TypeManager.RegisterType($"AddIn.{identifier}.{name}", default, typeof(NativeApiFactory));
         }
 
         public IValue CreateComponent(object host, String typeName, String componentName)

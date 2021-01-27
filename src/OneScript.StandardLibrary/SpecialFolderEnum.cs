@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 using sysFolder = System.Environment.SpecialFolder;
 
 namespace OneScript.StandardLibrary
@@ -26,8 +27,8 @@ namespace OneScript.StandardLibrary
         public static SpecialFolderEnum CreateInstance(ITypeManager typeManager)
         {
             SpecialFolderEnum instance;
-            var type = typeManager.RegisterType("ПеречислениеСпециальнаяПапка", typeof(SpecialFolderEnum));
-            var enumValueType = typeManager.RegisterType("СпециальнаяПапка", typeof(CLREnumValueWrapper<sysFolder>));
+            var type = typeManager.RegisterType("ПеречислениеСпециальнаяПапка", "EnumSpecialFolder", typeof(SpecialFolderEnum));
+            var enumValueType = typeManager.RegisterType("СпециальнаяПапка", "SpecialFolder", typeof(CLREnumValueWrapper<sysFolder>));
 
             instance = new SpecialFolderEnum(type, enumValueType);
 

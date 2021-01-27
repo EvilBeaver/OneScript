@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.DriveInfo
 {
@@ -33,8 +34,8 @@ namespace OneScript.StandardLibrary.DriveInfo
         public static DriveTypeEnum CreateInstance(ITypeManager typeManager)
         {
             DriveTypeEnum instance;
-            var type = typeManager.RegisterType("ПеречислениеТипДиска", typeof(DriveTypeEnum));
-            var enumValueType = typeManager.RegisterType("ТипДиска", typeof(CLREnumValueWrapper<System.IO.DriveType>));
+            var type = typeManager.RegisterType("ПеречислениеТипДиска", "EnumDriveType",typeof(DriveTypeEnum));
+            var enumValueType = typeManager.RegisterType("ТипДиска","DriveType", typeof(CLREnumValueWrapper<System.IO.DriveType>));
 
             instance = new DriveTypeEnum(type, enumValueType);
 

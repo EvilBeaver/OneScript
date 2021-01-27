@@ -175,19 +175,15 @@ namespace OneScript.StandardLibrary
 
         private static Type GetReflectableClrType(TypeTypeValue type)
         {
-            Type clrType;
-            try
-            {
-                clrType = TypeManager.GetImplementingClass(type.Value.ID);
-            }
-            catch (InvalidOperationException)
+            var clrType = type.TypeValue.ImplementingClass;
+            if(clrType != typeof(AttachedScriptsFactory) && !typeof(IRuntimeContextInstance).IsAssignableFrom(clrType))
             {
                 throw NonReflectableType();
             }
 
             Type reflectableType;
             if (clrType == typeof(AttachedScriptsFactory))
-                reflectableType = ReflectUserType(type.Value.Name);
+                reflectableType = ReflectUserType(type.TypeValue.Name);
             else
                 reflectableType = ReflectContext(clrType);
 

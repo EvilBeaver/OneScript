@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Text
 {
@@ -43,8 +44,8 @@ namespace OneScript.StandardLibrary.Text
         public static ConsoleColorEnum CreateInstance(ITypeManager typeManager)
         {
             ConsoleColorEnum instance;
-            var type = typeManager.RegisterType("ПеречислениеЦветКонсоли", typeof(ConsoleColorEnum));
-            var enumValueType = typeManager.RegisterType("ЦветКонсоли", typeof(CLREnumValueWrapper<ConsoleColor>));
+            var type = typeManager.RegisterType("ПеречислениеЦветКонсоли", default,typeof(ConsoleColorEnum));
+            var enumValueType = typeManager.RegisterType("ЦветКонсоли", default, typeof(CLREnumValueWrapper<ConsoleColor>));
 
             instance = new ConsoleColorEnum(type, enumValueType);
 

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -63,11 +64,12 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         public static EnumerationXSSubstitutionGroupExclusions CreateInstance(ITypeManager typeManager)
         {
 
-            TypeDescriptor type = typeManager.RegisterType("EnumerationXSSubstitutionGroupExclusions", typeof(EnumerationXSSubstitutionGroupExclusions));
-            TypeDescriptor enumValueType = typeManager.RegisterType("XSSubstitutionGroupExclusions", typeof(XSSubstitutionGroupExclusions));
-
-            typeManager.RegisterAliasFor(type, "ПеречислениеИсключенияГруппПодстановкиXS");
-            typeManager.RegisterAliasFor(enumValueType, "ИсключенияГруппПодстановкиXS");
+            var type = typeManager.RegisterType(
+                "ПеречислениеИсключенияГруппПодстановкиXS",
+                "EnumerationXSSubstitutionGroupExclusions", typeof(EnumerationXSSubstitutionGroupExclusions));
+            var enumValueType = typeManager.RegisterType(
+                "ИсключенияГруппПодстановкиXS",
+                "XSSubstitutionGroupExclusions", typeof(XSSubstitutionGroupExclusions));
 
             EnumerationXSSubstitutionGroupExclusions instance = new EnumerationXSSubstitutionGroupExclusions(type, enumValueType);
 

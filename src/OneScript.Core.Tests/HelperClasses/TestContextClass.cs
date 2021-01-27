@@ -5,13 +5,17 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.Core.Tests
 {
 	[ContextClass("ТестовыйКласс", "TestClass")]
 	public class TestContextClass : AutoContext<TestContextClass>
 	{
+		
+		public string CreatedViaMethod { get; private set; }
 		
 		[ContextMethod("УстаревшийМетод", "ObsoleteMethod", IsDeprecated = true, ThrowOnUse = false)]
 		public void ObsoleteMethod()
@@ -30,8 +34,28 @@ namespace OneScript.Core.Tests
 		[ScriptConstructor]
 		public static TestContextClass Constructor()
 		{
-			return new TestContextClass();
+			return new TestContextClass
+			{
+				CreatedViaMethod = "Constructor0"
+			};
 		}
 		
+		[ScriptConstructor(ParametrizeWithClassName = true)]
+		public static TestContextClass Constructor(string typeName, IValue ctorParam)
+		{
+			return new TestContextClass
+			{
+				CreatedViaMethod = $"Constructor1-{typeName}"
+			};
+		}
+		
+		[TypeConstructor(InjectActivationContext = true)]
+		public static TestContextClass Constructor(TypeActivationContext context, IValue ctorParam1, IValue ctorParam2)
+		{
+			return new TestContextClass
+			{
+				CreatedViaMethod = $"Constructor2-{context.TypeName}"
+			};
+		}
 	}
 }

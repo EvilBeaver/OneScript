@@ -25,6 +25,7 @@ namespace ScriptEngine
             ExportedProperties = new List<ExportedSymbol>();
             ExportedMethods = new List<ExportedSymbol>();
             Variables = new VariablesFrame();
+            Annotations = new List<AnnotationDefinition>();
         }
 
         public VariablesFrame Variables { get; }
@@ -38,6 +39,7 @@ namespace ScriptEngine
         public IList<ExportedSymbol> ExportedMethods { get; set; }
         public int LoadAddress { get; set; }
         public ModuleInformation ModuleInfo { get; set; }
+        public IList<AnnotationDefinition> Annotations { get; set; }
     }
 
     [Serializable]

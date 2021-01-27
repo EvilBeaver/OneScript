@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Security.Cryptography;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Hash
 {

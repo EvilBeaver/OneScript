@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -35,10 +36,7 @@ namespace ScriptEngine.Machine.Contexts
             get { return Machine.DataType.GenericValue; }
         }
 
-        public virtual TypeDescriptor SystemType
-        {
-            get { return _owner.ValuesType; }
-        }
+        public virtual TypeDescriptor SystemType => _owner.ValuesType;
 
         public virtual decimal AsNumber()
         {
@@ -82,7 +80,7 @@ namespace ScriptEngine.Machine.Contexts
                 }
                 else
                 {
-                    return SystemType.ID - other.SystemType.ID;
+                    throw RuntimeException.ComparisonNotSupportedException();
                 }
             }
             else

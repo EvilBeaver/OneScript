@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Xml.Schema;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -63,11 +64,12 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         public static EnumerationXSProhibitedSubstitutions CreateInstance(ITypeManager typeManager)
         {
 
-            TypeDescriptor type = typeManager.RegisterType("EnumerationXSProhibitedSubstitutions", typeof(EnumerationXSProhibitedSubstitutions));
-            TypeDescriptor enumValueType = typeManager.RegisterType("XSProhibitedSubstitutions", typeof(XSProhibitedSubstitutions));
-
-            typeManager.RegisterAliasFor(type, "ПеречислениеЗапрещенныеПодстановкиXS");
-            typeManager.RegisterAliasFor(enumValueType, "ЗапрещенныеПодстановкиXS");
+            var type = typeManager.RegisterType(
+                "ПеречислениеЗапрещенныеПодстановкиXS",
+                "EnumerationXSProhibitedSubstitutions", typeof(EnumerationXSProhibitedSubstitutions));
+            var enumValueType = typeManager.RegisterType(
+                "ЗапрещенныеПодстановкиXS",
+                "XSProhibitedSubstitutions", typeof(XSProhibitedSubstitutions));
 
             EnumerationXSProhibitedSubstitutions instance = new EnumerationXSProhibitedSubstitutions(type, enumValueType);
 

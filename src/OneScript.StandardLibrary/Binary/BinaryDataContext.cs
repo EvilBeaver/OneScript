@@ -117,7 +117,7 @@ namespace OneScript.StandardLibrary.Binary
             if (other == null)
                 return false;
 
-            if (other.SystemType.ID == SystemType.ID)
+            if (other.SystemType == SystemType)
             {
                 var binData = other.GetRawValue() as BinaryDataContext;
                 Debug.Assert(binData != null);

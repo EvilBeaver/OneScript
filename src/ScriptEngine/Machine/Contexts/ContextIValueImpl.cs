@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Dynamic;
 using System.Linq;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -14,12 +15,11 @@ namespace ScriptEngine.Machine.Contexts
     {
         private TypeDescriptor _type;
 
-        public ContextIValueImpl()
+        protected ContextIValueImpl()
         {
-
         }
 
-        public ContextIValueImpl(TypeDescriptor type)
+        protected ContextIValueImpl(TypeDescriptor type)
         {
             DefineType(type);
         }
@@ -45,7 +45,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
-                if (_type.Name == null)
+                if (_type == default)
                 {
                     if (TypeManager.IsKnownType(this.GetType()))
                     {

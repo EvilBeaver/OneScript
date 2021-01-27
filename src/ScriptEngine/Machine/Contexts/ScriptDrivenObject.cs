@@ -25,7 +25,6 @@ namespace ScriptEngine.Machine.Contexts
         public LoadedModule Module => _module;
 
         protected ScriptDrivenObject(LoadedModule module, bool deffered)
-            : base(TypeManager.GetTypeByName("Object"))
         {
             _module = module;
             if (!deffered)

@@ -6,10 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Diagnostics;
 using System.Xml;
 using OneScript.StandardLibrary.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Xml
 {
@@ -31,9 +34,8 @@ namespace OneScript.StandardLibrary.Xml
                     return XmlConvert.ToString(value.AsNumber());
                 default:
                     
-                    if(value.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext))))
+                    if(value.GetRawValue() is BinaryDataContext bdc)
                     {
-                        var bdc = value.GetRawValue() as BinaryDataContext;
                         System.Diagnostics.Debug.Assert(bdc != null);
 
                         return Convert.ToBase64String(bdc.Buffer, Base64FormattingOptions.InsertLineBreaks);
@@ -49,29 +51,37 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("XMLЗначение", "XMLValue")]
         public IValue XMLValue(IValue givenType, string presentation)
         {
-            var typeValue = TypeManager.GetTypeDescriptorFor(givenType.GetRawValue());
+            if (givenType.GetRawValue().DataType != DataType.Type)
+            {
+                throw new ArgumentException(nameof(givenType));
+            }
 
-            if(typeValue.Equals(TypeDescriptor.FromDataType(DataType.Boolean)))
+            var dataType = givenType.GetRawValue() as TypeTypeValue;
+            Debug.Assert(dataType != null);
+
+            var typeValue = dataType.TypeValue;
+
+            if(typeValue.Equals(BasicTypes.Boolean))
             {
                 return ValueFactory.Create(XmlConvert.ToBoolean(presentation));
             }
-            else if (typeValue.Equals(TypeDescriptor.FromDataType(DataType.Date)))
+            else if (typeValue.Equals(BasicTypes.Date))
             {
                 return ValueFactory.Create(XmlConvert.ToDateTime(presentation, XmlDateTimeSerializationMode.Unspecified));
             }
-            else if (typeValue.Equals(TypeDescriptor.FromDataType(DataType.Number)))
+            else if (typeValue.Equals(BasicTypes.Number))
             {
                 return ValueFactory.Create(XmlConvert.ToDecimal(presentation));
             }
-            else if (typeValue.Equals(TypeDescriptor.FromDataType(DataType.String)))
+            else if (typeValue.Equals(BasicTypes.String))
             {
                 return ValueFactory.Create(presentation);
             }
-            else if (typeValue.Equals(TypeDescriptor.FromDataType(DataType.Undefined)) && presentation == "")
+            else if (typeValue.Equals(BasicTypes.Undefined) && presentation == "")
             {
                 return ValueFactory.Create();
             }
-            else if (typeValue.Equals(TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext))))
+            else if (typeValue.ImplementingClass == typeof(BinaryDataContext))
             {
                 byte[] bytes = Convert.FromBase64String(presentation);
                 return new BinaryDataContext(bytes);
