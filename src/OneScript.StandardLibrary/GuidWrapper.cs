@@ -35,7 +35,7 @@ namespace OneScript.StandardLibrary
             _value = Guid.Parse(uuidString);
         }
 
-        [TypeConstructor]
+        [ScriptConstructor]
         public static GuidWrapper Create()
         {
             return new GuidWrapper();

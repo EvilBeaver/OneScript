@@ -329,6 +329,8 @@ namespace ScriptEngine.Machine.Contexts
     public class ScriptConstructorAttribute : Attribute
     {
         public string Name { get; set; }
+        
+        [Obsolete("Use TypeActivationContext as first parameter in Constructor")]
         public bool ParametrizeWithClassName { get; set; }
     }
 }

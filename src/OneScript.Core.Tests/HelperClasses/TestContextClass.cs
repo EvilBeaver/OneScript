@@ -49,7 +49,7 @@ namespace OneScript.Core.Tests
 			};
 		}
 		
-		[TypeConstructor(InjectActivationContext = true)]
+		[ScriptConstructor]
 		public static TestContextClass Constructor(TypeActivationContext context, IValue ctorParam1, IValue ctorParam2)
 		{
 			return new TestContextClass

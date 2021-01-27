@@ -191,7 +191,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return new TypeDescription(new TypeTypeValue[] { TypeBoolean() });
 		}
 
-		[TypeConstructor(InjectActivationContext = true)]
+		[ScriptConstructor]
 		public static TypeDescription Constructor(
 			TypeActivationContext context,
 			IValue source = null,
