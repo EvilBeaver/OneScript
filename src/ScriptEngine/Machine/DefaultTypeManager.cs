@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Commons;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
@@ -50,7 +51,11 @@ namespace ScriptEngine.Machine
                 var td = RegisterType(name, default, typeof(COMWrapperContext));
                 return td;
             }
-            throw new RuntimeException($"Тип не зарегистрирован ({name})");
+
+            var template = Locale.NStr("ru = 'Тип не зарегистрирован ({0})';" +
+                                       "en = 'Type is not registered ({0})'");
+            
+            throw new RuntimeException(string.Format(template, name));
         }
 
         public TypeDescriptor RegisterType(string name, string alias, Type implementingClass)
