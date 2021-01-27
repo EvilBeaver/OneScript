@@ -1352,13 +1352,17 @@ namespace ScriptEngine.Machine
             }
 
             var typeName = _operationStack.Pop().AsString();
-            var type = TypeManager.GetTypeByName(typeName);
+            if (!TypeManager.TryGetType(typeName, out var type))
+            {
+                throw RuntimeException.ConstructorNotFound(typeName);
+            }
+            
             var factory = TypeManager.GetFactoryFor(type);
-
             var constructor = factory.GetConstructor(argValues);
+            
             if(constructor == null)
             {
-                throw new RuntimeException("Конструктор не найден (" + typeName + ")");
+                throw RuntimeException.ConstructorNotFound(typeName);
             }
 
             var context = new TypeActivationContext

@@ -58,6 +58,24 @@ namespace ScriptEngine.Machine
             throw new RuntimeException(string.Format(template, name));
         }
 
+        public bool TryGetType(Type frameworkType, out TypeDescriptor type)
+        {
+            type = _knownTypes.FirstOrDefault(x => x.ImplementingClass == frameworkType);
+            return type != default;
+        }
+        
+        public bool TryGetType(string name, out TypeDescriptor type)
+        {
+            if (_knownTypesIndexes.TryGetValue(name, out var index))
+            {
+                type = _knownTypes[index];
+                return true;
+            }
+
+            type = default;
+            return false;
+        }
+
         public TypeDescriptor RegisterType(string name, string alias, Type implementingClass)
         {
             if (_knownTypesIndexes.ContainsKey(name))

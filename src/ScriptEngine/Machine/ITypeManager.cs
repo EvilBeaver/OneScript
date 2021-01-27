@@ -14,6 +14,10 @@ namespace ScriptEngine.Machine
     {
         TypeDescriptor GetTypeByName(string name);
         TypeDescriptor GetTypeByFrameworkType(Type type);
+
+        bool TryGetType(string name, out TypeDescriptor type);
+        bool TryGetType(Type frameworkType, out TypeDescriptor type);
+        
         TypeDescriptor RegisterType(string name, string alias, Type implementingClass);
         
         TypeFactory GetFactoryFor(TypeDescriptor type);
