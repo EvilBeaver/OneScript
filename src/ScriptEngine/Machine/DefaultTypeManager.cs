@@ -20,7 +20,7 @@ namespace ScriptEngine.Machine
     {
         private readonly Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private readonly List<TypeDescriptor> _knownTypes = new List<TypeDescriptor>();
-        private readonly TypeActivator _activator = new TypeActivator();
+        private readonly TypeFactoryCache _factoryCache = new TypeFactoryCache();
         
         private Type _dynamicFactory;
 
@@ -112,7 +112,7 @@ namespace ScriptEngine.Machine
 
         public TypeFactory GetFactoryFor(TypeDescriptor type)
         {
-            return _activator.GetFactoryFor(type);
+            return _factoryCache.GetFactoryFor(type);
         }
 
         private void RegisterTypeInternal(TypeDescriptor td)

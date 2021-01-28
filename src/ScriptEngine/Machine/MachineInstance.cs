@@ -1358,13 +1358,6 @@ namespace ScriptEngine.Machine
             }
             
             var factory = TypeManager.GetFactoryFor(type);
-            var constructor = factory.GetConstructor(argValues);
-            
-            if(constructor == null)
-            {
-                throw RuntimeException.ConstructorNotFound(typeName);
-            }
-
             var context = new TypeActivationContext
             {
                 GlobalsManager = GlobalsManager.Instance,
@@ -1372,7 +1365,7 @@ namespace ScriptEngine.Machine
                 TypeName = typeName
             };
             
-            var instance = constructor(context, argValues);
+            var instance = factory.Activate(context, argValues);
             _operationStack.Push(instance);
             NextInstruction();
 

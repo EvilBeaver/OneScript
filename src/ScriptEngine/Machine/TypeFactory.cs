@@ -16,19 +16,38 @@ using Refl = System.Reflection;
 namespace ScriptEngine.Machine
 {
     public delegate IValue InstanceConstructor(TypeActivationContext context, IValue[] arguments);
-
+    
     public class TypeFactory
     {
-        private readonly Type _clrType;
+        private readonly TypeDescriptor _systemType;
 
         private Dictionary<int, InstanceConstructor> _constructorsCache = new Dictionary<int, InstanceConstructor>();
 
-        public TypeFactory(Type clrType)
+        public TypeFactory(TypeDescriptor type)
         {
-            _clrType = clrType;
+            _systemType = type;
         }
 
-        public InstanceConstructor GetConstructor(IValue[] arguments)
+        private Type ClrType => _systemType.ImplementingClass;
+
+        public IValue Activate(TypeActivationContext context, IValue[] arguments)
+        {
+            var constructor = GetConstructor(arguments);
+            if (constructor == default)
+            {
+                throw RuntimeException.ConstructorNotFound(context.TypeName);
+            }
+            
+            var instance = constructor(context, arguments);
+            if (instance is ISystemTypeAcceptor typeAcceptor)
+            {
+                typeAcceptor.AssignType(_systemType);
+            }
+
+            return instance;
+        }
+        
+        private InstanceConstructor GetConstructor(IValue[] arguments)
         {
             if (_constructorsCache.TryGetValue(arguments.Length, out var constructor))
             {
@@ -155,7 +174,7 @@ namespace ScriptEngine.Machine
 
         private (bool, ConstructorDefinition) FindConstructor(IValue[] arguments)
         {
-            var ctors = GetMarkedConstructors(_clrType);
+            var ctors = GetMarkedConstructors(ClrType);
 
             int argCount = arguments.Length;
             foreach (var ctor in ctors)
@@ -219,7 +238,7 @@ namespace ScriptEngine.Machine
 
         private IEnumerable<ConstructorDefinition> GetMarkedConstructors(Type type)
         {
-            var staticMethods = _clrType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+            var staticMethods = ClrType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
             var constructors = new List<ConstructorDefinition>(4);
             
             foreach (var method in staticMethods)

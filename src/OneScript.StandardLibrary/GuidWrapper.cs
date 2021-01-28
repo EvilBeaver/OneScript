@@ -23,11 +23,7 @@ namespace OneScript.StandardLibrary
         static GuidWrapper()
         {
             var attr = typeof(GuidWrapper).GetCustomAttribute<ContextClassAttribute>();
-            InstanceType = new TypeDescriptor(
-                new Guid(attr.TypeUUID),
-                attr.GetName(),
-                attr.GetAlias(),
-                typeof(GuidWrapper));
+            InstanceType = typeof(GuidWrapper).GetTypeFromClassMarkup();
         }
         
         public GuidWrapper()

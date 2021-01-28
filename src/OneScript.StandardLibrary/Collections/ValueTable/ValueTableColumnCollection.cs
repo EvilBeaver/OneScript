@@ -11,24 +11,26 @@ using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
     /// <summary>
     /// Коллекция колонок таблицы значений
     /// </summary>
-    [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection")]
+    [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection", TypeUUID = "E1584766-C053-4644-B4C2-9642C0F53EFA")]
     public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTableColumn>, IDebugPresentationAcceptor
     {
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
- 
         private StringComparer NamesComparer = StringComparer.OrdinalIgnoreCase;
-
         private readonly ValueTable _owner;
+
+        private static readonly TypeDescriptor _objectType = typeof(ValueTableColumnCollection).GetTypeFromClassMarkup();
 
         public ValueTableColumnCollection(ValueTable owner)
         {
             _owner = owner;
+            DefineType(_objectType);
         }
 
         /// <summary>

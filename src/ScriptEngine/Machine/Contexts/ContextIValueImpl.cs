@@ -11,7 +11,7 @@ using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class ContextIValueImpl : DynamicObject, IRuntimeContextInstance, IValue
+    public abstract class ContextIValueImpl : DynamicObject, IRuntimeContextInstance, IValue, ISystemTypeAcceptor
     {
         private TypeDescriptor _type;
 
@@ -21,9 +21,14 @@ namespace ScriptEngine.Machine.Contexts
 
         protected ContextIValueImpl(TypeDescriptor type)
         {
-            DefineType(type);
+            _type = type;
         }
 
+        void ISystemTypeAcceptor.AssignType(TypeDescriptor type)
+        {
+            _type = type;
+        }
+        
         protected void DefineType(TypeDescriptor type)
         {
             _type = type;
