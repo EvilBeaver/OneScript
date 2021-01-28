@@ -71,9 +71,44 @@ namespace ScriptEngine.HostedScript.Extensions
             return b;
         }
         
-        public static CompilerOptions UseFileSystemLibraries(this CompilerOptions b)
+        public static IEngineBuilder UseFileSystemLibraries(this IEngineBuilder b)
         {
-            return b.UseImports(new FileSystemDependencyResolver());
+            var config = b.ConfigurationProviders.CreateConfig();
+
+            var searchDirs = new List<string>();
+            
+            var sysDir = config[OneScriptOptions.SYSTEM_LIBRARY_DIR];
+            if (sysDir == default)
+            {
+                var entrypoint = System.Reflection.Assembly.GetEntryAssembly();
+                if (entrypoint == default)
+                    entrypoint = typeof(FileSystemDependencyResolver).Assembly;
+                
+                sysDir = Path.GetDirectoryName(entrypoint.Location);
+                searchDirs.Add(sysDir);
+            }
+            else
+            {
+                searchDirs.Add(sysDir);
+            }
+            
+            var additionalDirsList = config[OneScriptOptions.ADDITIONAL_LIBRARIES];
+
+            if (additionalDirsList != null)
+            {
+                var addDirs = additionalDirsList.Split(';');
+                searchDirs.AddRange(addDirs);
+            }
+
+            b.CompilerOptions.UseFileSystemLibraries(searchDirs);
+            return b;
+        }
+        
+        public static CompilerOptions UseFileSystemLibraries(this CompilerOptions b, IEnumerable<string> searchDirectories)
+        {
+            var resolver = new FileSystemDependencyResolver();
+            resolver.SearchDirectories.AddRange(searchDirectories);
+            return b.UseImports(resolver);
         }
     }
 }
