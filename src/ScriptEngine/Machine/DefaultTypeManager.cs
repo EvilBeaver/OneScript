@@ -26,13 +26,13 @@ namespace ScriptEngine.Machine
 
         public DefaultTypeManager()
         {
-            RegisterType(BasicTypes.Undefined);
-            RegisterType(BasicTypes.Boolean);
-            RegisterType(BasicTypes.String);
-            RegisterType(BasicTypes.Date);
-            RegisterType(BasicTypes.Number);
-            RegisterType(BasicTypes.Null);
-            RegisterType(BasicTypes.Type);
+            RegisterTypeInternal(BasicTypes.Undefined);
+            RegisterTypeInternal(BasicTypes.Boolean);
+            RegisterTypeInternal(BasicTypes.String);
+            RegisterTypeInternal(BasicTypes.Date);
+            RegisterTypeInternal(BasicTypes.Number);
+            RegisterTypeInternal(BasicTypes.Null);
+            RegisterTypeInternal(BasicTypes.Type);
             
             // TODO тут был еще тип Object для конструирования
         }
@@ -91,10 +91,23 @@ namespace ScriptEngine.Machine
             else
             {
                 var typeDesc = new TypeDescriptor(Guid.NewGuid(), name, alias, implementingClass);
-                RegisterType(typeDesc);
+                RegisterTypeInternal(typeDesc);
                 return typeDesc;
             }
 
+        }
+        
+        public void RegisterType(TypeDescriptor typeDescriptor)
+        {
+            if (TryGetType(typeDescriptor.Name, out var knownType))
+            {
+                if (knownType != typeDescriptor)
+                    throw new InvalidOperationException($"Type {typeDescriptor} already registered");
+                
+                return;
+            }
+            
+            RegisterTypeInternal(typeDescriptor);
         }
 
         public TypeFactory GetFactoryFor(TypeDescriptor type)
@@ -102,7 +115,7 @@ namespace ScriptEngine.Machine
             return _activator.GetFactoryFor(type);
         }
 
-        private void RegisterType(TypeDescriptor td)
+        private void RegisterTypeInternal(TypeDescriptor td)
         {
             var nextListId = _knownTypes.Count;
             _knownTypesIndexes.Add(td.Name, nextListId);

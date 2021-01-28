@@ -101,7 +101,18 @@ namespace ScriptEngine.Machine.Contexts
 
             var attr = (ContextClassAttribute)attribData[0];
 
-            Types.RegisterType(attr.GetName(), attr.GetAlias(), stdClass);
+            if (attr.TypeUUID != default)
+            {
+                var type = new TypeDescriptor(
+                    new Guid(attr.TypeUUID),
+                    attr.GetName(),
+                    attr.GetAlias(),
+                    stdClass);
+
+                Types.RegisterType(type);
+            }
+            else
+                Types.RegisterType(attr.GetName(), attr.GetAlias(), stdClass);
         }
 
         private void RegisterSystemEnum(Type enumType, RuntimeEnvironment environment)

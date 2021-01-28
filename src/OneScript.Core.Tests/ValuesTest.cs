@@ -5,9 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using Moq;
 using OneScript.Commons;
+using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 using Xunit;
@@ -236,6 +239,26 @@ namespace OneScript.Core.Tests
         {
             var value = ValueFactory.Parse(literal, type);
             Assert.True(value.DataType == type);
+        }
+
+        [Fact]
+        public void TypeEqualityOnCreationTest()
+        {
+            var autoGuid = new GuidWrapper();
+            var manualGuid = new GuidWrapper("9F3457C0-7D2A-4DCD-B9F9-3D9228986A6A");
+
+            var typeManager = new DefaultTypeManager(); 
+            var discoverer = new ContextDiscoverer(typeManager, Mock.Of<IGlobalsManager>());
+            
+            discoverer.DiscoverClasses(typeof(GuidWrapper).Assembly, x => x == typeof(GuidWrapper));
+
+            Assert.True(typeManager.IsKnownType(typeof(GuidWrapper)));
+            var typeFromManager = typeManager.GetTypeByFrameworkType(typeof(GuidWrapper));
+            
+            Assert.Equal(autoGuid.SystemType, typeFromManager);
+            Assert.Equal(manualGuid.SystemType, typeFromManager);
+            Assert.Equal(manualGuid.SystemType, autoGuid.SystemType);
+            
         }
     }
 }

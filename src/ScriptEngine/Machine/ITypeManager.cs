@@ -20,6 +20,8 @@ namespace ScriptEngine.Machine
         
         TypeDescriptor RegisterType(string name, string alias, Type implementingClass);
         
+        void RegisterType(TypeDescriptor typeDescriptor);
+        
         TypeFactory GetFactoryFor(TypeDescriptor type);
         
         bool IsKnownType(Type type);
