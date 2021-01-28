@@ -59,13 +59,7 @@ namespace ScriptEngine
             return _injectedProperties.GetPropValue(propId);
         }
 
-        internal CompilerContext SymbolsContext
-        {
-            get
-            {
-                return _symbolScopes;
-            }
-        }
+        internal CompilerContext SymbolsContext => _symbolScopes;
 
         internal IList<IAttachableContext> AttachedContexts => _objects;
 

@@ -31,15 +31,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string ToString()
         {
-            return _type.Name ?? base.ToString();
+            return _type?.Name ?? base.ToString();
         }
         
         #region IValue Members
 
-        public DataType DataType
-        {
-            get { return Machine.DataType.Object; }
-        }
+        public DataType DataType => DataType.Object;
 
         public TypeDescriptor SystemType
         {
