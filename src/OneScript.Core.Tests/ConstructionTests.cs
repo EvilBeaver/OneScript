@@ -22,9 +22,8 @@ namespace OneScript.Core.Tests
             {
                 TypeName = "SomeType"
             };
-            
-            var constructor = f.GetConstructor(new IValue[0]);
-            var instance = (TestContextClass)constructor(ctx, new IValue[0]);
+
+            var instance = (TestContextClass)f.Activate(ctx, new IValue[0]);
             instance.CreatedViaMethod.Should().Be("Constructor0");
         
             var args = new IValue[1]
@@ -32,8 +31,7 @@ namespace OneScript.Core.Tests
                 default
             };
             
-            constructor = f.GetConstructor(args);
-            instance = (TestContextClass)constructor(ctx, args);
+            instance = (TestContextClass)f.Activate(ctx, args);
             instance.CreatedViaMethod.Should().Be("Constructor1-SomeType");
         }
 
@@ -51,9 +49,8 @@ namespace OneScript.Core.Tests
                 default,
                 default
             };
-            var constructor = f.GetConstructor(args);
-            constructor.Should().NotBeNull();
-            var instance = (TestContextClass)constructor(ctx, args);
+            
+            var instance = (TestContextClass)f.Activate(ctx, args);
             instance.CreatedViaMethod.Should().Be("Constructor2-SomeType");
         }
     }

@@ -11,9 +11,13 @@ using ScriptEngine.Types;
 
 namespace OneScript.Core.Tests
 {
-	[ContextClass("ТестовыйКласс", "TestClass")]
+	[ContextClass("ТестовыйКласс", "TestClass", TypeUUID = "65E99482-F711-4FBC-AAC7-4BF7E2A124A5")]
 	public class TestContextClass : AutoContext<TestContextClass>
 	{
+		public TestContextClass()
+		{
+			DefineType(GetType().GetTypeFromClassMarkup());
+		}
 		
 		public string CreatedViaMethod { get; private set; }
 		

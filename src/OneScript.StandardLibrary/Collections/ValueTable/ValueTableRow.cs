@@ -20,10 +20,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         private static readonly TypeDescriptor _objectType = typeof(ValueTableRow).GetTypeFromClassMarkup();
         
-        public ValueTableRow(ValueTable owner)
+        public ValueTableRow(ValueTable owner) : base(_objectType)
         {
             _owner = owner;
-            DefineType(_objectType);
         }
 
         public int Count()

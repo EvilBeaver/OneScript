@@ -22,7 +22,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTableColumn>, IDebugPresentationAcceptor
     {
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
-        private StringComparer NamesComparer = StringComparer.OrdinalIgnoreCase;
+        private readonly StringComparer _namesComparer = StringComparer.OrdinalIgnoreCase;
         private readonly ValueTable _owner;
 
         private static readonly TypeDescriptor _objectType = typeof(ValueTableColumnCollection).GetTypeFromClassMarkup();
@@ -128,7 +128,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public ValueTableColumn FindColumnByName(string name)
         {
-            return _columns.Find(column => NamesComparer.Equals(name, column.Name));
+            return _columns.Find(column => _namesComparer.Equals(name, column.Name));
         }
 
         public ValueTableColumn FindColumnByIndex(int index)
@@ -156,7 +156,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public override int FindProperty(string name)
         {
-            int idx = _columns.FindIndex(column => NamesComparer.Equals(name, column.Name));
+            int idx = _columns.FindIndex(column => _namesComparer.Equals(name, column.Name));
             if (idx == -1)
                 throw RuntimeException.PropNotFoundException(name);
             return idx;

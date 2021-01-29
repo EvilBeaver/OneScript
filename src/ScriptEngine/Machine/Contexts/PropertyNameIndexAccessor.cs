@@ -13,17 +13,13 @@ namespace ScriptEngine.Machine.Contexts
     {
         protected PropertyNameIndexAccessor()
         {
-
         }
-
+        
         protected PropertyNameIndexAccessor(TypeDescriptor type):base(type)
         {
         }
 
-        public override bool IsIndexed
-        {
-            get { return true; }
-        }
+        public override bool IsIndexed => true;
 
         public override bool IsPropReadable(int propNum)
         {

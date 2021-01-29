@@ -15,10 +15,10 @@ namespace ScriptEngine.Machine.Contexts
     {
         private TypeDescriptor _type;
 
-        protected ContextIValueImpl()
+        protected ContextIValueImpl() : this(BasicTypes.UnknownType)
         {
         }
-
+        
         protected ContextIValueImpl(TypeDescriptor type)
         {
             _type = type;
@@ -47,7 +47,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
-                if (_type == default)
+                if (_type == BasicTypes.UnknownType)
                 {
                     if (TypeManager.IsKnownType(this.GetType()))
                     {

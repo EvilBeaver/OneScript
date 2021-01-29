@@ -10,14 +10,21 @@ using System.Collections.Generic;
 using System.Linq;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
-    [ContextClass("ИндексыКоллекции", "CollectionIndexes")]
+    [ContextClass("ИндексыКоллекции", "CollectionIndexes", TypeUUID = "75983CBE-2ACC-4925-9CE0-23FC0C3E3211")]
     public class CollectionIndexes : AutoContext<CollectionIndexes>, ICollectionContext, IEnumerable<CollectionIndex>
     {
+        private static readonly TypeDescriptor _instanceType = typeof(CollectionIndexes).GetTypeFromClassMarkup();
+        
         readonly List<CollectionIndex> _indexes = new List<CollectionIndex>();
 
+        public CollectionIndexes() : base(_instanceType)
+        {
+        }
+        
         [ContextMethod("Добавить", "Add")]
         public CollectionIndex Add(string columns)
         {

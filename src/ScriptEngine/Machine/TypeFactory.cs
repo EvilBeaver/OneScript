@@ -27,6 +27,10 @@ namespace ScriptEngine.Machine
         {
             _systemType = type;
         }
+        
+        public TypeFactory(Type type) : this(type.GetTypeFromClassMarkup())
+        {
+        }
 
         private Type ClrType => _systemType.ImplementingClass;
 

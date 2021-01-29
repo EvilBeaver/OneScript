@@ -10,22 +10,25 @@ using System.Collections.Generic;
 using System.Linq;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTree
 {
     /// <summary>
     /// Коллекция строк дерева значений.
     /// </summary>
-    [ContextClass("КоллекцияСтрокДереваЗначений", "ValueTreeRowCollection")]
+    [ContextClass("КоллекцияСтрокДереваЗначений", "ValueTreeRowCollection", TypeUUID = "CEBF52F0-DA62-4058-9A22-0E659747E622")]
     public class ValueTreeRowCollection : AutoContext<ValueTreeRowCollection>, ICollectionContext, IEnumerable<ValueTreeRow>
     {
-
         private readonly List<ValueTreeRow> _rows = new List<ValueTreeRow>();
         private readonly ValueTreeRow _parent;
         private readonly ValueTree _owner;
         private readonly int _level;
+        
+        private static TypeDescriptor _instanceType = typeof(ValueTreeRowCollection).GetTypeFromClassMarkup();
 
         public ValueTreeRowCollection(ValueTree owner, ValueTreeRow parent, int level)
+            : base(_instanceType)
         {
             _owner = owner;
             _parent = parent;
