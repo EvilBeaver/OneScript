@@ -91,6 +91,12 @@ namespace OneScript.Language.SyntaxAnalysis
                     case NodeKind.ModuleBody:
                         VisitModuleBody(child);
                         break;
+                    case NodeKind.TopLevelExpression:
+                        var expression = child.Children.FirstOrDefault();
+                        if(expression != default)
+                            VisitExpression(expression);
+                        
+                        break;
                     default:
                         Visit(child);
                         break;

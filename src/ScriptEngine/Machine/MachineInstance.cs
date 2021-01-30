@@ -296,6 +296,7 @@ namespace ScriptEngine.Machine
             if (separate)
             {
                 runner = new MachineInstance();
+                runner._typeManager = _typeManager;
                 runner._scopes = new List<Scope>(_scopes);
                 currentMachine = Current;
                 SetCurrentMachineInstance(runner);

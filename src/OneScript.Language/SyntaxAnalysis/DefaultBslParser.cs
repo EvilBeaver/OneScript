@@ -94,9 +94,10 @@ namespace OneScript.Language.SyntaxAnalysis
         public BslSyntaxNode ParseExpression()
         {
             NextLexem();
-            var parent = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
+            var module = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
+            var parent = CreateChild(module, NodeKind.TopLevelExpression, _lastExtractedLexem);
             BuildExpression(parent, Token.EndOfText);
-            return parent;
+            return module;
         }
 
         private void PushContext(BslSyntaxNode node) => _builder.PushContext(node);
