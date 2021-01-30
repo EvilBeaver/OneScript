@@ -18,6 +18,10 @@
 	ЭтоWindows = Найти(НРег(СистемнаяИнформация.ВерсияОС), "windows") > 0;
 	Если ЭтоWindows Тогда
 		ВсеТесты.Добавить("ТестДолжен_ПроверитьМетодыВнешнейКомпоненты");
+	Иначе
+		Каталог = ТекущийСценарий().Каталог + "../src/ScriptEngine.NativeApi/bin/";
+		КопироватьФайл(Каталог + "ScriptEngine.NativeApi32.so", "/usr/share/oscript/bin");
+		КопироватьФайл(Каталог + "ScriptEngine.NativeApi64.so", "/usr/share/oscript/bin");
 	КонецЕсли;
 	
 	Возврат ВсеТесты;
