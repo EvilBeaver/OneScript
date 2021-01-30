@@ -87,7 +87,7 @@ public:
 		return ::AllocMemory(pMemory, ulCountByte);
 	}
 	virtual void ADDIN_API FreeMemory(void** pMemory) override {
-		::FreeMemory(pMemory);
+		if (*pMemory) ::FreeMemory(pMemory);
 	}
 	IComponentBase& Component() {
 		return *pComponent;
