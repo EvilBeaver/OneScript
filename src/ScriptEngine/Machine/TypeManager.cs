@@ -10,6 +10,7 @@ using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine
 {
+    [Obsolete]
     public static class TypeManager
     {
         private static ITypeManager _instance;
