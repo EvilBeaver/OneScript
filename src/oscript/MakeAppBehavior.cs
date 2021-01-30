@@ -59,7 +59,7 @@ namespace oscript
 	    {
 	        var offset = (int)output.Length;
 	        
-	        var builder = ConsoleHostBuilder.Create();
+	        var builder = ConsoleHostBuilder.Create(_codePath);
 	        builder.UseEntrypointConfigFile(_codePath);
 	        var engine = ConsoleHostBuilder.Build(builder);
 	        engine.Initialize();

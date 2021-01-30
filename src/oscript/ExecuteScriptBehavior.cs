@@ -44,10 +44,8 @@ namespace oscript
 
             SystemLogger.SetWriter(this);
 
-            var builder = ConsoleHostBuilder.Create();
-            builder
-                 .UseEntrypointConfigFile(_path)
-                 .WithDebugger(DebugController);
+            var builder = ConsoleHostBuilder.Create(_path);
+            builder.WithDebugger(DebugController);
 
             var hostedScript = ConsoleHostBuilder.Build(builder);
 

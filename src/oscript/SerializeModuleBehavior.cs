@@ -30,8 +30,7 @@ namespace oscript
 
         public override int Execute()
         {
-            var builder = ConsoleHostBuilder.Create();
-            builder.UseEntrypointConfigFile(_path);
+            var builder = ConsoleHostBuilder.Create(_path);
             var engine = ConsoleHostBuilder.Build(builder);
             
             engine.Initialize();

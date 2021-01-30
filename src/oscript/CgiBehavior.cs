@@ -61,8 +61,8 @@ namespace oscript
 
 		private int RunCGIMode(string scriptFile)
 		{
-			var builder = ConsoleHostBuilder.Create();
-			builder.UseEntrypointConfigFile(scriptFile)
+			var builder = ConsoleHostBuilder
+				.Create(scriptFile)
 				.AddAssembly(Assembly.GetExecutingAssembly());
 
 			var engine = ConsoleHostBuilder.Build(builder);

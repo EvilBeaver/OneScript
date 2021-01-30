@@ -19,13 +19,14 @@ namespace oscript
 {
     internal static class ConsoleHostBuilder
     {
-        public static IEngineBuilder Create()
+        public static IEngineBuilder Create(string codePath)
         {
             var builder = new DefaultEngineBuilder();
             builder.SetDefaultOptions()
                 .AddAssembly(typeof(ArrayImpl).Assembly)
                 .UseSystemConfigFile()
-                .UseEnvironmentVariableConfig("OSCRIPT_CONFIG");
+                .UseEnvironmentVariableConfig("OSCRIPT_CONFIG")
+                .UseEntrypointConfigFile(codePath);
 
             builder.UseFileSystemLibraries();
             

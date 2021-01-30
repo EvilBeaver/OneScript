@@ -29,9 +29,7 @@ namespace oscript
 
 		public override int Execute()
 		{
-			var builder = ConsoleHostBuilder.Create();
-			builder.UseEntrypointConfigFile(_path);
-
+			var builder = ConsoleHostBuilder.Create(_path);
 			var hostedScript = ConsoleHostBuilder.Build(builder);
 			hostedScript.Initialize();
 			ScriptFileHelper.OnBeforeScriptRead(hostedScript);
