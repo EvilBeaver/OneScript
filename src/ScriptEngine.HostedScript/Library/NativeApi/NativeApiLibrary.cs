@@ -27,6 +27,9 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public NativeApiLibrary(String filepath, String identifier)
         {
+            if (!File.Exists(filepath))
+                return;
+
             using (var stream = File.OpenRead(filepath))
             {
                 if (NativeApiPackage.IsZip(stream))
