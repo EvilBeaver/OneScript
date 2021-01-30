@@ -112,10 +112,10 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public static Int32 Size
         {
-            get => 48;
+            get => NativeApiProxy.IsLinux ? ((IntPtr.Size == 8) ? 64 : 52) : 48;
         }
 
-        public IValue GetValue()
+    public IValue GetValue()
         {
             switch ((VarTypes)vt)
             {
