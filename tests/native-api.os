@@ -18,10 +18,9 @@
 	СистемнаяИнформация = Новый СистемнаяИнформация;
 	ЭтоWindows = Найти(НРег(СистемнаяИнформация.ВерсияОС), "windows") > 0;
 	Если Не ЭтоWindows Тогда
-		Каталог = ТекущийСценарий().Каталог + "/../src/ScriptEngine.NativeApi/";
-		ЗапуститьПриложение(Каталог + "build.sh", Каталог, Истина);
-		КопироватьФайл(Каталог + "bin/ScriptEngine.NativeApi32.so", "/usr/share/oscript/bin/ScriptEngine.NativeApi32.so");
-		КопироватьФайл(Каталог + "bin/ScriptEngine.NativeApi64.so", "/usr/share/oscript/bin/ScriptEngine.NativeApi64.so");
+		Каталог = ТекущийСценарий().Каталог + "/../src/ScriptEngine.NativeApi/bin/";
+		КопироватьФайл(Каталог + "ScriptEngine.NativeApi32.so", "/usr/share/oscript/bin/ScriptEngine.NativeApi32.so");
+		КопироватьФайл(Каталог + "ScriptEngine.NativeApi64.so", "/usr/share/oscript/bin/ScriptEngine.NativeApi64.so");
 		Каталог = ТекущийСценарий().Каталог + "/native-api/";
 		ЗапуститьПриложение(Каталог + "build.sh", Каталог, Истина);
 	КонецЕсли;
