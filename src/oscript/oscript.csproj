@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>oscript.Program</StartupObject>
@@ -26,9 +26,6 @@
     <PlatformTarget>x86</PlatformTarget>
     <IntermediateOutputPath>obj\x86\Debug</IntermediateOutputPath>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />
     <ProjectReference Include="..\OneScript.DebugServices\OneScript.DebugServices.csproj" />
