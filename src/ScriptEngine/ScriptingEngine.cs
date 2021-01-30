@@ -200,12 +200,6 @@ namespace ScriptEngine
             return sdo.InitializeAsync();
         }
 
-        public void ExecuteModule(LoadedModule module)
-        {
-            var scriptContext = new UserScriptContextInstance(module);
-            InitializeSDO(scriptContext);
-        }
-
         public AttachedScriptsFactory AttachedScriptsFactory => _attachedScriptsFactory;
 
         public IDebugController DebugController
