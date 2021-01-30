@@ -21,6 +21,8 @@
 		Каталог = ТекущийСценарий().Каталог + "/../src/ScriptEngine.NativeApi/bin/";
 		КопироватьФайл(Каталог + "ScriptEngine.NativeApi32.so", "/usr/share/oscript/bin/ScriptEngine.NativeApi32.so");
 		КопироватьФайл(Каталог + "ScriptEngine.NativeApi64.so", "/usr/share/oscript/bin/ScriptEngine.NativeApi64.so");
+		Каталог = ТекущийСценарий().Каталог + "/native-api/";
+		ЗапуститьПриложение(Каталог + "build.sh", Каталог, Истина);
 	КонецЕсли;
 	
 	Возврат ВсеТесты;
