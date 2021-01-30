@@ -199,7 +199,7 @@ namespace ScriptEngine.Compiler
             if (entry != _module.Code.Count)
             {
                 var bodyMethod = new MethodInfo();
-                bodyMethod.Name = AstBasedCodeGenerator.BODY_METHOD_NAME;
+                bodyMethod.Name = ModuleImage.BODY_METHOD_NAME;
                 var descriptor = new MethodDescriptor();
                 descriptor.EntryPoint = entry;
                 descriptor.Signature = bodyMethod;

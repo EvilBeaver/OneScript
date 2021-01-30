@@ -5,22 +5,18 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
+using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
 
-namespace OneScript.Language.LexicalAnalysis
+namespace OneScript.Compiler.Legacy.LexicalAnalysis
 {
     public static class SourceCodeExtensions
     {
-        public static ErrorPositionInfo GetErrorPosition(this SourceCodeIterator iterator)
+        public static ErrorPositionInfo GetErrorPosition(this ILexemGenerator lexer)
         {
-            return new ErrorPositionInfo
-            {
-                LineNumber = iterator.CurrentLine,
-                ColumnNumber = iterator.CurrentColumn,
-                Code = iterator.GetCodeLine(iterator.CurrentLine)
-            };
+            return lexer.Iterator.GetErrorPosition();
         }
-        
+
         public static ErrorPositionInfo GetErrorPosition(this ILexer lexer)
         {
             return lexer.Iterator.GetErrorPosition();

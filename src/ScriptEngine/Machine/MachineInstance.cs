@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine.Values;
@@ -2490,12 +2491,10 @@ namespace ScriptEngine.Machine
             ICodeSource stringSource = new StringBasedSource(expression);
             var parser = new DefaultLexer();
             parser.Iterator = new SourceCodeIterator(stringSource.Code);
-            var compiler = new Compiler.Compiler();
             ctx.PushScope(new SymbolScope()); // скоуп выражения
-            var modImg = compiler.CompileExpression(parser, ctx);
-            modImg.ModuleInfo = new ModuleInformation();
-            modImg.ModuleInfo.Origin = "<expression>";
-            modImg.ModuleInfo.ModuleName = "<expression>";
+
+            var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
+            var modImg = compiler.CompileExpression(stringSource);
             var code = new LoadedModule(modImg);
             return code;
         }
@@ -2506,15 +2505,13 @@ namespace ScriptEngine.Machine
             var entryId = CurrentCodeEntry().ToString();
 
             ICodeSource stringSource = new StringBasedSource(execBatch);
-            var parser = new DefaultLexer();
-            parser.Code = stringSource.Code;
-            var compiler = new Compiler.Compiler();
+            
+            var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
             ctx.PushScope(new SymbolScope()); // скоуп выражения
-            var modImg = compiler.CompileExecBatch(parser, ctx);
+            var modImg = compiler.CompileBatch(stringSource);
             modImg.ModuleInfo = new ModuleInformation();
             modImg.ModuleInfo.Origin = $"{entryId}:<exec>";
             modImg.ModuleInfo.ModuleName = $"{entryId}:<exec>";
-            modImg.ModuleInfo.CodeIndexer = parser.Iterator;
             var code = new LoadedModule(modImg);
             return code;
         }

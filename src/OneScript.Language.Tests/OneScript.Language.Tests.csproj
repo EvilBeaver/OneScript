@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OneScript.Compiler.Legacy\OneScript.Compiler.Legacy.csproj" />
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
   </ItemGroup>
 

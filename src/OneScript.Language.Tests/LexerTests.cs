@@ -16,23 +16,9 @@ namespace OneScript.Language.Tests
         public void Empty_Lexer_Position_Is_Negative()
         {
             var lexer = new DefaultLexer();
-            Assert.True(lexer.CurrentColumn == ErrorPositionInfo.OUT_OF_TEXT);
-            Assert.True(lexer.CurrentLine == ErrorPositionInfo.OUT_OF_TEXT);
+            Assert.True(lexer.Iterator.CurrentColumn == ErrorPositionInfo.OUT_OF_TEXT);
+            Assert.True(lexer.Iterator.CurrentLine == ErrorPositionInfo.OUT_OF_TEXT);
 
-        }
-
-        [Fact]
-        public void Code_Set_Sets_Position()
-        {
-            var lexer = new DefaultLexer();
-            lexer.Code = "А = 1;";
-            Assert.True(lexer.Code == "А = 1;");
-            Assert.True(lexer.CurrentColumn == ErrorPositionInfo.OUT_OF_TEXT);
-            Assert.True(lexer.CurrentLine == 1);
-            lexer.NextLexem();
-            Assert.True(lexer.CurrentColumn >= 0);
-            lexer.Code = "А = 1;";
-            Assert.True(lexer.CurrentColumn == ErrorPositionInfo.OUT_OF_TEXT);
         }
 
         [Fact]
@@ -548,7 +534,7 @@ namespace OneScript.Language.Tests
             '20100207' - ""ffff""";
 
             var lexer = new DefaultLexer();
-            lexer.Code = code;
+            lexer.Iterator = new SourceCodeIterator(code);
 
             Lexem lex;
             lex = lexer.NextLexem();
@@ -587,7 +573,7 @@ namespace OneScript.Language.Tests
             А$Б";
 
             var lexer = new DefaultLexer();
-            lexer.Code = code;
+            lexer.Iterator = new SourceCodeIterator(code);
             lexer.UnexpectedCharacterFound += (s, e) =>
                 {
                     e.Iterator.MoveNext();
@@ -634,7 +620,7 @@ namespace OneScript.Language.Tests
         {
             string code = "a //comment\r\n// another comment\r\nvalue";
             var lexer = new DefaultLexer();
-            lexer.Code = code;
+            lexer.Iterator = new SourceCodeIterator(code);
             Lexem lex;
 
             lex = lexer.NextLexem();

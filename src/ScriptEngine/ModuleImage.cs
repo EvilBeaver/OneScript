@@ -40,6 +40,8 @@ namespace ScriptEngine
         public int LoadAddress { get; set; }
         public ModuleInformation ModuleInfo { get; set; }
         public IList<AnnotationDefinition> Annotations { get; set; }
+        
+        public const string BODY_METHOD_NAME = "$entry";
     }
 
     [Serializable]

@@ -76,7 +76,22 @@ namespace ScriptEngine
             }
         }
 
+        public ModuleImage CompileExpression(ICodeSource source)
+        {
+            return CompileExpressionInternal(source, _currentContext);
+        }
+
+        public ModuleImage CompileBatch(ICodeSource source)
+        {
+            return CompileBatchInternal(source, _preprocessorVariables, _currentContext);
+        }
+
         protected abstract ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        
+        protected abstract ModuleImage CompileBatchInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        
+        protected abstract ModuleImage CompileExpressionInternal(ICodeSource source, ICompilerContext context);
+        
 
         private void RegisterScopeIfNeeded()
         {

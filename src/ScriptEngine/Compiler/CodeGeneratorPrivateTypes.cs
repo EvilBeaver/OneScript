@@ -13,7 +13,6 @@ namespace ScriptEngine.Compiler
 {
     public partial class AstBasedCodeGenerator
     {
-        public const string BODY_METHOD_NAME = "$entry";
         private const int DUMMY_ADDRESS = -1;
         
         private struct ForwardedMethodDecl

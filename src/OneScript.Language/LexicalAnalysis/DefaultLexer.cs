@@ -5,11 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Language.SyntaxAnalysis;
-
 namespace OneScript.Language.LexicalAnalysis
 {
-    public class DefaultLexer : FullSourceLexer, ILexemGenerator
+    public class DefaultLexer : FullSourceLexer
     {
         private string _code;
 
@@ -20,20 +18,6 @@ namespace OneScript.Language.LexicalAnalysis
                 ; // skip
 
             return lex;
-        }
-        
-        public int CurrentColumn => Iterator.CurrentColumn;
-
-        public int CurrentLine => Iterator.CurrentLine;
-
-        public string Code
-        {
-            get => _code;
-            set
-            {
-                _code = value;
-                Iterator = new SourceCodeIterator(value);
-            }
         }
     }
 }

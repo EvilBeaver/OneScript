@@ -9,7 +9,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    class ModuleCompilerContext : ICompilerContext
+    public class ModuleCompilerContext : ICompilerContext
     {
         private readonly ICompilerContext _outerCtx;
         private readonly CompilerContext _moduleCtx;
@@ -156,7 +156,7 @@ namespace ScriptEngine.Compiler
             symbolBinding.ContextIndex += OUTER_CTX_SIZE;
         }
 
-        internal void Update()
+        public void Update()
         {
             OUTER_CTX_SIZE = _outerCtx.TopIndex() + 1;
         }

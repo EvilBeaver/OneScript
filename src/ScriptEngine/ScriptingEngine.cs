@@ -25,17 +25,17 @@ namespace ScriptEngine
         private IDebugController _debugController;
 
         [Obsolete]
-        public ScriptingEngine()
+        public ScriptingEngine(ICompilerServiceFactory compilerFactory)
         {
             TypeManager = new DefaultTypeManager();
-            TypeManager.RegisterType("Сценарий", "Script", typeof(UserScriptContextInstance));
             
             GlobalsManager.Reset();
             
             Loader = new ScriptSourceFactory();
             DirectiveResolvers = new DirectiveMultiResolver();
             ContextDiscoverer = new ContextDiscoverer(TypeManager, GlobalsManager.Instance);
-            _compilerFactory = new LegacyCompilerFactory((IDirectiveResolver)DirectiveResolvers);
+            //_compilerFactory = new LegacyCompilerFactory(IDirectiveResolver)DirectiveResolvers);
+            _compilerFactory = compilerFactory;
             
             AttachAssembly(GetType().Assembly);
         }
@@ -51,11 +51,6 @@ namespace ScriptEngine
             TypeManager = types;
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
             
-            TypeManager.RegisterType(
-                "Сценарий",
-                "Script",
-                typeof(UserScriptContextInstance));
-
             GlobalsManager.Instance = globals;
             Environment = env;
             

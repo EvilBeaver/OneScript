@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Language;
@@ -27,29 +28,72 @@ namespace ScriptEngine.Compiler
         
         protected override ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
-            var codeGen = new AstBasedCodeGenerator(context)
-            {
-                ThrowErrors = true,
-                ProduceExtraCode = ProduceExtraCode,
-                DependencyResolver = _сompilerOptions.DependencyResolver
-            };
-            
-            var astBuilder = new DefaultAstBuilder();
-            _сompilerOptions.NodeBuilder = astBuilder;
-            
             var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
+            var mi = CreateModuleInformation(source, lexer);
+            var moduleNode = ParseSyntaxConstruction(
+                lexer,
+                handlers,
+                mi,
+                p => p.ParseStatefulModule());
+
+            return BuildModule(context, moduleNode, mi);
+        }
+
+        protected override ModuleImage CompileBatchInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
+        {
+            var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
+            var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
+            var mi = CreateModuleInformation(source, lexer);
+            var moduleNode = ParseSyntaxConstruction(
+                lexer,
+                handlers,
+                mi,
+                p => p.ParseCodeBatch());
+
+            return BuildModule(context, moduleNode, mi);
+        }
+
+        protected override ModuleImage CompileExpressionInternal(ICodeSource source, ICompilerContext context)
+        {
+            var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
+            var lexer = new DefaultLexer
+            {
+                Iterator = new SourceCodeIterator(source.Code)
+            };
+
+            var mi = new ModuleInformation
+            {
+                Origin = "<expression>",
+                ModuleName = "<expression>"
+            };
+            
+            var moduleNode = ParseSyntaxConstruction(
+                lexer,
+                handlers,
+                mi,
+                p => p.ParseExpression());
+
+            return BuildModule(context, moduleNode, mi);
+        }
+        
+        private ModuleNode ParseSyntaxConstruction(
+            ILexer lexer,
+            PreprocessorHandlers handlers,
+            ModuleInformation mi,
+            Func<DefaultBslParser, BslSyntaxNode> action)
+        {
             var parser = new DefaultBslParser(
                 lexer,
-                astBuilder,
+                _сompilerOptions.NodeBuilder,
                 _сompilerOptions.ErrorSink,
                 handlers);
 
             ModuleNode moduleNode;
-            var mi = CreateModuleInformation(source, lexer);
+            
             try
             {
-                moduleNode = (ModuleNode)parser.ParseStatefulModule();
+                moduleNode = (ModuleNode) action(parser);
             }
             catch (SyntaxErrorException e)
             {
@@ -57,8 +101,21 @@ namespace ScriptEngine.Compiler
                 {
                     e.ModuleName = mi.ModuleName;
                 }
+
                 throw;
             }
+
+            return moduleNode;
+        }
+
+        private ModuleImage BuildModule(ICompilerContext context, ModuleNode moduleNode, ModuleInformation mi)
+        {
+            var codeGen = new AstBasedCodeGenerator(context)
+            {
+                ThrowErrors = true,
+                ProduceExtraCode = ProduceExtraCode,
+                DependencyResolver = _сompilerOptions.DependencyResolver
+            };
 
             return codeGen.CreateImage(moduleNode, mi);
         }

@@ -31,7 +31,7 @@ namespace ScriptEngine.Compiler
             return exc;
         }
         
-        internal static CompilerException AppendCodeInfo(CompilerException exc, ErrorPositionInfo errorPosInfo)
+        public static CompilerException AppendCodeInfo(CompilerException exc, ErrorPositionInfo errorPosInfo)
         {
             exc.LineNumber = errorPosInfo.LineNumber;
             exc.ColumnNumber = errorPosInfo.ColumnNumber;
@@ -41,94 +41,94 @@ namespace ScriptEngine.Compiler
             return exc;
         }
 
-        internal static CompilerException UnexpectedOperation()
+        public static CompilerException UnexpectedOperation()
         {
             return new CompilerException(Locale.NStr("ru='Неизвестная операция';en='Unknown operation'"));
         }
 
-        internal static CompilerException IdentifierExpected()
+        public static CompilerException IdentifierExpected()
         {
             return new CompilerException(Locale.NStr("ru='Ожидается идентификатор';en='Identifier expecting'"));
         }
 
-        internal static CompilerException SemicolonExpected()
+        public static CompilerException SemicolonExpected()
         {
             return new CompilerException(Locale.NStr("ru='Ожидается символ ; (точка с запятой)';en='Expecting \";\"'"));
         }
 
-        internal static CompilerException LateVarDefinition()
+        public static CompilerException LateVarDefinition()
         {
             return new CompilerException(Locale.NStr("ru='Объявления переменных должны быть расположены в начале модуля, процедуры или функции';"
                                                     + "en='Variable declarations must be placed at beginning of module, procedure, or function'"));
         }
 
-        internal static CompilerException TokenExpected(params Token[] expected)
+        public static CompilerException TokenExpected(params Token[] expected)
         {
             var names = expected.Select(x => Enum.GetName(typeof(Token), x));
             return new CompilerException(Locale.NStr("ru='Ожидается символ: ';en='Expecting symbol: '") + String.Join("/", names));
         }
 
-        internal static CompilerException TokenExpected(string tokens)
+        public static CompilerException TokenExpected(string tokens)
         {
             return new CompilerException(Locale.NStr("ru='Ожидается символ: ';en='Expecting symbol: '") + tokens);
         }
 
-        internal static CompilerException ExpressionSyntax()
+        public static CompilerException ExpressionSyntax()
         {
             return new CompilerException(Locale.NStr("ru='Ошибка в выражении';en='Expression syntax error'"));
         }
 
-        internal static CompilerException UseProcAsFunction()
+        public static CompilerException UseProcAsFunction()
         {
             return new CompilerException(Locale.NStr("ru='Использование процедуры, как функции';en='Procedure called as function'"));            
         }
 
-        internal static CompilerException TooFewArgumentsPassed()
+        public static CompilerException TooFewArgumentsPassed()
         {
             return new CompilerException(Locale.NStr("ru='Недостаточно фактических параметров';en='Not enough actual parameters'"));
         }
 
-        internal static CompilerException TooManyArgumentsPassed()
+        public static CompilerException TooManyArgumentsPassed()
         {
             return new CompilerException(Locale.NStr("ru='Слишком много фактических параметров'; en='Too many actual parameters'"));
         }
 
-        internal static CompilerException InternalCompilerError(string reason)
+        public static CompilerException InternalCompilerError(string reason)
         {
             return new CompilerException(Locale.NStr("ru='Внутренняя ошибка компилятора:';en='Internal compiler error:'") + reason);
         }
 
-        internal static CompilerException UnexpectedEndOfText()
+        public static CompilerException UnexpectedEndOfText()
         {
             return new CompilerException(Locale.NStr("ru='Обнаружено логическое завершение текста модуля';en='Logical end of module source text encountered'"));
         }
 
-        internal static CompilerException BreakOutsideOfLoop()
+        public static CompilerException BreakOutsideOfLoop()
         {
             return new CompilerException(Locale.NStr("ru='Оператор \"Прервать\" может использоваться только внутри цикла';en='Break operator may be used only within loop'"));
         }
 
-        internal static CompilerException ContinueOutsideOfLoop()
+        public static CompilerException ContinueOutsideOfLoop()
         {
             return new CompilerException(Locale.NStr("ru='Оператор \"Продолжить\" может использоваться только внутри цикла';en='Continue operator may be used only within loop'"));
         }
 
-        internal static CompilerException ReturnOutsideOfMethod()
+        public static CompilerException ReturnOutsideOfMethod()
         {
             return new CompilerException(Locale.NStr("ru='Оператор \"Возврат\" может использоваться только внутри метода';en='Return operator may not be used outside procedure or function'"));
         }
 
-        internal static CompilerException ProcReturnsAValue()
+        public static CompilerException ProcReturnsAValue()
         {
             return new CompilerException(Locale.NStr("ru='Процедуры не могут возвращать значение';en='Procedures cannot return value'"));
         }
 
-        internal static CompilerException FuncEmptyReturnValue()
+        public static CompilerException FuncEmptyReturnValue()
         {
             return new CompilerException(Locale.NStr("ru='Функция должна возвращать значение';en='Function should return a value'"));
         }
 
-        internal static CompilerException MismatchedRaiseException()
+        public static CompilerException MismatchedRaiseException()
         {
             return new CompilerException(Locale.NStr("ru='Оператор \"ВызватьИсключение\" без параметров может использоваться только в блоке \"Исключение\"';en='Raise operator may be used without arguments only when handling exception'"));
         }

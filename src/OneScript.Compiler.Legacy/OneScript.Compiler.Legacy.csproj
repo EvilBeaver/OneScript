@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <PackageVersion>1.5.0</PackageVersion>
+        <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
+        <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+        <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
+        <Copyright>EvilBeaver &lt;ovsiankin.a.a@gmail.com&gt;</Copyright>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+    </ItemGroup>
+
+</Project>

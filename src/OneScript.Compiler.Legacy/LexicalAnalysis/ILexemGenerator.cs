@@ -9,7 +9,6 @@ using System;
 
 namespace OneScript.Language.LexicalAnalysis
 {
-    [Obsolete]
     public interface ILexemGenerator : ILexer
     {
         string Code { get; set; }

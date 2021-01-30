@@ -24,7 +24,7 @@
         <Version>$(ReleaseNumber).$(BuildNumber)</Version>
         <FileVersion>$(Version)</FileVersion>
         <Product>1C (BSL) language runtime</Product>
-        <Copyright>Copyright (c) 2017 EvilBeaver</Copyright>
+        <Copyright>Copyright (c) 2021 EvilBeaver</Copyright>
     </PropertyGroup>
 
 </Project>

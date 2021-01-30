@@ -26,5 +26,9 @@ namespace ScriptEngine
         void DefinePreprocessorValue(string name);
         
         ModuleImage Compile(ICodeSource source);
+        
+        ModuleImage CompileExpression(ICodeSource source);
+        
+        ModuleImage CompileBatch(ICodeSource source);
     }
 }

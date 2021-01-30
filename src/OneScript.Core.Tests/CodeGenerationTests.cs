@@ -64,7 +64,7 @@ namespace OneScript.Core.Tests
         public static DefaultBslParser PrepareParser(string code)
         {
             var lexer = new DefaultLexer();
-            lexer.Code = code;
+            lexer.Iterator = new SourceCodeIterator(code);
             var treeBuilder = new DefaultAstBuilder();
             var parser = new DefaultBslParser(
                 lexer,

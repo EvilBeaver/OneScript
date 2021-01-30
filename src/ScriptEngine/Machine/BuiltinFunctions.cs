@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace ScriptEngine.Machine
 {
-    static class BuiltinFunctions
+    public static class BuiltinFunctions
     {
         static readonly Dictionary<OperationCode, ParameterDefinition[]> _paramInfoCache = new Dictionary<OperationCode,ParameterDefinition[]>();
 
