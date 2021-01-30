@@ -221,8 +221,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             NativeApiProxy.CallAsProc(_object, methodNumber, paramArray);
             NativeApiVariant.GetValue(arguments, paramArray, paramCount);
             NativeApiVariant.Clear(paramArray, paramCount);
-            if (paramArray != IntPtr.Zero) 
-                Marshal.FreeHGlobal(paramArray);
+            Marshal.FreeHGlobal(paramArray);
         }
 
         public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
@@ -239,8 +238,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             );
             NativeApiVariant.GetValue(arguments, paramArray, paramCount);
             NativeApiVariant.Clear(paramArray, paramCount);
-            if (paramArray != IntPtr.Zero)
-                Marshal.FreeHGlobal(paramArray);
+            Marshal.FreeHGlobal(paramArray);
             if (ok)
                 retValue = result;
         }
