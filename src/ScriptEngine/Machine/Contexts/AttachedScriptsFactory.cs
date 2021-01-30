@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using ScriptEngine.Environment;
 using System.Security.Cryptography;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -26,6 +27,8 @@ namespace ScriptEngine.Machine.Contexts
             _engine = engine;
         }
 
+        private ITypeManager TypeManager => _engine.TypeManager;
+        
         static string GetMd5Hash(MD5 md5Hash, string input)
         {
 
@@ -184,12 +187,14 @@ namespace ScriptEngine.Machine.Contexts
             return _instance._loadedModules[typeName];
         }
 
-        [ScriptConstructor(ParametrizeWithClassName = true)]
-        public static UserScriptContextInstance ScriptFactory(string typeName, IValue[] arguments)
+        [ScriptConstructor]
+        public static UserScriptContextInstance ScriptFactory(TypeActivationContext context, IValue[] arguments)
         {
-            var module = _instance._loadedModules[typeName];
+            var module = _instance._loadedModules[context.TypeName];
 
-            var newObj = new UserScriptContextInstance(module, typeName, arguments);
+            var type = context.TypeManager.GetTypeByName(context.TypeName); 
+            
+            var newObj = new UserScriptContextInstance(module, type, arguments);
             newObj.InitOwnData();
             newObj.Initialize();
 

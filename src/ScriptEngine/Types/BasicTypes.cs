@@ -67,8 +67,8 @@ namespace ScriptEngine.Types
                 typeof(NullValue));
 
             UnknownType = new TypeDescriptor(new Guid("EC3408A3-18A7-4A38-936F-7E7094D3C4E3"),
-                "$unknownType$",
-                "$unknownType$",
+                "$UnknownType$",
+                "$UnknownType$",
                 typeof(IValue));
         }
     }

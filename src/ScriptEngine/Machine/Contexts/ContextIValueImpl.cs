@@ -36,7 +36,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string ToString()
         {
-            return _type?.Name ?? base.ToString();
+            return _type.Name;
         }
         
         #region IValue Members
@@ -49,9 +49,10 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (_type == BasicTypes.UnknownType)
                 {
-                    if (TypeManager.IsKnownType(this.GetType()))
+                    var mgr = MachineInstance.Current.TypeManager;
+                    if (mgr.IsKnownType(this.GetType()))
                     {
-                        _type = TypeManager.GetTypeByFrameworkType(this.GetType());
+                        _type = mgr.GetTypeByFrameworkType(this.GetType());
                     }
                     else
                     {

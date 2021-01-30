@@ -9,9 +9,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ScriptEngine.Compiler;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
+    [ContextClass("Сценарий", "Script")]
     public class UserScriptContextInstance : ThisAwareScriptedObjectBase, IDebugPresentationAcceptor
     {
         readonly LoadedModule _module;
@@ -32,10 +34,10 @@ namespace ScriptEngine.Machine.Contexts
             ConstructorParams = new IValue[0];
         }
 
-        public UserScriptContextInstance(LoadedModule module, string asObjectOfType, IValue[] args = null)
+        public UserScriptContextInstance(LoadedModule module, TypeDescriptor asObjectOfType, IValue[] args = null)
             : base(module, true)
         {
-            DefineType(TypeManager.GetTypeByName(asObjectOfType));
+            DefineType(asObjectOfType);
             _module = module;
 
             ConstructorParams = args;

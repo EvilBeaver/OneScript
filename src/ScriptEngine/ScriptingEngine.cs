@@ -30,7 +30,6 @@ namespace ScriptEngine
             TypeManager = new DefaultTypeManager();
             TypeManager.RegisterType("Сценарий", "Script", typeof(UserScriptContextInstance));
             
-            Machine.TypeManager.Initialize(TypeManager);
             GlobalsManager.Reset();
             
             Loader = new ScriptSourceFactory();
@@ -51,7 +50,7 @@ namespace ScriptEngine
             _compilerFactory = compilerFactory;
             TypeManager = types;
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
-            Machine.TypeManager.Initialize(types);
+            
             TypeManager.RegisterType(
                 "Сценарий",
                 "Script",

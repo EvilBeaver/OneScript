@@ -36,7 +36,7 @@ namespace ScriptEngine.Machine
         // актуален в момент останова машины
         private IList<ExecutionFrameInfo> _fullCallstackCache;
 
-        internal MachineInstance() 
+        private MachineInstance() 
         {
             InitCommands();
             Reset();
@@ -81,8 +81,19 @@ namespace ScriptEngine.Machine
             _scopes.Add(default(Scope));
         }
 
-        public ITypeManager TypeManager => _typeManager ?? Machine.TypeManager.Instance;
-        
+        public ITypeManager TypeManager
+        {
+            get
+            {
+                if (_typeManager == default)
+                {
+                    _typeManager = new DefaultTypeManager();
+                }
+
+                return _typeManager;
+            }
+        }
+
         public void SetMemory(ITypeManager types, IEnumerable<IAttachableContext> contexts)
         {
             Cleanup();
@@ -426,6 +437,7 @@ namespace ScriptEngine.Machine
             _exceptionsStack = new Stack<ExceptionJumpInfo>();
             _module = null;
             _currentFrame = null;
+            _typeManager = null;
         }
         
         private void PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
