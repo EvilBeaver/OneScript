@@ -2,7 +2,7 @@
 	
     <!--Свойства сборки по умолчанию-->
     <PropertyGroup>
-        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">1.2.0</ReleaseNumber>
+        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">2.0.0</ReleaseNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
         <Configuration Condition="'$(Release)' == ''">Release</Configuration>
