@@ -9,13 +9,14 @@ using System;
 using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
     /// <summary>
     /// Колонка таблицы значений. 
     /// </summary>
-    [ContextClass("КолонкаТаблицыЗначений", "ValueTableColumn")]
+    [ContextClass("КолонкаТаблицыЗначений", "ValueTableColumn", TypeUUID = "5B2F5C0D-8E08-4D01-A85F-9E24FCC92685")]
     public class ValueTableColumn : AutoContext<ValueTableColumn>
     {
         private string _title;
@@ -23,15 +24,18 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         private TypeDescription _valueType;
         private int _width;
         private readonly WeakReference _owner;
+        
+        private static TypeDescriptor _instanceType = typeof(ValueTableColumn).GetTypeFromClassMarkup();
 
-        public ValueTableColumn(ValueTableColumnCollection Owner, string Name, string Title, TypeDescription Type, int Width)
+        public ValueTableColumn(ValueTableColumnCollection owner, string name, string title, TypeDescription type, int width)
+            : base(_instanceType)
         {
-            _name = Name;
-            _title = Title;
-            _valueType = Type ?? new TypeDescription();
-            _width = Width;
+            _name = name;
+            _title = title;
+            _valueType = type ?? new TypeDescription();
+            _width = width;
 
-            _owner = new WeakReference(Owner);
+            _owner = new WeakReference(owner);
         }
 
         /// <summary>

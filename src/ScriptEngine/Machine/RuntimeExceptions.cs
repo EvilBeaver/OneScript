@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using OneScript.Commons;
 using OneScript.Language;
 
 namespace ScriptEngine.Machine
@@ -159,6 +160,13 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Деление на ноль");
         }
 
+        public static RuntimeException ConstructorNotFound(string typeName)
+        {
+            var template = Locale.NStr("ru = 'Конструктор не найден ({0})';" +
+                                       "en = 'Constructor not found ({0})'");
+
+            return new RuntimeException(string.Format(template, typeName));
+        }
     }
 
     public class WrongStackConditionException : ApplicationException

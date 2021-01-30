@@ -96,12 +96,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private void RegisterSystemType(Type stdClass)
         {
-            var attribData = stdClass.GetCustomAttributes(typeof(ContextClassAttribute), false);
-            System.Diagnostics.Trace.Assert(attribData.Length > 0, "Class is not marked as context");
-
-            var attr = (ContextClassAttribute)attribData[0];
-
-            Types.RegisterType(attr.GetName(), attr.GetAlias(), stdClass);
+            Types.RegisterClass(stdClass);
         }
 
         private void RegisterSystemEnum(Type enumType, RuntimeEnvironment environment)

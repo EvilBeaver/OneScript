@@ -11,19 +11,24 @@ using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class ContextIValueImpl : DynamicObject, IRuntimeContextInstance, IValue
+    public abstract class ContextIValueImpl : DynamicObject, IRuntimeContextInstance, IValue, ISystemTypeAcceptor
     {
         private TypeDescriptor _type;
 
-        protected ContextIValueImpl()
+        protected ContextIValueImpl() : this(BasicTypes.UnknownType)
         {
         }
-
+        
         protected ContextIValueImpl(TypeDescriptor type)
         {
-            DefineType(type);
+            _type = type;
         }
 
+        void ISystemTypeAcceptor.AssignType(TypeDescriptor type)
+        {
+            _type = type;
+        }
+        
         protected void DefineType(TypeDescriptor type)
         {
             _type = type;
@@ -31,21 +36,18 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string ToString()
         {
-            return _type.Name ?? base.ToString();
+            return _type?.Name ?? base.ToString();
         }
         
         #region IValue Members
 
-        public DataType DataType
-        {
-            get { return Machine.DataType.Object; }
-        }
+        public DataType DataType => DataType.Object;
 
         public TypeDescriptor SystemType
         {
             get
             {
-                if (_type == default)
+                if (_type == BasicTypes.UnknownType)
                 {
                     if (TypeManager.IsKnownType(this.GetType()))
                     {
@@ -329,6 +331,8 @@ namespace ScriptEngine.Machine.Contexts
     public class ScriptConstructorAttribute : Attribute
     {
         public string Name { get; set; }
+        
+        [Obsolete("Use TypeActivationContext as first parameter in Constructor")]
         public bool ParametrizeWithClassName { get; set; }
     }
 }

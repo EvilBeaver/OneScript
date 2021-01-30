@@ -142,7 +142,7 @@ namespace ScriptEngine.Machine.Contexts
             var loadedModule = new LoadedModule(moduleImage);
             _loadedModules.Add(typeName, loadedModule);
             
-            TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
+            _engine.TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
 
         }
 

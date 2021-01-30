@@ -139,11 +139,9 @@ namespace TestApp
                 .UseSystemConfigFile()
                 .UseEntrypointConfigFile(_currentDocPath);
             
-            builder.CompilerOptions.UseFileSystemLibraries();
+            builder.UseFileSystemLibraries();
             var engine = builder.Build();
             var mainEngine = new HostedScriptEngine(engine);
-
-            builder.CompilerOptions?.DependencyResolver?.Initialize(engine);
 
             return mainEngine;
         }

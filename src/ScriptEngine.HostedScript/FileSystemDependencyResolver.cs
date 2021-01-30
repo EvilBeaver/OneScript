@@ -56,10 +56,6 @@ namespace ScriptEngine.HostedScript
         public void Initialize(ScriptingEngine engine)
         {
             Engine = engine;
-            var config = Engine.Configuration.CreateConfig();
-            
-            SetDefaultDir(config);
-            SetAdditionalDirs(config);
         }
         
         public ExternalLibraryDef Resolve(ModuleInformation module, string libraryName)
@@ -120,33 +116,6 @@ namespace ScriptEngine.HostedScript
             return LoadByPath(realPath);
         }
 
-        private void SetAdditionalDirs(KeyValueConfig config)
-        {
-            var additionalDirsList = config[OneScriptOptions.ADDITIONAL_LIBRARIES];
-
-            if (additionalDirsList == null) 
-                return;
-            
-            var addDirs = additionalDirsList.Split(';');
-            SearchDirectories.AddRange(addDirs);
-        }
-
-        private void SetDefaultDir(KeyValueConfig config)
-        {
-            var sysDir = config[OneScriptOptions.SYSTEM_LIBRARY_DIR];
-            if (sysDir == default)
-            {
-                var entrypoint = System.Reflection.Assembly.GetEntryAssembly();
-                if (entrypoint == default)
-                    entrypoint = GetType().Assembly;
-                
-                sysDir = Path.GetDirectoryName(entrypoint.Location);
-                SearchDirectories.Add(sysDir);
-            }
-            
-            SearchDirectories.Add(sysDir);
-        }
- 
         private LibraryLoader CreateDefaultLoader()
         {
             var loaderscript = Path.Combine(LibraryRoot, PREDEFINED_LOADER_FILE);

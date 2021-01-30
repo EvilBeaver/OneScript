@@ -8,13 +8,14 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTree
 {
     /// <summary>
     /// Строка дерева значений.
     /// </summary>
-    [ContextClass("СтрокаДереваЗначений", "ValueTreeRow")]
+    [ContextClass("СтрокаДереваЗначений", "ValueTreeRow", TypeUUID = "4EE26F99-54A8-4640-B2F8-3DA1CB102113")]
     public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>, IDebugPresentationAcceptor
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
@@ -22,8 +23,13 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         private readonly ValueTree _owner;
         private readonly int _level;
         private readonly ValueTreeRowCollection _rows;
+        
+        private static TypeDescriptor _instanceType = typeof(ValueTreeRow).GetTypeFromClassMarkup();
+        private static readonly ContextPropertyMapper<ValueTreeRow> _properties = new ContextPropertyMapper<ValueTreeRow>();
+        private static readonly ContextMethodsMapper<ValueTreeRow> _methods = new ContextMethodsMapper<ValueTreeRow>();
 
         public ValueTreeRow(ValueTree owner, ValueTreeRow parent, int level)
+            : base(_instanceType)
         {
             _owner = owner;
             _parent = parent;
@@ -148,8 +154,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             return new CollectionEnumerator(GetEnumerator());
         }
 
-        private static readonly ContextPropertyMapper<ValueTreeRow> _properties = new ContextPropertyMapper<ValueTreeRow>();
-
         public override int GetPropCount()
         {
             return Count();
@@ -240,8 +244,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             return propIndex - _properties.Count;
         }
-
-        private static readonly ContextMethodsMapper<ValueTreeRow> _methods = new ContextMethodsMapper<ValueTreeRow>();
 
         public override MethodInfo GetMethodInfo(int methodNumber)
         {

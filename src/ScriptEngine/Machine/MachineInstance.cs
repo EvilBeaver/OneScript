@@ -15,6 +15,7 @@ using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine.Values;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine
 {
@@ -1351,16 +1352,20 @@ namespace ScriptEngine.Machine
             }
 
             var typeName = _operationStack.Pop().AsString();
-            var type = TypeManager.GetTypeByName(typeName);
-            var factory = TypeManager.GetFactoryFor(type);
-
-            var constructor = factory.GetConstructor(typeName, argValues);
-            if(constructor == null)
+            if (!TypeManager.TryGetType(typeName, out var type))
             {
-                throw new RuntimeException("Конструктор не найден (" + typeName + ")");
+                throw RuntimeException.ConstructorNotFound(typeName);
             }
-
-            var instance = constructor(typeName, argValues);
+            
+            var factory = TypeManager.GetFactoryFor(type);
+            var context = new TypeActivationContext
+            {
+                GlobalsManager = GlobalsManager.Instance,
+                TypeManager = TypeManager,
+                TypeName = typeName
+            };
+            
+            var instance = factory.Activate(context, argValues);
             _operationStack.Push(instance);
             NextInstruction();
 

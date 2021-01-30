@@ -27,7 +27,7 @@ namespace oscript
                 .UseSystemConfigFile()
                 .UseEnvironmentVariableConfig("OSCRIPT_CONFIG");
 
-            builder.CompilerOptions.UseFileSystemLibraries();
+            builder.UseFileSystemLibraries();
             
             return builder;
         }
@@ -36,8 +36,6 @@ namespace oscript
         {
             var engine = builder.Build(); 
             var mainEngine = new HostedScriptEngine(engine);
-
-            builder.CompilerOptions?.DependencyResolver?.Initialize(engine);
 
             return mainEngine;
         }

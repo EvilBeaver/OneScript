@@ -8,16 +8,19 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
-    [ContextClass("СтрокаТаблицыЗначений", "ValueTableRow")]
+    [ContextClass("СтрокаТаблицыЗначений", "ValueTableRow", TypeUUID = "DBFCD195-4B87-4AB7-9BA7-AE2E791E04ED")]
     public class ValueTableRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>, IDebugPresentationAcceptor
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTable _owner;
 
-        public ValueTableRow(ValueTable owner)
+        private static readonly TypeDescriptor _objectType = typeof(ValueTableRow).GetTypeFromClassMarkup();
+        
+        public ValueTableRow(ValueTable owner) : base(_objectType)
         {
             _owner = owner;
         }

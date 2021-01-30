@@ -5,15 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
+using ScriptEngine.Types;
 
-namespace ScriptEngine.Types
+namespace ScriptEngine.Machine.Contexts
 {
-    [AttributeUsage(AttributeTargets.Method)]
-    public sealed class TypeConstructorAttribute : Attribute
+    internal interface ISystemTypeAcceptor
     {
-        public string Name { get; set; }
-        
-        public bool InjectActivationContext { get; set; }
+        void AssignType(TypeDescriptor systemTypeValue);
     }
 }

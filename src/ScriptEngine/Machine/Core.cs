@@ -306,44 +306,6 @@ namespace ScriptEngine.Machine
         }
     }
 
-    public struct TypeDescriptor_ : IEquatable<TypeDescriptor_>
-    {
-        public int ID;
-        public string Name;
-
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        public static TypeDescriptor FromDataType(DataType srcType)
-        {
-            switch (srcType)
-            {
-                case DataType.Boolean:
-                    return BasicTypes.Boolean;
-                case DataType.Date:
-                    return BasicTypes.Date;
-                case DataType.Number:
-                    return BasicTypes.Number;
-                case DataType.String:
-                    return BasicTypes.String;
-                case DataType.Undefined:
-                    return BasicTypes.Undefined;
-                case DataType.Type:
-                    return BasicTypes.Type;
-                default:
-                    Debug.Assert(false, "Can be used only for primitive types");
-                    return default;
-            }
-        }
-
-        public bool Equals(TypeDescriptor_ other)
-        {
-            return other.ID == this.ID;
-        }
-    }
-
     [Serializable]
     public struct SymbolBinding
     {

@@ -11,24 +11,26 @@ using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
     /// <summary>
     /// Коллекция колонок таблицы значений
     /// </summary>
-    [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection")]
+    [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection", TypeUUID = "E1584766-C053-4644-B4C2-9642C0F53EFA")]
     public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTableColumn>, IDebugPresentationAcceptor
     {
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
- 
-        private StringComparer NamesComparer = StringComparer.OrdinalIgnoreCase;
-
+        private readonly StringComparer _namesComparer = StringComparer.OrdinalIgnoreCase;
         private readonly ValueTable _owner;
+
+        private static readonly TypeDescriptor _objectType = typeof(ValueTableColumnCollection).GetTypeFromClassMarkup();
 
         public ValueTableColumnCollection(ValueTable owner)
         {
             _owner = owner;
+            DefineType(_objectType);
         }
 
         /// <summary>
@@ -126,7 +128,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public ValueTableColumn FindColumnByName(string name)
         {
-            return _columns.Find(column => NamesComparer.Equals(name, column.Name));
+            return _columns.Find(column => _namesComparer.Equals(name, column.Name));
         }
 
         public ValueTableColumn FindColumnByIndex(int index)
@@ -154,7 +156,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public override int FindProperty(string name)
         {
-            int idx = _columns.FindIndex(column => NamesComparer.Equals(name, column.Name));
+            int idx = _columns.FindIndex(column => _namesComparer.Equals(name, column.Name));
             if (idx == -1)
                 throw RuntimeException.PropNotFoundException(name);
             return idx;

@@ -11,19 +11,24 @@ using System.Linq;
 using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTree
 {
     /// <summary>
     /// Коллекция колонок дерева значений.
     /// </summary>
-    [ContextClass("КоллекцияКолонокДереваЗначений", "ValueTreeColumnCollection")]
+    [ContextClass("КоллекцияКолонокДереваЗначений", "ValueTreeColumnCollection", TypeUUID = "7FEEB150-ECAB-4971-865B-6CCBECC7D947")]
     public class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTreeColumn>, IDebugPresentationAcceptor
     {
         private readonly List<ValueTreeColumn> _columns = new List<ValueTreeColumn>();
+        
+        private static TypeDescriptor _instanceType = typeof(ValueTreeColumnCollection).GetTypeFromClassMarkup();
+        private static readonly ContextMethodsMapper<ValueTreeColumnCollection> _methods = new ContextMethodsMapper<ValueTreeColumnCollection>();
 
         public ValueTreeColumnCollection()
         {
+            DefineType(_instanceType);
         }
 
         /// <summary>
@@ -266,8 +271,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             return GetColumnByIIndex(index);
         }
-
-        private static readonly ContextMethodsMapper<ValueTreeColumnCollection> _methods = new ContextMethodsMapper<ValueTreeColumnCollection>();
 
         public override MethodInfo GetMethodInfo(int methodNumber)
         {

@@ -7,10 +7,11 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Types
 {
-    public class TypeActivator
+    public class TypeFactoryCache
     {
         private readonly Dictionary<TypeDescriptor, TypeFactory> _factories = new Dictionary<TypeDescriptor, TypeFactory>(); 
 
@@ -18,7 +19,7 @@ namespace ScriptEngine.Types
         {
             if (!_factories.TryGetValue(type, out var factory))
             {
-                factory = new TypeFactory(type.ImplementingClass);
+                factory = new TypeFactory(type);
                 _factories[type] = factory;
             }
 

@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Linq;
 using FluentAssertions;
 using OneScript.DebugServices;
@@ -14,6 +15,7 @@ using OneScript.StandardLibrary.Collections.ValueTree;
 using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
+using ScriptEngine.Types;
 using Xunit;
 
 using Machine = ScriptEngine.Machine;
@@ -28,15 +30,28 @@ namespace OneScript.DebugProtocol.Test
         
         public DebugVariablesTest()
         {
-            // для инициализации долбаного глобального TypeManager
-            var builder = new DefaultEngineBuilder();
-            var e = builder.Build();
-            if (!TypeManager.IsKnownType(typeof(FileContext)))
-            {
-                e.AttachAssembly(typeof(FileContext).Assembly);
-            }
-
             Visualizer = new DefaultVariableVisualizer();
+            Manager = new DefaultTypeManager();
+        }
+
+        private ITypeManager Manager { get; }
+        
+        private IValue GetInstance(Type valueType, IValue[] args)
+        {
+            Manager.RegisterClass(valueType);
+
+            var registeredType = Manager.GetTypeByFrameworkType(valueType);
+            var factory = Manager.GetFactoryFor(registeredType);
+            return factory.Activate(new TypeActivationContext
+            {
+                TypeManager = Manager,
+                TypeName = registeredType.Name
+            },args);
+        }
+        
+        private T GetInstance<T>(params IValue[] args) where T : IValue
+        {
+            return (T) GetInstance(typeof(T), args);
         }
 
         public IVariableVisualizer Visualizer { get; set; }
@@ -65,8 +80,8 @@ namespace OneScript.DebugProtocol.Test
         [Fact]
         public void ObjectPresentation()
         {
-            var obj = new FileContext("somefile.txt");
-            
+            var obj = GetInstance<FileContext>(ValueFactory.Create("somefile.txt")); 
+
             var debuggerVar = Visualizer.GetVariable(Machine.Variable.Create(obj,"myFile"));
             debuggerVar.Name.Should().Be("myFile");
             debuggerVar.TypeName.Should().Be("Файл");
@@ -90,7 +105,7 @@ namespace OneScript.DebugProtocol.Test
         [Fact]
         public void ArrayPresentation()
         {
-            var obj = new ArrayImpl();
+            var obj = GetInstance<ArrayImpl>();
             obj.Add(ValueFactory.Create(1));
             obj.Add(ValueFactory.Create(2));
 
@@ -107,7 +122,9 @@ namespace OneScript.DebugProtocol.Test
         [Fact]
         public void StructurePresentation()
         {
-            var obj = new StructureImpl();
+            Manager.RegisterClass(typeof(KeyAndValueImpl));
+            
+            var obj = GetInstance<StructureImpl>();
             obj.Insert("first", ValueFactory.Create(1));
             obj.Insert("second", ValueFactory.Create(2));
 
@@ -135,7 +152,9 @@ namespace OneScript.DebugProtocol.Test
         [Fact]
         public void MapPresentation()
         {
-            var obj = new MapImpl();
+            Manager.RegisterClass(typeof(KeyAndValueImpl));
+            
+            var obj = GetInstance<MapImpl>();
             obj.Insert(ValueFactory.Create("first"), ValueFactory.Create(1));
             obj.Insert(ValueFactory.Create("second"), ValueFactory.Create(2));
 
@@ -172,7 +191,12 @@ namespace OneScript.DebugProtocol.Test
         [Fact]
         public void ValueTreePresentation()
         {
-            var obj = new ValueTree();
+            Manager.RegisterClass(typeof(ValueTreeRowCollection));
+            Manager.RegisterClass(typeof(ValueTreeRow));
+            Manager.RegisterClass(typeof(ValueTreeColumn));
+            Manager.RegisterClass(typeof(ValueTreeColumnCollection));
+            
+            var obj = GetInstance<ValueTree>();
             obj.Columns.Add("first");
             obj.Columns.Add("second");
 

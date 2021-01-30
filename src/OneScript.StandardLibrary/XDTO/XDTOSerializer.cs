@@ -299,7 +299,7 @@ namespace OneScript.StandardLibrary.XDTO
 
         #region Constructors
 
-        [TypeConstructor(Name = "По умолчанию", InjectActivationContext = true)]
+        [ScriptConstructor(Name = "По умолчанию")]
         public static XDTOSerializer CreateInstance(TypeActivationContext context) => new XDTOSerializer(context.TypeManager);
         
         #endregion

@@ -86,10 +86,10 @@ namespace ScriptEngine
         
         public RuntimeEnvironment Environment { get; set; }
 
+        public ITypeManager TypeManager { get; }
+        
         private CodeGenerationFlags ProduceExtraCode { get; set; }
         
-        private ITypeManager TypeManager { get; set; }
-
         public void AttachAssembly(System.Reflection.Assembly asm, Predicate<Type> filter = null)
         {
             ContextDiscoverer.DiscoverClasses(asm, filter);

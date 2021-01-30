@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Reflection;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
@@ -13,17 +14,17 @@ using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary
 {
-    [ContextClass("УникальныйИдентификатор","UUID")]
+    [ContextClass("УникальныйИдентификатор","UUID", TypeUUID = "B35D7F7B-DF1C-4D6C-A755-6C97A60BB345")]
     public class GuidWrapper : GenericValue, IObjectWrapper
     {
         Guid _value;
-        private TypeDescriptor _instanceType;
+        private static readonly TypeDescriptor InstanceType;
 
-        // private static ValueType _instanceType = new ValueType(
-        //     new Guid("B35D7F7B-DF1C-4D6C-A755-6C97A60BB345"),
-        //     "УникальныйИдентификатор",
-        //     "UUID",
-        //     typeof(GuidWrapper));
+        static GuidWrapper()
+        {
+            var attr = typeof(GuidWrapper).GetCustomAttribute<ContextClassAttribute>();
+            InstanceType = typeof(GuidWrapper).GetTypeFromClassMarkup();
+        }
         
         public GuidWrapper()
         {
@@ -35,7 +36,7 @@ namespace OneScript.StandardLibrary
             _value = Guid.Parse(uuidString);
         }
 
-        [TypeConstructor]
+        [ScriptConstructor]
         public static GuidWrapper Create()
         {
             return new GuidWrapper();
@@ -47,7 +48,7 @@ namespace OneScript.StandardLibrary
             return new GuidWrapper(uuidString.AsString());
         }
         
-        public override TypeDescriptor SystemType => _instanceType;
+        public override TypeDescriptor SystemType => InstanceType;
 
         public override string AsString()
         {

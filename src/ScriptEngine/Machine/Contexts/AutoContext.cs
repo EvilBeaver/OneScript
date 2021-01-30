@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -15,6 +16,14 @@ namespace ScriptEngine.Machine.Contexts
         private static readonly ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
         private static readonly ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();
         private static readonly HashSet<int> _warnedDeprecatedMethods = new HashSet<int>();
+        
+        protected AutoContext()
+        {
+        }
+        
+        protected AutoContext(TypeDescriptor assignedType) : base(assignedType)
+        {
+        }
         
         public override bool IsPropReadable(int propNum)
         {

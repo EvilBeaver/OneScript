@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Commons;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
@@ -19,19 +20,19 @@ namespace ScriptEngine.Machine
     {
         private readonly Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private readonly List<TypeDescriptor> _knownTypes = new List<TypeDescriptor>();
-        private readonly TypeActivator _activator = new TypeActivator();
+        private readonly TypeFactoryCache _factoryCache = new TypeFactoryCache();
         
         private Type _dynamicFactory;
 
         public DefaultTypeManager()
         {
-            RegisterType(BasicTypes.Undefined);
-            RegisterType(BasicTypes.Boolean);
-            RegisterType(BasicTypes.String);
-            RegisterType(BasicTypes.Date);
-            RegisterType(BasicTypes.Number);
-            RegisterType(BasicTypes.Null);
-            RegisterType(BasicTypes.Type);
+            RegisterTypeInternal(BasicTypes.Undefined);
+            RegisterTypeInternal(BasicTypes.Boolean);
+            RegisterTypeInternal(BasicTypes.String);
+            RegisterTypeInternal(BasicTypes.Date);
+            RegisterTypeInternal(BasicTypes.Number);
+            RegisterTypeInternal(BasicTypes.Null);
+            RegisterTypeInternal(BasicTypes.Type);
             
             // TODO тут был еще тип Object для конструирования
         }
@@ -50,7 +51,29 @@ namespace ScriptEngine.Machine
                 var td = RegisterType(name, default, typeof(COMWrapperContext));
                 return td;
             }
-            throw new RuntimeException($"Тип не зарегистрирован ({name})");
+
+            var template = Locale.NStr("ru = 'Тип не зарегистрирован ({0})';" +
+                                       "en = 'Type is not registered ({0})'");
+            
+            throw new RuntimeException(string.Format(template, name));
+        }
+
+        public bool TryGetType(Type frameworkType, out TypeDescriptor type)
+        {
+            type = _knownTypes.FirstOrDefault(x => x.ImplementingClass == frameworkType);
+            return type != default;
+        }
+        
+        public bool TryGetType(string name, out TypeDescriptor type)
+        {
+            if (_knownTypesIndexes.TryGetValue(name, out var index))
+            {
+                type = _knownTypes[index];
+                return true;
+            }
+
+            type = default;
+            return false;
         }
 
         public TypeDescriptor RegisterType(string name, string alias, Type implementingClass)
@@ -68,18 +91,31 @@ namespace ScriptEngine.Machine
             else
             {
                 var typeDesc = new TypeDescriptor(Guid.NewGuid(), name, alias, implementingClass);
-                RegisterType(typeDesc);
+                RegisterTypeInternal(typeDesc);
                 return typeDesc;
             }
 
         }
+        
+        public void RegisterType(TypeDescriptor typeDescriptor)
+        {
+            if (TryGetType(typeDescriptor.Name, out var knownType))
+            {
+                if (knownType != typeDescriptor)
+                    throw new InvalidOperationException($"Type {typeDescriptor} already registered");
+                
+                return;
+            }
+            
+            RegisterTypeInternal(typeDescriptor);
+        }
 
         public TypeFactory GetFactoryFor(TypeDescriptor type)
         {
-            return _activator.GetFactoryFor(type);
+            return _factoryCache.GetFactoryFor(type);
         }
 
-        private void RegisterType(TypeDescriptor td)
+        private void RegisterTypeInternal(TypeDescriptor td)
         {
             var nextListId = _knownTypes.Count;
             _knownTypesIndexes.Add(td.Name, nextListId);
