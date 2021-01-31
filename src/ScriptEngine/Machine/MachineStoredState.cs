@@ -19,5 +19,7 @@ namespace ScriptEngine.Machine
         public ICodeStatCollector CodeStatCollector { get; set; }
         
         public MachineStopManager StopManager { get; set; }
+        
+        public ITypeManager TypeManager { get; set; }
     }
 }

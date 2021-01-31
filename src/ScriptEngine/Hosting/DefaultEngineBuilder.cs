@@ -31,14 +31,11 @@ namespace ScriptEngine.Hosting
 
         public ScriptingEngine Build()
         {
+            if(CompilerOptions == default)
+                CompilerOptions = new CompilerOptions();
+            
             if (CompilerFactory == default)
-            {
-                if(CompilerOptions == default)
-                    CompilerOptions = new CompilerOptions();
-                
                 CompilerFactory = new AstBasedCompilerFactory(CompilerOptions);
-            }
-                
             
             var engine = new ScriptingEngine(
                 TypeManager,

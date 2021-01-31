@@ -116,7 +116,8 @@ namespace ScriptEngine.Machine
                 CallStack = _callStack,
                 OperationStack = _operationStack,
                 StopManager = _stopManager,
-                CodeStatCollector = _codeStatCollector
+                CodeStatCollector = _codeStatCollector,
+                TypeManager = _typeManager
             };
         }
 
@@ -129,6 +130,7 @@ namespace ScriptEngine.Machine
             _exceptionsStack = state.ExceptionsStack;
             _stopManager = state.StopManager;
             _codeStatCollector = state.CodeStatCollector;
+            _typeManager = state.TypeManager; 
             
             SetFrame(_callStack.Peek());
         } 
@@ -159,6 +161,7 @@ namespace ScriptEngine.Machine
                 var m = MachineInstance.Current;
                 m.Reset();
                 m._scopes = state.Scopes;
+                m._typeManager = state.TypeManager;
                 m.ExecuteModuleBody(sdo);
             };
 
@@ -173,6 +176,7 @@ namespace ScriptEngine.Machine
                 var m = MachineInstance.Current;
                 m.Reset();
                 m._scopes = state.Scopes; // память сохраняется, стеки с чистого листа
+                m._typeManager = state.TypeManager;
                 return m.ExecuteMethod(sdo, methodIndex, arguments);
             };
 
@@ -181,7 +185,7 @@ namespace ScriptEngine.Machine
                 InstructionPointer = -1
             };
 
-            var asyncTask = Task<IValue>.Run(callAction);
+            var asyncTask = Task.Run(callAction);
                 
             asyncTask.ContinueWith(t =>
             {
@@ -268,7 +272,7 @@ namespace ScriptEngine.Machine
             if (_stopManager == null)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
-           _stopManager.StepIn();
+            _stopManager.StepIn();
         }
 
         public void StepOut()
