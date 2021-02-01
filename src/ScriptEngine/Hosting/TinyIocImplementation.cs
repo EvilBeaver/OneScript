@@ -10,11 +10,16 @@ using TinyIoC;
 
 namespace ScriptEngine.Hosting
 {
-    public class TinyIocImplementation : IServiceDefinitions, IServiceContainer
+    public class TinyIocImplementation /*: IServiceDefinitions, IServiceContainer*/
     {
-        private TinyIoCContainer container = new TinyIoCContainer();
+        private readonly TinyIoCContainer _container = new TinyIoCContainer();
 
         #region Registration API
+
+        public IServiceContainer CreateContainer()
+        {
+            throw new NotImplementedException();
+        }
 
         public void Register(Type knownType)
         {
@@ -80,7 +85,7 @@ namespace ScriptEngine.Hosting
 
         #region Resolution API
 
-        public object Resolve()
+        public object Resolve(Type type)
         {
             throw new NotImplementedException();
         }
@@ -89,7 +94,27 @@ namespace ScriptEngine.Hosting
         {
             throw new NotImplementedException();
         }
-        
+
+        public object TryResolve(Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T TryResolve<T>()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IServiceContainer CreateScope()
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

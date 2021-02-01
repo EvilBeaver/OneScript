@@ -59,8 +59,9 @@ namespace OneScript.Core.Tests
         
         private ScriptingEngine MakeTestEngine()
         {
-            var builder = new DefaultEngineBuilder();
-            builder.AddAssembly(typeof(ArrayImpl).Assembly);
+            var builder = DefaultEngineBuilder
+                .Create()
+                .AddAssembly(typeof(ArrayImpl).Assembly);
             return builder.Build();
         }
     }

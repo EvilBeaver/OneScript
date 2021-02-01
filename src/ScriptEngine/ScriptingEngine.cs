@@ -24,22 +24,6 @@ namespace ScriptEngine
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
 
-        [Obsolete]
-        public ScriptingEngine(ICompilerServiceFactory compilerFactory)
-        {
-            TypeManager = new DefaultTypeManager();
-            
-            GlobalsManager.Reset();
-            
-            Loader = new ScriptSourceFactory();
-            DirectiveResolvers = new DirectiveMultiResolver();
-            ContextDiscoverer = new ContextDiscoverer(TypeManager, GlobalsManager.Instance);
-            //_compilerFactory = new LegacyCompilerFactory(IDirectiveResolver)DirectiveResolvers);
-            _compilerFactory = compilerFactory;
-            
-            AttachAssembly(GetType().Assembly);
-        }
-
         public ScriptingEngine(ITypeManager types,
             IGlobalsManager globals,
             RuntimeEnvironment env,
@@ -51,13 +35,14 @@ namespace ScriptEngine
             TypeManager = types;
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
             
-            GlobalsManager.Instance = globals;
+            GlobalsManager = globals;
+            Machine.GlobalsManager.Instance = globals;
+            
             Environment = env;
             
             Loader = new ScriptSourceFactory();
             ContextDiscoverer = new ContextDiscoverer(types, globals);
-            AttachAssembly(GetType().Assembly);
-
+            
             ApplyConfiguration(Configuration.CreateConfig());
         }
 
@@ -81,6 +66,8 @@ namespace ScriptEngine
         public RuntimeEnvironment Environment { get; set; }
 
         public ITypeManager TypeManager { get; }
+        
+        public IGlobalsManager GlobalsManager { get; }
         
         private CodeGenerationFlags ProduceExtraCode { get; set; }
         
@@ -221,7 +208,7 @@ namespace ScriptEngine
         public void Dispose()
         {
             AttachedScriptsFactory.SetInstance(null);
-            GlobalsManager.Reset();
+            Machine.GlobalsManager.Reset();
         }
 
         #endregion

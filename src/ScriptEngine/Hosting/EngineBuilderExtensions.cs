@@ -49,17 +49,6 @@ namespace ScriptEngine.Hosting
             return b;
         }
 
-        public static IEngineBuilder AddGlobalProperty(this IEngineBuilder b, IValue instance, string name, string alias = null, bool readOnly = true)
-        {
-            b.Environment.InjectGlobalProperty(instance, name, readOnly);
-            if (alias != null)
-            {
-                b.Environment.InjectGlobalProperty(instance, alias, readOnly);
-            }
-
-            return b;
-        }
-
         public static IEngineBuilder UseCompiler(this IEngineBuilder b, ICompilerServiceFactory factory)
         {
             b.CompilerFactory = factory;

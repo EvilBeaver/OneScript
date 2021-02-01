@@ -19,7 +19,7 @@ namespace OneScript.Core.Tests
         [Fact]
         public void ThisObjectCanBeFoundForUserScript()
         {
-            var builder = new DefaultEngineBuilder();
+            var builder = DefaultEngineBuilder.Create();
             var engine = builder.Build();
             engine.Initialize();
             var instance = engine.AttachedScriptsFactory.LoadFromString(engine.GetCompilerService(), "");

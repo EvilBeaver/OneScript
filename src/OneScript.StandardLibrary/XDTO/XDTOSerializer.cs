@@ -9,6 +9,7 @@ using System;
 using System.Xml;
 using System.Xml.Schema;
 using OneScript.StandardLibrary.Xml;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
@@ -20,13 +21,15 @@ namespace OneScript.StandardLibrary.XDTO
     public class XDTOSerializer : AutoContext<XDTOSerializer>
     {
         private readonly ITypeManager _typeManager;
-        private static readonly XmlGlobalFunctions xmlGlobalFunctions = GlobalsManager.GetGlobalContext<XmlGlobalFunctions>();
-        private static readonly XmlNodeTypeEnum xmlNodeEnum = GlobalsManager.GetEnum<XmlNodeTypeEnum>();
+        private readonly XmlGlobalFunctions _xmlGlobalFunctions;
+        private readonly XmlNodeTypeEnum _xmlNodeEnum;
 
 
-        private XDTOSerializer(ITypeManager typeManager)
+        private XDTOSerializer(ITypeManager typeManager, IGlobalsManager globalsManager)
         {
             _typeManager = typeManager;
+            _xmlGlobalFunctions = globalsManager.GetInstance<XmlGlobalFunctions>();
+            _xmlNodeEnum = globalsManager.GetInstance<XmlNodeTypeEnum>();
         }
 
         private void WriteXMLSimpleData(XmlWriterImpl xmlWriter,
@@ -109,10 +112,10 @@ namespace OneScript.StandardLibrary.XDTO
         #region Methods
 
         [ContextMethod("XMLЗначение", "XMLValue")]
-        public IValue XMLValue(IValue givenType, string presentation) => xmlGlobalFunctions.XMLValue(givenType, presentation);
+        public IValue XMLValue(IValue givenType, string presentation) => _xmlGlobalFunctions.XMLValue(givenType, presentation);
 
         [ContextMethod("XMLСтрока", "XMLString")]
-        public string XMLString(IValue value) => xmlGlobalFunctions.XMLString(value);
+        public string XMLString(IValue value) => _xmlGlobalFunctions.XMLString(value);
 
         //XMLТип(XMLType)
         //XMLТипЗнч(XMLTypeOf)
@@ -232,7 +235,7 @@ namespace OneScript.StandardLibrary.XDTO
             if (valueType is TypeTypeValue typeTypeValue)
                 typeValue = typeTypeValue;
 
-            else if (xmlReader.NodeType == xmlNodeEnum.FromNativeValue(XmlNodeType.Element))
+            else if (xmlReader.NodeType == _xmlNodeEnum.FromNativeValue(XmlNodeType.Element))
             {
                 IValue xsiType = xmlReader.GetAttribute(ValueFactory.Create("type"), XmlSchema.InstanceNamespace);
                 IValue xsiNil = xmlReader.GetAttribute(ValueFactory.Create("nil"), XmlSchema.InstanceNamespace);
@@ -280,7 +283,7 @@ namespace OneScript.StandardLibrary.XDTO
             else if (implType == typeof(DataType)) // TODO: такого не должно быть.
             {
                 xmlReader.Read();
-                if (xmlReader.NodeType == xmlNodeEnum.FromNativeValue(XmlNodeType.Text))
+                if (xmlReader.NodeType == _xmlNodeEnum.FromNativeValue(XmlNodeType.Text))
                 {
                     result = XMLValue(typeValue, xmlReader.Value);
                     xmlReader.Read();
@@ -300,7 +303,7 @@ namespace OneScript.StandardLibrary.XDTO
         #region Constructors
 
         [ScriptConstructor(Name = "По умолчанию")]
-        public static XDTOSerializer CreateInstance(TypeActivationContext context) => new XDTOSerializer(context.TypeManager);
+        public static XDTOSerializer CreateInstance(TypeActivationContext context) => new XDTOSerializer(context.TypeManager, context.GlobalsManager);
         
         #endregion
 

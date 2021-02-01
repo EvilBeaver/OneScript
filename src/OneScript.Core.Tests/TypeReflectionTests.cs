@@ -21,8 +21,9 @@ namespace OneScript.Core.Tests
 
         public TypeReflectionTests()
         {
-            var builder = new DefaultEngineBuilder();
-            builder.WithEnvironment(new RuntimeEnvironment());
+            var builder = DefaultEngineBuilder
+                .Create()
+                .WithEnvironment(new RuntimeEnvironment());
             host = builder.Build();
             host.Environment = new RuntimeEnvironment();
         }

@@ -26,11 +26,6 @@ namespace ScriptEngine.Machine
             Instance.RegisterInstance(instance);
         }
 
-        public static void RegisterInstance(Type type, object instance)
-        {
-            Instance.RegisterInstance(type, instance);
-        }
-
         public static T GetGlobalContext<T>()
         {
             return Instance.GetInstance<T>();

@@ -5,12 +5,23 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using System.Collections.Generic;
+
 namespace ScriptEngine.Hosting
 {
-    public interface IServiceContainer
+    public interface IServiceContainer : IDisposable
     {
-        object Resolve();
+        object Resolve(Type type);
 
         T Resolve<T>();
+        
+        object TryResolve(Type type);
+        
+        T TryResolve<T>();
+
+        IEnumerable<T> ResolverEnumerable<T>();
+
+        IServiceContainer CreateScope();
     }
 }

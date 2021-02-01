@@ -32,7 +32,7 @@ namespace ScriptEngine
         {
             if(!Utils.IsValidIdentifier(identifier))
             {
-                throw new ArgumentException("Invalid identifier", "identifier");
+                throw new ArgumentException("Invalid identifier", nameof(identifier));
             }
 
             if (_globalScope == null)

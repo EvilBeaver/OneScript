@@ -133,12 +133,16 @@ namespace TestApp
 
         private HostedScriptEngine CreateEngine()
         {
-            var builder = new DefaultEngineBuilder();
-            builder.SetDefaultOptions()
+            var builder = DefaultEngineBuilder
+                .Create()
+                .SetDefaultOptions()
                 .AddAssembly(typeof(ArrayImpl).Assembly)
-                .UseSystemConfigFile()
-                .UseEntrypointConfigFile(_currentDocPath);
-            
+                .SetupConfiguration(x =>
+                {
+                    x.UseSystemConfigFile()
+                     .UseEntrypointConfigFile(_currentDocPath);
+                });
+
             builder.UseFileSystemLibraries();
             var engine = builder.Build();
             var mainEngine = new HostedScriptEngine(engine);

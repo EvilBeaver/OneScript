@@ -16,6 +16,10 @@ namespace ScriptEngine.Hosting
 {
     public class DefaultEngineBuilder : IEngineBuilder
     {
+        private DefaultEngineBuilder()
+        {
+        }
+        
         public static IEngineBuilder Create()
         {
             return new DefaultEngineBuilder();
@@ -28,9 +32,12 @@ namespace ScriptEngine.Hosting
         public CompilerOptions CompilerOptions { get; set; }
         public IDebugController DebugController { get; set; }
         public ConfigurationProviders ConfigurationProviders { get; } = new ConfigurationProviders();
+        public IServiceDefinitions Services { get; set; }
 
         public ScriptingEngine Build()
         {
+            this.AddAssembly(GetType().Assembly);
+            
             if(CompilerOptions == default)
                 CompilerOptions = new CompilerOptions();
             

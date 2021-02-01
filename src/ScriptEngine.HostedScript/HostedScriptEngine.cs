@@ -35,27 +35,27 @@ namespace ScriptEngine.HostedScript
             _env = _engine.Environment;
             _engine.AttachAssembly(typeof(HostedScriptEngine).Assembly);
             
-            SetGlobalContexts();
+            SetGlobalContexts(engine.GlobalsManager);
         }
 
-        private void SetGlobalContexts()
+        private void SetGlobalContexts(IGlobalsManager manager)
         {
             _globalCtx = new SystemGlobalContext();
             _globalCtx.EngineInstance = _engine;
 
             _env.InjectObject(_globalCtx, false);
-            GlobalsManager.RegisterInstance(_globalCtx);
+            manager.RegisterInstance(_globalCtx);
 
             var dynLoader = new DynamicLoadingFunctions(_engine);
             _env.InjectObject(dynLoader, false);
-            GlobalsManager.RegisterInstance(dynLoader);
+            manager.RegisterInstance(dynLoader);
 
             InitializationCallback = (eng, env) =>
             {
                 var templateFactory = new DefaultTemplatesFactory();
                 var storage = new TemplateStorage(templateFactory);
                 env.InjectObject(storage);
-                GlobalsManager.RegisterInstance(storage);
+                manager.RegisterInstance(storage);
             };
         }
         

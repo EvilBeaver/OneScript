@@ -25,7 +25,7 @@ namespace ScriptEngine
         {
             _currentContext = new ModuleCompilerContext(outerContext);
         }
-        
+
         public CodeGenerationFlags ProduceExtraCode { get; set; }
         
         public int DefineVariable(string name, string alias, SymbolType type)
@@ -83,7 +83,16 @@ namespace ScriptEngine
 
         public ModuleImage CompileBatch(ICodeSource source)
         {
-            return CompileBatchInternal(source, _preprocessorVariables, _currentContext);
+            try
+            {
+                RegisterScopeIfNeeded();
+                return CompileBatchInternal(source, _preprocessorVariables, _currentContext);
+            }
+            finally
+            {
+                _currentContext.PopScope();
+                _scope = null;
+            }
         }
 
         protected abstract ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context);

@@ -11,6 +11,8 @@ namespace ScriptEngine.Hosting
 {
     public interface IServiceDefinitions
     {
+        IServiceContainer CreateContainer();
+        
         void Register(Type knownType);
         void Register(Type interfaceType, Type implementation);
         void Register<T>();
@@ -24,5 +26,8 @@ namespace ScriptEngine.Hosting
         void RegisterSingleton<T>(T instance);
         void RegisterSingleton<T,TImpl>();
         void RegisterSingleton<T>(Func<IServiceContainer, T> factory);
+        
+        void RegisterEnumerable<TInterface, TImplementation>();
+        void RegisterEnumerable<TInterface, TImplementation>(Func<IServiceContainer, TInterface> factory);
     }
 }

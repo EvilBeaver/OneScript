@@ -26,10 +26,10 @@ namespace StandaloneRunner
         {
             var appDump = DeserializeAppDump(sourceStream);
             
-            var engineBuilder = new DefaultEngineBuilder();
-            engineBuilder
+            var engineBuilder = DefaultEngineBuilder
+                .Create()
                 .AddAssembly(typeof(ArrayImpl).Assembly)
-                .UseEnvironmentVariableConfig("OSCRIPT_CONFIG");
+                .SetupConfiguration(p => p.UseEnvironmentVariableConfig("OSCRIPT_CONFIG"));
 
             var engine = new HostedScriptEngine(engineBuilder.Build());
             var src = new BinaryCodeSource();
