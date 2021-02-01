@@ -21,6 +21,8 @@ namespace ScriptEngine.Hosting
         
         ConfigurationProviders ConfigurationProviders { get; }
         
+        IServiceDefinitions Services { get; set; }
+        
         ScriptingEngine Build();
     }
 }
