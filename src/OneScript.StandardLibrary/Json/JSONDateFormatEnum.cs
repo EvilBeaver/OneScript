@@ -48,7 +48,7 @@ namespace OneScript.StandardLibrary.Json
 
         public static JSONDateFormatEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateEnumInstance<JSONDateFormatEnum>(typeManager, 
+            return EnumContextHelper.CreateSelfAwareEnumInstance(typeManager, 
                 (t, v) => new JSONDateFormatEnum(t, v));
         }
 

@@ -63,16 +63,10 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 
         public static EnumerationXSProhibitedSubstitutions CreateInstance(ITypeManager typeManager)
         {
-
-            var type = typeManager.RegisterType(
-                "ПеречислениеЗапрещенныеПодстановкиXS",
-                "EnumerationXSProhibitedSubstitutions", typeof(EnumerationXSProhibitedSubstitutions));
-            var enumValueType = typeManager.RegisterType(
-                "ЗапрещенныеПодстановкиXS",
-                "XSProhibitedSubstitutions", typeof(XSProhibitedSubstitutions));
-
-            EnumerationXSProhibitedSubstitutions instance = new EnumerationXSProhibitedSubstitutions(type, enumValueType);
-
+            var instance = EnumContextHelper.CreateClrEnumInstance<EnumerationXSProhibitedSubstitutions, XmlSchemaDerivationMethod>(
+                typeManager,
+                (t,v) => new EnumerationXSProhibitedSubstitutions(t, v));
+            
             instance.AddValue("Все", "All", instance._valuesCache[XmlSchemaDerivationMethod.All]);
             instance.AddValue("Ограничение", "Restriction", instance._valuesCache[XmlSchemaDerivationMethod.Restriction]);
             instance.AddValue("Расширение", "Extension", instance._valuesCache[XmlSchemaDerivationMethod.Extension]);

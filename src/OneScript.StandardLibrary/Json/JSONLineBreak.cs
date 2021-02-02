@@ -57,7 +57,7 @@ namespace OneScript.StandardLibrary.Json
 
         public static JSONLineBreakEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateEnumInstance<JSONLineBreakEnum>(typeManager,
+            return EnumContextHelper.CreateSelfAwareEnumInstance(typeManager,
                 (t, v) => new JSONLineBreakEnum(t, v));
         }
 

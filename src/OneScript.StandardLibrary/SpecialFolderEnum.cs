@@ -26,24 +26,22 @@ namespace OneScript.StandardLibrary
 
         public static SpecialFolderEnum CreateInstance(ITypeManager typeManager)
         {
-            SpecialFolderEnum instance;
-            var type = typeManager.RegisterType("ПеречислениеСпециальнаяПапка", "EnumSpecialFolder", typeof(SpecialFolderEnum));
-            var enumValueType = typeManager.RegisterType("СпециальнаяПапка", "SpecialFolder", typeof(CLREnumValueWrapper<sysFolder>));
+            var instance = EnumContextHelper.CreateClrEnumInstance<SpecialFolderEnum, sysFolder>(
+                typeManager,
+                (t,v) => new SpecialFolderEnum(t,v));
 
-            instance = new SpecialFolderEnum(type, enumValueType);
-
-            instance.AddValue("МоиДокументы", "MyDocuments", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.Personal));
-            instance.AddValue("ДанныеПриложений", "ApplicationData", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.ApplicationData));
-            instance.AddValue("ЛокальныйКаталогДанныхПриложений", "LocalApplicationData", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.LocalApplicationData));
-            instance.AddValue("РабочийСтол", "Desktop", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.Desktop));
-            instance.AddValue("КаталогРабочийСтол", "DesktopDirectory", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.DesktopDirectory));
-            instance.AddValue("МояМузыка", "MyMusic", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.MyMusic));
-            instance.AddValue("МоиРисунки", "MyPictures", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.MyPictures));
-            instance.AddValue("Шаблоны", "Templates", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.Templates));
-            instance.AddValue("МоиВидеозаписи", "MyVideos", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.MyVideos));
-            instance.AddValue("ОбщиеШаблоны", "CommonTemplates", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.CommonTemplates));
-            instance.AddValue("ПрофильПользователя", "UserProfile", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.UserProfile));
-            instance.AddValue("ОбщийКаталогДанныхПриложения", "CommonApplicationData", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.CommonApplicationData));
+            instance.WrapClrValue("МоиДокументы", "MyDocuments", sysFolder.Personal);
+            instance.WrapClrValue("ДанныеПриложений", "ApplicationData", sysFolder.ApplicationData);
+            instance.WrapClrValue("ЛокальныйКаталогДанныхПриложений", "LocalApplicationData", sysFolder.LocalApplicationData);
+            instance.WrapClrValue("РабочийСтол", "Desktop", sysFolder.Desktop);
+            instance.WrapClrValue("КаталогРабочийСтол", "DesktopDirectory", sysFolder.DesktopDirectory);
+            instance.WrapClrValue("МояМузыка", "MyMusic", sysFolder.MyMusic);
+            instance.WrapClrValue("МоиРисунки", "MyPictures", sysFolder.MyPictures);
+            instance.WrapClrValue("Шаблоны", "Templates", sysFolder.Templates);
+            instance.WrapClrValue("МоиВидеозаписи", "MyVideos", sysFolder.MyVideos);
+            instance.WrapClrValue("ОбщиеШаблоны", "CommonTemplates", sysFolder.CommonTemplates);
+            instance.WrapClrValue("ПрофильПользователя", "UserProfile", sysFolder.UserProfile);
+            instance.WrapClrValue("ОбщийКаталогДанныхПриложения", "CommonApplicationData", sysFolder.CommonApplicationData);
 
             return instance;
         }

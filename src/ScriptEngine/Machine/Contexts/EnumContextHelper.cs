@@ -25,9 +25,16 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        private static void RegisterEnumType<T>(ITypeManager typeManager, out TypeDescriptor enumType, out TypeDescriptor enumValueType) where T : EnumerationContext
+        private static void RegisterSelfAwareEnumType<T>(ITypeManager typeManager, out TypeDescriptor enumType, out TypeDescriptor enumValueType) where T : EnumerationContext
         {
-            var enumClassType = typeof(T);
+            (enumType, enumValueType) = RegisterEnumType<T, SelfAwareEnumValue<T>>(typeManager);
+        }
+        
+        public static (TypeDescriptor EnumType, TypeDescriptor EnumValueType) RegisterEnumType<TEnum, TValue>(ITypeManager typeManager) 
+            where TEnum : EnumerationContext 
+            where TValue : EnumerationValue
+        {
+            var enumClassType = typeof(TEnum);
             var attribs = enumClassType.GetCustomAttributes(typeof(SystemEnumAttribute), false);
 
             if (attribs.Length == 0)
@@ -35,31 +42,60 @@ namespace ScriptEngine.Machine.Contexts
 
             var enumMetadata = (SystemEnumAttribute)attribs[0];
 
-            enumType = typeManager.RegisterType(
+            var enumType = typeManager.RegisterType(
                 "Перечисление" + enumMetadata.GetName(),
                 "Enum" + enumMetadata.GetAlias(),
-                typeof(T));
+                typeof(TEnum));
             
-            enumValueType = typeManager.RegisterType(
+            var enumValueType = typeManager.RegisterType(
                 enumMetadata.GetName(),
                 enumMetadata.GetAlias(),
-                typeof(SelfAwareEnumValue<T>));
+                typeof(TValue));
+            
+            return (enumType, enumValueType);
         }
 
-        public static T CreateEnumInstance<T>(ITypeManager typeManager, EnumCreationDelegate<T> creator) where T : EnumerationContext
+        public static T CreateSelfAwareEnumInstance<T>(ITypeManager typeManager, EnumCreationDelegate<T> creator) where T : EnumerationContext
         {
             T instance;
 
             TypeDescriptor enumType;
             TypeDescriptor enumValType;
 
-            EnumContextHelper.RegisterEnumType<T>(typeManager, out enumType, out enumValType);
+            EnumContextHelper.RegisterSelfAwareEnumType<T>(typeManager, out enumType, out enumValType);
 
             instance = creator(enumType, enumValType);
 
             EnumContextHelper.RegisterValues<T>(instance);
 
             return instance;
+        }
+        
+        public static TOwner CreateClrEnumInstance<TOwner, TEnum>(ITypeManager typeManager, EnumCreationDelegate<TOwner> creator) 
+            where TOwner : EnumerationContext
+            where TEnum : struct
+        {
+            TOwner instance;
+
+            TypeDescriptor enumType;
+            TypeDescriptor enumValType;
+
+            (enumType, enumValType) = EnumContextHelper.RegisterEnumType<TOwner, CLREnumValueWrapper<TEnum>>(typeManager);
+
+            instance = creator(enumType, enumValType);
+            return instance;
+        }
+        
+        public static CLREnumValueWrapper<T> WrapClrValue<T>(
+            this EnumerationContext owner,
+            string name,
+            string alias,
+            T value)
+            where T : struct
+        {
+            var wrappedValue = new CLREnumValueWrapper<T>(owner, value); 
+            owner.AddValue(name, alias, wrappedValue);
+            return wrappedValue;
         }
 
     }

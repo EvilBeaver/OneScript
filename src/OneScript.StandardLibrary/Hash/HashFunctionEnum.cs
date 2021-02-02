@@ -93,7 +93,7 @@ namespace OneScript.StandardLibrary.Hash
 
         public static HashFunctionEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateEnumInstance<HashFunctionEnum>(typeManager,
+            return EnumContextHelper.CreateSelfAwareEnumInstance<HashFunctionEnum>(typeManager,
                 (t, v) => new HashFunctionEnum(t, v));
         }
 

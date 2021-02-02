@@ -46,27 +46,25 @@ namespace OneScript.StandardLibrary.Xml
 
         public static XmlNodeTypeEnum CreateInstance(ITypeManager typeManager)
         {
-            XmlNodeTypeEnum instance;
-            var type = typeManager.RegisterType("ПеречислениеТипУзлаXML", default,typeof(XmlNodeTypeEnum));
-            var enumValueType = typeManager.RegisterType("ТипУзлаXML", default,typeof(CLREnumValueWrapper<XmlNodeType>));
+            var instance = EnumContextHelper.CreateClrEnumInstance<XmlNodeTypeEnum, XmlNodeType>(
+                typeManager,
+                (t,v) => new XmlNodeTypeEnum(t, v));
 
-            instance = new XmlNodeTypeEnum(type, enumValueType);
-
-            instance.AddValue("Атрибут", "Attribute", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Attribute));
-            instance.AddValue("ИнструкцияОбработки", "ProcessingInstruction", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.ProcessingInstruction));
-            instance.AddValue("Комментарий", "Comment", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Comment));
-            instance.AddValue("КонецСущности", "EndEntity", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.EndEntity));
-            instance.AddValue("КонецЭлемента", "EndElement", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.EndElement));
-            instance.AddValue("НачалоЭлемента", "StartElement", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Element));
-            instance.AddValue("Ничего", "None", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.None));
-            instance.AddValue("Нотация", "Notation", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Notation));
-            instance.AddValue("ОбъявлениеXML", "XMLDeclaration", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.XmlDeclaration));
-            instance.AddValue("ОпределениеТипаДокумента", "DocumentTypeDefinition", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.DocumentType));
-            instance.AddValue("ПробельныеСимволы", "Whitespace", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Whitespace));
-            instance.AddValue("СекцияCDATA", "CDATASection", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.CDATA));
-            instance.AddValue("СсылкаНаСущность", "EntityReference", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.EntityReference));
-            instance.AddValue("Сущность", "Entity", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Entity));
-            instance.AddValue("Текст", "Text", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Text));
+            instance.WrapClrValue("Атрибут", "Attribute", XmlNodeType.Attribute);
+            instance.WrapClrValue("ИнструкцияОбработки", "ProcessingInstruction", XmlNodeType.ProcessingInstruction);
+            instance.WrapClrValue("Комментарий", "Comment", XmlNodeType.Comment);
+            instance.WrapClrValue("КонецСущности", "EndEntity", XmlNodeType.EndEntity);
+            instance.WrapClrValue("КонецЭлемента", "EndElement", XmlNodeType.EndElement);
+            instance.WrapClrValue("НачалоЭлемента", "StartElement", XmlNodeType.Element);
+            instance.WrapClrValue("Ничего", "None", XmlNodeType.None);
+            instance.WrapClrValue("Нотация", "Notation", XmlNodeType.Notation);
+            instance.WrapClrValue("ОбъявлениеXML", "XMLDeclaration", XmlNodeType.XmlDeclaration);
+            instance.WrapClrValue("ОпределениеТипаДокумента", "DocumentTypeDefinition", XmlNodeType.DocumentType);
+            instance.WrapClrValue("ПробельныеСимволы", "Whitespace", XmlNodeType.Whitespace);
+            instance.WrapClrValue("СекцияCDATA", "CDATASection", XmlNodeType.CDATA);
+            instance.WrapClrValue("СсылкаНаСущность", "EntityReference", XmlNodeType.EntityReference);
+            instance.WrapClrValue("Сущность", "Entity", XmlNodeType.Entity);
+            instance.WrapClrValue("Текст", "Text", XmlNodeType.Text);
 
             return instance;
         }

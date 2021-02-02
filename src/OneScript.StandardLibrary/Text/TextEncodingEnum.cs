@@ -106,7 +106,7 @@ namespace OneScript.StandardLibrary.Text
 
         public static TextEncodingEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateEnumInstance<TextEncodingEnum>(typeManager, 
+            return EnumContextHelper.CreateSelfAwareEnumInstance(typeManager, 
                 (t,v)=>new TextEncodingEnum(t,v));
         }
 

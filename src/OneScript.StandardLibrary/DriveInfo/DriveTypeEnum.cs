@@ -33,19 +33,18 @@ namespace OneScript.StandardLibrary.DriveInfo
 
         public static DriveTypeEnum CreateInstance(ITypeManager typeManager)
         {
-            DriveTypeEnum instance;
-            var type = typeManager.RegisterType("ПеречислениеТипДиска", "EnumDriveType",typeof(DriveTypeEnum));
-            var enumValueType = typeManager.RegisterType("ТипДиска","DriveType", typeof(CLREnumValueWrapper<System.IO.DriveType>));
-
-            instance = new DriveTypeEnum(type, enumValueType);
-
-            instance.AddValue("Неизвестный", "Unknown", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Unknown));
-            instance.AddValue("НеИмеетКорневойКаталог", "NoRootDirectory", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.NoRootDirectory));
-            instance.AddValue("СъемноеЗапоминающееУстройство", "Removable", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Removable));
-            instance.AddValue("ЖесткийДиск", "Fixed", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Fixed));
-            instance.AddValue("СетевойДиск", "Network", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Network));
-            instance.AddValue("ОптическийДиск", "CDRom", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.CDRom));
-            instance.AddValue("ДискОЗУ", "Ram", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Ram));
+            
+            var instance = EnumContextHelper.CreateClrEnumInstance<DriveTypeEnum, System.IO.DriveType>(
+                typeManager,
+                (t, v) => new DriveTypeEnum(t, v)); 
+            
+            instance.WrapClrValue("Неизвестный", "Unknown", System.IO.DriveType.Unknown);
+            instance.WrapClrValue("НеИмеетКорневойКаталог", "NoRootDirectory", System.IO.DriveType.NoRootDirectory);
+            instance.WrapClrValue("СъемноеЗапоминающееУстройство", "Removable", System.IO.DriveType.Removable);
+            instance.WrapClrValue("ЖесткийДиск", "Fixed", System.IO.DriveType.Fixed);
+            instance.WrapClrValue("СетевойДиск", "Network", System.IO.DriveType.Network);
+            instance.WrapClrValue("ОптическийДиск", "CDRom", System.IO.DriveType.CDRom);
+            instance.WrapClrValue("ДискОЗУ", "Ram", System.IO.DriveType.Ram);
 
             return instance;
         }

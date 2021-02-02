@@ -43,21 +43,19 @@ namespace OneScript.StandardLibrary.Text
 
         public static ConsoleColorEnum CreateInstance(ITypeManager typeManager)
         {
-            ConsoleColorEnum instance;
-            var type = typeManager.RegisterType("ПеречислениеЦветКонсоли", default,typeof(ConsoleColorEnum));
-            var enumValueType = typeManager.RegisterType("ЦветКонсоли", default, typeof(CLREnumValueWrapper<ConsoleColor>));
-
-            instance = new ConsoleColorEnum(type, enumValueType);
-
-            instance.AddValue("Белый", "White", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.White));
-            instance.AddValue("Черный", "Black", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Black));
-            instance.AddValue("Синий", "Blue", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Blue));
-            instance.AddValue("Желтый", "Yellow", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Yellow));
-            instance.AddValue("Красный", "Red", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Red));
-            instance.AddValue("Зеленый", "Green", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Green));
-            instance.AddValue("Бирюза", "Cyan", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Cyan));
-            instance.AddValue("Малиновый", "Magenta", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Magenta));
-            instance.AddValue("Серый", "Gray", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Gray));
+            var instance = EnumContextHelper.CreateClrEnumInstance<ConsoleColorEnum, ConsoleColor>(
+                typeManager,
+                (t,v) => new ConsoleColorEnum(t,v));
+            
+            instance.WrapClrValue("Белый", "White", ConsoleColor.White);
+            instance.WrapClrValue("Черный", "Black", ConsoleColor.Black);
+            instance.WrapClrValue("Синий", "Blue", ConsoleColor.Blue);
+            instance.WrapClrValue("Желтый", "Yellow", ConsoleColor.Yellow);
+            instance.WrapClrValue("Красный", "Red", ConsoleColor.Red);
+            instance.WrapClrValue("Зеленый", "Green", ConsoleColor.Green);
+            instance.WrapClrValue("Бирюза", "Cyan", ConsoleColor.Cyan);
+            instance.WrapClrValue("Малиновый", "Magenta", ConsoleColor.Magenta);
+            instance.WrapClrValue("Серый", "Gray", ConsoleColor.Gray);
 
             return instance;
         }
