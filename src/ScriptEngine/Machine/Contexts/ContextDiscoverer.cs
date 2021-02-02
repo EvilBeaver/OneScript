@@ -133,7 +133,7 @@ namespace ScriptEngine.Machine.Contexts
 
             var instance = new EnumerationContext (type, enumValueType);
 
-            var wrapperTypeUndefined = typeof (CLREnumValueWrapper<>);
+            var wrapperTypeUndefined = typeof (ClrEnumValueWrapper<>);
             var wrapperType = wrapperTypeUndefined.MakeGenericType (new Type [] { enumType } );
             var constructor = wrapperType.GetConstructor (new Type [] { typeof(EnumerationContext), enumType, typeof(DataType) });
 

@@ -284,7 +284,7 @@ namespace OneScript.StandardLibrary.Binary
                 return Constructor(
                     filename,
                     openMode,
-                    new CLREnumValueWrapper<FileAccessEnum>(null, FileAccessEnum.ReadAndWrite),
+                    new ClrEnumValueWrapper<FileAccessEnum>(null, FileAccessEnum.ReadAndWrite),
                     bufferSize);
             }
         }

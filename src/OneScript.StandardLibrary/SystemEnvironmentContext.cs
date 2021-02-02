@@ -140,7 +140,7 @@ namespace OneScript.StandardLibrary
         [ContextMethod("ПолучитьПутьПапки")]
         public string GetFolderPath(IValue folder)
         {
-            var typedValue = folder as CLREnumValueWrapper<System.Environment.SpecialFolder>;
+            var typedValue = folder as ClrEnumValueWrapper<System.Environment.SpecialFolder>;
             if (typedValue == null)
                 throw RuntimeException.InvalidArgumentType();
 

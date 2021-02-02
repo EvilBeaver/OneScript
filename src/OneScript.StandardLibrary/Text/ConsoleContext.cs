@@ -117,7 +117,7 @@ namespace OneScript.StandardLibrary.Text
             {
                 try
                 {
-                    return (CLREnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.ForegroundColor);
+                    return (ClrEnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.ForegroundColor);
                 }
                 catch (InvalidOperationException)
                 {
@@ -126,7 +126,7 @@ namespace OneScript.StandardLibrary.Text
             }
             set
             {
-                var typed = value.GetRawValue() as CLREnumValueWrapper<ConsoleColor>;
+                var typed = value.GetRawValue() as ClrEnumValueWrapper<ConsoleColor>;
                 Console.ForegroundColor = typed.UnderlyingValue;
             }
         }
@@ -138,7 +138,7 @@ namespace OneScript.StandardLibrary.Text
             {
                 try
                 {
-                    return (CLREnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
+                    return (ClrEnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
                 }
                 catch (InvalidOperationException)
                 {
@@ -147,7 +147,7 @@ namespace OneScript.StandardLibrary.Text
             }
             set
             {
-                var typed = value.GetRawValue() as CLREnumValueWrapper<ConsoleColor>;
+                var typed = value.GetRawValue() as ClrEnumValueWrapper<ConsoleColor>;
                 Console.BackgroundColor = typed.UnderlyingValue;
             }
         }

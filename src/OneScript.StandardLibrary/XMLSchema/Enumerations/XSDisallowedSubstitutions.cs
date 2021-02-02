@@ -13,7 +13,7 @@ using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    public class XSDisallowedSubstitutions : CLREnumValueWrapper<XmlSchemaDerivationMethod>
+    public class XSDisallowedSubstitutions : ClrEnumValueWrapper<XmlSchemaDerivationMethod>
     {
         internal XSDisallowedSubstitutions(EnumerationXSDisallowedSubstitutions instance, XmlSchemaDerivationMethod realValue) 
             : base(instance, realValue)

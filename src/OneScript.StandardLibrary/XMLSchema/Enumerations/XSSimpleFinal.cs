@@ -13,7 +13,7 @@ using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    public class XSSimpleFinal : CLREnumValueWrapper<XmlSchemaDerivationMethod>
+    public class XSSimpleFinal : ClrEnumValueWrapper<XmlSchemaDerivationMethod>
     {
         internal XSSimpleFinal(EnumerationXSSimpleFinal instance, XmlSchemaDerivationMethod realValue)
           : base(instance, realValue)

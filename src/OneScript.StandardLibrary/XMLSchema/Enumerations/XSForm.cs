@@ -13,7 +13,7 @@ using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    public class XSForm : CLREnumValueWrapper<XmlSchemaForm>
+    public class XSForm : ClrEnumValueWrapper<XmlSchemaForm>
     {
         internal XSForm(EnumerationXSForm instance, XmlSchemaForm realValue) : base(instance, realValue )
         {

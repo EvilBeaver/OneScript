@@ -37,7 +37,7 @@ namespace OneScript.StandardLibrary.Xml
             }
             else
             {
-                val = this.ValuesInternal.First(x => ((CLREnumValueWrapper<XmlNodeType>)x).UnderlyingValue == native);
+                val = this.ValuesInternal.First(x => ((ClrEnumValueWrapper<XmlNodeType>)x).UnderlyingValue == native);
                 _valuesCache.Add(native, val);
             }
 

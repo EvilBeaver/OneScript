@@ -80,20 +80,20 @@ namespace ScriptEngine.Machine.Contexts
             TypeDescriptor enumType;
             TypeDescriptor enumValType;
 
-            (enumType, enumValType) = EnumContextHelper.RegisterEnumType<TOwner, CLREnumValueWrapper<TEnum>>(typeManager);
+            (enumType, enumValType) = EnumContextHelper.RegisterEnumType<TOwner, ClrEnumValueWrapper<TEnum>>(typeManager);
 
             instance = creator(enumType, enumValType);
             return instance;
         }
         
-        public static CLREnumValueWrapper<T> WrapClrValue<T>(
+        public static ClrEnumValueWrapper<T> WrapClrValue<T>(
             this EnumerationContext owner,
             string name,
             string alias,
             T value)
             where T : struct
         {
-            var wrappedValue = new CLREnumValueWrapper<T>(owner, value); 
+            var wrappedValue = new ClrEnumValueWrapper<T>(owner, value); 
             owner.AddValue(name, alias, wrappedValue);
             return wrappedValue;
         }

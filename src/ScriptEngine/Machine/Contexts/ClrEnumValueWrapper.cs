@@ -7,18 +7,18 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class CLREnumValueWrapper<T> : EnumerationValue, IObjectWrapper where T :struct
+    public class ClrEnumValueWrapper<T> : EnumerationValue, IObjectWrapper where T :struct
     {
         private readonly T _realValue;
         private DataType _redefinedDataType;
 
-        public CLREnumValueWrapper(EnumerationContext owner, T realValue):base(owner)
+        public ClrEnumValueWrapper(EnumerationContext owner, T realValue):base(owner)
         {
             _realValue = realValue;
             _redefinedDataType = DataType.GenericValue;
         }
 
-        public CLREnumValueWrapper (EnumerationContext owner, T realValue, DataType newDataType) : base (owner)
+        public ClrEnumValueWrapper (EnumerationContext owner, T realValue, DataType newDataType) : base (owner)
         {
             _realValue = realValue;
             _redefinedDataType = newDataType;
@@ -50,7 +50,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool Equals(IValue other)
         {
-            var otherWrapper = other.GetRawValue() as CLREnumValueWrapper<T>;
+            var otherWrapper = other.GetRawValue() as ClrEnumValueWrapper<T>;
             if (otherWrapper == null)
                 return false;
 

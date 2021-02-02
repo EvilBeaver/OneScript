@@ -13,7 +13,7 @@ using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    public class XSSubstitutionGroupExclusions : CLREnumValueWrapper<XmlSchemaDerivationMethod>
+    public class XSSubstitutionGroupExclusions : ClrEnumValueWrapper<XmlSchemaDerivationMethod>
     {
         internal XSSubstitutionGroupExclusions(EnumerationXSSubstitutionGroupExclusions instance, XmlSchemaDerivationMethod realValue)
             : base(instance, realValue)

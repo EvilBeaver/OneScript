@@ -34,7 +34,7 @@ namespace OneScript.StandardLibrary.Text
             }
             else
             {
-                val = ValuesInternal.First(x => ((CLREnumValueWrapper<ConsoleColor>)x).UnderlyingValue == native);
+                val = ValuesInternal.First(x => ((ClrEnumValueWrapper<ConsoleColor>)x).UnderlyingValue == native);
                 _valuesCache.Add(native, val);
             }
 
