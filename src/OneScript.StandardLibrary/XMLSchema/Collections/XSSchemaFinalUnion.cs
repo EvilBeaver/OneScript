@@ -20,9 +20,9 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
 
         private bool Contains(XmlSchemaDerivationMethod _value)
         {
-            XSSchemaFinal _enumValue = EnumerationXSSchemaFinal.FromNativeValue(_value);
-            IValue _idx = _values.Find(_enumValue);
-            return (_idx.DataType != DataType.Undefined);
+            var enumValue = EnumerationXSSchemaFinal.Instance.FromNativeValue(_value);
+            IValue idx = _values.Find(enumValue);
+            return (idx.DataType != DataType.Undefined);
         }
 
         internal XSSchemaFinalUnion() => _values = ArrayImpl.Constructor();

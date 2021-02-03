@@ -124,40 +124,14 @@ namespace ScriptEngine.Machine.Contexts
         {
             var enumTypeAttribute = (EnumerationTypeAttribute)enumType.GetCustomAttributes (typeof (EnumerationTypeAttribute), false)[0];
 
-            var type = Types.RegisterType (
-                "Перечисление" + enumTypeAttribute.Name,
-                "Enum" + enumTypeAttribute.Alias,
-                typeof (EnumerationContext));
+            var genericType = typeof(ClrEnumWrapper<>).MakeGenericType(enumType);
+            var genericValue = typeof(ClrEnumValueWrapper<>).MakeGenericType(enumType);
+
+            var (enumTypeDescription, valueTypeDescription) =
+                EnumContextHelper.RegisterEnumType(genericType, genericValue, Types);
+
+            var instance = (IValue)Activator.CreateInstance(genericType, enumTypeDescription, valueTypeDescription, true);
             
-            var enumValueType = Types.RegisterType (enumTypeAttribute.Name, enumTypeAttribute.Alias, enumType);
-
-            var instance = new EnumerationContext (type, enumValueType);
-
-            var wrapperTypeUndefined = typeof (ClrEnumValueWrapper<>);
-            var wrapperType = wrapperTypeUndefined.MakeGenericType (new Type [] { enumType } );
-            var constructor = wrapperType.GetConstructor (new Type [] { typeof(EnumerationContext), enumType, typeof(DataType) });
-
-            foreach (var field in enumType.GetFields())
-            {
-                foreach (var contextFieldAttribute in field.GetCustomAttributes (typeof (EnumItemAttribute), false))
-                {
-                    var contextField = (EnumItemAttribute)contextFieldAttribute;
-                    var osValue = (EnumerationValue)constructor.Invoke (new object [] { instance, field.GetValue (null), DataType.Enumeration } );
-
-                    if (contextField.Alias == null)
-                    {
-                        if(StringComparer
-                             .InvariantCultureIgnoreCase
-                             .Compare(field.Name, contextField.Name) != 0)
-                            instance.AddValue(contextField.Name, field.Name, osValue);
-                        else
-                            instance.AddValue(contextField.Name, osValue);
-                    }
-                    else
-                        instance.AddValue(contextField.Name, contextField.Alias, osValue);
-                }
-            }
-
 			if (enumTypeAttribute.CreateGlobalProperty)
 			{
 				Globals.RegisterInstance(enumType, instance);
@@ -166,7 +140,6 @@ namespace ScriptEngine.Machine.Contexts
 					environment.InjectGlobalProperty(instance, enumTypeAttribute.Alias, true);
 			}
         }
-
 
         private void RegisterGlobalContext(Type contextType, RuntimeEnvironment environment)
         {

@@ -117,7 +117,7 @@ namespace OneScript.StandardLibrary.Text
             {
                 try
                 {
-                    return (ClrEnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.ForegroundColor);
+                    return ConsoleColorEnum.Instance.FromNativeValue(Console.ForegroundColor);
                 }
                 catch (InvalidOperationException)
                 {

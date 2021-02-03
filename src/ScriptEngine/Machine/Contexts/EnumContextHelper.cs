@@ -34,8 +34,12 @@ namespace ScriptEngine.Machine.Contexts
             where TEnum : EnumerationContext 
             where TValue : EnumerationValue
         {
-            var enumClassType = typeof(TEnum);
-            var attribs = enumClassType.GetCustomAttributes(typeof(SystemEnumAttribute), false);
+            return RegisterEnumType(typeof(TEnum), typeof(TValue), typeManager);
+        }
+        
+        public static (TypeDescriptor EnumType, TypeDescriptor EnumValueType) RegisterEnumType(Type enumClass, Type enumValueClass, ITypeManager typeManager)
+        {
+            var attribs = enumClass.GetCustomAttributes(typeof(SystemEnumAttribute), false);
 
             if (attribs.Length == 0)
                 throw new InvalidOperationException("Enum is not marked as SystemEnum");
@@ -45,12 +49,12 @@ namespace ScriptEngine.Machine.Contexts
             var enumType = typeManager.RegisterType(
                 "Перечисление" + enumMetadata.GetName(),
                 "Enum" + enumMetadata.GetAlias(),
-                typeof(TEnum));
+                enumClass);
             
             var enumValueType = typeManager.RegisterType(
                 enumMetadata.GetName(),
                 enumMetadata.GetAlias(),
-                typeof(TValue));
+                enumValueClass);
             
             return (enumType, enumValueType);
         }

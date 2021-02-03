@@ -224,17 +224,18 @@ namespace OneScript.StandardLibrary.Xml
         }
 
         [ContextProperty("ТипУзла", "NodeType")]
-        public IValue NodeType
+        public ClrEnumValueWrapper<XmlNodeType> NodeType
         {
             get
             {
+                var enumInstance = XmlNodeTypeEnum.Instance;
                 if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
                 {
-                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(XmlNodeType.EndElement);
+                    return enumInstance.FromNativeValue(XmlNodeType.EndElement);
                 }
                 else
                 {
-                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(_reader.NodeType);
+                    return enumInstance.FromNativeValue(_reader.NodeType);
                 }
             }
         }
@@ -450,7 +451,7 @@ namespace OneScript.StandardLibrary.Xml
 
         private bool IsEndElement()
         {
-            var isEnd = (NodeType == GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(XmlNodeType.EndElement));
+            var isEnd = (NodeType == XmlNodeTypeEnum.Instance.FromNativeValue(XmlNodeType.EndElement));
             return isEnd;
         }
 

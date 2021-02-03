@@ -50,8 +50,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool Equals(IValue other)
         {
-            var otherWrapper = other.GetRawValue() as ClrEnumValueWrapper<T>;
-            if (otherWrapper == null)
+            if (!(other?.GetRawValue() is ClrEnumValueWrapper<T> otherWrapper))
                 return false;
 
             return UnderlyingValue.Equals(otherWrapper.UnderlyingValue);

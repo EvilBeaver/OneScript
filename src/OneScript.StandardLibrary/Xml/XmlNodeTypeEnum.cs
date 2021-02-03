@@ -15,33 +15,42 @@ using ScriptEngine.Types;
 namespace OneScript.StandardLibrary.Xml
 {
     [SystemEnum("ТипУзлаXML", "XMLNodeType")]
-    public class XmlNodeTypeEnum : EnumerationContext
+    public class XmlNodeTypeEnum : ClrEnumWrapper<XmlNodeType>
     {
-        readonly Dictionary<XmlNodeType, IValue> _valuesCache = new Dictionary<XmlNodeType,IValue>();
+        readonly Dictionary<XmlNodeType, ClrEnumValueWrapper<XmlNodeType>> _valuesCache = new Dictionary<XmlNodeType,ClrEnumValueWrapper<XmlNodeType>>();
 
         private XmlNodeTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
-
+            MakeValue("Атрибут", "Attribute", XmlNodeType.Attribute);
+            MakeValue("ИнструкцияОбработки", "ProcessingInstruction", XmlNodeType.ProcessingInstruction);
+            MakeValue("Комментарий", "Comment", XmlNodeType.Comment);
+            MakeValue("КонецСущности", "EndEntity", XmlNodeType.EndEntity);
+            MakeValue("КонецЭлемента", "EndElement", XmlNodeType.EndElement);
+            MakeValue("НачалоЭлемента", "StartElement", XmlNodeType.Element);
+            MakeValue("Ничего", "None", XmlNodeType.None);
+            MakeValue("Нотация", "Notation", XmlNodeType.Notation);
+            MakeValue("ОбъявлениеXML", "XMLDeclaration", XmlNodeType.XmlDeclaration);
+            MakeValue("ОпределениеТипаДокумента", "DocumentTypeDefinition", XmlNodeType.DocumentType);
+            MakeValue("ПробельныеСимволы", "Whitespace", XmlNodeType.Whitespace);
+            MakeValue("СекцияCDATA", "CDATASection", XmlNodeType.CDATA);
+            MakeValue("СсылкаНаСущность", "EntityReference", XmlNodeType.EntityReference);
+            MakeValue("Сущность", "Entity", XmlNodeType.Entity);
+            MakeValue("Текст", "Text", XmlNodeType.Text);
         }
 
-        public IValue FromNativeValue(XmlNodeType native)
+        private void MakeValue(string name, string alias, XmlNodeType enumValue)
+        {
+            var wrappedValue = this.WrapClrValue(name, alias, enumValue);
+            _valuesCache[enumValue] = wrappedValue;
+        }
+
+        public override ClrEnumValueWrapper<XmlNodeType> FromNativeValue(XmlNodeType native)
         {
             if (native == XmlNodeType.SignificantWhitespace)
                 native = XmlNodeType.Whitespace;
 
-            IValue val;
-            if(_valuesCache.TryGetValue(native, out val))
-            {
-                return val;
-            }
-            else
-            {
-                val = this.ValuesInternal.First(x => ((ClrEnumValueWrapper<XmlNodeType>)x).UnderlyingValue == native);
-                _valuesCache.Add(native, val);
-            }
-
-            return val;
+            return _valuesCache[native];
         }
 
         public static XmlNodeTypeEnum CreateInstance(ITypeManager typeManager)
@@ -49,22 +58,6 @@ namespace OneScript.StandardLibrary.Xml
             var instance = EnumContextHelper.CreateClrEnumInstance<XmlNodeTypeEnum, XmlNodeType>(
                 typeManager,
                 (t,v) => new XmlNodeTypeEnum(t, v));
-
-            instance.WrapClrValue("Атрибут", "Attribute", XmlNodeType.Attribute);
-            instance.WrapClrValue("ИнструкцияОбработки", "ProcessingInstruction", XmlNodeType.ProcessingInstruction);
-            instance.WrapClrValue("Комментарий", "Comment", XmlNodeType.Comment);
-            instance.WrapClrValue("КонецСущности", "EndEntity", XmlNodeType.EndEntity);
-            instance.WrapClrValue("КонецЭлемента", "EndElement", XmlNodeType.EndElement);
-            instance.WrapClrValue("НачалоЭлемента", "StartElement", XmlNodeType.Element);
-            instance.WrapClrValue("Ничего", "None", XmlNodeType.None);
-            instance.WrapClrValue("Нотация", "Notation", XmlNodeType.Notation);
-            instance.WrapClrValue("ОбъявлениеXML", "XMLDeclaration", XmlNodeType.XmlDeclaration);
-            instance.WrapClrValue("ОпределениеТипаДокумента", "DocumentTypeDefinition", XmlNodeType.DocumentType);
-            instance.WrapClrValue("ПробельныеСимволы", "Whitespace", XmlNodeType.Whitespace);
-            instance.WrapClrValue("СекцияCDATA", "CDATASection", XmlNodeType.CDATA);
-            instance.WrapClrValue("СсылкаНаСущность", "EntityReference", XmlNodeType.EntityReference);
-            instance.WrapClrValue("Сущность", "Entity", XmlNodeType.Entity);
-            instance.WrapClrValue("Текст", "Text", XmlNodeType.Text);
 
             return instance;
         }

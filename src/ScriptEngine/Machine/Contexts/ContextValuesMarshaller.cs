@@ -256,10 +256,11 @@ namespace ScriptEngine.Machine.Contexts
 			default:
                 if (val.DataType == DataType.Object)
                     result = val.AsObject();
+                else
+                    result = val.GetRawValue();
 
-				result = val.GetRawValue();
-				if (result is IObjectWrapper)
-					result = ((IObjectWrapper)result).UnderlyingObject;
+                if (result is IObjectWrapper wrapper)
+					result = wrapper.UnderlyingObject;
 				else
 				    throw new ValueMarshallingException($"Тип {val.GetType()} не поддерживает преобразование в CLR-объект");
 
@@ -280,7 +281,7 @@ namespace ScriptEngine.Machine.Contexts
             object objectRef;
             if (rawValue.DataType == DataType.GenericValue)
             {
-                objectRef = rawValue;
+                objectRef = (rawValue is IObjectWrapper wrapper) ? wrapper.UnderlyingObject : rawValue;
             }
             else
             {

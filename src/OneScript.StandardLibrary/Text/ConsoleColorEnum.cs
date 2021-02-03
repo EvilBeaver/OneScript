@@ -15,30 +15,12 @@ using ScriptEngine.Types;
 namespace OneScript.StandardLibrary.Text
 {
     [SystemEnum("ЦветКонсоли", "ConsoleColor")]
-    public class ConsoleColorEnum : EnumerationContext
+    public class ConsoleColorEnum : ClrEnumWrapper<ConsoleColor>
     {
-        readonly Dictionary<ConsoleColor, IValue> _valuesCache = new Dictionary<ConsoleColor, IValue>();
-
         private ConsoleColorEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
 
-        }
-
-        public IValue FromNativeValue(ConsoleColor native)
-        {
-            IValue val;
-            if (_valuesCache.TryGetValue(native, out val))
-            {
-                return val;
-            }
-            else
-            {
-                val = ValuesInternal.First(x => ((ClrEnumValueWrapper<ConsoleColor>)x).UnderlyingValue == native);
-                _valuesCache.Add(native, val);
-            }
-
-            return val;
         }
 
         public static ConsoleColorEnum CreateInstance(ITypeManager typeManager)

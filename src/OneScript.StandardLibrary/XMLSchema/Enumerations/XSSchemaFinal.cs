@@ -19,18 +19,11 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
            : base(instance, realValue)
         {
         }
-
-        public static XSSchemaFinal FromNativeValue(XmlSchemaDerivationMethod native)
-            => EnumerationXSSchemaFinal.FromNativeValue(native);
-
-        public static XmlSchemaDerivationMethod ToNativeValue(XSSchemaFinal wrapper)
-            => wrapper.UnderlyingValue;
     }
 
     [SystemEnum("ЗавершенностьСхемыXS", "XSSchemaFinal")]
-    public class EnumerationXSSchemaFinal : EnumerationContext
+    public class EnumerationXSSchemaFinal : ClrEnumWrapper<XmlSchemaDerivationMethod>
     {
-
         private readonly Dictionary<XmlSchemaDerivationMethod, XSSchemaFinal> _valuesCache;
 
         private EnumerationXSSchemaFinal(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
@@ -46,7 +39,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
             };
         }
 
-        internal static XSSchemaFinal FromNativeValue(XmlSchemaDerivationMethod native)
+        public override ClrEnumValueWrapper<XmlSchemaDerivationMethod> FromNativeValue(XmlSchemaDerivationMethod native)
         {
             switch (native)
             {
@@ -55,9 +48,8 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
                 case XmlSchemaDerivationMethod.Restriction:
                 case XmlSchemaDerivationMethod.Extension:
                 case XmlSchemaDerivationMethod.List:
-
-                    EnumerationXSSchemaFinal enumeration = GlobalsManager.GetEnum<EnumerationXSSchemaFinal>();
-                    return enumeration._valuesCache[native];
+                    
+                    return _valuesCache[native];
 
                 default:
                     return null;
@@ -66,16 +58,9 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 
         public static EnumerationXSSchemaFinal CreateInstance(ITypeManager typeManager)
         {
-
-            var type = typeManager.RegisterType(
-                "ПеречислениеЗавершенностьСхемыXS",
-                "EnumerationXSSchemaFinal", typeof(EnumerationXSSchemaFinal));
+            var (enumType, enumValType) = EnumContextHelper.RegisterEnumType<EnumerationXSSchemaFinal, XSSchemaFinal>(typeManager);
             
-            var enumValueType = typeManager.RegisterType(
-                "ЗавершенностьСхемыXS",
-                "XSSchemaFinal", typeof(XSSchemaFinal));
-
-            EnumerationXSSchemaFinal instance = new EnumerationXSSchemaFinal(type, enumValueType);
+            var instance = new EnumerationXSSchemaFinal(enumType, enumValType);
 
             instance.AddValue("Все", "All", instance._valuesCache[XmlSchemaDerivationMethod.All]);
             instance.AddValue("Объединение", "Union", instance._valuesCache[XmlSchemaDerivationMethod.Union]);
