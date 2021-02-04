@@ -9,25 +9,15 @@ using System;
 namespace ScriptEngine.Machine.Contexts
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class SystemEnumAttribute : Attribute
+    public class SystemEnumAttribute : Attribute, INameAndAliasProvider
     {
-        private readonly string _name;
-        private readonly string _alias;
-
         public SystemEnumAttribute(string name, string alias = "")
         {
-            _name = name;
-            _alias = alias;
+            Name = name;
+            Alias = alias;
         }
 
-        public string GetName()
-        {
-            return _name;
-        }
-
-        public string GetAlias()
-        {
-            return _alias;
-        }
+        public string Name { get; }
+        public string Alias { get; }
     }
 }

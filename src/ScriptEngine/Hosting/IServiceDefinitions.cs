@@ -15,19 +15,26 @@ namespace ScriptEngine.Hosting
         
         void Register(Type knownType);
         void Register(Type interfaceType, Type implementation);
-        void Register<T>();
-        void Register<T>(T instance);
-        void Register<T,TImpl>();
-        void Register<T>(Func<IServiceContainer, T> factory);
+        void Register<T>() where T : class;
+        void Register<T>(T instance) where T : class;
+        void Register<T,TImpl>() 
+            where T : class 
+            where TImpl : class, T;
+        
+        void Register<T>(Func<IServiceContainer, T> factory) where T : class;
         
         void RegisterSingleton(Type knownType);
         void RegisterSingleton(Type interfaceType, Type implementation);
-        void RegisterSingleton<T>();
-        void RegisterSingleton<T>(T instance);
-        void RegisterSingleton<T,TImpl>();
-        void RegisterSingleton<T>(Func<IServiceContainer, T> factory);
+        void RegisterSingleton<T>() where T : class;
+        void RegisterSingleton<T>(T instance) where T : class;
+        void RegisterSingleton<T,TImpl>() 
+            where T : class
+            where TImpl : class, T;
         
-        void RegisterEnumerable<TInterface, TImplementation>();
-        void RegisterEnumerable<TInterface, TImplementation>(Func<IServiceContainer, TInterface> factory);
+        void RegisterSingleton<T>(Func<IServiceContainer, T> factory) where T : class;
+        
+        void RegisterEnumerable<T, TImpl>() 
+            where T : class 
+            where TImpl : class,T;
     }
 }

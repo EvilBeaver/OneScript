@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -115,9 +116,9 @@ namespace ScriptEngine.Machine.Contexts
             
             Globals.RegisterInstance(instance);
             
-            environment.InjectGlobalProperty(instance, enumMetadata.GetName(), true);
-            if(enumMetadata.GetAlias() != String.Empty)
-                environment.InjectGlobalProperty(instance, enumMetadata.GetAlias(), true);
+            environment.InjectGlobalProperty(instance, enumMetadata.Name, true);
+            if(enumMetadata.Alias != String.Empty)
+                environment.InjectGlobalProperty(instance, enumMetadata.Alias, true);
         }
         
         private void RegisterSimpleEnum(Type enumType, RuntimeEnvironment environment)
@@ -128,9 +129,22 @@ namespace ScriptEngine.Machine.Contexts
             var genericValue = typeof(ClrEnumValueWrapper<>).MakeGenericType(enumType);
 
             var (enumTypeDescription, valueTypeDescription) =
-                EnumContextHelper.RegisterEnumType(genericType, genericValue, Types);
+                EnumContextHelper.RegisterEnumType(genericType, genericValue, Types, enumTypeAttribute);
 
-            var instance = (IValue)Activator.CreateInstance(genericType, enumTypeDescription, valueTypeDescription, true);
+            var ctor = genericType.GetConstructor(
+                BindingFlags.NonPublic | BindingFlags.Instance,
+                default,
+                new []
+                {
+                    typeof(TypeDescriptor),
+                    typeof(TypeDescriptor),
+                    typeof(bool)
+                },
+                default);
+            
+            Debug.Assert(ctor != null);
+            
+            var instance = (IValue)ctor.Invoke(new object[]{enumTypeDescription, valueTypeDescription, true});
             
 			if (enumTypeAttribute.CreateGlobalProperty)
 			{

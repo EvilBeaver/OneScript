@@ -22,6 +22,12 @@ namespace ScriptEngine.Hosting
             return b;
         }
 
+        public static IEngineBuilder WithServices(this IEngineBuilder b, IServiceDefinitions ioc)
+        {
+            b.Services = ioc;
+            return b;
+        }
+        
         public static IEngineBuilder WithTypes(this IEngineBuilder b, ITypeManager typeManager)
         {
             b.TypeManager = typeManager;

@@ -14,13 +14,13 @@ namespace ScriptEngine.Hosting
     {
         object Resolve(Type type);
 
-        T Resolve<T>();
+        T Resolve<T>() where T : class;
         
         object TryResolve(Type type);
         
-        T TryResolve<T>();
+        T TryResolve<T>() where T : class;
 
-        IEnumerable<T> ResolverEnumerable<T>();
+        IEnumerable<T> ResolveEnumerable<T>() where T : class;
 
         IServiceContainer CreateScope();
     }

@@ -30,30 +30,39 @@ namespace ScriptEngine.Machine.Contexts
             (enumType, enumValueType) = RegisterEnumType<T, SelfAwareEnumValue<T>>(typeManager);
         }
         
-        public static (TypeDescriptor EnumType, TypeDescriptor EnumValueType) RegisterEnumType<TEnum, TValue>(ITypeManager typeManager) 
+        public static (TypeDescriptor, TypeDescriptor) RegisterEnumType<TEnum, TValue>(ITypeManager typeManager) 
             where TEnum : EnumerationContext 
             where TValue : EnumerationValue
         {
             return RegisterEnumType(typeof(TEnum), typeof(TValue), typeManager);
         }
         
-        public static (TypeDescriptor EnumType, TypeDescriptor EnumValueType) RegisterEnumType(Type enumClass, Type enumValueClass, ITypeManager typeManager)
+        public static (TypeDescriptor, TypeDescriptor) RegisterEnumType(Type enumClass, Type enumValueClass, ITypeManager typeManager)
         {
             var attribs = enumClass.GetCustomAttributes(typeof(SystemEnumAttribute), false);
 
             if (attribs.Length == 0)
-                throw new InvalidOperationException("Enum is not marked as SystemEnum");
+                throw new InvalidOperationException($"Enum {enumClass} is not marked as SystemEnum");
 
             var enumMetadata = (SystemEnumAttribute)attribs[0];
 
+            return RegisterEnumType(enumClass, enumValueClass, typeManager, enumMetadata);
+        }
+
+        public static (TypeDescriptor, TypeDescriptor) RegisterEnumType(
+            Type enumClass,
+            Type enumValueClass,
+            ITypeManager typeManager,
+            INameAndAliasProvider enumMetadata)
+        {
             var enumType = typeManager.RegisterType(
-                "Перечисление" + enumMetadata.GetName(),
-                "Enum" + enumMetadata.GetAlias(),
+                "Перечисление" + enumMetadata.Name,
+                enumMetadata.Alias != default? "Enum" + enumMetadata.Alias : default,
                 enumClass);
-            
+
             var enumValueType = typeManager.RegisterType(
-                enumMetadata.GetName(),
-                enumMetadata.GetAlias(),
+                enumMetadata.Name,
+                enumMetadata.Alias,
                 enumValueClass);
             
             return (enumType, enumValueType);

@@ -72,7 +72,7 @@ namespace oscript
             
             services.Register<PreprocessorHandlers>(sp =>
             {
-                var providers = sp.ResolverEnumerable<IDirectiveHandler>();
+                var providers = sp.ResolveEnumerable<IDirectiveHandler>();
                 return new PreprocessorHandlers(providers);
             });
             

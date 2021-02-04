@@ -32,7 +32,7 @@ namespace ScriptEngine.Hosting
         public CompilerOptions CompilerOptions { get; set; }
         public IDebugController DebugController { get; set; }
         public ConfigurationProviders ConfigurationProviders { get; } = new ConfigurationProviders();
-        public IServiceDefinitions Services { get; set; }
+        public IServiceDefinitions Services { get; set; } = new TinyIocImplementation();
 
         public ScriptingEngine Build()
         {
@@ -43,16 +43,22 @@ namespace ScriptEngine.Hosting
             
             if (CompilerFactory == default)
                 CompilerFactory = new AstBasedCompilerFactory(CompilerOptions);
-            
-            var engine = new ScriptingEngine(
-                TypeManager,
-                GlobalInstances,
-                Environment,
-                CompilerFactory,
-                ConfigurationProviders);
 
+            var container = Services.CreateContainer();
+
+            var engine = container.Resolve<ScriptingEngine>();
+            
+            // var engine = new ScriptingEngine(
+            //     TypeManager,
+            //     GlobalInstances,
+            //     Environment,
+            //     CompilerFactory,
+            //     ConfigurationProviders);
+            
             engine.DebugController = DebugController;
-            CompilerOptions.DependencyResolver?.Initialize(engine);
+
+            var dependencyResolver = container.TryResolve<IDependencyResolver>();
+            dependencyResolver?.Initialize(engine);
             
             return engine;
         }

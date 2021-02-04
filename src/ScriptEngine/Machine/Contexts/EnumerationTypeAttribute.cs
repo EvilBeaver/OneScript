@@ -5,10 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using ScriptEngine.Machine.Contexts;
+
 namespace ScriptEngine
 {
     [AttributeUsage(AttributeTargets.Enum)]
-    public class EnumerationTypeAttribute : Attribute
+    public class EnumerationTypeAttribute : Attribute, INameAndAliasProvider
     {
         public EnumerationTypeAttribute (string name, string alias = null, bool createProperty = true)
 		{
