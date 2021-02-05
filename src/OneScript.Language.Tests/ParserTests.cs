@@ -802,7 +802,8 @@ namespace OneScript.Language.Tests
         
         private static SyntaxTreeValidator ParseExpressionAndGetValidator(string code)
         {
-            return MakeValidator(code, p => p.ParseExpression());
+            var topLevel = MakeValidator(code, p => p.ParseExpression());
+            return topLevel.NextChild();
         }
 
         private static SyntaxTreeValidator MakeValidator(string code, Func<DefaultBslParser, BslSyntaxNode> action)

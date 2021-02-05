@@ -40,6 +40,12 @@ namespace ScriptEngine.Hosting
             return b;
         }
 
+        public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<ScriptingEngine, IServiceContainer> action)
+        {
+            b.StartupAction = action;
+            return b;
+        }
+        
         public static IEngineBuilder AddAssembly(this IEngineBuilder b, Assembly asm, Predicate<Type> filter = null)
         {
             var discoverer = new ContextDiscoverer(b.TypeManager, b.GlobalInstances);
@@ -61,25 +67,10 @@ namespace ScriptEngine.Hosting
             return b;
         }
         
-        public static IEngineBuilder UseCompilerOptions(this IEngineBuilder b, Action<CompilerOptions> getOptions)
-        {
-            EnsureCompilerOptions(b);
-            getOptions(b.CompilerOptions);
-            
-            b.UseCompiler(new AstBasedCompilerFactory(b.CompilerOptions));
-            return b;
-        }
-
         private static void EnsureCompilerOptions(IEngineBuilder b)
         {
             if(b.CompilerOptions == default)
                 b.CompilerOptions = new CompilerOptions();
-        }
-        
-        public static CompilerOptions UseDirectiveHandler(this CompilerOptions b, IDirectiveHandler handler)
-        {
-            b.PreprocessorFactory.Add(o => handler);
-            return b;
         }
         
         public static CompilerOptions UseDirectiveHandler(
@@ -110,10 +101,39 @@ namespace ScriptEngine.Hosting
         
         public static IEngineBuilder SetDefaultOptions(this IEngineBuilder builder)
         {
-            builder.UseCompilerOptions(o =>
+            var services = builder.Services;
+            
+            services.Register<IServiceContainer>(sp => sp);
+            services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
+            services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
+            services.RegisterSingleton<RuntimeEnvironment>();
+            services.RegisterSingleton<IAstBuilder, DefaultAstBuilder>();
+            services.RegisterSingleton<ICompilerServiceFactory, AstBasedCompilerFactory>();
+            services.RegisterSingleton<BslSyntaxWalker, AstBasedCodeGenerator>();
+            services.RegisterSingleton<IErrorSink, ThrowingErrorSink>();
+            services.RegisterSingleton<IDependencyResolver, NullDependencyResolver>();
+            
+            services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();
+            services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
+            services.RegisterEnumerable<IDirectiveHandler, ImportDirectivesHandler>();
+            
+            services.Register<PreprocessorHandlers>(sp =>
             {
-                o.UseConditionalCompilation()
-                    .UseRegions();
+                var providers = sp.ResolveEnumerable<IDirectiveHandler>();
+                return new PreprocessorHandlers(providers);
+            });
+            
+            services.Register<CompilerOptions>(sp =>
+            {
+                var opts = new CompilerOptions
+                {
+                    DependencyResolver = sp.Resolve<IDependencyResolver>(),
+                    ErrorSink = sp.Resolve<IErrorSink>(),
+                    NodeBuilder = sp.Resolve<IAstBuilder>(),
+                    PreprocessorHandlers = sp.Resolve<PreprocessorHandlers>()
+                };
+                
+                return opts;
             });
 
             return builder;

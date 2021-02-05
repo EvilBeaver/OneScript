@@ -31,7 +31,7 @@ namespace ScriptEngine.Machine.Contexts
         internal ClrEnumWrapper(TypeDescriptor typeRepresentation, TypeDescriptor valuesType, bool autoRegister) : base(typeRepresentation, valuesType)
         {
             if (Instance != default)
-                throw new InvalidOperationException($"Enum wrapper for {typeof(T)} must be a singleton");
+                return;
             
             if(autoRegister)
                 Autoregister();

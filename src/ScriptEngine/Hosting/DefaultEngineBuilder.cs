@@ -22,7 +22,9 @@ namespace ScriptEngine.Hosting
         
         public static IEngineBuilder Create()
         {
-            return new DefaultEngineBuilder();
+            var builder = new DefaultEngineBuilder();
+            builder.SetDefaultOptions();
+            return builder;
         }
         
         public RuntimeEnvironment Environment { get; set; } = new RuntimeEnvironment();
@@ -34,26 +36,15 @@ namespace ScriptEngine.Hosting
         public ConfigurationProviders ConfigurationProviders { get; } = new ConfigurationProviders();
         public IServiceDefinitions Services { get; set; } = new TinyIocImplementation();
 
+        public Action<ScriptingEngine, IServiceContainer> StartupAction { get; set; }
+        
         public ScriptingEngine Build()
         {
-            this.AddAssembly(GetType().Assembly);
-            
-            if(CompilerOptions == default)
-                CompilerOptions = new CompilerOptions();
-            
-            if (CompilerFactory == default)
-                CompilerFactory = new AstBasedCompilerFactory(CompilerOptions);
-
             var container = Services.CreateContainer();
 
             var engine = container.Resolve<ScriptingEngine>();
-            
-            // var engine = new ScriptingEngine(
-            //     TypeManager,
-            //     GlobalInstances,
-            //     Environment,
-            //     CompilerFactory,
-            //     ConfigurationProviders);
+            engine.AttachAssembly(GetType().Assembly);
+            StartupAction?.Invoke(engine, container);
             
             engine.DebugController = DebugController;
 

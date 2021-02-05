@@ -33,11 +33,12 @@ namespace oscript
                 });
 
             BuildUpWithIoC(builder);
-            
-            builder
-                .AddAssembly(typeof(ArrayImpl).Assembly)
-                .UseFileSystemLibraries();
-            
+            var x = new Lazy<string>(() => "hi");
+            builder.SetupEnvironment((engine, container) =>
+                {
+                    engine.AttachAssembly(typeof(ArrayImpl).Assembly);
+                });
+
             return builder;
         }
 
@@ -55,38 +56,9 @@ namespace oscript
 
             var config = builder.ConfigurationProviders.CreateConfig();
             services.RegisterSingleton(config);
-            
-            services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
-            services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
-            services.RegisterSingleton<RuntimeEnvironment>();
-            services.RegisterSingleton<IDependencyResolver, FileSystemDependencyResolver>();
-            
-            services.Register<IAstBuilder, DefaultAstBuilder>();
-            services.Register<ICompilerServiceFactory, AstBasedCompilerFactory>();
-            services.Register<BslSyntaxWalker, AstBasedCodeGenerator>();
-            services.Register<IErrorSink, ThrowingErrorSink>();
-            
-            services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();
-            services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
-            services.RegisterEnumerable<IDirectiveHandler, ImportDirectivesHandler>();
-            
-            services.Register<PreprocessorHandlers>(sp =>
-            {
-                var providers = sp.ResolveEnumerable<IDirectiveHandler>();
-                return new PreprocessorHandlers(providers);
-            });
-            
-            services.Register<CompilerOptions>(sp =>
-            {
-                var opts = new CompilerOptions
-                {
-                    DependencyResolver = sp.Resolve<IDependencyResolver>(),
-                    ErrorSink = sp.Resolve<IErrorSink>(),
-                    NodeBuilder = sp.Resolve<IAstBuilder>()
-                };
-                
-                return opts;
-            });
+
+            builder.SetDefaultOptions()
+                .UseFileSystemLibraries();
         }
     }
 }

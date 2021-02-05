@@ -1,4 +1,6 @@
-﻿//===============================================================================
+﻿//OSCRIPT_SKIP_TESTING_MPL2_PREFIX
+//
+//===============================================================================
 // TinyIoC
 //
 // An easy to use, hassle free, Inversion of Control Container for small projects
@@ -2929,6 +2931,14 @@ namespace TinyIoC
                 this.registerType = registerType;
             }
 
+            public override ObjectFactoryBase SingletonVariant
+            {
+                get
+                {
+                    return new DelegateSingletonFactory(registerType, _factory);
+                }
+            }
+
             public override ObjectFactoryBase WeakReferenceVariant
             {
                 get
@@ -3337,6 +3347,47 @@ namespace TinyIoC
             public void Dispose()
             {
                 _LifetimeProvider.ReleaseObject();
+            }
+        }
+
+        private class DelegateSingletonFactory : ObjectFactoryBase, IDisposable
+        {
+            private readonly Func<TinyIoCContainer, NamedParameterOverloads, object> _factory;
+            private readonly object _singletonLock = new object();
+            private object _instance;
+
+            public DelegateSingletonFactory(Type creatingType, Func<TinyIoCContainer, NamedParameterOverloads, object> factory)
+            {
+                _factory = factory;
+                CreatesType = creatingType;
+            }
+            
+            public override Type CreatesType { get; }
+
+            public override object GetObject(Type requestedType, TinyIoCContainer container, NamedParameterOverloads parameters,
+                ResolveOptions options)
+            {
+                if (_instance != null)
+                    return _instance;
+                
+                lock (_singletonLock)
+                    if (_instance == null)
+                    {
+                        var localCopy = _factory(container, parameters);
+                        Thread.MemoryBarrier();
+                        _instance = localCopy;
+                    }
+
+                return _instance;
+            }
+
+            public void Dispose()
+            {
+                if (_instance is IDisposable disp)
+                {
+                    disp.Dispose();
+                    _instance = null;
+                }
             }
         }
 #endregion

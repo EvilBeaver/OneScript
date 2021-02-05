@@ -73,7 +73,7 @@ namespace ScriptEngine.HostedScript.Extensions
         
         public static IEngineBuilder UseFileSystemLibraries(this IEngineBuilder b)
         {
-            b.Services.Register<IDependencyResolver>(sp =>
+            b.Services.RegisterSingleton<IDependencyResolver>(sp =>
             {
                 var config = sp.Resolve<KeyValueConfig>();
 

@@ -32,7 +32,7 @@ namespace ScriptEngine.Hosting
         {
             foreach (var registration in _multiRegistrations)
             {
-                _container.RegisterMultiple(registration.Key, registration.Value);
+                _container.RegisterMultiple(registration.Key, registration.Value).AsMultiInstance();
             }
             
             return this;

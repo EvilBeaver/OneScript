@@ -28,7 +28,7 @@ namespace ScriptEngine.Compiler
         
         protected override ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
-            var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
+            var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
             var mi = CreateModuleInformation(source, lexer);
             var moduleNode = ParseSyntaxConstruction(
@@ -42,7 +42,7 @@ namespace ScriptEngine.Compiler
 
         protected override ModuleImage CompileBatchInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
-            var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
+            var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
             var mi = CreateModuleInformation(source, lexer);
             var moduleNode = ParseSyntaxConstruction(
@@ -56,7 +56,7 @@ namespace ScriptEngine.Compiler
 
         protected override ModuleImage CompileExpressionInternal(ICodeSource source, ICompilerContext context)
         {
-            var handlers = _сompilerOptions.PreprocessorFactory.Create(_сompilerOptions);
+            var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = new DefaultLexer
             {
                 Iterator = new SourceCodeIterator(source.Code)
@@ -130,7 +130,7 @@ namespace ScriptEngine.Compiler
                 Iterator = new SourceCodeIterator(source.Code)
             };
 
-            var conditionals = handlers.Get<ConditionalDirectiveHandler>();
+            var conditionals = handlers?.Get<ConditionalDirectiveHandler>();
             if (conditionals != default)
             {
                 foreach (var constant in preprocessorConstants)

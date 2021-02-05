@@ -7,10 +7,12 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.StandardLibrary;
 using oscript.Web;
 
@@ -62,8 +64,14 @@ namespace oscript
 		private int RunCGIMode(string scriptFile)
 		{
 			var builder = ConsoleHostBuilder
-				.Create(scriptFile)
-				.AddAssembly(Assembly.GetExecutingAssembly());
+				.Create(scriptFile);
+
+			var oldAction = builder.StartupAction;
+			builder.SetupEnvironment((e, c) =>
+				{
+					oldAction?.Invoke(e,c);
+					e.AttachAssembly(Assembly.GetExecutingAssembly());
+				});
 
 			var engine = ConsoleHostBuilder.Build(builder);
 			

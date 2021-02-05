@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 
@@ -22,6 +23,7 @@ namespace ScriptEngine.Hosting
         ConfigurationProviders ConfigurationProviders { get; }
         
         IServiceDefinitions Services { get; set; }
+        Action<ScriptingEngine, IServiceContainer> StartupAction { get; set; }
         
         ScriptingEngine Build();
     }
