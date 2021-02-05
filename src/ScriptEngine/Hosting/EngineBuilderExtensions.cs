@@ -16,30 +16,12 @@ namespace ScriptEngine.Hosting
 {
     public static class EngineBuilderExtensions
     {
-        public static IEngineBuilder WithEnvironment(this IEngineBuilder b, RuntimeEnvironment env)
-        {
-            b.Environment = env;
-            return b;
-        }
-
         public static IEngineBuilder WithServices(this IEngineBuilder b, IServiceDefinitions ioc)
         {
             b.Services = ioc;
             return b;
         }
         
-        public static IEngineBuilder WithTypes(this IEngineBuilder b, ITypeManager typeManager)
-        {
-            b.TypeManager = typeManager;
-            return b;
-        }
-        
-        public static IEngineBuilder WithGlobals(this IEngineBuilder b, IGlobalsManager globals)
-        {
-            b.GlobalInstances = globals;
-            return b;
-        }
-
         public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<ScriptingEngine, IServiceContainer> action)
         {
             b.StartupAction = action;
@@ -59,44 +41,6 @@ namespace ScriptEngine.Hosting
             b.Environment.InjectObject(context);
             b.GlobalInstances.RegisterInstance(context);
             return b;
-        }
-
-        public static IEngineBuilder UseCompiler(this IEngineBuilder b, ICompilerServiceFactory factory)
-        {
-            b.CompilerFactory = factory;
-            return b;
-        }
-        
-        private static void EnsureCompilerOptions(IEngineBuilder b)
-        {
-            if(b.CompilerOptions == default)
-                b.CompilerOptions = new CompilerOptions();
-        }
-        
-        public static CompilerOptions UseDirectiveHandler(
-            this CompilerOptions b, 
-            Func<ParserOptions, IDirectiveHandler> handlerFactory)
-        {
-            b.PreprocessorFactory.Add(handlerFactory);
-            return b;
-        }
-
-        public static CompilerOptions UseConditionalCompilation(this CompilerOptions b)
-        {
-            return b.UseDirectiveHandler(o => new ConditionalDirectiveHandler(o.ErrorSink));
-        }
-        
-        public static CompilerOptions UseRegions(this CompilerOptions b)
-        {
-            return b.UseDirectiveHandler(o => new RegionDirectiveHandler(o.ErrorSink));
-        }
-        
-        public static CompilerOptions UseImports(this CompilerOptions opts, IDependencyResolver resolver)
-        {
-            opts.UseDirectiveHandler(o => new ImportDirectivesHandler(opts.NodeBuilder, opts.ErrorSink));
-            opts.DependencyResolver = resolver;
-
-            return opts;
         }
         
         public static IEngineBuilder SetDefaultOptions(this IEngineBuilder builder)

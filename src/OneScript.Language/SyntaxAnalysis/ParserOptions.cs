@@ -13,8 +13,6 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public IAstBuilder NodeBuilder { get; set; } = new DefaultAstBuilder();
 
-        public PreprocessorHandlersFactory PreprocessorFactory { get; } = new PreprocessorHandlersFactory();
-        
         public PreprocessorHandlers PreprocessorHandlers { get; set; }
     }
 }

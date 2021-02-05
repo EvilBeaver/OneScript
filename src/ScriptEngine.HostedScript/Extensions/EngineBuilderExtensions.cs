@@ -110,12 +110,5 @@ namespace ScriptEngine.HostedScript.Extensions
             
             return b;
         }
-        
-        public static CompilerOptions UseFileSystemLibraries(this CompilerOptions b, IEnumerable<string> searchDirectories)
-        {
-            var resolver = new FileSystemDependencyResolver();
-            resolver.SearchDirectories.AddRange(searchDirectories);
-            return b.UseImports(resolver);
-        }
     }
 }

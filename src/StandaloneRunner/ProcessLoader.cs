@@ -28,7 +28,7 @@ namespace StandaloneRunner
             
             var engineBuilder = DefaultEngineBuilder
                 .Create()
-                .AddAssembly(typeof(ArrayImpl).Assembly)
+                .SetupEnvironment((e,c) => e.AttachAssembly(typeof(ArrayImpl).Assembly))
                 .SetupConfiguration(p => p.UseEnvironmentVariableConfig("OSCRIPT_CONFIG"));
 
             var engine = new HostedScriptEngine(engineBuilder.Build());
