@@ -3367,16 +3367,14 @@ namespace TinyIoC
             public override object GetObject(Type requestedType, TinyIoCContainer container, NamedParameterOverloads parameters,
                 ResolveOptions options)
             {
-                if (_instance != null)
-                    return _instance;
-                
-                lock (_singletonLock)
-                    if (_instance == null)
+                if (_instance == null)
+                {
+                    lock (_singletonLock)
                     {
-                        var localCopy = _factory(container, parameters);
-                        Thread.MemoryBarrier();
-                        _instance = localCopy;
+                        if(_instance == null)
+                            _instance = _factory(container, parameters);
                     }
+                }
 
                 return _instance;
             }
