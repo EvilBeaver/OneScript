@@ -61,6 +61,7 @@ namespace OneScript.Core.Tests
         {
             var builder = DefaultEngineBuilder
                 .Create()
+                .SetDefaultOptions()
                 .SetupEnvironment((e, c) => e.AttachAssembly(typeof(ArrayImpl).Assembly));
             return builder.Build();
         }

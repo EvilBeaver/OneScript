@@ -65,6 +65,7 @@ namespace OneScript.Core.Tests
         {
             var engine = DefaultEngineBuilder
                 .Create()
+                .SetDefaultOptions()
                 .Build();
 
             var compiler = engine.GetCompilerService();

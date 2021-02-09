@@ -87,7 +87,7 @@ namespace ScriptEngine
             var newCount = globalEnvironment.AttachedContexts.Count();
             while (lastCount < newCount)
             {
-                MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount]);
+                MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount].Instance);
                 ++lastCount;
             }
         }
@@ -109,7 +109,7 @@ namespace ScriptEngine
 
         public void UpdateContexts()
         {
-            MachineInstance.Current.SetMemory(TypeManager, Environment.AttachedContexts);
+            MachineInstance.Current.SetMemory(TypeManager, Environment.AttachedContexts.Select(x=>x.Instance));
         }
 
         private void SetDefaultEnvironmentIfNeeded()

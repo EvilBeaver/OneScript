@@ -75,6 +75,11 @@ namespace ScriptEngine.Machine
             }
         }
 
+        public override int GetMethodsCount()
+        {
+            return 0;
+        }
+
         #region IAttachableContext Members
 
         public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)

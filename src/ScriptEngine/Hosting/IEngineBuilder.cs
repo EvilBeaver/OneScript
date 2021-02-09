@@ -16,8 +16,6 @@ namespace ScriptEngine.Hosting
         RuntimeEnvironment Environment { get; set; }
         ITypeManager TypeManager { get; set; }
         IGlobalsManager GlobalInstances { get; set; }
-        ICompilerServiceFactory CompilerFactory { get; set; }
-        CompilerOptions CompilerOptions { get; set; }
         IDebugController DebugController { get; set; }
         
         ConfigurationProviders ConfigurationProviders { get; }

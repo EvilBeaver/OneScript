@@ -15,17 +15,19 @@ namespace ScriptEngine
 {
     public class RuntimeEnvironment
     {
-        private readonly List<IAttachableContext> _objects = new List<IAttachableContext>();
         private readonly CompilerContext _symbolScopes = new CompilerContext();
         private SymbolScope _globalScope;
         private PropertyBag _injectedProperties;
 
+        private readonly List<AttachedContext> _contexts = new List<AttachedContext>();
         private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
 
         public void InjectObject(IAttachableContext context, bool asDynamicScope = false)
         {
-            RegisterSymbolScope(context, asDynamicScope);
-            RegisterObject(context);
+            var injectedContext =
+                asDynamicScope ? AttachedContext.CreateDynamic(context) : AttachedContext.Create(context);
+            
+            RegisterObject(injectedContext);
         }
 
         public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
@@ -35,59 +37,58 @@ namespace ScriptEngine
                 throw new ArgumentException("Invalid identifier", nameof(identifier));
             }
 
-            if (_globalScope == null)
-            {
-                _globalScope = new SymbolScope();
-                _injectedProperties = new PropertyBag();
-                _symbolScopes.PushScope(_globalScope);
-                RegisterObject(_injectedProperties);
-            }
+            EnsureGlobalScopeExist();
             
             _globalScope.DefineVariable(identifier, SymbolType.ContextProperty);
             _injectedProperties.Insert(value, identifier, true, !readOnly);
         }
 
+        private void EnsureGlobalScopeExist()
+        {
+            if (_globalScope == null)
+            {
+                lock (_symbolScopes)
+                {
+                    if (_globalScope == null)
+                    {
+                        _injectedProperties = new PropertyBag();
+                        var injected = AttachedContext.Create(_injectedProperties);
+                        _globalScope = injected.Symbols;
+                        RegisterObject(injected);
+                    }
+                }
+            }
+        }
+
+        private void RegisterObject(AttachedContext context)
+        {
+            _symbolScopes.PushScope(context.Symbols);
+            _contexts.Add(context);
+        }
+        
         public void SetGlobalProperty(string propertyName, IValue value)
         {
-            int propId = _injectedProperties.FindProperty(propertyName);
-            _injectedProperties.SetPropValue(propId, value);
+            var binding = SymbolsContext.GetVariable(propertyName).binding;
+
+            var context = _contexts[binding.ContextIndex];
+            context.Instance.SetPropValue(binding.CodeIndex, value);
         }
 
         public IValue GetGlobalProperty(string propertyName)
         {
-            int propId = _injectedProperties.FindProperty(propertyName);
-            return _injectedProperties.GetPropValue(propId);
+            var binding = SymbolsContext.GetVariable(propertyName).binding;
+
+            var context = _contexts[binding.ContextIndex];
+            return context.Instance.GetPropValue(binding.CodeIndex);
         }
 
         internal CompilerContext SymbolsContext => _symbolScopes;
 
-        internal IList<IAttachableContext> AttachedContexts => _objects;
+        internal IList<AttachedContext> AttachedContexts => _contexts;
 
         public IEnumerable<ExternalLibraryDef> GetUserAddedScripts()
         { 
             return _externalLibs.ToArray();
-        }
-
-        private void RegisterSymbolScope(IRuntimeContextInstance provider, bool asDynamicScope)
-        {
-            var scope = new SymbolScope();
-            scope.IsDynamicScope = asDynamicScope;
-            
-            _symbolScopes.PushScope(scope);
-            foreach (var item in provider.GetProperties())
-            {
-                _symbolScopes.DefineVariable(item.Identifier, item.Alias);
-            }
-
-            foreach (var item in provider.GetMethods())
-            {
-                _symbolScopes.DefineMethod(item);
-            }
-        }
-
-        private void RegisterObject(IAttachableContext context)
-        {
-            _objects.Add(context);
         }
 
         [Obsolete]
@@ -96,7 +97,7 @@ namespace ScriptEngine
             machine.Cleanup();
             foreach (var item in AttachedContexts)
             {
-                machine.AttachContext(item);
+                machine.AttachContext(item.Instance);
             }
             machine.ContextsAttached();
         }

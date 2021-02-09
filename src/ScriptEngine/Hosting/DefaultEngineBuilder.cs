@@ -23,15 +23,12 @@ namespace ScriptEngine.Hosting
         public static IEngineBuilder Create()
         {
             var builder = new DefaultEngineBuilder();
-            builder.SetDefaultOptions();
             return builder;
         }
         
         public RuntimeEnvironment Environment { get; set; } = new RuntimeEnvironment();
         public ITypeManager TypeManager { get; set; } = new DefaultTypeManager();
         public IGlobalsManager GlobalInstances { get; set; } = new GlobalInstancesManager();
-        public ICompilerServiceFactory CompilerFactory { get; set; }
-        public CompilerOptions CompilerOptions { get; set; }
         public IDebugController DebugController { get; set; }
         public ConfigurationProviders ConfigurationProviders { get; } = new ConfigurationProviders();
         public IServiceDefinitions Services { get; set; } = new TinyIocImplementation();
