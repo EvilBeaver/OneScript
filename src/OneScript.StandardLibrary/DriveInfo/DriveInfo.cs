@@ -55,7 +55,7 @@ namespace OneScript.StandardLibrary.DriveInfo
         {
             get
             {
-                var dte = GlobalsManager.GetEnum<DriveTypeEnum>();
+                var dte = GlobalsHelper.GetEnum<DriveTypeEnum>();
                 return dte.GetPropValue((int)_driveInfo.DriveType);
             }
         }

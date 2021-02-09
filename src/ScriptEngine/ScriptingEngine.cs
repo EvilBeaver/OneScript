@@ -36,8 +36,6 @@ namespace ScriptEngine
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
             
             GlobalsManager = globals;
-            Machine.GlobalsManager.Instance = globals;
-            
             Environment = env;
             
             Loader = new ScriptSourceFactory();
@@ -109,7 +107,8 @@ namespace ScriptEngine
 
         public void UpdateContexts()
         {
-            MachineInstance.Current.SetMemory(TypeManager, Environment.AttachedContexts.Select(x=>x.Instance));
+            var mem = new MachineEnvironment(TypeManager, Environment, GlobalsManager);
+            MachineInstance.Current.SetMemory(mem);
         }
 
         private void SetDefaultEnvironmentIfNeeded()
@@ -208,7 +207,6 @@ namespace ScriptEngine
         public void Dispose()
         {
             AttachedScriptsFactory.SetInstance(null);
-            Machine.GlobalsManager.Reset();
         }
 
         #endregion

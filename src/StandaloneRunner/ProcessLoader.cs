@@ -39,7 +39,7 @@ namespace StandaloneRunner
             engine.InitializationCallback = (e, env) =>
             {
                 e.Environment.InjectObject(templateStorage);
-                GlobalsManager.RegisterInstance(templateStorage);
+                e.GlobalsManager.RegisterInstance(templateStorage);
             };
             engine.Initialize();
 

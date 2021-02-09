@@ -53,7 +53,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
                 case XmlSchemaDerivationMethod.Restriction:
                 case XmlSchemaDerivationMethod.Extension:
 
-                    EnumerationXSSubstitutionGroupExclusions enumeration = GlobalsManager.GetEnum<EnumerationXSSubstitutionGroupExclusions>();
+                    EnumerationXSSubstitutionGroupExclusions enumeration = GlobalsHelper.GetEnum<EnumerationXSSubstitutionGroupExclusions>();
                     return enumeration._valuesCache[native];
 
                 default:

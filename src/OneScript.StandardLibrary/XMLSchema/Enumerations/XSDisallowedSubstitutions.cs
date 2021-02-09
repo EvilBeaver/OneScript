@@ -55,7 +55,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
                 case XmlSchemaDerivationMethod.Substitution:
                 case XmlSchemaDerivationMethod.Extension:
 
-                    EnumerationXSDisallowedSubstitutions enumeration = GlobalsManager.GetEnum<EnumerationXSDisallowedSubstitutions>();
+                    EnumerationXSDisallowedSubstitutions enumeration = GlobalsHelper.GetEnum<EnumerationXSDisallowedSubstitutions>();
                     return enumeration._valuesCache[native];
 
                 default:

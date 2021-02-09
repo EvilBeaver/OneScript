@@ -501,7 +501,7 @@ namespace OneScript.StandardLibrary.Xml
         {
             var nodeType = _reader.MoveToContent();
             CheckEmptyElementEntering();
-            return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(nodeType);        
+            return GlobalsHelper.GetEnum<XmlNodeTypeEnum>().FromNativeValue(nodeType);        
 	    } 
 
         #endregion

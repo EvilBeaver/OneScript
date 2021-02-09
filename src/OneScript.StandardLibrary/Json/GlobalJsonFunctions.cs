@@ -202,7 +202,7 @@ namespace OneScript.StandardLibrary.Json
         {
          
             var format = Format.GetRawValue() as SelfAwareEnumValue<JSONDateFormatEnum>;
-            var JSONDateFormatEnum = GlobalsManager.GetEnum<JSONDateFormatEnum>();
+            var JSONDateFormatEnum = GlobalsHelper.GetEnum<JSONDateFormatEnum>();
             DateFormatHandling dateFormatHandling = new DateFormatHandling();
 
             if (format == JSONDateFormatEnum.ISO || format == null)

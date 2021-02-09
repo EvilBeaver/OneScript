@@ -12,7 +12,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
-using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine.Values;
@@ -32,6 +31,8 @@ namespace ScriptEngine.Machine
         private LoadedModule _module;
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
+        
+        private MachineEnvironment _mem;
 
         // для отладчика.
         // актуален в момент останова машины
@@ -45,8 +46,6 @@ namespace ScriptEngine.Machine
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
         
-        private ITypeManager _typeManager;
-
         public void AttachContext(IAttachableContext context)
         {
             IVariable[] vars;
@@ -82,29 +81,22 @@ namespace ScriptEngine.Machine
             _scopes.Add(default(Scope));
         }
 
-        public ITypeManager TypeManager
-        {
-            get
-            {
-                if (_typeManager == default)
-                {
-                    _typeManager = new DefaultTypeManager();
-                }
+        public MachineEnvironment Memory => _mem;
 
-                return _typeManager;
-            }
-        }
+        public ITypeManager TypeManager => _mem?.TypeManager;
+        
+        public IGlobalsManager Globals => _mem?.GlobalInstances;
 
-        public void SetMemory(ITypeManager types, IEnumerable<IAttachableContext> contexts)
+        public void SetMemory(MachineEnvironment memory)
         {
             Cleanup();
-            foreach (var item in contexts)
+            foreach (var item in memory.GlobalNamespace.AttachedContexts.Select(x=>x.Instance))
             {
                 AttachContext(item);
             }
             ContextsAttached();
 
-            _typeManager = types;
+            _mem = memory;
         }
         
         internal MachineStoredState SaveState()
@@ -117,7 +109,7 @@ namespace ScriptEngine.Machine
                 OperationStack = _operationStack,
                 StopManager = _stopManager,
                 CodeStatCollector = _codeStatCollector,
-                TypeManager = _typeManager
+                Memory = _mem
             };
         }
 
@@ -130,7 +122,7 @@ namespace ScriptEngine.Machine
             _exceptionsStack = state.ExceptionsStack;
             _stopManager = state.StopManager;
             _codeStatCollector = state.CodeStatCollector;
-            _typeManager = state.TypeManager; 
+            _mem = state.Memory; 
             
             SetFrame(_callStack.Peek());
         } 
@@ -161,7 +153,7 @@ namespace ScriptEngine.Machine
                 var m = MachineInstance.Current;
                 m.Reset();
                 m._scopes = state.Scopes;
-                m._typeManager = state.TypeManager;
+                m._mem = state.Memory;
                 m.ExecuteModuleBody(sdo);
             };
 
@@ -176,7 +168,7 @@ namespace ScriptEngine.Machine
                 var m = MachineInstance.Current;
                 m.Reset();
                 m._scopes = state.Scopes; // память сохраняется, стеки с чистого листа
-                m._typeManager = state.TypeManager;
+                m._mem = state.Memory;
                 return m.ExecuteMethod(sdo, methodIndex, arguments);
             };
 
@@ -300,7 +292,7 @@ namespace ScriptEngine.Machine
             if (separate)
             {
                 runner = new MachineInstance();
-                runner._typeManager = _typeManager;
+                runner._mem = _mem;
                 runner._scopes = new List<Scope>(_scopes);
                 currentMachine = Current;
                 SetCurrentMachineInstance(runner);
@@ -443,7 +435,7 @@ namespace ScriptEngine.Machine
             _exceptionsStack = new Stack<ExceptionJumpInfo>();
             _module = null;
             _currentFrame = null;
-            _typeManager = null;
+            _mem = null;
         }
         
         private void PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
@@ -1378,7 +1370,7 @@ namespace ScriptEngine.Machine
             var factory = TypeManager.GetFactoryFor(type);
             var context = new TypeActivationContext
             {
-                GlobalsManager = GlobalsManager.Instance,
+                GlobalsManager = Globals,
                 TypeManager = TypeManager,
                 TypeName = typeName
             };

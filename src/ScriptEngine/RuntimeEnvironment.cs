@@ -30,17 +30,27 @@ namespace ScriptEngine
             RegisterObject(injectedContext);
         }
 
-        public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
+        public void InjectGlobalProperty(IValue value, string identifier, string alias, bool readOnly)
         {
             if(!Utils.IsValidIdentifier(identifier))
             {
                 throw new ArgumentException("Invalid identifier", nameof(identifier));
             }
 
+            if (alias != default && !Utils.IsValidIdentifier(alias))
+            {
+                throw new ArgumentException("Invalid identifier", nameof(alias));
+            }
+
             EnsureGlobalScopeExist();
             
-            _globalScope.DefineVariable(identifier, SymbolType.ContextProperty);
+            _globalScope.DefineVariable(identifier, alias, readOnly? SymbolType.ContextProperty:SymbolType.Variable);
             _injectedProperties.Insert(value, identifier, true, !readOnly);
+        }
+        
+        public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
+        {
+            InjectGlobalProperty(value, identifier, default, readOnly);
         }
 
         private void EnsureGlobalScopeExist()
@@ -110,8 +120,10 @@ namespace ScriptEngine
             {
                 var loaded = runtime.LoadModuleImage(module.Image);
                 var instance = runtime.CreateUninitializedSDO(loaded);
-                SetGlobalProperty(module.Symbol, instance);
-                module.InjectOrder = _injectedProperties.FindProperty(module.Symbol);
+                
+                var propId = _injectedProperties.FindProperty(module.Symbol);
+                _injectedProperties.SetPropValue(propId, instance);
+                module.InjectOrder = propId;
                 loadedObjects[i++] = instance;
             }
             

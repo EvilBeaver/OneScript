@@ -41,8 +41,7 @@ namespace oscript
 			if (_isCgi)
 			{
 				var request = ValueFactory.Create();
-				hostedScript.InjectGlobalProperty("ВебЗапрос", request, true);
-				hostedScript.InjectGlobalProperty("WebRequest", request, true);
+				hostedScript.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);
 			}
 
 			ScriptFileHelper.OnBeforeScriptRead(hostedScript);

@@ -230,8 +230,7 @@ namespace OneScript.StandardLibrary.Json
                             JSONValueType = "ArrayEnd";
                             break;
                     }
-                    return GlobalsManager.GetEnum<JSONValueTypeEnum>()[JSONValueType];
-
+                    return GlobalsHelper.GetEnum<JSONValueTypeEnum>()[JSONValueType];
                 }
                 else
                     throw NotOpenException();

@@ -53,7 +53,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
                 case XmlSchemaDerivationMethod.Restriction:
                 case XmlSchemaDerivationMethod.List:
 
-                    EnumerationXSSimpleFinal enumeration = GlobalsManager.GetEnum<EnumerationXSSimpleFinal>();
+                    EnumerationXSSimpleFinal enumeration = GlobalsHelper.GetEnum<EnumerationXSSimpleFinal>();
                     return enumeration._valuesCache[native];
 
                 default:

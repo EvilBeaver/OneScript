@@ -92,7 +92,7 @@ namespace OneScript.StandardLibrary.Json
             if (_settings.EscapeCharacters != null)
             {
                 var jsonCharactersEscapeMode = _settings.EscapeCharacters.GetRawValue() as SelfAwareEnumValue<JSONCharactersEscapeModeEnum>;
-                var jsonCharactersEscapeModeEnum = GlobalsManager.GetEnum<JSONCharactersEscapeModeEnum>();
+                var jsonCharactersEscapeModeEnum = GlobalsHelper.GetEnum<JSONCharactersEscapeModeEnum>();
 
                 if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.NotASCIISymbols)
                 {
@@ -230,7 +230,7 @@ namespace OneScript.StandardLibrary.Json
                 if (_settings.NewLines != null)
                 {
                     var NewLines = _settings.NewLines.GetRawValue() as SelfAwareEnumValue<JSONLineBreakEnum>;
-                    var LineBreakEnum = GlobalsManager.GetEnum<JSONLineBreakEnum>();
+                    var LineBreakEnum = GlobalsHelper.GetEnum<JSONLineBreakEnum>();
 
                     if (NewLines == LineBreakEnum.Unix)
                         textWriter.NewLine = "\n";

@@ -76,8 +76,7 @@ namespace oscript
 			var engine = ConsoleHostBuilder.Build(builder);
 			
 			var request = new WebRequestContext();
-			engine.InjectGlobalProperty("ВебЗапрос", request, true);
-			engine.InjectGlobalProperty("WebRequest", request, true);
+			engine.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);
 			engine.InjectObject(this, false);
 
 			ScriptFileHelper.OnBeforeScriptRead(engine);

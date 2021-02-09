@@ -115,10 +115,7 @@ namespace ScriptEngine.Machine.Contexts
             var instance = (IValue)method.Invoke(null, new object[]{Types});
             
             Globals.RegisterInstance(instance);
-            
-            environment.InjectGlobalProperty(instance, enumMetadata.Name, true);
-            if(enumMetadata.Alias != String.Empty)
-                environment.InjectGlobalProperty(instance, enumMetadata.Alias, true);
+            environment.InjectGlobalProperty(instance, enumMetadata.Name, enumMetadata.Alias, true);
         }
         
         private void RegisterSimpleEnum(Type enumType, RuntimeEnvironment environment)
@@ -149,10 +146,8 @@ namespace ScriptEngine.Machine.Contexts
 			if (enumTypeAttribute.CreateGlobalProperty)
 			{
 				Globals.RegisterInstance(enumType, instance);
-				environment.InjectGlobalProperty(instance, enumTypeAttribute.Name, true);
-				if (enumTypeAttribute.Alias != null)
-					environment.InjectGlobalProperty(instance, enumTypeAttribute.Alias, true);
-			}
+				environment.InjectGlobalProperty(instance, enumTypeAttribute.Name, enumTypeAttribute.Alias, true);
+            }
         }
 
         private void RegisterGlobalContext(Type contextType, RuntimeEnvironment environment)

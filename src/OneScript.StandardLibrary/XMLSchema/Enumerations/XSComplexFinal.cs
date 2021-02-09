@@ -43,7 +43,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         }
         internal static XSComplexFinal FromNativeValue(XmlSchemaDerivationMethod native)
         {
-            EnumerationXSComplexFinal enumeration = GlobalsManager.GetEnum<EnumerationXSComplexFinal>();
+            EnumerationXSComplexFinal enumeration = GlobalsHelper.GetEnum<EnumerationXSComplexFinal>();
             enumeration._valuesCache.TryGetValue(native, out XSComplexFinal value);
             return value;
         }

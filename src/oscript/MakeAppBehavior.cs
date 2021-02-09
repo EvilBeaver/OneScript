@@ -71,7 +71,7 @@ namespace oscript
 	        var embeddedContext = engine.GetExternalLibraries()
 		        .SelectMany(x => x.Modules.Concat(x.Classes));
 	        
-	        var templates = GlobalsManager.GetGlobalContext<TemplateStorage>();
+	        var templates = engine.EngineInstance.GlobalsManager.GetInstance<TemplateStorage>();
 
 	        var dump = new ApplicationDump();
 	        dump.Scripts = new UserAddedScript[]

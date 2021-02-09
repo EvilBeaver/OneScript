@@ -138,7 +138,7 @@ namespace OneScript.StandardLibrary.Text
             {
                 try
                 {
-                    return (ClrEnumValueWrapper<ConsoleColor>)GlobalsManager.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
+                    return (ClrEnumValueWrapper<ConsoleColor>)GlobalsHelper.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
                 }
                 catch (InvalidOperationException)
                 {
@@ -161,7 +161,7 @@ namespace OneScript.StandardLibrary.Text
         {
             get
             {
-                var encodingEnum = GlobalsManager.GetEnum<TextEncodingEnum>();
+                var encodingEnum = GlobalsHelper.GetEnum<TextEncodingEnum>();
                 return encodingEnum.GetValue(Console.InputEncoding);
             }
             set 

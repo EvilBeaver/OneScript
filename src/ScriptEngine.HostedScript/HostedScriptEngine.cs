@@ -68,7 +68,7 @@ namespace ScriptEngine.HostedScript
 
         public KeyValueConfig GetWorkingConfig()
         {
-            var cfgAccessor = GlobalsManager.GetGlobalContext<SystemConfigAccessor>();
+            var cfgAccessor = EngineInstance.GlobalsManager.GetInstance<SystemConfigAccessor>();
             if (!_configInitialized)
             {
                 cfgAccessor.Provider = _engine.Configuration;
@@ -128,14 +128,9 @@ namespace ScriptEngine.HostedScript
 
         }
 
-        public void AttachAssembly(System.Reflection.Assembly asm)
+        public void InjectGlobalProperty(string name, string alias, IValue value, bool readOnly)
         {
-            _engine.AttachAssembly(asm);
-        }
-
-        public void InjectGlobalProperty(string name, IValue value, bool readOnly)
-        {
-            _env.InjectGlobalProperty(value, name, readOnly);
+            _env.InjectGlobalProperty(value, name, alias, readOnly);
         }
 
         public void InjectObject(IAttachableContext obj, bool asDynamicScope)

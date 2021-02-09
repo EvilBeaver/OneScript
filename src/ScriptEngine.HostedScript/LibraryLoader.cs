@@ -131,7 +131,7 @@ namespace ScriptEngine.HostedScript
         [ContextMethod("ДобавитьМакет", "AddTemplate")]
         public void AddTemplate(string file, string name, TemplateKind kind = TemplateKind.File)
         {
-            var manager = GlobalsManager.GetGlobalContext<TemplateStorage>();
+            var manager = _engine.GlobalsManager.GetInstance<TemplateStorage>();
             manager.RegisterTemplate(file, name, kind);
         }
 

@@ -167,7 +167,7 @@ namespace OneScript.StandardLibrary.Text
                 if (encValue == null)
                     throw RuntimeException.InvalidArgumentType();
 
-                var encodingEnum = GlobalsManager.GetEnum<TextEncodingEnum>();
+                var encodingEnum = GlobalsHelper.GetEnum<TextEncodingEnum>();
 
                 Encoding enc;
                 if (encValue == encodingEnum.Ansi)

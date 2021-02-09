@@ -218,7 +218,7 @@ namespace ScriptEngine.Machine.Contexts
                 throw new RuntimeException("Значение перечисления должно быть помечено атрибутом EnumItemAttribute");
 
             var itemName = ((EnumItemAttribute)attrs[0]).Name;
-            var enumImpl = GlobalsManager.GetSimpleEnum(type);
+            var enumImpl = GlobalsHelper.GetEnum(type);
 
             return enumImpl.GetPropValue(itemName);
         }

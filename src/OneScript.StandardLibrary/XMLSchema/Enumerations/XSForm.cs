@@ -46,7 +46,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
                 case XmlSchemaForm.Qualified:
                 case XmlSchemaForm.Unqualified:
 
-                    EnumerationXSForm enumeration = GlobalsManager.GetEnum<EnumerationXSForm>();
+                    EnumerationXSForm enumeration = GlobalsHelper.GetEnum<EnumerationXSForm>();
                     return enumeration._valuesCache[native];
 
                 default:
