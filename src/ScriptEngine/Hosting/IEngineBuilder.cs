@@ -13,15 +13,13 @@ namespace ScriptEngine.Hosting
 {
     public interface IEngineBuilder
     {
-        RuntimeEnvironment Environment { get; set; }
-        ITypeManager TypeManager { get; set; }
-        IGlobalsManager GlobalInstances { get; set; }
         IDebugController DebugController { get; set; }
         
         ConfigurationProviders ConfigurationProviders { get; }
         
+        EnvironmentProviders EnvironmentProviders { get; }
+        
         IServiceDefinitions Services { get; set; }
-        Action<ScriptingEngine, IServiceContainer> StartupAction { get; set; }
         
         ScriptingEngine Build();
     }

@@ -66,11 +66,9 @@ namespace oscript
 			var builder = ConsoleHostBuilder
 				.Create(scriptFile);
 
-			var oldAction = builder.StartupAction;
-			builder.SetupEnvironment((e, c) =>
+			builder.SetupEnvironment(e =>
 				{
-					oldAction?.Invoke(e,c);
-					e.AttachAssembly(Assembly.GetExecutingAssembly());
+					e.AddAssembly(GetType().Assembly);
 				});
 
 			var engine = ConsoleHostBuilder.Build(builder);

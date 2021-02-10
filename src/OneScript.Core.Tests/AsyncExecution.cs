@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
+using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.Hosting;
@@ -62,7 +63,7 @@ namespace OneScript.Core.Tests
             var builder = DefaultEngineBuilder
                 .Create()
                 .SetDefaultOptions()
-                .SetupEnvironment((e, c) => e.AttachAssembly(typeof(ArrayImpl).Assembly));
+                .SetupEnvironment(e => e.AddStandardLibrary());
             return builder.Build();
         }
     }

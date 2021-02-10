@@ -6,6 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Reflection;
+using OneScript.Language.SyntaxAnalysis;
+using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Hosting
 {
@@ -16,6 +20,34 @@ namespace ScriptEngine.Hosting
             setup(b.ConfigurationProviders);
             b.Services.RegisterSingleton(b.ConfigurationProviders);
             return b;
+        }
+        
+        public static MachineEnvironment AddAssembly(this MachineEnvironment env, Assembly asm, Predicate<Type> filter = null)
+        {
+            var discoverer = new ContextDiscoverer(env.TypeManager, env.GlobalInstances);
+            discoverer.DiscoverClasses(asm, filter);
+            discoverer.DiscoverGlobalContexts(env.GlobalNamespace, asm, filter);
+            return env;
+        }
+        
+        public static MachineEnvironment AddGlobalContext(this MachineEnvironment env, IAttachableContext context)
+        {
+            env.GlobalNamespace.InjectObject(context);
+            env.GlobalInstances.RegisterInstance(context);
+            return env;
+        }
+
+        public static IServiceDefinitions UseImports(this IServiceDefinitions services)
+        {
+            services.RegisterEnumerable<IDirectiveHandler, ImportDirectivesHandler>();
+            services.RegisterSingleton<IDependencyResolver, NullDependencyResolver>();
+            return services;
+        }
+        
+        public static IServiceDefinitions AddDirectiveHandler<T>(this IServiceDefinitions services) where T : class, IDirectiveHandler
+        {
+            services.RegisterEnumerable<IDirectiveHandler, T>();
+            return services;
         }
     }
 }

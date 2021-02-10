@@ -33,10 +33,10 @@ namespace oscript
                 });
 
             BuildUpWithIoC(builder);
-            var x = new Lazy<string>(() => "hi");
-            builder.SetupEnvironment((engine, container) =>
+            
+            builder.SetupEnvironment(e =>
                 {
-                    engine.AttachAssembly(typeof(ArrayImpl).Assembly);
+                    e.AddStandardLibrary();
                 });
 
             return builder;
@@ -58,6 +58,7 @@ namespace oscript
             services.RegisterSingleton(config);
 
             builder.SetDefaultOptions()
+                .UseImports()
                 .UseFileSystemLibraries();
         }
     }

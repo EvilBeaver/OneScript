@@ -22,24 +22,9 @@ namespace ScriptEngine.Hosting
             return b;
         }
         
-        public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<ScriptingEngine, IServiceContainer> action)
+        public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<MachineEnvironment> action)
         {
-            b.StartupAction = action;
-            return b;
-        }
-        
-        public static IEngineBuilder AddAssembly(this IEngineBuilder b, Assembly asm, Predicate<Type> filter = null)
-        {
-            var discoverer = new ContextDiscoverer(b.TypeManager, b.GlobalInstances);
-            discoverer.DiscoverClasses(asm, filter);
-            discoverer.DiscoverGlobalContexts(b.Environment, asm, filter);
-            return b;
-        }
-        
-        public static IEngineBuilder AddGlobalContext(this IEngineBuilder b, IAttachableContext context)
-        {
-            b.Environment.InjectObject(context);
-            b.GlobalInstances.RegisterInstance(context);
+            b.EnvironmentProviders.Add(action);
             return b;
         }
         
@@ -55,11 +40,9 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<ICompilerServiceFactory, AstBasedCompilerFactory>();
             services.RegisterSingleton<BslSyntaxWalker, AstBasedCodeGenerator>();
             services.RegisterSingleton<IErrorSink, ThrowingErrorSink>();
-            services.RegisterSingleton<IDependencyResolver, NullDependencyResolver>();
             
             services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();
             services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
-            services.RegisterEnumerable<IDirectiveHandler, ImportDirectivesHandler>();
             
             services.Register<PreprocessorHandlers>(sp =>
             {
@@ -81,6 +64,12 @@ namespace ScriptEngine.Hosting
             });
 
             return builder;
+        }
+
+        public static IEngineBuilder UseImports(this IEngineBuilder b)
+        {
+            b.Services.UseImports();
+            return b;
         }
 
         public static IEngineBuilder WithDebugger(this IEngineBuilder b, IDebugController debugger)

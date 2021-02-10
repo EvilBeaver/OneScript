@@ -136,7 +136,7 @@ namespace TestApp
             var builder = DefaultEngineBuilder
                 .Create()
                 .SetDefaultOptions()
-                .SetupEnvironment((e,c) => e.AttachAssembly(typeof(ArrayImpl).Assembly))
+                .SetupEnvironment(e => e.AddStandardLibrary())
                 .SetupConfiguration(x =>
                 {
                     x.UseSystemConfigFile()

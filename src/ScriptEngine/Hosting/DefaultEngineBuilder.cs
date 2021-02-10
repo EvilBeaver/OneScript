@@ -18,6 +18,7 @@ namespace ScriptEngine.Hosting
     {
         private DefaultEngineBuilder()
         {
+            EnvironmentProviders.Add(environment => environment.AddAssembly(GetType().Assembly));
         }
         
         public static IEngineBuilder Create()
@@ -26,22 +27,22 @@ namespace ScriptEngine.Hosting
             return builder;
         }
         
-        public RuntimeEnvironment Environment { get; set; } = new RuntimeEnvironment();
-        public ITypeManager TypeManager { get; set; } = new DefaultTypeManager();
-        public IGlobalsManager GlobalInstances { get; set; } = new GlobalInstancesManager();
         public IDebugController DebugController { get; set; }
         public ConfigurationProviders ConfigurationProviders { get; } = new ConfigurationProviders();
-        public IServiceDefinitions Services { get; set; } = new TinyIocImplementation();
 
-        public Action<ScriptingEngine, IServiceContainer> StartupAction { get; set; }
+        public EnvironmentProviders EnvironmentProviders { get; } = new EnvironmentProviders();
+        
+        public IServiceDefinitions Services { get; set; } = new TinyIocImplementation();
         
         public ScriptingEngine Build()
         {
             var container = Services.CreateContainer();
 
             var engine = container.Resolve<ScriptingEngine>();
-            engine.AttachAssembly(GetType().Assembly);
-            StartupAction?.Invoke(engine, container);
+
+            var env = new MachineEnvironment(engine.TypeManager, engine.Environment, engine.GlobalsManager);
+            
+            EnvironmentProviders.Invoke(env);
             
             engine.DebugController = DebugController;
 
