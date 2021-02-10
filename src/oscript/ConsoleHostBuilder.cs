@@ -52,11 +52,6 @@ namespace oscript
 
         private static void BuildUpWithIoC(IEngineBuilder builder)
         {
-            var services = builder.Services;
-
-            var config = builder.ConfigurationProviders.CreateConfig();
-            services.RegisterSingleton(config);
-
             builder.SetDefaultOptions()
                 .UseImports()
                 .UseFileSystemLibraries();

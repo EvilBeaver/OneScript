@@ -50,6 +50,12 @@ namespace ScriptEngine.Hosting
                 return new PreprocessorHandlers(providers);
             });
             
+            services.Register<KeyValueConfig>(sp =>
+            {
+                var providers = sp.Resolve<ConfigurationProviders>();
+                return providers.CreateConfig();
+            });
+            
             services.Register<CompilerOptions>(sp =>
             {
                 var opts = new CompilerOptions

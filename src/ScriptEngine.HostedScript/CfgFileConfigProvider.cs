@@ -51,21 +51,21 @@ namespace ScriptEngine.HostedScript
         private static void ExpandRelativePaths(IDictionary<string, string> conf, string configFile)
         {
             string sysDir = null;
-            conf.TryGetValue(OneScriptOptions.SYSTEM_LIBRARY_DIR, out sysDir);
+            conf.TryGetValue(OneScriptLibraryOptions.SYSTEM_LIBRARY_DIR, out sysDir);
 
             var confDir = System.IO.Path.GetDirectoryName(configFile);
             if (sysDir != null && !System.IO.Path.IsPathRooted(sysDir))
             {
                 sysDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(confDir, sysDir));
-                conf[OneScriptOptions.SYSTEM_LIBRARY_DIR] = sysDir;
+                conf[OneScriptLibraryOptions.SYSTEM_LIBRARY_DIR] = sysDir;
             }
 
             string additionals;
-            if (conf.TryGetValue(OneScriptOptions.ADDITIONAL_LIBRARIES, out additionals))
+            if (conf.TryGetValue(OneScriptLibraryOptions.ADDITIONAL_LIBRARIES, out additionals))
             {
                 var fullPaths = additionals.Split(new[]{";"}, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => Path.GetFullPath(Path.Combine(confDir, x)));
-                conf[OneScriptOptions.ADDITIONAL_LIBRARIES] = string.Join(";",fullPaths);
+                conf[OneScriptLibraryOptions.ADDITIONAL_LIBRARIES] = string.Join(";",fullPaths);
             }
         }
     }

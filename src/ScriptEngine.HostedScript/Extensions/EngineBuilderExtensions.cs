@@ -77,9 +77,10 @@ namespace ScriptEngine.HostedScript.Extensions
             {
                 var config = sp.Resolve<KeyValueConfig>();
 
+                var libOptions = new OneScriptLibraryOptions(config);
                 var searchDirs = new List<string>();
-            
-                var sysDir = config[OneScriptOptions.SYSTEM_LIBRARY_DIR];
+
+                var sysDir = libOptions.SystemLibraryDir; 
                 if (sysDir == default)
                 {
                     var entrypoint = System.Reflection.Assembly.GetEntryAssembly();
@@ -94,12 +95,9 @@ namespace ScriptEngine.HostedScript.Extensions
                     searchDirs.Add(sysDir);
                 }
             
-                var additionalDirsList = config[OneScriptOptions.ADDITIONAL_LIBRARIES];
-
-                if (additionalDirsList != null)
+                if (libOptions.AdditionalLibraries != null)
                 {
-                    var addDirs = additionalDirsList.Split(';');
-                    searchDirs.AddRange(addDirs);
+                    searchDirs.AddRange(libOptions.AdditionalLibraries);
                 }
                 
                 var resolver = new FileSystemDependencyResolver();

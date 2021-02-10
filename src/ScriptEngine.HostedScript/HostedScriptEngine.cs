@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Library;
@@ -13,8 +14,6 @@ using OneScript.Commons;
 using OneScript.StandardLibrary;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Hosting;
-
 
 namespace ScriptEngine.HostedScript
 {
@@ -24,9 +23,9 @@ namespace ScriptEngine.HostedScript
         private SystemGlobalContext _globalCtx;
         private readonly RuntimeEnvironment _env;
         private bool _isInitialized;
-        private bool _configInitialized;
-        private bool _librariesInitialized;
 
+        private readonly Lazy<OneScriptLibraryOptions> _workingConfig;
+        
         private CodeStatProcessor _codeStat;
 
         public HostedScriptEngine(ScriptingEngine engine)
@@ -36,6 +35,15 @@ namespace ScriptEngine.HostedScript
             _engine.AttachAssembly(typeof(HostedScriptEngine).Assembly);
             
             SetGlobalContexts(engine.GlobalsManager);
+
+            _workingConfig = new Lazy<OneScriptLibraryOptions>(() =>
+            {
+                var cfgAccessor = EngineInstance.GlobalsManager.GetInstance<SystemConfigAccessor>();
+                cfgAccessor.Provider = _engine.Configuration;
+                cfgAccessor.Refresh();
+                
+                return new OneScriptLibraryOptions(cfgAccessor.GetConfig());
+            });
         }
 
         private void SetGlobalContexts(IGlobalsManager manager)
@@ -61,21 +69,9 @@ namespace ScriptEngine.HostedScript
         
         public ScriptingEngine EngineInstance => _engine;
 
-        public void InitExternalLibraries(string systemLibrary, IEnumerable<string> searchDirs)
+        private OneScriptLibraryOptions GetWorkingConfig()
         {
-            _librariesInitialized = true;
-        }
-
-        public KeyValueConfig GetWorkingConfig()
-        {
-            var cfgAccessor = EngineInstance.GlobalsManager.GetInstance<SystemConfigAccessor>();
-            if (!_configInitialized)
-            {
-                cfgAccessor.Provider = _engine.Configuration;
-                cfgAccessor.Refresh();
-                _configInitialized = true;
-            }
-            return cfgAccessor.GetConfig();
+            return _workingConfig.Value;
         }
 
         public Action<ScriptingEngine, RuntimeEnvironment> InitializationCallback { get; set; }
@@ -90,42 +86,12 @@ namespace ScriptEngine.HostedScript
             }
 
             // System language
-            var SystemLanguageCfg = GetWorkingConfig()["SystemLanguage"];
+            var SystemLanguageCfg = GetWorkingConfig().SystemLanguage;
 
             if (SystemLanguageCfg != null)
                 Locale.SystemLanguageISOName = SystemLanguageCfg;
             else
                 Locale.SystemLanguageISOName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
-        }
-
-        private void InitLibraries(KeyValueConfig config)
-        {
-            if (_librariesInitialized)
-                return;
-
-            if(config != null)
-            {
-                InitLibrariesFromConfig(config);
-            }
-            else
-            {
-                InitExternalLibraries(null, null);
-            }
-        }
-
-        private void InitLibrariesFromConfig(KeyValueConfig config)
-        {
-            string sysDir = config[OneScriptOptions.SYSTEM_LIBRARY_DIR];
-            string additionalDirsList = config[OneScriptOptions.ADDITIONAL_LIBRARIES];
-            string[] addDirs = null;
-            
-            if(additionalDirsList != null)
-            {
-                addDirs = additionalDirsList.Split(';');
-            }
-
-            InitExternalLibraries(sysDir, addDirs);
-
         }
 
         public void InjectGlobalProperty(string name, string alias, IValue value, bool readOnly)
@@ -148,8 +114,6 @@ namespace ScriptEngine.HostedScript
 
         public ICompilerService GetCompilerService()
         {
-            InitLibraries(GetWorkingConfig());
-
             var compilerSvc = _engine.GetCompilerService();
             UserScriptContextInstance.PrepareCompilation(compilerSvc);
             
@@ -204,7 +168,7 @@ namespace ScriptEngine.HostedScript
 
         private void DefineConstants(ICompilerService compilerSvc)
         {
-            var definitions = GetWorkingConfig()["preprocessor.define"]?.Split(',') ?? new string[0];
+            var definitions = GetWorkingConfig().PreprocessorDefinitions;
             foreach (var val in definitions)
             {
                 compilerSvc.DefinePreprocessorValue(val);

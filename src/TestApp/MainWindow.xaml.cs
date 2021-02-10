@@ -201,8 +201,7 @@ namespace TestApp
             var host = new Host(result, l_args.ToArray());
             SystemLogger.SetWriter(host);
             var hostedScript = CreateEngine();
-            SetEncodingFromConfig(hostedScript);
-
+            
             var src = new EditedFileSource(txtCode.Text, _currentDocPath);
 
             Process process = null;
@@ -259,9 +258,7 @@ namespace TestApp
             if (dlg.ShowDialog() == true  )
             {
                 _currentDocPath = dlg.FileName;
-                var hostedScript = CreateEngine();
-                SetEncodingFromConfig(hostedScript);
-
+                
                 using (var fs = FileOpener.OpenReader(dlg.FileName))
                 {
                     txtCode.Text = fs.ReadToEnd();
@@ -273,17 +270,6 @@ namespace TestApp
         private void Save_Execute(object sender, ExecutedRoutedEventArgs e)
         {
             SaveFile();
-        }
-
-        private void SetEncodingFromConfig(HostedScriptEngine engine)
-        {
-            var cfg = engine.GetWorkingConfig();
-
-            string openerEncoding = cfg["encoding.script"];
-            if (!String.IsNullOrWhiteSpace(openerEncoding) && StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") != 0)
-            {
-                engine.Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
-            }
         }
 
         private bool SaveFile()

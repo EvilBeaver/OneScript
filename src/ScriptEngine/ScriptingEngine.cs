@@ -46,15 +46,9 @@ namespace ScriptEngine
 
         private void ApplyConfiguration(KeyValueConfig config)
         {
-            var openerEncoding = config[OneScriptOptions.FILE_READER_ENCODING];
-            
-            if (!string.IsNullOrWhiteSpace(openerEncoding))
-            {    
-                if (StringComparer.InvariantCultureIgnoreCase.Compare(openerEncoding, "default") == 0)
-                    Loader.ReaderEncoding = FileOpener.SystemSpecificEncoding();
-                else
-                    Loader.ReaderEncoding = Encoding.GetEncoding(openerEncoding);
-            }
+            var options = new OneScriptCoreOptions(config);
+
+            Loader.ReaderEncoding = options.FileReaderEncoding;
         }
 
         public ConfigurationProviders Configuration { get; }
