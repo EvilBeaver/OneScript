@@ -60,7 +60,7 @@ namespace ScriptEngine.Hosting
             {
                 var opts = new CompilerOptions
                 {
-                    DependencyResolver = sp.Resolve<IDependencyResolver>(),
+                    DependencyResolver = sp.TryResolve<IDependencyResolver>(),
                     ErrorSink = sp.Resolve<IErrorSink>(),
                     NodeBuilder = sp.Resolve<IAstBuilder>(),
                     PreprocessorHandlers = sp.Resolve<PreprocessorHandlers>()
@@ -68,6 +68,8 @@ namespace ScriptEngine.Hosting
                 
                 return opts;
             });
+            
+            services.Register<ScriptingEngine>();
 
             return builder;
         }

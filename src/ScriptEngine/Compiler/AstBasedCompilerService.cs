@@ -16,11 +16,11 @@ using ScriptEngine.Environment;
 
 namespace ScriptEngine.Compiler
 {
-    internal class AstBasedCompilerService : CompilerServiceBase
+    public class AstBasedCompilerService : CompilerServiceBase
     {
         private readonly CompilerOptions _сompilerOptions;
 
-        internal AstBasedCompilerService(CompilerOptions сompilerOptions, ICompilerContext outerContext) 
+        public AstBasedCompilerService(CompilerOptions сompilerOptions, ICompilerContext outerContext) 
             : base(outerContext)
         {
             _сompilerOptions = сompilerOptions;
@@ -110,14 +110,17 @@ namespace ScriptEngine.Compiler
 
         private ModuleImage BuildModule(ICompilerContext context, ModuleNode moduleNode, ModuleInformation mi)
         {
-            var codeGen = new AstBasedCodeGenerator(context)
-            {
-                ThrowErrors = true,
-                ProduceExtraCode = ProduceExtraCode,
-                DependencyResolver = _сompilerOptions.DependencyResolver
-            };
+            var codeGen = GetCodeGenerator(context);
+            codeGen.ThrowErrors = true;
+            codeGen.ProduceExtraCode = ProduceExtraCode;
+            codeGen.DependencyResolver = _сompilerOptions.DependencyResolver;
 
             return codeGen.CreateImage(moduleNode, mi);
+        }
+
+        protected virtual AstBasedCodeGenerator GetCodeGenerator(ICompilerContext context)
+        {
+            return new AstBasedCodeGenerator(context);
         }
 
         private PreprocessingLexer CreatePreprocessor(

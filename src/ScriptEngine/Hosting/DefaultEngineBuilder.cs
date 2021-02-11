@@ -16,7 +16,7 @@ namespace ScriptEngine.Hosting
 {
     public class DefaultEngineBuilder : IEngineBuilder
     {
-        private DefaultEngineBuilder()
+        protected DefaultEngineBuilder()
         {
             EnvironmentProviders.Add(environment => environment.AddAssembly(GetType().Assembly));
         }
@@ -34,9 +34,9 @@ namespace ScriptEngine.Hosting
         
         public IServiceDefinitions Services { get; set; } = new TinyIocImplementation();
         
-        public ScriptingEngine Build()
+        public virtual ScriptingEngine Build()
         {
-            var container = Services.CreateContainer();
+            var container = GetContainer();
 
             var engine = container.Resolve<ScriptingEngine>();
 
@@ -50,6 +50,11 @@ namespace ScriptEngine.Hosting
             dependencyResolver?.Initialize(engine);
             
             return engine;
+        }
+
+        protected virtual IServiceContainer GetContainer()
+        {
+            return Services.CreateContainer();
         }
     }
 }

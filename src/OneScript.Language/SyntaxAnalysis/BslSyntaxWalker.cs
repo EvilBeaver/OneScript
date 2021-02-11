@@ -14,7 +14,7 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class BslSyntaxWalker
+    public abstract class BslSyntaxWalker
     {
         private Action<BslSyntaxNode>[] _nodeVisitors;
 

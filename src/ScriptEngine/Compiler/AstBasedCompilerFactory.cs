@@ -13,9 +13,9 @@ namespace ScriptEngine.Compiler
     {
         private readonly CompilerOptions _compilerOptions;
 
-        public AstBasedCompilerFactory(IServiceContainer services)
+        public AstBasedCompilerFactory(CompilerOptions options)
         {
-            _compilerOptions = services.Resolve<CompilerOptions>();
+            _compilerOptions = options;
         }
 
         public ICompilerService CreateInstance(ICompilerContext context)
