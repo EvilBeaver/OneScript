@@ -43,6 +43,21 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<IDependencyResolver, NullDependencyResolver>();
             return services;
         }
+
+        public static IServiceDefinitions UseImports<T>(this IServiceDefinitions services)
+            where T : class, IDependencyResolver
+        {
+            services.RegisterEnumerable<IDirectiveHandler, ImportDirectivesHandler>();
+            services.RegisterSingleton<IDependencyResolver, T>();
+            return services;
+        }
+        
+        public static IServiceDefinitions UseImports(this IServiceDefinitions services, Func<IServiceContainer, IDependencyResolver> factory)
+        {
+            services.RegisterEnumerable<IDirectiveHandler, ImportDirectivesHandler>();
+            services.RegisterSingleton<IDependencyResolver>(factory);
+            return services;
+        }
         
         public static IServiceDefinitions AddDirectiveHandler<T>(this IServiceDefinitions services) where T : class, IDirectiveHandler
         {

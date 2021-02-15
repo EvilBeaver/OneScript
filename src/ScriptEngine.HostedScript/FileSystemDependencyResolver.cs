@@ -49,7 +49,7 @@ namespace ScriptEngine.HostedScript
         
         public IList<string> SearchDirectories { get;} = new List<string>();
 
-        public string LibraryRoot => SearchDirectories.FirstOrDefault();
+        public string LibraryRoot => SearchDirectories.FirstOrDefault() ?? string.Empty;
         
         private ScriptingEngine Engine { get; set; }
         
