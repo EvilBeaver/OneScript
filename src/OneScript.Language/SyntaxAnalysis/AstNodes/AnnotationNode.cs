@@ -6,12 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class AnnotationNode : NonTerminalNode
     {
-        public AnnotationNode(NodeKind kind) : base(kind)
+        public AnnotationNode(NodeKind kind, Lexem startLexem) : base(kind, startLexem)
         {
             if(Kind != NodeKind.Annotation && Kind != NodeKind.Import)
                 throw new ArgumentException(nameof(kind));

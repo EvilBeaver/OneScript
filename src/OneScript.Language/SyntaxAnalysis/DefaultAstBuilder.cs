@@ -45,7 +45,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 case NodeKind.Annotation:
                 case NodeKind.Import:
-                    return new AnnotationNode(kind)
+                    return new AnnotationNode(kind, startLexem)
                     {
                         Name = startLexem.Content
                     };

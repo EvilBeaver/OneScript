@@ -26,7 +26,7 @@ namespace ScriptEngine.Compiler
 
         public static string GetCodeLine(this ModuleInformation info, int line)
         {
-            return info.CodeIndexer.GetCodeLine(line);
+            return line > 0? info.CodeIndexer.GetCodeLine(line): string.Empty;
         }
     }
 }

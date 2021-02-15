@@ -101,6 +101,7 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException e)
             {
+                CompilerException.AppendCodeInfo(e, MakeCodePosition(node.Location));
                 AddError(e);
             }
         }
