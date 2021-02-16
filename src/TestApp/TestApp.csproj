@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <!--LanguageTargets>$(MSBuildExtensionsPath)\$(VisualStudioVersion)\Bin\Microsoft.CSharp.targets</LanguageTargets-->
     <ApplicationIcon>logo.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
@@ -25,7 +25,6 @@
     <Resource Include="Resources/module_icons.png" />
     <Resource Include="logo.ico" />
 
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.1.0" />
     <PackageReference Include="AvalonEdit" Version="6.0.1" />
 	
   </ItemGroup>

@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">2.0.0</ReleaseNumber>
+        <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
+        <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
+
+        <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
+        <Configuration>Release</Configuration>
+		<Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
+		
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PlatformItem Include="x86">
+            <MSBuildName>x86</MSBuildName>
+        </PlatformItem>
+        <PlatformItem Include="x64">
+            <MSBuildName>&quot;Any CPU&quot;</MSBuildName>
+        </PlatformItem>
+    </ItemGroup>
+	
+	<ItemGroup>
+		<PublishProjects Include="oscript">
+			<ProjectFile>oscript.csproj</ProjectFile>
+			<Framework>net5.0</Framework>
+		</PublishProjects>
+		<PublishProjects Include="TestApp">
+			<ProjectFile>TestApp.csproj</ProjectFile>
+			<Framework>net5.0-windows</Framework>
+		</PublishProjects>
+	</ItemGroup>
+	
+	<Target Name="CleanAll">
+    
+        <ItemGroup>
+            <TestsResults Include="$(MSBuildProjectDirectory)/tests/*.os.xml" />
+        </ItemGroup>
+    
+        <Delete Files="@(TestsResults)" />
+        <RemoveDir Directories="$(ArtifactsRoot)" Condition="Exists($(ArtifactsRoot))" />
+
+		<MSBuild Projects="$(Solution)" Targets="Clean"/>
+
+    </Target> 
+	
+	<Target Name="MakeFDD">
+		
+		<CreateItem
+			Include="@(PublishProjects)"
+			AdditionalMetadata="Platform=%(PlatformItem.MSBuildName);BinFolder=%(PlatformItem.BinFolder);Suffix=%(PlatformItem.Identity)">
+			<Output
+				TaskParameter="Include"
+				ItemName="BuildVariant"/>
+		</CreateItem>
+		
+		<PropertyGroup>
+			<OutputFolder>$(ArtifactsRoot)/FDD</OutputFolder>
+		</PropertyGroup>
+		
+		<Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -o &quot;$(OutputFolder)/%(BuildVariant.Suffix)/bin&quot;"/>
+	</Target>
+	
+	<Target Name="MakeSCD">
+		
+		<ItemGroup>
+			<RuntimeID Include="win-x64"/>
+			<RuntimeID Include="win-x86"/>
+			<RuntimeID Include="linux-x64"/>
+		</ItemGroup>
+		
+		<Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -f net5.0 -r %(RuntimeID.Identity) -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;"/>
+	</Target>
+    
+	<Target Name="BuildAll" DependsOnTargets="CleanAll;MakeFDD;MakeSCD"/>
+	
+</Project>
