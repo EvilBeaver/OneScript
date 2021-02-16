@@ -44,7 +44,9 @@ namespace OneScript.Core.Tests
 			};
 		}
 		
+#pragma warning disable 618
 		[ScriptConstructor(ParametrizeWithClassName = true)]
+#pragma warning restore 618
 		public static TestContextClass Constructor(string typeName, IValue ctorParam)
 		{
 			return new TestContextClass

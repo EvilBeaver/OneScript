@@ -25,7 +25,7 @@ namespace OneScript.StandardLibrary.NativeApi
 
         private readonly String _tempfile;
 
-        public NativeApiLibrary(String filepath, String identifier)
+        public NativeApiLibrary(string filepath, string identifier, ITypeManager typeManager)
         {
             using (var stream = File.OpenRead(filepath))
             {
@@ -39,7 +39,7 @@ namespace OneScript.StandardLibrary.NativeApi
                     Module = LoadLibrary(filepath);
             }
             if (Loaded) 
-                RegisterComponents(identifier);
+                RegisterComponents(identifier, typeManager);
         }
 
         public void Dispose()
@@ -58,7 +58,7 @@ namespace OneScript.StandardLibrary.NativeApi
             get => Module != IntPtr.Zero;
         }
 
-        private void RegisterComponents(String identifier)
+        private void RegisterComponents(string identifier, ITypeManager typeManager)
         {
             var funcPtr = GetProcAddress(Module, "GetClassNames");
             if (funcPtr == IntPtr.Zero) 
@@ -69,12 +69,13 @@ namespace OneScript.StandardLibrary.NativeApi
             var separator = new char[] { '|' };
             var names = NativeApiProxy.Str(namesPtr).Split(separator, StringSplitOptions.RemoveEmptyEntries);
             foreach (String name in names)
-                TypeManager.RegisterType($"AddIn.{identifier}.{name}", default, typeof(NativeApiFactory));
+                typeManager.RegisterType($"AddIn.{identifier}.{name}", default, typeof(NativeApiFactory));
         }
 
-        public IValue CreateComponent(object host, String typeName, String componentName)
+        public IValue CreateComponent(ITypeManager typeManager, object host, String typeName, String componentName)
         {
-            var component = new NativeApiComponent(host, this, typeName, componentName);
+            var typeDef = typeManager.RegisterType(typeName, default, typeof(NativeApiComponent));
+            var component = new NativeApiComponent(host, this, typeDef, componentName);
             _components.Add(component);
             return ValueFactory.Create(component);
         }

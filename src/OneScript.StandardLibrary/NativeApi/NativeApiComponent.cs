@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Runtime.InteropServices;
 using ScriptEngine.Machine;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.NativeApi
 {
@@ -77,7 +78,7 @@ namespace OneScript.StandardLibrary.NativeApi
             }
         }
 
-        public NativeApiComponent(object host, NativeApiLibrary library, string typeName, string componentName)
+        public NativeApiComponent(object host, NativeApiLibrary library, TypeDescriptor typeDef, string componentName)
         {
             _object = NativeApiProxy.GetClassObject(library.Module, componentName,
                 (wcode, source, descr, scode) =>
@@ -91,7 +92,7 @@ namespace OneScript.StandardLibrary.NativeApi
                     OnComponentStatusText?.Invoke(S(status));
                 }
             );
-            DefineType(TypeManager.GetTypeByName(typeName));
+            DefineType(typeDef);
         }
 
         public void Dispose()

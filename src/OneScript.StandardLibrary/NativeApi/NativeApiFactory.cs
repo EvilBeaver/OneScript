@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using ScriptEngine.Machine;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.NativeApi
 {
@@ -17,11 +18,11 @@ namespace OneScript.StandardLibrary.NativeApi
     /// </summary>
     public class NativeApiFactory : NativeApiKernel
     {
-        public static bool Register(string filepath, string identifier)
+        public static bool Register(string filepath, string identifier, ITypeManager typeManager)
         {
             if (_libraries.ContainsKey(identifier)) 
                 return false;
-            var library = new NativeApiLibrary(filepath, identifier);
+            var library = new NativeApiLibrary(filepath, identifier, typeManager);
             if (library.Loaded) 
                 _libraries.Add(identifier, library);
             return library.Loaded;
@@ -36,13 +37,14 @@ namespace OneScript.StandardLibrary.NativeApi
             _libraries.Clear();
         }
 
-        [ScriptEngine.Machine.Contexts.ScriptConstructor(ParametrizeWithClassName = true)]
-        public static IValue Constructor(string typeName)
+        [ScriptEngine.Machine.Contexts.ScriptConstructor]
+        public static IValue Constructor(TypeActivationContext context)
         {
+            var typeName = context.TypeName;
             var separator = new char[] { '.' };
             var names = typeName.Split(separator, StringSplitOptions.RemoveEmptyEntries);
             if (names.Length == 3 && _libraries.TryGetValue(names[1], out NativeApiLibrary library))
-                return library.CreateComponent(default, typeName, names[2]);
+                return library.CreateComponent(context.TypeManager, default, typeName, names[2]);
             throw new NotImplementedException();
         }
     }
