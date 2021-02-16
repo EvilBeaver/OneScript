@@ -10,7 +10,6 @@ using OneScript.DebugProtocol;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.ServiceModel;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
@@ -191,7 +190,7 @@ namespace VSCode.DebugAdapter
             {
                 return _debugger.Evaluate(frame.ThreadId, frame.Index, expression);
             }
-            catch (FaultException e)
+            catch (RpcOperationException e)
             {
                 throw new Exception(e.Message);
             }

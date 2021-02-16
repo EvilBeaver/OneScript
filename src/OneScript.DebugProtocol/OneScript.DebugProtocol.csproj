@@ -11,9 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="System.ServiceModel" Condition="'$(TargetFramework)' == 'net452'" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
