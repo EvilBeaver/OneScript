@@ -9,8 +9,6 @@ namespace OneScript.Language.LexicalAnalysis
 {
     public class DefaultLexer : FullSourceLexer
     {
-        private string _code;
-
         public override Lexem NextLexem()
         {
             Lexem lex;
