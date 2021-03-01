@@ -5,6 +5,7 @@
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
 
         <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
+		<BinRoot>$(ArtifactsRoot)/bin</BinRoot>
         <Configuration>Release</Configuration>
 		<Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
 		
@@ -47,17 +48,13 @@
 		
 		<CreateItem
 			Include="@(PublishProjects)"
-			AdditionalMetadata="Platform=%(PlatformItem.MSBuildName);BinFolder=%(PlatformItem.BinFolder);Suffix=%(PlatformItem.Identity)">
+			AdditionalMetadata="Platform=%(PlatformItem.MSBuildName);Suffix=%(PlatformItem.Identity)">
 			<Output
 				TaskParameter="Include"
 				ItemName="BuildVariant"/>
 		</CreateItem>
 		
-		<PropertyGroup>
-			<OutputFolder>$(ArtifactsRoot)/FDD</OutputFolder>
-		</PropertyGroup>
-		
-		<Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -o &quot;$(OutputFolder)/%(BuildVariant.Suffix)/bin&quot;"/>
+		<Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -o &quot;$(BinRoot)/fdd-%(BuildVariant.Suffix)/&quot;"/>
 	</Target>
 	
 	<Target Name="MakeSCD">
@@ -68,9 +65,19 @@
 			<RuntimeID Include="linux-x64"/>
 		</ItemGroup>
 		
-		<Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -f net5.0 -r %(RuntimeID.Identity) -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;"/>
+		<Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) -c $(Configuration) -o &quot;$(BinRoot)/%(RuntimeID.Identity)&quot;"/>
 	</Target>
     
-	<Target Name="BuildAll" DependsOnTargets="CleanAll;MakeFDD;MakeSCD"/>
+	<Target Name="BuildAll" DependsOnTargets="CleanAll;MakeFDD;MakeSCD">
+		<CallTarget Targets="CleanIntermediates"/>
+	</Target>
+	
+	<Target Name="CleanIntermediates">
+		<ItemGroup>
+			<TempFiles Include="$(BinRoot)/**/*.pdb"/>
+			<TempFiles Include="$(BinRoot)/**/*.xml"/>
+		</ItemGroup>
+		<Delete Files="@(TempFiles)"/>
+	</Target>
 	
 </Project>
