@@ -159,7 +159,7 @@
 		
 	</Target>
 	
-	<Target Name="PackDistributions" DependsOnTargets="PrepareDistributionFiles">
+	<Target Name="PackDistributions">
 		<ItemGroup>
 			<Executable Include="$(ArtifactsRoot)/*/bin/oscript.exe" />
 			<RuntimeID Include="fdd-x64"/>

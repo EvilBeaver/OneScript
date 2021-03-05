@@ -57,7 +57,7 @@ pipeline {
 
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
                             bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionContent /p:OneScriptDocumenter=\"%WORKSPACE%/doctool/OneScriptDocumenter.exe\""
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:CleanAll;PrepareDistributionFiles"
                             
                             stash includes: 'tests, built/**', name: 'buildResults'
                         }
@@ -97,7 +97,7 @@ pipeline {
                                 deleteDir()
                             }
                             unstash 'buildResults'
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:xUnitTest"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:Test"
 
                             junit 'tests/tests.xml'
                         }
@@ -126,7 +126,7 @@ pipeline {
                         fi
                         rm lintests/*.xml -f
                         cd tests
-                        mono ../built/tmp/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
+                        mono ../built/linux-x64/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
                         exit 0
                         '''.stripIndent()
 
@@ -161,131 +161,13 @@ pipeline {
                                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions /p:Suffix=-pre%BUILD_NUMBER%"
                                 }
                                 else{
-                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions"
+                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions"
                                 }
                             }
                             archiveArtifacts artifacts: 'built/**', fingerprint: true
                             stash includes: 'built/**', name: 'winDist'
                         }
                     }
-                }
-
-                stage('DEB distribution') {
-                    agent { 
-                        docker {
-                            image 'oscript/onescript-builder:deb'
-                            label 'master' 
-                        }
-                    }
-
-                    steps {
-                        unstash 'buildResults'
-                        sh '/bld/build.sh'
-                        archiveArtifacts artifacts: 'out/deb/*', fingerprint: true
-                        stash includes: 'out/deb/*', name: 'debian'
-                    }
-                }
-
-                stage('RPM distribution') {
-                    agent { 
-                        docker {
-                            image 'oscript/onescript-builder:rpm'
-                            label 'master' 
-                        }
-                    }
-
-                    steps {
-                        unstash 'buildResults'
-                        sh '/bld/build.sh'
-                        archiveArtifacts artifacts: 'out/rpm/*', fingerprint: true
-                        stash includes: 'out/rpm/*', name: 'redhat'
-                    }
-                }
-            }
-        }
-
-        stage ('Publishing night-build') {
-            when { anyOf {
-				branch 'develop';
-				branch 'release/*'
-				}
-			}
-			
-            agent { label 'master' }
-
-            steps {
-                
-                unstash 'winDist'
-                unstash 'debian'
-                unstash 'redhat'
-                unstash 'vsix'
-
-                dir('targetContent') {
-                    sh '''
-                    WIN=../built
-                    DEB=../out/deb
-                    RPM=../out/rpm
-                    mkdir x64
-                    mv $WIN/OneScript*-x64*.exe x64/
-                    mv $WIN/OneScript*-x64*.zip x64/
-                    mv $WIN/vscode/*.vsix x64/
-                    mv $WIN/OneScript*-x86*.exe ./
-                    mv $WIN/OneScript*-x86*.zip ./
-                    mv $RPM/*.rpm x64/
-                    mv $DEB/*.deb x64/
-                    TARGET="/var/www/oscript.io/download/versions/night-build/"
-                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
-                    '''.stripIndent()
-                }
-            }
-        }
-                
-        stage ('Publishing master') {
-            when { branch 'master' }
-                
-            agent { label 'master' }
-
-            steps {
-                
-                unstash 'winDist'
-                unstash 'debian'
-                unstash 'redhat'
-                unstash 'vsix'
-
-                dir('targetContent') {
-                    
-                    sh '''
-                    WIN=../built
-                    DEB=../out/deb
-                    RPM=../out/rpm
-                    mkdir x64
-                    mv $WIN/OneScript*-x64*.exe x64/
-                    mv $WIN/OneScript*-x64*.zip x64/
-                    mv $WIN/vscode/*.vsix x64/
-                    mv $WIN/OneScript*-x86*.exe ./
-                    mv $WIN/OneScript*-x86*.zip ./
-                    mv $RPM/*.rpm x64/
-                    mv $DEB/*.deb x64/
-                    TARGET="/var/www/oscript.io/download/versions/latest/"
-                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
-                    '''.stripIndent()
-
-                    sh """
-                    TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
-                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
-                    """.stripIndent()
-                }
-            }
-        }
-
-        stage ('Publishing artifacts to clouds'){
-            when { branch 'master' }
-            agent { label 'windows' }
-
-            steps{
-                unstash 'winDist'
-                withCredentials([string(credentialsId: 'NuGetToken', variable: 'NUGET_TOKEN')]) {
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PublishNuget /p:NugetToken=$NUGET_TOKEN"
                 }
             }
         }
