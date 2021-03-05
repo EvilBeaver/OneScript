@@ -131,6 +131,8 @@
 		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/win-x86/lib/%(RecursiveDir)" />
 		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/linux-x64/lib/%(RecursiveDir)" />
 		
+		<RemoveDir Directories="$(LibDir)" />
+		
 	</Target>
 	
 	<Target Name="CleanIntermediates">
@@ -141,5 +143,7 @@
 		</ItemGroup>
 		<Delete Files="@(TempFiles)"/>
 	</Target>
+	
+	<Target Name="PrepareDistributionFiles" DependsOnTargets="CleanAll;BuildAll;GatherLibrary;ComposeDistributionFolders"/>
 	
 </Project>
