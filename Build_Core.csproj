@@ -146,4 +146,44 @@
 	
 	<Target Name="PrepareDistributionFiles" DependsOnTargets="CleanAll;BuildAll;GatherLibrary;ComposeDistributionFolders"/>
 	
+	<Target Name="Test">
+		<ItemGroup>
+			<!--Executable Include="$(ArtifactsRoot)/fdd-x64/bin/oscript.exe" /-->
+			<Executable Include="$(ArtifactsRoot)/fdd-x86/bin/oscript.exe" />
+			<RemoveXMLTestResult Include="$(MSBuildProjectDirectory)\tests\*.os.xml" />
+		</ItemGroup>
+
+		<Delete Files="@(RemoveXMLTestResult)" />
+
+		<Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="&quot;%(Executable.Identity)&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." IgnoreExitCode="true"/>
+		
+	</Target>
+	
+	<Target Name="PackDistributions" DependsOnTargets="PrepareDistributionFiles">
+		<ItemGroup>
+			<Executable Include="$(ArtifactsRoot)/*/bin/oscript.exe" />
+			<RuntimeID Include="fdd-x64"/>
+			<RuntimeID Include="fdd-x86"/>
+			<RuntimeID Include="win-x64"/>
+			<RuntimeID Include="win-x86"/>
+			<RuntimeID Include="linux-x64"/>
+		</ItemGroup>
+
+		<CreateItem
+				Include="@(RuntimeID)"
+				AdditionalMetadata="Path=$(ArtifactsRoot)/%(RuntimeID.Identity)">
+			<Output
+					TaskParameter="Include"
+					ItemName="BuildVariant"/>
+		</CreateItem>
+		
+		<!-- упадет если ничего не нашлось, и это хорошо -->
+		<GetFirstItem Items="@(Executable)">
+			<Output TaskParameter="FirstItem" PropertyName="Runner"/>
+		</GetFirstItem>
+		
+		<Exec Command="&quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber)-%(RuntimeID.Identity).zip&quot;"/>
+		<RemoveDir Directories="$(ArtifactsRoot)/%(RuntimeID.Identity)" />
+	</Target>
+	
 </Project>
