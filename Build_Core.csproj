@@ -68,7 +68,17 @@
 		<Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) -c $(Configuration) -o &quot;$(BinRoot)/%(RuntimeID.Identity)&quot;"/>
 	</Target>
     
-	<Target Name="BuildAll" DependsOnTargets="CleanAll;MakeFDD;MakeSCD">
+	<Target Name="BuildDebugger">
+		<PropertyGroup>
+			<DebuggerProject>src/VSCode.DebugAdapter/VSCode.DebugAdapter.csproj</DebuggerProject>
+			<LocalResolvedOutput>$(DebugAdapterDir)</LocalResolvedOutput>
+		</PropertyGroup>
+		
+		<MSBuild Projects="$(DebuggerProject)" Properties="OutputPath=$(LocalResolvedOutput);Configuration=Release"/>
+		
+	</Target>
+	
+	<Target Name="BuildAll" DependsOnTargets="CleanAll;MakeFDD;MakeSCD;BuildDebugger">
 		<CallTarget Targets="CleanIntermediates"/>
 	</Target>
 	
