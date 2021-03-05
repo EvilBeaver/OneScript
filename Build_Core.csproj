@@ -5,7 +5,8 @@
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
 
         <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
-		<BinRoot>$(ArtifactsRoot)/bin</BinRoot>
+		<LibDir>$(ArtifactsRoot)/lib</LibDir>
+		<DebugAdapterDir>$(ArtifactsRoot)\vscode\</DebugAdapterDir>
         <Configuration>Release</Configuration>
 		<Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
 		
@@ -54,7 +55,7 @@
 				ItemName="BuildVariant"/>
 		</CreateItem>
 		
-		<Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -o &quot;$(BinRoot)/fdd-%(BuildVariant.Suffix)/&quot;"/>
+		<Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -o &quot;$(ArtifactsRoot)/fdd-%(BuildVariant.Suffix)/bin&quot;"/>
 	</Target>
 	
 	<Target Name="MakeSCD">
@@ -65,7 +66,7 @@
 			<RuntimeID Include="linux-x64"/>
 		</ItemGroup>
 		
-		<Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) -c $(Configuration) -o &quot;$(BinRoot)/%(RuntimeID.Identity)&quot;"/>
+		<Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;"/>
 	</Target>
     
 	<Target Name="BuildDebugger">
@@ -81,11 +82,62 @@
 	<Target Name="BuildAll" DependsOnTargets="CleanAll;MakeFDD;MakeSCD;BuildDebugger">
 		<CallTarget Targets="CleanIntermediates"/>
 	</Target>
+
+	<!-- Используется для поиска первого собранного oscript.exe -->
+	<UsingTask
+			TaskName="GetFirstItem"
+			TaskFactory="CodeTaskFactory"
+			AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+		<ParameterGroup>
+			<Items ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+			<FirstItem ParameterType="System.String" Output="true" Required="false" />
+		</ParameterGroup>
+		<Task>
+			<Reference Include="System.Xml"/>
+			<Using Namespace="System.Linq"/>
+			<Code Type="Fragment" Language="cs">FirstItem = Items.First().ItemSpec;</Code>
+		</Task>
+	</UsingTask>
+	
+	<Target Name="GatherLibrary">
+		<MakeDir Directories="$(LibDir)" />
+		
+		<ItemGroup>
+			<Executable Include="$(ArtifactsRoot)/*/bin/oscript.exe"/>
+		</ItemGroup>
+
+		<!-- упадет если ничего не нашлось, и это хорошо -->
+		<GetFirstItem Items="@(Executable)">
+			<Output TaskParameter="FirstItem" PropertyName="Runner"/>
+		</GetFirstItem>
+		
+		<Exec Command="&quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)/install/opm-0.16.2.ospx&quot; &quot;$(LibDir)/tmp&quot;"/>
+		<Exec Command="&quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(LibDir)/tmp/content.zip&quot; &quot;$(LibDir)/opm&quot;"/>
+
+		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibDir)"/>
+		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(Executable.RelativeDir)"/>
+		<RemoveDir Directories="$(LibDir)/tmp"/>
+	</Target>
+	
+	<Target Name="ComposeDistributionFolders">
+		<ItemGroup>
+			<LibraryFiles Include="$(LibDir)/**/*" Exclude="package-loader.os"/>
+		</ItemGroup>
+		
+		<!--Заставить Copy копировать batching-ом в несколько директорий - не удалось :(-->
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/lib/%(RecursiveDir)" />
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/lib/%(RecursiveDir)" />
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/win-x64/lib/%(RecursiveDir)" />
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/win-x86/lib/%(RecursiveDir)" />
+		<Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/linux-x64/lib/%(RecursiveDir)" />
+		
+	</Target>
 	
 	<Target Name="CleanIntermediates">
 		<ItemGroup>
-			<TempFiles Include="$(BinRoot)/**/*.pdb"/>
-			<TempFiles Include="$(BinRoot)/**/*.xml"/>
+			<TempFiles Include="$(ArtifactsRoot)/**/bin/*.pdb"/>
+			<TempFiles Include="$(ArtifactsRoot)/**/bin/*.xml"/>
+			<TempFiles Include="$(DebugAdapterDir)/**/*.pdb"/>
 		</ItemGroup>
 		<Delete Files="@(TempFiles)"/>
 	</Target>
