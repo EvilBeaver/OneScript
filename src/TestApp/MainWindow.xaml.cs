@@ -417,8 +417,11 @@ namespace TestApp
 
         public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
-            _output.AppendText(str + '\n');
-            _output.ScrollToEnd();
+            _output.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _output.AppendText(str + '\n');
+                _output.ScrollToEnd();
+            }));
         }
 
         public void ShowExceptionInfo(Exception exc)
