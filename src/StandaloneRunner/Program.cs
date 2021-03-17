@@ -16,6 +16,8 @@ namespace StandaloneRunner
 {
 	internal static class Program
 	{
+		private static Dictionary<string, Assembly> _loadedAssemblies = new Dictionary<string, Assembly>();
+
 		private static int Main(string[] args)
 		{
 			AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -59,23 +61,33 @@ namespace StandaloneRunner
 			{
 				CommandLineArguments = args
 			};
-			
+
 			return process.LoadAndRun(codeStream);
 		}
-		
+
 		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 		private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
 		{
-			var resourceName = "StandaloneRunner." + new AssemblyName(args.Name).Name + ".dll";
+			var assemblyShortName = new AssemblyName(args.Name).Name;
+			var resourceName = "StandaloneRunner." + assemblyShortName + ".dll";
+			Assembly assembly;
+
+			if (_loadedAssemblies.TryGetValue(assemblyShortName, out assembly))
+			{
+				return assembly;
+			}
 
 			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
 			{
 				var asmData = new byte[stream.Length];
 				stream.Read(asmData, 0, asmData.Length);
-				return Assembly.Load(asmData);
+				assembly = Assembly.Load(asmData);
+
+				_loadedAssemblies.Add(assemblyShortName, assembly);
+				return assembly;
 			}
 		}
-		
+
 		private static Stream LocateCode(Stream sourceStream)
 		{
 			const int SIGN_SIZE = 8;
