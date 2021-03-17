@@ -49,13 +49,13 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         [ScriptConstructor]
-        public CriticalSectionContext Create()
+        public static CriticalSectionContext Create()
         {
             return new CriticalSectionContext();
         }
         
         [ScriptConstructor(Name = "По объекту")]
-        public CriticalSectionContext Create(IValue instance)
+        public static CriticalSectionContext Create(IValue instance)
         {
             return new CriticalSectionContext(instance.AsObject());
         }

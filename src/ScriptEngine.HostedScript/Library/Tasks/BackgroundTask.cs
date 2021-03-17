@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -22,7 +23,6 @@ namespace ScriptEngine.HostedScript.Library.Tasks
         {
             Target = target;
             MethodName = methodName;
-            Status = TaskStatusEnum.NotRunned;
             if(parameters != default)
                 Parameters = new ArrayImpl(parameters);
             
@@ -34,7 +34,7 @@ namespace ScriptEngine.HostedScript.Library.Tasks
         
         public Task WorkerTask { get; set; } 
         
-        [ContextProperty("Идентификатор","Identifier")]
+        [ContextProperty("УникальныйИдентификатор","UUID")]
         public GuidWrapper Identifier { get; private set; }
         
         [ContextProperty("ИмяМетода","MethodName")]
@@ -42,12 +42,12 @@ namespace ScriptEngine.HostedScript.Library.Tasks
         
         [ContextProperty("Объект","Object")]
         public IRuntimeContextInstance Target { get; private set; }
-        
-        [ContextProperty("Состояние", "Status")]
-        public TaskStatusEnum Status { get; private set; }
-        
+
+        [ContextProperty("Состояние", "State")]
+        public TaskStateEnum State { get; private set; }
+
         [ContextProperty("Параметры", "Parameters")]
-        public ArrayImpl Parameters { get; private set; }
+        public IValue Parameters { get; private set; } = ValueFactory.Create();
 
         [ContextProperty("Результат", "Result")]
         public IValue Result { get; private set; } = ValueFactory.Create();
@@ -63,24 +63,23 @@ namespace ScriptEngine.HostedScript.Library.Tasks
         [ContextMethod("ОжидатьЗавершения", "Wait")]
         public bool Wait(int timeout = 0)
         {
-            if(timeout < 0)
-                throw RuntimeException.InvalidArgumentValue();
-            if (timeout == 0)
-                timeout = -1;
+            timeout = BackgroundTasksManager.ConvertTimeout(timeout);
             
             return WorkerTask.Wait(timeout);
         }
         
         public void ExecuteOnCurrentThread()
         {
-            if (Status != TaskStatusEnum.NotRunned)
+            if (State != TaskStateEnum.NotRunned)
                 throw new RuntimeException(Locale.NStr("ru = 'Неверное состояние задачи';en = 'Incorrect task status'"));
-            
-            var parameters = Parameters?.ToArray() ?? new IValue[0];
+
+            var parameters = Parameters is ArrayImpl array ?
+                array.ToArray() :
+                new IValue[0];
 
             try
             {
-                Status = TaskStatusEnum.Running;
+                State = TaskStateEnum.Running;
                 if (_method.IsFunction)
                 {
                     Target.CallAsFunction(_methIndex, parameters, out var result);
@@ -91,11 +90,11 @@ namespace ScriptEngine.HostedScript.Library.Tasks
                     Target.CallAsProcedure(_methIndex, parameters);
                 }
 
-                Status = TaskStatusEnum.Completed;
+                State = TaskStateEnum.Completed;
             }
             catch (RuntimeException exception)
             {
-                Status = TaskStatusEnum.CompletedWithErrors;
+                State = TaskStateEnum.CompletedWithErrors;
                 ExceptionInfo = new ExceptionInfoContext(exception);
             }
         }

@@ -9,16 +9,16 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.Tasks
 {
-    [EnumerationType("СостояниеЗадания", "TaskStatus")]
-    public enum TaskStatusEnum
+    [EnumerationType("СостояниеФоновогоЗадания", "BackgroundJobState")]
+    public enum TaskStateEnum
     {
         [EnumItem("НеВыполнялось", "NotRunned")]
         NotRunned,
-        [EnumItem("Выполняется", "Running")]
+        [EnumItem("Активно", "Active")]
         Running,
         [EnumItem("Завершено", "Completed")]
         Completed,
-        [EnumItem("ЗавершеноСОшибками", "CompletedWithErrors")]
+        [EnumItem("ЗавершеноАварийно", "Failed")]
         CompletedWithErrors
     }
 }
