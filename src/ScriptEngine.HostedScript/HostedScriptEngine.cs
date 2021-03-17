@@ -12,6 +12,7 @@ using ScriptEngine.Machine;
 using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Tasks;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine.Contexts;
 
@@ -82,6 +83,12 @@ namespace ScriptEngine.HostedScript
             {
                 InitializationCallback?.Invoke(_engine, _engine.Environment);
                 _engine.Initialize();
+                
+                var taskManager = new BackgroundTasksManager(EngineInstance);
+                _engine.Environment.InjectGlobalProperty(taskManager, "ФоновыеЗадания", true);
+                _engine.Environment.InjectGlobalProperty(taskManager, "BackgroundTasks", true);
+
+                
                 _isInitialized = true;
             }
 
