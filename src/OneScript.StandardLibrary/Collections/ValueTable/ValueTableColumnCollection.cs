@@ -11,6 +11,7 @@ using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
@@ -280,5 +281,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             visitor.ShowProperties(this);
         }
+        
+        bool IEmptyValueCheck.IsEmpty => Count() == 0;
     }
 }

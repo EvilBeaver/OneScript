@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Collections
 {
     [ContextClass("Соответствие", "Map")]
-    public class MapImpl : AutoContext<MapImpl>, ICollectionContext, IEnumerable<KeyAndValueImpl>
+    public class MapImpl : AutoCollectionContext<MapImpl, KeyAndValueImpl>
     {
         private readonly Dictionary<IValue, IValue> _content = new Dictionary<IValue, IValue>(new GenericIValueComparer());
 
@@ -85,7 +85,7 @@ namespace OneScript.StandardLibrary.Collections
         }
 
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _content.Count;
         }
@@ -101,31 +101,16 @@ namespace OneScript.StandardLibrary.Collections
         {
             _content.Remove(key);
         }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
         #endregion
 
         #region IEnumerable<IValue> Members
 
-        public IEnumerator<KeyAndValueImpl> GetEnumerator()
+        public override IEnumerator<KeyAndValueImpl> GetEnumerator()
         {
             foreach (var item in _content)
             {
                 yield return new KeyAndValueImpl(item.Key, item.Value);
             }
-        }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
 
         #endregion

@@ -16,7 +16,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
     /// Стандартная универсальная коллекция системы 1С:Предприятие 8
     /// </summary>
     [ContextClass("СписокЗначений", "ValueList")]
-    public class ValueListImpl : AutoContext<ValueListImpl>, ICollectionContext, IEnumerable<ValueListItem>
+    public class ValueListImpl : AutoCollectionContext<ValueListImpl, ValueListItem>
     {
         readonly List<ValueListItem> _items;
         public ValueListImpl()
@@ -325,24 +325,14 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         #region Collection Context
 
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _items.Count;
         }
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
-        public IEnumerator<ValueListItem> GetEnumerator()
+        public override IEnumerator<ValueListItem> GetEnumerator()
         {
             return _items.GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
 
         #endregion

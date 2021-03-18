@@ -15,7 +15,7 @@ using ScriptEngine.Types;
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
     [ContextClass("ИндексыКоллекции", "CollectionIndexes", TypeUUID = "75983CBE-2ACC-4925-9CE0-23FC0C3E3211")]
-    public class CollectionIndexes : AutoContext<CollectionIndexes>, ICollectionContext, IEnumerable<CollectionIndex>
+    public class CollectionIndexes : AutoCollectionContext<CollectionIndexes, CollectionIndex>
     {
         private static readonly TypeDescriptor _instanceType = typeof(CollectionIndexes).GetTypeFromClassMarkup();
         
@@ -34,7 +34,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         }
 
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _indexes.Count();
         }
@@ -55,23 +55,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             _indexes.Clear();
         }
 
-        public IEnumerator<CollectionIndex> GetEnumerator()
+        public override IEnumerator<CollectionIndex> GetEnumerator()
         {
             foreach (var item in _indexes)
             {
                 yield return item;
             }
         }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
     }
 }

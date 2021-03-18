@@ -36,7 +36,8 @@ namespace oscript
             
             builder.SetupEnvironment(e =>
                 {
-                    e.AddStandardLibrary();
+                    e.AddStandardLibrary()
+                     .UseTemplateFactory(new DefaultTemplatesFactory());
                 });
 
             return builder;

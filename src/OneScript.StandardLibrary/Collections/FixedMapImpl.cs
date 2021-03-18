@@ -8,11 +8,12 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 
 namespace OneScript.StandardLibrary.Collections
 {
     [ContextClass("ФиксированноеСоответствие", "FixedMap")]
-    public class FixedMapImpl : AutoContext<FixedMapImpl>, ICollectionContext, IEnumerable<KeyAndValueImpl>
+    public class FixedMapImpl : AutoCollectionContext<FixedMapImpl, KeyAndValueImpl>
     {
 
         private readonly MapImpl _map;
@@ -66,34 +67,21 @@ namespace OneScript.StandardLibrary.Collections
         }
 
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _map.Count();
         }
 
-        public CollectionEnumerator GetManagedIterator()
+        public override CollectionEnumerator GetManagedIterator()
         {
             return _map.GetManagedIterator();
         }
 
-        #endregion
-
-        #region IEnumerable<IValue> Members
-
-        public IEnumerator<KeyAndValueImpl> GetEnumerator()
+        public override IEnumerator<KeyAndValueImpl> GetEnumerator()
         {
             return _map.GetEnumerator();
         }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
+        
         #endregion
 
         [ScriptConstructor(Name = "Из соответствия")]

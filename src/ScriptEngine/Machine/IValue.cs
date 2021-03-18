@@ -20,7 +20,6 @@ namespace ScriptEngine.Machine
         string AsString();
         IRuntimeContextInstance AsObject();
         IValue GetRawValue();
-        
     }
 
 }

@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTree
@@ -41,6 +42,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             return _properties.Count + _owner.Columns.Count();
         }
+        
+        bool IEmptyValueCheck.IsEmpty => Count() == 0;
 
         [ContextProperty("Родитель", "Parent")]
         public IValue Parent

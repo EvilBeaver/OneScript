@@ -14,7 +14,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Zip
 {
     [ContextClass("ЭлементыZipФайла", "ZipFileEntries")]
-    public class ZipFileEntriesCollection : AutoContext<ZipFileEntriesCollection>, ICollectionContext, IEnumerable<ZipFileEntryContext>
+    public class ZipFileEntriesCollection : AutoCollectionContext<ZipFileEntriesCollection, ZipFileEntryContext>
     {
         readonly List<ZipFileEntryContext> _entries;
 
@@ -24,7 +24,7 @@ namespace OneScript.StandardLibrary.Zip
         }
 
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _entries.Count;
         }
@@ -60,19 +60,9 @@ namespace OneScript.StandardLibrary.Zip
             return _entries[idx];
         }
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
-        public IEnumerator<ZipFileEntryContext> GetEnumerator()
+        public override IEnumerator<ZipFileEntryContext> GetEnumerator()
         {
             return _entries.GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

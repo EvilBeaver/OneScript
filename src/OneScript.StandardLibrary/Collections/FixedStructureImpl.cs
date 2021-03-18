@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 
 namespace OneScript.StandardLibrary.Collections
 {
@@ -120,6 +121,8 @@ namespace OneScript.StandardLibrary.Collections
         	return new CollectionEnumerator(_structure.GetManagedIterator());
         }
 
+        bool IEmptyValueCheck.IsEmpty => Count() == 0;
+        
         #endregion
 
         #region IEnumerable<IValue> Members

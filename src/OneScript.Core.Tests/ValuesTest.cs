@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections.Generic;
 using Moq;
 using OneScript.Commons;
 using OneScript.StandardLibrary;
@@ -259,6 +260,41 @@ namespace OneScript.Core.Tests
             Assert.Equal(manualGuid.SystemType, typeFromManager);
             Assert.Equal(manualGuid.SystemType, autoGuid.SystemType);
             
+        }
+
+        public static IEnumerable<object[]> FilledValues => new []
+        {
+            new object[] { ValueFactory.Create(1) },
+            new object[] { ValueFactory.Create("hello") },
+            new object[] { ValueFactory.Create(DateTime.Now) },
+            new object[] { ValueFactory.Create(true) },
+            new object[] { ValueFactory.Create(false) },
+            new object[] { new GuidWrapper() }
+        };
+        
+        public static IEnumerable<object[]> EmptyValues => new []
+        {
+            new object[] { ValueFactory.Create(0) },
+            new object[] { ValueFactory.Create()},
+            new object[] { ValueFactory.Create(DateTime.MinValue)},
+            new object[] { ValueFactory.CreateNullValue()},
+            new object[] { new GuidWrapper(Guid.Empty.ToString())}
+        };
+        
+        [Theory]
+        [MemberData(nameof(FilledValues))]
+        public void ValueFilledTest(IValue value)
+        {
+            var globCtx = new StandardGlobalContext();
+            Assert.True(globCtx.ValueIsFilled(value));
+        }
+        
+        [Theory]
+        [MemberData(nameof(EmptyValues))]
+        public void ValueEmptyTest(IValue value)
+        {
+            var globCtx = new StandardGlobalContext();
+            Assert.False(globCtx.ValueIsFilled(value));
         }
     }
 }

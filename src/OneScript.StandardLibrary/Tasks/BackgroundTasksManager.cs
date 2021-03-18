@@ -15,18 +15,19 @@ using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Tasks
 {
     [ContextClass("МенеджерФоновыхЗаданий", "BackgroundTasksManager")]
     public class BackgroundTasksManager : AutoContext<BackgroundTasksManager>, IDisposable
     {
-        private readonly ScriptingEngine _engine;
+        private readonly MachineEnvironment _runtimeContext;
         private List<BackgroundTask> _tasks = new List<BackgroundTask>();
 
-        public BackgroundTasksManager(ScriptingEngine engine)
+        public BackgroundTasksManager(MachineEnvironment runtimeContext)
         {
-            _engine = engine;
+            _runtimeContext = runtimeContext;
         }
         
         /// <summary>
@@ -44,9 +45,7 @@ namespace OneScript.StandardLibrary.Tasks
 
             var worker = new Task(() =>
             {
-                if(!MachineInstance.Current.IsRunning)
-                    _engine.Environment.LoadMemory(MachineInstance.Current);
-                
+                MachineInstance.Current.SetMemory(_runtimeContext);
                 task.ExecuteOnCurrentThread();
                 
             }, TaskCreationOptions.LongRunning);
@@ -203,6 +202,12 @@ namespace OneScript.StandardLibrary.Tasks
         {
             Task.WaitAll(GetWorkerTasks());
             _tasks.Clear();
+        }
+
+        [ScriptConstructor]
+        public static BackgroundTasksManager Create(TypeActivationContext runtimeContext)
+        {
+            return new BackgroundTasksManager(runtimeContext.MachineEnvironment);
         }
     }
 }

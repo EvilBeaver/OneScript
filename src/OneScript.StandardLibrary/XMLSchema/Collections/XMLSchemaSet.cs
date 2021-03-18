@@ -16,7 +16,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("НаборСхемXML", "XMLSchemaSet")]
-    public class XMLSchemaSet : AutoContext<XMLSchemaSet>, ICollectionContext, IEnumerable<Objects.XMLSchema>
+    public class XMLSchemaSet : AutoCollectionContext<XMLSchemaSet, Objects.XMLSchema>
     {
         private readonly XmlSchemaSet _schemaSet;
         private readonly List<Objects.XMLSchema> _items;
@@ -39,7 +39,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         }
 
         [ContextMethod("Количество", "Count")]
-        public int Count() => _schemaSet.Count;
+        public override int Count() => _schemaSet.Count;
 
         [ContextMethod("Получить", "Get")]
         public Objects.XMLSchema Get(IValue value)
@@ -87,17 +87,9 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
 
         #endregion
 
-        #region ICollectionContext
-
-        public CollectionEnumerator GetManagedIterator() => new CollectionEnumerator(GetEnumerator());
-
-        #endregion
-
         #region IEnumerable
 
-        public IEnumerator<Objects.XMLSchema> GetEnumerator() => _items.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public override IEnumerator<Objects.XMLSchema> GetEnumerator() => _items.GetEnumerator();
 
         #endregion
 

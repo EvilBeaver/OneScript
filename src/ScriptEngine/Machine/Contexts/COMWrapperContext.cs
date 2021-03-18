@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
@@ -258,6 +259,8 @@ namespace ScriptEngine.Machine.Contexts
         #region ICollectionContext Members
 
         public virtual int Count() => 0;
+
+        bool IEmptyValueCheck.IsEmpty => false;
 
         public virtual void Clear()
         {

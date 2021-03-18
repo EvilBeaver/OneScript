@@ -16,7 +16,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("КоллекцияИменованныхКомпонентXS", "XSNamedComponentMap")]
-    public class XSNamedComponentMap : AutoContext<XSNamedComponentMap>, ICollectionContext, IEnumerable<IXSNamedComponent>
+    public class XSNamedComponentMap : AutoCollectionContext<XSNamedComponentMap, IXSNamedComponent>
     {
         private readonly List<IXSNamedComponent> _items;
       
@@ -39,7 +39,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         #region Methods
 
         [ContextMethod("Количество", "Count")]
-        public int Count() => _items.Count;
+        public override int Count() => _items.Count;
 
         [ContextMethod("Получить", "Get")]
         public IXSNamedComponent Get(IValue value)
@@ -67,19 +67,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
 
         #endregion
 
-        #region ICollectionContext
-
-        public CollectionEnumerator GetManagedIterator() => new CollectionEnumerator(GetEnumerator());
-
-        #endregion
-
-        #region IEnumerable
-
-        public IEnumerator<IXSNamedComponent> GetEnumerator() => _items.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        #endregion
+        public override IEnumerator<IXSNamedComponent> GetEnumerator() => _items.GetEnumerator();
 
     }
 }

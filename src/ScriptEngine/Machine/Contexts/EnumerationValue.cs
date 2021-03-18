@@ -31,6 +31,8 @@ namespace ScriptEngine.Machine.Contexts
             get;set;
         }
 
+        public bool IsFilled() => true;
+
         public virtual DataType DataType
         {
             get { return Machine.DataType.GenericValue; }

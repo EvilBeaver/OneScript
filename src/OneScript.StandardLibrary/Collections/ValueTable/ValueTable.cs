@@ -18,7 +18,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     /// Представляет из себя коллекцию строк с заранее заданной структурой.
     /// </summary>
     [ContextClass("ТаблицаЗначений", "ValueTable")]
-    public class ValueTable : AutoContext<ValueTable>, ICollectionContext, IEnumerable<ValueTableRow>
+    public class ValueTable : AutoCollectionContext<ValueTable, ValueTableRow>
     {
         private readonly ValueTableColumnCollection _columns;
         private readonly List<ValueTableRow> _rows;
@@ -56,7 +56,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// </summary>
         /// <returns>Число</returns>
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _rows.Count;
         }
@@ -669,7 +669,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             throw new NotSupportedException();
         }
 
-        public IEnumerator<ValueTableRow> GetEnumerator()
+        public override IEnumerator<ValueTableRow> GetEnumerator()
         {
             foreach (var item in _rows)
             {
@@ -677,16 +677,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             }
         }
         
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
         public override IValue GetIndexedValue(IValue index)
         {
             return Get((int)index.AsNumber());

@@ -13,7 +13,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Collections
 {
     [ContextClass("Массив", "Array")]
-    public class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext, IEnumerable<IValue>
+    public class ArrayImpl : AutoCollectionContext<ArrayImpl, IValue>
     {
         private readonly List<IValue> _values;
 
@@ -54,7 +54,7 @@ namespace OneScript.StandardLibrary.Collections
         #region ICollectionContext Members
         
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _values.Count;
         }
@@ -65,30 +65,16 @@ namespace OneScript.StandardLibrary.Collections
             _values.Clear();
         }
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
         #endregion
 
         #region IEnumerable<IRuntimeContextInstance> Members
 
-        public IEnumerator<IValue> GetEnumerator()
+        public override IEnumerator<IValue> GetEnumerator()
         {
             foreach (var item in _values)
             {
                 yield return item;
             }
-        }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
 
         #endregion

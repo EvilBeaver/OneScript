@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 
 namespace OneScript.StandardLibrary.Collections
 {
@@ -194,6 +195,8 @@ namespace OneScript.StandardLibrary.Collections
         {
             return new CollectionEnumerator(GetEnumerator());
         }
+
+        bool IEmptyValueCheck.IsEmpty => Count() == 0;
 
         #endregion
 

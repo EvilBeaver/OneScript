@@ -28,5 +28,7 @@ namespace ScriptEngine.Machine.Values
         {
             return string.Empty;
         }
+
+        public override bool IsEmpty => true;
     }
 }

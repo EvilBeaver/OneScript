@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 
 namespace OneScript.StandardLibrary
 {
@@ -118,35 +119,13 @@ namespace OneScript.StandardLibrary
             {
                 return false;
             }
-            if (value.DataType == DataType.Undefined)
-                return false;
-            else if (value.DataType == DataType.Boolean)
-                return true;
-            else if (value.DataType == DataType.String)
-                return !String.IsNullOrWhiteSpace(value.AsString());
-            else if (value.DataType == DataType.Number)
-                return value.AsNumber() != 0;
-            else if (value.DataType == DataType.Date)
+
+            if (value is IEmptyValueCheck emptyHandler)
             {
-                var emptyDate = new DateTime(1, 1, 1, 0, 0, 0);
-                return value.AsDate() != emptyDate;
+                return !emptyHandler.IsEmpty;
             }
-            else if (value is COMWrapperContext)
-            {
-                return true;
-            }
-            else if (value is ICollectionContext)
-            {
-                var col = value as ICollectionContext;
-                return col.Count() != 0;
-            }
-            else if (ValueFactory.CreateNullValue().Equals(value))
-            {
-                return false;
-            }
-            else
-                return true;
-            
+
+            return true;
         }
 
         /// <summary>

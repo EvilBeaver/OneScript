@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 //#if !__MonoCS__
 using System;
 using System.Collections.Generic;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -34,6 +35,8 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _array.Length;
         }
+
+        bool IEmptyValueCheck.IsEmpty => Count() == 0;
 
         public override bool IsIndexed
         {

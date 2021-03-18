@@ -11,6 +11,7 @@ using System.Linq;
 using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTree
@@ -205,6 +206,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             return GetEnumerator();
         }
+
+        bool IEmptyValueCheck.IsEmpty => _columns.Count == 0;
 
         public CollectionEnumerator GetManagedIterator()
         {

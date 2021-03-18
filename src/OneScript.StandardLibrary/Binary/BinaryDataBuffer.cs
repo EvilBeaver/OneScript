@@ -23,7 +23,7 @@ namespace OneScript.StandardLibrary.Binary
     /// Порядок байтов, заданный для объекта ЧтениеДанных, будет использован во всех объектах, полученных на его основании.
     /// </summary>
     [ContextClass("БуферДвоичныхДанных", "BinaryDataBuffer")]
-    public class BinaryDataBuffer : AutoContext<BinaryDataBuffer>, ICollectionContext
+    public class BinaryDataBuffer : AutoCollectionContext<BinaryDataBuffer, IValue>
     {
         private bool _readOnly;
         private readonly byte[] _buffer;
@@ -616,17 +616,12 @@ namespace OneScript.StandardLibrary.Binary
             _readOnly = true;
         }
 
-        public int Count()
+        public override int Count()
         {
             return _buffer.Length;
         }
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
-        private IEnumerator<IValue> GetEnumerator()
+        public override IEnumerator<IValue> GetEnumerator()
         {
             for (long i = 0; i < _buffer.LongLength; i++)
             {

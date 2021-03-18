@@ -15,7 +15,7 @@ using ScriptEngine.Machine.Contexts;
 namespace Component
 {
 	[ContextClass("ПростоКоллекция")]
-	public sealed class SimpleCollection : AutoContext<SimpleCollection>, ICollectionContext, IEnumerable<SimpleClass>
+	public sealed class SimpleCollection : AutoCollectionContext<SimpleCollection, SimpleClass>
 	{
 		private readonly List<SimpleClass> _data = new List<SimpleClass>();
 
@@ -32,24 +32,15 @@ namespace Component
 		}
 
 		[ContextMethod("Количество")]
-		public int Count()
+		public override int Count()
 		{
 			return _data.Count;
 		}
 
-		public CollectionEnumerator GetManagedIterator()
-		{
-			return new CollectionEnumerator(GetEnumerator());
-		}
-
-		public IEnumerator<SimpleClass> GetEnumerator()
+		public override IEnumerator<SimpleClass> GetEnumerator()
 		{
 			return ((IEnumerable<SimpleClass>) _data).GetEnumerator();
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return ((IEnumerable<SimpleClass>) _data).GetEnumerator();
-		}
 	}
 }

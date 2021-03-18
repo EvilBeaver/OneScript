@@ -28,22 +28,24 @@ namespace StandaloneRunner
             
             var engineBuilder = DefaultEngineBuilder
                 .Create()
-                .SetupEnvironment(e => e.AddAssembly(typeof(ArrayImpl).Assembly))
+                .SetupEnvironment(e =>
+                {
+                    e.AddAssembly(typeof(ArrayImpl).Assembly);
+                    e.UseTemplateFactory(new StandaloneTemplateFactory());
+                })
                 .SetupConfiguration(p => p.UseEnvironmentVariableConfig("OSCRIPT_CONFIG"));
 
             var engine = new HostedScriptEngine(engineBuilder.Build());
             var src = new BinaryCodeSource();
-            var templateStorage = new TemplateStorage(new StandaloneTemplateFactory());
-
+            
             engine.SetGlobalEnvironment(host, src);
             engine.InitializationCallback = (e, env) =>
             {
-                e.Environment.InjectObject(templateStorage);
-                e.GlobalsManager.RegisterInstance(templateStorage);
+                var storage = e.GlobalsManager.GetInstance<TemplateStorage>();
+                LoadResources(storage, appDump.Resources);
             };
             engine.Initialize();
 
-            LoadResources(templateStorage, appDump.Resources);
             LoadScripts(engine, appDump.Scripts);
             
             var process = engine.CreateProcess(host, appDump.Scripts[0].Image, src);

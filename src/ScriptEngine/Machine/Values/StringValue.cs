@@ -64,5 +64,7 @@ namespace ScriptEngine.Machine.Values
 
             return false;
         }
+        
+        public override bool IsEmpty => String.IsNullOrWhiteSpace(_value);
     }
 }

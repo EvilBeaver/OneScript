@@ -16,7 +16,7 @@ namespace OneScript.StandardLibrary.Xml
     /// </summary>
     /// <see cref="XMLExpandedName"/>
     /// <seealso cref="XMLSchema.Objects.XSSimpleTypeDefinition"/>
-    public class XMLExpandedNameList: AutoContext<XMLExpandedNameList>, ICollectionContext, IEnumerable<XMLExpandedName>
+    public class XMLExpandedNameList: AutoCollectionContext<XMLExpandedNameList, XMLExpandedName>
     {
         private readonly List<XMLExpandedName> _items;
 
@@ -52,7 +52,7 @@ namespace OneScript.StandardLibrary.Xml
         /// </summary>
         /// <returns>Количество элементов</returns>
         [ContextMethod("Количество", "Count")]
-        public int Count() => _items.Count;
+        public override int Count() => _items.Count;
 
         /// <summary>
         /// Очищает коллекцию
@@ -87,17 +87,9 @@ namespace OneScript.StandardLibrary.Xml
 
         #endregion
 
-        #region ICollectionContext
-
-        public CollectionEnumerator GetManagedIterator() => new CollectionEnumerator(GetEnumerator());
-
-        #endregion
-
         #region IEnumerable
 
-        public IEnumerator<XMLExpandedName> GetEnumerator() => _items.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public override IEnumerator<XMLExpandedName> GetEnumerator() => _items.GetEnumerator();
 
         #endregion
     }

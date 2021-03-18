@@ -44,5 +44,7 @@ namespace ScriptEngine.Machine.Values
 
             return other.DataType == DataType.Date && _value.Equals(other.AsDate());
         }
+
+        public override bool IsEmpty => _value.Equals(DateTime.MinValue);
     }
 }

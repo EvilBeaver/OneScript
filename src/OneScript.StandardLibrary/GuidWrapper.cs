@@ -29,11 +29,13 @@ namespace OneScript.StandardLibrary
         public GuidWrapper()
         {
             _value = Guid.NewGuid();
+            DataType = DataType.GenericValue;
         }
 
         public GuidWrapper(string uuidString)
         {
             _value = Guid.Parse(uuidString);
+            DataType = DataType.GenericValue;
         }
 
         [ScriptConstructor]
@@ -73,6 +75,7 @@ namespace OneScript.StandardLibrary
                 return _value.Equals(otherUuid._value);
         }
 
+        public override bool IsEmpty => _value.Equals(Guid.Empty);
 
         object IObjectWrapper.UnderlyingObject => _value;
     }

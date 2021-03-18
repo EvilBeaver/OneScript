@@ -18,7 +18,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
     /// Коллекция строк дерева значений.
     /// </summary>
     [ContextClass("КоллекцияСтрокДереваЗначений", "ValueTreeRowCollection", TypeUUID = "CEBF52F0-DA62-4058-9A22-0E659747E622")]
-    public class ValueTreeRowCollection : AutoContext<ValueTreeRowCollection>, ICollectionContext, IEnumerable<ValueTreeRow>
+    public class ValueTreeRowCollection : AutoCollectionContext<ValueTreeRowCollection, ValueTreeRow>
     {
         private readonly List<ValueTreeRow> _rows = new List<ValueTreeRow>();
         private readonly ValueTreeRow _parent;
@@ -69,7 +69,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// </summary>
         /// <returns>Число. Количество строк.</returns>
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _rows.Count();
         }
@@ -478,7 +478,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         }
 
 
-        public IEnumerator<ValueTreeRow> GetEnumerator()
+        public override IEnumerator<ValueTreeRow> GetEnumerator()
         {
             foreach (var item in _rows)
             {
@@ -486,15 +486,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             }
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
 
         public override IValue GetIndexedValue(IValue index)
         {

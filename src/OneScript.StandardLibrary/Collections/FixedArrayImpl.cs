@@ -9,11 +9,12 @@ using System;
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 
 namespace OneScript.StandardLibrary.Collections
 {
     [ContextClass("ФиксированныйМассив", "FixedArray")]
-    public class FixedArrayImpl : AutoContext<FixedArrayImpl>, ICollectionContext, IEnumerable<IValue>
+    public class FixedArrayImpl : AutoCollectionContext<FixedArrayImpl, IValue>
     {
         private readonly ArrayImpl _array;
 
@@ -47,35 +48,18 @@ namespace OneScript.StandardLibrary.Collections
         #region ICollectionContext Members
 
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _array.Count();
         }
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
-        #endregion
-
-        #region IEnumerable<IRuntimeContextInstance> Members
-
-        public IEnumerator<IValue> GetEnumerator()
+        public override IEnumerator<IValue> GetEnumerator()
         {
             return _array.GetEnumerator();
         }
 
         #endregion
 
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
 
         [ContextMethod("Найти", "Find")]
         public IValue Find(IValue what)

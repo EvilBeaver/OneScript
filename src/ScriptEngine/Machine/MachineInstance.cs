@@ -86,6 +86,8 @@ namespace ScriptEngine.Machine
         public ITypeManager TypeManager => _mem?.TypeManager;
         
         public IGlobalsManager Globals => _mem?.GlobalInstances;
+        
+        public RuntimeEnvironment Environment => _mem?.GlobalNamespace;
 
         public void SetMemory(MachineEnvironment memory)
         {
@@ -1370,9 +1372,8 @@ namespace ScriptEngine.Machine
             var factory = TypeManager.GetFactoryFor(type);
             var context = new TypeActivationContext
             {
-                GlobalsManager = Globals,
-                TypeManager = TypeManager,
-                TypeName = typeName
+                TypeName = typeName,
+                MachineEnvironment = _mem
             };
             
             var instance = factory.Activate(context, argValues);

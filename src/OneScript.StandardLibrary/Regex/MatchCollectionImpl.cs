@@ -13,7 +13,7 @@ using RegExp = System.Text.RegularExpressions;
 namespace OneScript.StandardLibrary.Regex
 {
     [ContextClass("КоллекцияСовпаденийРегулярногоВыражения", "RegExMatchCollection")]
-    public class MatchCollection : AutoContext<MatchCollection>, ICollectionContext, IEnumerable<MatchImpl>
+    public class MatchCollection : AutoCollectionContext<MatchCollection, MatchImpl>
     {
         private readonly RegExp.MatchCollection _matches;
         private readonly RegExp.Regex _regex;
@@ -31,7 +31,7 @@ namespace OneScript.StandardLibrary.Regex
         /// </summary>
         /// <returns>Количество полученных совпадений.</returns>
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _matches.Count;
         }
@@ -45,7 +45,7 @@ namespace OneScript.StandardLibrary.Regex
 
         #region IEnumerable<IRuntimeContextInstance> Members
 
-        public IEnumerator<MatchImpl> GetEnumerator()
+        public override IEnumerator<MatchImpl> GetEnumerator()
         {
             foreach (RegExp.Match item in _matches)
             {
@@ -58,20 +58,10 @@ namespace OneScript.StandardLibrary.Regex
         }
 
         #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
-
     }
 
     [ContextClass("КоллекцияГруппРегулярногоВыражения", "RegExGroupCollection")]
-    public class GroupCollection : AutoContext<GroupCollection>, ICollectionContext, IEnumerable<GroupImpl>
+    public class GroupCollection : AutoCollectionContext<GroupCollection, GroupImpl>
     {
         private readonly RegExp.GroupCollection _groups;
         private readonly RegExp.Regex _regex;
@@ -89,7 +79,7 @@ namespace OneScript.StandardLibrary.Regex
         /// </summary>
         /// <returns>Количество полученных групп.</returns>
         [ContextMethod("Количество", "Count")]
-        public int Count()
+        public override int Count()
         {
             return _groups.Count;
         }
@@ -106,16 +96,11 @@ namespace OneScript.StandardLibrary.Regex
             return new GroupImpl(_groups[(int)index], (int)index, _regex);
         }
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
         #endregion
 
         #region IEnumerable<IRuntimeContextInstance> Members
 
-        public IEnumerator<GroupImpl> GetEnumerator()
+        public override IEnumerator<GroupImpl> GetEnumerator()
         {
             int i = 0;
             foreach (RegExp.Group item in _groups)
@@ -130,15 +115,5 @@ namespace OneScript.StandardLibrary.Regex
         }
 
         #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
-
     }
 }

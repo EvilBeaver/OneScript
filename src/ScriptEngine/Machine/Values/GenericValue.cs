@@ -10,7 +10,7 @@ using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Values
 {
-    public abstract class GenericValue : IValue
+    public abstract class GenericValue : IValue, IEmptyValueCheck
     {
         public virtual int CompareTo(IValue other)
         {
@@ -57,5 +57,7 @@ namespace ScriptEngine.Machine.Values
         {
             return AsString();
         }
+
+        public virtual bool IsEmpty => false;
     }
 }

@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
@@ -29,6 +30,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             return Owner().Columns.Count();
         }
+        
+        bool IEmptyValueCheck.IsEmpty => Count() == 0;
 
         /// <summary>
         /// Владелец строки

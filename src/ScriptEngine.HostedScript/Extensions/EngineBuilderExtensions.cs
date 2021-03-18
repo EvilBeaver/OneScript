@@ -108,5 +108,13 @@ namespace ScriptEngine.HostedScript.Extensions
             
             return b;
         }
+
+        public static MachineEnvironment UseTemplateFactory(this MachineEnvironment env, ITemplateFactory factory)
+        {
+            var storage = new TemplateStorage(factory);
+            env.GlobalNamespace.InjectObject(storage);
+            env.GlobalInstances.RegisterInstance(storage);
+            return env;
+        }
     }
 }

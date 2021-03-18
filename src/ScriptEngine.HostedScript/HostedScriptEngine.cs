@@ -59,13 +59,13 @@ namespace ScriptEngine.HostedScript
             _env.InjectObject(dynLoader, false);
             manager.RegisterInstance(dynLoader);
 
-            InitializationCallback = (eng, env) =>
-            {
-                var templateFactory = new DefaultTemplatesFactory();
-                var storage = new TemplateStorage(templateFactory);
-                env.InjectObject(storage);
-                manager.RegisterInstance(storage);
-            };
+            var bgTasksManager = new BackgroundTasksManager(MakeEnvironment(_engine));
+            _env.InjectGlobalProperty(bgTasksManager, "ФоновыеЗадания", "BackgroundJobs", true);
+        }
+
+        private static MachineEnvironment MakeEnvironment(ScriptingEngine engine)
+        {
+            return new MachineEnvironment(engine.TypeManager, engine.Environment, engine.GlobalsManager);
         }
         
         public ScriptingEngine EngineInstance => _engine;
@@ -83,12 +83,6 @@ namespace ScriptEngine.HostedScript
             {
                 InitializationCallback?.Invoke(_engine, _engine.Environment);
                 _engine.Initialize();
-                
-                var taskManager = new BackgroundTasksManager(EngineInstance);
-                _engine.Environment.InjectGlobalProperty(taskManager, "ФоновыеЗадания", true);
-                _engine.Environment.InjectGlobalProperty(taskManager, "BackgroundTasks", true);
-
-                
                 _isInitialized = true;
             }
 

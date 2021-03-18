@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Runtime.CompilerServices;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Types
@@ -13,8 +14,12 @@ namespace ScriptEngine.Types
     {
         public string TypeName { get; set; }
         
-        public ITypeManager TypeManager { get; set; }
+        public MachineEnvironment MachineEnvironment { get; set; }
 
-        public IGlobalsManager GlobalsManager { get; set; }
+        public ITypeManager TypeManager => MachineEnvironment.TypeManager;
+
+        public IGlobalsManager GlobalsManager => MachineEnvironment.GlobalInstances;
+
+        public RuntimeEnvironment GlobalNamespace => MachineEnvironment.GlobalNamespace;
     }
 }
