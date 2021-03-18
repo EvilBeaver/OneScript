@@ -31,8 +31,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return Owner().Columns.Count();
         }
         
-        bool IEmptyValueCheck.IsEmpty => Count() == 0;
-
         /// <summary>
         /// Владелец строки
         /// </summary>

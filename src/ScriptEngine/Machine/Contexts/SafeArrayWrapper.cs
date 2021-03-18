@@ -36,8 +36,6 @@ namespace ScriptEngine.Machine.Contexts
             return _array.Length;
         }
 
-        bool IEmptyValueCheck.IsEmpty => Count() == 0;
-
         public override bool IsIndexed
         {
             get

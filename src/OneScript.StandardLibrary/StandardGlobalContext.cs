@@ -120,12 +120,15 @@ namespace OneScript.StandardLibrary
                 return false;
             }
 
-            if (value is IEmptyValueCheck emptyHandler)
+            switch (value)
             {
-                return !emptyHandler.IsEmpty;
+                case IEmptyValueCheck emptyHandler:
+                    return !emptyHandler.IsEmpty;
+                case ICollectionContext collection:
+                    return collection.Count() != 0;
+                default:
+                    return true;
             }
-
-            return true;
         }
 
         /// <summary>

@@ -43,8 +43,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             return _properties.Count + _owner.Columns.Count();
         }
         
-        bool IEmptyValueCheck.IsEmpty => Count() == 0;
-
         [ContextProperty("Родитель", "Parent")]
         public IValue Parent
         {

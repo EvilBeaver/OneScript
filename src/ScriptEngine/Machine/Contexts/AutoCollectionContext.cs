@@ -24,8 +24,6 @@ namespace ScriptEngine.Machine.Contexts
         {
         }
         
-        bool IEmptyValueCheck.IsEmpty => Count() == 0;
-
         public abstract int Count();
         
         public abstract IEnumerator<TItem> GetEnumerator();

@@ -36,11 +36,6 @@ namespace OneScript.StandardLibrary.Regex
             return _matches.Count;
         }
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
-
         #endregion
 
         #region IEnumerable<IRuntimeContextInstance> Members

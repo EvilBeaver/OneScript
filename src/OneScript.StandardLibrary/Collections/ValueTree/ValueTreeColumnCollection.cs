@@ -207,8 +207,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             return GetEnumerator();
         }
 
-        bool IEmptyValueCheck.IsEmpty => _columns.Count == 0;
-
         public CollectionEnumerator GetManagedIterator()
         {
             return new CollectionEnumerator(GetEnumerator());

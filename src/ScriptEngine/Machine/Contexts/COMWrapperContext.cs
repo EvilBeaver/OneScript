@@ -14,7 +14,12 @@ using ScriptEngine.Types;
 namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("COMОбъект", "COMObject", TypeUUID = "5E4FA60E-9724-494A-A5C8-5BB0A4F914E0")]
-    public abstract class COMWrapperContext : PropertyNameIndexAccessor, ICollectionContext, IDisposable, IObjectWrapper, IEnumerable<IValue>
+    public abstract class COMWrapperContext : PropertyNameIndexAccessor, 
+        ICollectionContext,
+        IEmptyValueCheck,
+        IDisposable,
+        IObjectWrapper,
+        IEnumerable<IValue>
     {
         private static readonly DateTime MIN_OLE_DATE = new DateTime(100,1,1);
         protected static readonly TypeDescriptor ComObjectType = typeof(COMWrapperContext).GetTypeFromClassMarkup();

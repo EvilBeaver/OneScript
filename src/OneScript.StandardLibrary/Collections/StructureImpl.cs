@@ -196,8 +196,6 @@ namespace OneScript.StandardLibrary.Collections
             return new CollectionEnumerator(GetEnumerator());
         }
 
-        bool IEmptyValueCheck.IsEmpty => Count() == 0;
-
         #endregion
 
         #region IEnumerable<IValue> Members

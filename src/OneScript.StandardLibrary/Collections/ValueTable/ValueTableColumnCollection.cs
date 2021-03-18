@@ -281,7 +281,5 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             visitor.ShowProperties(this);
         }
-        
-        bool IEmptyValueCheck.IsEmpty => Count() == 0;
     }
 }

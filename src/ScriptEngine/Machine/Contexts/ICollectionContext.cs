@@ -9,7 +9,7 @@ using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public interface ICollectionContext : IEmptyValueCheck
+    public interface ICollectionContext
     {
         int Count();
         CollectionEnumerator GetManagedIterator();

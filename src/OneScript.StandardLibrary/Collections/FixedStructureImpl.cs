@@ -120,8 +120,6 @@ namespace OneScript.StandardLibrary.Collections
         {
         	return new CollectionEnumerator(_structure.GetManagedIterator());
         }
-
-        bool IEmptyValueCheck.IsEmpty => Count() == 0;
         
         #endregion
 
