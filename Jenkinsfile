@@ -89,7 +89,9 @@ pipeline {
             parallel{
                 stage('Windows testing') {
                     agent { label 'windows' }
-
+					environment {
+                        OSCRIPT_CONFIG = 'systemlanguage=ru'
+                    }
                     steps {
                         ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                         {

@@ -55,7 +55,7 @@
 				ItemName="BuildVariant"/>
 		</CreateItem>
 		
-		<Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -o &quot;$(ArtifactsRoot)/fdd-%(BuildVariant.Suffix)/bin&quot;"/>
+		<Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -p:UseAppHost=false -o &quot;$(ArtifactsRoot)/fdd-%(BuildVariant.Suffix)/bin&quot;"/>
 	</Target>
 	
 	<Target Name="MakeSCD">
@@ -103,7 +103,7 @@
 		<MakeDir Directories="$(LibDir)" />
 		
 		<ItemGroup>
-			<Executable Include="$(ArtifactsRoot)/*/bin/oscript.exe"/>
+			<Executable Include="$(ArtifactsRoot)/*x64/bin/oscript.dll"/>
 		</ItemGroup>
 
 		<!-- упадет если ничего не нашлось, и это хорошо -->
@@ -111,8 +111,8 @@
 			<Output TaskParameter="FirstItem" PropertyName="Runner"/>
 		</GetFirstItem>
 		
-		<Exec Command="&quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)/install/opm-0.16.2.ospx&quot; &quot;$(LibDir)/tmp&quot;"/>
-		<Exec Command="&quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(LibDir)/tmp/content.zip&quot; &quot;$(LibDir)/opm&quot;"/>
+		<Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)/install/opm-0.16.2.ospx&quot; &quot;$(LibDir)/tmp&quot;"/>
+		<Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(LibDir)/tmp/content.zip&quot; &quot;$(LibDir)/opm&quot;"/>
 
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibDir)"/>
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(Executable.RelativeDir)"/>
@@ -148,20 +148,23 @@
 	
 	<Target Name="Test">
 		<ItemGroup>
-			<!--Executable Include="$(ArtifactsRoot)/fdd-x64/bin/oscript.exe" /-->
-			<Executable Include="$(ArtifactsRoot)/fdd-x86/bin/oscript.exe" />
+			<Executable Include="$(ArtifactsRoot)/*x64/bin/oscript.dll" />
 			<RemoveXMLTestResult Include="$(MSBuildProjectDirectory)\tests\*.os.xml" />
 		</ItemGroup>
 
 		<Delete Files="@(RemoveXMLTestResult)" />
+		
+		<GetFirstItem Items="@(Executable)">
+			<Output TaskParameter="FirstItem" PropertyName="Runner"/>
+		</GetFirstItem>
 
-		<Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="&quot;%(Executable.Identity)&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." IgnoreExitCode="true"/>
+		<Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." IgnoreExitCode="true"/>
 		
 	</Target>
 	
 	<Target Name="PackDistributions">
 		<ItemGroup>
-			<Executable Include="$(ArtifactsRoot)/*/bin/oscript.exe" />
+			<Executable Include="$(ArtifactsRoot)/*x64/bin/oscript.dll" />
 			<RuntimeID Include="fdd-x64"/>
 			<RuntimeID Include="fdd-x86"/>
 			<RuntimeID Include="win-x64"/>
@@ -182,7 +185,7 @@
 			<Output TaskParameter="FirstItem" PropertyName="Runner"/>
 		</GetFirstItem>
 		
-		<Exec Command="&quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber)-%(RuntimeID.Identity).zip&quot;"/>
+		<Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber)-%(RuntimeID.Identity).zip&quot;"/>
 		<RemoveDir Directories="$(ArtifactsRoot)/%(RuntimeID.Identity)" />
 	</Target>
 	
