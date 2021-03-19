@@ -107,16 +107,17 @@ pipeline {
                 }
 
                 stage('Linux testing') {
-                    agent{
-                        docker{
-                            image 'evilbeaver/mono-ru:5.4'
-                            label 'master'
+						agent{ 
+                            docker {
+                                image 'mcr.microsoft.com/dotnet/sdk:5.0'
+                                label 'linux' 
+                            }
                         }
                     }
 
                     steps {
                         
-                        dir('install/build'){
+                        dir('built'){
                             deleteDir()
                         }
                         
@@ -128,7 +129,7 @@ pipeline {
                         fi
                         rm lintests/*.xml -f
                         cd tests
-                        mono ../built/linux-x64/bin/oscript.exe testrunner.os -runall . xddReportPath ../lintests || true
+                        dotnet ../built/linux-x64/bin/oscript.dll testrunner.os -runall . xddReportPath ../lintests || true
                         exit 0
                         '''.stripIndent()
 
@@ -141,13 +142,9 @@ pipeline {
         
         stage('Packaging') {
             parallel {
-                stage('Windows distribution'){
+                stage('Zip distribution'){
                     agent { label 'windows' }
 
-                    environment {
-                        InnoSetupPath = "${tool 'InnoSetup'}"
-                    }
-                    
                     steps {
                         ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                         {
@@ -160,7 +157,7 @@ pipeline {
                             {
                                 if (env.BRANCH_NAME == "preview") {
                                     echo 'Building preview'
-                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions /p:Suffix=-pre%BUILD_NUMBER%"
+                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
                                 }
                                 else{
                                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions"
