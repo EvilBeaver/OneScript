@@ -15,9 +15,11 @@
     <ItemGroup>
         <PlatformItem Include="x86">
             <MSBuildName>x86</MSBuildName>
+			<MSBuildNameCpp>Win32</MSBuildNameCpp>
         </PlatformItem>
         <PlatformItem Include="x64">
             <MSBuildName>&quot;Any CPU&quot;</MSBuildName>
+			<MSBuildNameCpp>x64</MSBuildNameCpp>
         </PlatformItem>
     </ItemGroup>
 	
@@ -45,6 +47,14 @@
 
     </Target> 
 	
+	<Target Name="MakeCPP">
+		<MSBuild Projects="src\ScriptEngine.NativeApi\ScriptEngine.NativeApi.vcxproj"
+			Properties="Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildNameCpp)"/>
+
+		<MSBuild Projects="tests\native-api\AddInNative.vcxproj"
+				 Properties="Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildNameCpp)"/>
+	</Target>
+
 	<Target Name="MakeFDD">
 		
 		<CreateItem
@@ -55,6 +65,10 @@
 				ItemName="BuildVariant"/>
 		</CreateItem>
 		
+		<ItemGroup>
+			<CppDll Include="$(MSBuildProjectDirectory)/src/ScriptEngine.NativeApi/bin/"/>
+		</ItemGroup>
+
 		<Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -p:UseAppHost=false -o &quot;$(ArtifactsRoot)/fdd-%(BuildVariant.Suffix)/bin&quot;"/>
 	</Target>
 	
