@@ -170,7 +170,18 @@ namespace ScriptEngine.HostedScript.Library.Tasks
 
             return arr;
         }
-        
+
+        [ContextMethod("ПолучитьТекущее", "GetCurrent")]
+        public IValue GetCurrent()
+        {
+            var currentId = Task.CurrentId;
+            if (currentId == null)
+                return ValueFactory.Create();
+
+            var task = _tasks.FirstOrDefault(x => x.TaskId == (int) currentId && x.State == TaskStateEnum.Running);
+            return task ?? ValueFactory.Create();
+        }
+
         internal static int ConvertTimeout(int timeout)
         {
             if(timeout < 0)

@@ -18,6 +18,8 @@ namespace ScriptEngine.HostedScript.Library.Tasks
     {
         private readonly MethodInfo _method;
         private readonly int _methIndex;
+        private Task _workerTask;
+        private int _taskId;
         
         public BackgroundTask(IRuntimeContextInstance target, string methodName, ArrayImpl parameters = default)
         {
@@ -31,9 +33,19 @@ namespace ScriptEngine.HostedScript.Library.Tasks
             _methIndex = Target.FindMethod(MethodName);
             _method = Target.GetMethodInfo(_methIndex);
         }
-        
-        public Task WorkerTask { get; set; } 
-        
+
+        public Task WorkerTask
+        {
+            get => _workerTask;
+            set
+            {
+                _workerTask = value;
+                _taskId = _workerTask.Id;
+            }
+        }
+
+        public int TaskId => _taskId;
+
         [ContextProperty("УникальныйИдентификатор","UUID")]
         public GuidWrapper Identifier { get; private set; }
         
