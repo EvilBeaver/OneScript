@@ -13,13 +13,19 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Reflection
 {
-    public class ClassBuilder<T> : IReflectedClassBuilder where T: ContextIValueImpl
+    public class ClassBuilder : IReflectedClassBuilder
     {
+        private readonly Type _classType;
         private List<SysReflection.MethodInfo> _methods = new List<SysReflection.MethodInfo>();
         private List<SysReflection.PropertyInfo> _properties = new List<SysReflection.PropertyInfo>();
         private List<SysReflection.FieldInfo> _fields = new List<SysReflection.FieldInfo>();
         private List<SysReflection.ConstructorInfo> _constructors = new List<SysReflection.ConstructorInfo>();
 
+        public ClassBuilder(Type classType)
+        {
+            _classType = classType;
+        }
+        
         public string TypeName { get; set; }
         public LoadedModule Module { get; set; }
 
@@ -37,9 +43,9 @@ namespace ScriptEngine.Machine.Reflection
 
         public IReflectedClassBuilder ExportClassMethod(string methodName)
         {
-            var mi = typeof(T).GetMethod(methodName);
+            var mi = _classType.GetMethod(methodName);
             if(mi == null)
-                throw new InvalidOperationException($"Method '{methodName}' not found in {typeof(T)}");
+                throw new InvalidOperationException($"Method '{methodName}' not found in {_classType}");
 
             ExportClassMethod(mi);
             return this;
@@ -50,8 +56,8 @@ namespace ScriptEngine.Machine.Reflection
             if(nativeMethod == null)
                 throw new ArgumentNullException(nameof(nativeMethod));
 
-            if (nativeMethod.ReflectedType != typeof(T))
-                throw new InvalidOperationException($"Method '{nativeMethod.Name}' not found in {typeof(T)}");
+            if (nativeMethod.ReflectedType != _classType)
+                throw new InvalidOperationException($"Method '{nativeMethod.Name}' not found in {_classType}");
 
             if(MarkedAsContextMethod(nativeMethod, true))
                 _methods.Add(new ContextMethodInfo(nativeMethod));
@@ -63,9 +69,9 @@ namespace ScriptEngine.Machine.Reflection
 
         public IReflectedClassBuilder ExportProperty(string propName)
         {
-            var info = typeof(T).GetProperty(propName);
+            var info = _classType.GetProperty(propName);
             if (info == null)
-                throw new InvalidOperationException($"Property '{propName}' not found in {typeof(T)}");
+                throw new InvalidOperationException($"Property '{propName}' not found in {_classType}");
 
             _properties.Add(new ContextPropertyInfo(info));
             
@@ -74,7 +80,7 @@ namespace ScriptEngine.Machine.Reflection
 
         public IReflectedClassBuilder ExportMethods(bool includeDeprecations = false)
         {
-            var methods = typeof(T).GetMethods()
+            var methods = _classType.GetMethods()
                                    .Where(x => MarkedAsContextMethod(x, includeDeprecations))
                                    .Select(x=>new ContextMethodInfo(x));
 
@@ -84,7 +90,7 @@ namespace ScriptEngine.Machine.Reflection
         
         public IReflectedClassBuilder ExportProperties(bool includeDeprecations = false)
         {
-            var props = typeof(T).GetProperties()
+            var props = _classType.GetProperties()
                                    .Where(MarkedAsContextProperty);
             _properties.AddRange(props);
             return this;
@@ -104,7 +110,7 @@ namespace ScriptEngine.Machine.Reflection
 
         public IReflectedClassBuilder ExportConstructor(SysReflection.ConstructorInfo info)
         {
-            if (info.DeclaringType != typeof(T))
+            if (info.DeclaringType != _classType)
             {
                 throw new ArgumentException("info must belong to the current class");
             }
@@ -116,7 +122,7 @@ namespace ScriptEngine.Machine.Reflection
         public IReflectedClassBuilder ExportConstructor(Func<object[], IRuntimeContextInstance> creator)
         {
             var info = new ReflectedConstructorInfo(creator);
-            info.SetDeclaringType(typeof(T));
+            info.SetDeclaringType(_classType);
             _constructors.Add(info);
             return this;
         }
@@ -211,7 +217,7 @@ namespace ScriptEngine.Machine.Reflection
 
         public IReflectedClassBuilder ExportScriptConstructors()
         {
-            var statics = typeof(T).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
+            var statics = _classType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
                                    .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute));
 
             foreach (var staticConstructor in statics)
@@ -243,7 +249,7 @@ namespace ScriptEngine.Machine.Reflection
 
         public Type Build()
         {
-            var classDelegator = new ReflectedClassType<T>();
+            var classDelegator = new ReflectedClassType(_classType);
             classDelegator.SetName(TypeName);
             classDelegator.SetFields(_fields);
             classDelegator.SetProperties(_properties);

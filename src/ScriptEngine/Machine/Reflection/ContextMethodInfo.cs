@@ -62,6 +62,8 @@ namespace ScriptEngine.Machine.Reflection
         public override ICustomAttributeProvider ReturnTypeCustomAttributes => _realMethod.ReturnTypeCustomAttributes;
 
         public override string Name => _scriptMark.GetName();
+        
+        public string Alias => _scriptMark.GetAlias();
 
         public override Type DeclaringType => _realMethod.DeclaringType;
 

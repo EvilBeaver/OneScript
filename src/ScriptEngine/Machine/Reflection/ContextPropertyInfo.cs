@@ -44,6 +44,8 @@ namespace ScriptEngine.Machine.Reflection
         
         public override string Name => _scriptMark.GetName();
         
+        public string Alias => _scriptMark.GetAlias();
+        
         public override System.Reflection.MethodInfo[] GetAccessors(bool nonPublic)
         {
             var getter = GetGetMethod(nonPublic);

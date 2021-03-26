@@ -53,7 +53,7 @@ namespace OneScript.Core.Tests
         private Type CreateDummyType(string script)
         {
             var module = LoadFromString(script);
-            var builder = new ClassBuilder<UserScriptContextInstance>();
+            var builder = new ClassBuilder(typeof(UserScriptContextInstance));
             var reflected = builder.SetModule(module)
                                    .SetTypeName("Dummy")
                                    .ExportDefaults()
@@ -151,7 +151,7 @@ namespace OneScript.Core.Tests
         [Fact]
         public void ClassCanBeCreatedViaConstructor()
         {
-            var cb = new ClassBuilder<UserScriptContextInstance>();
+            var cb = new ClassBuilder(typeof(UserScriptContextInstance));
             var module = LoadFromString("");
             cb.SetTypeName("testDrive")            
                 .SetModule(module)
@@ -166,7 +166,7 @@ namespace OneScript.Core.Tests
         [Fact]
         public void ClassCanExposeNativeMethodByName()
         {
-            var cb = new ClassBuilder<UserScriptContextInstance>();
+            var cb = new ClassBuilder(typeof(UserScriptContextInstance));
             var module = LoadFromString("");
             cb.SetTypeName("testDrive")
               .SetModule(module)
@@ -180,7 +180,7 @@ namespace OneScript.Core.Tests
         [Fact]
         public void ClassCanExposeNativeMethodDirectly()
         {
-            var cb = new ClassBuilder<UserScriptContextInstance>();
+            var cb = new ClassBuilder(typeof(UserScriptContextInstance));
             var module = LoadFromString("");
             var nativeMethod = typeof(UserScriptContextInstance).GetMethod("AddProperty",
                                                                            BindingFlags.Public | BindingFlags.Instance,

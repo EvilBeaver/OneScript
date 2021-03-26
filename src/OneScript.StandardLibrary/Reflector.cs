@@ -440,7 +440,7 @@ namespace OneScript.StandardLibrary
                 throw NonReflectableType();
             }
 
-            var builder = new ClassBuilder<UserScriptContextInstance>();
+            var builder = new ClassBuilder(typeof(UserScriptContextInstance));
 
             return builder
                    .SetTypeName(typeName)
@@ -455,8 +455,7 @@ namespace OneScript.StandardLibrary
             if (attrib == null || !typeof(ContextIValueImpl).IsAssignableFrom(clrType))
                 throw NonReflectableType();
 
-            var builderType = typeof(ClassBuilder<>).MakeGenericType(clrType);
-            var builder = (IReflectedClassBuilder)Activator.CreateInstance(builderType);
+            var builder = new ClassBuilder(clrType);
 
             return builder.SetTypeName(attrib.GetName())
                    .ExportDefaults()

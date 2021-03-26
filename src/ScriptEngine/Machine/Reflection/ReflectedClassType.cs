@@ -14,7 +14,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Reflection
 {
-    public class ReflectedClassType<T> : TypeDelegator where T : ContextIValueImpl
+    public class ReflectedClassType : TypeDelegator
     {
         private string _typeName;
         private PropertyInfo[] _properties;
@@ -22,9 +22,12 @@ namespace ScriptEngine.Machine.Reflection
         private FieldInfo[] _fields;
         private ConstructorInfo[] _constructors;
         
-        public ReflectedClassType()
-            :base(typeof(T))
+        private readonly Type _underlyingType;
+
+        public ReflectedClassType(Type classType)
+            :base(classType)
         {
+            _underlyingType = classType;
         }
 
         public void SetName(string name)
@@ -79,8 +82,8 @@ namespace ScriptEngine.Machine.Reflection
         public override Assembly Assembly => Assembly.GetExecutingAssembly();
         public override bool ContainsGenericParameters => false;
         public override string AssemblyQualifiedName => Assembly.CreateQualifiedName(Assembly.FullName, Name);
-        public override Type UnderlyingSystemType => typeof(T);
-        public override Type BaseType => typeof(T).BaseType;
+        public override Type UnderlyingSystemType => _underlyingType;
+        public override Type BaseType => _underlyingType.BaseType;
         public override IEnumerable<CustomAttributeData> CustomAttributes => null;
         public override string Namespace => GetType().Namespace + ".dyn";
 
