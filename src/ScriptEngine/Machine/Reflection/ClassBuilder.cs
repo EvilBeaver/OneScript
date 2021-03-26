@@ -54,7 +54,7 @@ namespace ScriptEngine.Machine.Reflection
                 throw new InvalidOperationException($"Method '{nativeMethod.Name}' not found in {typeof(T)}");
 
             if(MarkedAsContextMethod(nativeMethod, true))
-                _methods.Add(new WrappedMethodInfo(nativeMethod));
+                _methods.Add(new ContextMethodInfo(nativeMethod));
             else
                 _methods.Add(nativeMethod);
 
@@ -63,10 +63,12 @@ namespace ScriptEngine.Machine.Reflection
 
         public IReflectedClassBuilder ExportProperty(string propName)
         {
-            var mi = typeof(T).GetProperty(propName);
-            if (mi == null)
-                throw new InvalidOperationException($"Method '{propName}' not found in {typeof(T)}");
+            var info = typeof(T).GetProperty(propName);
+            if (info == null)
+                throw new InvalidOperationException($"Property '{propName}' not found in {typeof(T)}");
 
+            _properties.Add(new ContextPropertyInfo(info));
+            
             return this;
         }
 
@@ -74,7 +76,7 @@ namespace ScriptEngine.Machine.Reflection
         {
             var methods = typeof(T).GetMethods()
                                    .Where(x => MarkedAsContextMethod(x, includeDeprecations))
-                                   .Select(x=>new WrappedMethodInfo(x));
+                                   .Select(x=>new ContextMethodInfo(x));
 
             _methods.AddRange(methods);
             return this;

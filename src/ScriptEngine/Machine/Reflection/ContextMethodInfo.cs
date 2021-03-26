@@ -14,12 +14,12 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Reflection
 {
-    public sealed class WrappedMethodInfo : System.Reflection.MethodInfo
+    public sealed class ContextMethodInfo : System.Reflection.MethodInfo, IObjectWrapper
     {
         private readonly System.Reflection.MethodInfo _realMethod;
         private readonly ContextMethodAttribute _scriptMark;
 
-        public WrappedMethodInfo(System.Reflection.MethodInfo realMethod)
+        public ContextMethodInfo(System.Reflection.MethodInfo realMethod)
         {
             _realMethod = realMethod;
             _scriptMark = (ContextMethodAttribute)GetCustomAttributes(typeof(ContextMethodAttribute), false).First();
@@ -66,7 +66,7 @@ namespace ScriptEngine.Machine.Reflection
         public override Type DeclaringType => _realMethod.DeclaringType;
 
         public override Type ReflectedType => _realMethod.ReflectedType;
-
+        
         public override RuntimeMethodHandle MethodHandle => _realMethod.MethodHandle;
 
         public override MethodAttributes Attributes => _realMethod.Attributes;
@@ -75,5 +75,9 @@ namespace ScriptEngine.Machine.Reflection
         {
             return _realMethod.GetCustomAttributes(attributeType, inherit);
         }
+
+        public object UnderlyingObject => _realMethod;
+
+        public System.Reflection.MethodInfo GetWrappedMethod() => _realMethod;
     }
 }

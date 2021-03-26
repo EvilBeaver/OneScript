@@ -11,4 +11,12 @@ namespace ScriptEngine.Machine.Contexts
     {
         object UnderlyingObject { get; }
     }
+    
+    public static class WrapperHelper 
+    {
+        public static T OfType<T>(this IObjectWrapper wrapper)
+        {
+            return (T) wrapper.UnderlyingObject;
+        }
+    }
 }
