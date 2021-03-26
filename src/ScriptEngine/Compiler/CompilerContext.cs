@@ -206,7 +206,7 @@ namespace ScriptEngine.Compiler
             if (_scopeStack.Count > 0)
             {
                 var idx = TopIndex();
-                var num = _scopeStack[idx].DefineVariable(name, alias, SymbolType.ContextProperty);
+                var num = _scopeStack[idx].DefineProperty(name, alias);
                 return new SymbolBinding()
                 {
                     ContextIndex = idx,

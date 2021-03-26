@@ -76,13 +76,13 @@ namespace ScriptEngine.Compiler
         {
             return DefineVariable(name, alias, SymbolType.Variable);
         }
-
-        public int DefineVariable(string name, SymbolType symbolType)
+        
+        public int DefineProperty(string name, string alias = null)
         {
-            return DefineVariable(name, null, symbolType);
+            return DefineVariable(name, alias, SymbolType.ContextProperty);
         }
 
-        public int DefineVariable(string name, string alias, SymbolType symbolType)
+        private int DefineVariable(string name, string alias, SymbolType symbolType)
         {
             if (IsVarDefined(name))
             {

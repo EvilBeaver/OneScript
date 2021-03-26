@@ -44,7 +44,11 @@ namespace ScriptEngine
 
             EnsureGlobalScopeExist();
             
-            _globalScope.DefineVariable(identifier, alias, readOnly? SymbolType.ContextProperty:SymbolType.Variable);
+            if(readOnly)
+                _globalScope.DefineProperty(identifier, alias);
+            else
+                _globalScope.DefineVariable(identifier, alias);
+            
             _injectedProperties.Insert(value, identifier, true, !readOnly);
         }
         
