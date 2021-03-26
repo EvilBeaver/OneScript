@@ -30,6 +30,13 @@ namespace ScriptEngine.Machine
             _nameIndex[name] = idx;
         }
 
+        public void Add(T item, string name, string alias)
+        {
+            var index = _values.Count;
+            Add(item, name);
+            AddName(index, alias);
+        }
+
         public T this[int index]
         {
             get { return _values[index]; }

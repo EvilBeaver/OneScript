@@ -55,6 +55,11 @@ namespace OneScript.Language
             set => _codePosition.ModuleName = value;
         }
 
+        public ErrorPositionInfo GetPosition()
+        {
+            return _codePosition;
+        }
+
         public string ErrorDescription => base.Message;
 
         public string MessageWithoutCodeFragment

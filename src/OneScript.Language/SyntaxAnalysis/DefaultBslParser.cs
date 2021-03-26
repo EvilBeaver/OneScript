@@ -567,7 +567,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return success;
         }
 
-        public bool BuildAnnotationParamValue(BslSyntaxNode annotationParam)
+        private bool BuildAnnotationParamValue(BslSyntaxNode annotationParam)
         {
             if (LanguageDef.IsLiteral(ref _lastExtractedLexem))
             {

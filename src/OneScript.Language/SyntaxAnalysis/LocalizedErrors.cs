@@ -14,7 +14,7 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    internal static class LocalizedErrors
+    public static class LocalizedErrors
     {
         public static ParseError UnexpectedOperation()
         {
@@ -120,5 +120,9 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public static ParseError PreprocessorDefinitionExpected() =>
             Create("ru = 'Ожидается объявление препроцессора;en='Preprocessor definition expected'");
+        
+        public static ParseError UseBuiltInFunctionAsProcedure() =>
+            Create("ru = 'Использование встроенной функции, как процедуры';" 
+                   + "en = 'Using build-in function as procedure'");
     }
 }
