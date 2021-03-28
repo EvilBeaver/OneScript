@@ -7,9 +7,12 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
 using OneScript.Commons;
 using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.StandardLibrary.Collections;
@@ -18,7 +21,6 @@ using ScriptEngine.Compiler.Extensions;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Values;
-using ScriptEngine.Types;
 using Refl = System.Reflection;
 
 namespace OneScript.StandardLibrary.Native
@@ -32,6 +34,8 @@ namespace OneScript.StandardLibrary.Native
         
         private List<Expression> _statements = new List<Expression>();
         private Stack<Expression> _statementBuildParts = new Stack<Expression>();
+
+        private List<ParameterExpression> _localVariables = new List<ParameterExpression>();
         
         public BlockExpressionGenerator(
             SymbolResolver context,
@@ -52,27 +56,6 @@ namespace OneScript.StandardLibrary.Native
             return Expression.Block(_localVariables, _statements);
         }
 
-        private static Type ConvertTypeToClrType(TypeTypeValue typeVal)
-        {
-            var type = typeVal.TypeValue;
-
-            Type clrType;
-            if (type == BasicTypes.String)
-                clrType = typeof(string);
-            else if (type == BasicTypes.Date)
-                clrType = typeof(DateTime);
-            else if (type == BasicTypes.Boolean)
-                clrType = typeof(bool);
-            else if (type == BasicTypes.Number)
-                clrType = typeof(decimal);
-            else if (type == BasicTypes.Type)
-                clrType = typeof(TypeTypeValue);
-            else
-                clrType = type.ImplementingClass;
-
-            return clrType;
-        }
-
         protected override void VisitStatement(BslSyntaxNode statement)
         {
             _statementBuildParts.Clear();
@@ -91,6 +74,7 @@ namespace OneScript.StandardLibrary.Native
             try
             {
                 symbol = _ctx.GetMethod(node.Identifier.GetIdentifier());
+                var args = node.ArgumentList.Children.Select(ConvertToExpressionTree);
                 
                 var expression = CreateClrMethodCall(symbol.Target, symbol.MethodInfo);
                 _statements.Add(expression);
@@ -99,6 +83,28 @@ namespace OneScript.StandardLibrary.Native
             {
                 _errors.AddError(e);
             }
+        }
+
+        private Expression ConvertToExpressionTree(BslSyntaxNode arg)
+        {
+            if (arg is TerminalNode term)
+            {
+
+                if (arg.Kind == NodeKind.Constant)
+                {
+                    VisitConstant(term);
+                }
+                else
+                {
+                    VisitVariableRead(term);
+                }
+            }
+            else
+            {
+                DefaultVisit(arg);
+            }
+
+            return _statementBuildParts.Pop();
         }
 
         protected override void VisitVariableRead(TerminalNode node)
@@ -129,9 +135,8 @@ namespace OneScript.StandardLibrary.Native
             var hasVar = _ctx.TryGetVariable(identifier, out var varBinding);
             if (hasVar)
             {
-                if (varBinding.binding.ContextIndex == _ctx.TopIndex())
+                if (varBinding.PropertyInfo == null)
                 {
-                    
                     //AddCommand(OperationCode.LoadLoc, varBinding.binding.CodeIndex);
                 }
                 else
@@ -147,13 +152,73 @@ namespace OneScript.StandardLibrary.Native
             {
                 // can create variable
                 var typeOnStack = _statementBuildParts.Peek().Type;
-                _ctx.DefineVariable(identifier);
+                _ctx.AddVariable(identifier, typeOnStack);
                 var variable = Expression.Variable(typeOnStack, identifier);
                 _localVariables.Add(variable, identifier);
                 _statementBuildParts.Push(variable);
                 var assign = Assign();
                 _statements.Add(assign);
             }
+        }
+
+        protected override void VisitConstant(TerminalNode node)
+        {
+            DataType constType = default;
+            Type clrType = default;
+            
+            switch (node.Lexem.Type)
+            {
+                case LexemType.BooleanLiteral:
+                    constType = DataType.Boolean;
+                    clrType = typeof(bool);
+                    break;
+                case LexemType.DateLiteral:
+                    constType = DataType.Date;
+                    clrType = typeof(DateTime);
+                    break;
+                case LexemType.NumberLiteral:
+                    constType = DataType.Number;
+                    clrType = typeof(decimal);
+                    break;
+                case LexemType.StringLiteral:
+                    constType = DataType.String;
+                    clrType = typeof(string);
+                    break;
+                case LexemType.NullLiteral:
+                    constType = DataType.GenericValue;
+                    clrType = typeof(NullValue);
+                    break;
+                case LexemType.UndefinedLiteral:
+                    constType = DataType.Undefined;
+                    clrType = typeof(object);
+                    break;
+            }
+
+            var data = ValueFactory.Parse(node.Lexem.Content, constType);
+            Expression expr;
+
+            switch (data.DataType)
+            {
+                case DataType.Undefined:
+                case DataType.GenericValue:
+                    expr = Expression.Constant(null, typeof(object));
+                    break;
+                case DataType.String:
+                    expr = Expression.Constant(data.AsString());
+                    break;
+                case DataType.Number:
+                    expr = Expression.Constant(data.AsNumber());
+                    break;
+                case DataType.Date:
+                    expr = Expression.Constant(data.AsDate());
+                    break;
+                case DataType.Boolean:
+                    expr = Expression.Constant(data.AsBoolean());
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            _statementBuildParts.Push(expr);
         }
 
         private Expression Assign()
