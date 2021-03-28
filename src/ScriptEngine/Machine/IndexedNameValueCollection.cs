@@ -57,6 +57,8 @@ namespace ScriptEngine.Machine
             _nameIndex[name] = index;
         }
 
+        public int Count => _values.Count; 
+        
         public int IndexOf(string name)
         {
             int idx;
