@@ -32,13 +32,13 @@ namespace OneScript.StandardLibrary.Native
         private IErrorSink _errors;
         private ISourceCodeIndexer _codeLinesReferences;
 
-        private CompiledBlock(ITypeManager tm)
+        public CompiledBlock(ITypeManager tm)
         {
             _typeManager = tm;
         }
-        
+
         [ContextProperty("Параметры", "Parameters")]
-        public StructureImpl Parameters { get; set; }
+        public StructureImpl Parameters { get; set; } = new StructureImpl();
 
         [ContextProperty("ФрагментКода", "CodeFragment")]
         public string CodeBlock
@@ -69,23 +69,19 @@ namespace OneScript.StandardLibrary.Native
             }
         }
 
-        public Func<IValue> MakeFunction()
-        {
-            var expr = ReduceAst(_ast);
-            return Expression.Lambda<Func<IValue>>(expr).Compile();
-        }
-
-        private Expression ReduceAst(BslSyntaxNode ast)
+        public LambdaExpression MakeExpression() => ReduceAst(_ast);
+        
+        private LambdaExpression ReduceAst(BslSyntaxNode ast)
         {
             // в параметрах лежат соответствия имени переменной и ее типа
             // блок кода надо скомпилировтаь в лямбду с параметрами по количеству в коллекции Parameters и с типами параметров, как там
             // пробежать по аст 1С и превратить в BlockExpression<IValue>
 
-            var symbols = new SymbolResolver();
+            var symbols = new SymbolTable();
             FillSymbolContext(symbols);
 
             var blockBuilder = new BlockExpressionGenerator(symbols, _typeManager, _errors);
-            return blockBuilder.CreateExpression(_ast.Children[0] as CodeBatchNode, new ModuleInformation
+            return blockBuilder.CreateExpression(_ast as ModuleNode, new ModuleInformation
             {
                 Origin = "<compiled code>",
                 ModuleName = "<compiled code>",
@@ -93,8 +89,10 @@ namespace OneScript.StandardLibrary.Native
             });
         }
 
-        private void FillSymbolContext(SymbolResolver symbols)
+        private void FillSymbolContext(SymbolTable symbols)
         {
+            var localsScope = new SymbolScope();
+            
             foreach (var kv in Parameters)
             {
                 var name = kv.Key.AsString();
@@ -106,9 +104,10 @@ namespace OneScript.StandardLibrary.Native
 
                 var typeVal = kv.Value.GetRawValue() as TypeTypeValue;
                 var type = ConvertTypeToClrType(typeVal);
-
-                symbols.AddVariable(kv.Key.AsString(), type);
+                SymbolScope.AddVariable(localsScope, name, type);
             }
+            
+            symbols.AddScope(localsScope);
         }
 
         private static Type ConvertTypeToClrType(TypeTypeValue typeVal)
@@ -133,7 +132,7 @@ namespace OneScript.StandardLibrary.Native
         }
 
         [ScriptConstructor]
-        public CompiledBlock Create(TypeActivationContext context)
+        public static CompiledBlock Create(TypeActivationContext context)
         {
             return new CompiledBlock(context.TypeManager);
         }

@@ -27,7 +27,7 @@ namespace OneScript.StandardLibrary.Native
 {
     internal class BlockExpressionGenerator : BslSyntaxWalker
     {
-        private readonly SymbolResolver _ctx;
+        private readonly SymbolTable _ctx;
         private readonly ITypeManager _typeManager;
         private readonly IErrorSink _errors;
         private ModuleInformation _moduleInfo;
@@ -36,30 +36,44 @@ namespace OneScript.StandardLibrary.Native
         private Stack<Expression> _statementBuildParts = new Stack<Expression>();
 
         private List<ParameterExpression> _localVariables = new List<ParameterExpression>();
+        private int _parametersCount = 0;
         
         public BlockExpressionGenerator(
-            SymbolResolver context,
+            SymbolTable context,
             ITypeManager typeManager,
             IErrorSink errors)
         {
             _ctx = context;
             _typeManager = typeManager;
             _errors = errors;
+
+            if (context.TopScope() != null)
+            {
+                foreach (var local in context.TopScope().Variables)
+                {
+                    _localVariables.Add(Expression.Variable(local.VariableType, local.Name));
+                    ++_parametersCount;
+                }
+            }
         }
 
-        public BlockExpression CreateExpression(CodeBatchNode blockNode, ModuleInformation moduleInfo)
+        public LambdaExpression CreateExpression(ModuleNode module, ModuleInformation moduleInfo)
         {
             _moduleInfo = moduleInfo;
 
-            Visit(blockNode);
+            Visit(module);
 
-            return Expression.Block(_localVariables, _statements);
+            var body = Expression.Block(_localVariables, _statements);
+            var parameters = _localVariables.Take(_parametersCount);
+
+            return Expression.Lambda(body, parameters);
         }
 
         protected override void VisitStatement(BslSyntaxNode statement)
         {
             _statementBuildParts.Clear();
             base.VisitStatement(statement);
+            
         }
 
         protected override void VisitGlobalProcedureCall(CallNode node)
@@ -70,19 +84,17 @@ namespace OneScript.StandardLibrary.Native
                 return;
             }
 
-            MethodSymbol symbol;
-            try
+            if (!_ctx.FindMethod(node.Identifier.GetIdentifier(), out var binding))
             {
-                symbol = _ctx.GetMethod(node.Identifier.GetIdentifier());
-                var args = node.ArgumentList.Children.Select(ConvertToExpressionTree);
-                
-                var expression = CreateClrMethodCall(symbol.Target, symbol.MethodInfo);
-                _statements.Add(expression);
+                AddError($"Unknown method {node.Identifier.GetIdentifier()}", node.Location);
+                return;
             }
-            catch (CompilerException e)
-            {
-                _errors.AddError(e);
-            }
+
+            var symbol = _ctx.GetScope(binding.ContextIndex).Methods[binding.CodeIndex];
+            var args = node.ArgumentList.Children.Select(ConvertToExpressionTree);
+            
+            var expression = CreateClrMethodCall(symbol.Target, symbol.MethodInfo, args);
+            _statements.Add(expression);
         }
 
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
@@ -107,57 +119,71 @@ namespace OneScript.StandardLibrary.Native
             return _statementBuildParts.Pop();
         }
 
+        protected override void VisitAssignment(BslSyntaxNode assignment)
+        {
+            var left = assignment.Children[0];
+            var right = assignment.Children[1];
+            
+            VisitExpression(right);
+            if (left is TerminalNode t)
+            {
+                VisitVariableWrite(t);
+            }
+
+            var expr = MakeAssign();
+            _statements.Add(expr);
+        }
+
         protected override void VisitVariableRead(TerminalNode node)
         {
-            VariableSymbol symbol;
-            var identifier = node.GetIdentifier();
-            try
+            if (!_ctx.FindVariable(node.GetIdentifier(), out var binding))
             {
-                symbol = _ctx.GetVariable(identifier);
-                
-            }
-            catch (CompilerException e)
-            {
-                _errors.AddError(e); 
+                AddError($"Unknown variable {node.GetIdentifier()}", node.Location);
                 return;
             }
-            
-            _errors.AddError(new ParseError
+
+            var symbol = _ctx.GetScope(binding.ContextIndex).Variables[binding.CodeIndex];
+            if (symbol.MemberInfo == null)
             {
-                Description = Locale.NStr($"ru='Переменная {identifier} не доступна для чтения';en='Variable {identifier} is not availiable for reading'"),
-                Position = node.Lexem.Location.ToCodePosition(_moduleInfo)
-            });
+                // local read
+                var expr = _localVariables[binding.CodeIndex];
+                _statementBuildParts.Push(expr);
+            }
+            else
+            {
+                // prop read
+                throw new NotImplementedException("yet");
+            }
         }
 
         protected override void VisitVariableWrite(TerminalNode node)
         {
             var identifier = node.GetIdentifier();
-            var hasVar = _ctx.TryGetVariable(identifier, out var varBinding);
+            var hasVar = _ctx.FindVariable(identifier, out var varBinding);
             if (hasVar)
             {
-                if (varBinding.PropertyInfo == null)
+                var symbol = _ctx.GetScope(varBinding.ContextIndex).Variables[varBinding.CodeIndex];
+                if (symbol.MemberInfo == null)
                 {
-                    //AddCommand(OperationCode.LoadLoc, varBinding.binding.CodeIndex);
+                    var local = _localVariables[varBinding.CodeIndex];
+                    _statementBuildParts.Push(local);
                 }
                 else
                 {
-                    _errors.AddError(new ParseError
-                    {
-                        Description = Locale.NStr($"ru='Переменная {identifier} не доступна для записи';en='Variable {identifier} is not availiable for write'"),
-                        Position = node.Lexem.Location.ToCodePosition(_moduleInfo)
-                    });
+                    // Add target prop access
+                    throw new NotImplementedException("yet");
                 }
             }
             else
             {
                 // can create variable
                 var typeOnStack = _statementBuildParts.Peek().Type;
-                _ctx.AddVariable(identifier, typeOnStack);
+
+                var scope = _ctx.TopScope();
+                SymbolScope.AddVariable(scope, identifier, typeOnStack);
                 var variable = Expression.Variable(typeOnStack, identifier);
-                _localVariables.Add(variable, identifier);
+                _localVariables.Add(variable);
                 _statementBuildParts.Push(variable);
-                var assign = Assign();
-                _statements.Add(assign);
             }
         }
 
@@ -220,8 +246,8 @@ namespace OneScript.StandardLibrary.Native
             }
             _statementBuildParts.Push(expr);
         }
-
-        private Expression Assign()
+        
+        private Expression MakeAssign()
         {
             var left = _statementBuildParts.Pop();
             var right = _statementBuildParts.Pop();
@@ -230,12 +256,25 @@ namespace OneScript.StandardLibrary.Native
             return assign;
         }
 
-        private Expression CreateClrMethodCall(IRuntimeContextInstance context, Refl.MethodInfo method)
+        private Expression CreateClrMethodCall(IRuntimeContextInstance context, Refl.MethodInfo method,
+            IEnumerable<Expression> expressions)
         {
             // этот контекст или класс контекстный или скриптовый метод
             // для скриптовых методов мы сделаем обычный вызовем через машину
             // для контекстов - сделаем прямой вызов метода [ContextMethod] с типизацией параметров
             throw new NotImplementedException();
+        }
+
+        private void AddError(string text, CodeRange position)
+        {
+            var err = new ParseError
+            {
+                Description = text,
+                Position = position.ToCodePosition(_moduleInfo),
+                ErrorId = "TreeCompilerErr"
+            };
+                
+            _errors.AddError(err);
         }
     }
 }

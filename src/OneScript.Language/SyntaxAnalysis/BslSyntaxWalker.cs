@@ -172,10 +172,15 @@ namespace OneScript.Language.SyntaxAnalysis
 
         protected virtual void VisitAssignmentLeftPart(BslSyntaxNode node)
         {
+            if (node is TerminalNode term)
+            {
+                
+            }
         }
         
         protected virtual void VisitAssignmentRightPart(BslSyntaxNode node)
         {
+            VisitExpression(node);
         }
 
         protected virtual void VisitMethodVariable(MethodNode method, VariableDefinitionNode variableDefinition)
@@ -303,7 +308,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         protected virtual void VisitModuleBody(BslSyntaxNode codeBlock)
         {
-            VisitCodeBlock(codeBlock);
+            VisitCodeBlock(codeBlock.Children[0]);
         }
 
         protected virtual void VisitWhileNode(WhileLoopNode node)
