@@ -37,6 +37,10 @@ namespace OneScript.StandardLibrary.Native
 
         private List<ParameterExpression> _localVariables = new List<ParameterExpression>();
         private int _parametersCount = 0;
+
+        private class InternalFlowInterruptException : Exception
+        {
+        }
         
         public BlockExpressionGenerator(
             SymbolTable context,
@@ -72,8 +76,15 @@ namespace OneScript.StandardLibrary.Native
         protected override void VisitStatement(BslSyntaxNode statement)
         {
             _statementBuildParts.Clear();
-            base.VisitStatement(statement);
-            
+            try
+            {
+                base.VisitStatement(statement);
+            }
+            catch (InternalFlowInterruptException)
+            {
+                // нижележащий код заполнил коллекцию errors
+                // а мы просто переходим к следующей строке кода
+            }
         }
 
         protected override void VisitGlobalProcedureCall(CallNode node)
@@ -99,23 +110,7 @@ namespace OneScript.StandardLibrary.Native
 
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
         {
-            if (arg is TerminalNode term)
-            {
-
-                if (arg.Kind == NodeKind.Constant)
-                {
-                    VisitConstant(term);
-                }
-                else
-                {
-                    VisitVariableRead(term);
-                }
-            }
-            else
-            {
-                DefaultVisit(arg);
-            }
-
+            VisitExpression(arg);
             return _statementBuildParts.Pop();
         }
 
@@ -128,6 +123,10 @@ namespace OneScript.StandardLibrary.Native
             if (left is TerminalNode t)
             {
                 VisitVariableWrite(t);
+            }
+            else
+            {
+                VisitReferenceRead(left);
             }
 
             var expr = MakeAssign();
@@ -246,7 +245,88 @@ namespace OneScript.StandardLibrary.Native
             }
             _statementBuildParts.Push(expr);
         }
+
+        protected override void VisitBinaryOperation(BinaryOperationNode binaryOperationNode)
+        {
+            VisitExpression(binaryOperationNode.Children[0]);
+            VisitExpression(binaryOperationNode.Children[1]);
+
+            var right = _statementBuildParts.Pop();
+            var left = _statementBuildParts.Pop();
+            
+            var opCode = TokenToOperationCode(binaryOperationNode.Operation);
+            var binaryOp = Expression.MakeBinary(opCode, left, right);
+            
+            if (LanguageDef.IsLogicalBinaryOperator(binaryOperationNode.Operation))
+            {
+                var toBool = Expression.Convert(binaryOp, typeof(bool));
+                _statementBuildParts.Push(toBool);
+            }
+            else
+            {
+                _statementBuildParts.Push(binaryOp);
+            }
+        }
         
+        private static ExpressionType TokenToOperationCode(Token stackOp)
+        {
+            ExpressionType opCode;
+            switch (stackOp)
+            {
+                case Token.Equal:
+                    opCode = ExpressionType.Equal;
+                    break;
+                case Token.NotEqual:
+                    opCode = ExpressionType.NotEqual;
+                    break;
+                case Token.And:
+                    opCode = ExpressionType.And;
+                    break;
+                case Token.Or:
+                    opCode = ExpressionType.Or;
+                    break;
+                case Token.Plus:
+                    opCode = ExpressionType.Add;
+                    break;
+                case Token.Minus:
+                    opCode = ExpressionType.Subtract;
+                    break;
+                case Token.Multiply:
+                    opCode = ExpressionType.Multiply;
+                    break;
+                case Token.Division:
+                    opCode = ExpressionType.Divide;
+                    break;
+                case Token.Modulo:
+                    opCode = ExpressionType.Modulo;
+                    break;
+                case Token.UnaryPlus:
+                    opCode = ExpressionType.UnaryPlus;
+                    break;
+                case Token.UnaryMinus:
+                    opCode = ExpressionType.Negate;
+                    break;
+                case Token.Not:
+                    opCode = ExpressionType.Not;
+                    break;
+                case Token.LessThan:
+                    opCode = ExpressionType.LessThan;
+                    break;
+                case Token.LessOrEqual:
+                    opCode = ExpressionType.LessThanOrEqual;
+                    break;
+                case Token.MoreThan:
+                    opCode = ExpressionType.GreaterThan;
+                    break;
+                case Token.MoreOrEqual:
+                    opCode = ExpressionType.GreaterThanOrEqual;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return opCode;
+        }
+
         private Expression MakeAssign()
         {
             var left = _statementBuildParts.Pop();
@@ -275,6 +355,8 @@ namespace OneScript.StandardLibrary.Native
             };
                 
             _errors.AddError(err);
+            
+            throw new InternalFlowInterruptException();
         }
     }
 }

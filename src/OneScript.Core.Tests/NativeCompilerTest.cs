@@ -42,5 +42,22 @@ namespace OneScript.Core.Tests
 
             expr.Parameters.Should().HaveCount(1);
         }
+
+        [Fact]
+        public void Can_Compile_Binary_Expressions()
+        {
+            var blockOfCode = new CompiledBlock(new DefaultTypeManager());
+            
+            blockOfCode.Parameters.Insert("MyVar", new TypeTypeValue(BasicTypes.Number));
+            blockOfCode.CodeBlock = "MyVar = MyVar + 1";
+
+            var expr = blockOfCode.MakeExpression();
+
+            var body = expr.Body.As<BlockExpression>().Expressions;
+            
+            body[0].As<BinaryExpression>().NodeType.Should().Be(ExpressionType.Assign);
+            body[0].As<BinaryExpression>().Right.Should().BeAssignableTo<BinaryExpression>();
+        }
+        
     }
 }
