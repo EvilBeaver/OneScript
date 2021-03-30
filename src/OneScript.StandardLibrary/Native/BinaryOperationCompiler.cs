@@ -84,7 +84,11 @@ namespace OneScript.StandardLibrary.Native
                 return DateOffsetOperation(left, right);
             }
 
-            if (IsIValue(right.Type))
+            if (_opCode == ExpressionType.Subtract && right.Type == typeof(DateTime))
+            {
+                return DateDiffExpression(left, right);
+            }
+            else if (IsIValue(right.Type))
             {
                 var propType = Expression.Property(right, nameof(IValue.SystemType));
                 var isDate = Expression.Equal(propType, Expression.Constant(BasicTypes.Date));
@@ -103,9 +107,9 @@ namespace OneScript.StandardLibrary.Native
         private Expression DateDiffExpression(Expression left, Expression right)
         {
             var spanExpr = Expression.Subtract(left, ExpressionHelpers.ToDate(right));
-            var decimalSeconds = Expression.Convert(
-                Expression.Property(spanExpr, nameof(TimeSpan.TotalSeconds)),
-                typeof(decimal));
+            var totalSeconds = Expression.Property(spanExpr, nameof(TimeSpan.TotalSeconds));
+            var decimalSeconds = Expression.Convert(totalSeconds, typeof(decimal));
+
             return decimalSeconds;
         }
         

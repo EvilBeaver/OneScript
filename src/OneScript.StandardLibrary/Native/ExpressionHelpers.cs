@@ -61,7 +61,9 @@ namespace OneScript.StandardLibrary.Native
         
         public static Expression ConvertToIValue(Expression source)
         {
-            return Expression.Call(null, MarshallerToIValue, source, Expression.Constant(source.Type));
+            var arg = source.Type.IsValueType? Expression.Convert(source, typeof(object)) : source;
+            
+            return Expression.Call(null, MarshallerToIValue, arg, Expression.Constant(source.Type));
         }
 
         public static Expression ToNumber(Expression source)
@@ -223,10 +225,10 @@ namespace OneScript.StandardLibrary.Native
                 nameof(ContextValuesMarshaller.ConvertParam), new[] {typeof(IValue), typeof(Type)}));
 
             _converterToIValue = new Lazy<MethodInfo>(() => typeof(ContextValuesMarshaller).GetMethod(
-                nameof(ContextValuesMarshaller.ConvertReturnValue), new[] {typeof(IValue), typeof(Type)}));
+                nameof(ContextValuesMarshaller.ConvertReturnValue), new[] {typeof(object), typeof(Type)}));
             
-            _converterToIValue = new Lazy<MethodInfo>(() => typeof(ContextValuesMarshaller).GetMethod(
-                nameof(ContextValuesMarshaller.CastToCLRObject), new[] {typeof(IValue)}));
+            _castToObject = new Lazy<MethodInfo>(() => typeof(ContextValuesMarshaller).GetMethod(
+                nameof(ContextValuesMarshaller.CastToCLRObject), 0, new[] {typeof(IValue)}));
         }
 
         public static MethodInfo MarshallerFromIValue => _converterFromIValue.Value;

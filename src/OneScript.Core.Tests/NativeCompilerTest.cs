@@ -164,5 +164,37 @@ namespace OneScript.Core.Tests
             expr.Left.Type.Should().Be<DateTime>();
             expr.Right.Type.Should().Be<DateTime>();
         }
+        
+        [Fact]
+        public void DateDiff_Available()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.CodeBlock = "F = (Сегодня - '19840331') / 86400 / 366";
+            block.Parameters.Insert("Сегодня", new TypeTypeValue(BasicTypes.Date));
+            var assignment = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions
+                .First();
+            
+            assignment.NodeType.Should().Be(ExpressionType.Assign);
+            var expr = assignment.As<BinaryExpression>();
+
+            expr.Left.Type.Should().Be<decimal>();
+            expr.Right.Type.Should().Be<decimal>();
+        }
+        
+        [Fact]
+        public void Parameter_Passing_And_Return_Is_Available()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.CodeBlock = "Возврат (Сегодня - '19840331') / 86400 / 366";
+            block.Parameters.Insert("Сегодня", new TypeTypeValue(BasicTypes.Date));
+
+            var beaverAge = block.CreateDelegate<Func<DateTime, IValue>>();
+            var age = beaverAge(DateTime.Now);
+
+            age.AsNumber().Should().BeGreaterThan(0);
+        }
     }
 }

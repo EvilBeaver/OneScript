@@ -77,7 +77,7 @@ namespace OneScript.StandardLibrary.Native
 
             AppendReturnValue();
             
-            var body = Expression.Block(_localVariables, _statements);
+            var body = Expression.Block(_statements);
             var parameters = _localVariables.Take(_parametersCount);
 
             return Expression.Lambda(body, parameters);
@@ -319,6 +319,19 @@ namespace OneScript.StandardLibrary.Native
                 AddError(e.Message, binaryOperationNode.Location);
                 return null;
             }
+        }
+
+        protected override void VisitReturnNode(BslSyntaxNode node)
+        {
+            Debug.Assert(node.Children.Count > 0);
+            
+            VisitExpression(node.Children[0]);
+
+            var resultExpr = _statementBuildParts.Pop();
+            if (!typeof(IValue).IsAssignableFrom(resultExpr.Type))
+                resultExpr = ExpressionHelpers.ConvertToIValue(resultExpr);
+            
+            _statements.Add(Expression.Return(_fragmentReturn, resultExpr));
         }
 
         protected override void VisitUnaryOperation(UnaryOperationNode unaryOperationNode)

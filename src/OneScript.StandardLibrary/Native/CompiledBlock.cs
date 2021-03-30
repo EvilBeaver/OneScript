@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using OneScript.Commons;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -61,7 +62,7 @@ namespace OneScript.StandardLibrary.Native
             _errors = new ListErrorSink();
             var parser = new DefaultBslParser(lexer, new DefaultAstBuilder(), _errors, new PreprocessorHandlers());
 
-            _ast = parser.ParseCodeBatch();
+            _ast = parser.ParseCodeBatch(true);
             if (_errors.HasErrors)
             {
                 var prefix = Locale.NStr("ru = 'Ошибка комиляции модуля'; en = 'Module compilation error'");
@@ -88,7 +89,6 @@ namespace OneScript.StandardLibrary.Native
             }
 
             var lambdaInvocation = Expression.Invoke(l, convertedAccessList);
-
             var func = Expression.Lambda<Func<IValue[], IValue>>(lambdaInvocation, arrayOfValuesParam);
 
             return func.Compile();
@@ -107,8 +107,25 @@ namespace OneScript.StandardLibrary.Native
         {
             if(_ast == default)
                 ParseCode();
+
+            var expression = ReduceAst(_ast);
             
-            return ReduceAst(_ast);
+            if (_errors.HasErrors)
+            {
+                var prefix = Locale.NStr("ru = 'Ошибка комиляции модуля'; en = 'Module compilation error'");
+                var sb = new StringBuilder();
+                sb.AppendLine(prefix);
+                foreach (var error in _errors.Errors)
+                {
+                    sb.AppendLine($"{error.Description.TrimEnd()} ({error.Position.LineNumber})");
+                }
+
+                throw new RuntimeException(sb.ToString());
+            }
+
+            
+
+            return expression;
         }
 
         private LambdaExpression ReduceAst(BslSyntaxNode ast)
