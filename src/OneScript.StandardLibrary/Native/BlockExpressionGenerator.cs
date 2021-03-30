@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -20,7 +21,9 @@ using ScriptEngine.Compiler;
 using ScriptEngine.Compiler.Extensions;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
+using ScriptEngine.Types;
 using Refl = System.Reflection;
 
 namespace OneScript.StandardLibrary.Native
@@ -36,6 +39,8 @@ namespace OneScript.StandardLibrary.Native
         private Stack<Expression> _statementBuildParts = new Stack<Expression>();
 
         private List<ParameterExpression> _localVariables = new List<ParameterExpression>();
+        private LabelTarget _fragmentReturn;
+        
         private int _parametersCount = 0;
 
         private class InternalFlowInterruptException : Exception
@@ -59,6 +64,9 @@ namespace OneScript.StandardLibrary.Native
                     ++_parametersCount;
                 }
             }
+
+            // куда будут прыгать все Возвраты из метода
+            _fragmentReturn = Expression.Label(typeof(IValue));
         }
 
         public LambdaExpression CreateExpression(ModuleNode module, ModuleInformation moduleInfo)
@@ -67,10 +75,25 @@ namespace OneScript.StandardLibrary.Native
 
             Visit(module);
 
+            AppendReturnValue();
+            
             var body = Expression.Block(_localVariables, _statements);
             var parameters = _localVariables.Take(_parametersCount);
 
             return Expression.Lambda(body, parameters);
+        }
+
+        private void AppendReturnValue()
+        {
+            var convertMethod = typeof(ContextValuesMarshaller)
+                .GetMethod(nameof(ContextValuesMarshaller.ConvertReturnValue),
+                    new Type[] {typeof(object), typeof(Type)});
+            
+            Debug.Assert(convertMethod != null);
+
+            // возврат Неопределено по умолчанию
+            var jumpLabel = Expression.Label(_fragmentReturn, Expression.Constant(ValueFactory.Create()));
+            _statements.Add(jumpLabel);
         }
 
         protected override void VisitStatement(BslSyntaxNode statement)
@@ -169,8 +192,25 @@ namespace OneScript.StandardLibrary.Native
                 }
                 else
                 {
-                    // Add target prop access
-                    throw new NotImplementedException("yet");
+                    var propSymbol = (PropertySymbol) symbol;
+
+                    if (propSymbol.Target is DynamicPropertiesAccessor)
+                    {
+                        var call = ExpressionHelpers.CallToSetPropertyProtocol(
+                            propSymbol.Target,
+                            identifier,
+                            Expression.Parameter(typeof(IValue)));
+                        
+                        _statementBuildParts.Push(call);
+                    }
+                    else
+                    {
+                        var convert = Expression.Convert(Expression.Constant(propSymbol.Target),
+                            propSymbol.Target.GetType());
+                    
+                        var accessExpression = Expression.Property(convert, propSymbol.PropertyInfo.SetMethod);
+                        _statementBuildParts.Push(accessExpression);
+                    }
                 }
             }
             else
@@ -254,8 +294,7 @@ namespace OneScript.StandardLibrary.Native
             var right = _statementBuildParts.Pop();
             var left = _statementBuildParts.Pop();
             
-            var opCode = TokenToOperationCode(binaryOperationNode.Operation);
-            var binaryOp = Expression.MakeBinary(opCode, left, right);
+            var binaryOp = DispatchBinaryOp(left, right, binaryOperationNode);
             
             if (LanguageDef.IsLogicalBinaryOperator(binaryOperationNode.Operation))
             {
@@ -267,73 +306,66 @@ namespace OneScript.StandardLibrary.Native
                 _statementBuildParts.Push(binaryOp);
             }
         }
-        
-        private static ExpressionType TokenToOperationCode(Token stackOp)
+
+        private Expression DispatchBinaryOp(Expression left, Expression right, BinaryOperationNode binaryOperationNode)
         {
-            ExpressionType opCode;
-            switch (stackOp)
+            var compiler = new BinaryOperationCompiler();
+            try
             {
-                case Token.Equal:
-                    opCode = ExpressionType.Equal;
-                    break;
-                case Token.NotEqual:
-                    opCode = ExpressionType.NotEqual;
-                    break;
-                case Token.And:
-                    opCode = ExpressionType.And;
-                    break;
-                case Token.Or:
-                    opCode = ExpressionType.Or;
-                    break;
-                case Token.Plus:
-                    opCode = ExpressionType.Add;
-                    break;
-                case Token.Minus:
-                    opCode = ExpressionType.Subtract;
-                    break;
-                case Token.Multiply:
-                    opCode = ExpressionType.Multiply;
-                    break;
-                case Token.Division:
-                    opCode = ExpressionType.Divide;
-                    break;
-                case Token.Modulo:
-                    opCode = ExpressionType.Modulo;
-                    break;
-                case Token.UnaryPlus:
-                    opCode = ExpressionType.UnaryPlus;
-                    break;
-                case Token.UnaryMinus:
-                    opCode = ExpressionType.Negate;
-                    break;
-                case Token.Not:
-                    opCode = ExpressionType.Not;
-                    break;
-                case Token.LessThan:
-                    opCode = ExpressionType.LessThan;
-                    break;
-                case Token.LessOrEqual:
-                    opCode = ExpressionType.LessThanOrEqual;
-                    break;
-                case Token.MoreThan:
-                    opCode = ExpressionType.GreaterThan;
-                    break;
-                case Token.MoreOrEqual:
-                    opCode = ExpressionType.GreaterThanOrEqual;
-                    break;
-                default:
-                    throw new NotSupportedException();
+                return compiler.Compile(binaryOperationNode, left, right);
             }
-            return opCode;
+            catch (CompilerException e)
+            {
+                AddError(e.Message, binaryOperationNode.Location);
+                return null;
+            }
         }
+
+        protected override void VisitUnaryOperation(UnaryOperationNode unaryOperationNode)
+        {
+            var child = unaryOperationNode.Children[0];
+            VisitExpression(child);
+            var opCode = TokenToOperationCode(unaryOperationNode.Operation);
+
+            Type resultType = null;
+            switch (opCode)
+            {
+                case ExpressionType.Add:
+                case ExpressionType.Subtract:
+                    resultType = typeof(decimal);
+                    break;
+                case ExpressionType.Not:
+                    resultType = typeof(bool);
+                    break;
+            }
+            
+            var operation = Expression.MakeUnary(opCode, _statementBuildParts.Pop(), resultType);
+            _statementBuildParts.Push(operation);
+        }
+
+        private static ExpressionType TokenToOperationCode(Token stackOp) =>
+            ExpressionHelpers.TokenToOperationCode(stackOp);
 
         private Expression MakeAssign()
         {
             var left = _statementBuildParts.Pop();
             var right = _statementBuildParts.Pop();
-            var assign = Expression.Assign(left, right);
 
-            return assign;
+            if (left is MethodCallExpression call)
+            {
+                if (typeof(IValue).IsAssignableFrom(right.Type))
+                {
+                    return Expression.Invoke(call, right);
+                }
+                else
+                {
+                    return Expression.Invoke(call, ExpressionHelpers.ConvertToIValue(right));
+                }
+            }
+            else
+            {
+                return Expression.Assign(left, right);
+            }
         }
 
         private Expression CreateClrMethodCall(IRuntimeContextInstance context, Refl.MethodInfo method,

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using OneScript.Commons;
@@ -43,7 +44,7 @@ namespace OneScript.StandardLibrary.Native
         [ContextProperty("ФрагментКода", "CodeFragment")]
         public string CodeBlock
         {
-            get => _codeBlock;
+            get => _codeBlock ?? string.Empty;
             set
             {
                 _codeBlock = value;
@@ -54,7 +55,7 @@ namespace OneScript.StandardLibrary.Native
         private void ParseCode()
         {
             var lexer = new DefaultLexer();
-            lexer.Iterator = new SourceCodeIterator(_codeBlock);
+            lexer.Iterator = new SourceCodeIterator(CodeBlock);
 
             _codeLinesReferences = lexer.Iterator;
             _errors = new ListErrorSink();
@@ -69,8 +70,47 @@ namespace OneScript.StandardLibrary.Native
             }
         }
 
-        public LambdaExpression MakeExpression() => ReduceAst(_ast);
+        public Func<IValue[], IValue> CreateDelegate()
+        {
+            var l = MakeExpression();
+
+            var arrayOfValuesParam = Expression.Parameter(typeof(IValue[]));
+            var convertedAccessList = new List<Expression>();
+
+            int index = 0;
+            foreach (var parameter in Parameters)
+            {
+                var targetType = parameter.Value as TypeTypeValue;
+                var arrayAccess = Expression.ArrayIndex(arrayOfValuesParam, Expression.Constant(index));
+                var convertedParam = ExpressionHelpers.ConvertFromIValue(arrayAccess, ConvertTypeToClrType(targetType));
+                convertedAccessList.Add(convertedParam);
+                ++index;
+            }
+
+            var lambdaInvocation = Expression.Invoke(l, convertedAccessList);
+
+            var func = Expression.Lambda<Func<IValue[], IValue>>(lambdaInvocation, arrayOfValuesParam);
+
+            return func.Compile();
+        }
         
+        public T CreateDelegate<T>() where T:class
+        {
+            var l = MakeExpression();
+            var call = Expression.Invoke(l, l.Parameters);
+            var func = Expression.Lambda<T>(call, l.Parameters);
+
+            return func.Compile();
+        }
+
+        public LambdaExpression MakeExpression()
+        {
+            if(_ast == default)
+                ParseCode();
+            
+            return ReduceAst(_ast);
+        }
+
         private LambdaExpression ReduceAst(BslSyntaxNode ast)
         {
             // в параметрах лежат соответствия имени переменной и ее типа
@@ -113,22 +153,7 @@ namespace OneScript.StandardLibrary.Native
         private static Type ConvertTypeToClrType(TypeTypeValue typeVal)
         {
             var type = typeVal.TypeValue;
-
-            Type clrType;
-            if (type == BasicTypes.String)
-                clrType = typeof(string);
-            else if (type == BasicTypes.Date)
-                clrType = typeof(DateTime);
-            else if (type == BasicTypes.Boolean)
-                clrType = typeof(bool);
-            else if (type == BasicTypes.Number)
-                clrType = typeof(decimal);
-            else if (type == BasicTypes.Type)
-                clrType = typeof(TypeTypeValue);
-            else
-                clrType = type.ImplementingClass;
-
-            return clrType;
+            return ExpressionHelpers.GetClrType(type);
         }
 
         [ScriptConstructor]

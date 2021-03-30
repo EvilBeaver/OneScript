@@ -75,6 +75,18 @@ namespace ScriptEngine.Machine
 
             return context.GetPropValue(propNum);
         }
+        
+        public static void SetPropValue(this IRuntimeContextInstance context, string propName, IValue value)
+        {
+            int propNum = context.FindProperty(propName);
+
+            if (propNum == -1)
+            {
+                throw RuntimeException.InvalidArgumentValue(propName);
+            }
+
+            context.SetPropValue(propNum, value);
+        }
     }
 
 }

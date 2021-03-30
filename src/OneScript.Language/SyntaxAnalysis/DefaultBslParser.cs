@@ -74,18 +74,25 @@ namespace OneScript.Language.SyntaxAnalysis
             return node;
         }
 
-        public BslSyntaxNode ParseCodeBatch()
+        public BslSyntaxNode ParseCodeBatch(bool allowReturns = false)
         {
             NextLexem();
             var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
             PushContext(node);
             try
             {
+                if (allowReturns)
+                {
+                    _inMethodScope = true;
+                    _isInFunctionScope = true;
+                }
                 BuildModuleBody();
             }
             finally
             {
                 PopContext();
+                _inMethodScope = false;
+                _isInFunctionScope = false;
             }
 
             return node;
