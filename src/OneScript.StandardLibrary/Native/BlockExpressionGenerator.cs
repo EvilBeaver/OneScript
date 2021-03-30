@@ -42,6 +42,8 @@ namespace OneScript.StandardLibrary.Native
         private LabelTarget _fragmentReturn;
         
         private int _parametersCount = 0;
+        
+        private BinaryOperationCompiler _binaryOperationCompiler = new BinaryOperationCompiler();
 
         private class InternalFlowInterruptException : Exception
         {
@@ -309,10 +311,9 @@ namespace OneScript.StandardLibrary.Native
 
         private Expression DispatchBinaryOp(Expression left, Expression right, BinaryOperationNode binaryOperationNode)
         {
-            var compiler = new BinaryOperationCompiler();
             try
             {
-                return compiler.Compile(binaryOperationNode, left, right);
+                return _binaryOperationCompiler.Compile(binaryOperationNode, left, right);
             }
             catch (CompilerException e)
             {
