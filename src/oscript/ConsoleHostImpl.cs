@@ -64,14 +64,48 @@ namespace oscript
 		         Echo(exc.ToString());
 		}
 
-		public static bool InputString(out string result, int maxLen)
+		public static bool InputString(out string result, string prompt, int maxLen, bool multiline)
 		{
-			if (maxLen == 0)
-				result = Console.ReadLine();
-			else
-				result = Console.ReadLine()?.Substring(0, maxLen);
+			if( !String.IsNullOrEmpty(prompt) )
+				Console.Write(prompt);
 
-			return result?.Length > 0;
+			if (multiline)
+            {
+				string read;
+				System.Text.StringBuilder text = null;
+				
+				while (true)
+				{
+					read = Console.ReadLine();
+
+					if (read == null)
+						break;
+
+					if (text == null)
+					{
+						text = new System.Text.StringBuilder(read);
+					}
+					else
+					{
+						text.Append("\n");
+						text.Append(read);
+					}
+				}
+
+				result = text?.ToString(); 
+			}
+			else
+            {
+				result = Console.ReadLine();
+			}
+			
+			if (result == null)
+				return false;
+
+			if (maxLen > 0 && maxLen < result.Length)
+				result = result.Substring(0, maxLen);
+
+			return true;
 		}
 	}
 }

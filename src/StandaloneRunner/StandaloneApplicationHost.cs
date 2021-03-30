@@ -26,9 +26,9 @@ namespace StandaloneRunner
             ConsoleHostImpl.ShowExceptionInfo(exc);
         }
 
-        public bool InputString(out string result, int maxLen)
+        public bool InputString(out string result, string prompt, int maxLen, bool multiline)
         {
-            return ConsoleHostImpl.InputString(out result, maxLen);
+            return ConsoleHostImpl.InputString(out result, prompt, maxLen, multiline);
         }
 
         public string[] GetCommandLineArguments()

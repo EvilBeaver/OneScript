@@ -247,12 +247,12 @@ namespace ScriptEngine.HostedScript.Library
         /// Возможно указание неограниченной длины (длина=ноль), но данное поведение может не поддерживаться хост-приложением.</param>
         /// <returns>Булево. Истина, если пользователь ввел данные, Ложь, если отказался.</returns>
         [ContextMethod("ВвестиСтроку", "InputString")]
-        public bool InputString([ByRef] IVariable resut, int len = 0)
+        public bool InputString([ByRef] IVariable resut, string prompt="", int len = 0, bool multiline=false)
         {
             string input;
             bool inputIsDone;
 
-            inputIsDone = ApplicationHost.InputString(out input, len);
+            inputIsDone = ApplicationHost.InputString(out input, prompt, len, multiline);
 
             if (inputIsDone)
             {
