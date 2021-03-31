@@ -221,8 +221,8 @@ namespace OneScript.StandardLibrary.Native
                         exception)));
         }
 
-        private static bool IsNumeric(Type type) => typeof(decimal).IsAssignableFrom(type);
+        private static bool IsNumeric(Type type) => type.IsNumeric();
         
-        private static bool IsIValue(Type type) => typeof(IValue).IsAssignableFrom(type);
+        private static bool IsIValue(Type type) => type.IsIValue();
     }
 }

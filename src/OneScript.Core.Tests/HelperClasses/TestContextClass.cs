@@ -34,7 +34,7 @@ namespace OneScript.Core.Tests
 		{
 			// Do nothing
 		}
-		
+
 		[ScriptConstructor]
 		public static TestContextClass Constructor()
 		{

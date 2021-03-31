@@ -27,14 +27,12 @@ namespace OneScript.StandardLibrary.Collections
             _values = new List<IValue>(values);
         }
 
-        public override bool IsIndexed
+        public IValue this[int index]
         {
-            get
-            {
-                return true;
-            }
+            get => Get(index);
+            set => Set(index, value);
         }
-
+        
         public override IValue GetIndexedValue(IValue index)
         {
             if(index.DataType == DataType.Number)

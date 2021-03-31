@@ -172,10 +172,6 @@ namespace OneScript.Language.SyntaxAnalysis
 
         protected virtual void VisitAssignmentLeftPart(BslSyntaxNode node)
         {
-            if (node is TerminalNode term)
-            {
-                
-            }
         }
         
         protected virtual void VisitAssignmentRightPart(BslSyntaxNode node)

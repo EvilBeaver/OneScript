@@ -42,6 +42,11 @@ namespace OneScript.StandardLibrary.Native
                 value);
         }
 
+        public static Expression DowncastDecimal(Expression decimalValue, Type targetType)
+        {
+            return Expression.Convert(decimalValue, targetType);
+        }
+
         public static Expression ConvertFromIValue(Expression source, Type targetType)
         {
             return Expression.Convert(
@@ -61,11 +66,14 @@ namespace OneScript.StandardLibrary.Native
         
         public static Expression ConvertToIValue(Expression source)
         {
+            if (typeof(IValue).IsAssignableFrom(source.Type))
+                return source;
+            
             var arg = source.Type.IsValueType? Expression.Convert(source, typeof(object)) : source;
             
             return Expression.Call(null, MarshallerToIValue, arg, Expression.Constant(source.Type));
         }
-
+        
         public static Expression ToNumber(Expression source)
         {
             if (source.Type == typeof(decimal))
@@ -210,6 +218,26 @@ namespace OneScript.StandardLibrary.Native
             }
             return opCode;
         }
+
+        public static Expression ConvertParameter(Expression parameter, Type targetType)
+        {
+            var value = TryConvertParameter(parameter, targetType);
+
+            return value ?? throw new NotSupportedException($"Pass {parameter.Type} as value of {targetType} is not supported");
+        }
+        
+        public static Expression TryConvertParameter(Expression parameter, Type targetType)
+        {
+            if (targetType.IsAssignableFrom(parameter.Type))
+                return parameter;
+
+            if (targetType.IsNumeric() && parameter.Type.IsNumeric())
+            {
+                return DowncastDecimal(parameter, targetType);
+            }
+
+            return default;
+        }
         
         private static readonly Lazy<MethodInfo> _converterFromIValue;
         
@@ -236,6 +264,6 @@ namespace OneScript.StandardLibrary.Native
         public static MethodInfo MarshallerToIValue => _converterToIValue.Value;
 
         public static MethodInfo CastToObject => _castToObject.Value;
-
+        
     }
 }

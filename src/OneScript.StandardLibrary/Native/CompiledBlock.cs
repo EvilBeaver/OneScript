@@ -39,9 +39,11 @@ namespace OneScript.StandardLibrary.Native
             _typeManager = tm;
         }
 
+        internal SymbolTable Symbols { get; set; }
+        
         [ContextProperty("Параметры", "Parameters")]
         public StructureImpl Parameters { get; set; } = new StructureImpl();
-
+        
         [ContextProperty("ФрагментКода", "CodeFragment")]
         public string CodeBlock
         {
@@ -134,10 +136,12 @@ namespace OneScript.StandardLibrary.Native
             // блок кода надо скомпилировтаь в лямбду с параметрами по количеству в коллекции Parameters и с типами параметров, как там
             // пробежать по аст 1С и превратить в BlockExpression<IValue>
 
-            var symbols = new SymbolTable();
-            FillSymbolContext(symbols);
+            if (Symbols == null)
+                Symbols = new SymbolTable();
+            
+            FillSymbolContext(Symbols);
 
-            var blockBuilder = new BlockExpressionGenerator(symbols, _typeManager, _errors);
+            var blockBuilder = new BlockExpressionGenerator(Symbols, _typeManager, _errors);
             return blockBuilder.CreateExpression(_ast as ModuleNode, new ModuleInformation
             {
                 Origin = "<compiled code>",

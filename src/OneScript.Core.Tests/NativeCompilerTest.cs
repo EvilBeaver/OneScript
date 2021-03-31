@@ -8,7 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Mime;
 using FluentAssertions;
+using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Json;
 using OneScript.StandardLibrary.Native;
 using ScriptEngine.Machine;
@@ -195,6 +197,43 @@ namespace OneScript.Core.Tests
             var age = beaverAge(DateTime.Now);
 
             age.AsNumber().Should().BeGreaterThan(0);
+        }
+        
+        [Fact]
+        public void Can_Assign_To_Indexer()
+        {
+            var tm = new DefaultTypeManager();
+            var arrayType = tm.RegisterClass(typeof(ArrayImpl));
+            
+            var block = new CompiledBlock(tm);
+            block.CodeBlock = "Arr[10] = 15";
+            block.Parameters.Insert("Arr", new TypeTypeValue(arrayType));
+
+            var expr = block.MakeExpression();
+            var statement = expr.Body.As<BlockExpression>().Expressions.First();
+
+            statement.NodeType.Should().Be(ExpressionType.Assign);
+            var assign = statement.As<BinaryExpression>();
+            assign.Left.NodeType.Should().Be(ExpressionType.Index);
+
+        }
+        
+        [Fact]
+        public void Can_Read_Indexer()
+        {
+            var tm = new DefaultTypeManager();
+            var arrayType = tm.RegisterClass(typeof(ArrayImpl));
+            
+            var block = new CompiledBlock(tm);
+            block.CodeBlock = "А = Arr[10]";
+            block.Parameters.Insert("Arr", new TypeTypeValue(arrayType));
+
+            var expr = block.MakeExpression();
+            var statement = expr.Body.As<BlockExpression>().Expressions.First();
+
+            statement.NodeType.Should().Be(ExpressionType.Assign);
+            var assign = statement.As<BinaryExpression>();
+            assign.Right.NodeType.Should().Be(ExpressionType.Index);
         }
     }
 }

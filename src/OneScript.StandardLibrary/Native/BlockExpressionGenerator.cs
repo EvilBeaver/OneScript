@@ -8,22 +8,18 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
-using OneScript.Commons;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Compiler;
 using ScriptEngine.Compiler.Extensions;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
-using ScriptEngine.Types;
 using Refl = System.Reflection;
 
 namespace OneScript.StandardLibrary.Native
@@ -141,21 +137,76 @@ namespace OneScript.StandardLibrary.Native
 
         protected override void VisitAssignment(BslSyntaxNode assignment)
         {
-            var left = assignment.Children[0];
-            var right = assignment.Children[1];
+            var astLeft = assignment.Children[0];
+            var astRight = assignment.Children[1];
             
-            VisitExpression(right);
-            if (left is TerminalNode t)
+            VisitAssignmentRightPart(astRight);
+            VisitAssignmentLeftPart(astLeft);
+            
+            var left = _statementBuildParts.Pop();
+            var right = _statementBuildParts.Pop();
+
+            _statements.Add(MakeAssign(left, right));
+        }
+
+        protected override void VisitAssignmentLeftPart(BslSyntaxNode node)
+        {
+            if (node is TerminalNode t)
             {
                 VisitVariableWrite(t);
             }
+            else if (node.Kind == NodeKind.IndexAccess)
+            {
+                VisitIndexAccess(node);
+            }
             else
             {
-                VisitReferenceRead(left);
+                VisitReferenceRead(node);
             }
+        }
 
-            var expr = MakeAssign();
-            _statements.Add(expr);
+        protected override void VisitIndexAccess(BslSyntaxNode node)
+        {
+            base.VisitIndexAccess(node);
+            
+            var index = _statementBuildParts.Pop();
+            var target = _statementBuildParts.Pop();
+
+            if (!typeof(IRuntimeContextInstance).IsAssignableFrom(target.Type))
+            {
+                AddError($"Type {target.Type} is not indexed", node.Location);
+                return;
+            }
+            
+            var indexerProps = target.Type
+                .GetProperties(Refl.BindingFlags.Public | Refl.BindingFlags.Instance)
+                .Where(x => x.GetIndexParameters().Length != 0)
+                .ToList();
+
+            if (indexerProps.Count == 0)
+            {
+                AddError($"Type {target.Type} doesn't have an indexer", node.Location);
+            }
+            else if(indexerProps.Count > 1)
+            {
+                foreach (var propertyInfo in indexerProps)
+                {
+                    var parameterType = propertyInfo.GetIndexParameters()[0].ParameterType;
+                    var passExpression = ExpressionHelpers.TryConvertParameter(index, parameterType);
+                    
+                    if (passExpression == null) 
+                        continue;
+                    
+                    _statementBuildParts.Push(Expression.MakeIndex(target, propertyInfo, new[] {passExpression}));
+                    return;
+                }
+                AddError($"Type {target.Type} doesn't have an indexer for type {index.Type}", node.Location);
+            }
+            else
+            {
+                var propInfo = indexerProps[0];
+                _statementBuildParts.Push(Expression.MakeIndex(target, propInfo, new[]{index}));
+            }
         }
 
         protected override void VisitVariableRead(TerminalNode node)
@@ -176,7 +227,8 @@ namespace OneScript.StandardLibrary.Native
             else
             {
                 // prop read
-                throw new NotImplementedException("yet");
+                var target = symbol.Target;
+                _statementBuildParts.Push(Expression.Constant(target));
             }
         }
 
@@ -194,25 +246,12 @@ namespace OneScript.StandardLibrary.Native
                 }
                 else
                 {
-                    var propSymbol = (PropertySymbol) symbol;
-
-                    if (propSymbol.Target is DynamicPropertiesAccessor)
-                    {
-                        var call = ExpressionHelpers.CallToSetPropertyProtocol(
-                            propSymbol.Target,
-                            identifier,
-                            Expression.Parameter(typeof(IValue)));
-                        
-                        _statementBuildParts.Push(call);
-                    }
-                    else
-                    {
-                        var convert = Expression.Convert(Expression.Constant(propSymbol.Target),
+                   var propSymbol = (PropertySymbol) symbol;
+                   var convert = Expression.Convert(Expression.Constant(propSymbol.Target),
                             propSymbol.Target.GetType());
                     
-                        var accessExpression = Expression.Property(convert, propSymbol.PropertyInfo.SetMethod);
-                        _statementBuildParts.Push(accessExpression);
-                    }
+                   var accessExpression = Expression.Property(convert, propSymbol.PropertyInfo.SetMethod);
+                   _statementBuildParts.Push(accessExpression);
                 }
             }
             else
@@ -360,21 +399,19 @@ namespace OneScript.StandardLibrary.Native
         private static ExpressionType TokenToOperationCode(Token stackOp) =>
             ExpressionHelpers.TokenToOperationCode(stackOp);
 
-        private Expression MakeAssign()
+        private Expression MakeAssign(Expression left, Expression right)
         {
-            var left = _statementBuildParts.Pop();
-            var right = _statementBuildParts.Pop();
-
+            if (!left.Type.IsAssignableFrom(right.Type))
+            {
+                if (left.Type == typeof(IValue))
+                {
+                    right = ExpressionHelpers.ConvertToIValue(right);
+                }
+            }
+            
             if (left is MethodCallExpression call)
             {
-                if (typeof(IValue).IsAssignableFrom(right.Type))
-                {
-                    return Expression.Invoke(call, right);
-                }
-                else
-                {
-                    return Expression.Invoke(call, ExpressionHelpers.ConvertToIValue(right));
-                }
+                return Expression.Invoke(call, right);
             }
             else
             {

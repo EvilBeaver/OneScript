@@ -13,7 +13,7 @@ namespace ScriptEngine.Types
 {
     public static class TypeHandlingExtensions
     {
-        public static void RegisterClass(this ITypeManager manager, Type classType)
+        public static TypeDescriptor RegisterClass(this ITypeManager manager, Type classType)
         {
             var attribData = classType.GetCustomAttributes(typeof(ContextClassAttribute), false);
             if (attribData.Length == 0)
@@ -32,9 +32,10 @@ namespace ScriptEngine.Types
                     classType);
 
                 manager.RegisterType(type);
+                return type;
             }
             else
-                manager.RegisterType(attr.GetName(), attr.GetAlias(), classType);
+                return manager.RegisterType(attr.GetName(), attr.GetAlias(), classType);
         }
 
         public static TypeDescriptor GetTypeFromClassMarkup(this Type classType)
