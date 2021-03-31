@@ -233,6 +233,12 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
+        public IReflectedClassBuilder ExportIndexer()
+        {
+            _properties.Add(new IndexerPropertyInfo(_classType));
+            return this;
+        }
+
         public IReflectedClassBuilder ExportDefaults()
         {
             ExportMethods();
