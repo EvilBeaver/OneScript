@@ -243,11 +243,13 @@ namespace ScriptEngine.HostedScript.Library
         /// Ввод строки пользователем. Позволяет запросить у пользователя информацию.
         /// </summary>
         /// <param name="resut">Выходной параметр. Введенные данные в виде строки.</param>
-        /// <param name="len">Максимальная длина вводимой строки. 
-        /// Возможно указание неограниченной длины (длина=ноль), но данное поведение может не поддерживаться хост-приложением.</param>
+        /// <param name="prompt">Строка, выводимая в качестве подсказки. Необязательный, по умолчанию - пустая строка.</param>
+        /// <param name="len">Максимальная длина вводимой строки. Необязательный, по умолчанию - 0 (неограниченная длина).
+        /// Указание неограниченной длины может не поддерживаться хост-приложением.</param>
+        /// <param name="multiline">Булево, определяет режим ввода многострочного текста. Необязательный, по умолчанию - Ложь.</param>
         /// <returns>Булево. Истина, если пользователь ввел данные, Ложь, если отказался.</returns>
         [ContextMethod("ВвестиСтроку", "InputString")]
-        public bool InputString([ByRef] IVariable resut, string prompt="", int len = 0, bool multiline=false)
+        public bool InputString([ByRef] IVariable resut, string prompt = "", int len = 0, bool multiline = false)
         {
             string input;
             bool inputIsDone;
