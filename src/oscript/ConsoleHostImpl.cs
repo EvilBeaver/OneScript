@@ -69,35 +69,7 @@ namespace oscript
 			if( !String.IsNullOrEmpty(prompt) )
 				Console.Write(prompt);
 
-			if (multiline)
-            {
-				string read;
-				System.Text.StringBuilder text = null;
-				
-				while (true)
-				{
-					read = Console.ReadLine();
-
-					if (read == null)
-						break;
-
-					if (text == null)
-					{
-						text = new System.Text.StringBuilder(read);
-					}
-					else
-					{
-						text.Append("\n");
-						text.Append(read);
-					}
-				}
-
-				result = text?.ToString(); 
-			}
-			else
-            {
-				result = Console.ReadLine();
-			}
+			result = multiline ? ReadMultilineString() : Console.ReadLine();
 			
 			if (result == null)
 				return false;
@@ -107,5 +79,32 @@ namespace oscript
 
 			return true;
 		}
+		
+		private static string ReadMultilineString()
+        {
+			string read;
+			System.Text.StringBuilder text = null;
+
+			while (true)
+			{
+				read = Console.ReadLine();
+
+				if (read == null)
+					break;
+
+				if (text == null)
+				{
+					text = new System.Text.StringBuilder(read);
+				}
+				else
+				{
+					text.Append("\n");
+					text.Append(read);
+				}
+			}
+
+			return text?.ToString();
+		}
+
 	}
 }
