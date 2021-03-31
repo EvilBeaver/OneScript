@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Core;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Values
 {
@@ -23,13 +25,14 @@ namespace ScriptEngine.Machine.Values
         private StringValue(string value)
         {
             _value = value ?? throw new ArgumentNullException();
-            DataType = DataType.String;
         }
 
         public override string AsString()
         {
             return _value;
         }
+
+        public override TypeDescriptor SystemType => BasicTypes.String;
 
         public override decimal AsNumber()
         {
@@ -48,7 +51,7 @@ namespace ScriptEngine.Machine.Values
 
         public override int CompareTo(IValue other)
         {
-            if(other?.DataType == DataType.String)
+            if(other?.SystemType == BasicTypes.String)
                 return String.Compare(_value, other.AsString(), StringComparison.CurrentCulture);
 
             throw RuntimeException.ComparisonNotSupportedException();
@@ -56,7 +59,7 @@ namespace ScriptEngine.Machine.Values
 
         public override bool Equals(IValue other)
         {
-            if (other?.DataType == DataType)
+            if (other?.SystemType == SystemType)
             {
                 var scv = other.AsString();
                 return scv == _value;

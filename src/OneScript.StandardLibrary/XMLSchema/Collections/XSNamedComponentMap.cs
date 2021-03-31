@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Core;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

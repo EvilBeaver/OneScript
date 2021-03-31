@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Commons;
+using OneScript.Core;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Values
 {
@@ -22,7 +24,6 @@ namespace ScriptEngine.Machine.Values
         private BooleanValue(bool value)
         {
             _value = value;
-            DataType = DataType.Boolean;
         }
 
         static BooleanValue()
@@ -42,6 +43,8 @@ namespace ScriptEngine.Machine.Values
             return _value;
         }
 
+        public override TypeDescriptor SystemType => BasicTypes.Boolean;
+
         public override decimal AsNumber()
         {
             return _value ? 1 : 0;
@@ -54,7 +57,7 @@ namespace ScriptEngine.Machine.Values
 
         public override int CompareTo(IValue other)
         {
-            if (other.DataType == DataType.Number || other.DataType == DataType.Boolean)
+            if (other.SystemType.Equals(BasicTypes.Number) || other.SystemType.Equals(BasicTypes.Boolean))
             {
                 return AsNumber().CompareTo(other.AsNumber());
             }

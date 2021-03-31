@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Xml.Schema;
+using OneScript.Core;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using ScriptEngine.Machine;

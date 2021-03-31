@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using Newtonsoft.Json;
 using OneScript.Commons;
+using OneScript.Core;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.Machine;

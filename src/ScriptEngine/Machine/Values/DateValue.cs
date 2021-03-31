@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Core;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Values
 {
@@ -16,7 +18,6 @@ namespace ScriptEngine.Machine.Values
         public DateValue(DateTime value)
         {
             _value = value;
-            DataType = DataType.Date;
         }
 
         public override DateTime AsDate()
@@ -31,7 +32,7 @@ namespace ScriptEngine.Machine.Values
 
         public override int CompareTo(IValue other)
         {
-            if(other.DataType == DataType.Date)
+            if(other.SystemType == BasicTypes.Date)
                 return _value.CompareTo(other.AsDate());
 
             return base.CompareTo(other);
@@ -42,8 +43,10 @@ namespace ScriptEngine.Machine.Values
             if (other == null)
                 return false;
 
-            return other.DataType == DataType.Date && _value.Equals(other.AsDate());
+            return other.SystemType == BasicTypes.Date && _value.Equals(other.AsDate());
         }
+
+        public override TypeDescriptor SystemType => BasicTypes.Date;
 
         public override bool IsEmpty => _value.Equals(DateTime.MinValue);
     }

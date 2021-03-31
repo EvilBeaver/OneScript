@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using OneScript.Core;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi

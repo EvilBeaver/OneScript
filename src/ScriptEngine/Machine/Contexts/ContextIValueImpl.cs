@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Dynamic;
 using System.Linq;
+using OneScript.Core;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
@@ -84,7 +85,7 @@ namespace ScriptEngine.Machine.Contexts
             return SystemType.Name;
         }
 
-        public IRuntimeContextInstance AsObject()
+        public IContext AsContext()
         {
             return this;
         }

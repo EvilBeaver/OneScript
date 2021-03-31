@@ -8,9 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics;
 using OneScript.Commons;
-using ScriptEngine.Machine;
+using OneScript.Core;
 
-namespace ScriptEngine.Types
+namespace OneScript.Core
 {
     public sealed class TypeDescriptor : IEquatable<TypeDescriptor>
     {
@@ -22,28 +22,6 @@ namespace ScriptEngine.Types
             ImplementingClass = implementingClass ?? typeof(IValue);
         }
 
-        public static TypeDescriptor FromDataType(DataType srcType)
-        {
-            switch (srcType)
-            {
-                case DataType.Boolean:
-                    return BasicTypes.Boolean;
-                case DataType.Date:
-                    return BasicTypes.Date;
-                case DataType.Number:
-                    return BasicTypes.Number;
-                case DataType.String:
-                    return BasicTypes.String;
-                case DataType.Undefined:
-                    return BasicTypes.Undefined;
-                case DataType.Type:
-                    return BasicTypes.Type;
-                default:
-                    Debug.Assert(false, "Can be used only for primitive types");
-                    return default;
-            }
-        }
-        
         public string Name { get; }
         
         public string Alias { get; }

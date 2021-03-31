@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using OneScript.Core;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

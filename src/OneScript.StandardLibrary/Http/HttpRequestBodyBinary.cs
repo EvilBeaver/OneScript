@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using OneScript.Core;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;

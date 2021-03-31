@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Core;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Values
@@ -16,7 +17,6 @@ namespace ScriptEngine.Machine.Values
         public TypeTypeValue(TypeDescriptor type)
         {
             _type = type;
-            DataType = DataType.Type;
         }
 
         public override TypeDescriptor SystemType => BasicTypes.Type;
@@ -28,7 +28,7 @@ namespace ScriptEngine.Machine.Values
 
         public override bool Equals(IValue other)
         {
-            if(other?.DataType == DataType)
+            if(other?.SystemType == SystemType)
             {
                 var otherVal = other.GetRawValue() as TypeTypeValue;
                 return otherVal._type == this._type;

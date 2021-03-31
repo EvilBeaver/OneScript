@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
+using OneScript.Core;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

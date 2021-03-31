@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using OneScript.Commons;
+using OneScript.Core;
 using OneScript.StandardLibrary.Text;
 using ScriptEngine;
 using ScriptEngine.Machine;

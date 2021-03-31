@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using OneScript.Core;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine
@@ -69,8 +70,6 @@ namespace ScriptEngine.Machine
 
         #region IValue Members
 
-        public DataType DataType => Value.DataType;
-
         public TypeDescriptor SystemType => Value.SystemType; 
         
         public decimal AsNumber()
@@ -93,9 +92,9 @@ namespace ScriptEngine.Machine
             return Value.AsString();
         }
 
-        public IRuntimeContextInstance AsObject()
+        public IContext AsContext()
         {
-            return Value.AsObject();
+            return Value.AsContext();
         }
 
         public IValue GetRawValue()
@@ -211,8 +210,6 @@ namespace ScriptEngine.Machine
 
             #region IValue Members
 
-            public DataType DataType => Value.DataType;
-
             public TypeDescriptor SystemType => Value.SystemType;
 
             public decimal AsNumber()
@@ -235,7 +232,7 @@ namespace ScriptEngine.Machine
                 return Value.AsString();
             }
 
-            public IRuntimeContextInstance AsObject()
+            public IContext AsContext()
             {
                 return Value.AsObject();
             }

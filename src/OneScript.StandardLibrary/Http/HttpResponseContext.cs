@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using OneScript.Core;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;

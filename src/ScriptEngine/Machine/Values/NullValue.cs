@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Core;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Values
@@ -20,7 +21,6 @@ namespace ScriptEngine.Machine.Values
 
         public NullValue()
         {
-            DataType = DataType.GenericValue;
         }
 
         public override TypeDescriptor SystemType => BasicTypes.Null;

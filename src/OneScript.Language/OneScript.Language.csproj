@@ -16,5 +16,9 @@
     <PackageCopyright>OneScript OpenSource Community 2019</PackageCopyright>
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OneScript.Commons\OneScript.Commons.csproj" />
+  </ItemGroup>
   
 </Project>

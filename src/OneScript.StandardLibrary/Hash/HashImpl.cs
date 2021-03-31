@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using OneScript.Core;
 using OneScript.StandardLibrary.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

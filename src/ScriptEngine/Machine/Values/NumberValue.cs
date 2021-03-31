@@ -5,6 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Core;
+using ScriptEngine.Types;
+
 namespace ScriptEngine.Machine.Values
 {
     public class NumberValue : GenericValue
@@ -54,13 +57,14 @@ namespace ScriptEngine.Machine.Values
         private NumberValue(decimal value)
         {
             _value = value;
-            DataType = DataType.Number;
         }
 
         public override bool AsBoolean()
         {
             return _value != 0;
         }
+
+        public override TypeDescriptor SystemType => BasicTypes.Number;
 
         public override decimal AsNumber()
         {
@@ -74,7 +78,7 @@ namespace ScriptEngine.Machine.Values
 
         public override int CompareTo(IValue other)
         {
-            if (other.DataType == DataType.Boolean || other.DataType == DataType.Number)
+            if (other.SystemType == BasicTypes.Boolean || other.SystemType == BasicTypes.Number)
             {
                 return _value.CompareTo(other.AsNumber());
             }
@@ -87,7 +91,7 @@ namespace ScriptEngine.Machine.Values
             if (other == null)
                 return false;
 
-            if (other.DataType == DataType.Number || other.DataType == DataType.Boolean)
+            if (other.SystemType == BasicTypes.Number || other.SystemType == BasicTypes.Boolean)
                 return _value == other.AsNumber();
 
             return false;

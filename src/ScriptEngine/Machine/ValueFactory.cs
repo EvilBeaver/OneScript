@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Globalization;
+using OneScript.Core;
 using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
@@ -141,7 +142,7 @@ namespace ScriptEngine.Machine
             return result;
         }
 
-        class InvalidValue : IValue
+        private class InvalidValue : IValue
         {
             private static IValue _instance = new InvalidValue();
 
@@ -173,7 +174,7 @@ namespace ScriptEngine.Machine
                 throw new NotImplementedException();
             }
 
-            public IRuntimeContextInstance AsObject()
+            public IContext AsContext()
             {
                 throw new NotImplementedException();
             }
@@ -207,14 +208,14 @@ namespace ScriptEngine.Machine
 
         public static IValue Add(IValue op1, IValue op2)
         {
-            var type1 = op1.DataType;
+            var type1 = op1.SystemType;
 
-            if (type1 == DataType.String)
+            if (type1 == BasicTypes.String)
             {
                 return Create(op1.AsString() + op2.AsString());
             }
 
-            if (type1 == DataType.Date && op2.DataType == DataType.Number)
+            if (type1 == BasicTypes.Date && op2.SystemType == BasicTypes.Number)
             {
                 var date = op1.AsDate();
                 return Create(date.AddSeconds((double)op2.AsNumber()));
@@ -226,17 +227,17 @@ namespace ScriptEngine.Machine
 
         public static IValue Sub(IValue op1, IValue op2)
         {
-            if (op1.DataType == DataType.Number)
+            if (op1.SystemType == BasicTypes.Number)
             {
                 return Create(op1.AsNumber() - op2.AsNumber());
             }
-            if (op1.DataType == DataType.Date && op2.DataType == DataType.Number)
+            if (op1.SystemType == BasicTypes.Date && op2.SystemType == BasicTypes.Number)
             {
                 var date = op1.AsDate();
                 var result = date.AddSeconds(-(double)op2.AsNumber());
                 return Create(result);
             }
-            if (op1.DataType == DataType.Date && op2.DataType == DataType.Date)
+            if (op1.SystemType == BasicTypes.Date && op2.SystemType == BasicTypes.Date)
             {
                 var span = op1.AsDate() - op2.AsDate();
                 return Create((decimal)span.TotalSeconds);

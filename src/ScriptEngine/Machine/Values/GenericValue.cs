@@ -6,7 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using ScriptEngine.Types;
+using OneScript.Core;
 
 namespace ScriptEngine.Machine.Values
 {
@@ -22,9 +22,7 @@ namespace ScriptEngine.Machine.Values
             return ReferenceEquals(this, other?.GetRawValue());
         }
 
-        public DataType DataType { get; protected set; }
-
-        public virtual TypeDescriptor SystemType => TypeDescriptor.FromDataType(DataType);
+        public abstract TypeDescriptor SystemType { get; }
 
         public virtual decimal AsNumber()
         {
@@ -41,9 +39,9 @@ namespace ScriptEngine.Machine.Values
             throw RuntimeException.ConvertToBooleanException();
         }
 
-        public virtual string AsString() => DataType.ToString();
+        public virtual string AsString() => SystemType.ToString();
 
-        public virtual IRuntimeContextInstance AsObject()
+        public virtual IContext AsContext()
         {
             throw RuntimeException.ValueIsNotObjectException();
         }

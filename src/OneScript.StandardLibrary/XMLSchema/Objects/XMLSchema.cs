@@ -10,6 +10,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
+using OneScript.Core;
 using OneScript.StandardLibrary.XDTO;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Collections;
