@@ -5,12 +5,21 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using OneScript.Dynamic.Compiler;
+using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 
-namespace OneScript.Dynamic.Compiler
+namespace OneScript.Native.Compiler
 {
     public class ModuleCompiler : BslSyntaxWalker
     {
-        
+        private ModuleInformation _moduleInfo;
+
+        public DynamicModule Compile(ModuleInformation moduleInfo, BslSyntaxNode moduleNode)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

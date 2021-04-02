@@ -12,6 +12,8 @@ namespace OneScript.Dynamic.Compiler
 {
     public class DynamicModule
     {
+        public IList<ParameterExpression> Variables { get; }
+        
         public IList<LambdaExpression> Methods { get; } = new List<LambdaExpression>();
     }
 }
