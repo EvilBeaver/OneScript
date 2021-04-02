@@ -36,6 +36,8 @@ namespace OneScript.StandardLibrary.Native
 
         private List<ParameterExpression> _localVariables = new List<ParameterExpression>();
         private LabelTarget _fragmentReturn;
+        private LabelTarget _breakLabel;
+        private LabelTarget _continueLabel;
         
         private int _parametersCount = 0;
         
@@ -394,6 +396,43 @@ namespace OneScript.StandardLibrary.Native
             
             var operation = Expression.MakeUnary(opCode, _statementBuildParts.Pop(), resultType);
             _statementBuildParts.Push(operation);
+        }
+        
+        protected override void VisitWhileNode(WhileLoopNode node)
+        {
+            var _oldBreakLabel = _breakLabel;
+            var _oldContinueLabel = _continueLabel;
+            var _oldStatements = _statements;
+            
+            _continueLabel = Expression.Label(typeof(void));
+            _breakLabel = Expression.Label(typeof(void));
+
+            _statements = new List<Expression>();
+            _statements.Add(Expression.Label(_continueLabel));
+            
+            VisitWhileCondition(node.Children[0]);
+            VisitWhileBody(node.Children[1]);
+            VisitBlockEnd(node.EndLocation);
+
+            _statements.Add(Expression.Label(_breakLabel));
+            
+            var _loop = Expression.Loop(Expression.Block(_statements), _breakLabel, _continueLabel);
+            
+            _statements = _oldStatements;
+            _breakLabel = _oldBreakLabel;
+            _continueLabel = _oldContinueLabel;
+
+            _statements.Add(_loop);
+        }
+
+        protected override void VisitBreakNode(LineMarkerNode node)
+        {
+            _statements.Add(Expression.Break(_breakLabel));
+        }
+
+        protected override void VisitContinueNode(LineMarkerNode node)
+        {
+            _statements.Add(Expression.Continue(_continueLabel));
         }
 
         private static ExpressionType TokenToOperationCode(Token stackOp) =>

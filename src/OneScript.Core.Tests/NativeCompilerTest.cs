@@ -235,5 +235,18 @@ namespace OneScript.Core.Tests
             var assign = statement.As<BinaryExpression>();
             assign.Right.NodeType.Should().Be(ExpressionType.Index);
         }
+
+        [Fact]
+        public void Can_Do_While()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.CodeBlock = "Пока Истина Цикл Ф = 1; Прервать; КонецЦикла;";
+            var loop = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions
+                .First();
+            loop.NodeType.Should().Be(ExpressionType.Loop);
+        }
     }
 }
