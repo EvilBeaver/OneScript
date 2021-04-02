@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using OneScript.Language.LexicalAnalysis;
 
-namespace ScriptEngine.Environment
+namespace OneScript.Language
 {
     [Serializable]
     public class ModuleInformation
