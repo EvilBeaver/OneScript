@@ -7,13 +7,14 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using OneScript.Native.Compiler;
 
 namespace OneScript.Dynamic.Compiler
 {
     public class DynamicModule
     {
-        public IList<ParameterExpression> Variables { get; }
+        public IList<BslFieldInfo> Fields { get; }
         
-        public IList<LambdaExpression> Methods { get; } = new List<LambdaExpression>();
+        public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
     }
 }
