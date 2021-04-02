@@ -26,18 +26,24 @@ namespace OneScript.StandardLibrary.Native
 {
     internal class BlockExpressionGenerator : BslSyntaxWalker
     {
+        private class GeneratorState
+        {
+            public LabelTarget BreakLabel;
+            public LabelTarget ContinueLabel;
+            public List<Expression> Statements = new List<Expression>();
+        }
+        
         private readonly SymbolTable _ctx;
         private readonly ITypeManager _typeManager;
         private readonly IErrorSink _errors;
         private ModuleInformation _moduleInfo;
         
-        private List<Expression> _statements = new List<Expression>();
         private Stack<Expression> _statementBuildParts = new Stack<Expression>();
 
         private List<ParameterExpression> _localVariables = new List<ParameterExpression>();
         private LabelTarget _fragmentReturn;
-        private LabelTarget _breakLabel;
-        private LabelTarget _continueLabel;
+
+        private GeneratorState _currentState;
         
         private int _parametersCount = 0;
         
@@ -72,12 +78,13 @@ namespace OneScript.StandardLibrary.Native
         public LambdaExpression CreateExpression(ModuleNode module, ModuleInformation moduleInfo)
         {
             _moduleInfo = moduleInfo;
+            _currentState = new GeneratorState();
 
             Visit(module);
 
             AppendReturnValue();
             
-            var body = Expression.Block(_statements);
+            var body = Expression.Block(_currentState.Statements);
             var parameters = _localVariables.Take(_parametersCount);
 
             return Expression.Lambda(body, parameters);
@@ -93,7 +100,7 @@ namespace OneScript.StandardLibrary.Native
 
             // возврат Неопределено по умолчанию
             var jumpLabel = Expression.Label(_fragmentReturn, Expression.Constant(ValueFactory.Create()));
-            _statements.Add(jumpLabel);
+            _currentState.Statements.Add(jumpLabel);
         }
 
         protected override void VisitStatement(BslSyntaxNode statement)
@@ -128,7 +135,7 @@ namespace OneScript.StandardLibrary.Native
             var args = node.ArgumentList.Children.Select(ConvertToExpressionTree);
             
             var expression = CreateClrMethodCall(symbol.Target, symbol.MethodInfo, args);
-            _statements.Add(expression);
+            _currentState.Statements.Add(expression);
         }
 
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
@@ -148,7 +155,7 @@ namespace OneScript.StandardLibrary.Native
             var left = _statementBuildParts.Pop();
             var right = _statementBuildParts.Pop();
 
-            _statements.Add(MakeAssign(left, right));
+            _currentState.Statements.Add(MakeAssign(left, right));
         }
 
         protected override void VisitAssignmentLeftPart(BslSyntaxNode node)
@@ -373,7 +380,7 @@ namespace OneScript.StandardLibrary.Native
             if (!typeof(IValue).IsAssignableFrom(resultExpr.Type))
                 resultExpr = ExpressionHelpers.ConvertToIValue(resultExpr);
             
-            _statements.Add(Expression.Return(_fragmentReturn, resultExpr));
+            _currentState.Statements.Add(Expression.Return(_fragmentReturn, resultExpr));
         }
 
         protected override void VisitUnaryOperation(UnaryOperationNode unaryOperationNode)
@@ -400,39 +407,36 @@ namespace OneScript.StandardLibrary.Native
         
         protected override void VisitWhileNode(WhileLoopNode node)
         {
-            var _oldBreakLabel = _breakLabel;
-            var _oldContinueLabel = _continueLabel;
-            var _oldStatements = _statements;
-            
-            _continueLabel = Expression.Label(typeof(void));
-            _breakLabel = Expression.Label(typeof(void));
+            var oldState = _currentState;
 
-            _statements = new List<Expression>();
-            _statements.Add(Expression.Label(_continueLabel));
+            _currentState = new GeneratorState();
+            _currentState.ContinueLabel = Expression.Label(typeof(void));
+            _currentState.BreakLabel = Expression.Label(typeof(void));
+
+            _currentState.Statements = new List<Expression>();
+            _currentState.Statements.Add(Expression.Label(_currentState.ContinueLabel));
             
             VisitWhileCondition(node.Children[0]);
             VisitWhileBody(node.Children[1]);
             VisitBlockEnd(node.EndLocation);
 
-            _statements.Add(Expression.Label(_breakLabel));
+            _currentState.Statements.Add(Expression.Label(_currentState.BreakLabel));
             
-            var _loop = Expression.Loop(Expression.Block(_statements), _breakLabel, _continueLabel);
-            
-            _statements = _oldStatements;
-            _breakLabel = _oldBreakLabel;
-            _continueLabel = _oldContinueLabel;
+            var _loop = Expression.Loop(Expression.Block(_currentState.Statements), _currentState.BreakLabel, _currentState.ContinueLabel);
 
-            _statements.Add(_loop);
+            _currentState = oldState;
+            
+            _currentState.Statements.Add(_loop);
         }
 
         protected override void VisitBreakNode(LineMarkerNode node)
         {
-            _statements.Add(Expression.Break(_breakLabel));
+            _currentState.Statements.Add(Expression.Break(_currentState.BreakLabel));
         }
 
         protected override void VisitContinueNode(LineMarkerNode node)
         {
-            _statements.Add(Expression.Continue(_continueLabel));
+            _currentState.Statements.Add(Expression.Continue(_currentState.ContinueLabel));
         }
 
         private static ExpressionType TokenToOperationCode(Token stackOp) =>
