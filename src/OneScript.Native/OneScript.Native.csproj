@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
+        <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
+    </ItemGroup>
+    
+</Project>

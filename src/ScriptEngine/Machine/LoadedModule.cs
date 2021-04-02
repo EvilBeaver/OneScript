@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Environment;
 using System.Linq;
+using OneScript.Language;
 
 namespace ScriptEngine.Machine
 {

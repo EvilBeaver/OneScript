@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine;
 using ScriptEngine.Environment;
