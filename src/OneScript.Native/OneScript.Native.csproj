@@ -5,7 +5,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
+        <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
+        <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     </ItemGroup>
-
+    
 </Project>
