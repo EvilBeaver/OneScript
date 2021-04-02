@@ -5,18 +5,17 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace OneScript.Dynamic.Types
+using System.Dynamic;
+
+namespace OneScript.Values
 {
-    public enum DataType
+    public abstract class BslValue : DynamicObject
     {
-        Undefined,
-        String,
-        Number,
-        Date,
-        Boolean,
-        Type,
-        Object,
-        NotAValidValue, // default argument value
-        GenericValue
+        protected virtual string ConvertToString() => ToString();
+        
+        public static explicit operator string(BslValue value)
+        {
+            return value.ConvertToString();
+        }
     }
 }
