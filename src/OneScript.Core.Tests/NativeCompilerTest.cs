@@ -248,5 +248,44 @@ namespace OneScript.Core.Tests
                 .First();
             loop.NodeType.Should().Be(ExpressionType.Loop);
         }
+        
+        [Fact]
+        public void Can_Do_IfThen()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.CodeBlock = "Если Истина Тогда Ф=1; КонецЕсли";
+            var loop = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions
+                .First();
+            loop.NodeType.Should().Be(ExpressionType.Conditional);
+        }
+        
+        [Fact]
+        public void Can_Do_IfThenElse()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.CodeBlock = "Если Истина Тогда Ф=1; Иначе Ф=2; КонецЕсли";
+            var loop = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions
+                .First();
+            loop.NodeType.Should().Be(ExpressionType.Conditional);
+        }
+        
+        [Fact]
+        public void Can_Do_ElseIf()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.CodeBlock = "Если Истина Тогда Ф=1; ИначеЕсли Ложь Тогда Иначе Ф=2; КонецЕсли";
+            var loop = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions
+                .First();
+            loop.NodeType.Should().Be(ExpressionType.Conditional);
+        }
     }
 }
