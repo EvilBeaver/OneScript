@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Dynamic;
+using System.Globalization;
 using OneScript.Dynamic;
 
 namespace OneScript.Values
@@ -170,6 +171,27 @@ namespace OneScript.Values
         public static bool operator !=(BslNumericValue left, BslNumericValue right)
         {
             return !Equals(left, right);
+        }
+
+        public static BslNumericValue Parse(string presentation)
+        {
+            var numInfo = NumberFormatInfo.InvariantInfo;
+            var numStyle = NumberStyles.AllowDecimalPoint
+                           |NumberStyles.AllowLeadingSign
+                           |NumberStyles.AllowLeadingWhite
+                           |NumberStyles.AllowTrailingWhite;
+
+            try
+            {
+                var number = decimal.Parse(presentation, numStyle, numInfo);
+                return new BslNumericValue(number);
+            }
+            catch (FormatException)
+            {
+                // TODO: сделать исключение правильного Runtime типа
+                throw;
+                //throw RuntimeException.ConvertToNumberException();
+            }
         }
     }
 }

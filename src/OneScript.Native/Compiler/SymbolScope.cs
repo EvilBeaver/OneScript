@@ -13,7 +13,7 @@ using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
-    internal class SymbolScope
+    public class SymbolScope
     {
         private readonly IndexedNameValueCollection<MethodSymbol> _methods =
             new IndexedNameValueCollection<MethodSymbol>();

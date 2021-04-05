@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 
@@ -13,6 +14,28 @@ namespace OneScript.Native.Compiler
 {
     public class BslFieldInfo : FieldInfo
     {
+        private Type _declaringType;
+        private bool _isPublic;
+        
+        public BslFieldInfo(string name)
+        {
+            Name = name;
+        }
+
+        public void SetDeclaringType(Type declType)
+        {
+            _declaringType = declType;
+        }
+
+        public void SetExportFlag(bool isExported)
+        {
+            _isPublic = isExported;
+        }
+
+        public void SetAnnotations(IEnumerable<object> attributes)
+        {
+        }
+
         public override object[] GetCustomAttributes(bool inherit)
         {
             throw new NotImplementedException();

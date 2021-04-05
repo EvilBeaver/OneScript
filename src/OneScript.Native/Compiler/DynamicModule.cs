@@ -6,15 +6,15 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using OneScript.Native.Compiler;
+using OneScript.Language;
 
-namespace OneScript.Dynamic.Compiler
+namespace OneScript.Native.Compiler
 {
     public class DynamicModule
     {
-        public IList<BslFieldInfo> Fields { get; }
+        public IList<BslFieldInfo> Fields { get; } = new List<BslFieldInfo>();
         
         public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
+        public ModuleInformation ModuleInformation { get; set; }
     }
 }
