@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace OneScript.Native.Compiler
 {
-    internal class SymbolTable
+    public class SymbolTable
     {
         private List<SymbolScope> _scopes = new List<SymbolScope>();
         
@@ -64,5 +64,9 @@ namespace OneScript.Native.Compiler
             return false;
         }
 
+        public void PopScope()
+        {
+            _scopes.RemoveAt(_scopes.Count - 1);
+        }
     }
 }

@@ -11,7 +11,7 @@ using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
-    internal class RuntimeSymbol
+    public class RuntimeSymbol
     {
         public BslObjectValue Target;
         
@@ -22,19 +22,19 @@ namespace OneScript.Native.Compiler
         public MemberInfo MemberInfo { get; set; }
     }
     
-    internal class VariableSymbol : RuntimeSymbol
+    public class VariableSymbol : RuntimeSymbol
     {
         public virtual Type VariableType { get; set; }
     }
     
-    internal class PropertySymbol : VariableSymbol
+    public class PropertySymbol : VariableSymbol
     {
         public PropertyInfo PropertyInfo => (PropertyInfo)MemberInfo;
 
         public override Type VariableType { get => PropertyInfo.PropertyType; set => throw new NotSupportedException(); }
     }
     
-    internal class MethodSymbol : RuntimeSymbol
+    public class MethodSymbol : RuntimeSymbol
     {
         public MethodInfo MethodInfo => (MethodInfo)MemberInfo;
     }

@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.Native.Compiler
 {
-    internal struct SymbolBinding
+    public struct SymbolBinding
     {
         public int ScopeNumber { get; set; }
         
