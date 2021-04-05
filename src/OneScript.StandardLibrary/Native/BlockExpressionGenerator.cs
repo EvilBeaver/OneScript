@@ -82,7 +82,7 @@ namespace OneScript.StandardLibrary.Native
             {
                 foreach (var local in context.TopScope().Variables)
                 {
-                    _localVariables.Add(Expression.Variable(local.VariableType, local.Name));
+                    _localVariables.Add(Expression.Parameter(local.VariableType.MakeByRefType(), local.Name));
                     ++_parametersCount;
                 }
             }
@@ -100,10 +100,12 @@ namespace OneScript.StandardLibrary.Native
 
             AppendReturnValue();
 
-            var body = _currentState.Generator.Block(); //Expression.Block(_currentState.Statements);
+            var body = _currentState.Generator.Block();
             var parameters = _localVariables.Take(_parametersCount);
-
-            return Expression.Lambda(body, parameters);
+            
+            return Expression.Lambda(
+                Expression.Block(_localVariables.Skip(_parametersCount), body),
+                parameters);
         }
 
         private void AppendReturnValue()
