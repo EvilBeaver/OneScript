@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.Types;
+using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -31,20 +31,6 @@ namespace ScriptEngine.Machine.Contexts
             return false;
         }
 
-        public IValue this[string propName]
-        {
-            get
-            {
-                var propIdx = FindProperty(propName);
-                return GetPropValue(propIdx);
-            }
-            set
-            {
-                var propIdx = FindProperty(propName);
-                SetPropValue(propIdx, value);
-            }
-        }
-        
         public override IValue GetIndexedValue(IValue index)
         {
             if (index.DataType != DataType.String)
