@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Types;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine.Values;
@@ -1369,7 +1370,8 @@ namespace ScriptEngine.Machine
                 throw RuntimeException.ConstructorNotFound(typeName);
             }
             
-            var factory = TypeManager.GetFactoryFor(type);
+            // TODO убрать cast после рефакторинга ITypeFactory
+            var factory = (TypeFactory)TypeManager.GetFactoryFor(type);
             var context = new TypeActivationContext
             {
                 TypeName = typeName,

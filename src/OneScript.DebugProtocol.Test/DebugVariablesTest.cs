@@ -12,6 +12,7 @@ using OneScript.DebugServices;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTree;
+using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
@@ -41,7 +42,7 @@ namespace OneScript.DebugProtocol.Test
             Manager.RegisterClass(valueType);
 
             var registeredType = Manager.GetTypeByFrameworkType(valueType);
-            var factory = Manager.GetFactoryFor(registeredType);
+            var factory = (TypeFactory)Manager.GetFactoryFor(registeredType);
             return factory.Activate(new TypeActivationContext
             {
                 MachineEnvironment = new MachineEnvironment(Manager, default, default),

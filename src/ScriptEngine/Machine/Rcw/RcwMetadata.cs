@@ -13,7 +13,6 @@ using FUNCDESC = System.Runtime.InteropServices.ComTypes.FUNCDESC;
 using FUNCFLAGS = System.Runtime.InteropServices.ComTypes.FUNCFLAGS;
 using TYPEATTR = System.Runtime.InteropServices.ComTypes.TYPEATTR;
 using INVOKEKIND = System.Runtime.InteropServices.ComTypes.INVOKEKIND;
-using VARDESC = System.Runtime.InteropServices.ComTypes.VARDESC;
 
 namespace ScriptEngine.Machine.Rcw
 {

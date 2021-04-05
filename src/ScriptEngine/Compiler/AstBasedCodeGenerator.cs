@@ -16,7 +16,6 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using ScriptEngine.Compiler.Extensions;
-using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler

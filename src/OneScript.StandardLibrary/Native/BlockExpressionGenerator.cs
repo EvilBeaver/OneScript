@@ -15,6 +15,7 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
+using OneScript.Types;
 using ScriptEngine.Compiler;
 using ScriptEngine.Compiler.Extensions;
 using ScriptEngine.Machine;

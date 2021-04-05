@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using OneScript.Types;
 using ScriptEngine.Types;
 using Refl = System.Reflection;
 
@@ -17,7 +18,7 @@ namespace ScriptEngine.Machine
 {
     public delegate IValue InstanceConstructor(TypeActivationContext context, IValue[] arguments);
     
-    public class TypeFactory
+    public class TypeFactory : ITypeFactory
     {
         private readonly TypeDescriptor _systemType;
 

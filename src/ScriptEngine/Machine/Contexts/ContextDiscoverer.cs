@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using OneScript.Types;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts

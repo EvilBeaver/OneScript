@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;

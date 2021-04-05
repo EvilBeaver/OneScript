@@ -9,6 +9,7 @@ using System;
 using System.Xml;
 using System.Xml.Schema;
 using OneScript.StandardLibrary.Xml;
+using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

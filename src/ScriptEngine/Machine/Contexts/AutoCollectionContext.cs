@@ -7,8 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections;
 using System.Collections.Generic;
-using ScriptEngine.Machine.Values;
-using ScriptEngine.Types;
+using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {

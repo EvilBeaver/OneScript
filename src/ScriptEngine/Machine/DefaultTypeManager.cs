@@ -10,8 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
+using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine
@@ -110,7 +110,7 @@ namespace ScriptEngine.Machine
             RegisterTypeInternal(typeDescriptor);
         }
 
-        public TypeFactory GetFactoryFor(TypeDescriptor type)
+        public ITypeFactory GetFactoryFor(TypeDescriptor type)
         {
             return _factoryCache.GetFactoryFor(type);
         }

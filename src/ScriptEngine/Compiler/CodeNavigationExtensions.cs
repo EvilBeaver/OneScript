@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
-using ScriptEngine.Environment;
 
 namespace ScriptEngine.Compiler
 {
