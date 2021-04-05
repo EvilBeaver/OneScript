@@ -359,7 +359,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         protected virtual void VisitElseIfNode(ConditionNode node)
         {
-            VisitIfExpression(node);
+            VisitIfExpression(node.Expression);
             VisitIfTruePart(node.TruePart);
         }
         
