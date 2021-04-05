@@ -287,5 +287,18 @@ namespace OneScript.Core.Tests
                 .First();
             loop.NodeType.Should().Be(ExpressionType.Conditional);
         }
+        
+        [Fact]
+        public void Can_ForLoop()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.CodeBlock = "Для Ф = 1 По 2+2*2 Цикл Прервать; КонецЦикла;";
+            var loop = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions
+                .First();
+            loop.NodeType.Should().Be(ExpressionType.Loop);
+        }
     }
 }

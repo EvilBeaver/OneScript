@@ -479,6 +479,29 @@ namespace OneScript.StandardLibrary.Native
             base.VisitBlockEnd(in endLocation);
         }
 
+        protected override void VisitForLoopNode(ForLoopNode node)
+        {
+            _currentState.NewState(new ForBlockExpressionGenerator());
+            base.VisitForLoopNode(node);
+        }
+
+        protected override void VisitForInitializer(BslSyntaxNode node)
+        {
+            var forLoopIterator = node.Children[0];
+            var forLoopInitialValue = node.Children[1];
+            VisitForLoopInitialValue(forLoopInitialValue);
+            VisitForLoopIterator(forLoopIterator);
+            
+            ((ForBlockExpressionGenerator) _currentState.Generator).IteratorExpression = _statementBuildParts.Pop();
+            ((ForBlockExpressionGenerator) _currentState.Generator).InitialValue = _statementBuildParts.Pop();
+        }
+
+        protected override void VisitForUpperLimit(BslSyntaxNode node)
+        {
+            base.VisitForUpperLimit(node);
+            ((ForBlockExpressionGenerator) _currentState.Generator).UpperLimit = _statementBuildParts.Pop();
+        }
+
         private static ExpressionType TokenToOperationCode(Token stackOp) =>
             ExpressionHelpers.TokenToOperationCode(stackOp);
 

@@ -140,4 +140,53 @@ namespace OneScript.Native.Compiler
         }
     }
 
+    public class ForBlockExpressionGenerator : ILoopBlockExpressionGenerator
+    {
+        private readonly List<Expression> _bodyStatements = new List<Expression>();
+
+        public Expression IteratorExpression { get; set; }
+        public Expression InitialValue { get; set; }
+        public Expression UpperLimit { get; set; }
+
+        private readonly LabelTarget _continueLabel = Expression.Label(typeof(void));
+        private readonly LabelTarget _breakLabel = Expression.Label(typeof(void));
+        private readonly LabelTarget _loopLabel = Expression.Label(typeof(void));
+       
+        public void Add(Expression item)
+        {
+            _bodyStatements.Add(item);
+        }
+
+        public Expression Block()
+        {
+            var result = new List<Expression>();
+            result.Add(Expression.Assign(IteratorExpression, InitialValue)); // TODO: MakeAssign ?
+            var finalVar = Expression.Variable(typeof(decimal)); // TODO: BslNumericValue ?
+            result.Add(Expression.Assign(finalVar, InitialValue));
+            
+            result.Add(Expression.Label(_loopLabel));
+            result.Add(Expression.IfThen(
+                Expression.GreaterThan(IteratorExpression, InitialValue), 
+                Expression.Break(_breakLabel)));
+            
+            result.AddRange(_bodyStatements);
+            
+            result.Add(Expression.Label(_continueLabel));
+            result.Add(Expression.Increment(IteratorExpression));
+            result.Add(Expression.Goto(_loopLabel));
+            result.Add(Expression.Label(_breakLabel));
+
+            return Expression.Loop(Expression.Block(result), _breakLabel, _continueLabel);
+        }
+
+        public void AddBreakExpression()
+        {
+            Add(Expression.Break(_breakLabel));
+        }
+
+        public void AddContinueExpression()
+        {
+            Add(Expression.Continue(_continueLabel));
+        }
+    }
 }
