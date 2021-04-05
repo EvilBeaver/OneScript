@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 namespace OneScript.Native.Compiler
@@ -16,6 +17,7 @@ namespace OneScript.Native.Compiler
     {
         private Type _declaringType;
         private bool _isPublic;
+        private object[] _annotations;
         
         public BslFieldInfo(string name)
         {
@@ -34,16 +36,17 @@ namespace OneScript.Native.Compiler
 
         public void SetAnnotations(IEnumerable<object> attributes)
         {
+            _annotations = attributes.ToArray();
         }
 
         public override object[] GetCustomAttributes(bool inherit)
         {
-            throw new NotImplementedException();
+            return _annotations ?? new object[0];
         }
 
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
-            throw new NotImplementedException();
+            return GetCustomAttributes(true).Where(x => x.GetType() == attributeType).ToArray();
         }
 
         public override bool IsDefined(Type attributeType, bool inherit)
@@ -51,9 +54,9 @@ namespace OneScript.Native.Compiler
             throw new NotImplementedException();
         }
 
-        public override Type DeclaringType { get; }
+        public override Type DeclaringType => _declaringType;
         public override string Name { get; }
-        public override Type ReflectedType { get; }
+        public override Type ReflectedType => _declaringType;
         public override object GetValue(object obj)
         {
             throw new NotImplementedException();
