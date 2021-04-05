@@ -13,23 +13,28 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Native.Compiler
 {
-    public class MethodCompiler : BslSyntaxWalker
+    public class MethodCompiler : ExpressionTreeGeneratorBase
     {
-        private readonly SymbolTable _symbols;
-        private readonly IErrorSink _errors;
-        private readonly ModuleInformation _moduleInformation;
-
-        public MethodCompiler(SymbolTable symbols, IErrorSink errors, ModuleInformation moduleInformation)
+        public MethodCompiler(BslWalkerContext walkContext) : base(walkContext)
         {
-            _symbols = symbols;
-            _errors = errors;
-            _moduleInformation = moduleInformation;
         }
 
         public BslMethodInfo CreateMethodInfo(MethodNode methodNode)
         {
             throw new NotImplementedException();
             Visit(methodNode);
+        }
+        
+        /// <summary>
+        /// Создает тело модуля (процедуру без параметров с сигнатурой void(void)
+        /// </summary>
+        /// <param name="batch"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public BslMethodInfo CreateMethodInfo(string methodName, CodeBatchNode batch)
+        {
+            throw new NotImplementedException();
+            VisitCodeBlock(batch);
         }
     }
 }
