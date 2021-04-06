@@ -284,13 +284,28 @@ namespace OneScript.Core.Tests
         public void Can_Do_ElseIf()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.CodeBlock = "Если Истина Тогда Ф=1; ИначеЕсли Ложь Тогда Иначе Ф=2; КонецЕсли";
-            var loop = block.MakeExpression()
+            block.Parameters.Insert("П", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("Ф", new TypeTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Если П=1 Тогда Ф=1;" +
+                "ИначеЕсли П=2 Тогда Ф=2;" +
+                "ИначеЕсли П=3 Тогда Ф=3;" +
+                "Иначе Ф=0; КонецЕсли";
+            var expression = block.MakeExpression(); 
+            var condition = expression 
                 .Body
                 .As<BlockExpression>()
                 .Expressions
                 .First();
-            loop.NodeType.Should().Be(ExpressionType.Conditional);
+            condition.NodeType.Should().Be(ExpressionType.Conditional);
+            var func = expression.Compile();
+
+            for (decimal i = 0; i < 4; i++)
+            {
+                var args = new object[] {i, (decimal)0};
+                func.DynamicInvoke(args);
+                args[1].Should().Be(i);
+            }
         }
         
         [Fact]
