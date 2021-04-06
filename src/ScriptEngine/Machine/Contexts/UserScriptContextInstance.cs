@@ -8,8 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using ScriptEngine.Compiler;
-using ScriptEngine.Types;
+using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {

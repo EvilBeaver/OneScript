@@ -6,11 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Diagnostics;
-using OneScript.Commons;
-using ScriptEngine.Machine;
+using OneScript.Localization;
+using OneScript.Values;
 
-namespace ScriptEngine.Types
+namespace OneScript.Types
 {
     public sealed class TypeDescriptor : IEquatable<TypeDescriptor>
     {
@@ -19,31 +18,9 @@ namespace ScriptEngine.Types
             Id = id;
             Name = typeName;
             Alias = alias;
-            ImplementingClass = implementingClass ?? typeof(IValue);
+            ImplementingClass = implementingClass ?? typeof(BslValue);
         }
 
-        public static TypeDescriptor FromDataType(DataType srcType)
-        {
-            switch (srcType)
-            {
-                case DataType.Boolean:
-                    return BasicTypes.Boolean;
-                case DataType.Date:
-                    return BasicTypes.Date;
-                case DataType.Number:
-                    return BasicTypes.Number;
-                case DataType.String:
-                    return BasicTypes.String;
-                case DataType.Undefined:
-                    return BasicTypes.Undefined;
-                case DataType.Type:
-                    return BasicTypes.Type;
-                default:
-                    Debug.Assert(false, "Can be used only for primitive types");
-                    return default;
-            }
-        }
-        
         public string Name { get; }
         
         public string Alias { get; }
@@ -54,7 +31,7 @@ namespace ScriptEngine.Types
 
         public override string ToString()
         {
-            return Locale.UseAliasedPresentations? Alias ?? Name : Name;
+            return BilingualString.UseRussianLocale || Alias == default? Name : Alias;
         }
 
         public bool Equals(TypeDescriptor other)

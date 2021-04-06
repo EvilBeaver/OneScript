@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using OneScript.Language;
 using ScriptEngine.Machine;
-using ScriptEngine.Environment;
 
 namespace ScriptEngine
 {

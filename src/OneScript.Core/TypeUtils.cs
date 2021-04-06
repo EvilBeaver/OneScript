@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 
-namespace OneScript.Dynamic
+namespace OneScript
 {
     internal static class TypeUtils
     {

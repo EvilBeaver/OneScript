@@ -14,16 +14,12 @@ using OneScript.Native.Runtime;
 
 namespace OneScript.Native.Compiler
 {
-    public class ModuleCompiler : BslSyntaxWalker
+    public class ModuleCompiler : ExpressionTreeGeneratorBase
     {
-        private readonly IErrorSink _errors;
-        private ModuleInformation _moduleInfo;
         private DynamicModule _module;
-        private SymbolTable _ctx;
-
-        public ModuleCompiler(IErrorSink errors)
+        
+        public ModuleCompiler(IErrorSink errors) : base(errors)
         {
-            _errors = errors;
         }
         
         public DynamicModule Compile(
@@ -32,12 +28,11 @@ namespace OneScript.Native.Compiler
             SymbolTable symbols
             )
         {
-            _moduleInfo = moduleInfo;
-            _ctx = symbols;
+            InitContext(Errors, moduleInfo, symbols);
             
             _module = new DynamicModule
             {
-                ModuleInformation = _moduleInfo
+                ModuleInformation = ModuleInfo
             };
             
             Visit(moduleNode);
@@ -48,9 +43,9 @@ namespace OneScript.Native.Compiler
         protected override void VisitModule(ModuleNode node)
         {
             var moduleScope = new SymbolScope();
-            _ctx.AddScope(moduleScope);
+            Symbols.AddScope(moduleScope);
             base.VisitModule(node);
-            _ctx.PopScope();
+            Symbols.PopScope();
         }
 
         protected override void VisitModuleVariable(VariableDefinitionNode varNode)
@@ -65,8 +60,16 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitMethod(MethodNode methodNode)
         {
-            var methodCompiler = new MethodCompiler(_ctx, _errors, _moduleInfo);
+            var methodCompiler = new MethodCompiler(MakeContext());
             var method = methodCompiler.CreateMethodInfo(methodNode);
+            
+            _module.Methods.Add(method);
+        }
+
+        protected override void VisitModuleBody(BslSyntaxNode codeBlock)
+        {
+            var methodCompiler = new MethodCompiler(MakeContext());
+            var method = methodCompiler.CreateMethodInfo("$entry", (CodeBatchNode)codeBlock.Children[0]);
             
             _module.Methods.Add(method);
         }

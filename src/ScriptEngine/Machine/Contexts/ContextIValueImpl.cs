@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Dynamic;
 using System.Linq;
+using OneScript.Types;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts

@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using ScriptEngine.Types;
+using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {

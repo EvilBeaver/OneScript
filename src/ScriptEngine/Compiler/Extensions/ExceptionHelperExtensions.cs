@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Language;
-using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler.Extensions
 {

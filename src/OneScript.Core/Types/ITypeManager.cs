@@ -6,9 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using ScriptEngine.Types;
 
-namespace ScriptEngine.Machine
+namespace OneScript.Types
 {
     public interface ITypeManager
     {
@@ -22,7 +21,7 @@ namespace ScriptEngine.Machine
         
         void RegisterType(TypeDescriptor typeDescriptor);
         
-        TypeFactory GetFactoryFor(TypeDescriptor type);
+        ITypeFactory GetFactoryFor(TypeDescriptor type);
         
         bool IsKnownType(Type type);
         bool IsKnownType(string typeName);

@@ -6,11 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Reflection;
 using OneScript.Language.SyntaxAnalysis;
+using OneScript.Types;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Hosting
 {
