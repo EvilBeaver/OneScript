@@ -16,6 +16,15 @@ namespace OneScript.Native.Compiler
         LabelTarget ContinueLabel { get; }
     }
 
+    public static class GeneratorHelper
+    {
+        public static Expression OneOrBlock(this IList<Expression> list)
+        {
+            if (list.Count == 1) return list[0];
+            return Expression.Block(list);
+        }
+    }
+
     public class SimpleBlockExpressionGenerator : IBlockExpressionGenerator
     {
         readonly List<Expression> _statements = new List<Expression>();
@@ -27,7 +36,7 @@ namespace OneScript.Native.Compiler
 
         public Expression Block()
         {
-            return Expression.Block(_statements);
+            return _statements.OneOrBlock();
         }
     }
 
@@ -55,19 +64,19 @@ namespace OneScript.Native.Compiler
             var top = _conditionalBlocks.Pop();
             var block = _elseBlock.Count == 0
                 ? Expression.IfThen(
-                    Expression.Block(top.Condition),
-                    Expression.Block(top.Body))
+                    top.Condition.OneOrBlock(),
+                    top.Body.OneOrBlock())
                 : Expression.IfThenElse(
-                    Expression.Block(top.Condition),
-                    Expression.Block(top.Body),
-                    Expression.Block(_elseBlock));
+                    top.Condition.OneOrBlock(),
+                    top.Body.OneOrBlock(),
+                    _elseBlock.OneOrBlock());
 
             while (_conditionalBlocks.Count > 0)
             {
                 var next = _conditionalBlocks.Pop();
                 block = Expression.IfThenElse(
-                    Expression.Block(top.Condition), 
-                    Expression.Block(top.Body), 
+                    top.Condition.OneOrBlock(), 
+                    top.Body.OneOrBlock(), 
                     block);
             }
 
@@ -109,7 +118,7 @@ namespace OneScript.Native.Compiler
             var result = new List<Expression>();
             
             result.Add(Expression.IfThen(
-                Expression.Not(Expression.Block(_conditionStatements)), 
+                Expression.Not(_conditionStatements.OneOrBlock()), 
                 Expression.Break(BreakLabel)));
             result.AddRange(_bodyStatements);
 

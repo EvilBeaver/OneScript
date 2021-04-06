@@ -130,11 +130,11 @@ namespace OneScript.StandardLibrary.Native
 
             AppendReturnValue();
 
-            var body = _currentState.Generator.Block();
+            var body = _currentState.Generator.Block() as BlockExpression;
             var parameters = _localVariables.Take(_parametersCount);
             
             return Expression.Lambda(
-                Expression.Block(_localVariables.Skip(_parametersCount), body),
+                Expression.Block(_localVariables.Skip(_parametersCount), body.Expressions),
                 parameters);
         }
 
