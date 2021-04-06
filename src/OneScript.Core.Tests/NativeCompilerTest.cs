@@ -312,14 +312,18 @@ namespace OneScript.Core.Tests
         public void Can_ForLoop()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.CodeBlock = "Для Ф = 1 По 2+2*2 Цикл Прервать; КонецЦикла;";
-            var loop = block.MakeExpression()
-                .Body
-                .As<BlockExpression>()
-                .Expressions
-                .First();
-            // TODO: неверный тест
-            //loop.NodeType.Should().Be(ExpressionType.Loop);
+            block.Parameters.Insert("Результат", new TypeTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Для Ф = 1 По 2+2*2 Цикл " +
+                "Результат = Результат + Ф;" +
+                "Если Ф > 2 Тогда Прервать; КонецЕсли; " +
+                "Продолжить;" +
+                "КонецЦикла;";
+            var expression = block.MakeExpression();
+            var func = expression.Compile();
+            var args = new object[] { decimal.Zero };
+            func.DynamicInvoke(args);
+            args[0].Should().Be(6);
         }
     }
 }

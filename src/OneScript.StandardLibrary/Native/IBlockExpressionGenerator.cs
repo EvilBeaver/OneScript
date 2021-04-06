@@ -153,33 +153,21 @@ namespace OneScript.Native.Compiler
             var result = new List<Expression>();
             result.Add(Expression.Assign(IteratorExpression, InitialValue)); // TODO: MakeAssign ?
             var finalVar = Expression.Variable(typeof(decimal)); // TODO: BslNumericValue ?
-            result.Add(Expression.Assign(finalVar, InitialValue));
+            result.Add(Expression.Assign(finalVar, UpperLimit));// TODO: MakeAssign ?
             
             var loop = new List<Expression>();
             loop.Add(Expression.IfThen(
-                Expression.GreaterThan(IteratorExpression, InitialValue), 
+                Expression.GreaterThan(IteratorExpression, finalVar), 
                 Expression.Break(BreakLabel)));
             
             loop.AddRange(_bodyStatements);
             
             loop.Add(Expression.Label(ContinueLabel));
-            loop.Add(Expression.Increment(IteratorExpression));
+            loop.Add(Expression.PreIncrementAssign(IteratorExpression));
             
-            result.Add(Expression.Loop(Expression.Block(loop), BreakLabel, ContinueLabel));
+            result.Add(Expression.Loop(Expression.Block(loop), BreakLabel));
             
-            result.Add(Expression.Label(BreakLabel));
-
-            return Expression.Block(result);
-        }
-
-        public void AddBreakExpression()
-        {
-            Add(Expression.Break(BreakLabel));
-        }
-
-        public void AddContinueExpression()
-        {
-            Add(Expression.Continue(ContinueLabel));
+            return Expression.Block(new[] {finalVar}, result);
         }
 
         public LabelTarget BreakLabel { get; } = Expression.Label(typeof(void));
@@ -202,16 +190,6 @@ namespace OneScript.Native.Compiler
         public Expression Block()
         {
             throw new NotImplementedException();
-        }
-
-        public void AddBreakExpression()
-        {
-            Add(Expression.Break(BreakLabel));
-        }
-
-        public void AddContinueExpression()
-        {
-            Add(Expression.Continue(ContinueLabel));
         }
 
         public LabelTarget BreakLabel { get; } = Expression.Label(typeof(void));
