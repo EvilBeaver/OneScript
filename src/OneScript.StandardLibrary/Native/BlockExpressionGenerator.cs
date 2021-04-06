@@ -459,16 +459,9 @@ namespace OneScript.StandardLibrary.Native
             base.VisitWhileNode(node);
         }
 
-        protected override void VisitWhileBody(BslSyntaxNode node)
-        {
-            ((WhileBlockExpressionGenerator) _currentState.Generator).StartBody();
-            base.VisitWhileBody(node);
-        }
-
         protected override void VisitWhileCondition(BslSyntaxNode node)
         {
-            ((WhileBlockExpressionGenerator) _currentState.Generator).StartCondition();
-            _currentState.Generator.Add(ConvertToExpressionTree(node));
+            ((WhileBlockExpressionGenerator) _currentState.Generator).StartCondition(ConvertToExpressionTree(node));
         }
 
         protected override void VisitIfNode(ConditionNode node)
@@ -479,8 +472,7 @@ namespace OneScript.StandardLibrary.Native
 
         protected override void VisitIfExpression(BslSyntaxNode node)
         {
-            ((IfThenBlockGenerator) _currentState.Generator).StartCondition();
-            _currentState.Generator.Add(ConvertToExpressionTree(node));
+            ((IfThenBlockGenerator) _currentState.Generator).StartCondition(ConvertToExpressionTree(node));
         }
 
         protected override void VisitIfTruePart(CodeBatchNode node)

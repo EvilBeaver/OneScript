@@ -44,7 +44,7 @@ namespace OneScript.Native.Compiler
     {
         class IfThenElement
         {
-            public readonly List<Expression> Condition = new List<Expression>();
+            public Expression Condition;
             public readonly List<Expression> Body = new List<Expression>();
         }
 
@@ -64,18 +64,18 @@ namespace OneScript.Native.Compiler
             var top = _conditionalBlocks.Pop();
             var block = _elseBlock.Count == 0
                 ? Expression.IfThen(
-                    top.Condition.OneOrBlock(),
+                    top.Condition,
                     top.Body.OneOrBlock())
                 : Expression.IfThenElse(
-                    top.Condition.OneOrBlock(),
+                    top.Condition,
                     top.Body.OneOrBlock(),
                     _elseBlock.OneOrBlock());
 
             while (_conditionalBlocks.Count > 0)
             {
-                var next = _conditionalBlocks.Pop();
+                top = _conditionalBlocks.Pop();
                 block = Expression.IfThenElse(
-                    top.Condition.OneOrBlock(), 
+                    top.Condition, 
                     top.Body.OneOrBlock(), 
                     block);
             }
@@ -83,13 +83,13 @@ namespace OneScript.Native.Compiler
             return block;
         }
 
-        public void StartCondition()
+        public void StartCondition(Expression condition)
         {
             _currentElement = new IfThenElement();
-            _statements = _currentElement.Condition;
+            _currentElement.Condition = condition;
             _conditionalBlocks.Push(_currentElement);
         }
-
+        
         public void StartBody()
         {
             _statements = _currentElement.Body;
@@ -103,14 +103,12 @@ namespace OneScript.Native.Compiler
     
     public class WhileBlockExpressionGenerator : ILoopBlockExpressionGenerator
     {
-        private readonly List<Expression> _conditionStatements = new List<Expression>();
+        private Expression _condition;
         private readonly List<Expression> _bodyStatements = new List<Expression>();
-
-        private List<Expression> _statements = null;
 
         public void Add(Expression item)
         {
-            _statements.Add(item);
+            _bodyStatements.Add(item);
         }
 
         public Expression Block()
@@ -118,21 +116,16 @@ namespace OneScript.Native.Compiler
             var result = new List<Expression>();
             
             result.Add(Expression.IfThen(
-                Expression.Not(_conditionStatements.OneOrBlock()), 
+                Expression.Not(_condition), 
                 Expression.Break(BreakLabel)));
             result.AddRange(_bodyStatements);
 
             return Expression.Loop(Expression.Block(result), BreakLabel, ContinueLabel);
         }
 
-        public void StartCondition()
+        public void StartCondition(Expression condition)
         {
-            _statements = _conditionStatements;
-        }
-
-        public void StartBody()
-        {
-            _statements = _bodyStatements;
+            _condition = condition;
         }
 
         public LabelTarget BreakLabel { get; } = Expression.Label(typeof(void));
