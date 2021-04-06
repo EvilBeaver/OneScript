@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.Native.Compiler
 {
@@ -189,7 +191,31 @@ namespace OneScript.Native.Compiler
 
         public Expression Block()
         {
-            throw new NotImplementedException();
+            var collectionType = typeof(ICollectionContext);
+            var getManagedIteratorMethod = collectionType.GetMethod("GetManagedIterator");
+            var moveNextMethod = typeof(IEnumerator).GetMethod("MoveNext");
+            var collectionVar = Expression.Variable(collectionType);
+            
+            var result = new List<Expression>();
+            result.Add(Expression.Assign(collectionVar,
+                Expression.TypeAs(EnumeratorExpression, typeof(ICollectionContext))));
+            var enumeratorVar = Expression.Variable(typeof(CollectionEnumerator));
+            result.Add(Expression.Assign(enumeratorVar, 
+                Expression.Call(collectionVar, getManagedIteratorMethod)));
+
+            var loop = new List<Expression>();
+
+            loop.Add(Expression.Assign(Iterator, Expression.Property(enumeratorVar, "Current")));
+            loop.AddRange(_bodyStatements);
+
+            result.Add(Expression.Loop(
+                Expression.IfThenElse(
+                    Expression.Equal(Expression.Call(enumeratorVar, moveNextMethod), Expression.Constant(true)),
+                    Expression.Block(loop),
+                    Expression.Break(BreakLabel)),
+                BreakLabel, ContinueLabel));
+
+            return Expression.Block(new[] {collectionVar, enumeratorVar}, result);
         }
 
         public LabelTarget BreakLabel { get; } = Expression.Label(typeof(void));

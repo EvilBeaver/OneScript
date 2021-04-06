@@ -526,6 +526,26 @@ namespace OneScript.StandardLibrary.Native
             ((ForBlockExpressionGenerator) _currentState.Generator).UpperLimit = _statementBuildParts.Pop();
         }
 
+        protected override void VisitForEachLoopNode(ForEachLoopNode node)
+        {
+            _currentState.NewState(new ForEachBlockExpressionGenerator());
+            base.VisitForEachLoopNode(node);
+        }
+
+        protected override void VisitIteratorLoopVariable(TerminalNode node)
+        {
+            _statementBuildParts.Push(Expression.Variable(typeof(IValue)));
+            base.VisitIteratorLoopVariable(node);
+            ((ForEachBlockExpressionGenerator) _currentState.Generator).Iterator = _statementBuildParts.Pop();
+            _statementBuildParts.Pop();
+        }
+
+        protected override void VisitIteratorExpression(BslSyntaxNode node)
+        {
+            base.VisitIteratorExpression(node);
+            ((ForEachBlockExpressionGenerator) _currentState.Generator).EnumeratorExpression = _statementBuildParts.Pop();
+        }
+
         private static ExpressionType TokenToOperationCode(Token stackOp) =>
             ExpressionHelpers.TokenToOperationCode(stackOp);
 

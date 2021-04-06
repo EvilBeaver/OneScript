@@ -325,5 +325,37 @@ namespace OneScript.Core.Tests
             func.DynamicInvoke(args);
             args[0].Should().Be(6);
         }
+        
+        [Fact]
+        public void Can_Do_ForEachLoop()
+        {
+            var tm = new DefaultTypeManager();
+            var arrayType = tm.RegisterClass(typeof(ArrayImpl));
+            
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.Parameters.Insert("Результат", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("П", new TypeTypeValue(arrayType));
+            
+            block.CodeBlock = 
+                "Для Каждого Ф Из П Цикл " +
+                "Если Ф = 4 Тогда Продолжить; КонецЕсли; " +
+                "Если Ф = 5 Тогда Прервать; КонецЕсли;" +
+                "Результат = Результат + Ф;" +
+                "КонецЦикла;";
+            var expression = block.MakeExpression();
+            var func = expression.Compile();
+
+            var inArray = new ArrayImpl();
+
+            inArray.Add(ValueFactory.Create(1));
+            inArray.Add(ValueFactory.Create(2));
+            inArray.Add(ValueFactory.Create(3));
+            inArray.Add(ValueFactory.Create(4));
+            inArray.Add(ValueFactory.Create(5));
+            
+            var args = new object[] { decimal.Zero, inArray };
+            func.DynamicInvoke(args);
+            args[0].Should().Be(6);
+        }
     }
 }
