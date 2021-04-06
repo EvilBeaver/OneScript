@@ -242,9 +242,10 @@ namespace OneScript.Core.Tests
             var block = new CompiledBlock(new DefaultTypeManager());
             block.Parameters.Insert("Результат", new TypeTypeValue(BasicTypes.Number));
             block.CodeBlock = "Ф = 1;" +
-                              "Пока Ф < 3 Цикл" +
+                              "Пока Ф < 10 Цикл" +
                               "\tРезультат = Результат + Ф;" +
                               "\tФ = Ф + 1;" +
+                              "\tЕсли Ф > 2 Тогда Прервать; КонецЕсли;" +
                               "КонецЦикла;";
             var func = block.MakeExpression().Compile();
             

@@ -28,7 +28,19 @@ namespace OneScript.StandardLibrary.Native
     {
         private class GeneratorStateMaster
         {
+            private class LoopStruct
+            {
+                public LabelTarget BreakLabel;
+                public LabelTarget ContinueLabel;
+
+                public LoopStruct(ILoopBlockExpressionGenerator g)
+                {
+                    BreakLabel = g.BreakLabel;
+                    ContinueLabel = g.ContinueLabel;
+                }
+            };
             private readonly Stack<IBlockExpressionGenerator> _generators = new Stack<IBlockExpressionGenerator>();
+            private readonly Stack<LoopStruct> _labels = new Stack<LoopStruct>();
 
             public IBlockExpressionGenerator Generator => _generators.Peek();
 
@@ -40,12 +52,30 @@ namespace OneScript.StandardLibrary.Native
             public void NewState(IBlockExpressionGenerator newGenerator)
             {
                 _generators.Push(newGenerator);
+                if (newGenerator is ILoopBlockExpressionGenerator loopGenerator)
+                {
+                    _labels.Push(new LoopStruct(loopGenerator));
+                }
             }
 
             public void PopState()
             {
                 var gen = _generators.Pop();
                 Generator.Add(gen.Block());
+                if (gen is ILoopBlockExpressionGenerator)
+                {
+                    _labels.Pop();
+                }
+            }
+
+            public void AddBreakExpression()
+            {
+                Generator.Add(Expression.Break(_labels.Peek().BreakLabel));
+            }
+
+            public void AddContinueExpression()
+            {
+                Generator.Add(Expression.Continue(_labels.Peek().ContinueLabel));
             }
         }
         
@@ -467,12 +497,12 @@ namespace OneScript.StandardLibrary.Native
 
         protected override void VisitBreakNode(LineMarkerNode node)
         {
-            ((ILoopBlockExpressionGenerator) _currentState.Generator).AddBreakExpression();
+            _currentState.AddBreakExpression();
         }
 
         protected override void VisitContinueNode(LineMarkerNode node)
         {
-            ((ILoopBlockExpressionGenerator) _currentState.Generator).AddContinueExpression();
+            _currentState.AddContinueExpression();
         }
 
         protected override void VisitBlockEnd(in CodeRange endLocation)

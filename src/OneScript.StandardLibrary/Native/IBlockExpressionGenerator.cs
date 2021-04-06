@@ -6,29 +6,28 @@ namespace OneScript.Native.Compiler
 {
     public interface IBlockExpressionGenerator
     {
-
         void Add(Expression item);
         Expression Block();
     }
 
     public interface ILoopBlockExpressionGenerator : IBlockExpressionGenerator
     {
-        void AddBreakExpression();
-        void AddContinueExpression();
+        LabelTarget BreakLabel { get; }
+        LabelTarget ContinueLabel { get; }
     }
 
     public class SimpleBlockExpressionGenerator : IBlockExpressionGenerator
     {
-        readonly List<Expression> Statements = new List<Expression>();
+        readonly List<Expression> _statements = new List<Expression>();
 
         public void Add(Expression item)
         {
-            Statements.Add(item);
+            _statements.Add(item);
         }
 
         public Expression Block()
         {
-            return Expression.Block(Statements);
+            return Expression.Block(_statements);
         }
     }
 
@@ -54,10 +53,14 @@ namespace OneScript.Native.Compiler
         public Expression Block()
         {
             var top = _conditionalBlocks.Pop();
-            var block = Expression.IfThenElse(
-                Expression.Block(top.Condition), 
-                Expression.Block(top.Body), 
-                Expression.Block(_elseBlock));
+            var block = _elseBlock.Count == 0
+                ? Expression.IfThen(
+                    Expression.Block(top.Condition),
+                    Expression.Block(top.Body))
+                : Expression.IfThenElse(
+                    Expression.Block(top.Condition),
+                    Expression.Block(top.Body),
+                    Expression.Block(_elseBlock));
 
             while (_conditionalBlocks.Count > 0)
             {
@@ -96,9 +99,6 @@ namespace OneScript.Native.Compiler
 
         private List<Expression> _statements = null;
 
-        private readonly LabelTarget _continueLabel = Expression.Label(typeof(void));
-        private readonly LabelTarget _breakLabel = Expression.Label(typeof(void));
-        
         public void Add(Expression item)
         {
             _statements.Add(item);
@@ -110,10 +110,10 @@ namespace OneScript.Native.Compiler
             
             result.Add(Expression.IfThen(
                 Expression.Not(Expression.Block(_conditionStatements)), 
-                Expression.Break(_breakLabel)));
+                Expression.Break(BreakLabel)));
             result.AddRange(_bodyStatements);
 
-            return Expression.Loop(Expression.Block(result), _breakLabel, _continueLabel);
+            return Expression.Loop(Expression.Block(result), BreakLabel, ContinueLabel);
         }
 
         public void StartCondition()
@@ -126,15 +126,9 @@ namespace OneScript.Native.Compiler
             _statements = _bodyStatements;
         }
 
-        public void AddBreakExpression()
-        {
-            Add(Expression.Break(_breakLabel));
-        }
+        public LabelTarget BreakLabel { get; } = Expression.Label(typeof(void));
 
-        public void AddContinueExpression()
-        {
-            Add(Expression.Continue(_continueLabel));
-        }
+        public LabelTarget ContinueLabel { get; } = Expression.Label(typeof(void));
     }
 
     public class ForBlockExpressionGenerator : ILoopBlockExpressionGenerator
@@ -145,8 +139,6 @@ namespace OneScript.Native.Compiler
         public Expression InitialValue { get; set; }
         public Expression UpperLimit { get; set; }
 
-        private readonly LabelTarget _continueLabel = Expression.Label(typeof(void));
-        private readonly LabelTarget _breakLabel = Expression.Label(typeof(void));
         private readonly LabelTarget _loopLabel = Expression.Label(typeof(void));
        
         public void Add(Expression item)
@@ -164,29 +156,33 @@ namespace OneScript.Native.Compiler
             var loop = new List<Expression>();
             loop.Add(Expression.IfThen(
                 Expression.GreaterThan(IteratorExpression, InitialValue), 
-                Expression.Break(_breakLabel)));
+                Expression.Break(BreakLabel)));
             
             loop.AddRange(_bodyStatements);
             
-            loop.Add(Expression.Label(_continueLabel));
+            loop.Add(Expression.Label(ContinueLabel));
             loop.Add(Expression.Increment(IteratorExpression));
             
-            result.Add(Expression.Loop(Expression.Block(loop), _breakLabel, _continueLabel));
+            result.Add(Expression.Loop(Expression.Block(loop), BreakLabel, ContinueLabel));
             
-            result.Add(Expression.Label(_breakLabel));
+            result.Add(Expression.Label(BreakLabel));
 
             return Expression.Block(result);
         }
 
         public void AddBreakExpression()
         {
-            Add(Expression.Break(_breakLabel));
+            Add(Expression.Break(BreakLabel));
         }
 
         public void AddContinueExpression()
         {
-            Add(Expression.Continue(_continueLabel));
+            Add(Expression.Continue(ContinueLabel));
         }
+
+        public LabelTarget BreakLabel { get; } = Expression.Label(typeof(void));
+
+        public LabelTarget ContinueLabel { get; } = Expression.Label(typeof(void));
     }
 
     public class ForEachBlockExpressionGenerator : ILoopBlockExpressionGenerator
@@ -196,9 +192,6 @@ namespace OneScript.Native.Compiler
         public Expression EnumeratorExpression { get; set; }
         public Expression Iterator { get; set; }
 
-        private readonly LabelTarget _continueLabel = Expression.Label(typeof(void));
-        private readonly LabelTarget _breakLabel = Expression.Label(typeof(void));
-       
         public void Add(Expression item)
         {
             _bodyStatements.Add(item);
@@ -211,12 +204,16 @@ namespace OneScript.Native.Compiler
 
         public void AddBreakExpression()
         {
-            Add(Expression.Break(_breakLabel));
+            Add(Expression.Break(BreakLabel));
         }
 
         public void AddContinueExpression()
         {
-            Add(Expression.Continue(_continueLabel));
+            Add(Expression.Continue(ContinueLabel));
         }
+
+        public LabelTarget BreakLabel { get; } = Expression.Label(typeof(void));
+
+        public LabelTarget ContinueLabel { get; } = Expression.Label(typeof(void));
     }
 }
