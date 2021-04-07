@@ -401,10 +401,25 @@ namespace OneScript.Language.SyntaxAnalysis
 
         protected virtual void VisitForInitializer(BslSyntaxNode node)
         {
+            var forLoopIterator = node.Children[0];
+            var forLoopInitialValue = node.Children[1];
+            VisitForLoopIterator(forLoopIterator);
+            VisitForLoopInitialValue(forLoopInitialValue);
+        }
+
+        protected virtual void VisitForLoopIterator(BslSyntaxNode node)
+        {
+            VisitAssignmentLeftPart(node);
+        }
+
+        protected virtual void VisitForLoopInitialValue(BslSyntaxNode node)
+        {
+            VisitExpression(node);
         }
 
         protected virtual void VisitForUpperLimit(BslSyntaxNode node)
         {
+            VisitExpression(node);
         }
 
         protected virtual void VisitForLoopBody(CodeBatchNode node)
