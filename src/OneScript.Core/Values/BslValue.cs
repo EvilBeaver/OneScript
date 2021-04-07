@@ -5,11 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Dynamic;
 
 namespace OneScript.Values
 {
-    public abstract class BslValue : DynamicObject
+    public abstract class BslValue : DynamicObject, IComparable<BslValue>, IEquatable<BslValue>
     {
         protected virtual string ConvertToString() => ToString();
         
@@ -17,5 +18,10 @@ namespace OneScript.Values
         {
             return value.ConvertToString();
         }
+
+        public abstract int CompareTo(BslValue other);
+
+        public abstract bool Equals(BslValue other);
+
     }
 }

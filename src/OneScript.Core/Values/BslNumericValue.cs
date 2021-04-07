@@ -13,11 +13,41 @@ namespace OneScript.Values
 {
     public class BslNumericValue : BslPrimitiveValue, IEquatable<BslNumericValue>
     {
+        private static readonly BslNumericValue[] _popularValues = new BslNumericValue[10];
+        static BslNumericValue()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                _popularValues[i] = new BslNumericValue(i);
+            }
+        }
+        
+        
         private readonly decimal _value;
 
-        public BslNumericValue(decimal value)
+        private BslNumericValue(decimal value)
         {
             _value = value;
+        }
+        
+        public static BslNumericValue Create(decimal value)
+        {
+            switch (value)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                    return _popularValues[(int)value];
+                default:
+                    return new BslNumericValue(value);
+            }
         }
 
         public override bool TryBinaryOperation(BinaryOperationBinder binder, object arg, out object result)
@@ -31,11 +61,39 @@ namespace OneScript.Values
             return true;
         }
 
+        public override string ToString()
+        {
+            return _value.ToString(NumberFormatInfo.InvariantInfo);
+        }
+
         public bool Equals(BslNumericValue other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return _value == other._value;
+        }
+
+        public override bool Equals(BslValue other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            return other switch
+            {
+                BslNumericValue num => Equals(num),
+                BslBooleanValue boolean => _value == (decimal) boolean,
+                _ => false
+            };
+        }
+
+        public override int CompareTo(BslValue other)
+        {
+            return other switch
+            {
+                BslNumericValue num => _value.CompareTo(num._value),
+                BslBooleanValue boolean => _value.CompareTo((decimal) boolean),
+                _ => base.CompareTo(other)
+            };
         }
 
         public override bool Equals(object obj)
@@ -164,12 +222,31 @@ namespace OneScript.Values
 
         public static bool operator ==(BslNumericValue left, BslNumericValue right)
         {
-            return Equals(left, right);
+            return left?.Equals(right) ?? ReferenceEquals(right, null);
         }
 
         public static bool operator !=(BslNumericValue left, BslNumericValue right)
         {
-            return !Equals(left, right);
+            if (ReferenceEquals(left, null))
+                return ReferenceEquals(right, null);
+
+            return !left.Equals(right);
+        }
+        
+        public static bool operator ==(BslNumericValue left, decimal right)
+        {
+            if (ReferenceEquals(left, null))
+                return right == 0;
+            
+            return left._value == right;
+        }
+
+        public static bool operator !=(BslNumericValue left, decimal right)
+        {
+            if (ReferenceEquals(left, null))
+                return right != 0;
+
+            return left._value != right;
         }
 
         public static BslNumericValue Parse(string presentation)
