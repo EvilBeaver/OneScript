@@ -28,11 +28,13 @@ namespace OneScript.Native.Compiler
         {
             _name = name;
         }
-        
-        public BslMethodInfo(LambdaExpression implementation)
+
+        public void SetImplementation(LambdaExpression lambda)
         {
-            throw new NotImplementedException();
+            Implementation = lambda;
         }
+        
+        public LambdaExpression Implementation { get; private set; }
         
         public override object[] GetCustomAttributes(bool inherit)
         {

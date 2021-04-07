@@ -7,10 +7,12 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;
+using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
@@ -34,17 +36,47 @@ namespace OneScript.Native.Compiler
             {
                 ModuleInformation = ModuleInfo
             };
-            
+
             Visit(moduleNode);
 
             return _module;
         }
 
+        /// <summary>
+        /// Заранее заготавливаем символы методов, т.к. выражения могут ссылатся на методы,
+        /// объявленные позже в теле модуля.
+        /// </summary>
+        /// <param name="module"></param>
+        private void RegisterLocalMethods(BslSyntaxNode module)
+        {
+            var methodsSection = module.Children.FirstOrDefault(x => x.Kind == NodeKind.MethodsSection);
+            if(methodsSection == default)
+                return;
+            
+            foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
+            {
+                var methodInfo = new BslMethodInfo();
+                VisitMethodSignature(methodNode.Signature);
+
+                var symbol = new MethodSymbol
+                {
+                    Name = methodInfo.Name,
+                    MemberInfo = methodInfo
+                };
+                
+                Symbols.TopScope().Methods.Add(symbol, methodInfo.Name);
+                
+            }
+        }
+        
         protected override void VisitModule(ModuleNode node)
         {
             var moduleScope = new SymbolScope();
             Symbols.AddScope(moduleScope);
+            
+            RegisterLocalMethods(node);
             base.VisitModule(node);
+            
             Symbols.PopScope();
         }
 
@@ -60,18 +92,24 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitMethod(MethodNode methodNode)
         {
-            var methodCompiler = new MethodCompiler(MakeContext());
-            var method = methodCompiler.CreateMethodInfo(methodNode);
-            
-            _module.Methods.Add(method);
-        }
+            var methodSymbol = Symbols.TopScope().Methods[methodNode.Signature.MethodName];
+            var methodInfo = (BslMethodInfo)methodSymbol.MethodInfo;
 
-        protected override void VisitModuleBody(BslSyntaxNode codeBlock)
+            var context = MakeContext();
+            var methCompiler = new MethodCompiler(context, methodInfo);
+            methCompiler.CompileMethod(methodNode);
+        }
+ 
+        protected override void VisitModuleBody(BslSyntaxNode moduleBody)
         {
-            var methodCompiler = new MethodCompiler(MakeContext());
-            var method = methodCompiler.CreateMethodInfo("$entry", (CodeBatchNode)codeBlock.Children[0]);
+            var method = new BslMethodInfo();
+            method.SetName("$entry");
             
             _module.Methods.Add(method);
+            
+            var context = MakeContext();
+            var methCompiler = new MethodCompiler(context, method);
+            methCompiler.CompileModuleBody(method, moduleBody);
         }
     }
 }

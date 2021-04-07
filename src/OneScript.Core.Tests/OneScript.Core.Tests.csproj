@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\OneScript.Native\OneScript.Native.csproj" />
       <ProjectReference Include="..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
       <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
     </ItemGroup>
