@@ -113,7 +113,8 @@ namespace OneScript.StandardLibrary.Native
             {
                 foreach (var local in context.TopScope().Variables)
                 {
-                    _localVariables.Add(Expression.Parameter(local.VariableType.MakeByRefType(), local.Name));
+                    // TODO: ByRef ?
+                    _localVariables.Add(Expression.Parameter(local.VariableType, local.Name));
                     ++_parametersCount;
                 }
             }

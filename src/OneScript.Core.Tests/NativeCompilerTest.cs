@@ -246,12 +246,13 @@ namespace OneScript.Core.Tests
                               "\tРезультат = Результат + Ф;" +
                               "\tФ = Ф + 1;" +
                               "\tЕсли Ф > 2 Тогда Прервать; КонецЕсли;" +
-                              "КонецЦикла;";
+                              "КонецЦикла;" +
+                              "Возврат Результат;";
             var func = block.MakeExpression().Compile();
             
             var args = new object[] { decimal.One };
-            func.DynamicInvoke(args);
-            args[0].Should().Be(4);
+            var result = (IValue)func.DynamicInvoke(args);
+            result.AsNumber().Should().Be(4);
         }
         
         [Fact]
@@ -290,7 +291,8 @@ namespace OneScript.Core.Tests
                 "Если П=1 Тогда Ф=1;" +
                 "ИначеЕсли П=2 Тогда Ф=2;" +
                 "ИначеЕсли П=3 Тогда Ф=3;" +
-                "Иначе Ф=0; КонецЕсли";
+                "Иначе Ф=0; КонецЕсли;" +
+                "Возврат Ф;";
             var expression = block.MakeExpression(); 
             var condition = expression 
                 .Body
@@ -303,8 +305,8 @@ namespace OneScript.Core.Tests
             for (decimal i = 0; i < 4; i++)
             {
                 var args = new object[] {i, (decimal)0};
-                func.DynamicInvoke(args);
-                args[1].Should().Be(i);
+                var result = (IValue)func.DynamicInvoke(args);
+                result.AsNumber().Should().Be(i);
             }
         }
         
@@ -318,12 +320,13 @@ namespace OneScript.Core.Tests
                 "Результат = Результат + Ф;" +
                 "Если Ф > 2 Тогда Прервать; КонецЕсли; " +
                 "Продолжить;" +
-                "КонецЦикла;";
+                "КонецЦикла;" +
+                "Возврат Результат;";
             var expression = block.MakeExpression();
             var func = expression.Compile();
             var args = new object[] { decimal.Zero };
-            func.DynamicInvoke(args);
-            args[0].Should().Be(6);
+            var result = (IValue)func.DynamicInvoke(args);
+            result.AsNumber().Should().Be(6);
         }
         
         [Fact]
@@ -341,7 +344,8 @@ namespace OneScript.Core.Tests
                 "Если Ф = 4 Тогда Продолжить; КонецЕсли; " +
                 "Если Ф = 5 Тогда Прервать; КонецЕсли;" +
                 "Результат = Результат + Ф;" +
-                "КонецЦикла;";
+                "КонецЦикла;" +
+                "Возврат Результат;";
             var expression = block.MakeExpression();
             var func = expression.Compile();
 
@@ -354,8 +358,8 @@ namespace OneScript.Core.Tests
             inArray.Add(ValueFactory.Create(5));
             
             var args = new object[] { decimal.Zero, inArray };
-            func.DynamicInvoke(args);
-            args[0].Should().Be(6);
+            var result = (IValue)func.DynamicInvoke(args);
+            result.AsNumber().Should().Be(6);
         }
     }
 }
