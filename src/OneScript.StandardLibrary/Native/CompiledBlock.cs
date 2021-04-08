@@ -91,18 +91,38 @@ namespace OneScript.StandardLibrary.Native
                 convertedAccessList.Add(convertedParam);
                 ++index;
             }
-
+            
             var lambdaInvocation = Expression.Invoke(l, convertedAccessList);
-            var func = Expression.Lambda<Func<IValue[], IValue>>(lambdaInvocation, arrayOfValuesParam);
+            var body = AddReturnDummyIfNeeded(l, lambdaInvocation);
+            var func = Expression.Lambda<Func<IValue[], IValue>>(body, arrayOfValuesParam);
 
             return func.Compile();
         }
-        
+
+        private static Expression AddReturnDummyIfNeeded(LambdaExpression l, InvocationExpression lambdaInvocation)
+        {
+            Expression body;
+
+            if (l.ReturnType == typeof(void))
+            {
+                var retPoint = Expression.Label(typeof(IValue));
+                var retVal = Expression.Label(retPoint, Expression.Constant(ValueFactory.Create()));
+                body = Expression.Block(lambdaInvocation, retVal);
+            }
+            else
+            {
+                body = lambdaInvocation;
+            }
+
+            return body;
+        }
+
         public T CreateDelegate<T>() where T:class
         {
             var l = MakeExpression();
             var call = Expression.Invoke(l, l.Parameters);
-            var func = Expression.Lambda<T>(call, l.Parameters);
+            var body = AddReturnDummyIfNeeded(l, call);
+            var func = Expression.Lambda<T>(body, l.Parameters);
 
             return func.Compile();
         }
@@ -141,8 +161,6 @@ namespace OneScript.StandardLibrary.Native
             if (Symbols == null)
                 Symbols = new OneScript.Native.Compiler.SymbolTable();
             
-            FillSymbolContext(Symbols);
-
             var methodInfo = CreateMethodInfo();
             var moduleInfo = new ModuleInformation
             {
@@ -172,34 +190,12 @@ namespace OneScript.StandardLibrary.Native
                 var targetType = parameter.Value as TypeTypeValue;
                 var pi = new BslParameterInfo(
                     parameter.Key.AsString(),
-                    targetType.TypeValue.ImplementingClass);
+                    ConvertTypeToClrType(targetType));
 
                 methodInfo.Parameters.Add(pi);
             }
 
             return methodInfo;
-        }
-
-
-        private void FillSymbolContext(OneScript.Native.Compiler.SymbolTable symbols)
-        {
-            var localsScope = new OneScript.Native.Compiler.SymbolScope();
-            
-            foreach (var kv in Parameters)
-            {
-                var name = kv.Key.AsString();
-
-                if (kv.Value.SystemType != BasicTypes.Type)
-                {
-                    throw RuntimeException.InvalidArgumentType($"Parameter {name} is not a Type");
-                }
-
-                var typeVal = kv.Value.GetRawValue() as TypeTypeValue;
-                var type = ConvertTypeToClrType(typeVal);
-                localsScope.AddVariable(name, type);
-            }
-            
-            symbols.AddScope(localsScope);
         }
 
         private static Type ConvertTypeToClrType(TypeTypeValue typeVal)

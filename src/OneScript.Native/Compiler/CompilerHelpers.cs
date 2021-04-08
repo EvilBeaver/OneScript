@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;
@@ -22,6 +23,23 @@ namespace OneScript.Native.Compiler
             return lex.Type switch
             {
                 LexemType.NumberLiteral => BslNumericValue.Parse(lex.Content),
+                LexemType.BooleanLiteral => BslBooleanValue.Parse(lex.Content),
+                LexemType.StringLiteral => BslStringValue.Create(lex.Content),
+                LexemType.DateLiteral => BslDateValue.Parse(lex.Content),
+                LexemType.UndefinedLiteral => BslUndefinedValue.Instance,
+                _ => throw new NotImplementedException()
+            };
+        }
+        
+        public static object ClrValueFromLiteral(in Lexem lex)
+        {
+            return lex.Type switch
+            {
+                LexemType.NumberLiteral => (decimal)BslNumericValue.Parse(lex.Content),
+                LexemType.BooleanLiteral => (bool)BslBooleanValue.Parse(lex.Content),
+                LexemType.StringLiteral => (string)BslStringValue.Create(lex.Content),
+                LexemType.DateLiteral => (DateTime)BslDateValue.Parse(lex.Content),
+                LexemType.UndefinedLiteral => BslUndefinedValue.Instance,
                 _ => throw new NotImplementedException()
             };
         }
@@ -60,6 +78,18 @@ namespace OneScript.Native.Compiler
             scope.Variables.Add(symbol, name);
 
             return scope;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string GetIdentifier(this BslSyntaxNode node)
+        {
+            return GetIdentifier((TerminalNode) node);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string GetIdentifier(this TerminalNode node)
+        {
+            return node.Lexem.Content;
         }
     }
 }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace OneScript.Native.Compiler
+namespace OneScript.Native.Compiler_
 {
     public interface IBlockExpressionGenerator
     {

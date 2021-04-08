@@ -29,6 +29,8 @@ namespace OneScript.Values
         
         public static explicit operator decimal(BslStringValue value) => BslNumericValue.Parse(value._value);
         
+        //public static explicit operator string(BslStringValue value) => value._value;
+        
         public static explicit operator DateTime(BslStringValue value) => (DateTime)BslDateValue.Parse(value._value);
 
         public static explicit operator bool(BslStringValue value) => (bool)BslBooleanValue.Parse(value._value);
