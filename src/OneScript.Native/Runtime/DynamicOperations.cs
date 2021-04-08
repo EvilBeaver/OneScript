@@ -20,7 +20,7 @@ namespace OneScript.Native.Runtime
             
             if (left is BslDateValue bslDate && right is BslNumericValue num)
             {
-                return new BslDateValue(bslDate - (decimal) num);
+                return BslDateValue.Create(bslDate - (decimal) num);
             }
             
             dynamic dLeft = left;
@@ -42,7 +42,7 @@ namespace OneScript.Native.Runtime
                     case BslNumericValue numRight:
                     {
                         var result = date - numRight;
-                        return new BslDateValue(result);
+                        return BslDateValue.Create(result);
                     }
                     case BslDateValue dateRight:
                     {

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using OneScript.Language;
@@ -76,6 +77,10 @@ namespace OneScript.Native.Compiler
             }
 
             var block = _blocks.LeaveBlock();
+            block.Add(Expression.Label(
+                block.MethodReturn, 
+                Expression.Constant(BslUndefinedValue.Instance)));
+            
             var parameters = _localVariables.Take(_declaredParameters.Length).ToArray(); 
             var body = Expression.Block(
                 _localVariables.Skip(parameters.Length).ToArray(),
@@ -179,6 +184,104 @@ namespace OneScript.Native.Compiler
         {
             object constant = CompilerHelpers.ClrValueFromLiteral(node.Lexem);
             _statementBuildParts.Push(Expression.Constant(constant));
+        }
+        
+        protected override void VisitAssignment(BslSyntaxNode assignment)
+        {
+            var astLeft = assignment.Children[0];
+            var astRight = assignment.Children[1];
+            
+            VisitAssignmentRightPart(astRight);
+            VisitAssignmentLeftPart(astLeft);
+            
+            var left = _statementBuildParts.Pop();
+            var right = _statementBuildParts.Pop();
+
+            var statement = MakeAssign(left, right);
+            _blocks.Add(statement);
+        }
+        
+        protected override void VisitAssignmentLeftPart(BslSyntaxNode node)
+        {
+            if (node is TerminalNode t)
+            {
+                VisitVariableWrite(t);
+            }
+            // else if (node.Kind == NodeKind.IndexAccess)
+            // {
+            //     VisitIndexAccess(node);
+            // }
+            else
+            {
+                VisitReferenceRead(node);
+            }
+        }
+        
+        protected override void VisitBinaryOperation(BinaryOperationNode binaryOperationNode)
+        {
+            VisitExpression(binaryOperationNode.Children[0]);
+            VisitExpression(binaryOperationNode.Children[1]);
+
+            var right = _statementBuildParts.Pop();
+            var left = _statementBuildParts.Pop();
+            
+            var binaryOp = DispatchBinaryOp(left, right, binaryOperationNode);
+            
+            if (LanguageDef.IsLogicalBinaryOperator(binaryOperationNode.Operation))
+            {
+                var toBool = Expression.Convert(binaryOp, typeof(bool));
+                _statementBuildParts.Push(toBool);
+            }
+            else
+            {
+                _statementBuildParts.Push(binaryOp);
+            }
+        }
+
+        private Expression DispatchBinaryOp(Expression left, Expression right, BinaryOperationNode binaryOperationNode)
+        {
+            try
+            {
+                return _binaryOperationCompiler.Compile(binaryOperationNode, left, right);
+            }
+            catch (CompilerException e)
+            {
+                AddError(e.Message, binaryOperationNode.Location);
+                return null;
+            }
+        }
+        
+        private Expression MakeAssign(Expression left, Expression right)
+        {
+            if (!left.Type.IsAssignableFrom(right.Type))
+            {
+                right = ExpressionHelpers.ConvertToType(right, left.Type);
+            }
+            
+            if (left is MethodCallExpression call)
+            {
+                return Expression.Invoke(call, right);
+            }
+            else
+            {
+                return Expression.Assign(left, right);
+            }
+        }
+        
+        protected override void VisitReturnNode(BslSyntaxNode node)
+        {
+            Debug.Assert(node.Children.Count > 0);
+            
+            VisitExpression(node.Children[0]);
+
+            var resultExpr = _statementBuildParts.Pop();
+
+            var label = _blocks.GetCurrentBlock().MethodReturn;
+            if (!resultExpr.Type.IsValue())
+                resultExpr = ExpressionHelpers.ConvertToType(resultExpr, typeof(BslValue));
+            
+            var statement = Expression.Return(label, resultExpr);
+            _blocks.Add(statement);
         }
         
         protected override void AddError(BilingualString errorText, CodeRange location)

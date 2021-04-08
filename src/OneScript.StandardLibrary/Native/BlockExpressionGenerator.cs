@@ -218,7 +218,7 @@ namespace OneScript.StandardLibrary.Native
                 foreach (var propertyInfo in indexerProps)
                 {
                     var parameterType = propertyInfo.GetIndexParameters()[0].ParameterType;
-                    var passExpression = ExpressionHelpers.TryConvertParameter(index, parameterType);
+                    var passExpression = ExpressionHelpers_.TryConvertParameter(index, parameterType);
                     
                     if (passExpression == null) 
                         continue;
@@ -395,7 +395,7 @@ namespace OneScript.StandardLibrary.Native
 
             var resultExpr = _statementBuildParts.Pop();
             if (!typeof(IValue).IsAssignableFrom(resultExpr.Type))
-                resultExpr = ExpressionHelpers.ConvertToIValue(resultExpr);
+                resultExpr = ExpressionHelpers_.ConvertToIValue(resultExpr);
             
             _currentState.Generator.Add(Expression.Return(_fragmentReturn, resultExpr));
         }
@@ -481,7 +481,7 @@ namespace OneScript.StandardLibrary.Native
         }
 
         private static ExpressionType TokenToOperationCode(Token stackOp) =>
-            ExpressionHelpers.TokenToOperationCode(stackOp);
+            ExpressionHelpers_.TokenToOperationCode(stackOp);
 
         private Expression MakeAssign(Expression left, Expression right)
         {
@@ -489,7 +489,7 @@ namespace OneScript.StandardLibrary.Native
             {
                 if (left.Type == typeof(IValue))
                 {
-                    right = ExpressionHelpers.ConvertToIValue(right);
+                    right = ExpressionHelpers_.ConvertToIValue(right);
                 }
             }
             

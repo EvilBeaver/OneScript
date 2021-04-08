@@ -20,6 +20,7 @@ using OneScript.Native.Compiler;
 using OneScript.Native.Runtime;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
@@ -75,11 +76,11 @@ namespace OneScript.StandardLibrary.Native
             }
         }
 
-        public Func<IValue[], IValue> CreateDelegate()
+        public Func<BslValue[], BslValue> CreateDelegate()
         {
             var l = MakeExpression();
 
-            var arrayOfValuesParam = Expression.Parameter(typeof(IValue[]));
+            var arrayOfValuesParam = Expression.Parameter(typeof(BslValue[]));
             var convertedAccessList = new List<Expression>();
 
             int index = 0;
@@ -87,42 +88,22 @@ namespace OneScript.StandardLibrary.Native
             {
                 var targetType = parameter.Value as TypeTypeValue;
                 var arrayAccess = Expression.ArrayIndex(arrayOfValuesParam, Expression.Constant(index));
-                var convertedParam = ExpressionHelpers.ConvertFromIValue(arrayAccess, ConvertTypeToClrType(targetType));
+                var convertedParam = ExpressionHelpers.ConvertToType(arrayAccess, ConvertTypeToClrType(targetType));
                 convertedAccessList.Add(convertedParam);
                 ++index;
             }
             
             var lambdaInvocation = Expression.Invoke(l, convertedAccessList);
-            var body = AddReturnDummyIfNeeded(l, lambdaInvocation);
-            var func = Expression.Lambda<Func<IValue[], IValue>>(body, arrayOfValuesParam);
+            var func = Expression.Lambda<Func<BslValue[], BslValue>>(lambdaInvocation, arrayOfValuesParam);
 
             return func.Compile();
-        }
-
-        private static Expression AddReturnDummyIfNeeded(LambdaExpression l, InvocationExpression lambdaInvocation)
-        {
-            Expression body;
-
-            if (l.ReturnType == typeof(void))
-            {
-                var retPoint = Expression.Label(typeof(IValue));
-                var retVal = Expression.Label(retPoint, Expression.Constant(ValueFactory.Create()));
-                body = Expression.Block(lambdaInvocation, retVal);
-            }
-            else
-            {
-                body = lambdaInvocation;
-            }
-
-            return body;
         }
 
         public T CreateDelegate<T>() where T:class
         {
             var l = MakeExpression();
             var call = Expression.Invoke(l, l.Parameters);
-            var body = AddReturnDummyIfNeeded(l, call);
-            var func = Expression.Lambda<T>(body, l.Parameters);
+            var func = Expression.Lambda<T>(call, l.Parameters);
 
             return func.Compile();
         }
@@ -201,7 +182,7 @@ namespace OneScript.StandardLibrary.Native
         private static Type ConvertTypeToClrType(TypeTypeValue typeVal)
         {
             var type = typeVal.TypeValue;
-            return ExpressionHelpers.GetClrType(type);
+            return ExpressionHelpers_.GetClrType(type);
         }
 
         [ScriptConstructor]

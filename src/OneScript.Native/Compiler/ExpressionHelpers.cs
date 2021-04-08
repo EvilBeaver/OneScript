@@ -9,7 +9,9 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Localization;
 using OneScript.Native.Runtime;
+using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
@@ -162,6 +164,58 @@ namespace OneScript.Native.Compiler
                 nameof(DynamicOperations.Subtract));
 
             return Expression.Call(operation, left, right);
+        }
+
+        public static Expression ConvertToType(Expression value, Type targetType)
+        {
+            if (targetType.IsValue())
+            {
+                return ConvertToDynamicValue(value, targetType);
+            }
+            else
+            {
+                return CastToClrType(value, targetType);
+            }
+        }
+
+        private static Expression CastToClrType(Expression value, Type targetType)
+        {
+            var binder = Microsoft.CSharp.RuntimeBinder.Binder.Convert(
+                Microsoft.CSharp.RuntimeBinder.CSharpBinderFlags.ConvertExplicit,
+                targetType,
+                value.Type);
+
+            return Expression.Dynamic(binder, targetType, value);
+        }
+
+        private static Expression ConvertToDynamicValue(Expression value, Type targetType)
+        {
+            Type factoryClass;
+            if (value.Type == typeof(string))
+            {
+                factoryClass = typeof(BslStringValue);
+            }
+            else if (value.Type == typeof(bool))
+            {
+                factoryClass = typeof(BslBooleanValue);
+            }
+            else if (value.Type == typeof(decimal) || value.Type == typeof(int))
+            {
+                factoryClass = typeof(BslNumericValue);
+            }
+            else if (value.Type == typeof(DateTime))
+            {
+                factoryClass = typeof(BslDateValue);
+            }
+            else
+            {
+                throw new CompilerException(new BilingualString(
+                    $"Преобразование из типа {targetType} в тип {value.Type} не поддерживается",
+                    $"Conversion from type {targetType} into {value.Type} is not supported"));
+            }
+            
+            var factory = _operationsCache.GetOrAdd(factoryClass, "Create");
+            return Expression.Call(factory, value);
         }
     }
 }

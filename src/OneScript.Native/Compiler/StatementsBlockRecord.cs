@@ -31,6 +31,6 @@ namespace OneScript.Native.Compiler
 
         public void Add(Expression statement) => _statements.Add(statement);
 
-        public IEnumerable<Expression> GetStatements() => _statements;
+        public IList<Expression> GetStatements() => _statements;
     }
 }

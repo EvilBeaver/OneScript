@@ -14,10 +14,12 @@ namespace OneScript.Values
     {
         private readonly DateTime _value;
 
-        public BslDateValue(DateTime value)
+        private BslDateValue(DateTime value)
         {
             _value = value;
         }
+
+        public static BslDateValue Create(DateTime value) => new BslDateValue(value);
         
         public override int CompareTo(BslValue other)
         {

@@ -21,7 +21,7 @@ namespace OneScript.StandardLibrary.Native
 
         public Expression Compile(BinaryOperationNode node, Expression left, Expression right)
         {
-            _opCode = ExpressionHelpers.TokenToOperationCode(node.Operation);
+            _opCode = ExpressionHelpers_.TokenToOperationCode(node.Operation);
             
             if (IsIValue(left.Type))
             {
@@ -71,7 +71,7 @@ namespace OneScript.StandardLibrary.Native
             }
             if(IsIValue(right.Type))
             {
-                return Expression.MakeBinary(_opCode, left, ExpressionHelpers.ToNumber(right));
+                return Expression.MakeBinary(_opCode, left, ExpressionHelpers_.ToNumber(right));
             }
 
             throw new CompilerException($"Operation {_opCode} is not defined for Number and {right.Type}");
@@ -94,10 +94,10 @@ namespace OneScript.StandardLibrary.Native
                 var isDate = Expression.Equal(propType, Expression.Constant(BasicTypes.Date));
                 
                 if(_opCode == ExpressionType.Subtract)
-                    return Expression.Condition(isDate, DateDiffExpression(left, ExpressionHelpers.ToDate(right)),
-                        DateOffsetOperation(left, ExpressionHelpers.ToNumber(right)));
+                    return Expression.Condition(isDate, DateDiffExpression(left, ExpressionHelpers_.ToDate(right)),
+                        DateOffsetOperation(left, ExpressionHelpers_.ToNumber(right)));
                 else
-                    return DateOffsetOperation(left, ExpressionHelpers.ToNumber(right));
+                    return DateOffsetOperation(left, ExpressionHelpers_.ToNumber(right));
 
             }
             
@@ -106,7 +106,7 @@ namespace OneScript.StandardLibrary.Native
         
         private Expression DateDiffExpression(Expression left, Expression right)
         {
-            var spanExpr = Expression.Subtract(left, ExpressionHelpers.ToDate(right));
+            var spanExpr = Expression.Subtract(left, ExpressionHelpers_.ToDate(right));
             var totalSeconds = Expression.Property(spanExpr, nameof(TimeSpan.TotalSeconds));
             var decimalSeconds = Expression.Convert(totalSeconds, typeof(decimal));
 
@@ -136,7 +136,7 @@ namespace OneScript.StandardLibrary.Native
         {
             if (IsIValue(right.Type))
             {
-                return Expression.MakeBinary(_opCode, left, ExpressionHelpers.ToBoolean(right));
+                return Expression.MakeBinary(_opCode, left, ExpressionHelpers_.ToBoolean(right));
             }
             else
             {
@@ -148,7 +148,7 @@ namespace OneScript.StandardLibrary.Native
         {
             if (IsIValue(right.Type))
             {
-                return Expression.Add(left, ExpressionHelpers.ToString(right));
+                return Expression.Add(left, ExpressionHelpers_.ToString(right));
             }
             else
             {
@@ -174,8 +174,8 @@ namespace OneScript.StandardLibrary.Native
                 case ExpressionType.GreaterThan:
                 case ExpressionType.GreaterThanOrEqual:
                     return MakeNumericOperation(
-                        ExpressionHelpers.ToNumber(left),
-                        ExpressionHelpers.ToNumber(right));
+                        ExpressionHelpers_.ToNumber(left),
+                        ExpressionHelpers_.ToNumber(right));
                 default:
                     throw new CompilerException($"Operation {_opCode} is not defined for IValues");
             }
@@ -183,13 +183,13 @@ namespace OneScript.StandardLibrary.Native
 
         private Expression MakeDynamicSubtraction(Expression left, Expression right)
         {
-            var typeOfLeft = ExpressionHelpers.GetIValueSystemType(left);
+            var typeOfLeft = ExpressionHelpers_.GetIValueSystemType(left);
             var throwException = CreateConversionException(typeOfLeft);
 
             return Expression.IfThenElse(Expression.Equal(typeOfLeft, Expression.Constant(BasicTypes.Number)), 
-                MakeNumericOperation(ExpressionHelpers.ToNumber(left), right), 
+                MakeNumericOperation(ExpressionHelpers_.ToNumber(left), right), 
                 Expression.IfThenElse(Expression.Equal(typeOfLeft, Expression.Constant(BasicTypes.Date)), 
-                    DateOperation(ExpressionHelpers.ToDate(left), right),
+                    DateOperation(ExpressionHelpers_.ToDate(left), right),
                     throwException));
         }
 
@@ -209,15 +209,15 @@ namespace OneScript.StandardLibrary.Native
 
         private Expression MakeDynamicAddition(Expression left, Expression right)
         {
-            var typeOfLeft = ExpressionHelpers.GetIValueClrType(left);
+            var typeOfLeft = ExpressionHelpers_.GetIValueClrType(left);
             var exception = CreateConversionException(typeOfLeft);
 
             return Expression.IfThenElse(Expression.Equal(typeOfLeft, Expression.Constant(BasicTypes.String)),
-                StringAddition(ExpressionHelpers.ToString(left), right),
+                StringAddition(ExpressionHelpers_.ToString(left), right),
                 Expression.IfThenElse(Expression.Equal(typeOfLeft, Expression.Constant(BasicTypes.Date)),
                     DateOperation(left, right),
                     Expression.IfThenElse(Expression.Equal(typeOfLeft, Expression.Constant(BasicTypes.Number)),
-                        MakeNumericOperation(ExpressionHelpers.ToNumber(left), right),
+                        MakeNumericOperation(ExpressionHelpers_.ToNumber(left), right),
                         exception)));
         }
 

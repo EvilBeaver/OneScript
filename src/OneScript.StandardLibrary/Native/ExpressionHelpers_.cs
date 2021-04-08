@@ -20,7 +20,7 @@ using MethodInfo = System.Reflection.MethodInfo;
 
 namespace OneScript.StandardLibrary.Native
 {
-    public static class ExpressionHelpers
+    public static class ExpressionHelpers_
     {
         public static Expression CallToGetPropertyProtocol(IRuntimeContextInstance target, string propertyName)
         {
@@ -136,7 +136,7 @@ namespace OneScript.StandardLibrary.Native
         
         public static Expression GetIValueClrType(Expression type)
         {
-            var typeGetter = typeof(ExpressionHelpers).GetMethod(nameof(GetClrType));
+            var typeGetter = typeof(ExpressionHelpers_).GetMethod(nameof(GetClrType));
             Debug.Assert(typeGetter != null);
             
             return Expression.Call(null, typeGetter, type);
@@ -248,7 +248,7 @@ namespace OneScript.StandardLibrary.Native
 
         private static readonly Dictionary<Type, MethodInfo> _typeCasts = new Dictionary<Type, MethodInfo>();
         
-        static ExpressionHelpers()
+        static ExpressionHelpers_()
         {
             _converterFromIValue = new Lazy<MethodInfo>(() => typeof(ContextValuesMarshaller).GetMethod(
                 nameof(ContextValuesMarshaller.ConvertParam), new[] {typeof(IValue), typeof(Type)}));

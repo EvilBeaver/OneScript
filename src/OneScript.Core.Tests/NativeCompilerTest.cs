@@ -13,6 +13,7 @@ using FluentAssertions;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Json;
 using OneScript.StandardLibrary.Native;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
@@ -85,7 +86,7 @@ namespace OneScript.Core.Tests
             var blockOfCode = new CompiledBlock(new DefaultTypeManager());
             var func = blockOfCode.CreateDelegate();
             var result = func(default);
-            Assert.Equal(ValueFactory.Create(), result);
+            Assert.Equal(BslUndefinedValue.Instance, result);
         }
         
         [Fact]
@@ -96,9 +97,9 @@ namespace OneScript.Core.Tests
             blockOfCode.Parameters.Insert("Б", new TypeTypeValue(BasicTypes.String));
             
             var func = blockOfCode.CreateDelegate();
-            var result = func(new []{ ValueFactory.Create(1), ValueFactory.Create("hello") });
+            var result = func(new BslValue[]{ BslNumericValue.Create(1), BslStringValue.Create("hello") });
             
-            Assert.Equal(ValueFactory.Create(), result);
+            Assert.Equal(BslUndefinedValue.Instance, result);
         }
         
         [Fact]
@@ -108,10 +109,10 @@ namespace OneScript.Core.Tests
             blockOfCode.Parameters.Insert("A", new TypeTypeValue(BasicTypes.Number));
             blockOfCode.Parameters.Insert("Б", new TypeTypeValue(BasicTypes.String));
             
-            var func = blockOfCode.CreateDelegate<Func<decimal, string, IValue>>();
+            var func = blockOfCode.CreateDelegate<Func<decimal, string, BslValue>>();
             var result = func(1, "привет");
             
-            Assert.Equal(ValueFactory.Create(), result);
+            Assert.Equal(BslUndefinedValue.Instance, result);
         }
 
         [Fact]
@@ -193,10 +194,10 @@ namespace OneScript.Core.Tests
             block.CodeBlock = "Возврат (Сегодня - '19840331') / 86400 / 366";
             block.Parameters.Insert("Сегодня", new TypeTypeValue(BasicTypes.Date));
 
-            var beaverAge = block.CreateDelegate<Func<DateTime, IValue>>();
-            var age = beaverAge(DateTime.Now);
+            var beaverAge = block.CreateDelegate<Func<DateTime, BslValue>>();
+            var age = (decimal)(BslNumericValue)beaverAge(DateTime.Now);
 
-            age.AsNumber().Should().BeGreaterThan(0);
+            age.Should().BeGreaterThan(0);
         }
         
         [Fact(Skip = "Binding protocol used by indexer property «this[]» must be refactored to non-interface Values")]
