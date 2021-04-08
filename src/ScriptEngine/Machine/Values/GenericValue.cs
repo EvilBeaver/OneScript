@@ -8,11 +8,12 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Values
 {
-    public abstract class GenericValue : IValue, IEmptyValueCheck
+    public abstract class GenericValue : BslPrimitiveValue, IValue, IEmptyValueCheck
     {
         public virtual int CompareTo(IValue other)
         {

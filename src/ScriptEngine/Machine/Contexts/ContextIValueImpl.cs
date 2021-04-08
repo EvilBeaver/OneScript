@@ -8,11 +8,12 @@ using System;
 using System.Dynamic;
 using System.Linq;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class ContextIValueImpl : DynamicObject, IRuntimeContextInstance, IValue, ISystemTypeAcceptor
+    public abstract class ContextIValueImpl : BslObjectValue, IRuntimeContextInstance, IValue, ISystemTypeAcceptor
     {
         private TypeDescriptor _type;
 
@@ -326,6 +327,33 @@ namespace ScriptEngine.Machine.Contexts
 
             return true;
 
+        }
+
+        public override int CompareTo(BslValue other)
+        {
+            if (other.GetType() == GetType())
+            {
+                if (this.Equals(other))
+                {
+                    return 0;
+                }
+                else
+                {
+                    throw RuntimeException.ComparisonNotSupportedException();
+                }
+            }
+            else
+            {
+                return this.GetType().ToString().CompareTo(other.GetType().ToString());
+            }
+        }
+
+        public override bool Equals(BslValue other)
+        {
+            if (other == null)
+                return false;
+
+            return ReferenceEquals(this, other);
         }
     }
 
