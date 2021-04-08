@@ -241,13 +241,19 @@ namespace OneScript.Core.Tests
         public void Can_Do_While()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.CodeBlock = "Пока Истина Цикл Ф = 1; Прервать; КонецЦикла;";
-            var loop = block.MakeExpression()
-                .Body
-                .As<BlockExpression>()
-                .Expressions
-                .First();
-            loop.NodeType.Should().Be(ExpressionType.Loop);
+            block.Parameters.Insert("Результат", new TypeTypeValue(BasicTypes.Number));
+            block.CodeBlock = "Ф = 1;" +
+                              "Пока Ф < 10 Цикл" +
+                              "\tРезультат = Результат + Ф;" +
+                              "\tФ = Ф + 1;" +
+                              "\tЕсли Ф > 2 Тогда Прервать; КонецЕсли;" +
+                              "КонецЦикла;" +
+                              "Возврат Результат;";
+            var func = block.MakeExpression().Compile();
+            
+            var args = new object[] { decimal.One };
+            var result = (IValue)func.DynamicInvoke(args);
+            result.AsNumber().Should().Be(4);
         }
         
         [Fact]
@@ -280,13 +286,81 @@ namespace OneScript.Core.Tests
         public void Can_Do_ElseIf()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.CodeBlock = "Если Истина Тогда Ф=1; ИначеЕсли Ложь Тогда Иначе Ф=2; КонецЕсли";
-            var loop = block.MakeExpression()
+            block.Parameters.Insert("П", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("Ф", new TypeTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Если П=1 Тогда Ф=1;" +
+                "ИначеЕсли П=2 Тогда Ф=2;" +
+                "ИначеЕсли П=3 Тогда Ф=3;" +
+                "Иначе Ф=0; КонецЕсли;" +
+                "Возврат Ф;";
+            var expression = block.MakeExpression(); 
+            var condition = expression 
                 .Body
                 .As<BlockExpression>()
                 .Expressions
                 .First();
-            loop.NodeType.Should().Be(ExpressionType.Conditional);
+            condition.NodeType.Should().Be(ExpressionType.Conditional);
+            var func = expression.Compile();
+
+            for (decimal i = 0; i < 4; i++)
+            {
+                var args = new object[] {i, (decimal)0};
+                var result = (IValue)func.DynamicInvoke(args);
+                result.AsNumber().Should().Be(i);
+            }
+        }
+        
+        [Fact]
+        public void Can_ForLoop()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.Parameters.Insert("Результат", new TypeTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Для Ф = 1 По 2+2*2 Цикл " +
+                "Результат = Результат + Ф;" +
+                "Если Ф > 2 Тогда Прервать; КонецЕсли; " +
+                "Продолжить;" +
+                "КонецЦикла;" +
+                "Возврат Результат;";
+            var expression = block.MakeExpression();
+            var func = expression.Compile();
+            var args = new object[] { decimal.Zero };
+            var result = (IValue)func.DynamicInvoke(args);
+            result.AsNumber().Should().Be(6);
+        }
+        
+        [Fact]
+        public void Can_Do_ForEachLoop()
+        {
+            var tm = new DefaultTypeManager();
+            var arrayType = tm.RegisterClass(typeof(ArrayImpl));
+            
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.Parameters.Insert("Результат", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("П", new TypeTypeValue(arrayType));
+            
+            block.CodeBlock = 
+                "Для Каждого Ф Из П Цикл " +
+                "Если Ф = 4 Тогда Продолжить; КонецЕсли; " +
+                "Если Ф = 5 Тогда Прервать; КонецЕсли;" +
+                "Результат = Результат + Ф;" +
+                "КонецЦикла;" +
+                "Возврат Результат;";
+            var expression = block.MakeExpression();
+            var func = expression.Compile();
+
+            var inArray = new ArrayImpl();
+
+            inArray.Add(ValueFactory.Create(1));
+            inArray.Add(ValueFactory.Create(2));
+            inArray.Add(ValueFactory.Create(3));
+            inArray.Add(ValueFactory.Create(4));
+            inArray.Add(ValueFactory.Create(5));
+            
+            var args = new object[] { decimal.Zero, inArray };
+            var result = (IValue)func.DynamicInvoke(args);
+            result.AsNumber().Should().Be(6);
         }
     }
 }

@@ -29,7 +29,19 @@ namespace OneScript.StandardLibrary.Native
     {
         private class GeneratorStateMaster
         {
+            private class LoopStruct
+            {
+                public LabelTarget BreakLabel;
+                public LabelTarget ContinueLabel;
+
+                public LoopStruct(ILoopBlockExpressionGenerator g)
+                {
+                    BreakLabel = g.BreakLabel;
+                    ContinueLabel = g.ContinueLabel;
+                }
+            };
             private readonly Stack<IBlockExpressionGenerator> _generators = new Stack<IBlockExpressionGenerator>();
+            private readonly Stack<LoopStruct> _labels = new Stack<LoopStruct>();
 
             public IBlockExpressionGenerator Generator => _generators.Peek();
 
@@ -41,12 +53,30 @@ namespace OneScript.StandardLibrary.Native
             public void NewState(IBlockExpressionGenerator newGenerator)
             {
                 _generators.Push(newGenerator);
+                if (newGenerator is ILoopBlockExpressionGenerator loopGenerator)
+                {
+                    _labels.Push(new LoopStruct(loopGenerator));
+                }
             }
 
             public void PopState()
             {
                 var gen = _generators.Pop();
                 Generator.Add(gen.Block());
+                if (gen is ILoopBlockExpressionGenerator)
+                {
+                    _labels.Pop();
+                }
+            }
+
+            public void AddBreakExpression()
+            {
+                Generator.Add(Expression.Break(_labels.Peek().BreakLabel));
+            }
+
+            public void AddContinueExpression()
+            {
+                Generator.Add(Expression.Continue(_labels.Peek().ContinueLabel));
             }
         }
         
@@ -83,7 +113,8 @@ namespace OneScript.StandardLibrary.Native
             {
                 foreach (var local in context.TopScope().Variables)
                 {
-                    _localVariables.Add(Expression.Variable(local.VariableType, local.Name));
+                    // TODO: ByRef ?
+                    _localVariables.Add(Expression.Parameter(local.VariableType, local.Name));
                     ++_parametersCount;
                 }
             }
@@ -101,10 +132,12 @@ namespace OneScript.StandardLibrary.Native
 
             AppendReturnValue();
 
-            var body = _currentState.Generator.Block(); //Expression.Block(_currentState.Statements);
+            var body = _currentState.Generator.Block() as BlockExpression;
             var parameters = _localVariables.Take(_parametersCount);
-
-            return Expression.Lambda(body, parameters);
+            
+            return Expression.Lambda(
+                Expression.Block(_localVariables.Skip(_parametersCount), body.Expressions),
+                parameters);
         }
 
         private void AppendReturnValue()
@@ -428,16 +461,9 @@ namespace OneScript.StandardLibrary.Native
             base.VisitWhileNode(node);
         }
 
-        protected override void VisitWhileBody(BslSyntaxNode node)
-        {
-            ((WhileBlockExpressionGenerator) _currentState.Generator).StartBody();
-            base.VisitWhileBody(node);
-        }
-
         protected override void VisitWhileCondition(BslSyntaxNode node)
         {
-            ((WhileBlockExpressionGenerator) _currentState.Generator).StartCondition();
-            _currentState.Generator.Add(ConvertToExpressionTree(node));
+            ((WhileBlockExpressionGenerator) _currentState.Generator).StartCondition(ConvertToExpressionTree(node));
         }
 
         protected override void VisitIfNode(ConditionNode node)
@@ -448,8 +474,7 @@ namespace OneScript.StandardLibrary.Native
 
         protected override void VisitIfExpression(BslSyntaxNode node)
         {
-            ((IfThenBlockGenerator) _currentState.Generator).StartCondition();
-            _currentState.Generator.Add(ConvertToExpressionTree(node));
+            ((IfThenBlockGenerator) _currentState.Generator).StartCondition(ConvertToExpressionTree(node));
         }
 
         protected override void VisitIfTruePart(CodeBatchNode node)
@@ -466,18 +491,61 @@ namespace OneScript.StandardLibrary.Native
 
         protected override void VisitBreakNode(LineMarkerNode node)
         {
-            ((ILoopBlockExpressionGenerator) _currentState.Generator).AddBreakExpression();
+            _currentState.AddBreakExpression();
         }
 
         protected override void VisitContinueNode(LineMarkerNode node)
         {
-            ((ILoopBlockExpressionGenerator) _currentState.Generator).AddContinueExpression();
+            _currentState.AddContinueExpression();
         }
 
         protected override void VisitBlockEnd(in CodeRange endLocation)
         {
             _currentState.PopState();
             base.VisitBlockEnd(in endLocation);
+        }
+
+        protected override void VisitForLoopNode(ForLoopNode node)
+        {
+            _currentState.NewState(new ForBlockExpressionGenerator());
+            base.VisitForLoopNode(node);
+        }
+
+        protected override void VisitForInitializer(BslSyntaxNode node)
+        {
+            var forLoopIterator = node.Children[0];
+            var forLoopInitialValue = node.Children[1];
+            VisitForLoopInitialValue(forLoopInitialValue);
+            VisitForLoopIterator(forLoopIterator);
+            
+            ((ForBlockExpressionGenerator) _currentState.Generator).IteratorExpression = _statementBuildParts.Pop();
+            ((ForBlockExpressionGenerator) _currentState.Generator).InitialValue = _statementBuildParts.Pop();
+        }
+
+        protected override void VisitForUpperLimit(BslSyntaxNode node)
+        {
+            base.VisitForUpperLimit(node);
+            ((ForBlockExpressionGenerator) _currentState.Generator).UpperLimit = _statementBuildParts.Pop();
+        }
+
+        protected override void VisitForEachLoopNode(ForEachLoopNode node)
+        {
+            _currentState.NewState(new ForEachBlockExpressionGenerator());
+            base.VisitForEachLoopNode(node);
+        }
+
+        protected override void VisitIteratorLoopVariable(TerminalNode node)
+        {
+            _statementBuildParts.Push(Expression.Variable(typeof(IValue)));
+            base.VisitIteratorLoopVariable(node);
+            ((ForEachBlockExpressionGenerator) _currentState.Generator).Iterator = _statementBuildParts.Pop();
+            _statementBuildParts.Pop();
+        }
+
+        protected override void VisitIteratorExpression(BslSyntaxNode node)
+        {
+            base.VisitIteratorExpression(node);
+            ((ForEachBlockExpressionGenerator) _currentState.Generator).EnumeratorExpression = _statementBuildParts.Pop();
         }
 
         private static ExpressionType TokenToOperationCode(Token stackOp) =>
