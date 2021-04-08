@@ -16,6 +16,7 @@ using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using OneScript.Native.Compiler;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -39,7 +40,7 @@ namespace OneScript.StandardLibrary.Native
             _typeManager = tm;
         }
 
-        internal SymbolTable Symbols { get; set; }
+        internal OneScript.Native.Compiler.SymbolTable Symbols { get; set; }
         
         [ContextProperty("Параметры", "Parameters")]
         public StructureImpl Parameters { get; set; } = new StructureImpl();
@@ -137,22 +138,51 @@ namespace OneScript.StandardLibrary.Native
             // пробежать по аст 1С и превратить в BlockExpression<IValue>
 
             if (Symbols == null)
-                Symbols = new SymbolTable();
+                Symbols = new OneScript.Native.Compiler.SymbolTable();
             
             FillSymbolContext(Symbols);
 
-            var blockBuilder = new BlockExpressionGenerator(Symbols, _typeManager, _errors);
-            return blockBuilder.CreateExpression(_ast as ModuleNode, new ModuleInformation
+            var methodInfo = CreateMethodInfo();
+            var moduleInfo = new ModuleInformation
             {
                 Origin = "<compiled code>",
                 ModuleName = "<compiled code>",
                 CodeIndexer = _codeLinesReferences
-            });
+            };
+            var methodCompiler = new MethodCompiler(new BslWalkerContext
+            {
+                Errors = _errors,
+                Module = moduleInfo,
+                Symbols = Symbols
+            }, methodInfo);
+            
+            methodCompiler.CompileModuleBody(methodInfo, _ast);
+            return methodInfo.Implementation;
         }
 
-        private void FillSymbolContext(SymbolTable symbols)
+        private BslMethodInfo CreateMethodInfo()
         {
-            var localsScope = new SymbolScope();
+            var methodInfo = new BslMethodInfo();
+            methodInfo.SetName("$__compiled");
+            methodInfo.SetReturnType(typeof(IValue));
+
+            foreach (var parameter in Parameters)
+            {
+                var targetType = parameter.Value as TypeTypeValue;
+                var pi = new BslParameterInfo(
+                    parameter.Key.AsString(),
+                    targetType.TypeValue.ImplementingClass);
+
+                methodInfo.Parameters.Add(pi);
+            }
+
+            return methodInfo;
+        }
+
+
+        private void FillSymbolContext(OneScript.Native.Compiler.SymbolTable symbols)
+        {
+            var localsScope = new OneScript.Native.Compiler.SymbolScope();
             
             foreach (var kv in Parameters)
             {
@@ -165,7 +195,7 @@ namespace OneScript.StandardLibrary.Native
 
                 var typeVal = kv.Value.GetRawValue() as TypeTypeValue;
                 var type = ConvertTypeToClrType(typeVal);
-                SymbolScope.AddVariable(localsScope, name, type);
+                localsScope.AddVariable(name, type);
             }
             
             symbols.AddScope(localsScope);

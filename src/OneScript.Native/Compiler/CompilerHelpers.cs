@@ -48,5 +48,18 @@ namespace OneScript.Native.Compiler
                 .Select(param => new BslAnnotationParameter(param.Name, ValueFromLiteral(param.Value)))
                 .ToList();
         }
+
+        public static SymbolScope AddVariable(this SymbolScope scope, string name, Type type)
+        {
+            var symbol = new VariableSymbol
+            {
+                Name = name,
+                VariableType = type
+            };
+        
+            scope.Variables.Add(symbol, name);
+
+            return scope;
+        }
     }
 }

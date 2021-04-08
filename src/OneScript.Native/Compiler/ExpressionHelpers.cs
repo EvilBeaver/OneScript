@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Types;
+using OneScript.Values;
 using MethodInfo = System.Reflection.MethodInfo;
 
 namespace OneScript.Native.Compiler

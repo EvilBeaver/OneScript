@@ -16,10 +16,13 @@ namespace OneScript.Native.Compiler
         
         public void EnterBlock(JumpInformationRecord newJumpStates)
         {
-            var current = GetCurrentBlock();
-            newJumpStates.MethodReturn ??= current.MethodReturn;
-            newJumpStates.LoopBreak ??= current.LoopBreak;
-            newJumpStates.LoopContinue ??= current.LoopContinue;
+            var current = _blocks.Count > 0 ? GetCurrentBlock() : null;
+            if (current != null)
+            {
+                newJumpStates.MethodReturn ??= current.MethodReturn;
+                newJumpStates.LoopBreak ??= current.LoopBreak;
+                newJumpStates.LoopContinue ??= current.LoopContinue;
+            }
 
             var block = new StatementsBlockRecord(newJumpStates);
             _blocks.Push(block);

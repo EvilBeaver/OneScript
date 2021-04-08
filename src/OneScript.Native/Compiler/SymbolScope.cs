@@ -26,15 +26,6 @@ namespace OneScript.Native.Compiler
 
         public IndexedNameValueCollection<VariableSymbol> Variables => _variables;
 
-        public static void AddVariable(SymbolScope scope, string name, Type type)
-        {
-            var symbol = new VariableSymbol
-            {
-                Name = name,
-                VariableType = type
-            };
-            
-            scope.Variables.Add(symbol, name);
-        }
+        
     }
 }

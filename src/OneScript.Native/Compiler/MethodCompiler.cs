@@ -24,6 +24,7 @@ namespace OneScript.Native.Compiler
         private readonly List<ParameterExpression> _localVariables = new List<ParameterExpression>();
         private readonly StatementBlocksWriter _blocks = new StatementBlocksWriter();
         private readonly Stack<Expression> _statementBuildParts = new Stack<Expression>();
+        private BslParameterInfo[] _declaredParameters;
         
         public MethodCompiler(BslWalkerContext walkContext, BslMethodInfo method) : base(walkContext)
         {
@@ -55,6 +56,8 @@ namespace OneScript.Native.Compiler
                 MethodReturn = Expression.Label(typeof(BslValue))
             });
             Symbols.AddScope(new SymbolScope());
+
+            _declaredParameters = _method.Parameters.ToArray();
             
             try
             {
@@ -71,7 +74,7 @@ namespace OneScript.Native.Compiler
             }
 
             var block = _blocks.LeaveBlock();
-            var parameters = _localVariables.Take(_method.GetParameters().Length).ToArray(); 
+            var parameters = _localVariables.Take(_declaredParameters.Length).ToArray(); 
             var body = Expression.Block(
                 _localVariables.Skip(parameters.Length).ToArray(),
                 block.GetStatements());

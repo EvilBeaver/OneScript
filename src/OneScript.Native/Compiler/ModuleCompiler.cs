@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -68,7 +69,34 @@ namespace OneScript.Native.Compiler
                 
             }
         }
-        
+
+        private void VisitMethodSignature(BslMethodInfo info, MethodSignatureNode node)
+        {
+            info.SetName(node.MethodName);
+            info.SetReturnType(node.IsFunction ? typeof(BslValue): typeof(void));
+            info.SetPrivate(!node.IsExported);
+
+            var parameters = node.GetParameters().Select(CreateParameterInfo);
+        }
+
+        private BslParameterInfo CreateParameterInfo(MethodParameterNode paramNode)
+        {
+            var param = new BslParameterInfo(paramNode.Name);
+            if(paramNode.IsByValue)
+                param.SetByVal();
+            
+            if(paramNode.HasDefaultValue)
+                param.SetDefaultValue(CompilerHelpers.ValueFromLiteral(paramNode.DefaultValue));
+
+            var attributes = CompilerHelpers.GetAnnotations(paramNode.Annotations);
+            foreach (var attribute in attributes.Cast<Attribute>())
+            {
+                param.AddAttribute(attribute);
+            }
+
+            return param;
+        }
+
         protected override void VisitModule(ModuleNode node)
         {
             var moduleScope = new SymbolScope();

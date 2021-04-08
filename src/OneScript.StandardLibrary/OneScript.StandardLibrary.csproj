@@ -24,6 +24,7 @@
     </ItemGroup>
     
     <ItemGroup>
+      <ProjectReference Include="..\OneScript.Native\OneScript.Native.csproj" />
       <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
     </ItemGroup>
     
