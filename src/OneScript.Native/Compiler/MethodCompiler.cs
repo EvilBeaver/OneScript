@@ -14,6 +14,7 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Localization;
+using OneScript.Native.Runtime;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler
@@ -42,7 +43,7 @@ namespace OneScript.Native.Compiler
         
         public void CompileModuleBody(BslMethodInfo method, BslSyntaxNode moduleBodyNode)
         {
-            CompileFragment(moduleBodyNode.Children[0], VisitCodeBlock);
+            CompileFragment(moduleBodyNode.Children[0], VisitModuleBody);
         }
         
         private class InternalFlowInterruptException : Exception

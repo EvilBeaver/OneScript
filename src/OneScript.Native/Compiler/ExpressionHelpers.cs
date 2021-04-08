@@ -6,13 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Reflection;
 using OneScript.Language.LexicalAnalysis;
-using OneScript.Types;
-using OneScript.Values;
-using MethodInfo = System.Reflection.MethodInfo;
+using OneScript.Native.Runtime;
 
 namespace OneScript.Native.Compiler
 {
@@ -99,6 +96,72 @@ namespace OneScript.Native.Compiler
                     throw new NotSupportedException();
             }
             return opCode;
+        }
+
+        private static ReflectedMethodsCache _operationsCache = new ReflectedMethodsCache();
+        
+        public static Expression ToBoolean(Expression right)
+        {
+            if (right.Type == typeof(bool))
+                return right;
+            
+            var method = _operationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.ToBoolean));
+
+            return Expression.Call(method, right);
+        }
+        
+        public static Expression ToNumber(Expression right)
+        {
+            if (right.Type == typeof(decimal))
+                return right;
+            
+            var method = _operationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.ToNumber));
+
+            return Expression.Call(method, right);
+        }
+        
+        public static Expression ToDate(Expression right)
+        {
+            if (right.Type == typeof(DateTime))
+                return right;
+            
+            var method = _operationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.ToDate));
+
+            return Expression.Call(method, right);
+        }
+        
+        public static Expression ToString(Expression right)
+        {
+            var method = _operationsCache.GetOrAdd(
+                typeof(object),
+                nameof(object.ToString),
+                BindingFlags.Public | BindingFlags.Instance);
+
+            return Expression.Call(right, method);
+        }
+
+        public static Expression Add(Expression left, Expression right)
+        {
+            var operation = _operationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.Add));
+
+            return Expression.Call(operation, left, right);
+        }
+        
+        public static Expression Subtract(Expression left, Expression right)
+        {
+            var operation = _operationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.Subtract));
+
+            return Expression.Call(operation, left, right);
         }
     }
 }

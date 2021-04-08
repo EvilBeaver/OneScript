@@ -11,7 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-namespace OneScript.Native.Compiler
+namespace OneScript.Native.Runtime
 {
     public class BslFieldInfo : FieldInfo
     {

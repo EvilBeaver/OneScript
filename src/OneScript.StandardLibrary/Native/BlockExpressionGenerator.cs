@@ -380,7 +380,7 @@ namespace OneScript.StandardLibrary.Native
             {
                 return _binaryOperationCompiler.Compile(binaryOperationNode, left, right);
             }
-            catch (CompilerException e)
+            catch (ScriptEngine.Compiler.CompilerException e)
             {
                 AddError(e.Message, binaryOperationNode.Location);
                 return null;

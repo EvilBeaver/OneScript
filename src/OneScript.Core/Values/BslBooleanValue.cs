@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using OneScript.Commons;
 using OneScript.Localization;
 
 namespace OneScript.Values
@@ -27,6 +29,22 @@ namespace OneScript.Values
         public static explicit operator decimal(BslBooleanValue value)
         {
             return value._flag ? 1 : 0;
+        }
+
+        public static explicit operator bool(BslBooleanValue value) => value._flag;
+
+        public static BslBooleanValue Parse(string presentation)
+        {
+            if (String.Compare(presentation, "истина", StringComparison.OrdinalIgnoreCase) == 0
+                || String.Compare(presentation, "true", StringComparison.OrdinalIgnoreCase) == 0
+                || String.Compare(presentation, "да", StringComparison.OrdinalIgnoreCase) == 0)
+                return True;
+            else if (String.Compare(presentation, "ложь", StringComparison.OrdinalIgnoreCase) == 0
+                     || String.Compare(presentation, "false", StringComparison.OrdinalIgnoreCase) == 0
+                     || String.Compare(presentation, "нет", StringComparison.OrdinalIgnoreCase) == 0)
+                return False;
+            else
+                throw BslExceptions.ConvertToBooleanException();
         }
 
         public override string ToString()

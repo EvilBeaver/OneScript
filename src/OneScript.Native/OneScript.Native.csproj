@@ -8,5 +8,9 @@
         <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
         <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    </ItemGroup>
     
 </Project>

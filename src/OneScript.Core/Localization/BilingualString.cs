@@ -23,6 +23,11 @@ namespace OneScript.Localization
             {
             }
         }
+
+        public static implicit operator BilingualString(string source)
+        {
+            return new BilingualString(source);
+        }
         
         public BilingualString(string ru, string en)
         {

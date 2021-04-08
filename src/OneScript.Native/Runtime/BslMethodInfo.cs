@@ -11,8 +11,9 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using OneScript.Native.Compiler;
 
-namespace OneScript.Native.Compiler
+namespace OneScript.Native.Runtime
 {
     public class BslMethodInfo : MethodInfo
     {
