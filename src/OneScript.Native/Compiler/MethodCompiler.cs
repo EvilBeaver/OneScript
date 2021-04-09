@@ -309,33 +309,41 @@ namespace OneScript.Native.Compiler
         protected override void VisitIfNode(ConditionNode node)
         {
             _blocks.EnterBlock();
-            VisitIfExpression(node.Expression);
-            VisitIfTruePart(node.TruePart);
-
-            var stack = new Stack<ConditionNode>();
-            foreach (var alternative in node.GetAlternatives())
+            try
             {
-                if (alternative is ConditionNode elif)
+                VisitIfExpression(node.Expression);
+                VisitIfTruePart(node.TruePart);
+
+                var stack = new Stack<ConditionNode>();
+                foreach (var alternative in node.GetAlternatives())
                 {
-                    stack.Push(elif);
+                    if (alternative is ConditionNode elif)
+                    {
+                        stack.Push(elif);
+                    }
+                    else if (stack.Count > 0)
+                    {
+                        var cond = stack.Pop();
+
+                        VisitElseNode((CodeBatchNode) alternative);
+                        VisitElseIfNode(cond);
+                    }
+                    else
+                    {
+                        VisitElseNode((CodeBatchNode) alternative);
+                    }
                 }
-                else if(stack.Count > 0)
+
+                while (stack.Count > 0)
                 {
-                    var cond = stack.Pop();
-                    
-                    VisitElseNode((CodeBatchNode)alternative);
-                    VisitElseIfNode(cond);
-                }
-                else
-                {
-                    VisitElseNode((CodeBatchNode)alternative);
+                    var elseIfNode = stack.Pop();
+                    VisitElseIfNode(elseIfNode);
                 }
             }
-
-            while (stack.Count > 0)
+            catch
             {
-                var elseIfNode = stack.Pop();
-                VisitElseIfNode(elseIfNode);
+                _blocks.LeaveBlock();
+                throw;
             }
 
             var expression = CreateIfExpression(_blocks.LeaveBlock());
@@ -371,7 +379,16 @@ namespace OneScript.Native.Compiler
         protected override void VisitIfTruePart(CodeBatchNode node)
         {
             _blocks.EnterBlock();
-            base.VisitIfTruePart(node);
+            try
+            {
+                base.VisitIfTruePart(node);
+            }
+            catch
+            {
+                _blocks.LeaveBlock();
+                throw;
+            }
+
             var body = _blocks.LeaveBlock().GetStatements();
             _blocks.GetCurrentBlock().BuildStack.Push(Expression.Block(body));
         }
@@ -384,8 +401,17 @@ namespace OneScript.Native.Compiler
                 elseNode = _blocks.GetCurrentBlock().BuildStack.Pop();
             
             _blocks.EnterBlock();
-            VisitIfExpression(node.Expression);
-            VisitIfTruePart(node.TruePart);
+            try
+            {
+                VisitIfExpression(node.Expression);
+                VisitIfTruePart(node.TruePart);
+            }
+            catch
+            {
+                _blocks.LeaveBlock();
+                throw;
+            }
+
             if(hasCompiledElse)
                 _blocks.GetCurrentBlock().BuildStack.Push(elseNode);
             
@@ -408,6 +434,45 @@ namespace OneScript.Native.Compiler
                 _blocks.LeaveBlock();
                 throw;
             }
+        }
+        
+        protected override void VisitWhileNode(WhileLoopNode node)
+        {
+            _blocks.EnterBlock(new JumpInformationRecord()
+            {
+                LoopBreak = Expression.Label(),
+                LoopContinue = Expression.Label()
+            });
+            base.VisitWhileNode(node);
+
+            var block = _blocks.LeaveBlock();
+
+            var result = new List<Expression>();
+            result.Add(Expression.IfThen(
+                Expression.Not(block.BuildStack.Pop()), 
+                Expression.Break(block.LoopBreak)));
+            
+            result.AddRange(block.GetStatements());
+            
+            var loop = Expression.Loop(Expression.Block(result), block.LoopBreak, block.LoopContinue);
+            _blocks.Add(loop);
+        }
+
+        protected override void VisitWhileCondition(BslSyntaxNode node)
+        {
+            _blocks.GetCurrentBlock().BuildStack.Push(ConvertToExpressionTree(node));
+        }
+        
+        protected override void VisitContinueNode(LineMarkerNode node)
+        {
+            var label = _blocks.GetCurrentBlock().LoopContinue;
+            _blocks.Add(Expression.Continue(label));
+        }
+
+        protected override void VisitBreakNode(LineMarkerNode node)
+        {
+            var label = _blocks.GetCurrentBlock().LoopBreak;
+            _blocks.Add(Expression.Break(label));
         }
         
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
