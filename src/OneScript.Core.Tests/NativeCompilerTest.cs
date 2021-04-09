@@ -362,5 +362,21 @@ namespace OneScript.Core.Tests
             var result = (IValue)func.DynamicInvoke(args);
             result.AsNumber().Should().Be(6);
         }
+
+        [Fact]
+        public void Can_Do_TryExcept()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.Parameters.Insert("Ф", new TypeTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Попытка Если Ф = 1 Тогда Возврат 1; КонецЕсли;" +
+                "ВызватьИсключение 123; " +
+                "Исключение Возврат 2; КонецПопытки;";
+            var expression = block.MakeExpression();
+            var func = expression.Compile();
+            
+            ((IValue)func.DynamicInvoke(new object[] { decimal.One }))?.AsNumber().Should().Be(1);
+            ((IValue)func.DynamicInvoke(new object[] { decimal.Zero }))?.AsNumber().Should().Be(2);
+        }
     }
 }

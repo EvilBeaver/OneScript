@@ -446,7 +446,7 @@ namespace OneScript.Language.SyntaxAnalysis
         protected virtual void VisitTryExceptNode(TryExceptNode node)
         {
             VisitTryBlock(node.TryBlock);
-            VisitExceptBlock(node.TryBlock);
+            VisitExceptBlock(node.ExceptBlock);
             VisitBlockEnd(node.EndLocation);
         }
 

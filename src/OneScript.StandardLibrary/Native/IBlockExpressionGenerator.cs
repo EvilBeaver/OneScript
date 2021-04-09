@@ -222,4 +222,33 @@ namespace OneScript.Native.Compiler_
 
         public LabelTarget ContinueLabel { get; } = Expression.Label(typeof(void));
     }
+
+    public class TryBlockExpressionGenerator : IBlockExpressionGenerator
+    {
+        private readonly List<Expression> _tryStatements = new List<Expression>();
+        private readonly List<Expression> _catchStatements = new List<Expression>();
+
+        private List<Expression> _statements;
+        
+        public void Add(Expression item)
+        {
+            _statements.Add(item);
+        }
+
+        public void StartCatchBlock()
+        {
+            _statements = _catchStatements;
+        }
+
+        public void StartTryBlock()
+        {
+            _statements = _tryStatements;
+        }
+
+        public Expression Block()
+        {
+            return Expression.TryCatch(_tryStatements.OneOrBlock(),
+                Expression.Catch(typeof(Exception), _catchStatements.OneOrBlock()));
+        }
+    }
 }

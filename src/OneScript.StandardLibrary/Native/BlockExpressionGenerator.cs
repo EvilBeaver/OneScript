@@ -132,11 +132,14 @@ namespace OneScript.StandardLibrary.Native
 
             AppendReturnValue();
 
-            var body = _currentState.Generator.Block() as BlockExpression;
+            var block = _currentState.Generator.Block();
+            var expressions = block is BlockExpression blockExpression
+                ? blockExpression.Expressions.ToArray()
+                : new[] {block};
             var parameters = _localVariables.Take(_parametersCount);
             
             return Expression.Lambda(
-                Expression.Block(_localVariables.Skip(_parametersCount), body.Expressions),
+                Expression.Block(_localVariables.Skip(_parametersCount), expressions),
                 parameters);
         }
 
@@ -546,6 +549,45 @@ namespace OneScript.StandardLibrary.Native
         {
             base.VisitIteratorExpression(node);
             ((ForEachBlockExpressionGenerator) _currentState.Generator).EnumeratorExpression = _statementBuildParts.Pop();
+        }
+
+        protected override void VisitTryExceptNode(TryExceptNode node)
+        {
+            _currentState.NewState(new TryBlockExpressionGenerator());
+            base.VisitTryExceptNode(node);
+        }
+
+        protected override void VisitTryBlock(CodeBatchNode node)
+        {
+            ((TryBlockExpressionGenerator)_currentState.Generator).StartTryBlock();
+            base.VisitTryBlock(node);
+            
+        }
+
+        protected override void VisitExceptBlock(CodeBatchNode node)
+        {
+            ((TryBlockExpressionGenerator)_currentState.Generator).StartCatchBlock();
+            base.VisitExceptBlock(node);
+        }
+
+        protected override void VisitRaiseNode(BslSyntaxNode node)
+        {
+            if (node.Children.Count == 0)
+            {
+                _currentState.Generator.Add(Expression.Rethrow());
+            }
+            else
+            {
+                VisitExpression(node.Children[0]);
+                var expression = Expression.Call(
+                    _statementBuildParts.Pop(),
+                    typeof(object).GetMethod("ToString"));
+                var exceptionType = typeof(RuntimeException);
+                var ctor = exceptionType.GetConstructor(new Type[] {typeof(string)});
+                var exceptionExpression = Expression.New(ctor, expression);
+                _currentState.Generator.Add(Expression.Throw(exceptionExpression));
+            }
+            base.VisitRaiseNode(node);
         }
 
         private static ExpressionType TokenToOperationCode(Token stackOp) =>
