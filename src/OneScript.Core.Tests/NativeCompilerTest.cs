@@ -283,7 +283,7 @@ namespace OneScript.Core.Tests
         }
         
         [Fact]
-        public void Can_Do_ElseIf()
+        public void Can_Do_ElseIfElse()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
             block.Parameters.Insert("П", new TypeTypeValue(BasicTypes.Number));
@@ -306,8 +306,37 @@ namespace OneScript.Core.Tests
             for (decimal i = 0; i < 4; i++)
             {
                 var args = new object[] {i, (decimal)0};
-                var result = (IValue)func.DynamicInvoke(args);
-                result.AsNumber().Should().Be(i);
+                var result = (BslNumericValue)func.DynamicInvoke(args);
+                ((decimal)result).Should().Be(i);
+            }
+        }
+        
+        [Fact]
+        public void Can_Do_ElseIf_WithoutElse()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            block.Parameters.Insert("П", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("Ф", new TypeTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Если П=1 Тогда Ф=1;" +
+                "ИначеЕсли П=2 Тогда Ф=2;" +
+                "ИначеЕсли П=3 Тогда Ф=3;" +
+                "ИначеЕсли П=4 Тогда Ф=4; КонецЕсли;" +
+                "Возврат Ф;";
+            var expression = block.MakeExpression(); 
+            var condition = expression 
+                .Body
+                .As<BlockExpression>()
+                .Expressions
+                .First();
+            condition.NodeType.Should().Be(ExpressionType.Conditional);
+            var func = expression.Compile();
+
+            for (decimal i = 0; i < 4; i++)
+            {
+                var args = new object[] {i, 0M};
+                var result = (BslNumericValue)func.DynamicInvoke(args);
+                ((decimal)result).Should().Be(i);
             }
         }
         

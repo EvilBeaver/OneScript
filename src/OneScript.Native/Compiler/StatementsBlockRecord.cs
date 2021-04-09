@@ -14,6 +14,7 @@ namespace OneScript.Native.Compiler
     {
         private readonly List<Expression> _statements = new List<Expression>();
         private readonly JumpInformationRecord _jumpContext;
+        private readonly Stack<Expression> _buildParts = new Stack<Expression>();
 
         public StatementsBlockRecord()
         {
@@ -32,5 +33,7 @@ namespace OneScript.Native.Compiler
         public void Add(Expression statement) => _statements.Add(statement);
 
         public IList<Expression> GetStatements() => _statements;
+
+        public Stack<Expression> BuildStack => _buildParts;
     }
 }

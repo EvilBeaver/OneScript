@@ -225,7 +225,7 @@ namespace OneScript.Native.Compiler
             var right = _statementBuildParts.Pop();
             var left = _statementBuildParts.Pop();
             
-            var binaryOp = DispatchBinaryOp(left, right, binaryOperationNode);
+            var binaryOp = CompileBinaryOp(left, right, binaryOperationNode);
             
             if (LanguageDef.IsLogicalBinaryOperator(binaryOperationNode.Operation))
             {
@@ -238,7 +238,29 @@ namespace OneScript.Native.Compiler
             }
         }
 
-        private Expression DispatchBinaryOp(Expression left, Expression right, BinaryOperationNode binaryOperationNode)
+        protected override void VisitUnaryOperation(UnaryOperationNode unaryOperationNode)
+        {
+            var child = unaryOperationNode.Children[0];
+            VisitExpression(child);
+            var opCode = ExpressionHelpers.TokenToOperationCode(unaryOperationNode.Operation);
+
+            Type resultType = null;
+            switch (opCode)
+            {
+                case ExpressionType.Add:
+                case ExpressionType.Subtract:
+                    resultType = typeof(decimal);
+                    break;
+                case ExpressionType.Not:
+                    resultType = typeof(bool);
+                    break;
+            }
+            
+            var operation = Expression.MakeUnary(opCode, _statementBuildParts.Pop(), resultType);
+            _statementBuildParts.Push(operation);
+        }
+        
+        private Expression CompileBinaryOp(Expression left, Expression right, BinaryOperationNode binaryOperationNode)
         {
             try
             {
@@ -282,6 +304,116 @@ namespace OneScript.Native.Compiler
             
             var statement = Expression.Return(label, resultExpr);
             _blocks.Add(statement);
+        }
+        
+        protected override void VisitIfNode(ConditionNode node)
+        {
+            _blocks.EnterBlock();
+            VisitIfExpression(node.Expression);
+            VisitIfTruePart(node.TruePart);
+
+            var stack = new Stack<ConditionNode>();
+            foreach (var alternative in node.GetAlternatives())
+            {
+                if (alternative is ConditionNode elif)
+                {
+                    stack.Push(elif);
+                }
+                else if(stack.Count > 0)
+                {
+                    var cond = stack.Pop();
+                    
+                    VisitElseNode((CodeBatchNode)alternative);
+                    VisitElseIfNode(cond);
+                }
+                else
+                {
+                    VisitElseNode((CodeBatchNode)alternative);
+                }
+            }
+
+            while (stack.Count > 0)
+            {
+                var elseIfNode = stack.Pop();
+                VisitElseIfNode(elseIfNode);
+            }
+
+            var expression = CreateIfExpression(_blocks.LeaveBlock());
+            _blocks.Add(expression);
+        }
+
+        private Expression CreateIfExpression(StatementsBlockRecord block)
+        {
+            if (block.BuildStack.Count == 3)
+            {
+                var falsePart = block.BuildStack.Pop();
+                var truePart = block.BuildStack.Pop();
+                var condition = block.BuildStack.Pop();
+                
+                return Expression.IfThenElse(condition, truePart, falsePart);
+            }
+            else
+            {
+                Debug.Assert(block.BuildStack.Count == 2);
+                var truePart = block.BuildStack.Pop();
+                var condition = block.BuildStack.Pop();
+                
+                return Expression.IfThen(condition, truePart);
+            }
+        }
+
+        protected override void VisitIfExpression(BslSyntaxNode node)
+        {
+            var condition = ConvertToExpressionTree(node);
+            _blocks.GetCurrentBlock().BuildStack.Push(condition);
+        }
+
+        protected override void VisitIfTruePart(CodeBatchNode node)
+        {
+            _blocks.EnterBlock();
+            base.VisitIfTruePart(node);
+            var body = _blocks.LeaveBlock().GetStatements();
+            _blocks.GetCurrentBlock().BuildStack.Push(Expression.Block(body));
+        }
+
+        protected override void VisitElseIfNode(ConditionNode node)
+        {
+            var hasCompiledElse = _blocks.GetCurrentBlock().BuildStack.Count == 3;
+            Expression elseNode = null;
+            if (hasCompiledElse)
+                elseNode = _blocks.GetCurrentBlock().BuildStack.Pop();
+            
+            _blocks.EnterBlock();
+            VisitIfExpression(node.Expression);
+            VisitIfTruePart(node.TruePart);
+            if(hasCompiledElse)
+                _blocks.GetCurrentBlock().BuildStack.Push(elseNode);
+            
+            var expr = CreateIfExpression(_blocks.LeaveBlock());
+            _blocks.GetCurrentBlock().BuildStack.Push(expr);
+        }
+
+        protected override void VisitElseNode(CodeBatchNode node)
+        {
+            _blocks.EnterBlock();
+            try
+            {
+                base.VisitElseNode(node);
+                var block = _blocks.LeaveBlock();
+                var body = Expression.Block(block.GetStatements());
+                _blocks.GetCurrentBlock().BuildStack.Push(body);
+            }
+            catch
+            {
+                _blocks.LeaveBlock();
+                throw;
+            }
+        }
+        
+        private Expression ConvertToExpressionTree(BslSyntaxNode arg)
+        {
+            VisitExpression(arg);
+            return _statementBuildParts.Pop();
         }
         
         protected override void AddError(BilingualString errorText, CodeRange location)

@@ -27,6 +27,11 @@ namespace OneScript.Native.Compiler
             var block = new StatementsBlockRecord(newJumpStates);
             _blocks.Push(block);
         }
+        
+        public void EnterBlock()
+        {
+            EnterBlock(new JumpInformationRecord());
+        }
 
         public StatementsBlockRecord LeaveBlock() => _blocks.Pop();
 
