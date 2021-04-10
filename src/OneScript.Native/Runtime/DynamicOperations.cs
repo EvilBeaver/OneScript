@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Commons;
+using OneScript.Localization;
 using OneScript.Values;
 
 namespace OneScript.Native.Runtime
@@ -89,6 +90,23 @@ namespace OneScript.Native.Runtime
                 _ => (DateTime)(dynamic)value
             };
         }
-        
+
+        public static BslValue WrapToValue(object value)
+        {
+            return value switch
+            {
+                null => BslUndefinedValue.Instance,
+                string s => BslStringValue.Create(s),
+                decimal d => BslNumericValue.Create(d),
+                int n => BslNumericValue.Create(n),
+                long l => BslNumericValue.Create(l),
+                double dbl => BslNumericValue.Create((decimal) dbl),
+                bool boolean => BslBooleanValue.Create(boolean),
+                DateTime date => BslDateValue.Create(date),
+                _ => throw new TypeConversionException(new BilingualString(
+                    $"Невозможно преобразовать {value.GetType()} в тип {nameof(BslValue)}",
+                    $"Can't Convert {value.GetType()} to {nameof(BslValue)}"))
+            };
+        }
     }
 }

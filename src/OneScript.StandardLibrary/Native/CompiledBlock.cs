@@ -182,7 +182,26 @@ namespace OneScript.StandardLibrary.Native
         private static Type ConvertTypeToClrType(TypeTypeValue typeVal)
         {
             var type = typeVal.TypeValue;
-            return ExpressionHelpers_.GetClrType(type);
+            return GetClrType(type);
+        }
+        
+        private static Type GetClrType(TypeDescriptor type)
+        {
+            Type clrType;
+            if (type == BasicTypes.String)
+                clrType = typeof(string);
+            else if (type == BasicTypes.Date)
+                clrType = typeof(DateTime);
+            else if (type == BasicTypes.Boolean)
+                clrType = typeof(bool);
+            else if (type == BasicTypes.Number)
+                clrType = typeof(decimal);
+            else if (type == BasicTypes.Type)
+                clrType = typeof(TypeTypeValue);
+            else
+                clrType = type.ImplementingClass;
+
+            return clrType;
         }
 
         [ScriptConstructor]

@@ -29,11 +29,11 @@ namespace OneScript.StandardLibrary.Collections
             _values = new List<IValue>(values);
         }
 
-        public BslValue this[int index]
-        {
-            get => (BslValue) _values[index];
-            set => _values[index] = (IValue) value;
-        }
+        // public BslValue this[int index]
+        // {
+        //     get => (BslValue) _values[index];
+        //     set => _values[index] = (IValue) value;
+        // }
         
         public override IValue GetIndexedValue(IValue index)
         {

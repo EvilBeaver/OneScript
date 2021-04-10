@@ -61,5 +61,10 @@ namespace OneScript.Values
 
             return other.Equals(this);
         }
+
+        public static BslValue Create(bool boolean)
+        {
+            return boolean ? True : False;
+        }
     }
 }

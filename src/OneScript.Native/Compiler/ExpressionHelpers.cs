@@ -201,10 +201,26 @@ namespace OneScript.Native.Compiler
                 target.Type,
                 new[]
                 {
-                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, "index")
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
                 });
 
-            return Expression.Dynamic(binder, typeof(BslValue), index);
+            return Expression.Dynamic(binder, typeof(object), target, index);
+        }
+        
+        public static Expression DynamicSetIndex(Expression target, Expression index, Expression value)
+        {
+            var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetIndex(
+                CSharpBinderFlags.ResultIndexed,
+                target.Type,
+                new[]
+                {
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
+                });
+
+            return Expression.Dynamic(binder, typeof(object), target, index, value);
         }
         
         /// <summary>
@@ -233,38 +249,70 @@ namespace OneScript.Native.Compiler
 
         private static Expression ConvertToDynamicValue(Expression value, Type targetType)
         {
-            Type factoryClass;
-            if (value.Type == typeof(string))
+            var factoryClass = GetValueFactoryType(value.Type);
+            if (factoryClass == null)
             {
-                factoryClass = typeof(BslStringValue);
-            }
-            else if (value.Type == typeof(bool))
-            {
-                factoryClass = typeof(BslBooleanValue);
-            }
-            else if (value.Type == typeof(decimal))
-            {
-                factoryClass = typeof(BslNumericValue);
-            }
-            else if (value.Type == typeof(int) ||
-                     value.Type == typeof(long) ||
-                     value.Type == typeof(double))
-            {
-                factoryClass = typeof(BslNumericValue);
-                value = CastToDecimal(value);
-            }
-            else if (value.Type == typeof(DateTime))
-            {
-                factoryClass = typeof(BslDateValue);
-            }
-            else
-            {
+                if (value.Type == typeof(object))
+                {
+                    // это результат динамической операции
+                    // просто верим, что он BslValue
+                    var meth = _operationsCache.GetOrAdd(
+                        typeof(DynamicOperations),
+                        nameof(DynamicOperations.WrapToValue));
+                    return Expression.Call(meth, value);
+                }
                 throw new CompilerException(new BilingualString(
                     $"Преобразование из типа {targetType} в тип {value.Type} не поддерживается",
                     $"Conversion from type {targetType} into {value.Type} is not supported"));
             }
+            
+            if (value.Type == typeof(int) ||
+                value.Type == typeof(long) ||
+                value.Type == typeof(double))
+            {
+                value = CastToDecimal(value);
+            }
+            
             var factory = _operationsCache.GetOrAdd(factoryClass, "Create");
             return Expression.Call(factory, value);
+        }
+
+        private static Type GetValueFactoryType(Type clrType)
+        {
+            Type factoryClass = default;
+            if (clrType == typeof(string))
+            {
+                factoryClass = typeof(BslStringValue);
+            }
+            else if (clrType == typeof(bool))
+            {
+                factoryClass = typeof(BslBooleanValue);
+            }
+            else if (clrType == typeof(decimal))
+            {
+                factoryClass = typeof(BslNumericValue);
+            }
+            else if (clrType == typeof(int) ||
+                     clrType == typeof(long) ||
+                     clrType == typeof(double))
+            {
+                factoryClass = typeof(BslNumericValue);
+            }
+            else if (clrType == typeof(DateTime))
+            {
+                factoryClass = typeof(BslDateValue);
+            }
+
+            return factoryClass;
+        }
+
+        private static BslValue ConvertRuntimeObject(object value)
+        {
+            var type = value.GetType();
+            if (type.IsValue())
+                return (BslValue)value;
+
+            return DynamicOperations.WrapToValue(value);
         }
     }
 }

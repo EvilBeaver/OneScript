@@ -8,8 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Net.Mime;
 using FluentAssertions;
+using OneScript.Native.Compiler;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Json;
@@ -208,15 +208,24 @@ namespace OneScript.Core.Tests
             var arrayType = tm.RegisterClass(typeof(ArrayImpl));
             
             var block = new CompiledBlock(tm);
-            block.CodeBlock = "Arr[10] = 15";
+            block.CodeBlock = "Arr[5] = 15";
             block.Parameters.Insert("Arr", new TypeTypeValue(arrayType));
 
             var expr = block.MakeExpression();
             var statement = expr.Body.As<BlockExpression>().Expressions.First();
 
-            statement.NodeType.Should().Be(ExpressionType.Assign);
-            var assign = statement.As<BinaryExpression>();
-            assign.Left.NodeType.Should().Be(ExpressionType.Index);
+            if (statement.NodeType != ExpressionType.Dynamic)
+            {
+                statement.NodeType.Should().Be(ExpressionType.Assign);
+                var assign = statement.As<BinaryExpression>();
+                assign.Left.NodeType.Should().Be(ExpressionType.Index);
+            };
+
+            var proc = expr.Compile();
+            var array = new ArrayImpl(new IValue[6]);
+            proc.DynamicInvoke(array);
+
+            array.Get(5).AsNumber().Should().Be(15M);
 
         }
         
@@ -227,7 +236,7 @@ namespace OneScript.Core.Tests
             var arrayType = tm.RegisterClass(typeof(ArrayImpl));
             
             var block = new CompiledBlock(tm);
-            block.CodeBlock = "А = Arr[10]";
+            block.CodeBlock = "А = Arr[5]; Возврат А;";
             block.Parameters.Insert("Arr", new TypeTypeValue(arrayType));
 
             var expr = block.MakeExpression();
@@ -235,7 +244,16 @@ namespace OneScript.Core.Tests
 
             statement.NodeType.Should().Be(ExpressionType.Assign);
             var assign = statement.As<BinaryExpression>();
-            assign.Right.NodeType.Should().Be(ExpressionType.Index);
+            
+            if(assign.Right.NodeType != ExpressionType.Dynamic)
+                assign.Right.NodeType.Should().Be(ExpressionType.Index);
+
+            var arr = new ArrayImpl(new IValue[6]);
+            arr.Set(5, ValueFactory.Create("Hello"));
+
+            var func = expr.Compile();
+            var result = (BslValue)func.DynamicInvoke(arr);
+            result.ToString().Should().Be("Hello");
         }
 
         [Fact]

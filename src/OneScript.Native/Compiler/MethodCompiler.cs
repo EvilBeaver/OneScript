@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -215,22 +216,35 @@ namespace OneScript.Native.Compiler
             VisitAssignmentLeftPart(astLeft);
             
             var left = _statementBuildParts.Pop();
+            
+            if (left.NodeType == ExpressionType.Dynamic && left is DynamicExpression dyn)
+            {
+                if (dyn.Binder is SetIndexBinder || dyn.Binder is SetMemberBinder)
+                {
+                    _blocks.Add(left);
+                    return;
+                }
+            }
+            
             var right = _statementBuildParts.Pop();
-
-            var statement = MakeAssign(left, right);
-            _blocks.Add(statement);
+            _blocks.Add(MakeAssign(left, right));
         }
-        
+
+        private Expression AssignToDynamicObject(Expression left, Expression right)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void VisitAssignmentLeftPart(BslSyntaxNode node)
         {
             if (node is TerminalNode t)
             {
                 VisitVariableWrite(t);
             }
-            // else if (node.Kind == NodeKind.IndexAccess)
-            // {
-            //     VisitIndexAccess(node);
-            // }
+            else if (node.Kind == NodeKind.IndexAccess)
+            {
+                 VisitIndexAccessWrite(node);
+            }
             else
             {
                 VisitReferenceRead(node);
@@ -289,10 +303,34 @@ namespace OneScript.Native.Compiler
             var index = _statementBuildParts.Pop();
             var target = _statementBuildParts.Pop();
 
+            var indexExpression = TryCreateIndexExpression(node, target, index);
+
+            indexExpression ??= ExpressionHelpers.DynamicGetIndex(target, index);
+            
+            _statementBuildParts.Push(indexExpression);
+        }
+        
+        private void VisitIndexAccessWrite(BslSyntaxNode node)
+        {
+            base.VisitIndexAccess(node);
+            
+            var index = _statementBuildParts.Pop();
+            var target = _statementBuildParts.Pop();
+            var value = _statementBuildParts.Pop();
+
+            var indexExpression = TryCreateIndexExpression(node, target, index);
+
+            indexExpression ??= ExpressionHelpers.DynamicSetIndex(target, index, value);
+            
+            _statementBuildParts.Push(indexExpression);
+        }
+
+        private Expression TryCreateIndexExpression(BslSyntaxNode node, Expression target, Expression index)
+        {
             if (!typeof(BslObjectValue).IsAssignableFrom(target.Type))
             {
                 AddError($"Type {target.Type} is not indexed", node.Location);
-                return;
+                return null;
             }
             
             var indexerProps = target.Type
@@ -325,11 +363,9 @@ namespace OneScript.Native.Compiler
                     indexExpression = Expression.MakeIndex(target, propInfo, new[]{passExpression});
             }
 
-            indexExpression ??= ExpressionHelpers.DynamicGetIndex(target, index);
-            
-            _statementBuildParts.Push(indexExpression);
+            return indexExpression;
         }
-
+        
         #endregion
         
         private Expression CompileBinaryOp(Expression left, Expression right, BinaryOperationNode binaryOperationNode)
