@@ -22,6 +22,11 @@ namespace OneScript.Native.Compiler
         {
             return Expression.Convert(decimalValue, targetType);
         }
+        
+        public static Expression CastToDecimal(Expression value)
+        {
+            return Expression.Convert(value, typeof(decimal));
+        }
 
         // public static Type GetClrType(TypeDescriptor type)
         // {
@@ -237,9 +242,16 @@ namespace OneScript.Native.Compiler
             {
                 factoryClass = typeof(BslBooleanValue);
             }
-            else if (value.Type == typeof(decimal) || value.Type == typeof(int))
+            else if (value.Type == typeof(decimal))
             {
                 factoryClass = typeof(BslNumericValue);
+            }
+            else if (value.Type == typeof(int) ||
+                     value.Type == typeof(long) ||
+                     value.Type == typeof(double))
+            {
+                factoryClass = typeof(BslNumericValue);
+                value = CastToDecimal(value);
             }
             else if (value.Type == typeof(DateTime))
             {
@@ -251,7 +263,6 @@ namespace OneScript.Native.Compiler
                     $"Преобразование из типа {targetType} в тип {value.Type} не поддерживается",
                     $"Conversion from type {targetType} into {value.Type} is not supported"));
             }
-            
             var factory = _operationsCache.GetOrAdd(factoryClass, "Create");
             return Expression.Call(factory, value);
         }

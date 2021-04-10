@@ -739,20 +739,31 @@ namespace OneScript.Native.Compiler
                 return;
             }
 
+            var expression = CreateMethodCall(node);
+            _blocks.Add(expression);
+        }
+
+        protected override void VisitGlobalFunctionCall(CallNode node)
+        {
+            var expression = CreateMethodCall(node);
+            _statementBuildParts.Push(expression);
+        }
+
+        private Expression CreateMethodCall(CallNode node)
+        {
             if (!Symbols.FindMethod(node.Identifier.GetIdentifier(), out var binding))
             {
                 AddError($"Unknown method {node.Identifier.GetIdentifier()}", node.Location);
-                return;
+                return null;
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
             var args = node.ArgumentList.Children.Select(ConvertToExpressionTree);
 
             var context = Expression.Constant(symbol.Target);
-            var expression = Expression.Call(context, symbol.MethodInfo, args);
-            _blocks.Add(expression);
+            return Expression.Call(context, symbol.MethodInfo, args);
         }
-
+        
         #endregion
         
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)

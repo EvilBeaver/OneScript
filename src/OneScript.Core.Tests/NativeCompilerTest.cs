@@ -417,10 +417,13 @@ namespace OneScript.Core.Tests
         {
             var block = new CompiledBlock(new DefaultTypeManager());
             var context = new StandardGlobalContext();
+            block.Symbols = new Native.Compiler.SymbolTable();
             block.Symbols.AddScope(Native.Compiler.SymbolScope.FromContext(context));
             block.CodeBlock = "Возврат ТекущаяУниверсальнаяДатаВМиллисекундах();";
             
-            var expression = block.MakeExpression();
+            var func = block.CreateDelegate<Func<BslValue>>();
+            var time = (decimal)(BslNumericValue) func();
+            time.Should().BeGreaterThan(0);
         }
     }
 }

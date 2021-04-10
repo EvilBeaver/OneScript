@@ -35,7 +35,7 @@ namespace OneScript.Native.Compiler
             var type = target.GetType();
             foreach (var info in type.GetMethods())
             {
-                var attr = type.GetCustomAttribute<ContextMethodAttribute>();
+                var attr = info.GetCustomAttribute<ContextMethodAttribute>();
                 if(attr == null)
                     continue;
                 
@@ -52,7 +52,7 @@ namespace OneScript.Native.Compiler
             
             foreach (var info in type.GetProperties())
             {
-                var attr = type.GetCustomAttribute<ContextMethodAttribute>();
+                var attr = info.GetCustomAttribute<ContextMethodAttribute>();
                 if(attr == null)
                     continue;
                 

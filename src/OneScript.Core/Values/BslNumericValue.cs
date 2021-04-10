@@ -49,18 +49,7 @@ namespace OneScript.Values
                     return new BslNumericValue(value);
             }
         }
-
-        // public override bool TryBinaryOperation(BinaryOperationBinder binder, object arg, out object result)
-        // {
-        //     if (!arg.GetType().IsNumeric())
-        //     {
-        //         throw new InvalidOperationException($"Conversion to Number from {arg.GetType()} is not supported");
-        //     }
-        //
-        //     result = Convert.ToDecimal(arg);
-        //     return true;
-        // }
-
+  
         public override bool TryConvert(ConvertBinder binder, out object result)
         {
             if (!binder.Type.IsNumeric())
