@@ -8,7 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Reflection;
 using OneScript.Commons;
+using OneScript.Types;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler
@@ -26,6 +28,46 @@ namespace OneScript.Native.Compiler
 
         public IndexedNameValueCollection<VariableSymbol> Variables => _variables;
 
+        public static SymbolScope FromContext(BslObjectValue target)
+        {
+            var scope = new SymbolScope();
+
+            var type = target.GetType();
+            foreach (var info in type.GetMethods())
+            {
+                var attr = type.GetCustomAttribute<ContextMethodAttribute>();
+                if(attr == null)
+                    continue;
+                
+                var symbol = new MethodSymbol
+                {
+                    Name = attr.GetName(),
+                    Alias = attr.GetAlias(),
+                    MemberInfo = info,
+                    Target = target
+                };
+
+                scope.AddMethod(symbol);
+            }
+            
+            foreach (var info in type.GetProperties())
+            {
+                var attr = type.GetCustomAttribute<ContextMethodAttribute>();
+                if(attr == null)
+                    continue;
+                
+                var symbol = new PropertySymbol
+                {
+                    Name = attr.GetName(),
+                    Alias = attr.GetAlias(),
+                    MemberInfo = info
+                };
+
+                scope.AddVariable(symbol);
+            }
+
+            return scope;
+        }
         
     }
 }

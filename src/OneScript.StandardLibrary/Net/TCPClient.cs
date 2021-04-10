@@ -10,6 +10,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using OneScript.StandardLibrary.Binary;
+using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

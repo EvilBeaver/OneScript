@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using HttpMultipartParser;
 using OneScript.StandardLibrary.Binary;
+using OneScript.Types;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine.Contexts;
 

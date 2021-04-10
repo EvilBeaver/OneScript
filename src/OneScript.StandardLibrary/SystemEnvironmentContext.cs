@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections;
 using OneScript.Commons;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

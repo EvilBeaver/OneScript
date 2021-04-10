@@ -8,44 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public class ContextPropertyAttribute : Attribute
-    {
-        private readonly string _name;
-        private readonly string _alias;
-
-        public ContextPropertyAttribute(string name, string alias = "")
-        {
-            if (!Utils.IsValidIdentifier(name))
-                throw new ArgumentException("Name must be a valid identifier");
-
-            if (!string.IsNullOrEmpty(alias) && !Utils.IsValidIdentifier(alias))
-                throw new ArgumentException("Alias must be a valid identifier");
-
-            _name = name;
-            _alias = alias;
-            CanRead = true;
-            CanWrite = true;
-        }
-
-        public bool CanRead { get; set; }
-        public bool CanWrite { get; set; }
-
-        public string GetName()
-        {
-            return _name;
-        }
-
-        public string GetAlias()
-        {
-            return _alias;
-        }
-        
-    }
-
     public class PropertyTarget<TInstance>
     {
         private readonly Func<TInstance, IValue> _getter;

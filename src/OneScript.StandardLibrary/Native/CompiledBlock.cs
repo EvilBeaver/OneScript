@@ -42,7 +42,7 @@ namespace OneScript.StandardLibrary.Native
             _typeManager = tm;
         }
 
-        internal OneScript.Native.Compiler.SymbolTable Symbols { get; set; }
+        public OneScript.Native.Compiler.SymbolTable Symbols { get; set; }
         
         [ContextProperty("Параметры", "Parameters")]
         public StructureImpl Parameters { get; set; } = new StructureImpl();

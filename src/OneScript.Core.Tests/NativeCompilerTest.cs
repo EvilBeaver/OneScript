@@ -10,6 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Mime;
 using FluentAssertions;
+using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Json;
 using OneScript.StandardLibrary.Native;
@@ -409,6 +410,17 @@ namespace OneScript.Core.Tests
             
             ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { decimal.One })).Should().Be(1);
             ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { decimal.Zero })).Should().Be(2);
+        }
+
+        [Fact]
+        public void CanCallGlobalFunctions()
+        {
+            var block = new CompiledBlock(new DefaultTypeManager());
+            var context = new StandardGlobalContext();
+            block.Symbols.AddScope(Native.Compiler.SymbolScope.FromContext(context));
+            block.CodeBlock = "Возврат ТекущаяУниверсальнаяДатаВМиллисекундах();";
+            
+            var expression = block.MakeExpression();
         }
     }
 }

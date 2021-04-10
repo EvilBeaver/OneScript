@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Types;
 using RegExp = System.Text.RegularExpressions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

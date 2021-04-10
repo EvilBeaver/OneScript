@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using OneScript.Commons;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
@@ -32,10 +33,10 @@ namespace ScriptEngine.Machine.Contexts
             System.Diagnostics.Debug.Assert(name != null);
             System.Diagnostics.Debug.Assert(val != null);
 
-            if (!ScriptEngine.Utils.IsValidIdentifier(name))
+            if (!Utils.IsValidIdentifier(name))
                 throw new ArgumentException("Name must be a valid identifier", "name");
 
-            if(alias != null && !ScriptEngine.Utils.IsValidIdentifier(alias))
+            if(alias != null && !Utils.IsValidIdentifier(alias))
                 throw new ArgumentException("Name must be a valid identifier", "alias");
 
             _nameIds.RegisterName(name, alias);

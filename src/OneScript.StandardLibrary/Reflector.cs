@@ -12,6 +12,7 @@ using System.Reflection;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.TypeDescriptions;
+using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Reflection;

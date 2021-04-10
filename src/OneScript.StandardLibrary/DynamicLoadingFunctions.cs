@@ -10,6 +10,7 @@ using OneScript.Commons;
 using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.NativeApi;
+using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;

@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.StandardLibrary;
+using OneScript.Types;
 using oscript.Web;
 
 using ScriptEngine.HostedScript;

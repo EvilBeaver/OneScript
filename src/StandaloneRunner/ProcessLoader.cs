@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using OneScript.Commons;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.Compiler;

@@ -727,6 +727,33 @@ namespace OneScript.Native.Compiler
         }
         
         #endregion
+
+        #region Method Calls
+
+        protected override void VisitGlobalProcedureCall(CallNode node)
+        {
+            if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
+            {   
+                // TODO поменять на BilingualString
+                AddError(LocalizedErrors.UseBuiltInFunctionAsProcedure());
+                return;
+            }
+
+            if (!Symbols.FindMethod(node.Identifier.GetIdentifier(), out var binding))
+            {
+                AddError($"Unknown method {node.Identifier.GetIdentifier()}", node.Location);
+                return;
+            }
+
+            var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
+            var args = node.ArgumentList.Children.Select(ConvertToExpressionTree);
+
+            var context = Expression.Constant(symbol.Target);
+            var expression = Expression.Call(context, symbol.MethodInfo, args);
+            _blocks.Add(expression);
+        }
+
+        #endregion
         
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
         {

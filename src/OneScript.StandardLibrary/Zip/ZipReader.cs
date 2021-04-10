@@ -11,6 +11,7 @@ using Ionic.Zip;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.IO;
+using OneScript.Types;
 
 namespace OneScript.StandardLibrary.Zip
 {

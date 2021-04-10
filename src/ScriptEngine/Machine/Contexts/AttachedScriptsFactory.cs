@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using ScriptEngine.Environment;
 using System.Security.Cryptography;
+using OneScript.Commons;
 using OneScript.Types;
 using ScriptEngine.Types;
 

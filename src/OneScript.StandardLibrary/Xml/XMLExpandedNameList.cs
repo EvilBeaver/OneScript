@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections;
 using System.Collections.Generic;
+using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Xml

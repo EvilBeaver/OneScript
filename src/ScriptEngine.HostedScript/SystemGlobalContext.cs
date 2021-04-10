@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Types;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

@@ -79,6 +79,18 @@ namespace OneScript.Native.Compiler
 
             return scope;
         }
+
+        public static SymbolScope AddVariable(this SymbolScope scope, PropertySymbol symbol)
+        {
+            scope.Variables.Add(symbol, symbol.Name, symbol.Alias);
+            return scope;
+        }
+        
+        public static SymbolScope AddMethod(this SymbolScope scope, MethodSymbol symbol)
+        {
+            scope.Methods.Add(symbol, symbol.Name, symbol.Alias);
+            return scope;
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetIdentifier(this BslSyntaxNode node)

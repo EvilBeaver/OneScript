@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

@@ -6,10 +6,11 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Linq;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class GlobalContextBase<T> : IAttachableContext where T : GlobalContextBase<T>
+    public abstract class GlobalContextBase<T> : BslObjectValue, IAttachableContext where T : GlobalContextBase<T>
     {
         protected ContextMethodsMapper<T> Methods { get; } = new ContextMethodsMapper<T>();
 
@@ -129,5 +130,15 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         #endregion
+
+        public override int CompareTo(BslValue other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Equals(BslValue other)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

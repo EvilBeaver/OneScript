@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Types;
 
 namespace ScriptEngine.HostedScript
 {

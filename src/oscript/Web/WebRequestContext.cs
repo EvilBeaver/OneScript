@@ -12,6 +12,7 @@ using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;
+using OneScript.Types;
 using oscript.Web.Multipart;
 
 using ScriptEngine.HostedScript.Library;

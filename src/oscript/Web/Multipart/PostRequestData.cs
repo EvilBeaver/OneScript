@@ -14,6 +14,7 @@ using System.Text;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Types;
 
 namespace oscript.Web.Multipart
 {
