@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
@@ -181,11 +182,48 @@ namespace OneScript.Native.Compiler
         private static Expression CastToClrType(Expression value, Type targetType)
         {
             var binder = Microsoft.CSharp.RuntimeBinder.Binder.Convert(
-                Microsoft.CSharp.RuntimeBinder.CSharpBinderFlags.ConvertExplicit,
+                CSharpBinderFlags.ConvertExplicit,
                 targetType,
                 value.Type);
 
             return Expression.Dynamic(binder, targetType, value);
+        }
+
+        public static Expression DynamicGetIndex(Expression target, Expression index)
+        {
+            var binder = Microsoft.CSharp.RuntimeBinder.Binder.GetIndex(
+                CSharpBinderFlags.ResultIndexed,
+                target.Type,
+                new[]
+                {
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, "index")
+                });
+
+            return Expression.Dynamic(binder, typeof(BslValue), index);
+        }
+        
+        /// <summary>
+        /// Пытается найти статический конвертер из типа в тип при передаче параметра
+        /// </summary>
+        /// <param name="parameter">параметр</param>
+        /// <param name="targetType">тип аргумента</param>
+        /// <returns>null если статический каст не удался, выражение конверсии, если удался</returns>
+        public static Expression TryConvertParameter(Expression parameter, Type targetType)
+        {
+            if (targetType.IsAssignableFrom(parameter.Type))
+                return parameter;
+
+            if (targetType.IsNumeric() && parameter.Type.IsNumeric())
+            {
+                return DowncastDecimal(parameter, targetType);
+            }
+
+            if (targetType == typeof(string))
+            {
+                return ToString(parameter);
+            }
+            
+            return default;
         }
 
         private static Expression ConvertToDynamicValue(Expression value, Type targetType)

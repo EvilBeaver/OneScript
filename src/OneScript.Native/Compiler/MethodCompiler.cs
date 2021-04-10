@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using OneScript.Commons;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
@@ -138,6 +139,8 @@ namespace OneScript.Native.Compiler
                 _blocks.LeaveBlock();
             }
         }
+        
+        #region Expressions
         
         protected override void VisitVariableRead(TerminalNode node)
         {
@@ -276,6 +279,58 @@ namespace OneScript.Native.Compiler
             var operation = Expression.MakeUnary(opCode, _statementBuildParts.Pop(), resultType);
             _statementBuildParts.Push(operation);
         }
+
+        #region Dereferencing
+
+        protected override void VisitIndexAccess(BslSyntaxNode node)
+        {
+            base.VisitIndexAccess(node);
+            
+            var index = _statementBuildParts.Pop();
+            var target = _statementBuildParts.Pop();
+
+            if (!typeof(BslObjectValue).IsAssignableFrom(target.Type))
+            {
+                AddError($"Type {target.Type} is not indexed", node.Location);
+                return;
+            }
+            
+            var indexerProps = target.Type
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(x => x.GetIndexParameters().Length != 0)
+                .ToList();
+
+            Expression indexExpression = null;
+            
+            if(indexerProps.Count > 1)
+            {
+                foreach (var propertyInfo in indexerProps)
+                {
+                    var parameterType = propertyInfo.GetIndexParameters()[0].ParameterType;
+                    var passExpression = ExpressionHelpers.TryConvertParameter(index, parameterType);
+                    
+                    if (passExpression == null) 
+                        continue;
+                    
+                    indexExpression = Expression.MakeIndex(target, propertyInfo, new[] {passExpression});
+                    break;
+                }
+            }
+            else if(indexerProps.Count == 1)
+            {
+                var propInfo = indexerProps[0];
+                var parameterType = propInfo.GetIndexParameters()[0].ParameterType;
+                var passExpression = ExpressionHelpers.TryConvertParameter(index, parameterType);
+                if(passExpression != null)
+                    indexExpression = Expression.MakeIndex(target, propInfo, new[]{passExpression});
+            }
+
+            indexExpression ??= ExpressionHelpers.DynamicGetIndex(target, index);
+            
+            _statementBuildParts.Push(indexExpression);
+        }
+
+        #endregion
         
         private Expression CompileBinaryOp(Expression left, Expression right, BinaryOperationNode binaryOperationNode)
         {
@@ -297,14 +352,7 @@ namespace OneScript.Native.Compiler
                 right = ExpressionHelpers.ConvertToType(right, left.Type);
             }
             
-            if (left is MethodCallExpression call)
-            {
-                return Expression.Invoke(call, right);
-            }
-            else
-            {
-                return Expression.Assign(left, right);
-            }
+            return Expression.Assign(left, right);
         }
         
         protected override void VisitReturnNode(BslSyntaxNode node)
@@ -322,6 +370,8 @@ namespace OneScript.Native.Compiler
             var statement = Expression.Return(label, resultExpr);
             _blocks.Add(statement);
         }
+        
+        #endregion
         
         #region If Block
         

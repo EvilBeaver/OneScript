@@ -200,7 +200,7 @@ namespace OneScript.Core.Tests
             age.Should().BeGreaterThan(0);
         }
         
-        [Fact(Skip = "Binding protocol used by indexer property «this[]» must be refactored to non-interface Values")]
+        [Fact]
         public void Can_Assign_To_Indexer()
         {
             var tm = new DefaultTypeManager();
@@ -219,7 +219,7 @@ namespace OneScript.Core.Tests
 
         }
         
-        [Fact(Skip = "Binding protocol used by indexer property «this[]» must be refactored to non-interface Values")]
+        [Fact]
         public void Can_Read_Indexer()
         {
             var tm = new DefaultTypeManager();

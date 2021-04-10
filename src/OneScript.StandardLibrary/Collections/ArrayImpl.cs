@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -27,6 +28,12 @@ namespace OneScript.StandardLibrary.Collections
             _values = new List<IValue>(values);
         }
 
+        public BslValue this[int index]
+        {
+            get => (BslValue) _values[index];
+            set => _values[index] = (IValue) value;
+        }
+        
         public override IValue GetIndexedValue(IValue index)
         {
             if(index.DataType == DataType.Number)
