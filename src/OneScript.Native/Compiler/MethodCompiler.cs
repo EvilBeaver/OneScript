@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -538,27 +539,76 @@ namespace OneScript.Native.Compiler
             
             _blocks.GetCurrentBlock().BuildStack.Push(limit);
         }
-        //
-        // protected override void VisitForEachLoopNode(ForEachLoopNode node)
-        // {
-        //     _currentState.NewState(new ForEachBlockExpressionGenerator());
-        //     base.VisitForEachLoopNode(node);
-        // }
-        //
-        // protected override void VisitIteratorLoopVariable(TerminalNode node)
-        // {
-        //     _statementBuildParts.Push(Expression.Variable(typeof(IValue)));
-        //     base.VisitIteratorLoopVariable(node);
-        //     ((ForEachBlockExpressionGenerator) _currentState.Generator).Iterator = _statementBuildParts.Pop();
-        //     _statementBuildParts.Pop();
-        // }
-        //
-        // protected override void VisitIteratorExpression(BslSyntaxNode node)
-        // {
-        //     base.VisitIteratorExpression(node);
-        //     ((ForEachBlockExpressionGenerator) _currentState.Generator).EnumeratorExpression = _statementBuildParts.Pop();
-        // }
-        //
+        
+        protected override void VisitForEachLoopNode(ForEachLoopNode node)
+        {
+            _blocks.EnterBlock(new JumpInformationRecord
+            {
+                LoopBreak = Expression.Label(),
+                LoopContinue = Expression.Label()
+            });
+            base.VisitForEachLoopNode(node);
+
+            var block = _blocks.LeaveBlock();
+            var enumerableCollection = block.BuildStack.Pop();
+            var itemVariable = block.BuildStack.Pop();
+            
+            var collectionType = typeof(IEnumerable);
+            var getEnumeratorMethod = collectionType.GetMethod("GetEnumerator");
+            var moveNextMethod = typeof(IEnumerator).GetMethod("MoveNext");
+            var collectionCast = Expression.Convert(enumerableCollection, collectionType);
+            
+            Debug.Assert(moveNextMethod != null);
+            
+            // loop init section
+            var getEnumeratorInvoke = Expression.Call(collectionCast, getEnumeratorMethod);
+            var enumeratorVar = Expression.Variable(typeof(IEnumerator));
+            
+            var result = new List<Expression>();
+            result.Add(Expression.Assign(enumeratorVar, getEnumeratorInvoke));
+            
+            
+            var loop = new List<Expression>();
+
+            var assignCurrent = Expression.Assign(
+                itemVariable,
+                Expression.Convert(
+                    Expression.Property(enumeratorVar, "Current"),
+                    typeof(BslValue))
+            );
+            
+            loop.Add(assignCurrent);
+            loop.AddRange(block.GetStatements());
+            
+            var finalLoop = Expression.Loop(
+                Expression.IfThenElse(
+                    Expression.Equal(Expression.Call(enumeratorVar, moveNextMethod), Expression.Constant(true)),
+                    Expression.Block(loop),
+                    Expression.Break(block.LoopBreak)),
+                block.LoopBreak, block.LoopContinue);
+            
+            result.Add(finalLoop);
+
+            _blocks.Add(Expression.Block(new[] {enumeratorVar}, result));
+        }
+        
+        protected override void VisitIteratorLoopVariable(TerminalNode node)
+        {
+            // temp var for VisitVariableWrite()
+            _statementBuildParts.Push(Expression.Variable(typeof(BslValue)));
+            base.VisitIteratorLoopVariable(node);
+            // push variable
+            _blocks.GetCurrentBlock().BuildStack.Push(_statementBuildParts.Pop());
+            // clear temp var
+            _statementBuildParts.Pop();
+        }
+        
+        protected override void VisitIteratorExpression(BslSyntaxNode node)
+        {
+            base.VisitIteratorExpression(node);
+            _blocks.GetCurrentBlock().BuildStack.Push(_statementBuildParts.Pop());
+        }
+        
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
         {
             VisitExpression(arg);

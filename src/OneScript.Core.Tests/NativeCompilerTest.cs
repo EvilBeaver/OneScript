@@ -388,8 +388,8 @@ namespace OneScript.Core.Tests
             inArray.Add(ValueFactory.Create(5));
             
             var args = new object[] { decimal.Zero, inArray };
-            var result = (IValue)func.DynamicInvoke(args);
-            result.AsNumber().Should().Be(6);
+            var result = (decimal)(BslNumericValue)func.DynamicInvoke(args);
+            result.Should().Be(6);
         }
 
         [Fact]
