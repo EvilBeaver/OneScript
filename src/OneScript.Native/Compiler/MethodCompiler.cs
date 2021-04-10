@@ -475,6 +475,90 @@ namespace OneScript.Native.Compiler
             _blocks.Add(Expression.Break(label));
         }
         
+        protected override void VisitForLoopNode(ForLoopNode node)
+        {
+            _blocks.EnterBlock(new JumpInformationRecord
+            {
+                LoopBreak = Expression.Label(),
+                LoopContinue = Expression.Label()
+            });
+            base.VisitForLoopNode(node);
+            var block = _blocks.LeaveBlock();
+
+            var upperLimit = block.BuildStack.Pop();
+            var initialValue = block.BuildStack.Pop();
+            var counterVar = block.BuildStack.Pop();
+            
+            var result = new List<Expression>();
+            result.Add(Expression.Assign(counterVar, initialValue)); // TODO: MakeAssign ?
+            var finalVar = Expression.Variable(typeof(decimal)); // TODO: BslNumericValue ?
+            result.Add(Expression.Assign(finalVar, upperLimit));
+            
+            var loop = new List<Expression>();
+            loop.Add(Expression.IfThen(
+                Expression.GreaterThan(counterVar, finalVar), 
+                Expression.Break(block.LoopBreak)));
+            
+            loop.AddRange(block.GetStatements());
+            
+            loop.Add(Expression.Label(block.LoopContinue));
+            loop.Add(Expression.PreIncrementAssign(counterVar));
+            
+            result.Add(Expression.Loop(Expression.Block(loop), block.LoopBreak));
+            
+            _blocks.Add(Expression.Block(new[] {finalVar}, result));
+        }
+
+        protected override void VisitForInitializer(BslSyntaxNode node)
+        {
+            var forLoopIterator = node.Children[0];
+            var forLoopInitialValue = node.Children[1];
+            VisitForLoopInitialValue(forLoopInitialValue);
+            VisitForLoopIterator(forLoopIterator);
+            
+            // counter variable
+            _blocks.GetCurrentBlock().BuildStack.Push(_statementBuildParts.Pop());
+            // initial value
+            _blocks.GetCurrentBlock().BuildStack.Push(_statementBuildParts.Pop());
+        }
+
+        protected override void VisitForLoopInitialValue(BslSyntaxNode node)
+        {
+            base.VisitForLoopInitialValue(node);
+            var expr = ExpressionHelpers.ToNumber(_statementBuildParts.Pop());
+            _statementBuildParts.Push(expr);
+        }
+
+        protected override void VisitForUpperLimit(BslSyntaxNode node)
+        {
+            base.VisitForUpperLimit(node);
+            var limit = Expression.Convert(
+                ExpressionHelpers.ToNumber(_statementBuildParts.Pop()),
+                typeof(decimal));
+            
+            _blocks.GetCurrentBlock().BuildStack.Push(limit);
+        }
+        //
+        // protected override void VisitForEachLoopNode(ForEachLoopNode node)
+        // {
+        //     _currentState.NewState(new ForEachBlockExpressionGenerator());
+        //     base.VisitForEachLoopNode(node);
+        // }
+        //
+        // protected override void VisitIteratorLoopVariable(TerminalNode node)
+        // {
+        //     _statementBuildParts.Push(Expression.Variable(typeof(IValue)));
+        //     base.VisitIteratorLoopVariable(node);
+        //     ((ForEachBlockExpressionGenerator) _currentState.Generator).Iterator = _statementBuildParts.Pop();
+        //     _statementBuildParts.Pop();
+        // }
+        //
+        // protected override void VisitIteratorExpression(BslSyntaxNode node)
+        // {
+        //     base.VisitIteratorExpression(node);
+        //     ((ForEachBlockExpressionGenerator) _currentState.Generator).EnumeratorExpression = _statementBuildParts.Pop();
+        // }
+        //
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
         {
             VisitExpression(arg);

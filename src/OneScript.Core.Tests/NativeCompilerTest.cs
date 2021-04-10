@@ -355,8 +355,8 @@ namespace OneScript.Core.Tests
             var expression = block.MakeExpression();
             var func = expression.Compile();
             var args = new object[] { decimal.Zero };
-            var result = (IValue)func.DynamicInvoke(args);
-            result.AsNumber().Should().Be(6);
+            var result = (decimal)(BslNumericValue)func.DynamicInvoke(args);
+            result.Should().Be(6);
         }
         
         [Fact]
