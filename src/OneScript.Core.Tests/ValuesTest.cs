@@ -52,10 +52,10 @@ namespace OneScript.Core.Tests
         [Fact]
         public void NumbersEquality()
         {
-            var num1 = NumberValue.Create(12.5);
-            var num2 = NumberValue.Create(12.5);
-            var num3 = NumberValue.Create(7);
-            var num4 = NumberValue.Create(0);
+            var num1 = ValueFactory.Create(12.5M);
+            var num2 = ValueFactory.Create(12.5M);
+            var num3 = ValueFactory.Create(7);
+            var num4 = ValueFactory.Create(0);
 
             Assert.Equal(num1, num2);
             Assert.True(num1.Equals(num2));

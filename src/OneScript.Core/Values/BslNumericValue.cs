@@ -25,7 +25,7 @@ namespace OneScript.Values
         
         private readonly decimal _value;
 
-        private BslNumericValue(decimal value)
+        protected BslNumericValue(decimal value)
         {
             _value = value;
         }
@@ -50,14 +50,29 @@ namespace OneScript.Values
             }
         }
 
-        public override bool TryBinaryOperation(BinaryOperationBinder binder, object arg, out object result)
+        // public override bool TryBinaryOperation(BinaryOperationBinder binder, object arg, out object result)
+        // {
+        //     if (!arg.GetType().IsNumeric())
+        //     {
+        //         throw new InvalidOperationException($"Conversion to Number from {arg.GetType()} is not supported");
+        //     }
+        //
+        //     result = Convert.ToDecimal(arg);
+        //     return true;
+        // }
+
+        public override bool TryConvert(ConvertBinder binder, out object result)
         {
-            if (!arg.GetType().IsNumeric())
+            if (!binder.Type.IsNumeric())
             {
-                throw new InvalidOperationException($"Conversion to Number from {arg.GetType()} is not supported");
+                if (binder.Type == typeof(string))
+                {
+                    result = ConvertToString();
+                }
+                throw new InvalidOperationException($"Conversion from Number to {binder.Type} is not supported");
             }
 
-            result = Convert.ToDecimal(arg);
+            result = Convert.ToDecimal(_value);
             return true;
         }
 
@@ -104,6 +119,8 @@ namespace OneScript.Values
             return Equals((BslNumericValue) obj);
         }
 
+        protected decimal ActualValue => _value;
+        
         public override int GetHashCode()
         {
             return _value.GetHashCode();

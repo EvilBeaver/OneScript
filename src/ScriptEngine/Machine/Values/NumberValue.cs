@@ -5,12 +5,15 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using OneScript.Types;
+using OneScript.Values;
+using ScriptEngine.Types;
+
 namespace ScriptEngine.Machine.Values
 {
-    public class NumberValue : GenericValue
+    public class NumberValue : BslNumericValue, IValue, IEmptyValueCheck
     {
-        private readonly decimal _value;
-
         private static readonly NumberValue[] _popularValues = new NumberValue[10];
 
         static NumberValue()
@@ -51,48 +54,60 @@ namespace ScriptEngine.Machine.Values
             return Create((decimal)value);
         }
 
-        private NumberValue(decimal value)
+        private NumberValue(decimal value) : base(value)
         {
-            _value = value;
             DataType = DataType.Number;
         }
 
-        public override bool AsBoolean()
+        public DateTime AsDate()
         {
-            return _value != 0;
+            throw RuntimeException.ConvertToDateException();
         }
 
-        public override decimal AsNumber()
+        public bool AsBoolean()
         {
-            return _value;
+            return AsNumber() != 0;
         }
 
-        public override string AsString()
+        public DataType DataType { get; }
+
+        public TypeDescriptor SystemType => BasicTypes.Number;
+
+        public decimal AsNumber()
         {
-            return AsNumber().ToString(System.Globalization.NumberFormatInfo.InvariantInfo);
+            return ActualValue;
         }
 
-        public override int CompareTo(IValue other)
+        public string AsString()
+        {
+            return ConvertToString();
+        }
+
+        public IRuntimeContextInstance AsObject()
+        {
+            throw RuntimeException.ValueIsNotObjectException();
+        }
+
+        public IValue GetRawValue()
+        {
+            return this;
+        }
+
+        public int CompareTo(IValue other)
         {
             if (other.DataType == DataType.Boolean || other.DataType == DataType.Number)
             {
-                return _value.CompareTo(other.AsNumber());
+                return ActualValue.CompareTo(other.AsNumber());
             }
 
-            return base.CompareTo(other);
+            throw RuntimeException.ComparisonNotSupportedException();
         }
 
-        public override bool Equals(IValue other)
+        public bool Equals(IValue other)
         {
-            if (other == null)
-                return false;
-
-            if (other.DataType == DataType.Number || other.DataType == DataType.Boolean)
-                return _value == other.AsNumber();
-
-            return false;
+            return base.Equals((BslValue)other);
         }
 
-        public override bool IsEmpty => _value == 0;
+        public bool IsEmpty => ActualValue == 0;
     }
 }
