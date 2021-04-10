@@ -402,10 +402,13 @@ namespace OneScript.Core.Tests
                 "ВызватьИсключение 123; " +
                 "Исключение Возврат 2; КонецПопытки;";
             var expression = block.MakeExpression();
+
+            expression.Body.As<BlockExpression>().Expressions[0].NodeType.Should().Be(ExpressionType.Try);
+            
             var func = expression.Compile();
             
-            ((IValue)func.DynamicInvoke(new object[] { decimal.One }))?.AsNumber().Should().Be(1);
-            ((IValue)func.DynamicInvoke(new object[] { decimal.Zero }))?.AsNumber().Should().Be(2);
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { decimal.One })).Should().Be(1);
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { decimal.Zero })).Should().Be(2);
         }
     }
 }

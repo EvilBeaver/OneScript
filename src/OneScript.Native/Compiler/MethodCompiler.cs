@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using OneScript.Commons;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -112,6 +113,7 @@ namespace OneScript.Native.Compiler
         protected override void VisitStatement(BslSyntaxNode statement)
         {
             _statementBuildParts.Clear();
+            var nestingLevel = _blocks.Count;
             try
             {
                 base.VisitStatement(statement);
@@ -120,9 +122,23 @@ namespace OneScript.Native.Compiler
             {
                 // нижележащий код заполнил коллекцию errors
                 // а мы просто переходим к следующей строке кода
+                RestoreNestingLevel(nestingLevel);
+            }
+            catch (Exception)
+            {
+                RestoreNestingLevel(nestingLevel);
+                throw;
             }
         }
 
+        private void RestoreNestingLevel(int desiredLevel)
+        {
+            while (_blocks.Count > desiredLevel)
+            {
+                _blocks.LeaveBlock();
+            }
+        }
+        
         protected override void VisitVariableRead(TerminalNode node)
         {
             if (!Symbols.FindVariable(node.GetIdentifier(), out var binding))
@@ -307,45 +323,41 @@ namespace OneScript.Native.Compiler
             _blocks.Add(statement);
         }
         
+        #region If Block
+        
         protected override void VisitIfNode(ConditionNode node)
         {
             _blocks.EnterBlock();
-            try
+            
+            VisitIfExpression(node.Expression);
+            VisitIfTruePart(node.TruePart);
+
+            var stack = new Stack<ConditionNode>();
+            foreach (var alternative in node.GetAlternatives())
             {
-                VisitIfExpression(node.Expression);
-                VisitIfTruePart(node.TruePart);
-
-                var stack = new Stack<ConditionNode>();
-                foreach (var alternative in node.GetAlternatives())
+                if (alternative is ConditionNode elif)
                 {
-                    if (alternative is ConditionNode elif)
-                    {
-                        stack.Push(elif);
-                    }
-                    else if (stack.Count > 0)
-                    {
-                        var cond = stack.Pop();
-
-                        VisitElseNode((CodeBatchNode) alternative);
-                        VisitElseIfNode(cond);
-                    }
-                    else
-                    {
-                        VisitElseNode((CodeBatchNode) alternative);
-                    }
+                    stack.Push(elif);
                 }
-
-                while (stack.Count > 0)
+                else if (stack.Count > 0)
                 {
-                    var elseIfNode = stack.Pop();
-                    VisitElseIfNode(elseIfNode);
+                    var cond = stack.Pop();
+
+                    VisitElseNode((CodeBatchNode) alternative);
+                    VisitElseIfNode(cond);
+                }
+                else
+                {
+                    VisitElseNode((CodeBatchNode) alternative);
                 }
             }
-            catch
+
+            while (stack.Count > 0)
             {
-                _blocks.LeaveBlock();
-                throw;
+                var elseIfNode = stack.Pop();
+                VisitElseIfNode(elseIfNode);
             }
+  
 
             var expression = CreateIfExpression(_blocks.LeaveBlock());
             _blocks.Add(expression);
@@ -380,16 +392,8 @@ namespace OneScript.Native.Compiler
         protected override void VisitIfTruePart(CodeBatchNode node)
         {
             _blocks.EnterBlock();
-            try
-            {
-                base.VisitIfTruePart(node);
-            }
-            catch
-            {
-                _blocks.LeaveBlock();
-                throw;
-            }
-
+            base.VisitIfTruePart(node);
+            
             var body = _blocks.LeaveBlock().GetStatements();
             _blocks.GetCurrentBlock().BuildStack.Push(Expression.Block(body));
         }
@@ -402,17 +406,9 @@ namespace OneScript.Native.Compiler
                 elseNode = _blocks.GetCurrentBlock().BuildStack.Pop();
             
             _blocks.EnterBlock();
-            try
-            {
-                VisitIfExpression(node.Expression);
-                VisitIfTruePart(node.TruePart);
-            }
-            catch
-            {
-                _blocks.LeaveBlock();
-                throw;
-            }
-
+            VisitIfExpression(node.Expression);
+            VisitIfTruePart(node.TruePart);
+            
             if(hasCompiledElse)
                 _blocks.GetCurrentBlock().BuildStack.Push(elseNode);
             
@@ -436,7 +432,11 @@ namespace OneScript.Native.Compiler
                 throw;
             }
         }
+
+        #endregion
         
+        #region While Loop
+
         protected override void VisitWhileNode(WhileLoopNode node)
         {
             _blocks.EnterBlock(new JumpInformationRecord()
@@ -475,7 +475,11 @@ namespace OneScript.Native.Compiler
             var label = _blocks.GetCurrentBlock().LoopBreak;
             _blocks.Add(Expression.Break(label));
         }
+
+        #endregion
         
+        #region For With Counter Loop
+
         protected override void VisitForLoopNode(ForLoopNode node)
         {
             _blocks.EnterBlock(new JumpInformationRecord
@@ -540,6 +544,10 @@ namespace OneScript.Native.Compiler
             _blocks.GetCurrentBlock().BuildStack.Push(limit);
         }
         
+        #endregion
+        
+        #region ForEach Loop
+        
         protected override void VisitForEachLoopNode(ForEachLoopNode node)
         {
             _blocks.EnterBlock(new JumpInformationRecord
@@ -559,6 +567,7 @@ namespace OneScript.Native.Compiler
             var collectionCast = Expression.Convert(enumerableCollection, collectionType);
             
             Debug.Assert(moveNextMethod != null);
+            Debug.Assert(getEnumeratorMethod != null);
             
             // loop init section
             var getEnumeratorInvoke = Expression.Call(collectionCast, getEnumeratorMethod);
@@ -608,6 +617,66 @@ namespace OneScript.Native.Compiler
             base.VisitIteratorExpression(node);
             _blocks.GetCurrentBlock().BuildStack.Push(_statementBuildParts.Pop());
         }
+        #endregion
+
+        #region TryExcept Block
+        
+        protected override void VisitTryExceptNode(TryExceptNode node)
+        {
+            _blocks.EnterBlock();
+            base.VisitTryExceptNode(node);
+            
+            // TODO доделать все переобертки RuntimeException для стековой машины и для нативной
+
+            var block = _blocks.LeaveBlock();
+            var except = block.BuildStack.Pop();
+            var tryBlock = block.BuildStack.Pop();
+            
+            _blocks.Add(Expression.TryCatch(tryBlock,
+                Expression.Catch(typeof(Exception), except))
+            );
+        }
+
+        protected override void VisitTryBlock(CodeBatchNode node)
+        {
+            _blocks.EnterBlock();
+            base.VisitTryBlock(node);
+            var block = _blocks.LeaveBlock();
+            
+            _blocks.GetCurrentBlock().BuildStack.Push(Expression.Block(block.GetStatements()));
+        }
+
+        protected override void VisitExceptBlock(CodeBatchNode node)
+        {
+            _blocks.EnterBlock();
+            base.VisitExceptBlock(node);
+            var block = _blocks.LeaveBlock();
+            
+            _blocks.GetCurrentBlock().BuildStack.Push(Expression.Block(block.GetStatements()));
+        }
+
+        protected override void VisitRaiseNode(BslSyntaxNode node)
+        {
+            if (node.Children.Count == 0)
+            {
+                _blocks.Add(Expression.Rethrow());
+            }
+            else
+            {
+                VisitExpression(node.Children[0]);
+                var expression = Expression.Call(
+                    _statementBuildParts.Pop(),
+                    typeof(object).GetMethod("ToString"));
+                
+                var exceptionType = typeof(BslRuntimeException);
+                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString)});
+                var exceptionExpression = Expression.New(ctor, Expression.Convert(expression, typeof(BilingualString)));
+                _blocks.Add(Expression.Throw(exceptionExpression));
+            }
+            base.VisitRaiseNode(node);
+        }
+        
+        #endregion
         
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
         {

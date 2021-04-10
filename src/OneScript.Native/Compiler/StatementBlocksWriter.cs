@@ -13,7 +13,9 @@ namespace OneScript.Native.Compiler
     public class StatementBlocksWriter
     {
         private readonly Stack<StatementsBlockRecord> _blocks = new Stack<StatementsBlockRecord>();
-        
+
+        public int Count => _blocks.Count;
+
         public void EnterBlock(JumpInformationRecord newJumpStates)
         {
             var current = _blocks.Count > 0 ? GetCurrentBlock() : null;
