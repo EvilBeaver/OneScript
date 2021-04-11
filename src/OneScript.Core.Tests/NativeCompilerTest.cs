@@ -468,7 +468,7 @@ namespace OneScript.Core.Tests
             tm.RegisterClass(typeof(ArrayImpl));
             var blockCompiler = new CompiledBlock(tm);
 
-            var N = 5000000;
+            var N = 500;
             var arr = new ArrayImpl();
             for (int i = 0; i < N; i++)
             {
@@ -488,8 +488,8 @@ namespace OneScript.Core.Tests
             
             var lambda = blockCompiler.MakeExpression();
             var eratosphenes = blockCompiler.CreateDelegate<Func<decimal, ArrayImpl, BslValue>>();
-            var time = eratosphenes(N, arr);
-            throw new Exception(time.ToString());
+            var time = (decimal)(BslNumericValue)eratosphenes(N, arr);
+            time.Should().BeGreaterThan(0);
         }
     }
 }
