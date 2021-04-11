@@ -231,14 +231,14 @@ namespace OneScript.Native.Compiler
                     return;
                 }
             }
+            else if (left.NodeType == ExpressionType.Call)
+            {
+                _blocks.Add(left);
+                return;
+            }
             
             var right = _statementBuildParts.Pop();
             _blocks.Add(MakeAssign(left, right));
-        }
-
-        private Expression AssignToDynamicObject(Expression left, Expression right)
-        {
-            throw new NotImplementedException();
         }
 
         protected override void VisitAssignmentLeftPart(BslSyntaxNode node)
@@ -311,11 +311,15 @@ namespace OneScript.Native.Compiler
 
             var indexExpression = TryCreateIndexExpression(node, target, index);
 
-            indexExpression ??= ExpressionHelpers.DynamicGetIndex(target, index);
+            if (indexExpression == null)
+            {
+                indexExpression = TryFindMagicGetterMethod(target, index) 
+                                  ?? ExpressionHelpers.DynamicGetIndex(target, index);
+            }
             
             _statementBuildParts.Push(indexExpression);
         }
-        
+
         private void VisitIndexAccessWrite(BslSyntaxNode node)
         {
             base.VisitIndexAccess(node);
@@ -328,10 +332,47 @@ namespace OneScript.Native.Compiler
             if (indexExpression == null)
             {
                 var value = _statementBuildParts.Pop();
-                indexExpression = ExpressionHelpers.DynamicSetIndex(target, index, value);
+                indexExpression = TryFindMagicSetterMethod(target, index, value) 
+                                  ?? ExpressionHelpers.DynamicSetIndex(target, index, value);
             }
             
             _statementBuildParts.Push(indexExpression);
+        }
+
+        private Expression TryFindMagicGetterMethod(Expression target, Expression index)
+        {
+            var targetType = target.Type;
+            var method = targetType.GetMethod("BslIndexGetter");
+            if (method == null)
+                return null;
+
+            var parameters = method.GetParameters();
+            if (parameters.Length != 1)
+                return null;
+
+            var indexParamType = parameters[0].ParameterType;
+            
+            return Expression.Call(target, method,ExpressionHelpers.ConvertToType(index, indexParamType));
+        }
+        
+        private Expression TryFindMagicSetterMethod(Expression target, Expression index, Expression value)
+        {
+            var targetType = target.Type;
+            var method = targetType.GetMethod("BslIndexSetter");
+            if (method == null)
+                return null;
+
+            var parameters = method.GetParameters();
+            if (parameters.Length != 2)
+                return null;
+
+            var indexParamType = parameters[0].ParameterType;
+            var valueType = parameters[1].ParameterType;
+
+            return Expression.Call(target, method,
+                ExpressionHelpers.ConvertToType(index, indexParamType),
+                ExpressionHelpers.ConvertToType(value, valueType));
+
         }
 
         private Expression TryCreateIndexExpression(BslSyntaxNode node, Expression target, Expression index)

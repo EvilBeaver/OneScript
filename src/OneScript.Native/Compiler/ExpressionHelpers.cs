@@ -180,11 +180,41 @@ namespace OneScript.Native.Compiler
             }
             else
             {
-                return CastToClrType(value, targetType);
+                var conversion = TryFindConversionOp(value, targetType);
+                if(conversion == null)
+                    return DynamicallyCastToClrType(value, targetType);
+
+                return conversion;
             }
         }
 
-        private static Expression CastToClrType(Expression value, Type targetType)
+        private static Expression TryFindConversionOp(Expression value, Type targetType)
+        {
+            if (value.Type.IsValue())
+            {
+                if (targetType.IsNumeric())
+                    return ToNumber(value);
+                if (targetType == typeof(bool))
+                    return ToBoolean(value);
+                if (targetType == typeof(string))
+                    return ToString(value);
+                if (targetType == typeof(DateTime))
+                    return ToDate(value);
+            }
+            
+            // пока в тупую делаем каст, а вдруг повезет
+            // если будет ненадежно - поиграем с поиском статических конверсий
+            try
+            {
+                return Expression.Convert(value, targetType);
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+        }
+
+        private static Expression DynamicallyCastToClrType(Expression value, Type targetType)
         {
             var binder = Microsoft.CSharp.RuntimeBinder.Binder.Convert(
                 CSharpBinderFlags.ConvertExplicit,

@@ -23,5 +23,13 @@ namespace OneScript.Values
 
         public abstract bool Equals(BslValue other);
 
+        public static explicit operator bool(BslValue target) => (bool) (BslBooleanValue) target;
+        
+        public static explicit operator decimal(BslValue target) => (decimal) (BslNumericValue) target;
+        
+        public static explicit operator int(BslValue target) => (int)(decimal)(BslNumericValue) target;
+        
+        public static explicit operator DateTime(BslValue target) => (DateTime)(BslDateValue) target;
+        
     }
 }

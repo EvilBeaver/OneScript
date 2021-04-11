@@ -214,12 +214,16 @@ namespace OneScript.Core.Tests
             var expr = block.MakeExpression();
             var statement = expr.Body.As<BlockExpression>().Expressions.First();
 
-            if (statement.NodeType != ExpressionType.Dynamic)
+            if (statement.NodeType == ExpressionType.Assign)
             {
-                statement.NodeType.Should().Be(ExpressionType.Assign);
                 var assign = statement.As<BinaryExpression>();
                 assign.Left.NodeType.Should().Be(ExpressionType.Index);
-            };
+            }
+            else if (statement.NodeType != ExpressionType.Dynamic)
+            {
+                statement.NodeType.Should().Be(ExpressionType.Call);
+                statement.As<MethodCallExpression>().Method.Name.Should().Be("BslIndexSetter");
+            }
 
             var proc = expr.Compile();
             var array = new ArrayImpl(new IValue[6]);
@@ -468,14 +472,14 @@ namespace OneScript.Core.Tests
             tm.RegisterClass(typeof(ArrayImpl));
             var blockCompiler = new CompiledBlock(tm);
 
-            var N = 500;
+            var N = 50000000;
             var arr = new ArrayImpl();
             for (int i = 0; i < N; i++)
             {
                 if(i < 2)
-                    arr.Add(ValueFactory.Create(false));
+                    arr.AddBsl(BslBooleanValue.False);
                 
-                arr.Add(ValueFactory.Create(true));
+                arr.AddBsl(BslBooleanValue.True);
             }
 
             var arrayType = tm.GetTypeByFrameworkType(typeof(ArrayImpl));
@@ -489,7 +493,7 @@ namespace OneScript.Core.Tests
             var lambda = blockCompiler.MakeExpression();
             var eratosphenes = blockCompiler.CreateDelegate<Func<decimal, ArrayImpl, BslValue>>();
             var time = (decimal)(BslNumericValue)eratosphenes(N, arr);
-            time.Should().BeGreaterThan(0);
+            throw new Exception(time.ToString());
         }
     }
 }

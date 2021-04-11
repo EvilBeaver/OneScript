@@ -11,6 +11,7 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections
 {
@@ -28,6 +29,20 @@ namespace OneScript.StandardLibrary.Collections
         {
             _values = new List<IValue>(values);
         }
+
+        #region Native Runtime Bridge
+        
+        // Нельзя использовать свойство-индексатор this, поскольку в этом случае
+        // падает тест DynamicObjectTest.CanAccessArraysByIndex
+        // это происходит потому, что при наличии индексатора протокол DynamicObject перестает использовать метод
+        // TryGetIndex при биндинге, а вызывает объявленный индексатор.
+        // После чего, не может привязать результат индексатора к методу Assert.Equal
+        
+        public BslValue BslIndexGetter(int index) => _values_2[index];
+        
+        public void BslIndexSetter(int index, BslValue value) => _values_2[index] = value;
+        
+        #endregion
         
         public override IValue GetIndexedValue(IValue index)
         {
