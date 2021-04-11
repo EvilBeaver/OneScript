@@ -443,5 +443,53 @@ namespace OneScript.Core.Tests
             var time = (decimal)(BslNumericValue) func();
             time.Should().BeGreaterThan(0);
         }
+
+        [Fact]
+        public void Can_Do_Eratosthenes()
+        {
+            var code = @"времяНачала = ТекущаяУниверсальнаяДатаВМиллисекундах();
+            Для индекс = 2 По Н Цикл
+                Если Массив[индекс] Тогда
+                    квадрат = индекс * индекс;
+                    Если квадрат <= Н Тогда
+                        м = квадрат;
+                        Пока м <= Н Цикл
+                            Массив[м] = Ложь;
+                            м = м + индекс;
+                        КонецЦикла;
+                    КонецЕсли;
+                КонецЕсли;
+            КонецЦикла;
+
+            времяОкончания = ТекущаяУниверсальнаяДатаВМиллисекундах();
+            Возврат (времяОкончания - времяНачала)/1000";
+
+            var tm = new DefaultTypeManager();
+            tm.RegisterClass(typeof(ArrayImpl));
+            var blockCompiler = new CompiledBlock(tm);
+
+            var N = 5000000;
+            var arr = new ArrayImpl();
+            for (int i = 0; i < N; i++)
+            {
+                if(i < 2)
+                    arr.Add(ValueFactory.Create(false));
+                
+                arr.Add(ValueFactory.Create(true));
+            }
+
+            var arrayType = tm.GetTypeByFrameworkType(typeof(ArrayImpl));
+            
+            blockCompiler.Parameters.Insert("Н", new TypeTypeValue(BasicTypes.Number));
+            blockCompiler.Parameters.Insert("Массив", new TypeTypeValue(arrayType));
+            blockCompiler.Symbols = new SymbolTable();
+            blockCompiler.Symbols.AddScope(SymbolScope.FromContext(new StandardGlobalContext()));
+            blockCompiler.CodeBlock = code;
+            
+            var lambda = blockCompiler.MakeExpression();
+            var eratosphenes = blockCompiler.CreateDelegate<Func<decimal, ArrayImpl, BslValue>>();
+            var time = eratosphenes(N, arr);
+            throw new Exception(time.ToString());
+        }
     }
 }

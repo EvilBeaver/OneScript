@@ -18,7 +18,7 @@ using Xunit;
 
 namespace OneScript.Dynamic.Tests
 {
-    public class NativeCompiler2_Test
+    public class Compiler_Api_Tests
     {
         [Fact]
         public void CanCompile_Empty_Module()

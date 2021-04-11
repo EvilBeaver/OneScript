@@ -126,10 +126,16 @@ namespace OneScript.Native.Compiler
                 // а мы просто переходим к следующей строке кода
                 RestoreNestingLevel(nestingLevel);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 RestoreNestingLevel(nestingLevel);
-                throw;
+                if (e is BslCoreException)
+                    throw;
+
+                var msg = new BilingualString(
+                    "Ошибка компиляции статического модуля\n" + e,
+                    "Error compiling static module\n" + e);
+                base.AddError(msg, statement.Location);
             }
         }
 
@@ -456,16 +462,18 @@ namespace OneScript.Native.Compiler
                 var falsePart = block.BuildStack.Pop();
                 var truePart = block.BuildStack.Pop();
                 var condition = block.BuildStack.Pop();
-                
-                return Expression.IfThenElse(condition, truePart, falsePart);
+
+                return Expression.IfThenElse(ExpressionHelpers.ToBoolean(condition), truePart, falsePart);
             }
             else
             {
                 Debug.Assert(block.BuildStack.Count == 2);
                 var truePart = block.BuildStack.Pop();
                 var condition = block.BuildStack.Pop();
+                if (condition.Type != typeof(bool))
+                    condition = Expression.Convert(condition, typeof(bool));
                 
-                return Expression.IfThen(condition, truePart);
+                return Expression.IfThen(ExpressionHelpers.ToBoolean(condition), truePart);
             }
         }
 
@@ -547,7 +555,8 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitWhileCondition(BslSyntaxNode node)
         {
-            _blocks.GetCurrentBlock().BuildStack.Push(ConvertToExpressionTree(node));
+            var expr = ExpressionHelpers.ToBoolean(ConvertToExpressionTree(node));  
+            _blocks.GetCurrentBlock().BuildStack.Push(expr);
         }
         
         protected override void VisitContinueNode(LineMarkerNode node)

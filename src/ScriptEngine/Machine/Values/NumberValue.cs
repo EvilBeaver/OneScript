@@ -105,7 +105,7 @@ namespace ScriptEngine.Machine.Values
 
         public bool Equals(IValue other)
         {
-            return base.Equals((BslValue)other);
+            return base.Equals(other.GetRawValue() as BslValue);
         }
 
         public bool IsEmpty => ActualValue == 0;

@@ -36,6 +36,5 @@ namespace OneScript
         public static bool IsValue(this Type type) => typeof(BslValue).IsAssignableFrom(type);
         
         public static bool IsObjectValue(this Type type) => typeof(BslObjectValue).IsAssignableFrom(type);
-        
     }
 }

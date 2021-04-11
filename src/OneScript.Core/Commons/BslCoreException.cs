@@ -15,5 +15,9 @@ namespace OneScript.Commons
         public BslCoreException(BilingualString message) : base(message.ToString())
         {
         }
+        
+        public BslCoreException(BilingualString message, Exception innerException) : base(message.ToString(), innerException)
+        {
+        }
     }
 }

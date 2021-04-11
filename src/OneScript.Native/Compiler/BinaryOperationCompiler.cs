@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Reflection;
 using OneScript;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Values;
@@ -66,16 +67,55 @@ namespace OneScript.Native.Compiler
         {
             if (IsNumeric(right.Type))
             {
-                return Expression.MakeBinary(_opCode, left, right);
+                return AdjustArithmeticOperandTypesAndMakeBinary(left, right);
             }
             if(IsValue(right.Type))
             {
-                return Expression.MakeBinary(_opCode, left, ExpressionHelpers.ToNumber(right));
+                right = ExpressionHelpers.ToNumber(right);
+                return AdjustArithmeticOperandTypesAndMakeBinary(left, right);
             }
 
             throw new CompilerException($"Operation {_opCode} is not defined for Number and {right.Type}");
         }
 
+        private Expression AdjustArithmeticOperandTypesAndMakeBinary(Expression left, Expression right)
+        {
+            if (left.Type == right.Type)
+                return Expression.MakeBinary(_opCode, left, right);
+            
+            // try find direct operator
+            var method = GetUserDefinedBinaryOperator("op_" + _opCode.ToString(), left.Type, right.Type);
+            if (method == null)
+            {
+                // try convert
+                if (left.Type.IsInteger() && !right.Type.IsInteger())
+                {
+                    // нужна нецелочисленная операция
+                    left = Expression.Convert(left, typeof(decimal));
+                    return AdjustArithmeticOperandTypesAndMakeBinary(left, right);
+                }
+
+                right = Expression.Convert(right, left.Type);
+            }
+
+            return Expression.MakeBinary(_opCode, left, right, false, method);
+        }
+        
+        private static MethodInfo GetUserDefinedBinaryOperator(string name, Type leftType, Type rightType) {
+            // 
+ 
+            Type[] types = new Type[] { leftType, rightType };
+            
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+            MethodInfo method = leftType.GetMethod(name, flags, null, types, null);
+            if (method == null)
+            {
+                method = rightType.GetMethod(name, flags, null, types, null);
+            }
+            
+            return method;
+        }
+        
         private Expression DateOperation(Expression left, Expression right)
         {
             if (IsNumeric(right.Type))
