@@ -322,11 +322,14 @@ namespace OneScript.Native.Compiler
             
             var index = _statementBuildParts.Pop();
             var target = _statementBuildParts.Pop();
-            var value = _statementBuildParts.Pop();
-
+            
             var indexExpression = TryCreateIndexExpression(node, target, index);
 
-            indexExpression ??= ExpressionHelpers.DynamicSetIndex(target, index, value);
+            if (indexExpression == null)
+            {
+                var value = _statementBuildParts.Pop();
+                indexExpression = ExpressionHelpers.DynamicSetIndex(target, index, value);
+            }
             
             _statementBuildParts.Push(indexExpression);
         }
