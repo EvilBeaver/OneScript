@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Values;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
@@ -21,7 +22,7 @@ namespace ScriptEngine.Machine
         public int GetHashCode(IValue obj)
         {
             object CLR_obj;
-            if (obj.DataType == DataType.Undefined)
+            if (obj is BslUndefinedValue)
                 return obj.GetHashCode();
 
             try

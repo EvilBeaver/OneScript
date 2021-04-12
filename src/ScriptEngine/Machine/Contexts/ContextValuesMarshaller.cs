@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Linq;
+using OneScript.Values;
 using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine.Contexts
@@ -77,7 +78,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsString();
             }
-            else if (value == UndefinedValue.Instance)
+            else if (value == BslUndefinedValue.Instance)
             {
                 // Если тип параметра не IValue и не IVariable && Неопределено -> null
                 valueObj = null;
@@ -193,7 +194,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
-                return ValueFactory.Create((IRuntimeContextInstance)objParam);
+                return (IValue)(IRuntimeContextInstance)objParam;
             }
             else if (typeof(IValue).IsAssignableFrom(type))
             {

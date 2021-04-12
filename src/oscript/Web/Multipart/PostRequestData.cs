@@ -42,7 +42,7 @@ namespace oscript.Web.Multipart
                 {
                     m_files.Insert(
                         ValueFactory.Create(file.Name),
-                        ValueFactory.Create(new PostFileDescription(file))
+                        new PostFileDescription(file)
                     );
                 }
                 _files = new FixedMapImpl(m_files);

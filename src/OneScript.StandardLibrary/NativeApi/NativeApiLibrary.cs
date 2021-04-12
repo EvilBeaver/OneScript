@@ -78,7 +78,7 @@ namespace OneScript.StandardLibrary.NativeApi
             var typeDef = typeManager.RegisterType(typeName, default, typeof(NativeApiComponent));
             var component = new NativeApiComponent(host, this, typeDef, componentName);
             _components.Add(component);
-            return ValueFactory.Create(component);
+            return component;
         }
     }
 }

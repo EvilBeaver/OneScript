@@ -2442,7 +2442,7 @@ namespace ScriptEngine.Machine
                 else
                     excInfo = new ExceptionInfoContext(_currentFrame.LastException);
 
-                _operationStack.Push(ValueFactory.Create(excInfo));
+                _operationStack.Push(excInfo);
             }
             else
             {

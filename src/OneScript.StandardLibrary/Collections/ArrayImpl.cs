@@ -38,9 +38,9 @@ namespace OneScript.StandardLibrary.Collections
         // TryGetIndex при биндинге, а вызывает объявленный индексатор.
         // После чего, не может привязать результат индексатора к методу Assert.Equal
         
-        public BslValue BslIndexGetter(int index) => _values_2[index];
-        
-        public void BslIndexSetter(int index, BslValue value) => _values_2[index] = value;
+        // public BslValue BslIndexGetter(int index) => _values_2[index];
+        //
+        // public void BslIndexSetter(int index, BslValue value) => _values_2[index] = value;
         
         #endregion
         

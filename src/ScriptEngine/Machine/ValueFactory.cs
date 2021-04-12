@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Globalization;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine
@@ -15,32 +16,32 @@ namespace ScriptEngine.Machine
     {
         public static IValue Create()
         {
-            return UndefinedValue.Instance;
+            return BslUndefinedValue.Instance;
         }
 
         public static IValue Create(string value)
         {
-            return StringValue.Create(value);
+            return BslStringValue.Create(value);
         }
 
         public static IValue Create(bool value)
         {
-            return value ? BooleanValue.True : BooleanValue.False;
+            return BslBooleanValue.Create(value);
         }
 
         public static IValue Create(decimal value)
         {
-            return NumberValue.Create(value);
+            return BslNumericValue.Create(value);
         }
 
         public static IValue Create(int value)
         {
-            return NumberValue.Create(value);
+            return BslNumericValue.Create(value);
         }
 
         public static IValue Create(DateTime value)
         {
-            return new DateValue(value);
+            return new BslDateValue(value);
         }
 
         public static IValue CreateInvalidValueMarker()
@@ -50,12 +51,7 @@ namespace ScriptEngine.Machine
 
         public static IValue CreateNullValue()
         {
-            return NullValue.Instance;
-        }
-
-        public static IValue Create(IRuntimeContextInstance instance)
-        {
-            return (IValue)instance;
+            return BslNullValue.Instance;
         }
 
         public static IValue Parse(string presentation, DataType type)

@@ -253,7 +253,7 @@ namespace ScriptEngine.Machine.Contexts
                 {
                     throw new RuntimeException("Тип " + type + " невозможно преобразовать в один из поддерживаемых типов", e);
                 }
-                return ValueFactory.Create(ctx);
+                return ctx;
             }
             
             else

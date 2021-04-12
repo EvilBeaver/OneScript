@@ -14,11 +14,6 @@ namespace ScriptEngine.Machine
         DataType DataType { get; }
         TypeDescriptor SystemType { get; }
 
-        decimal AsNumber();
-        DateTime AsDate();
-        bool AsBoolean();
-        string AsString();
-        IRuntimeContextInstance AsObject();
         IValue GetRawValue();
     }
 

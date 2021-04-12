@@ -120,7 +120,7 @@ namespace OneScript.StandardLibrary.NativeApi
                 case VarTypes.VTYPE_BLOB:
                     byte[] buffer = new byte[strLen];
                     Marshal.Copy(pstrVal, buffer, 0, strLen);
-                    return ValueFactory.Create(new BinaryDataContext(buffer));
+                    return new BinaryDataContext(buffer);
                 default:
                     return ValueFactory.Create();
             }

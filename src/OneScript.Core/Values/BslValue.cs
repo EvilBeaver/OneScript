@@ -7,29 +7,32 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Dynamic;
+using OneScript.Commons;
 
 namespace OneScript.Values
 {
     public abstract class BslValue : DynamicObject, IComparable<BslValue>, IEquatable<BslValue>
     {
         protected virtual string ConvertToString() => ToString();
-        
-        public static explicit operator string(BslValue value)
-        {
-            return value.ConvertToString();
-        }
 
         public abstract int CompareTo(BslValue other);
 
         public abstract bool Equals(BslValue other);
 
-        public static explicit operator bool(BslValue target) => (bool) (BslBooleanValue) target;
+        public static explicit operator string(BslValue value) => value.ConvertToString();
         
-        public static explicit operator decimal(BslValue target) => (decimal) (BslNumericValue) target;
+        public static explicit operator bool(BslValue target) => 
+            target is BslBooleanValue v ? (bool)v : throw BslExceptions.ConvertToBooleanException();
+
+        public static explicit operator decimal(BslValue target) =>
+            target is BslNumericValue v ? (decimal) v : throw BslExceptions.ConvertToNumberException();
         
-        public static explicit operator int(BslValue target) => (int)(decimal)(BslNumericValue) target;
+        public static explicit operator int(BslValue target) => 
+            target is BslNumericValue v ? (int)(decimal) v : throw BslExceptions.ConvertToNumberException();
         
-        public static explicit operator DateTime(BslValue target) => (DateTime)(BslDateValue) target;
+        public static explicit operator DateTime(BslValue target) => 
+            target is BslDateValue v ? (DateTime) v : throw BslExceptions.ConvertToDateException();
+
         
     }
 }

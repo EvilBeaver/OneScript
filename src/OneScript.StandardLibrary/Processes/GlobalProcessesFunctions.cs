@@ -75,7 +75,7 @@ namespace OneScript.StandardLibrary.Processes
                 return ValueFactory.Create();
             }
 
-            return ValueFactory.Create(new ProcessContext(process));
+            return new ProcessContext(process);
 
         }
 

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Moq;
 using OneScript.Commons;
 using OneScript.StandardLibrary;
+using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

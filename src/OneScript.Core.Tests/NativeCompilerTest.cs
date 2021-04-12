@@ -14,6 +14,7 @@ using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Json;
 using OneScript.StandardLibrary.Native;
+using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Values;
@@ -477,9 +478,9 @@ namespace OneScript.Core.Tests
             for (int i = 0; i < N; i++)
             {
                 if(i < 2)
-                    arr.AddBsl(BslBooleanValue.False);
+                    arr.Add(BooleanValue.False);
                 
-                arr.AddBsl(BslBooleanValue.True);
+                arr.Add(BooleanValue.True);
             }
 
             var arrayType = tm.GetTypeByFrameworkType(typeof(ArrayImpl));

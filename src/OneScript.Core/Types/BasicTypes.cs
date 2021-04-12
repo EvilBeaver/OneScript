@@ -6,11 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using OneScript.Types;
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Values;
+using OneScript.Values;
 
-namespace ScriptEngine.Types
+namespace OneScript.Types
 {
     public static class BasicTypes
     {
@@ -34,43 +32,43 @@ namespace ScriptEngine.Types
                 new Guid("A7403601-38B7-420A-8630-84A1F675E102"),
                 "Число",
                 "Number",
-                typeof(NumberValue));
+                typeof(BslNumericValue));
             
             String = new TypeDescriptor(
                 new Guid("1AF7A333-33A1-45E2-BC5E-65CE2455D619"), 
                 "Строка",
                 "String",
-                typeof(StringValue));
+                typeof(BslStringValue));
             
             Date = new TypeDescriptor(new Guid("A7E20D06-E876-4949-9DB2-7C93891F3B87"), 
                 "Дата",
                 "Date",
-                typeof(DateValue));
+                typeof(BslDateValue));
             
             Boolean = new TypeDescriptor(new Guid("34EDD2E3-DD29-4829-A424-67B3404AF423"), 
                 "Булево",
                 "Boolean",
-                typeof(BooleanValue));
+                typeof(BslBooleanValue));
             
             Undefined = new TypeDescriptor(new Guid("783CE532-8CE0-4C59-BEF4-835AEFB715E4"),
                 "Неопределено",
                 "Undefined",
-                typeof(UndefinedValue));
+                typeof(BslUndefinedValue));
             
             Type = new TypeDescriptor(new Guid("4BCF3B78-B525-4159-8180-C76EDA613652"),
                 "Тип",
                 "Type",
-                typeof(TypeTypeValue));
+                typeof(BslTypeValue));
             
             Null = new TypeDescriptor(new Guid("26D78088-915A-4294-97E1-FB39E70187A6"),
                 "Null",
                 "Null",
-                typeof(NullValue));
+                typeof(BslNullValue));
 
             UnknownType = new TypeDescriptor(new Guid("EC3408A3-18A7-4A38-936F-7E7094D3C4E3"),
                 "$UnknownType$",
                 "$UnknownType$",
-                typeof(IValue));
+                typeof(BslValue));
         }
     }
 }
