@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.IO;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -56,9 +57,9 @@ namespace OneScript.StandardLibrary.Binary
         [ScriptConstructor(Name = "По буферу или начальной емкости")]
         public static MemoryStreamContext Constructor(IValue bufferOrCapacity)
         {
-            if (bufferOrCapacity.DataType == DataType.Number)
+            if (bufferOrCapacity.GetRawValue() is BslNumericValue n)
             {
-                return new MemoryStreamContext((int)bufferOrCapacity.AsNumber());
+                return new MemoryStreamContext((int)n);
             }
 
             var memBuf = ContextValuesMarshaller.ConvertParam<BinaryDataBuffer>(bufferOrCapacity);

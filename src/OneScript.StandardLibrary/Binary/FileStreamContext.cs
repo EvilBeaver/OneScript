@@ -271,7 +271,7 @@ namespace OneScript.StandardLibrary.Binary
         [ScriptConstructor(Name = "С указанием режима открытия")]
         public static FileStreamContext Constructor(IValue filename, IValue openMode, IValue bufferSize = null)
         {
-            if (bufferSize == null || bufferSize.DataType == DataType.Number)
+            if (bufferSize == null || bufferSize.SystemType == BasicTypes.Number)
             {
                 return new FileStreamContext(
                     filename.AsString(),

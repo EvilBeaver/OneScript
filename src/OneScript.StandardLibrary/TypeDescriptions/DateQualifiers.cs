@@ -44,7 +44,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 		public IValue Adjust(IValue value)
 		{
-			if (value == null || value.DataType == DataType.Undefined)
+			if (value == null || value.SystemType == BasicTypes.Undefined)
 				return ValueFactory.Create(new DateTime(1, 1, 1));
 
 			try

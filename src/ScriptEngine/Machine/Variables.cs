@@ -69,8 +69,6 @@ namespace ScriptEngine.Machine
 
         #region IValue Members
 
-        public DataType DataType => Value.DataType;
-
         public TypeDescriptor SystemType => Value.SystemType; 
         
         public decimal AsNumber()
@@ -210,8 +208,6 @@ namespace ScriptEngine.Machine
             #endregion
 
             #region IValue Members
-
-            public DataType DataType => Value.DataType;
 
             public TypeDescriptor SystemType => Value.SystemType;
 

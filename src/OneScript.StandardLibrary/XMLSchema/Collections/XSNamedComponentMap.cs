@@ -45,17 +45,17 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         [ContextMethod("Получить", "Get")]
         public IXSNamedComponent Get(IValue value)
         {
-            DataType DataType = value.DataType;
-            switch (DataType)
+            if (value.SystemType == BasicTypes.String)
             {
-                case DataType.String:
-                    return _items.FirstOrDefault(x => x.Name.Equals(value.AsString()));
-
-                case DataType.Number:
-                    return _items[(int)value.AsNumber()];
-
-                default:
-                    throw RuntimeException.InvalidArgumentType();
+                return _items.FirstOrDefault(x => x.Name.Equals(value.AsString()));
+            }
+            else if (value.SystemType == BasicTypes.Number)
+            {
+                return _items[(int)value.AsNumber()];
+            }
+            else
+            {
+                throw RuntimeException.InvalidArgumentType();
             }
         }
 

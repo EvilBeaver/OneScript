@@ -102,7 +102,7 @@ namespace OneScript.StandardLibrary.Binary
         [ScriptConstructor]
         public static DataWriter Constructor(IValue file_stream, IValue textEncoding = null, IValue byteOrder = null, IValue lineSplitter = null, IValue param5 = null, IValue param6 = null, IValue param7 = null)
         {
-            if (file_stream.DataType == DataType.String)
+            if (file_stream.SystemType == BasicTypes.String)
                 return new DataWriter(file_stream.AsString(), textEncoding, 
                             ContextValuesMarshaller.ConvertParam<ByteOrderEnum?>(byteOrder,null),
                             ContextValuesMarshaller.ConvertParam<string>(lineSplitter),

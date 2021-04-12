@@ -243,7 +243,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
 
         public ValueTreeColumn GetColumnByIIndex(IValue index)
         {
-            if (index.DataType == DataType.String)
+            if (index.SystemType == BasicTypes.String)
             {
                 var column = FindColumnByName(index.AsString());
                 if (column == null)
@@ -251,7 +251,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
                 return column;
             }
 
-            if (index.DataType == DataType.Number)
+            if (index.SystemType == BasicTypes.Number)
             {
                 int indexNum = Decimal.ToInt32(index.AsNumber());
                 if (indexNum < 0 || indexNum >= Count())

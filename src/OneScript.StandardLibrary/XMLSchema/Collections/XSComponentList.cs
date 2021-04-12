@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -80,14 +81,14 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         {
             int index;
 
-            switch (value.DataType)
+            switch (value.GetRawValue())
             {
-                case DataType.Number:
-                    index = (int)value.AsNumber();
+                case BslNumericValue n:
+                    index = (int)n;
                     break;
 
-                case DataType.Object:
-                    index = _items.IndexOf(value as IXSComponent);
+                case IXSComponent xsComponent:
+                    index = _items.IndexOf(xsComponent);
                     if (index == -1)
                         return;
                     break;

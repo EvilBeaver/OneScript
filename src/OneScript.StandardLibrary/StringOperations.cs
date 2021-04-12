@@ -10,6 +10,7 @@ using System.Linq;
 using OneScript.Commons;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -279,7 +280,7 @@ namespace OneScript.StandardLibrary
 
             var re = new System.Text.RegularExpressions.Regex(@"(%%)|(%\d+)|(%\D)");
             int matchCount = 0;
-            int passedArgsCount = arguments.Skip(1).Count(x => x.DataType != DataType.NotAValidValue && x.DataType != DataType.Undefined);
+            int passedArgsCount = arguments.Skip(1).Count(x => x != BslSkippedParameterValue.Instance && x.SystemType != BasicTypes.Undefined);
             var result = re.Replace(srcFormat, (m) =>
             {
                 if (m.Groups[1].Success)
@@ -292,7 +293,7 @@ namespace OneScript.StandardLibrary
                     if (number < 1 || number > 11)
                         throw new RuntimeException("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
 
-                    if (arguments[number] != null && arguments[number].DataType != DataType.NotAValidValue)
+                    if (arguments[number] != null && arguments[number] != BslSkippedParameterValue.Instance)
                         return arguments[number].AsString();
                     else
                         return "";

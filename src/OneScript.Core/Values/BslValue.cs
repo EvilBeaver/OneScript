@@ -8,10 +8,12 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Dynamic;
 using OneScript.Commons;
+using OneScript.Types;
+using ScriptEngine.Machine;
 
 namespace OneScript.Values
 {
-    public abstract class BslValue : DynamicObject, IComparable<BslValue>, IEquatable<BslValue>
+    public abstract class BslValue : DynamicObject, IComparable<BslValue>, IEquatable<BslValue>, IValue
     {
         protected virtual string ConvertToString() => ToString();
 
@@ -33,6 +35,23 @@ namespace OneScript.Values
         public static explicit operator DateTime(BslValue target) => 
             target is BslDateValue v ? (DateTime) v : throw BslExceptions.ConvertToDateException();
 
+
+        #region Stack Runtime Bridge
+
+        public virtual TypeDescriptor SystemType => BasicTypes.UnknownType; 
         
+        public int CompareTo(IValue other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Equals(IValue other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual IValue GetRawValue() => this;
+        
+        #endregion
     }
 }

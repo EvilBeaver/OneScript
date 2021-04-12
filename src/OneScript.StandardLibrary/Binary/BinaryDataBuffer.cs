@@ -161,7 +161,7 @@ namespace OneScript.StandardLibrary.Binary
 
         private static ulong AsUnsignedLong( IValue value, ulong maxValue=ulong.MaxValue )
         {
-            if (value.DataType != DataType.Number)
+            if (value.SystemType != BasicTypes.Number)
                 throw RuntimeException.InvalidArgumentType(2,nameof(value));
 
             var number = value.AsNumber();

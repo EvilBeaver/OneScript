@@ -157,15 +157,11 @@ namespace OneScript.StandardLibrary.Text
 
         public static Encoding GetEncoding(IValue encoding, bool addBOM = true)
         {
-            if (encoding.DataType == DataType.String)
+            if (encoding.SystemType == BasicTypes.String)
                 return GetEncodingByName(encoding.AsString(), addBOM);
             else
             {
-                if (encoding.DataType != DataType.GenericValue)
-                    throw RuntimeException.InvalidArgumentType();
-
-                var encValue = encoding.GetRawValue() as SelfAwareEnumValue<TextEncodingEnum>;
-                if (encValue == null)
+                if (!(encoding.GetRawValue() is SelfAwareEnumValue<TextEncodingEnum> encValue))
                     throw RuntimeException.InvalidArgumentType();
 
                 var encodingEnum = GlobalsHelper.GetEnum<TextEncodingEnum>();

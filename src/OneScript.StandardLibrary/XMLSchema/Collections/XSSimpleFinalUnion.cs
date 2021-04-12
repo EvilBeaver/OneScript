@@ -23,7 +23,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         {
             XSSimpleFinal _enumValue = EnumerationXSSimpleFinal.FromNativeValue(_value);
             IValue _idx = _values.Find(_enumValue);
-            return (_idx.DataType != DataType.Undefined);
+            return (_idx.SystemType != BasicTypes.Undefined);
         }
 
         public XSSimpleFinalUnion() => _values = ArrayImpl.Constructor();

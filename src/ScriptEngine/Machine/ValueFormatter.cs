@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Globalization;
 using OneScript.Commons;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine
 {
@@ -38,15 +39,15 @@ namespace ScriptEngine.Machine
 
             string formattedValue;
 
-            switch(value.DataType)
+            switch(value)
             {
-                case DataType.Boolean:
+                case BslBooleanValue _:
                     formattedValue = FormatBoolean(value.AsBoolean(), formatParameters);
                     break;
-                case DataType.Number:
+                case BslNumericValue _:
                     formattedValue = FormatNumber(value.AsNumber(), formatParameters);
                     break;
-                case DataType.Date:
+                case BslDateValue _:
                     formattedValue = FormatDate(value.AsDate(), formatParameters);
                     break;
                 default:

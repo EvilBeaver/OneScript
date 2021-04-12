@@ -241,7 +241,7 @@ namespace OneScript.StandardLibrary.Xml
             {
                 _settings = rawEncoding as XmlWriterSettingsImpl;
             }
-            else if ((encodingOrSettings?.DataType ?? DataType.String) == DataType.String)
+            else if ((encodingOrSettings?.SystemType ?? BasicTypes.String) == BasicTypes.String)
             {
                 _settings = (XmlWriterSettingsImpl) XmlWriterSettingsImpl.Constructor(encodingOrSettings, null,
                     ValueFactory.Create(Indent), null, ValueFactory.Create(DEFAULT_INDENT_STRING));

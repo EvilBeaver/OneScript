@@ -216,14 +216,10 @@ namespace OneScript.StandardLibrary.Text
         private static bool IsStream(IValue input, out IStreamWrapper wrapper)
         {
             wrapper = null;
-            if (input.DataType == DataType.Object)
+            if (input.GetRawValue() is IStreamWrapper wrap)
             {
-                var obj = input.AsObject();
-                if (obj is IStreamWrapper wrap)
-                {
-                    wrapper = wrap;
-                    return true;
-                }
+                wrapper = wrap;
+                return true;
             }
             return false;
         }

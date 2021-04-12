@@ -128,20 +128,19 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public void SetValue(IValue value)
         {
-            switch (value.DataType)
+            var clrObject = value.CastToClrObject();
+            switch (clrObject)
             {
-                case DataType.String:
-                    String str = value.AsString();
+                case string str:
                     pwstrVal = Marshal.StringToHGlobalUni(str);
                     wstrLen = str.Length;
                     vt = (UInt16)VarTypes.VTYPE_PWSTR;
                     return;
-                case DataType.Boolean:
-                    bVal = value.AsBoolean();
+                case bool v:
+                    bVal = v;
                     vt = (UInt16)VarTypes.VTYPE_BOOL;
                     return;
-                case DataType.Number:
-                    Decimal num = value.AsNumber();
+                case decimal num:
                     if (num % 1 == 0)
                     {
                         lVal = Convert.ToInt32(num);
@@ -153,7 +152,7 @@ namespace OneScript.StandardLibrary.NativeApi
                         vt = (UInt16)VarTypes.VTYPE_R8;
                     }
                     return;
-                case DataType.Object when value.AsObject() is BinaryDataContext binaryData:
+                case BinaryDataContext binaryData:
                     strLen = binaryData.Buffer.Length;
                     pstrVal = Marshal.AllocHGlobal(strLen);
                     Marshal.Copy(binaryData.Buffer, 0, pstrVal, strLen);

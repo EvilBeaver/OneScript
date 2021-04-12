@@ -23,36 +23,31 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("XMLСтрока", "XMLString")]
         public string XMLString(IValue value)
         {
-            switch(value.DataType)
+            if (value.SystemType == BasicTypes.Undefined)
+                return "";
+            else if(value.SystemType == BasicTypes.Boolean)
+                return XmlConvert.ToString(value.AsBoolean());
+            else if(value.SystemType == BasicTypes.Date)
+                return XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
+            else if(value.SystemType == BasicTypes.Number)
+                return XmlConvert.ToString(value.AsNumber());
+            else
             {
-                case DataType.Undefined:
-                    return "";
-                case DataType.Boolean:
-                    return XmlConvert.ToString(value.AsBoolean());
-                case DataType.Date:
-                    return XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
-                case DataType.Number:
-                    return XmlConvert.ToString(value.AsNumber());
-                default:
-                    
-                    if(value.GetRawValue() is BinaryDataContext bdc)
-                    {
-                        System.Diagnostics.Debug.Assert(bdc != null);
-
-                        return Convert.ToBase64String(bdc.Buffer, Base64FormattingOptions.InsertLineBreaks);
-                    }
-                    else
-                    {
-                        return value.GetRawValue().AsString();
-                    }
-
+                if(value.GetRawValue() is BinaryDataContext bdc)
+                {
+                    return Convert.ToBase64String(bdc.Buffer, Base64FormattingOptions.InsertLineBreaks);
+                }
+                else
+                {
+                    return value.GetRawValue().AsString();
+                }
             }
         }
 
         [ContextMethod("XMLЗначение", "XMLValue")]
         public IValue XMLValue(IValue givenType, string presentation)
         {
-            if (givenType.GetRawValue().DataType != DataType.Type)
+            if (givenType.GetRawValue().SystemType != BasicTypes.Type)
             {
                 throw new ArgumentException(nameof(givenType));
             }

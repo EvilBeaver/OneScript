@@ -67,7 +67,7 @@ namespace OneScript.StandardLibrary.Binary
         [ScriptConstructor(Name = "На основании двоичных данных или имени файла")]
         public static DataReader Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = "\n", string convertibleSplitterOfLines = null)
         {
-            if (dataSource.DataType == DataType.String)
+            if (dataSource.SystemType == BasicTypes.String)
             {
                 var stream = new FileStream(dataSource.AsString(), FileMode.Open, FileAccess.Read, FileShare.Read);
                 return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
@@ -332,7 +332,7 @@ namespace OneScript.StandardLibrary.Binary
             {
                 return new BinaryDataBuffer(ReadSomeBytes(0).ToArray());
             }
-            else if (buffer.DataType == DataType.Number)
+            else if (buffer.SystemType == BasicTypes.Number)
             {
                 var stream = ReadSomeBytes((int)buffer.AsNumber());
                 return new BinaryDataBuffer(stream.ToArray());

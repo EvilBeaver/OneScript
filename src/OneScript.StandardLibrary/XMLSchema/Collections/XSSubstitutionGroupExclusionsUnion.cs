@@ -22,7 +22,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         {
             XSSubstitutionGroupExclusions _enumValue = EnumerationXSSubstitutionGroupExclusions.FromNativeValue(_value);
             IValue _idx = _values.Find(_enumValue);
-            return (_idx.DataType != DataType.Undefined);
+            return (_idx.SystemType != BasicTypes.Undefined);
         }
 
         internal XSSubstitutionGroupExclusionsUnion() => _values = ArrayImpl.Constructor();

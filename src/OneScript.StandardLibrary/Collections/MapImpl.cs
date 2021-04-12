@@ -50,7 +50,7 @@ namespace OneScript.StandardLibrary.Collections
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            if (index.DataType != DataType.Undefined)
+            if (index.SystemType != BasicTypes.Undefined)
             {
                 _content[index] = val;
             }

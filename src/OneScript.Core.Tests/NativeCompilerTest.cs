@@ -478,9 +478,9 @@ namespace OneScript.Core.Tests
             for (int i = 0; i < N; i++)
             {
                 if(i < 2)
-                    arr.Add(BooleanValue.False);
+                    arr.Add(BslBooleanValue.False);
                 
-                arr.Add(BooleanValue.True);
+                arr.Add(BslBooleanValue.True);
             }
 
             var arrayType = tm.GetTypeByFrameworkType(typeof(ArrayImpl));

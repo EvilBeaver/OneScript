@@ -188,7 +188,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             foreach (ValueTreeRow row in _rows)
             {
                 IValue currentValue = row.Get(column);
-                if (currentValue.DataType == ScriptEngine.Machine.DataType.Number)
+                if (currentValue.SystemType == BasicTypes.Number)
                 {
                     result += currentValue.AsNumber();
                 }
@@ -196,7 +196,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
                 if (includeChildren)
                 {
                     IValue childrenTotal = row.Rows.Total(columnIndex, includeChildren);
-                    if (childrenTotal.DataType == ScriptEngine.Machine.DataType.Number)
+                    if (childrenTotal.SystemType == BasicTypes.Number)
                     {
                         result += childrenTotal.AsNumber();
                     }
@@ -228,7 +228,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
                 if (includeChildren)
                 {
                     IValue childrenResult = row.Rows.Find(value, columnNames, includeChildren);
-                    if (childrenResult.DataType != ScriptEngine.Machine.DataType.Undefined)
+                    if (childrenResult.SystemType != BasicTypes.Undefined)
                     {
                         return childrenResult;
                     }
@@ -323,7 +323,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             int indexSource;
             if (row is ValueTreeRow)
                 indexSource = _rows.IndexOf(row as ValueTreeRow);
-            else if (row.DataType == ScriptEngine.Machine.DataType.Number)
+            else if (row.SystemType == BasicTypes.Number)
                 indexSource = decimal.ToInt32(row.AsNumber());
             else
                 throw RuntimeException.InvalidArgumentType();

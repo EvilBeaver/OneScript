@@ -48,7 +48,7 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("Записать","Write")]
         public void Write(IValue filenameOrStream)
         {
-            if(filenameOrStream.DataType == DataType.String)
+            if(filenameOrStream.SystemType == BasicTypes.String)
             {
                 var filename = filenameOrStream.AsString();
                 using (var fs = new FileStream(filename, FileMode.Create, FileAccess.Write))

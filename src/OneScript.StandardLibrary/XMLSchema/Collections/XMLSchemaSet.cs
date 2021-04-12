@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Schema;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -45,14 +46,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         [ContextMethod("Получить", "Get")]
         public Objects.XMLSchema Get(IValue value)
         {
-            DataType DataType = value.DataType;
-            switch (DataType)
+            switch (value.GetRawValue())
             {
-                case DataType.String:
-                    return _items.FirstOrDefault(x => x.TargetNamespace.Equals(value.AsString()));
+                case BslStringValue s:
+                    return _items.FirstOrDefault(x => x.TargetNamespace.Equals((string)s));
 
-                case DataType.Number:
-                    return _items[(int)value.AsNumber()];
+                case BslNumericValue n:
+                    return _items[(int)n];
 
                 default:
                     throw RuntimeException.InvalidArgumentType();

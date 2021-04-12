@@ -35,7 +35,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
         public override IValue GetIndexedValue(IValue index)
         {
-            if (index.DataType == ScriptEngine.Machine.DataType.Number)
+            if (index.SystemType == BasicTypes.Number)
             {
                 return GetValue(index);
             }
@@ -47,7 +47,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            if (index.DataType == ScriptEngine.Machine.DataType.Number)
+            if (index.SystemType == BasicTypes.Number)
             {
                 throw new RuntimeException("Индексированное значение доступно только для чтения");
             }

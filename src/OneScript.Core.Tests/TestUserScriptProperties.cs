@@ -9,6 +9,7 @@ using System.Linq;
 using FluentAssertions;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
@@ -33,7 +34,7 @@ namespace OneScript.Core.Tests
             
             var myVarPropertyIndex = instance.FindProperty("МояПеременная");
             var myVarValue = instance.GetPropValue(myVarPropertyIndex);
-            myVarValue.Should().Be(UndefinedValue.Instance);
+            myVarValue.Should().Be(BslUndefinedValue.Instance);
 
             thisObjIndex.Should().Be(0);
             instance.FindProperty("МояПеременная").Should().Be(1);

@@ -99,7 +99,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 			TypeTypeValue typeToCast = null;
 
-			if (value != null && value.DataType != DataType.Undefined)
+			if (value != null && value.SystemType != BasicTypes.Undefined)
 			{
 				var valueType = new TypeTypeValue(value.SystemType);
 				if (_types.Contains(valueType))
@@ -133,7 +133,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				return _types;
 
 			types = types.GetRawValue();
-			if (types.DataType == DataType.String)
+			if (types.SystemType == BasicTypes.String)
 			{
 				var typeNames = types.AsString().Split(',');
 				foreach (var typeName in typeNames)
@@ -205,7 +205,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		{
 			var rawSource = source?.GetRawValue();
 
-			if (rawSource == null || rawSource.DataType == DataType.Undefined)
+			if (rawSource == null || rawSource.SystemType == BasicTypes.Undefined)
 			{
 				// первый параметр имеет право быть не задан только в таком конструкторе
 				return ConstructByOtherDescription(context.TypeManager, null, p1, p2, p3, p4, p5, p6);
@@ -216,7 +216,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				return ConstructByOtherDescription(context.TypeManager, rawSource, p1, p2, p3, p4, p5, p6);
 			}
 
-			if (rawSource.DataType == DataType.String || rawSource is ArrayImpl)
+			if (rawSource.SystemType == BasicTypes.String || rawSource is ArrayImpl)
 			{
 				// TODO: проверить, что p5 и p6 не заданы
 				return ConstructByQualifiers(context.TypeManager, rawSource, p1, p2, p3, p4);

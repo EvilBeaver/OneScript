@@ -100,13 +100,10 @@ namespace OneScript.StandardLibrary.Hash
 
         public static HashAlgorithm GetProvider(IValue provider)
         {
-            if (provider.DataType != DataType.GenericValue)
+            var providerRaw = provider.GetRawValue();
+            if (!(providerRaw is SelfAwareEnumValue<HashFunctionEnum> neededProvider))
                 throw RuntimeException.InvalidArgumentType();
-
-            var neededProvider = provider.GetRawValue() as SelfAwareEnumValue<HashFunctionEnum>;
-            if (neededProvider == null)
-                throw RuntimeException.InvalidArgumentType();
-
+            
             var algName = neededProvider.AsString();
             if (algName == "CRC32")
                 return new Crc32();

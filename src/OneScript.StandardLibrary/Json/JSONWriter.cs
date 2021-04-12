@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using OneScript.Commons;
 using OneScript.StandardLibrary.Text;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -348,22 +349,26 @@ namespace OneScript.StandardLibrary.Json
             if (!IsOpen())
                 throw NotOpenException();
 
-            if (value.SystemType.Name == "Null")
+            if(!(value.GetRawValue() is BslPrimitiveValue))
+                throw new RuntimeException("Тип переданного значения не поддерживается.");
+            
+            var clrValue = value.CastToClrObject();
+            
+            if (clrValue == null)
             {
                 _writer.WriteNull();
                 return;
             }
 
-            switch (value.DataType)
+            switch (clrValue)
             {
-                case DataType.String:
-                     WriteStringValue(value.AsString());
+                case string v:
+                     WriteStringValue(v);
                     break;
-                case DataType.Number:
-                    decimal d = value.AsNumber();
-                    if (d == Math.Round(d))
+                case decimal v:
+                    if (v == Math.Round(v))
                     {
-                        Int64 i  = Convert.ToInt64(d);
+                        Int64 i  = Convert.ToInt64(v);
                         if (useFormatWithExponent)
                             _writer.WriteRawValue(string.Format(Thread.CurrentThread.CurrentCulture, "{0:E}", i));
                         else
@@ -373,23 +378,18 @@ namespace OneScript.StandardLibrary.Json
                     else
                     {
                         if (useFormatWithExponent)
-                            _writer.WriteRawValue(string.Format(string.Format(Thread.CurrentThread.CurrentCulture, "{0:E}", d)));
+                            _writer.WriteRawValue(string.Format(string.Format(Thread.CurrentThread.CurrentCulture, "{0:E}", v)));
                         else
-                            _writer.WriteValue(d);
+                            _writer.WriteValue(v);
                     }
                    
                     break;
-                case DataType.Date:
-                    _writer.WriteValue(value.AsDate());
+                case bool v:
+                    _writer.WriteValue(v);
                     break;
-                case DataType.Boolean:
-                    _writer.WriteValue(value.AsBoolean());
+                case DateTime v:
+                    WriteStringValue(v.ToString());
                     break;
-                case DataType.Undefined:
-                    _writer.WriteNull();
-                    break;
-                default:
-                            throw new RuntimeException("Тип переданного значения не поддерживается.");
             }
         }
 

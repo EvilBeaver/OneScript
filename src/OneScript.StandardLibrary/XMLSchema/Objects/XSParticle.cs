@@ -55,10 +55,10 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
 
         private void SetMaxOccurs(XmlSchemaParticle particle, IValue maxOccurs)
         {
-            if (maxOccurs.DataType == DataType.Undefined)
+            if (maxOccurs.SystemType == BasicTypes.Undefined)
                 particle.MaxOccursString = null;
 
-            else if (maxOccurs.DataType == DataType.Number)
+            else if (maxOccurs.SystemType == BasicTypes.Number)
             {
                 decimal number = maxOccurs.AsNumber();
                 if (number >= 0)
@@ -72,10 +72,10 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
 
         private void SetMinOccurs(XmlSchemaParticle particle, IValue minOccurs)
         {
-            if (minOccurs.DataType == DataType.Undefined)
+            if (minOccurs.SystemType == BasicTypes.Undefined)
                 particle.MinOccursString = null;
 
-            else if (minOccurs.DataType == DataType.Number)
+            else if (minOccurs.SystemType == BasicTypes.Number)
             {
                 decimal number = minOccurs.AsNumber();
                 if (number >= 0)

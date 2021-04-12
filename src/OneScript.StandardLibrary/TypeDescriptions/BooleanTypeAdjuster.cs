@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Types;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.TypeDescriptions
@@ -13,7 +14,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 	{
 		public IValue Adjust(IValue value)
 		{
-			if (value?.DataType == DataType.Boolean)
+			if (value?.SystemType == BasicTypes.Boolean)
 				return value;
 
             try

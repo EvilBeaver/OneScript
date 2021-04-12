@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.DebugProtocol;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using Variable = OneScript.DebugProtocol.Variable;
@@ -65,7 +66,7 @@ namespace OneScript.DebugServices
         {
             var presenter = new DefaultValueVisitor();
             
-            if (VariableHasType(value, DataType.Object))
+            if (value.GetRawValue() is IRuntimeContextInstance)
             {
                 var objectValue = value.AsObject();
                 if (objectValue is IDebugPresentationAcceptor customPresenter)
@@ -108,11 +109,6 @@ namespace OneScript.DebugServices
         private static bool HasProperties(IRuntimeContextInstance value)
         {
             return value?.GetPropCount() > 0;
-        }
-
-        private static bool VariableHasType(IValue variable, DataType type)
-        {
-            return variable.GetRawValue() != null && variable.DataType == type;
         }
     }
 }

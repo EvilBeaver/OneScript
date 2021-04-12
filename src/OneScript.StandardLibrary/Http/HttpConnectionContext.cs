@@ -12,6 +12,7 @@ using System.Net;
 using System.Text;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
+using OneScript.Values;
 using RegExp = System.Text.RegularExpressions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -43,7 +44,7 @@ namespace OneScript.StandardLibrary.Http
             IValue ssl = null,
             bool useOSAuth = false)
         {
-            if (ssl != null && !(ssl.DataType == ScriptEngine.Machine.DataType.Undefined || ssl.DataType == ScriptEngine.Machine.DataType.NotAValidValue))
+            if (ssl != null && !(ssl.SystemType == BasicTypes.Undefined || ssl.GetRawValue() == BslSkippedParameterValue.Instance))
                 throw new RuntimeException("Защищенное соединение по произвольным сертификатам не поддерживается. Если необходим доступ по https, просто укажите протокол https в адресе хоста.");
             
             var uriBuilder = new UriBuilder(host);

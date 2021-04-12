@@ -43,8 +43,6 @@ namespace ScriptEngine.Machine.Contexts
         
         #region IValue Members
 
-        public DataType DataType => DataType.Object;
-
         public TypeDescriptor SystemType
         {
             get

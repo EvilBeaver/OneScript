@@ -10,6 +10,7 @@ using System.Xml;
 using System.Xml.Schema;
 using OneScript.StandardLibrary.Xml;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -35,13 +36,12 @@ namespace OneScript.StandardLibrary.XDTO
 
         private void WriteXMLSimpleData(XmlWriterImpl xmlWriter,
                                         string name,
-                                        IValue value,
+                                        string value,
                                         XMLExpandedName type,
                                         XMLTypeAssignment typeAssigment,
                                         XMLForm form)
         {
             XmlNamespaceContext namespaceContext;
-            string xmlValue = XMLString(value);
             switch (form)
             {
                 case XMLForm.Attribute:
@@ -49,12 +49,12 @@ namespace OneScript.StandardLibrary.XDTO
                     AddNamespaceMapping(namespaceContext, xmlWriter, "", XmlSchema.Namespace);
 
                     xmlWriter.WriteStartAttribute(name);
-                    xmlWriter.WriteText(xmlValue);
+                    xmlWriter.WriteText(value);
                     xmlWriter.WriteEndAttribute();
                     break;
 
                 case XMLForm.Text:
-                    xmlWriter.WriteText(xmlValue);
+                    xmlWriter.WriteText(value);
                     break;
 
                 default:
@@ -72,7 +72,7 @@ namespace OneScript.StandardLibrary.XDTO
                         xmlWriter.WriteEndAttribute();
                     }
 
-                    xmlWriter.WriteText(xmlValue);
+                    xmlWriter.WriteText(value);
 
                     xmlWriter.WriteEndElement();
                     break;
@@ -130,97 +130,53 @@ namespace OneScript.StandardLibrary.XDTO
                              XMLTypeAssignment typeAssigment = XMLTypeAssignment.Implicit,
                              XMLForm form = XMLForm.Element)
         {
-            switch (value.DataType)
+            value = value.GetRawValue();
+            if (value.SystemType == BasicTypes.Undefined)
             {
-                case DataType.Undefined:
-
-                    WriteXML(xmlWriter, value, "Undefined", typeAssigment, form);
-                    break;
-
-                case DataType.String:
-
-                    WriteXML(xmlWriter, value, "string", typeAssigment, form);
-                    break;
-
-                case DataType.Number:
-
-                    WriteXML(xmlWriter, value, "decimal", typeAssigment, form);
-                    break;
-
-                case DataType.Boolean:
-
-                    WriteXML(xmlWriter, value, "boolean", typeAssigment, form);
-                    break;
-
-                case DataType.Date:
-
-                    WriteXML(xmlWriter, value, "dateTime", typeAssigment, form);
-                    break;
-
-                case DataType.Object:
-
-                    IRuntimeContextInstance valueObject = value.AsObject();
-                    if (valueObject is IXDTOSerializableXML seriazable)
-                        seriazable.WriteXML(xmlWriter, this);
-                    else
-                        throw RuntimeException.InvalidArgumentType();
-                    break;
-
-                default:
+                WriteXML(xmlWriter, null, "Undefined", typeAssigment, form);
+            }
+            else if (value.SystemType == BasicTypes.String)
+            {
+                WriteXML(xmlWriter, XMLString(value), "string", typeAssigment, form);
+            }
+            else if (value.SystemType == BasicTypes.Number)
+            {
+                WriteXML(xmlWriter, XMLString(value), "decimal", typeAssigment, form);
+            }
+            else if (value.SystemType == BasicTypes.Boolean)
+            {
+                WriteXML(xmlWriter, XMLString(value), "boolean", typeAssigment, form);
+            }
+            else if (value.SystemType == BasicTypes.Date)
+            {
+                WriteXML(xmlWriter, XMLString(value), "dateTime", typeAssigment, form);
+            }
+            else
+            {
+                if(!(value is IXDTOSerializableXML seriazable))
                     throw RuntimeException.InvalidArgumentType();
+                
+                seriazable.WriteXML(xmlWriter, this);
             }
         }
 
-        public void WriteXML(XmlWriterImpl xmlWriter,
-                             IValue value,
-                             string name,
-                             XMLTypeAssignment typeAssigment = XMLTypeAssignment.Implicit,
-                             XMLForm form = XMLForm.Element)
+        private void WriteXML(XmlWriterImpl xmlWriter,
+            string xmlString,
+            string name,
+            XMLTypeAssignment typeAssigment = XMLTypeAssignment.Implicit,
+            XMLForm form = XMLForm.Element)
         {
             XMLExpandedName xmlType;
-            switch (value.DataType)
+            if (name == "Undefined")
             {
-                case DataType.Undefined:
-
-                    WriteXMLUndefined(xmlWriter, name, form);
-                    break;
-
-                case DataType.String:
-
-                    xmlType = new XMLExpandedName(XmlSchema.InstanceNamespace, "string");
-                    WriteXMLSimpleData(xmlWriter, name, value, xmlType, typeAssigment, form);
-                    break;
-
-                case DataType.Number:
-
-                    xmlType = new XMLExpandedName(XmlSchema.InstanceNamespace, "decimal");
-                    WriteXMLSimpleData(xmlWriter, name, value, xmlType, typeAssigment, form);
-                    break;
-
-                case DataType.Boolean:
-
-                    xmlType = new XMLExpandedName(XmlSchema.InstanceNamespace, "boolean");
-                    WriteXMLSimpleData(xmlWriter, name, value, xmlType, typeAssigment, form);
-                    break;
-
-                case DataType.Date:
-
-                    xmlType = new XMLExpandedName(XmlSchema.InstanceNamespace, "dateTime");
-                    WriteXMLSimpleData(xmlWriter, name, value, xmlType, typeAssigment, form);
-                    break;
-
-                case DataType.Object:
-
-                    IRuntimeContextInstance valueObject = value.AsObject();
-                    if (valueObject is IXDTOSerializableXML seriazable)
-                        seriazable.WriteXML(xmlWriter, this);
-                    else
-                        throw RuntimeException.InvalidArgumentType();
-                    break;
-
-                default:
-                    throw RuntimeException.InvalidArgumentType();
+                WriteXMLUndefined(xmlWriter, name, form);
             }
+            else
+            {
+                xmlType = new XMLExpandedName(XmlSchema.InstanceNamespace, name);
+                WriteXMLSimpleData(xmlWriter, name, xmlString, xmlType, typeAssigment, form);
+            }
+
         }
 
         //ИзXMLТипа(FromXMLType)
@@ -241,7 +197,7 @@ namespace OneScript.StandardLibrary.XDTO
                 IValue xsiType = xmlReader.GetAttribute(ValueFactory.Create("type"), XmlSchema.InstanceNamespace);
                 IValue xsiNil = xmlReader.GetAttribute(ValueFactory.Create("nil"), XmlSchema.InstanceNamespace);
 
-                if (xsiType.DataType == DataType.String)
+                if (xsiType.SystemType == BasicTypes.String)
                 {
                     switch (xsiType.AsString())
                     {
@@ -265,7 +221,7 @@ namespace OneScript.StandardLibrary.XDTO
                             break;
                     }
                 }
-                else if (xsiNil.DataType == DataType.String)
+                else if (xsiNil.SystemType == BasicTypes.String)
                     typeValue = new TypeTypeValue(BasicTypes.Undefined);
             };
 

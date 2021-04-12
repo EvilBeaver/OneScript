@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using OneScript.StandardLibrary.Binary;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -88,12 +89,13 @@ namespace OneScript.StandardLibrary.Hash
         [ContextMethod("Добавить", "Append")]
         public void Append(IValue toAdd, uint count = 0)
         {
-            switch (toAdd.DataType)
+            var realValue = toAdd.GetRawValue();
+            switch (realValue)
             {
-                case DataType.String:
-                    AddStream(new MemoryStream(Encoding.UTF8.GetBytes(toAdd.AsString())));
+                case BslStringValue s:
+                    AddStream(new MemoryStream(Encoding.UTF8.GetBytes((string)s)));
                     break;
-                case DataType.Object when toAdd is GenericStream stream:
+                case BslObjectValue obj when obj is GenericStream stream:
                     var length = Math.Min(count == 0 ? stream.Size() : count, stream.Size() - stream.CurrentPosition());
                     var buffer = (stream.GetUnderlyingStream() as MemoryStream)?.GetBuffer();
                     if (buffer == null)
@@ -101,7 +103,7 @@ namespace OneScript.StandardLibrary.Hash
                     AddStream(new MemoryStream(buffer, (int) stream.CurrentPosition(), (int) length));
                     stream.Seek((int) length, StreamPositionEnum.Current);
                     break;
-                case DataType.Object when toAdd is BinaryDataContext binaryData:
+                case BslObjectValue obj when obj is BinaryDataContext binaryData:
                     AddStream(new MemoryStream(binaryData.Buffer));
                     break;
                 default:

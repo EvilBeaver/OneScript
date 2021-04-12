@@ -19,8 +19,6 @@ namespace OneScript.StandardLibrary.NativeApi
     {
         #region IValue Members
 
-        public DataType DataType => DataType.Object;
-
         protected void DefineType(TypeDescriptor type)
         {
             SystemType = type;

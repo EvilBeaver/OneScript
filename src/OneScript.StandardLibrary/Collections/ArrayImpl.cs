@@ -46,7 +46,7 @@ namespace OneScript.StandardLibrary.Collections
         
         public override IValue GetIndexedValue(IValue index)
         {
-            if(index.DataType == DataType.Number)
+            if(index.SystemType == BasicTypes.Number)
                 return Get((int)index.AsNumber());
 
             return base.GetIndexedValue(index);
@@ -54,7 +54,7 @@ namespace OneScript.StandardLibrary.Collections
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            if (index.DataType == DataType.Number)
+            if (index.SystemType == BasicTypes.Number)
                 Set((int)index.AsNumber(), val);
             else
                 base.SetIndexedValue(index, val);
@@ -180,10 +180,7 @@ namespace OneScript.StandardLibrary.Collections
             ArrayImpl clone = new ArrayImpl();
             foreach (var item in cloneable._values)
             {
-                if (item.DataType == DataType.Undefined)
-                    clone._values.Add(ValueFactory.Create());
-                else
-                    clone._values.Add(item);
+                clone._values.Add(item ?? ValueFactory.Create());
             }
             return clone;
         }

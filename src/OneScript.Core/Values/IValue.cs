@@ -11,7 +11,7 @@ namespace ScriptEngine.Machine
 {
     public interface IValue : IComparable<IValue>, IEquatable<IValue>
     {
-        DataType DataType { get; }
+        //DataType DataType { get; }
         TypeDescriptor SystemType { get; }
 
         IValue GetRawValue();

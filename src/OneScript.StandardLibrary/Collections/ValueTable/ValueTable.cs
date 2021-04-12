@@ -230,7 +230,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             foreach (ValueTableRow row in _rows)
             {
                 IValue current_value = row.Get(Column);
-                if (current_value.DataType == ScriptEngine.Machine.DataType.Number)
+                if (current_value.SystemType == BasicTypes.Number)
                 {
                     has_data = true;
                     Result += current_value.AsNumber();
@@ -353,7 +353,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     foreach (var Column in AggregateColumns)
                     {
                         IValue current = row.Get(Column);
-                        if (current.DataType == DataType.Number)
+                        if (current.SystemType == BasicTypes.Number)
                         {
                             decimal sum = old_row.Get(Column).AsNumber() + current.AsNumber();
                             old_row.Set(Column, ValueFactory.Create(sum));
@@ -368,7 +368,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                         new_row.Set(Column, row.Get(Column));
 
                     foreach (var Column in AggregateColumns)
-                        if (row.Get(Column).DataType != DataType.Number)
+                        if (row.Get(Column).SystemType != BasicTypes.Number)
                             new_row.Set(Column, ValueFactory.Create(0));
                         else
                             new_row.Set(Column, row.Get(Column));

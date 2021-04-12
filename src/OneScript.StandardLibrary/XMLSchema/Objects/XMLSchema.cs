@@ -98,26 +98,18 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
 
         internal static string XMLStringIValue(IValue value)
         {
-            switch (value.DataType)
-            {
-                case DataType.Undefined:
-                    return "";
-
-                case DataType.String:
-                    return value.AsString();
-
-                case DataType.Boolean:
-                    return XmlConvert.ToString(value.AsBoolean());
-
-                case DataType.Date:
-                    return XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
-
-                case DataType.Number:
-                    return XmlConvert.ToString(value.AsNumber());
-
-                default:
-                    throw RuntimeException.InvalidArgumentType();
-            }
+            if (value.SystemType == BasicTypes.Undefined)
+                return "";
+            else if(value.SystemType == BasicTypes.String)
+                return value.AsString();
+            else if(value.SystemType == BasicTypes.Boolean)
+                return XmlConvert.ToString(value.AsBoolean());
+            else if(value.SystemType == BasicTypes.Date)
+                return XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
+            else if(value.SystemType == BasicTypes.Number)
+                return XmlConvert.ToString(value.AsNumber());
+            
+            throw RuntimeException.InvalidArgumentType();
         }
 
 

@@ -144,11 +144,11 @@ namespace OneScript.StandardLibrary
             string strFilled;
             string strIgnored;
 
-            if (filledProperties == null || filledProperties.DataType == DataType.Undefined)
+            if (filledProperties == null || filledProperties.SystemType == BasicTypes.Undefined)
             {
                 strFilled = null;
             }
-            else if (filledProperties.DataType == DataType.String)
+            else if (filledProperties.SystemType == BasicTypes.String)
             {
                 strFilled = filledProperties.AsString();
             }
@@ -157,11 +157,11 @@ namespace OneScript.StandardLibrary
                 throw RuntimeException.InvalidArgumentType(3, nameof(filledProperties));
             }
 
-            if (ignoredProperties == null || ignoredProperties.DataType == DataType.Undefined)
+            if (ignoredProperties == null || ignoredProperties.SystemType == BasicTypes.Undefined)
             {
                 strIgnored = null;
             }
-            else if (ignoredProperties.DataType == DataType.String)
+            else if (ignoredProperties.SystemType == BasicTypes.String)
             {
                 strIgnored = ignoredProperties.AsString();
             }

@@ -322,11 +322,11 @@ namespace OneScript.StandardLibrary.Xml
         {
             string attributeValue = null;
 
-            if (indexOrName.DataType == DataType.Number)
+            if (indexOrName.SystemType == BasicTypes.Number)
             {
                 attributeValue = _reader.GetAttribute((int)indexOrName.AsNumber());
             }
-            else if (indexOrName.DataType == DataType.String)
+            else if (indexOrName.SystemType == BasicTypes.String)
             {
                 if (URIIfGiven == null)
                     attributeValue = _reader.GetAttribute(indexOrName.AsString());

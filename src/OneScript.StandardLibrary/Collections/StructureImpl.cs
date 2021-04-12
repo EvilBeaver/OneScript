@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -251,9 +252,9 @@ namespace OneScript.StandardLibrary.Collections
         public static StructureImpl Constructor(IValue param1, IValue[] args)
         {
             var rawArgument = param1.GetRawValue();
-            if (rawArgument.DataType == DataType.String)
+            if (rawArgument is BslStringValue s)
             {
-                return new StructureImpl(rawArgument.AsString(), args);
+                return new StructureImpl((string)s, args);
             }
             else if (rawArgument is FixedStructureImpl)
             {

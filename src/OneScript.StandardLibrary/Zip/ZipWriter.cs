@@ -12,6 +12,7 @@ using System.Text;
 using Ionic.Zip;
 using Ionic.Zlib;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -334,10 +335,10 @@ namespace OneScript.StandardLibrary.Zip
             if (paramSource == null)
                 return default(T);
 
-            if (paramSource.DataType == DataType.NotAValidValue)
+            var raw = paramSource.GetRawValue();
+            if (raw.IsSkippedArgument())
                 return default(T);
 
-            var raw = paramSource.GetRawValue();
             if (typeof(EnumerationValue).IsAssignableFrom(typeof(T)))
             {
                 try

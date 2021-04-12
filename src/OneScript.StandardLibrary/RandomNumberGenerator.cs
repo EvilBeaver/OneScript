@@ -67,7 +67,7 @@ namespace OneScript.StandardLibrary
         public static RandomNumberGenerator Constructor(IValue seed)
         {
             seed = seed.GetRawValue();
-            if (seed.DataType == DataType.Number)
+            if (seed.SystemType == BasicTypes.Number)
                 return new RandomNumberGenerator(decimal.ToInt32(seed.AsNumber()));
 
             return new RandomNumberGenerator();

@@ -10,6 +10,7 @@ using Moq;
 using OneScript.Commons;
 using OneScript.StandardLibrary;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -24,19 +25,19 @@ namespace OneScript.Core.Tests
         [Fact]
         public void BooleanEquality()
         {
-            Assert.True(BooleanValue.True.AsBoolean());
-            Assert.False(BooleanValue.False.AsBoolean());
+            Assert.True(BslBooleanValue.True.AsBoolean());
+            Assert.False(BslBooleanValue.False.AsBoolean());
 
-            Assert.Same(BooleanValue.True, ValueFactory.Create(true));
-            Assert.Same(BooleanValue.False, ValueFactory.Create(false));
-            Assert.NotEqual(BooleanValue.False, BooleanValue.True);
-            Assert.Equal(0, BooleanValue.False.AsNumber());
-            Assert.Equal(1, BooleanValue.True.AsNumber());
+            Assert.Same(BslBooleanValue.True, ValueFactory.Create(true));
+            Assert.Same(BslBooleanValue.False, ValueFactory.Create(false));
+            Assert.NotEqual(BslBooleanValue.False, BslBooleanValue.True);
+            Assert.Equal(0, BslBooleanValue.False.AsNumber());
+            Assert.Equal(1, BslBooleanValue.True.AsNumber());
 
-            Assert.True(BooleanValue.True.CompareTo(BooleanValue.False) > 0);
+            Assert.True(BslBooleanValue.True.CompareTo(BslBooleanValue.False) > 0);
 
-            Assert.Throws<RuntimeException>(() => BooleanValue.True.AsDate());
-            Assert.Throws<RuntimeException>(() => BooleanValue.True.AsObject());
+            Assert.Throws<RuntimeException>(() => BslBooleanValue.True.AsDate());
+            Assert.Throws<RuntimeException>(() => BslBooleanValue.True.AsObject());
         }
 
         [Theory]
@@ -46,8 +47,8 @@ namespace OneScript.Core.Tests
         public void BooleanStringLocales(string locale, string trueString, string falseString)
         {
             Locale.SystemLanguageISOName = locale;
-            Assert.Equal(trueString, BooleanValue.True.AsString());
-            Assert.Equal(falseString, BooleanValue.False.AsString());
+            Assert.Equal(trueString, BslBooleanValue.True.AsString());
+            Assert.Equal(falseString, BslBooleanValue.False.AsString());
         }
 
         [Fact]
@@ -95,7 +96,7 @@ namespace OneScript.Core.Tests
         public void StringValueTests()
         {
             var trueString = ValueFactory.Create("ИстИНа");
-            Assert.True(trueString.DataType == DataType.String);
+            Assert.True(trueString.SystemType == BasicTypes.String);
             Assert.True(trueString.AsBoolean());
             Assert.True(trueString.AsString() == "ИстИНа");
 
@@ -118,7 +119,7 @@ namespace OneScript.Core.Tests
         public void Undefined_Value_Test()
         {
             var value = ValueFactory.Create();
-            Assert.True(value.DataType == DataType.Undefined);
+            Assert.True(value.SystemType == BasicTypes.Undefined);
             Assert.True(value.AsString() == "");
 
             Assert.Throws<RuntimeException>(() => value.AsNumber());
@@ -131,7 +132,8 @@ namespace OneScript.Core.Tests
         public void Null_Value_Test()
         {
             var value = ValueFactory.CreateNullValue();
-            Assert.True(value.DataType == DataType.GenericValue);
+            Assert.True(value is BslNullValue);
+            Assert.True(ReferenceEquals(value, BslNullValue.Instance));
             Assert.True(value.AsString() == "");
 
             Assert.Throws<RuntimeException>(() => value.AsNumber());
@@ -144,7 +146,7 @@ namespace OneScript.Core.Tests
         public void Type_Value_Test()
         {
             var typeValue = new TypeTypeValue(BasicTypes.String);
-            Assert.True(typeValue.DataType == DataType.Type);
+            Assert.True(typeValue.SystemType == BasicTypes.Type);
             Assert.Equal("Строка", typeValue.AsString());
 
             Assert.Throws<RuntimeException>(() => typeValue.AsNumber());
@@ -228,19 +230,19 @@ namespace OneScript.Core.Tests
         }
 
         [Theory]
-        [InlineData("Null", DataType.GenericValue)]
-        [InlineData("Истина", DataType.Boolean)]
-        [InlineData("Ложь", DataType.Boolean)]
-        [InlineData("True", DataType.Boolean)]
-        [InlineData("False", DataType.Boolean)]
-        [InlineData("20140105", DataType.Date)]
-        [InlineData("20140105010101", DataType.Date)]
-        [InlineData("Неопределено", DataType.Undefined)]
-        [InlineData("Undefined", DataType.Undefined)]
-        public void ValueFactory_Parse(string literal, DataType type)
+        [InlineData("Null", DataType.GenericValue, typeof(BslNullValue))]
+        [InlineData("Истина", DataType.Boolean, typeof(BslBooleanValue))]
+        [InlineData("Ложь", DataType.Boolean, typeof(BslBooleanValue))]
+        [InlineData("True", DataType.Boolean, typeof(BslBooleanValue))]
+        [InlineData("False", DataType.Boolean, typeof(BslBooleanValue))]
+        [InlineData("20140105", DataType.Date, typeof(BslBooleanValue))]
+        [InlineData("20140105010101", DataType.Date, typeof(BslDateValue))]
+        [InlineData("Неопределено", DataType.Undefined, typeof(BslUndefinedValue))]
+        [InlineData("Undefined", DataType.Undefined, typeof(BslUndefinedValue))]
+        public void ValueFactory_Parse(string literal, DataType type, Type implementation)
         {
             var value = ValueFactory.Parse(literal, type);
-            Assert.True(value.DataType == type);
+            Assert.True(value.SystemType.ImplementingClass == implementation);
         }
 
         [Fact]

@@ -33,7 +33,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override IValue GetIndexedValue(IValue index)
         {
-            if (index.DataType != DataType.String)
+            if (index.SystemType != BasicTypes.String)
             {
                 throw RuntimeException.InvalidArgumentType();
             }
@@ -47,7 +47,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            if (index.DataType != DataType.String)
+            if (index.SystemType != BasicTypes.String)
             {
                 throw RuntimeException.InvalidArgumentType();
             }

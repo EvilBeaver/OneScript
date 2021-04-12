@@ -224,6 +224,16 @@ namespace OneScript.Values
             return numVal._value;
         }
         
+        public static implicit operator int(BslNumericValue numVal)
+        {
+            return (int)numVal._value;
+        }
+        
+        public static implicit operator long(BslNumericValue numVal)
+        {
+            return (long)numVal._value;
+        }
+        
         #endregion
 
         public static bool operator ==(BslNumericValue left, BslNumericValue right)

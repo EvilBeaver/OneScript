@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using OneScript.Types;
 using OneScript.Values;
@@ -41,7 +42,7 @@ namespace ScriptEngine.Machine
 
         public static IValue Create(DateTime value)
         {
-            return new BslDateValue(value);
+            return BslDateValue.Create(value);
         }
 
         public static IValue CreateInvalidValueMarker()
@@ -203,17 +204,17 @@ namespace ScriptEngine.Machine
 
         public static IValue Add(IValue op1, IValue op2)
         {
-            var type1 = op1.DataType;
-
-            if (type1 == DataType.String)
+            // принимаем только RawValue
+            Debug.Assert(!(op1 is IVariable || op2 is IVariable));
+            
+            if (op1 is BslStringValue s)
             {
-                return Create(op1.AsString() + op2.AsString());
+                return Create(s + op2.AsString());
             }
 
-            if (type1 == DataType.Date && op2.DataType == DataType.Number)
+            if (op1 is BslDateValue date && op2.SystemType == BasicTypes.Number)
             {
-                var date = op1.AsDate();
-                return Create(date.AddSeconds((double)op2.AsNumber()));
+                return Create(date + op1.AsNumber());
             }
 
             // все к числовому типу.
@@ -222,20 +223,19 @@ namespace ScriptEngine.Machine
 
         public static IValue Sub(IValue op1, IValue op2)
         {
-            if (op1.DataType == DataType.Number)
+            if (op1 is BslNumericValue n)
             {
-                return Create(op1.AsNumber() - op2.AsNumber());
+                return Create(n - op2.AsNumber());
             }
-            if (op1.DataType == DataType.Date && op2.DataType == DataType.Number)
+            if (op1 is BslDateValue date && op2 is BslNumericValue num)
             {
-                var date = op1.AsDate();
-                var result = date.AddSeconds(-(double)op2.AsNumber());
+                var result = date - num;
                 return Create(result);
             }
-            if (op1.DataType == DataType.Date && op2.DataType == DataType.Date)
+            if (op1 is BslDateValue d1 && op2 is BslDateValue d2)
             {
-                var span = op1.AsDate() - op2.AsDate();
-                return Create((decimal)span.TotalSeconds);
+                var diff = d1 - d2;
+                return Create(diff);
             }
 
             // все к числовому типу.

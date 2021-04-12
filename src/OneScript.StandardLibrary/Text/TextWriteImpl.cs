@@ -99,7 +99,7 @@ namespace OneScript.StandardLibrary.Text
             Write (what);
 
             var sDelimiter = _lineDelimiter;
-            if (delimiter != null && delimiter.GetRawValue ().DataType != DataType.Undefined)
+            if (delimiter != null && delimiter.GetRawValue ().SystemType != BasicTypes.Undefined)
                 sDelimiter = delimiter.GetRawValue ().AsString ();
 
             Write (sDelimiter);

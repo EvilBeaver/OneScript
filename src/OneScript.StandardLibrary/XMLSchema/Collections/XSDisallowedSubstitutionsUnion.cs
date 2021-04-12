@@ -23,7 +23,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         {
             XSDisallowedSubstitutions _enumValue = EnumerationXSDisallowedSubstitutions.FromNativeValue(_value);
             IValue _idx = _values.Find(_enumValue);
-            return (_idx.DataType != DataType.Undefined);
+            return (_idx.SystemType != BasicTypes.Undefined);
         }
 
         internal XSDisallowedSubstitutionsUnion() => _values = ArrayImpl.Constructor();

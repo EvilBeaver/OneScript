@@ -187,7 +187,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public ValueTableColumn GetColumnByIIndex(IValue index)
         {
-            if (index.DataType == DataType.String)
+            if (index.SystemType == BasicTypes.String)
             {
                 ValueTableColumn Column = FindColumnByName(index.AsString());
                 if (Column == null)
@@ -195,7 +195,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 return Column;
             }
 
-            if (index.DataType == DataType.Number)
+            if (index.SystemType == BasicTypes.Number)
             {
                 int i_index = Decimal.ToInt32(index.AsNumber());
                 if (i_index < 0 || i_index >= Count())
@@ -215,12 +215,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public int GetColumnNumericIndex(IValue index)
         {
-            if (index.DataType == DataType.String)
+            if (index.SystemType == BasicTypes.String)
             {
                 return FindProperty(index.AsString());
             }
 
-            if (index.DataType == DataType.Number)
+            if (index.SystemType == BasicTypes.Number)
             {
                 int iIndex = Decimal.ToInt32(index.AsNumber());
                 if (iIndex < 0 || iIndex >= Count())

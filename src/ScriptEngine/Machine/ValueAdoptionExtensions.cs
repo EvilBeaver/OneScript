@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Values;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -27,5 +28,39 @@ namespace ScriptEngine.Machine
         
         public static IRuntimeContextInstance AsObject(this IValue val) 
             => val is IRuntimeContextInstance ctx? ctx : throw RuntimeException.ValueIsNotObjectException();
+
+        public static object CastToClrObject(this IValue value)
+        {
+            if (value == null)
+                return null;
+            
+            var raw = value.GetRawValue();
+            switch (raw)
+            {
+                case BslNumericValue num:
+                    return (decimal) num;
+                case BslBooleanValue boolean:
+                    return (bool) boolean;
+                case BslStringValue str:
+                    return (string) str;
+                case BslDateValue date:
+                    return (DateTime) date;
+                case BslUndefinedValue _:
+                    return null;
+                case BslNullValue _:
+                    return null;
+                case BslTypeValue type:
+                    return type.SystemType.ImplementingClass;
+                case IObjectWrapper wrapper:
+                    return wrapper.UnderlyingObject;
+                default:
+                    return value;
+            }
+        }
+
+        public static bool IsSkippedArgument(this IValue val)
+        {
+            return ReferenceEquals(val, BslSkippedParameterValue.Instance);
+        }
     }
 }
