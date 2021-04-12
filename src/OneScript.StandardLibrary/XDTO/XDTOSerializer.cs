@@ -187,9 +187,9 @@ namespace OneScript.StandardLibrary.XDTO
         [ContextMethod("ПрочитатьXML", "ReadXML")]
         public IValue ReadXML(XmlReaderImpl xmlReader, IValue valueType = null)
         {
-            TypeTypeValue typeValue = null;
+            BslTypeValue typeValue = null;
 
-            if (valueType is TypeTypeValue typeTypeValue)
+            if (valueType is BslTypeValue typeTypeValue)
                 typeValue = typeTypeValue;
 
             else if (xmlReader.NodeType == _xmlNodeEnum.FromNativeValue(XmlNodeType.Element))
@@ -202,19 +202,19 @@ namespace OneScript.StandardLibrary.XDTO
                     switch (xsiType.AsString())
                     {
                         case "string":
-                            typeValue = new TypeTypeValue(BasicTypes.String);
+                            typeValue = new BslTypeValue(BasicTypes.String);
                             break;
 
                         case "decimal":
-                            typeValue = new TypeTypeValue(BasicTypes.Number);
+                            typeValue = new BslTypeValue(BasicTypes.Number);
                             break;
 
                         case "boolean":
-                            typeValue = new TypeTypeValue(BasicTypes.Boolean);
+                            typeValue = new BslTypeValue(BasicTypes.Boolean);
                             break;
 
                         case "dateTime":
-                            typeValue = new TypeTypeValue(BasicTypes.Number);
+                            typeValue = new BslTypeValue(BasicTypes.Number);
                             break;
 
                         default:
@@ -222,7 +222,7 @@ namespace OneScript.StandardLibrary.XDTO
                     }
                 }
                 else if (xsiNil.SystemType == BasicTypes.String)
-                    typeValue = new TypeTypeValue(BasicTypes.Undefined);
+                    typeValue = new BslTypeValue(BasicTypes.Undefined);
             };
 
             if (typeValue == null)
@@ -232,7 +232,7 @@ namespace OneScript.StandardLibrary.XDTO
 
             IValue result = ValueFactory.Create();
 
-            if (typeValue.Equals(new TypeTypeValue(BasicTypes.Undefined)))
+            if (typeValue.Equals(new BslTypeValue(BasicTypes.Undefined)))
             {
                 result = ValueFactory.Create();
                 xmlReader.Skip();

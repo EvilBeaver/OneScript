@@ -13,6 +13,7 @@ using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Reflection;
@@ -101,11 +102,11 @@ namespace OneScript.StandardLibrary
         [ContextMethod("МетодСуществует", "MethodExists")]
         public bool MethodExists(IValue target, string methodName)
         {
-            if(target.DataType == DataType.Object)
+            if(target.GetRawValue() is BslObjectValue)
                 return MethodExistsForObject(target.AsObject(), methodName);
 
-            if (target.DataType == DataType.Type)
-                return MethodExistsForType(target.GetRawValue() as TypeTypeValue, methodName);
+            if (target.SystemType == BasicTypes.Type)
+                return MethodExistsForType(target.GetRawValue() as BslTypeValue, methodName);
 
             throw RuntimeException.InvalidArgumentType("target");
         }
@@ -168,13 +169,13 @@ namespace OneScript.StandardLibrary
             return annotationsTable;
         }
 
-        private static bool MethodExistsForType(TypeTypeValue type, string methodName)
+        private static bool MethodExistsForType(BslTypeValue type, string methodName)
         {
             var clrType = GetReflectableClrType(type);
             return clrType.GetMethod(methodName) != null;
         }
 
-        private static Type GetReflectableClrType(TypeTypeValue type)
+        private static Type GetReflectableClrType(BslTypeValue type)
         {
             var clrType = type.TypeValue.ImplementingClass;
             if(clrType != typeof(AttachedScriptsFactory) && !typeof(IRuntimeContextInstance).IsAssignableFrom(clrType))
@@ -205,10 +206,10 @@ namespace OneScript.StandardLibrary
         public ValueTable GetMethodsTable(IValue target)
         {
             var result = new ValueTable();
-            if(target.DataType == DataType.Object)
+            if(target.GetRawValue() is BslObjectValue)
                 FillMethodsTableForObject(target.AsObject(), result);
-            else if (target.DataType == DataType.Type)
-                FillMethodsTableForType(target.GetRawValue() as TypeTypeValue, result);
+            else if (target.SystemType == BasicTypes.Type)
+                FillMethodsTableForType(target.GetRawValue() as BslTypeValue, result);
             else
                 throw RuntimeException.InvalidArgumentType();
 
@@ -220,7 +221,7 @@ namespace OneScript.StandardLibrary
             FillMethodsTable(result, target.GetMethods());
         }
 
-        private static void FillMethodsTableForType(TypeTypeValue type, ValueTable result)
+        private static void FillMethodsTableForType(BslTypeValue type, ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
             var clrMethods = clrType.GetMethods(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);
@@ -270,7 +271,7 @@ namespace OneScript.StandardLibrary
             return attributes.Select(x => x.Annotation).ToArray();
         }
 
-        private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable result)
+        private static void FillPropertiesTableForType(BslTypeValue type, ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
             var nativeProps = clrType.GetProperties()
@@ -365,11 +366,11 @@ namespace OneScript.StandardLibrary
         {
             var result = new ValueTable();
 
-            if(target.DataType == DataType.Object)
+            if(target.GetRawValue() is BslObjectValue)
                 FillPropertiesTable(result, target.AsObject().GetProperties());
-            else if (target.DataType == DataType.Type)
+            else if (target.SystemType == BasicTypes.Type)
             {
-                var type = target.GetRawValue() as TypeTypeValue;
+                var type = target.GetRawValue() as BslTypeValue;
                 FillPropertiesTableForType(type, result);
             }
             else

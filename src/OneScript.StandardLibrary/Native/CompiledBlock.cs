@@ -86,7 +86,7 @@ namespace OneScript.StandardLibrary.Native
             int index = 0;
             foreach (var parameter in Parameters)
             {
-                var targetType = parameter.Value as TypeTypeValue;
+                var targetType = parameter.Value as BslTypeValue;
                 var arrayAccess = Expression.ArrayIndex(arrayOfValuesParam, Expression.Constant(index));
                 var convertedParam = ExpressionHelpers.ConvertToType(arrayAccess, ConvertTypeToClrType(targetType));
                 convertedAccessList.Add(convertedParam);
@@ -168,7 +168,7 @@ namespace OneScript.StandardLibrary.Native
 
             foreach (var parameter in Parameters)
             {
-                var targetType = parameter.Value as TypeTypeValue;
+                var targetType = parameter.Value as BslTypeValue;
                 var pi = new BslParameterInfo(
                     parameter.Key.AsString(),
                     ConvertTypeToClrType(targetType));
@@ -179,7 +179,7 @@ namespace OneScript.StandardLibrary.Native
             return methodInfo;
         }
 
-        private static Type ConvertTypeToClrType(TypeTypeValue typeVal)
+        private static Type ConvertTypeToClrType(BslTypeValue typeVal)
         {
             var type = typeVal.TypeValue;
             return GetClrType(type);
@@ -197,7 +197,7 @@ namespace OneScript.StandardLibrary.Native
             else if (type == BasicTypes.Number)
                 clrType = typeof(decimal);
             else if (type == BasicTypes.Type)
-                clrType = typeof(TypeTypeValue);
+                clrType = typeof(BslTypeValue);
             else
                 clrType = type.ImplementingClass;
 

@@ -40,7 +40,7 @@ namespace OneScript.Core.Tests
         {
             var blockOfCode = new CompiledBlock(new DefaultTypeManager());
             
-            blockOfCode.Parameters.Insert("MyVar", new TypeTypeValue(BasicTypes.Number));
+            blockOfCode.Parameters.Insert("MyVar", new BslTypeValue(BasicTypes.Number));
             blockOfCode.CodeBlock = "MyVar = 2";
 
             var expr = blockOfCode.MakeExpression();
@@ -55,7 +55,7 @@ namespace OneScript.Core.Tests
         {
             var blockOfCode = new CompiledBlock(new DefaultTypeManager());
             
-            blockOfCode.Parameters.Insert("MyVar", new TypeTypeValue(BasicTypes.Number));
+            blockOfCode.Parameters.Insert("MyVar", new BslTypeValue(BasicTypes.Number));
             blockOfCode.CodeBlock = "MyVar = MyVar + 1";
 
             var expr = blockOfCode.MakeExpression();
@@ -71,7 +71,7 @@ namespace OneScript.Core.Tests
         {
             var blockOfCode = new CompiledBlock(new DefaultTypeManager());
             
-            blockOfCode.Parameters.Insert("MyVar", new TypeTypeValue(BasicTypes.Number));
+            blockOfCode.Parameters.Insert("MyVar", new BslTypeValue(BasicTypes.Number));
             blockOfCode.CodeBlock = "MyVar = -MyVar";
 
             var expr = blockOfCode.MakeExpression();
@@ -95,8 +95,8 @@ namespace OneScript.Core.Tests
         public void Can_Compile_AcceptParameters_In_Array()
         {
             var blockOfCode = new CompiledBlock(new DefaultTypeManager());
-            blockOfCode.Parameters.Insert("A", new TypeTypeValue(BasicTypes.Number));
-            blockOfCode.Parameters.Insert("Б", new TypeTypeValue(BasicTypes.String));
+            blockOfCode.Parameters.Insert("A", new BslTypeValue(BasicTypes.Number));
+            blockOfCode.Parameters.Insert("Б", new BslTypeValue(BasicTypes.String));
             
             var func = blockOfCode.CreateDelegate();
             var result = func(new BslValue[]{ BslNumericValue.Create(1), BslStringValue.Create("hello") });
@@ -108,8 +108,8 @@ namespace OneScript.Core.Tests
         public void Can_Compile_AcceptParameters()
         {
             var blockOfCode = new CompiledBlock(new DefaultTypeManager());
-            blockOfCode.Parameters.Insert("A", new TypeTypeValue(BasicTypes.Number));
-            blockOfCode.Parameters.Insert("Б", new TypeTypeValue(BasicTypes.String));
+            blockOfCode.Parameters.Insert("A", new BslTypeValue(BasicTypes.Number));
+            blockOfCode.Parameters.Insert("Б", new BslTypeValue(BasicTypes.String));
             
             var func = blockOfCode.CreateDelegate<Func<decimal, string, BslValue>>();
             var result = func(1, "привет");
@@ -137,9 +137,9 @@ namespace OneScript.Core.Tests
             var block = new CompiledBlock(new DefaultTypeManager());
             block.CodeBlock = "А = 1+(А*Б/3)%В";
             
-            block.Parameters.Insert("А", new TypeTypeValue(BasicTypes.Number));
-            block.Parameters.Insert("Б", new TypeTypeValue(BasicTypes.Number));
-            block.Parameters.Insert("В", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("А", new BslTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("Б", new BslTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("В", new BslTypeValue(BasicTypes.Number));
             
             var assignment = block.MakeExpression()
                 .Body
@@ -175,7 +175,7 @@ namespace OneScript.Core.Tests
         {
             var block = new CompiledBlock(new DefaultTypeManager());
             block.CodeBlock = "F = (Сегодня - '19840331') / 86400 / 366";
-            block.Parameters.Insert("Сегодня", new TypeTypeValue(BasicTypes.Date));
+            block.Parameters.Insert("Сегодня", new BslTypeValue(BasicTypes.Date));
             var assignment = block.MakeExpression()
                 .Body
                 .As<BlockExpression>()
@@ -194,7 +194,7 @@ namespace OneScript.Core.Tests
         {
             var block = new CompiledBlock(new DefaultTypeManager());
             block.CodeBlock = "Возврат (Сегодня - '19840331') / 86400 / 366";
-            block.Parameters.Insert("Сегодня", new TypeTypeValue(BasicTypes.Date));
+            block.Parameters.Insert("Сегодня", new BslTypeValue(BasicTypes.Date));
 
             var beaverAge = block.CreateDelegate<Func<DateTime, BslValue>>();
             var age = (decimal)(BslNumericValue)beaverAge(DateTime.Now);
@@ -210,7 +210,7 @@ namespace OneScript.Core.Tests
             
             var block = new CompiledBlock(tm);
             block.CodeBlock = "Arr[5] = 15";
-            block.Parameters.Insert("Arr", new TypeTypeValue(arrayType));
+            block.Parameters.Insert("Arr", new BslTypeValue(arrayType));
 
             var expr = block.MakeExpression();
             var statement = expr.Body.As<BlockExpression>().Expressions.First();
@@ -242,7 +242,7 @@ namespace OneScript.Core.Tests
             
             var block = new CompiledBlock(tm);
             block.CodeBlock = "А = Arr[5]; Возврат А;";
-            block.Parameters.Insert("Arr", new TypeTypeValue(arrayType));
+            block.Parameters.Insert("Arr", new BslTypeValue(arrayType));
 
             var expr = block.MakeExpression();
             var statement = expr.Body.As<BlockExpression>().Expressions.First();
@@ -265,7 +265,7 @@ namespace OneScript.Core.Tests
         public void Can_Do_While()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.Parameters.Insert("Результат", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("Результат", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = "Ф = 1;" +
                               "Пока Ф < 10 Цикл" +
                               "\tРезультат = Результат + Ф;" +
@@ -310,8 +310,8 @@ namespace OneScript.Core.Tests
         public void Can_Do_ElseIfElse()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.Parameters.Insert("П", new TypeTypeValue(BasicTypes.Number));
-            block.Parameters.Insert("Ф", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("П", new BslTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("Ф", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = 
                 "Если П=1 Тогда Ф=1;" +
                 "ИначеЕсли П=2 Тогда Ф=2;" +
@@ -339,8 +339,8 @@ namespace OneScript.Core.Tests
         public void Can_Do_ElseIf_WithoutElse()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.Parameters.Insert("П", new TypeTypeValue(BasicTypes.Number));
-            block.Parameters.Insert("Ф", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("П", new BslTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("Ф", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = 
                 "Если П=1 Тогда Ф=1;" +
                 "ИначеЕсли П=2 Тогда Ф=2;" +
@@ -368,7 +368,7 @@ namespace OneScript.Core.Tests
         public void Can_ForLoop()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.Parameters.Insert("Результат", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("Результат", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = 
                 "Для Ф = 1 По 2+2*2 Цикл " +
                 "Результат = Результат + Ф;" +
@@ -390,8 +390,8 @@ namespace OneScript.Core.Tests
             var arrayType = tm.RegisterClass(typeof(ArrayImpl));
             
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.Parameters.Insert("Результат", new TypeTypeValue(BasicTypes.Number));
-            block.Parameters.Insert("П", new TypeTypeValue(arrayType));
+            block.Parameters.Insert("Результат", new BslTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("П", new BslTypeValue(arrayType));
             
             block.CodeBlock = 
                 "Для Каждого Ф Из П Цикл " +
@@ -420,7 +420,7 @@ namespace OneScript.Core.Tests
         public void Can_Do_TryExcept()
         {
             var block = new CompiledBlock(new DefaultTypeManager());
-            block.Parameters.Insert("Ф", new TypeTypeValue(BasicTypes.Number));
+            block.Parameters.Insert("Ф", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = 
                 "Попытка Если Ф = 1 Тогда Возврат 1; КонецЕсли;" +
                 "ВызватьИсключение 123; " +
@@ -485,8 +485,8 @@ namespace OneScript.Core.Tests
 
             var arrayType = tm.GetTypeByFrameworkType(typeof(ArrayImpl));
             
-            blockCompiler.Parameters.Insert("Н", new TypeTypeValue(BasicTypes.Number));
-            blockCompiler.Parameters.Insert("Массив", new TypeTypeValue(arrayType));
+            blockCompiler.Parameters.Insert("Н", new BslTypeValue(BasicTypes.Number));
+            blockCompiler.Parameters.Insert("Массив", new BslTypeValue(arrayType));
             blockCompiler.Symbols = new SymbolTable();
             blockCompiler.Symbols.AddScope(SymbolScope.FromContext(new StandardGlobalContext()));
             blockCompiler.CodeBlock = code;

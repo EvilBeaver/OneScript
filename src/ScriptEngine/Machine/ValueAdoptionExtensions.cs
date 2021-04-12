@@ -31,31 +31,7 @@ namespace ScriptEngine.Machine
 
         public static object CastToClrObject(this IValue value)
         {
-            if (value == null)
-                return null;
-            
-            var raw = value.GetRawValue();
-            switch (raw)
-            {
-                case BslNumericValue num:
-                    return (decimal) num;
-                case BslBooleanValue boolean:
-                    return (bool) boolean;
-                case BslStringValue str:
-                    return (string) str;
-                case BslDateValue date:
-                    return (DateTime) date;
-                case BslUndefinedValue _:
-                    return null;
-                case BslNullValue _:
-                    return null;
-                case BslTypeValue type:
-                    return type.SystemType.ImplementingClass;
-                case IObjectWrapper wrapper:
-                    return wrapper.UnderlyingObject;
-                default:
-                    return value;
-            }
+            return ContextValuesMarshaller.ConvertToCLRObject(value);
         }
 
         public static bool IsSkippedArgument(this IValue val)

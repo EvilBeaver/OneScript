@@ -38,17 +38,11 @@ namespace OneScript.Values
 
         #region Stack Runtime Bridge
 
-        public virtual TypeDescriptor SystemType => BasicTypes.UnknownType; 
-        
-        public int CompareTo(IValue other)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual TypeDescriptor SystemType => BasicTypes.UnknownType;
 
-        public bool Equals(IValue other)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual int CompareTo(IValue other) => CompareTo((BslValue) other);
+
+        public virtual bool Equals(IValue other) => Equals((BslValue) other);
 
         public virtual IValue GetRawValue() => this;
         

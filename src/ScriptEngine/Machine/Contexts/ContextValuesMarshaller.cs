@@ -56,7 +56,7 @@ namespace ScriptEngine.Machine.Contexts
         public static object ConvertParam(IValue value, Type type)
         {
             object valueObj;
-            if (value == null || value.DataType == DataType.NotAValidValue)
+            if (value == null || value.IsSkippedArgument())
             {
                 return null;
             }
@@ -231,58 +231,42 @@ namespace ScriptEngine.Machine.Contexts
             return ConvertReturnValue(param, type);
         }
 
-		public static object ConvertToCLRObject(IValue val)
+		public static object ConvertToCLRObject(IValue value)
 		{
-			object result;
-			if (val == null)
-				return val;
-			
-			switch (val.DataType)
-			{
-			case Machine.DataType.Boolean:
-				result = val.AsBoolean();
-				break;
-			case Machine.DataType.Date:
-				result = val.AsDate();
-				break;
-			case Machine.DataType.Number:
-				result = val.AsNumber();
-				break;
-			case Machine.DataType.String:
-				result = val.AsString();
-				break;
-			case Machine.DataType.Undefined:
-				result = null;
-				break;
-			default:
-                if (val.DataType == DataType.Object)
-                    result = val.AsObject();
-                else
-                    result = val.GetRawValue();
-
-                if (result is IObjectWrapper wrapper)
-					result = wrapper.UnderlyingObject;
-				else
-				    throw new ValueMarshallingException($"Тип {val.GetType()} не поддерживает преобразование в CLR-объект");
-
-                break;
-			}
-			
-			return result;
-		}
-
-        public static T CastToCLRObject<T>(IValue val)
-        {
-            return (T)CastToCLRObject(val);
+            if (value == null)
+                return null;
+            
+            var raw = value.GetRawValue();
+            switch (raw)
+            {
+                case BslNumericValue num:
+                    return (decimal) num;
+                case BslBooleanValue boolean:
+                    return (bool) boolean;
+                case BslStringValue str:
+                    return (string) str;
+                case BslDateValue date:
+                    return (DateTime) date;
+                case BslUndefinedValue _:
+                    return null;
+                case BslNullValue _:
+                    return null;
+                case BslTypeValue type:
+                    return type.SystemType.ImplementingClass;
+                case IObjectWrapper wrapper:
+                    return wrapper.UnderlyingObject;
+                default:
+                    return value;
+            }
         }
 
         public static object CastToCLRObject(IValue val)
         {
             var rawValue = val.GetRawValue();
             object objectRef;
-            if (rawValue.DataType == DataType.GenericValue)
+            if (rawValue is IObjectWrapper wrapper)
             {
-                objectRef = (rawValue is IObjectWrapper wrapper) ? wrapper.UnderlyingObject : rawValue;
+                objectRef = wrapper.UnderlyingObject;
             }
             else
             {

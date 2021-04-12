@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Xml;
 using OneScript.StandardLibrary.Binary;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
@@ -52,7 +53,7 @@ namespace OneScript.StandardLibrary.Xml
                 throw new ArgumentException(nameof(givenType));
             }
 
-            var dataType = givenType.GetRawValue() as TypeTypeValue;
+            var dataType = givenType.GetRawValue() as BslTypeValue;
             Debug.Assert(dataType != null);
 
             var typeValue = dataType.TypeValue;

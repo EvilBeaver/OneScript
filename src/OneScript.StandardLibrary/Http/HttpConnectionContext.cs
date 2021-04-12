@@ -44,7 +44,7 @@ namespace OneScript.StandardLibrary.Http
             IValue ssl = null,
             bool useOSAuth = false)
         {
-            if (ssl != null && !(ssl.SystemType == BasicTypes.Undefined || ssl.GetRawValue() == BslSkippedParameterValue.Instance))
+            if (ssl != null && !(ssl.SystemType == BasicTypes.Undefined || ssl.IsSkippedArgument()))
                 throw new RuntimeException("Защищенное соединение по произвольным сертификатам не поддерживается. Если необходим доступ по https, просто укажите протокол https в адресе хоста.");
             
             var uriBuilder = new UriBuilder(host);

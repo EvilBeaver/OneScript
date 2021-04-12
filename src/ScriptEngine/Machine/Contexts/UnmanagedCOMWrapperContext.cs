@@ -9,6 +9,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine.Rcw;
 
 namespace ScriptEngine.Machine.Contexts
@@ -129,9 +131,9 @@ namespace ScriptEngine.Machine.Contexts
                 try
                 {
                     object argToPass;
-                    if(newVal.DataType == Machine.DataType.Date)
+                    if(newVal is BslDateValue dateVal)
                     {
-                        var date = newVal.AsDate();
+                        var date = (DateTime)dateVal;
                         if(date == DateTime.MinValue)
                         {
                             argToPass = new DateTime(100, 1, 1); // Min OLEAuth Date

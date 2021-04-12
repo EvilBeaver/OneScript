@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
@@ -18,9 +19,9 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 	[ContextClass("ОписаниеТипов", "TypeDescription")]
 	public class TypeDescription : AutoContext<TypeDescription>
 	{
-		private readonly List<TypeTypeValue> _types = new List<TypeTypeValue>();
+		private readonly List<BslTypeValue> _types = new List<BslTypeValue>();
 		
-		public TypeDescription(IEnumerable<TypeTypeValue> types = null,
+		public TypeDescription(IEnumerable<BslTypeValue> types = null,
 		                           NumberQualifiers numberQualifiers = null,
 		                           StringQualifiers stringQualifiers = null,
 		                           DateQualifiers   dateQualifiers = null,
@@ -64,12 +65,12 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		[ContextMethod("СодержитТип", "ContainsType")]
 		public bool ContainsType(IValue type)
 		{
-			if (type is TypeTypeValue)
-				return _types.IndexOf(type as TypeTypeValue) != -1;
+			if (type is BslTypeValue)
+				return _types.IndexOf(type as BslTypeValue) != -1;
 			throw RuntimeException.InvalidArgumentType(nameof(type));
 		}
 
-		IValueAdjuster GetAdjusterForType(TypeTypeValue type)
+		IValueAdjuster GetAdjusterForType(BslTypeValue type)
 		{
 			var value = type.TypeValue;
 			
@@ -97,11 +98,11 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				return value ?? ValueFactory.Create();
 			}
 
-			TypeTypeValue typeToCast = null;
+			BslTypeValue typeToCast = null;
 
 			if (value != null && value.SystemType != BasicTypes.Undefined)
 			{
-				var valueType = new TypeTypeValue(value.SystemType);
+				var valueType = new BslTypeValue(value.SystemType);
 				if (_types.Contains(valueType))
 				{
 					// Если такой тип у нас есть
@@ -126,9 +127,9 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return adjuster?.Adjust(value) ?? ValueFactory.Create();
 		}
 
-		private static IList<TypeTypeValue> ConstructTypeList(ITypeManager typeManager, IValue types)
+		private static IList<BslTypeValue> ConstructTypeList(ITypeManager typeManager, IValue types)
 		{
-			var _types = new List<TypeTypeValue>();
+			var _types = new List<BslTypeValue>();
 			if (types == null)
 				return _types;
 
@@ -139,13 +140,13 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				foreach (var typeName in typeNames)
 				{
 					var type = typeManager.GetTypeByName(typeName.Trim());
-					_types.Add(new TypeTypeValue(type));
+					_types.Add(new BslTypeValue(type));
 				}
 			} else if (types is ArrayImpl arrayOfTypes)
 			{
 				foreach (var type in arrayOfTypes)
 				{
-					var rawType = type.GetRawValue() as TypeTypeValue;
+					var rawType = type.GetRawValue() as BslTypeValue;
 					if (rawType == null)
 						return null;
 
@@ -158,38 +159,38 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return _types;
 		}
 
-		static TypeTypeValue TypeNumber()
+		static BslTypeValue TypeNumber()
 		{
-			return new TypeTypeValue(BasicTypes.Number);
+			return new BslTypeValue(BasicTypes.Number);
 		}
 
-		static TypeTypeValue TypeBoolean()
+		static BslTypeValue TypeBoolean()
 		{
-			return new TypeTypeValue(BasicTypes.Boolean);
+			return new BslTypeValue(BasicTypes.Boolean);
 		}
 
-		static TypeTypeValue TypeString()
+		static BslTypeValue TypeString()
 		{
-			return new TypeTypeValue(BasicTypes.String);
+			return new BslTypeValue(BasicTypes.String);
 		}
 
 		public static TypeDescription StringType(int length = 0,
 		                                         AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
 		{
 			var stringQualifier = new StringQualifiers(length, allowedLength);
-			return new TypeDescription(new TypeTypeValue[] { TypeString() }, null, stringQualifier);
+			return new TypeDescription(new BslTypeValue[] { TypeString() }, null, stringQualifier);
 		}
 
 		public static TypeDescription IntegerType(int length = 10,
 		                                          AllowedSignEnum allowedSign = AllowedSignEnum.Any)
 		{
 			var numberQualifier = new NumberQualifiers(length, 0, allowedSign);
-			return new TypeDescription(new TypeTypeValue[] { TypeNumber() }, numberQualifier);
+			return new TypeDescription(new BslTypeValue[] { TypeNumber() }, numberQualifier);
 		}
 
 		public static TypeDescription BooleanType()
 		{
-			return new TypeDescription(new TypeTypeValue[] { TypeBoolean() });
+			return new TypeDescription(new BslTypeValue[] { TypeBoolean() });
 		}
 
 		[ScriptConstructor]
@@ -259,12 +260,12 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				throw RuntimeException.InvalidArgumentType(nameof(removeTypes));
 
 
-			var _types = new List<TypeTypeValue>();
+			var _types = new List<BslTypeValue>();
 			if (td != null)
 			{
 				foreach (var ivType in td.Types())
 				{
-					var type = ivType as TypeTypeValue;
+					var type = ivType as BslTypeValue;
 					if (removeTypesList.IndexOf(type) == -1)
 					{
 						_types.Add(type);

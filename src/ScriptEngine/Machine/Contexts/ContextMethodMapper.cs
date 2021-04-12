@@ -291,7 +291,7 @@ namespace ScriptEngine.Machine.Contexts
             // ReSharper disable once UnusedMember.Local
             private static T ConvertParam<T>(IValue value, object def)
             {
-                if (value == null || value.DataType == DataType.NotAValidValue)
+                if (value == null || value.IsSkippedArgument())
                     return (T)def;
 
                 return ContextValuesMarshaller.ConvertParam<T>(value);

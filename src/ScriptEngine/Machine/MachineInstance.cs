@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine.Values;
@@ -222,7 +223,7 @@ namespace ScriptEngine.Machine
                         Variable.CreateReference((IVariable)arguments[i], method.Variables[i].Identifier);
                     }
                 }
-                else if (arguments[i] == null || arguments[i].DataType == DataType.NotAValidValue)
+                else if (arguments[i] == null || arguments[i].IsSkippedArgument())
                     _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
                 else
                     _currentFrame.Locals[i] = Variable.Create(arguments[i], method.Variables[i]);
@@ -816,7 +817,7 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Add(op1, op2));
+            _operationStack.Push(ValueFactory.Add(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
 
         }
@@ -978,7 +979,7 @@ namespace ScriptEngine.Machine
             for (int i = argCount - 1; i >= 0; i--)
             {
                 var argValue = _operationStack.Pop();
-                if (argValue.DataType == DataType.NotAValidValue)
+                if (argValue.IsSkippedArgument())
                 {
                     if (i < methInfo.Params.Length)
                     {
@@ -1143,11 +1144,7 @@ namespace ScriptEngine.Machine
         private void ResolveProp(int arg)
         {
             var objIValue = _operationStack.Pop();
-            if (objIValue.DataType != DataType.Object)
-            {
-                throw RuntimeException.ValueIsNotObjectException();
-            }
-
+            
             var context = objIValue.AsObject();
             var propName = _module.Constants[arg].AsString();
             var propNum = context.FindProperty(propName);
@@ -1198,11 +1195,7 @@ namespace ScriptEngine.Machine
             }
 
             var objIValue = _operationStack.Pop();
-            if (objIValue.DataType != DataType.Object)
-            {
-                throw RuntimeException.ValueIsNotObjectException();
-            }
-
+            
             context = objIValue.AsObject();
             var methodName = _module.Constants[arg].AsString();
             methodId = context.FindMethod(methodName);
@@ -1219,7 +1212,7 @@ namespace ScriptEngine.Machine
             for (int i = 0; i < factArgs.Length; i++)
             {
                 var argValue = factArgs[i];
-                if (argValue.DataType == DataType.NotAValidValue)
+                if (argValue.IsSkippedArgument())
                 {
                     signatureCheck[i] = false;
                 }
@@ -1360,7 +1353,7 @@ namespace ScriptEngine.Machine
             for (int i = argCount - 1; i >= 0; i--)
             {
                 var argValue = _operationStack.Pop();
-                if(argValue.DataType != DataType.NotAValidValue)
+                if(argValue.IsSkippedArgument())
                     argValues[i] = BreakVariableLink(argValue);
             }
 
@@ -1386,15 +1379,14 @@ namespace ScriptEngine.Machine
 
         private void PushIterator(int arg)
         {
-            var collection = _operationStack.Pop();
-            if (collection.DataType == DataType.Object)
+            var collection = _operationStack.Pop().GetRawValue();
+            // TODO: возможно, можем избавиться от вызова AsObject и сразу проверять тип collection на ICollectionContext
+            // Нужно проверить, как ведет себя 1С, если в Для Каждого кидаем НеОбъект. Будет ли исключение приведения к объекту?
+            // Если "Значение не явл. значением объектного типа" 1С не выдает, а всегда выдает "Итератор не определен"
+            // то можем удалить данный вызов .AsObject, т.к. он здесь оставлен только ради исключения ValueIsNotObjectException
+            var rci = collection.AsObject();
+            if (rci is ICollectionContext context)
             {
-                var context = collection.AsObject() as ICollectionContext;
-                if (context == null)
-                {
-                    throw RuntimeException.IteratorIsNotDefined();
-                }
-
                 var iterator = context.GetManagedIterator();
                 _currentFrame.LocalFrameStack.Push(iterator);
                 NextInstruction();
@@ -1402,7 +1394,7 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                throw RuntimeException.ValueIsNotObjectException();
+                throw RuntimeException.IteratorIsNotDefined();
             }
         }
 
@@ -1682,7 +1674,7 @@ namespace ScriptEngine.Machine
         {
             var typeName = _operationStack.Pop().AsString();
             var type = TypeManager.GetTypeByName(typeName);
-            var value = new TypeTypeValue(type);
+            var value = new BslTypeValue(type);
             _operationStack.Push(value);
             NextInstruction();
         }
@@ -1690,7 +1682,7 @@ namespace ScriptEngine.Machine
         private void ValType(int arg)
         {
             var value = _operationStack.Pop();
-            var valueType = new TypeTypeValue(value.SystemType);
+            var valueType = new BslTypeValue(value.SystemType);
             _operationStack.Push(valueType);
             NextInstruction();
         }

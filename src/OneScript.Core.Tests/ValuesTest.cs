@@ -145,7 +145,7 @@ namespace OneScript.Core.Tests
         [Fact]
         public void Type_Value_Test()
         {
-            var typeValue = new TypeTypeValue(BasicTypes.String);
+            var typeValue = new BslTypeValue(BasicTypes.String);
             Assert.True(typeValue.SystemType == BasicTypes.Type);
             Assert.Equal("Строка", typeValue.AsString());
 

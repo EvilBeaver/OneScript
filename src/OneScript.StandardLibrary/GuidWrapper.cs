@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Reflection;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
@@ -16,7 +17,7 @@ using ScriptEngine.Types;
 namespace OneScript.StandardLibrary
 {
     [ContextClass("УникальныйИдентификатор","UUID", TypeUUID = "B35D7F7B-DF1C-4D6C-A755-6C97A60BB345")]
-    public class GuidWrapper : GenericValue, IObjectWrapper
+    public class GuidWrapper : BslPrimitiveValue, IObjectWrapper
     {
         Guid _value;
         private static readonly TypeDescriptor InstanceType;
@@ -30,13 +31,11 @@ namespace OneScript.StandardLibrary
         public GuidWrapper()
         {
             _value = Guid.NewGuid();
-            DataType = DataType.GenericValue;
         }
 
         public GuidWrapper(string uuidString)
         {
             _value = Guid.Parse(uuidString);
-            DataType = DataType.GenericValue;
         }
 
         [ScriptConstructor]
@@ -53,12 +52,12 @@ namespace OneScript.StandardLibrary
         
         public override TypeDescriptor SystemType => InstanceType;
 
-        public override string AsString()
+        public override string ToString()
         {
             return _value.ToString();
         }
 
-        public override int CompareTo(IValue other)
+        public override int CompareTo(BslValue other)
         {
             GuidWrapper otherUuid = other.GetRawValue() as GuidWrapper;
             if (otherUuid == null)
@@ -67,16 +66,16 @@ namespace OneScript.StandardLibrary
             return _value.CompareTo(otherUuid._value);
         }
 
-        public override bool Equals(IValue other)
+        public override bool Equals(BslValue other)
         {
-            GuidWrapper otherUuid = other.GetRawValue() as GuidWrapper;
+            GuidWrapper otherUuid = other?.GetRawValue() as GuidWrapper;
             if (otherUuid == null)
                 return false;
             else
                 return _value.Equals(otherUuid._value);
         }
 
-        public override bool IsEmpty => _value.Equals(Guid.Empty);
+        public bool IsEmpty => _value.Equals(Guid.Empty);
 
         object IObjectWrapper.UnderlyingObject => _value;
     }

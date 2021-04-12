@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
@@ -130,9 +131,9 @@ namespace ScriptEngine.Machine.Contexts
         public static object MarshalIValue(IValue val)
         {
             object retValue;
-            if (val != null && val.DataType == Machine.DataType.Date)
+            if (val != null && val is BslDateValue dateVal)
             {
-                var date = val.AsDate();
+                var date = (DateTime)dateVal;
                 if (date <= MIN_OLE_DATE)
                 {
                     retValue = MIN_OLE_DATE;
@@ -189,7 +190,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private static bool IsMissedArg(IValue arg)
         {
-            return arg == null || arg.DataType == DataType.NotAValidValue;
+            return arg == null || arg.IsSkippedArgument();
         }
 
         public static IValue CreateIValue(object objParam)
