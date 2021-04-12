@@ -14,6 +14,7 @@ namespace ScriptEngine.Machine
         //DataType DataType { get; }
         TypeDescriptor SystemType { get; }
 
+        // TODO: Избавиться нахер от этого ужоса
         IValue GetRawValue();
     }
 

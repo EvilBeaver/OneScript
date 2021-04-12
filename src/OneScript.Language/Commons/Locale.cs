@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Globalization;
 using System.Linq;
 
 // ReSharper disable once CheckNamespace
@@ -22,6 +23,8 @@ namespace OneScript.Commons
             set
             {
                 _actualLocaleName = value;
+                var ci = CultureInfo.CreateSpecificCulture(_actualLocaleName);
+                CultureInfo.CurrentCulture = ci;
                 SystemLocaleChanged?.Invoke();
             }
         }

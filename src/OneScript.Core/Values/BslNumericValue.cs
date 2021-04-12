@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Dynamic;
 using System.Globalization;
+using OneScript.Types;
 
 namespace OneScript.Values
 {
@@ -49,7 +50,9 @@ namespace OneScript.Values
                     return new BslNumericValue(value);
             }
         }
-  
+
+        public override TypeDescriptor SystemType => BasicTypes.Number;
+
         public override bool TryConvert(ConvertBinder binder, out object result)
         {
             if (!binder.Type.IsNumeric())

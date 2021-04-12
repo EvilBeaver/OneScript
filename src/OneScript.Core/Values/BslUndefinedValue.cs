@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Types;
 
 namespace OneScript.Values
 {
@@ -17,6 +18,8 @@ namespace OneScript.Values
         {
         }
 
+        public override TypeDescriptor SystemType => BasicTypes.Undefined;
+        
         public override bool Equals(BslValue other)
         {
             return ReferenceEquals(Instance, other);

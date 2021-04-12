@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OneScript.Commons;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Types;
@@ -509,47 +510,53 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
-                    if(exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT)
+                    if (exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT)
                         SetScriptExceptionSource(exc);
 
-                    if (_exceptionsStack.Count == 0)
-                    {
+                    if (ShouldRethrowException(exc))
                         throw;
-                    }
-
-                    if (exc.CallStackFrames == null)
-                    {
-                        CreateFullCallstack();
-                        exc.InitCallStackFrames(_fullCallstackCache);
-                    }
-
-                    var handler = _exceptionsStack.Pop();
-
-                    // Раскрутка стека вызовов
-                    while (_currentFrame != handler.HandlerFrame)
-                    {
-                        if (_currentFrame.IsReentrantCall)
-                        {
-                            _exceptionsStack.Push(handler);
-                            PopFrame();
-                            throw;
-                        }
-
-                        PopFrame();
-                    }
-
-                    _currentFrame.InstructionPointer = handler.HandlerAddress;
-                    _currentFrame.LastException = exc;
-
-                    // При возникновении исключения посредине выражения
-                    // некому почистить стек операндов.
-                    // Сделаем это
-                    while (_operationStack.Count > handler.StackSize)
-                        _operationStack.Pop();
-                    
-
                 }
             }
+        }
+
+        private bool ShouldRethrowException(RuntimeException exc)
+        {
+            if (_exceptionsStack.Count == 0)
+            {
+                return true;
+            }
+
+            if (exc.CallStackFrames == null)
+            {
+                CreateFullCallstack();
+                exc.InitCallStackFrames(_fullCallstackCache);
+            }
+
+            var handler = _exceptionsStack.Pop();
+
+            // Раскрутка стека вызовов
+            while (_currentFrame != handler.HandlerFrame)
+            {
+                if (_currentFrame.IsReentrantCall)
+                {
+                    _exceptionsStack.Push(handler);
+                    PopFrame();
+                    return true;
+                }
+
+                PopFrame();
+            }
+
+            _currentFrame.InstructionPointer = handler.HandlerAddress;
+            _currentFrame.LastException = exc;
+
+            // При возникновении исключения посредине выражения
+            // некому почистить стек операндов.
+            // Сделаем это
+            while (_operationStack.Count > handler.StackSize)
+                _operationStack.Pop();
+
+            return false;
         }
 
         public void SetCodeStatisticsCollector(ICodeStatCollector collector)

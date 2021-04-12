@@ -47,7 +47,7 @@ namespace ScriptEngine.Machine
 
         public static IValue CreateInvalidValueMarker()
         {
-            return InvalidValue.Instance;
+            return BslSkippedParameterValue.Instance;
         }
 
         public static IValue CreateNullValue()
@@ -137,70 +137,6 @@ namespace ScriptEngine.Machine
 
             return result;
         }
-
-        class InvalidValue : IValue
-        {
-            private static IValue _instance = new InvalidValue();
-
-            internal static IValue Instance => _instance;
-
-            #region IValue Members
-
-            public DataType DataType => DataType.NotAValidValue;
-
-            public TypeDescriptor SystemType => throw new NotImplementedException();
-
-            public decimal AsNumber()
-            {
-                throw new NotImplementedException();
-            }
-
-            public DateTime AsDate()
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool AsBoolean()
-            {
-                throw new NotImplementedException();
-            }
-
-            public string AsString()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IRuntimeContextInstance AsObject()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IValue GetRawValue()
-            {
-                return this;
-            }
-
-            #endregion
-
-            #region IComparable<IValue> Members
-
-            public int CompareTo(IValue other)
-            {
-                throw new NotImplementedException();
-            }
-
-            #endregion
-
-            #region IEquatable<IValue> Members
-
-            public bool Equals(IValue other)
-            {
-                return ReferenceEquals(other, this);
-            }
-
-            #endregion
-        }
-
 
         public static IValue Add(IValue op1, IValue op2)
         {

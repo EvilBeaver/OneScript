@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Commons;
+using OneScript.Types;
 
 namespace OneScript.Values
 {
@@ -42,6 +43,8 @@ namespace OneScript.Values
             
             return base.Equals(other);
         }
+        
+        public override TypeDescriptor SystemType => BasicTypes.Date;
         
         #region Conversions
 

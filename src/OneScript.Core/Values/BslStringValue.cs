@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Types;
 
 namespace OneScript.Values
 {
@@ -25,6 +26,8 @@ namespace OneScript.Values
             _value = value ?? throw new ArgumentNullException();
         }
 
+        public override TypeDescriptor SystemType => BasicTypes.String;
+        
         public override string ToString() => _value;
         
         public static explicit operator decimal(BslStringValue value) => BslNumericValue.Parse(value._value);

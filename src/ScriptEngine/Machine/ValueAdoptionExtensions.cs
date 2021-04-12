@@ -21,13 +21,13 @@ namespace ScriptEngine.Machine
         public static IRuntimeContextInstance AsObject(this BslValue val) 
             => val is IRuntimeContextInstance ctx? ctx : throw RuntimeException.ValueIsNotObjectException();
         
-        public static bool AsBoolean(this IValue val) => (bool) (BslValue)val;
-        public static DateTime AsDate(this IValue val) => (DateTime) (BslValue)val;
-        public static decimal AsNumber(this IValue val) => (decimal) (BslValue)val;
-        public static string AsString(this IValue val) => (string) (BslValue)val;
+        public static bool AsBoolean(this IValue val) => (bool) (BslValue)val.GetRawValue();
+        public static DateTime AsDate(this IValue val) => (DateTime) (BslValue)val.GetRawValue();
+        public static decimal AsNumber(this IValue val) => (decimal) (BslValue)val.GetRawValue();
+        public static string AsString(this IValue val) => (string) (BslValue)val.GetRawValue();
         
         public static IRuntimeContextInstance AsObject(this IValue val) 
-            => val is IRuntimeContextInstance ctx? ctx : throw RuntimeException.ValueIsNotObjectException();
+            => val.GetRawValue() is IRuntimeContextInstance ctx? ctx : throw RuntimeException.ValueIsNotObjectException();
 
         public static object CastToClrObject(this IValue value)
         {
