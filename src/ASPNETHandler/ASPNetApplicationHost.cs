@@ -62,7 +62,7 @@ namespace OneScript.ASPNETHandler
             throw new NotImplementedException();
         }
 
-        public bool InputString(out string result, int maxLen)
+        public bool InputString(out string result, string prompt, int maxLen, bool multiline)
         {
             throw new NotImplementedException();
         }
