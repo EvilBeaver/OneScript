@@ -186,18 +186,8 @@ namespace OneScript.Core.Tests
             var v1 = ValueFactory.Create();
             var v2 = ValueFactory.Create(true);
 
-            try
-            {
-                v1.CompareTo(v2);
-            }
-            catch(RuntimeException e)
-            {
-                var validExc = RuntimeException.ComparisonNotSupportedException();
-                Assert.True(e.Message == validExc.Message);
-                return;
-            }
-
-            throw new Exception("No exception thrown");
+            //TODO: типизировать исключение ComparisonNotSupportedException
+            Assert.ThrowsAny<BslCoreException>(() => v1.CompareTo(v2));
         }
 
         [Fact]
