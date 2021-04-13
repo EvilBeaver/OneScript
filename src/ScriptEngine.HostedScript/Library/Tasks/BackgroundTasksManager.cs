@@ -42,8 +42,7 @@ namespace ScriptEngine.HostedScript.Library.Tasks
 
             var worker = new Task(() =>
             {
-                if(!MachineInstance.Current.IsRunning)
-                    _engine.Environment.LoadMemory(MachineInstance.Current);
+                _engine.Environment.LoadMemory(MachineInstance.Current);
                 
                 task.ExecuteOnCurrentThread();
                 

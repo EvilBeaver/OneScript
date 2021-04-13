@@ -73,34 +73,29 @@ namespace ScriptEngine.Machine.Contexts
         private List<InternalMethInfo> _methodPtrs;
         private IdentifiersTrie<int> _methodNumbers;
 
-        private void Init()
+        private readonly object _locker = new object();
+
+            private void Init()
         {
             if (_methodPtrs == null)
             {
-                lock (this)
+                lock (_locker)
                 {
                     if (_methodPtrs == null)
                     {
-                        _methodPtrs = new List<InternalMethInfo>();
-                        MapType(typeof(TInstance));
+                        var localPtrs = MapType(typeof(TInstance));
+                        _methodNumbers = new IdentifiersTrie<int>();
+                        for (int idx = 0; idx < localPtrs.Count; ++idx)
+                        {
+                            var methinfo = localPtrs[idx].MethodInfo;
+
+                            _methodNumbers.Add(methinfo.Name, idx);
+                            if (methinfo.Alias != null)
+                                _methodNumbers.Add(methinfo.Alias, idx);
+                        }
+
+                        _methodPtrs = localPtrs;
                     }
-                }
-            }
-        }
-
-        private void InitSearch()
-        {
-            if (_methodNumbers == null)
-            {
-                Init();
-                _methodNumbers = new IdentifiersTrie<int>();
-                for (int idx = 0; idx < _methodPtrs.Count; ++idx)
-                {
-                    var methinfo = _methodPtrs[idx].MethodInfo;
-
-                    _methodNumbers.Add(methinfo.Name, idx);
-                    if (methinfo.Alias != null)
-                        _methodNumbers.Add(methinfo.Alias, idx);
                 }
             }
         }
@@ -125,7 +120,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public int FindMethod(string name)
         {
-            InitSearch();
+            Init();
 
             if (!_methodNumbers.TryGetValue(name, out var idx))
                 throw RuntimeException.MethodNotFoundException(name);
@@ -142,9 +137,9 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        private void MapType(Type type)
+        private List<InternalMethInfo> MapType(Type type)
         {
-            _methodPtrs = type.GetMethods()
+            return type.GetMethods()
                 .SelectMany(method => method.GetCustomAttributes(typeof(ContextMethodAttribute), false)
                     .Select(attr => new InternalMethInfo(method, (ContextMethodAttribute)attr)) )
                 .ToList();
