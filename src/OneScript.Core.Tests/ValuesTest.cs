@@ -122,10 +122,10 @@ namespace OneScript.Core.Tests
             Assert.True(value.SystemType == BasicTypes.Undefined);
             Assert.True(value.AsString() == "");
 
-            Assert.Throws<RuntimeException>(() => value.AsNumber());
-            Assert.Throws<RuntimeException>(() => value.AsBoolean());
-            Assert.Throws<RuntimeException>(() => value.AsObject());
-            Assert.Throws<RuntimeException>(() => value.AsDate());
+            Assert.ThrowsAny<BslCoreException>(() => value.AsNumber());
+            Assert.ThrowsAny<BslCoreException>(() => value.AsBoolean());
+            Assert.ThrowsAny<BslCoreException>(() => value.AsObject());
+            Assert.ThrowsAny<BslCoreException>(() => value.AsDate());
         }
 
         [Fact]
@@ -149,10 +149,10 @@ namespace OneScript.Core.Tests
             Assert.True(typeValue.SystemType == BasicTypes.Type);
             Assert.Equal("Строка", typeValue.AsString());
 
-            Assert.Throws<RuntimeException>(() => typeValue.AsNumber());
-            Assert.Throws<RuntimeException>(() => typeValue.AsBoolean());
-            Assert.Throws<RuntimeException>(() => typeValue.AsObject());
-            Assert.Throws<RuntimeException>(() => typeValue.AsDate());
+            Assert.ThrowsAny<BslCoreException>(() => typeValue.AsNumber());
+            Assert.ThrowsAny<BslCoreException>(() => typeValue.AsBoolean());
+            Assert.ThrowsAny<BslCoreException>(() => typeValue.AsObject());
+            Assert.ThrowsAny<BslCoreException>(() => typeValue.AsDate());
 
         }
 

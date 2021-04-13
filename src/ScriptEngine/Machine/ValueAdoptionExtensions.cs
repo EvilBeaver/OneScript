@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Commons;
 using OneScript.Values;
 using ScriptEngine.Machine.Contexts;
 
@@ -19,7 +20,7 @@ namespace ScriptEngine.Machine
         public static string AsString(this BslValue val) => (string) val;
         
         public static IRuntimeContextInstance AsObject(this BslValue val) 
-            => val is IRuntimeContextInstance ctx? ctx : throw RuntimeException.ValueIsNotObjectException();
+            => val is IRuntimeContextInstance ctx? ctx : throw BslExceptions.ValueIsNotObjectException();
         
         public static bool AsBoolean(this IValue val) => (bool) (BslValue)val.GetRawValue();
         public static DateTime AsDate(this IValue val) => (DateTime) (BslValue)val.GetRawValue();
@@ -27,7 +28,7 @@ namespace ScriptEngine.Machine
         public static string AsString(this IValue val) => (string) (BslValue)val.GetRawValue();
         
         public static IRuntimeContextInstance AsObject(this IValue val) 
-            => val.GetRawValue() is IRuntimeContextInstance ctx? ctx : throw RuntimeException.ValueIsNotObjectException();
+            => val.GetRawValue() is IRuntimeContextInstance ctx? ctx : throw BslExceptions.ValueIsNotObjectException();
 
         public static object CastToClrObject(this IValue value)
         {

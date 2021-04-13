@@ -31,5 +31,12 @@ namespace OneScript.Commons
                 "Преобразование к типу 'Дата' не поддерживается",
                 "Conversion to type 'Date' is not supported"));
         }
+
+        public static BslCoreException ValueIsNotObjectException()
+        {
+            return new TypeConversionException(new BilingualString(
+                "Значение не является значением объектного типа",
+                "Value is not of object type"));
+        }
     }
 }
