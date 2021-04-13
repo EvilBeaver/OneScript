@@ -510,8 +510,8 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
-                    //if (exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT)
-                    SetScriptExceptionSource(exc);
+                    if (exc.AdditionalInfo == default) // TODO: тут нужно вменяемое условие
+                        SetScriptExceptionSource(exc);
 
                     if (ShouldRethrowException(exc))
                         throw;
@@ -598,7 +598,7 @@ namespace ScriptEngine.Machine
                     _commands[(int) command.Code](command.Argument);
                 }
             }
-            catch (RuntimeException)
+            catch (BslRuntimeException)
             {
                 throw;
             }
@@ -616,19 +616,19 @@ namespace ScriptEngine.Machine
 
         private void SetScriptExceptionSource(RuntimeException exc)
         {
-            var sinfo = new ScriptException();
-            sinfo.LineNumber = _currentFrame.LineNumber;
+            var epi = new ErrorPositionInfo();
+            epi.LineNumber = _currentFrame.LineNumber;
             if (_module.ModuleInfo != null)
             {
-                sinfo.ModuleName = _module.ModuleInfo.ModuleName;
-                sinfo.Code = _module.ModuleInfo.CodeIndexer?.GetCodeLine(sinfo.LineNumber) ?? "<исходный код недоступен>";
+                epi.ModuleName = _module.ModuleInfo.ModuleName;
+                epi.Code = _module.ModuleInfo.CodeIndexer?.GetCodeLine(epi.LineNumber) ?? "<исходный код недоступен>";
             }
             else
             {
-                sinfo.ModuleName = "<имя модуля недоступно>";
-                sinfo.Code = "<исходный код недоступен>";
+                epi.ModuleName = "<имя модуля недоступно>";
+                epi.Code = "<исходный код недоступен>";
             }
-            exc.AdditionalInfo = sinfo;
+            exc.AdditionalInfo = epi;
         }
 
         #region Commands
@@ -2437,12 +2437,7 @@ namespace ScriptEngine.Machine
         {
             if (_currentFrame.LastException != null)
             {
-                ExceptionInfoContext excInfo;
-                if (_currentFrame.LastException is ParametrizedRuntimeException)
-                    excInfo = new ExceptionInfoContext((ParametrizedRuntimeException)_currentFrame.LastException);
-                else
-                    excInfo = new ExceptionInfoContext(_currentFrame.LastException);
-
+                var excInfo = new ExceptionInfoContext(_currentFrame.LastException);
                 _operationStack.Push(excInfo);
             }
             else

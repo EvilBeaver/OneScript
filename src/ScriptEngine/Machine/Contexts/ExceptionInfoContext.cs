@@ -18,24 +18,30 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
     public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
-        readonly ScriptException _exc;
+        private readonly BslRuntimeException _rte;
+        private readonly ScriptException _exc;
         IValue _innerException;
 
         public ExceptionInfoContext()
         {
         }
-        public ExceptionInfoContext(ScriptException source)
-        {
-            _exc = source;
-        }
 
         public ExceptionInfoContext(BslRuntimeException source)
-            : this((ScriptException) source.AdditionalInfo)
         {
+            _rte = source;
+            switch (source.AdditionalInfo)
+            {
+                case ErrorPositionInfo info:
+                    _exc = new ScriptException(info, source.Message, source);
+                    break;
+                case ScriptException info:
+                    _exc = info;
+                    break;
+            }
         }
 
         public ExceptionInfoContext(ParametrizedRuntimeException source)
-            : this((ScriptException) source.AdditionalInfo)
+            : this((BslRuntimeException)source)
         {
             Parameters = source.Parameter;
         }
