@@ -235,7 +235,7 @@ namespace OneScript.Core.Tests
         [InlineData("Ложь", DataType.Boolean, typeof(BslBooleanValue))]
         [InlineData("True", DataType.Boolean, typeof(BslBooleanValue))]
         [InlineData("False", DataType.Boolean, typeof(BslBooleanValue))]
-        [InlineData("20140105", DataType.Date, typeof(BslBooleanValue))]
+        [InlineData("20140105", DataType.Date, typeof(BslDateValue))]
         [InlineData("20140105010101", DataType.Date, typeof(BslDateValue))]
         [InlineData("Неопределено", DataType.Undefined, typeof(BslUndefinedValue))]
         [InlineData("Undefined", DataType.Undefined, typeof(BslUndefinedValue))]
