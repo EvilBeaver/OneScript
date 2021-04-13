@@ -11,20 +11,18 @@ using OneScript.Language;
 
 namespace ScriptEngine.Machine
 {
-    public class RuntimeException : ScriptException
+    //public class RuntimeException : ScriptException
+    public class RuntimeException : BslRuntimeException
     {
         private List<ExecutionFrameInfo> _frames;
-
-        public RuntimeException() : base()
-        {
-        }
 
         public RuntimeException(string msg) : base(msg)
         {
         }
 
         public RuntimeException(string msg, Exception inner)
-            : base(new ErrorPositionInfo(), msg, inner)
+            //: base(new ErrorPositionInfo(), msg, inner)
+            : base(msg)
         {
         }
 

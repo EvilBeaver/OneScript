@@ -18,7 +18,7 @@ namespace OneScript.Values
                 "Сравнение на больше/меньше для данного типа не поддерживается",
                 "Comparison for greater/less than is not supported for this type");
             
-            throw new BslCoreException(message);
+            throw new BslRuntimeException(message);
         }
 
         public override bool Equals(BslValue other) => false;

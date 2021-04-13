@@ -510,8 +510,8 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
-                    if (exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT)
-                        SetScriptExceptionSource(exc);
+                    //if (exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT)
+                    SetScriptExceptionSource(exc);
 
                     if (ShouldRethrowException(exc))
                         throw;
@@ -616,17 +616,19 @@ namespace ScriptEngine.Machine
 
         private void SetScriptExceptionSource(RuntimeException exc)
         {
-            exc.LineNumber = _currentFrame.LineNumber;
+            var sinfo = new ScriptException();
+            sinfo.LineNumber = _currentFrame.LineNumber;
             if (_module.ModuleInfo != null)
             {
-                exc.ModuleName = _module.ModuleInfo.ModuleName;
-                exc.Code = _module.ModuleInfo.CodeIndexer?.GetCodeLine(exc.LineNumber) ?? "<исходный код недоступен>";
+                sinfo.ModuleName = _module.ModuleInfo.ModuleName;
+                sinfo.Code = _module.ModuleInfo.CodeIndexer?.GetCodeLine(sinfo.LineNumber) ?? "<исходный код недоступен>";
             }
             else
             {
-                exc.ModuleName = "<имя модуля недоступно>";
-                exc.Code = "<исходный код недоступен>";
+                sinfo.ModuleName = "<имя модуля недоступно>";
+                sinfo.Code = "<исходный код недоступен>";
             }
+            exc.AdditionalInfo = sinfo;
         }
 
         #region Commands
@@ -1360,7 +1362,7 @@ namespace ScriptEngine.Machine
             for (int i = argCount - 1; i >= 0; i--)
             {
                 var argValue = _operationStack.Pop();
-                if(argValue.IsSkippedArgument())
+                if(!argValue.IsSkippedArgument())
                     argValues[i] = BreakVariableLink(argValue);
             }
 
