@@ -28,6 +28,7 @@ namespace OneScript.Native.Compiler
     {
         private readonly BslMethodInfo _method;
         private readonly List<ParameterExpression> _localVariables = new List<ParameterExpression>();
+        private readonly List<ParameterExpression> _discardedVariables = new List<ParameterExpression>();
         private readonly StatementBlocksWriter _blocks = new StatementBlocksWriter();
         private readonly Stack<Expression> _statementBuildParts = new Stack<Expression>();
         private BslParameterInfo[] _declaredParameters;
@@ -50,7 +51,7 @@ namespace OneScript.Native.Compiler
         
         public void CompileModuleBody(BslMethodInfo method, BslSyntaxNode moduleBodyNode)
         {
-            CompileFragment(moduleBodyNode, Visit);
+            CompileFragment(moduleBodyNode, VisitModuleBody);
         }
         
         private class InternalFlowInterruptException : Exception
@@ -85,9 +86,13 @@ namespace OneScript.Native.Compiler
                 block.MethodReturn, 
                 Expression.Constant(BslUndefinedValue.Instance)));
             
-            var parameters = _localVariables.Take(_declaredParameters.Length).ToArray(); 
+            var parameters = _localVariables.Take(_declaredParameters.Length).ToArray();
+
+            var blockVariables = _localVariables.Skip(parameters.Length)
+                .Concat(_discardedVariables);
+            
             var body = Expression.Block(
-                _localVariables.Skip(parameters.Length).ToArray(),
+                blockVariables.ToArray(),
                 block.GetStatements());
 
             var impl = Expression.Lambda(body, parameters);
@@ -181,8 +186,7 @@ namespace OneScript.Native.Compiler
                 var symbol = Symbols.GetScope(varBinding.ScopeNumber).Variables[varBinding.MemberNumber];
                 if (symbol.MemberInfo == null)
                 {
-                    var local = _localVariables[varBinding.MemberNumber];
-                    _statementBuildParts.Push(local);
+                    WriteLocalVariable(varBinding);
                 }
                 else
                 {
@@ -204,6 +208,40 @@ namespace OneScript.Native.Compiler
                 var variable = Expression.Variable(typeOnStack, identifier);
                 _localVariables.Add(variable);
                 _statementBuildParts.Push(variable);
+            }
+        }
+
+        private void WriteLocalVariable(SymbolBinding varBinding)
+        {
+            var expressionOnStack = _statementBuildParts.Peek();
+            // можем перезаписывать переменную с несовместимым типом
+
+            var local = _localVariables[varBinding.MemberNumber];
+            
+            if (local.Type.IsAssignableFrom(expressionOnStack.Type))
+            {
+                _statementBuildParts.Push(local);
+            }
+            else if (_declaredParameters.Length > varBinding.MemberNumber)
+            {
+                // это параметр метода, его нельзя заменить
+                _statementBuildParts.Push(local); // надеемся на конверсию и dynamic
+            }
+            else
+            {
+                var canBeCasted = ExpressionHelpers.TryStaticConversion(expressionOnStack, local.Type, out var conversion);
+                if (canBeCasted)
+                {
+                    _statementBuildParts.Pop();
+                    _statementBuildParts.Push(conversion);
+                }
+                else
+                {
+                    var newVar = Expression.Variable(expressionOnStack.Type, local.Name);
+                    _localVariables[varBinding.MemberNumber] = newVar;
+                    _statementBuildParts.Push(newVar);
+                    _discardedVariables.Add(local);
+                }
             }
         }
 

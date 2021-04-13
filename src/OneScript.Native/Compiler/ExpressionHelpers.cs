@@ -174,18 +174,33 @@ namespace OneScript.Native.Compiler
 
         public static Expression ConvertToType(Expression value, Type targetType)
         {
+            if (!TryStaticConversion(value, targetType, out var result))
+            {
+                return DynamicallyCastToClrType(value, targetType);
+            }
+
+            return result;
+        }
+
+        public static bool TryStaticConversion(Expression value, Type targetType, out Expression result)
+        {
             if (targetType.IsValue())
             {
-                return ConvertToDynamicValue(value, targetType);
+                result = ConvertToBslValue(value, targetType);
+                return true;
             }
             else
             {
                 var conversion = TryFindConversionOp(value, targetType);
-                if(conversion == null)
-                    return DynamicallyCastToClrType(value, targetType);
-
-                return conversion;
+                if (conversion != null)
+                {
+                    result = conversion;
+                    return true;
+                }
             }
+
+            result = null;
+            return false;
         }
 
         private static Expression TryFindConversionOp(Expression value, Type targetType)
@@ -277,7 +292,7 @@ namespace OneScript.Native.Compiler
             return default;
         }
 
-        private static Expression ConvertToDynamicValue(Expression value, Type targetType)
+        private static Expression ConvertToBslValue(Expression value, Type targetType)
         {
             var factoryClass = GetValueFactoryType(value.Type);
             if (factoryClass == null)

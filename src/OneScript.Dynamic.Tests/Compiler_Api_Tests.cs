@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using FluentAssertions;
 using OneScript.Commons;
 using OneScript.Language;
@@ -33,6 +34,18 @@ namespace OneScript.Dynamic.Tests
         {
             var module = CreateModule("А = 1");
             module.Methods.Should().HaveCount(1);
+        }
+
+        [Fact]
+        public void Can_Replace_Variable_For_Another_Type()
+        {
+            var module = CreateModule("А = 1; А = \"Привет\"");
+            var bodyLambda = module.Methods.First().Implementation;
+            bodyLambda.Compile();
+            var variables = bodyLambda.Body.As<BlockExpression>().Variables;
+            variables.Should().HaveCount(2);
+            variables[0].Name.Should().Be("А");
+            variables[1].Name.Should().Be("А");
         }
         
         private class CompileHelper
