@@ -51,9 +51,9 @@ namespace OneScript.Values
 
         public virtual TypeDescriptor SystemType => BasicTypes.UnknownType;
 
-        public virtual int CompareTo(IValue other) => CompareTo((BslValue) other);
+        public virtual int CompareTo(IValue other) => CompareTo((BslValue) other?.GetRawValue());
 
-        public virtual bool Equals(IValue other) => Equals((BslValue) other);
+        public virtual bool Equals(IValue other) => Equals((BslValue) other?.GetRawValue());
 
         public virtual IValue GetRawValue() => this;
         
