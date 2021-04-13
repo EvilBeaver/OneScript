@@ -32,11 +32,13 @@ namespace OneScript.Values
         public static explicit operator decimal(BslValue target) =>
             target is BslNumericValue v ? (decimal) v :
             target is BslStringValue sv ? (decimal) sv :
+            target is BslBooleanValue bv ? (decimal) bv :
             throw BslExceptions.ConvertToNumberException();
 
         public static explicit operator int(BslValue target) =>
             target is BslNumericValue v ? (int) (decimal) v :
             target is BslStringValue sv ? (int) (decimal) sv :
+            target is BslBooleanValue bv ? (int) (decimal) bv :
             throw BslExceptions.ConvertToNumberException();
 
         public static explicit operator DateTime(BslValue target) =>
