@@ -234,6 +234,7 @@ namespace OneScript.Native.Compiler
                 {
                     _statementBuildParts.Pop();
                     _statementBuildParts.Push(conversion);
+                    _statementBuildParts.Push(local);
                 }
                 else
                 {

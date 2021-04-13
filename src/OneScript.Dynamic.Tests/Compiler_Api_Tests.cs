@@ -15,6 +15,7 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
+using OneScript.Values;
 using Xunit;
 
 namespace OneScript.Dynamic.Tests
@@ -46,6 +47,17 @@ namespace OneScript.Dynamic.Tests
             variables.Should().HaveCount(2);
             variables[0].Name.Should().Be("А");
             variables[1].Name.Should().Be("А");
+        }
+        
+        [Fact]
+        public void DoNot_Replaces_Variable_For_BslValue_Acceptor()
+        {
+            var module = CreateModule("А = Неопределено; А = \"Привет\"");
+            var bodyLambda = module.Methods.First().Implementation;
+            bodyLambda.Compile();
+            var variables = bodyLambda.Body.As<BlockExpression>().Variables;
+            variables.Should().HaveCount(1);
+            variables[0].Type.Should().BeAssignableTo<BslValue>();
         }
         
         private class CompileHelper
