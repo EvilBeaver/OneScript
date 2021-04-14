@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
+using OneScript.Types;
 
 namespace OneScript.Native.Compiler
 {
@@ -17,5 +18,7 @@ namespace OneScript.Native.Compiler
         public IErrorSink Errors { get; set; }
         
         public ModuleInformation Module { get; set; }
+        
+        public ITypeManager TypeManager { get; set; }
     }
 }

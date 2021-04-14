@@ -20,6 +20,7 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
+using OneScript.Types;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler
@@ -33,10 +34,12 @@ namespace OneScript.Native.Compiler
         private BslParameterInfo[] _declaredParameters;
         
         private BinaryOperationCompiler _binaryOperationCompiler = new BinaryOperationCompiler();
-        
+        private readonly ITypeManager _typeManager;
+
         public MethodCompiler(BslWalkerContext walkContext, BslMethodInfo method) : base(walkContext)
         {
             _method = method;
+            _typeManager = walkContext.TypeManager;
         }
 
         public void CompileMethod(MethodNode methodNode)
@@ -855,6 +858,29 @@ namespace OneScript.Native.Compiler
             return Expression.Call(context, symbol.MethodInfo, args);
         }
         
+        #endregion
+
+        #region Constructors
+
+        protected override void VisitNewObjectCreation(NewObjectNode node)
+        {
+            Expression typeName;
+            Type staticallyKnownType = null;
+            if (node.IsDynamic)
+            {
+                typeName = ConvertToExpressionTree(node.TypeNameNode);
+            }
+            else
+            {
+                var typeNameString = node.TypeNameNode.GetIdentifier();
+                typeName = Expression.Constant(typeNameString);
+                var typeDescriptor = _typeManager.GetTypeByName(typeNameString);
+                var factory = _typeManager.GetFactoryFor(typeDescriptor);
+                
+                
+            }
+        }
+
         #endregion
         
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)

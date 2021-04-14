@@ -208,7 +208,12 @@ namespace OneScript.StandardLibrary.Tasks
         [ScriptConstructor]
         public static BackgroundTasksManager Create(TypeActivationContext runtimeContext)
         {
-            return new BackgroundTasksManager(runtimeContext.MachineEnvironment);
+            var machineContext = new MachineEnvironment(
+                runtimeContext.TypeManager,
+                runtimeContext.GlobalNamespace,
+                runtimeContext.GlobalsManager);
+            
+            return new BackgroundTasksManager(machineContext);
         }
     }
 }

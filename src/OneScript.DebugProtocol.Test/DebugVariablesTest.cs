@@ -45,7 +45,7 @@ namespace OneScript.DebugProtocol.Test
             var factory = (TypeFactory)Manager.GetFactoryFor(registeredType);
             return factory.Activate(new TypeActivationContext
             {
-                MachineEnvironment = new MachineEnvironment(Manager, default, default),
+                TypeManager = Manager,
                 TypeName = registeredType.Name
             },args);
         }

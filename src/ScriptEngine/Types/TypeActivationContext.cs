@@ -14,12 +14,10 @@ namespace ScriptEngine.Types
     {
         public string TypeName { get; set; }
         
-        public MachineEnvironment MachineEnvironment { get; set; }
+        public ITypeManager TypeManager { get; set; }
 
-        public ITypeManager TypeManager => MachineEnvironment.TypeManager;
+        public IGlobalsManager GlobalsManager { get; set; }
 
-        public IGlobalsManager GlobalsManager => MachineEnvironment.GlobalInstances;
-
-        public RuntimeEnvironment GlobalNamespace => MachineEnvironment.GlobalNamespace;
+        public RuntimeEnvironment GlobalNamespace { get; set; }
     }
 }

@@ -71,7 +71,7 @@ namespace OneScript.Dynamic.Tests
                     CodeIndexer = _codeIndexer,
                     Origin = "<text>",
                     ModuleName = "<test>"
-                }, _module, scopes);
+                }, _module, scopes, null);
             }
         }
         
