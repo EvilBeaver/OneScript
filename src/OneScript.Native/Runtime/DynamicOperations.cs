@@ -91,7 +91,7 @@ namespace OneScript.Native.Runtime
             };
         }
 
-        public static BslValue WrapToValue(object value)
+        public static BslValue WrapClrObjectToValue(object value)
         {
             return value switch
             {

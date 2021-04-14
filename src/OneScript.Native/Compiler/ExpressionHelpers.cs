@@ -303,7 +303,7 @@ namespace OneScript.Native.Compiler
                     // просто верим, что он BslValue
                     var meth = _operationsCache.GetOrAdd(
                         typeof(DynamicOperations),
-                        nameof(DynamicOperations.WrapToValue));
+                        nameof(DynamicOperations.WrapClrObjectToValue));
                     return Expression.Call(meth, value);
                 }
                 throw new CompilerException(new BilingualString(
@@ -351,15 +351,6 @@ namespace OneScript.Native.Compiler
             return factoryClass;
         }
 
-        private static BslValue ConvertRuntimeObject(object value)
-        {
-            var type = value.GetType();
-            if (type.IsValue())
-                return (BslValue)value;
-
-            return DynamicOperations.WrapToValue(value);
-        }
-
         public static bool IsInteger(this Type type)
         {
             switch (Type.GetTypeCode(type))
@@ -376,6 +367,11 @@ namespace OneScript.Native.Compiler
                 default:
                     return false;
             }
+        }
+
+        public static Expression AssignmentRule(Expression left, Expression right)
+        {
+            throw new NotImplementedException();
         }
     }
 }

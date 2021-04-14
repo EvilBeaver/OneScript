@@ -28,7 +28,6 @@ namespace OneScript.Native.Compiler
     {
         private readonly BslMethodInfo _method;
         private readonly List<ParameterExpression> _localVariables = new List<ParameterExpression>();
-        private readonly List<ParameterExpression> _discardedVariables = new List<ParameterExpression>();
         private readonly StatementBlocksWriter _blocks = new StatementBlocksWriter();
         private readonly Stack<Expression> _statementBuildParts = new Stack<Expression>();
         private BslParameterInfo[] _declaredParameters;
@@ -88,8 +87,7 @@ namespace OneScript.Native.Compiler
             
             var parameters = _localVariables.Take(_declaredParameters.Length).ToArray();
 
-            var blockVariables = _localVariables.Skip(parameters.Length)
-                .Concat(_discardedVariables);
+            var blockVariables = _localVariables.Skip(parameters.Length);
             
             var body = Expression.Block(
                 blockVariables.ToArray(),
@@ -238,10 +236,10 @@ namespace OneScript.Native.Compiler
                 }
                 else
                 {
-                    var newVar = Expression.Variable(expressionOnStack.Type, local.Name);
-                    _localVariables[varBinding.MemberNumber] = newVar;
-                    _statementBuildParts.Push(newVar);
-                    _discardedVariables.Add(local);
+                    // Функция замены переменной с тем же именем, но на другой тип - это не очень хорошо для циклов.
+                    // Предсказуемость сильно падает
+                    
+                    _statementBuildParts.Push(local); // надеемся на конверсию и dynamic
                 }
             }
         }
