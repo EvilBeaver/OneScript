@@ -184,7 +184,8 @@ namespace OneScript.Native.Compiler
                 var symbol = Symbols.GetScope(varBinding.ScopeNumber).Variables[varBinding.MemberNumber];
                 if (symbol.MemberInfo == null)
                 {
-                    WriteLocalVariable(varBinding);
+                    var local = _localVariables[varBinding.MemberNumber];
+                    _statementBuildParts.Push(local);
                 }
                 else
                 {
@@ -206,41 +207,6 @@ namespace OneScript.Native.Compiler
                 var variable = Expression.Variable(typeOnStack, identifier);
                 _localVariables.Add(variable);
                 _statementBuildParts.Push(variable);
-            }
-        }
-
-        private void WriteLocalVariable(SymbolBinding varBinding)
-        {
-            var expressionOnStack = _statementBuildParts.Peek();
-            // можем перезаписывать переменную с несовместимым типом
-
-            var local = _localVariables[varBinding.MemberNumber];
-            
-            if (local.Type.IsAssignableFrom(expressionOnStack.Type))
-            {
-                _statementBuildParts.Push(local);
-            }
-            else if (_declaredParameters.Length > varBinding.MemberNumber)
-            {
-                // это параметр метода, его нельзя заменить
-                _statementBuildParts.Push(local); // надеемся на конверсию и dynamic
-            }
-            else
-            {
-                var canBeCasted = ExpressionHelpers.TryStaticConversion(expressionOnStack, local.Type, out var conversion);
-                if (canBeCasted)
-                {
-                    _statementBuildParts.Pop();
-                    _statementBuildParts.Push(conversion);
-                    _statementBuildParts.Push(local);
-                }
-                else
-                {
-                    // Функция замены переменной с тем же именем, но на другой тип - это не очень хорошо для циклов.
-                    // Предсказуемость сильно падает
-                    
-                    _statementBuildParts.Push(local); // надеемся на конверсию и dynamic
-                }
             }
         }
 
