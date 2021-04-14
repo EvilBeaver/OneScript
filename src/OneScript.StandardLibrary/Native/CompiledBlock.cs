@@ -76,6 +76,13 @@ namespace OneScript.StandardLibrary.Native
             }
         }
 
+        [ContextMethod("Скомпилировать", "Compile")]
+        public DelegateAction Compile()
+        {
+            var method = CreateDelegate();
+            return new DelegateAction(method);
+        }
+
         public Func<BslValue[], BslValue> CreateDelegate()
         {
             var l = MakeExpression();
