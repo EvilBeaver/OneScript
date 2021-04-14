@@ -205,6 +205,9 @@ namespace OneScript.Native.Compiler
                 // can create variable
                 var typeOnStack = _statementBuildParts.Peek().Type;
 
+                if (typeOnStack == typeof(BslUndefinedValue))
+                    typeOnStack = typeof(BslValue);
+                
                 var scope = Symbols.TopScope();
                 scope.AddVariable(identifier, typeOnStack);
                 var variable = Expression.Variable(typeOnStack, identifier);
@@ -236,6 +239,8 @@ namespace OneScript.Native.Compiler
                     _blocks.Add(left);
                     return;
                 }
+
+                throw new NotSupportedException($"Dynamic operation {dyn.Binder} is not supported");
             }
             else if (left.NodeType == ExpressionType.Call)
             {
@@ -243,8 +248,9 @@ namespace OneScript.Native.Compiler
                 return;
             }
             
-            var right = _statementBuildParts.Pop();
-            _blocks.Add(MakeAssign(left, right));
+            var right = ExpressionHelpers.CreateAssignmentSource(_statementBuildParts.Pop(), left.Type);
+            
+            _blocks.Add(Expression.Assign(left, right));
         }
 
         protected override void VisitAssignmentLeftPart(BslSyntaxNode node)
@@ -435,16 +441,6 @@ namespace OneScript.Native.Compiler
                 AddError(e.Message, binaryOperationNode.Location);
                 return null;
             }
-        }
-        
-        private Expression MakeAssign(Expression left, Expression right)
-        {
-            if (!left.Type.IsAssignableFrom(right.Type))
-            {
-                right = ExpressionHelpers.ConvertToType(right, left.Type);
-            }
-            
-            return Expression.Assign(left, right);
         }
         
         protected override void VisitReturnNode(BslSyntaxNode node)

@@ -496,5 +496,20 @@ namespace OneScript.Core.Tests
             var time = (decimal)(BslNumericValue)eratosphenes(N, arr);
             time.Should().NotBe(0);
         }
+
+        [Fact]
+        public void Undefined_To_Object_Makes_NullObject()
+        {
+            var tm = new DefaultTypeManager();
+            var arrayType = tm.RegisterClass(typeof(ArrayImpl));
+            var blockCompiler = new CompiledBlock(tm);
+            blockCompiler.Parameters.Insert("А", new BslTypeValue(arrayType));
+            blockCompiler.CodeBlock = "А = Неопределено";
+
+            var lambda = blockCompiler.MakeExpression();
+            var assignment = lambda.Body.As<BlockExpression>().Expressions[0].As<BinaryExpression>();
+            assignment.Right.Should().BeAssignableTo<DefaultExpression>();
+            assignment.Type.Should().Be(typeof(ArrayImpl));
+        }
     }
 }

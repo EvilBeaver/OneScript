@@ -176,6 +176,7 @@ namespace OneScript.Native.Compiler
         {
             if (!TryStaticConversion(value, targetType, out var result))
             {
+                throw new Exception("Fucked UP!");
                 return DynamicallyCastToClrType(value, targetType);
             }
 
@@ -184,9 +185,17 @@ namespace OneScript.Native.Compiler
 
         public static bool TryStaticConversion(Expression value, Type targetType, out Expression result)
         {
-            if (targetType.IsValue())
+            if (targetType == typeof(BslValue))
             {
                 result = ConvertToBslValue(value, targetType);
+                return true;
+            }
+            else if (typeof(BslObjectValue).IsAssignableFrom(targetType) && value.Type == typeof(BslUndefinedValue))
+            {
+                // это присваивание Неопределено
+                // в переменную строго типизированного объекта
+                // просто обнуляем переменную, не меняя тип на Неопределено
+                result = Expression.Default(targetType);
                 return true;
             }
             else
@@ -294,6 +303,9 @@ namespace OneScript.Native.Compiler
 
         private static Expression ConvertToBslValue(Expression value, Type targetType)
         {
+            if (value.Type.IsValue())
+                return value;
+            
             var factoryClass = GetValueFactoryType(value.Type);
             if (factoryClass == null)
             {
@@ -369,9 +381,25 @@ namespace OneScript.Native.Compiler
             }
         }
 
-        public static Expression AssignmentRule(Expression left, Expression right)
+        public static Expression CreateAssignmentSource(Expression source, Type targetType)
         {
-            throw new NotImplementedException();
+            if (targetType == typeof(BslValue) && source.Type.IsValue())
+            {
+                // это универсальный вариант - не нужны конверсии
+                return source;
+            }
+            
+            // возможно прямое clr-присваивание
+            if (targetType.IsAssignableFrom(source.Type))
+                return source;
+
+            var canBeCasted = TryStaticConversion(source, targetType, out var conversion);
+            if (canBeCasted)
+                return conversion;
+            
+            throw new CompilerException(new BilingualString(
+                $"Преобразование из типа {targetType} в тип {source.Type} не поддерживается",
+                $"Conversion from type {targetType} into {source.Type} is not supported"));
         }
     }
 }
