@@ -156,7 +156,7 @@ namespace OneScript.StandardLibrary.Native
                 Symbols = Symbols
             }, methodInfo);
             
-            methodCompiler.CompileModuleBody(methodInfo, _ast);
+            methodCompiler.CompileModuleBody(methodInfo, _ast.Children.FirstOrDefault(x => x.Kind == NodeKind.ModuleBody));
             return methodInfo.Implementation;
         }
 

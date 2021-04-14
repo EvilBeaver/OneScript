@@ -50,7 +50,10 @@ namespace OneScript.Native.Compiler
         
         public void CompileModuleBody(BslMethodInfo method, BslSyntaxNode moduleBodyNode)
         {
-            CompileFragment(moduleBodyNode, VisitModuleBody);
+            if(moduleBodyNode != default)
+                CompileFragment(moduleBodyNode, VisitModuleBody);
+            else
+                CompileFragment(null, n => {});
         }
         
         private class InternalFlowInterruptException : Exception
