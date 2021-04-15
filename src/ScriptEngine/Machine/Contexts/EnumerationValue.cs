@@ -6,10 +6,11 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using OneScript.Types;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    abstract public class EnumerationValue : IValue
+    public abstract class EnumerationValue : BslValue
     {
         readonly EnumerationContext _owner;
 
@@ -40,29 +41,9 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual TypeDescriptor SystemType => _owner.ValuesType;
 
-        public virtual decimal AsNumber()
-        {
-            throw RuntimeException.ConvertToNumberException();
-        }
-
-        public virtual DateTime AsDate()
-        {
-            throw RuntimeException.ConvertToDateException();
-        }
-
-        public virtual bool AsBoolean()
-        {
-            throw RuntimeException.ConvertToBooleanException();
-        }
-
-        public virtual string AsString()
+        public override string ToString()
         {
             return ValuePresentation == null ? SystemType.Name : ValuePresentation;
-        }
-
-        public virtual IRuntimeContextInstance AsObject()
-        {
-            throw RuntimeException.ValueIsNotObjectException();
         }
 
         public IValue GetRawValue()
@@ -70,7 +51,7 @@ namespace ScriptEngine.Machine.Contexts
             return this;
         }
 
-        public virtual int CompareTo(IValue other)
+        public override int CompareTo(BslValue other)
         {
             if (other != null)
             {
@@ -91,9 +72,9 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public virtual bool Equals(IValue other)
+        public override bool Equals(BslValue other)
         {
-            return other.GetRawValue() == this;
+            return other?.GetRawValue() == this;
         }
     }
 }

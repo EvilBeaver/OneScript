@@ -29,7 +29,7 @@ namespace ScriptEngine.Machine.Contexts
         public ExceptionInfoContext(BslRuntimeException source)
         {
             _rte = source;
-            switch (source.AdditionalInfo)
+            switch (source.RuntimeSpecificInfo)
             {
                 case ErrorPositionInfo info:
                     _exc = new ScriptException(info, source.Message, source);

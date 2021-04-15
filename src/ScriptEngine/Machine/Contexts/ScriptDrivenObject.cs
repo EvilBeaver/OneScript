@@ -156,7 +156,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             var id = GetScriptMethod(methodName);
             if (id == -1)
-                throw RuntimeException.MethodNotFoundException(methodName, AsString());
+                throw RuntimeException.MethodNotFoundException(methodName, SystemType.Name);
 
             return (args) => CallScriptMethod(id, args);
         }

@@ -813,8 +813,11 @@ namespace OneScript.Native.Compiler
                     typeof(object).GetMethod("ToString"));
                 
                 var exceptionType = typeof(BslRuntimeException);
-                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString)});
-                var exceptionExpression = Expression.New(ctor, Expression.Convert(expression, typeof(BilingualString)));
+                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString), typeof(object)});
+                var exceptionExpression = Expression.New(
+                    ctor, 
+                    Expression.Convert(expression, typeof(BilingualString)),
+                    Expression.Default(typeof(object)));
                 _blocks.Add(Expression.Throw(exceptionExpression));
             }
             base.VisitRaiseNode(node);

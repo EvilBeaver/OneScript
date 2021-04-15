@@ -12,11 +12,15 @@ namespace OneScript.Commons
 {
     public class BslRuntimeException : BslCoreException
     {
-        public BslRuntimeException(BilingualString message, object additionalInfo = null) : base(message)
+        public BslRuntimeException(BilingualString message, object runtimeSpecificInfo) : base(message)
         {
-            AdditionalInfo = additionalInfo;
+            RuntimeSpecificInfo = runtimeSpecificInfo;
+        }
+        
+        public BslRuntimeException(BilingualString message) : base(message)
+        {
         }
 
-        public object AdditionalInfo { get; set; }
+        public object RuntimeSpecificInfo { get; set; }
     }
 }

@@ -61,68 +61,19 @@ namespace ScriptEngine.Machine
             switch (type)
             {
                 case DataType.Boolean:
-
-                    if (String.Compare(presentation, "истина", StringComparison.OrdinalIgnoreCase) == 0 
-                        || String.Compare(presentation, "true", StringComparison.OrdinalIgnoreCase) == 0 
-                        || String.Compare(presentation, "да", StringComparison.OrdinalIgnoreCase) == 0)
-                        result = ValueFactory.Create(true);
-                    else if (String.Compare(presentation, "ложь", StringComparison.OrdinalIgnoreCase) == 0 
-                             || String.Compare(presentation, "false", StringComparison.OrdinalIgnoreCase) == 0
-                             || String.Compare(presentation, "нет", StringComparison.OrdinalIgnoreCase) == 0)
-                        result = ValueFactory.Create(false);
-                    else
-                        throw RuntimeException.ConvertToBooleanException();
-
+                    result = BslBooleanValue.Parse(presentation);
                     break;
                 case DataType.Date:
-                    string format;
-                    if (presentation.Length == 14)
-                        format = "yyyyMMddHHmmss";
-                    else if (presentation.Length == 8)
-                        format = "yyyyMMdd";
-                    else if (presentation.Length == 12)
-                        format = "yyyyMMddHHmm";
-                    else
-                        throw RuntimeException.ConvertToDateException();
-
-                    if (presentation == "00000000"
-                     || presentation == "000000000000"
-                     || presentation == "00000000000000")
-                    {
-                        result = ValueFactory.Create(new DateTime());
-                    }
-                    else
-                        try
-                        {
-                            result = ValueFactory.Create(DateTime.ParseExact(presentation, format, System.Globalization.CultureInfo.InvariantCulture));
-                        }
-                        catch (FormatException)
-                        {
-                            throw RuntimeException.ConvertToDateException();
-                        }
-
+                    result = BslDateValue.Parse(presentation);
                     break;
                 case DataType.Number:
-                    var numInfo = NumberFormatInfo.InvariantInfo;
-                    var numStyle = NumberStyles.AllowDecimalPoint
-                                |NumberStyles.AllowLeadingSign
-                                |NumberStyles.AllowLeadingWhite
-                                |NumberStyles.AllowTrailingWhite;
-
-                    try
-                    {
-                        result = ValueFactory.Create(Decimal.Parse(presentation, numStyle, numInfo));
-                    }
-                    catch (FormatException)
-                    {
-                        throw RuntimeException.ConvertToNumberException();
-                    }
+                    result = BslNumericValue.Parse(presentation);
                     break;
                 case DataType.String:
-                    result = ValueFactory.Create(presentation);
+                    result = BslStringValue.Create(presentation);
                     break;
                 case DataType.Undefined:
-                    result = ValueFactory.Create();
+                    result = BslUndefinedValue.Instance;
                     break;
                 case DataType.GenericValue:
                     if (string.Compare(presentation, "null", StringComparison.OrdinalIgnoreCase) == 0)

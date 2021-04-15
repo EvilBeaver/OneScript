@@ -63,42 +63,12 @@ namespace ScriptEngine.Machine.Contexts
                 return _type;
             }
         }
-
-        public decimal AsNumber()
-        {
-            throw RuntimeException.ConvertToNumberException();
-        }
-
-        public DateTime AsDate()
-        {
-            throw RuntimeException.ConvertToDateException();
-        }
-
-        public bool AsBoolean()
-        {
-            throw RuntimeException.ConvertToBooleanException();
-        }
-
-        public virtual string AsString()
-        {
-            return SystemType.Name;
-        }
-
-        public IRuntimeContextInstance AsObject()
-        {
-            return this;
-        }
-
-        public IValue GetRawValue()
-        {
-            return this;
-        }
-
+        
         #endregion
 
         #region IComparable<IValue> Members
 
-        public int CompareTo(IValue other)
+        public override int CompareTo(IValue other)
         {
             if (other.SystemType.Equals(this.SystemType))
             {
@@ -121,7 +91,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IEquatable<IValue> Members
 
-        public virtual bool Equals(IValue other)
+        public override bool Equals(IValue other)
         {
             if (other == null)
                 return false;
