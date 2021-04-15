@@ -138,7 +138,7 @@ namespace OneScript.Native.Compiler
             catch (Exception e)
             {
                 RestoreNestingLevel(nestingLevel);
-                if (e is BslRuntimeException)
+                if (e is BslCoreException)
                     throw;
 
                 var msg = new BilingualString(
@@ -812,12 +812,11 @@ namespace OneScript.Native.Compiler
                     _statementBuildParts.Pop(),
                     typeof(object).GetMethod("ToString"));
                 
-                var exceptionType = typeof(BslRuntimeException);
-                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString), typeof(object)});
+                var exceptionType = typeof(BslCoreException);
+                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString)});
                 var exceptionExpression = Expression.New(
                     ctor, 
-                    Expression.Convert(expression, typeof(BilingualString)),
-                    Expression.Default(typeof(object)));
+                    Expression.Convert(expression, typeof(BilingualString)));
                 _blocks.Add(Expression.Throw(exceptionExpression));
             }
             base.VisitRaiseNode(node);

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
@@ -120,12 +121,22 @@ namespace OneScript.StandardLibrary
                 return false;
             }
 
-            switch (value)
+            switch (value.GetRawValue())
             {
                 case IEmptyValueCheck emptyHandler:
                     return !emptyHandler.IsEmpty;
+                case BslStringValue v:
+                    return !string.IsNullOrWhiteSpace(v.ToString());
                 case ICollectionContext collection:
                     return collection.Count() != 0;
+                case BslNumericValue v:
+                    return v != 0;
+                case BslUndefinedValue v:
+                    return false;
+                case BslNullValue v:
+                    return false;
+                case BslDateValue v:
+                    return !((DateTime)v).Equals(DateTime.MinValue);
                 default:
                     return true;
             }

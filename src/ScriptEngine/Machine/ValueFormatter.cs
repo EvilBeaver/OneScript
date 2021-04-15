@@ -39,7 +39,7 @@ namespace ScriptEngine.Machine
 
             string formattedValue;
 
-            switch(value)
+            switch(value.GetRawValue())
             {
                 case BslBooleanValue _:
                     formattedValue = FormatBoolean(value.AsBoolean(), formatParameters);

@@ -101,7 +101,7 @@ namespace ScriptEngine.Machine
 
             if (op1 is BslDateValue date && op2.SystemType == BasicTypes.Number)
             {
-                return Create(date + op1.AsNumber());
+                return Create(date + op2.AsNumber());
             }
 
             // все к числовому типу.

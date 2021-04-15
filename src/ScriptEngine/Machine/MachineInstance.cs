@@ -835,7 +835,7 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Sub(op1, op2));
+            _operationStack.Push(ValueFactory.Sub(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
         }
 

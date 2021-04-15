@@ -11,28 +11,28 @@ namespace OneScript.Commons
 {
     public static class BslExceptions
     {
-        public static BslRuntimeException ConvertToNumberException()
+        public static BslCoreException ConvertToNumberException()
         {
             return new TypeConversionException(new BilingualString(
                 "Преобразование к типу 'Число' не поддерживается",
                 "Conversion to type 'Number' is not supported"));
         }
 
-        public static BslRuntimeException ConvertToBooleanException()
+        public static BslCoreException ConvertToBooleanException()
         {
             return new TypeConversionException(new BilingualString(
                 "Преобразование к типу 'Булево' не поддерживается",
                 "Conversion to type 'Boolean' is not supported"));
         }
 
-        public static BslRuntimeException ConvertToDateException()
+        public static BslCoreException ConvertToDateException()
         {
             return new TypeConversionException(new BilingualString(
                 "Преобразование к типу 'Дата' не поддерживается",
                 "Conversion to type 'Date' is not supported"));
         }
 
-        public static BslRuntimeException ValueIsNotObjectException()
+        public static BslCoreException ValueIsNotObjectException()
         {
             return new TypeConversionException(new BilingualString(
                 "Значение не является значением объектного типа",
