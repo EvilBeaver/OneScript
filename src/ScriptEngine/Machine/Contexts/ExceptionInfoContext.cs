@@ -18,7 +18,6 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
     public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
-        private readonly BslRuntimeException _rte;
         private readonly ScriptException _exc;
         IValue _innerException;
 
@@ -26,24 +25,22 @@ namespace ScriptEngine.Machine.Contexts
         {
         }
 
-        public ExceptionInfoContext(BslRuntimeException source)
+        public ExceptionInfoContext(BslCoreException source)
         {
-            _rte = source;
-            switch (source.AdditionalInfo)
+            if (source is ScriptException scriptException)
             {
-                case ErrorPositionInfo info:
-                    _exc = new ScriptException(info, source.Message, source);
-                    break;
-                case ScriptException info:
-                    _exc = info;
-                    break;
+                _exc = scriptException;
+            }
+            else
+            {
+                _exc = new ScriptException(source);
             }
         }
-
+        
         public ExceptionInfoContext(ParametrizedRuntimeException source)
-            : this((BslRuntimeException)source)
         {
             Parameters = source.Parameter;
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -131,8 +128,8 @@ namespace ScriptEngine.Machine.Contexts
         /// <returns></returns>
         [ContextMethod("ПолучитьСтекВызовов", "GetStackTrace")]
         public IValue GetStackTrace()
-        { /*
-            if (_exc is RuntimeException rte)
+        {
+            if (_exc.InnerException is RuntimeException rte)
             {
                 var frames = rte.CallStackFrames;
                 if (frames == null)
@@ -140,7 +137,7 @@ namespace ScriptEngine.Machine.Contexts
 
                 return new StackTraceCollectionContext(frames);
             }
-            else */
+            else
                 return ValueFactory.Create();
         }
 
@@ -166,9 +163,9 @@ namespace ScriptEngine.Machine.Contexts
 
         private IValue CreateInnerExceptionInfo()
         {
-            //if (_exc.InnerException == null)
+            if (_exc.InnerException == null)
                 return ValueFactory.Create();
-            /*
+            
             bool alreadyWrapped = _exc is ExternalSystemException;
             if (!alreadyWrapped)
             {
@@ -199,7 +196,7 @@ namespace ScriptEngine.Machine.Contexts
 
                 return new ExceptionInfoContext(inner);
             }
-            */
+            
         }
 
         /// <summary>
