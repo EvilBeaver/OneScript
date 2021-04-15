@@ -1376,8 +1376,7 @@ namespace ScriptEngine.Machine
             {
                 TypeName = typeName,
                 TypeManager = _mem.TypeManager,
-                GlobalNamespace = _mem.GlobalNamespace,
-                GlobalsManager = _mem.GlobalInstances
+                Services = _mem.Services
             };
             
             var instance = factory.Activate(context, argValues);

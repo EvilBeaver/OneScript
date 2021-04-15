@@ -59,13 +59,8 @@ namespace ScriptEngine.HostedScript
             _env.InjectObject(dynLoader, false);
             manager.RegisterInstance(dynLoader);
 
-            var bgTasksManager = new BackgroundTasksManager(MakeEnvironment(_engine));
+            var bgTasksManager = new BackgroundTasksManager(_engine.Services.Resolve<MachineEnvironment>());
             _env.InjectGlobalProperty(bgTasksManager, "ФоновыеЗадания", "BackgroundJobs", true);
-        }
-
-        private static MachineEnvironment MakeEnvironment(ScriptingEngine engine)
-        {
-            return new MachineEnvironment(engine.TypeManager, engine.Environment, engine.GlobalsManager);
         }
         
         public ScriptingEngine EngineInstance => _engine;
