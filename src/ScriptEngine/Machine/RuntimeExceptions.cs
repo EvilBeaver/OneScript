@@ -11,23 +11,18 @@ using OneScript.Language;
 
 namespace ScriptEngine.Machine
 {
-    public class RuntimeException : ScriptException
+    public class RuntimeException : BslRuntimeException
     {
         private List<ExecutionFrameInfo> _frames;
-
-        public RuntimeException() : base()
-        {
-        }
 
         public RuntimeException(string msg) : base(msg)
         {
         }
-
-        public RuntimeException(string msg, Exception inner)
-            : base(new ErrorPositionInfo(), msg, inner)
-        {
-        }
-
+        
+        public RuntimeException(string msg, object additionalInfo)
+            : base(msg, additionalInfo)
+        {}
+        
         public IEnumerable<ExecutionFrameInfo> GetStackTrace()
         {
             return _frames.AsReadOnly();

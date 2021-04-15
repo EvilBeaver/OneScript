@@ -36,8 +36,8 @@ namespace OneScript.Core.Tests
 
             Assert.True(BslBooleanValue.True.CompareTo(BslBooleanValue.False) > 0);
 
-            Assert.Throws<RuntimeException>(() => BslBooleanValue.True.AsDate());
-            Assert.Throws<RuntimeException>(() => BslBooleanValue.True.AsObject());
+            Assert.ThrowsAny<BslRuntimeException>(() => BslBooleanValue.True.AsDate());
+            Assert.ThrowsAny<BslRuntimeException>(() => BslBooleanValue.True.AsObject());
         }
 
         [Theory]
@@ -76,8 +76,8 @@ namespace OneScript.Core.Tests
             Assert.True(num4.CompareTo(num3) < 0);
 
             Assert.Equal("12.5", num1.AsString());
-            Assert.Throws<RuntimeException>(() => num1.AsDate());
-            Assert.Throws<RuntimeException>(() => num1.AsObject());
+            Assert.ThrowsAny<BslRuntimeException>(() => num1.AsDate());
+            Assert.ThrowsAny<BslRuntimeException>(() => num1.AsObject());
         }
 
         [Fact]
@@ -111,8 +111,8 @@ namespace OneScript.Core.Tests
             var numString = ValueFactory.Create("012.12");
             Assert.True(numString.AsNumber() == 12.12m);
 
-            Assert.Throws<RuntimeException>(() => dateString.AsObject());
-            Assert.Throws<RuntimeException>(() => trueString.AsNumber());
+            Assert.ThrowsAny<BslRuntimeException>(() => dateString.AsObject());
+            Assert.ThrowsAny<BslRuntimeException>(() => trueString.AsNumber());
         }
         
         [Fact]
@@ -122,10 +122,10 @@ namespace OneScript.Core.Tests
             Assert.True(value.SystemType == BasicTypes.Undefined);
             Assert.True(value.AsString() == "");
 
-            Assert.Throws<RuntimeException>(() => value.AsNumber());
-            Assert.Throws<RuntimeException>(() => value.AsBoolean());
-            Assert.Throws<RuntimeException>(() => value.AsObject());
-            Assert.Throws<RuntimeException>(() => value.AsDate());
+            Assert.ThrowsAny<BslRuntimeException>(() => value.AsNumber());
+            Assert.ThrowsAny<BslRuntimeException>(() => value.AsBoolean());
+            Assert.ThrowsAny<BslRuntimeException>(() => value.AsObject());
+            Assert.ThrowsAny<BslRuntimeException>(() => value.AsDate());
         }
 
         [Fact]
@@ -136,10 +136,10 @@ namespace OneScript.Core.Tests
             Assert.True(ReferenceEquals(value, BslNullValue.Instance));
             Assert.True(value.AsString() == "");
 
-            Assert.Throws<RuntimeException>(() => value.AsNumber());
-            Assert.Throws<RuntimeException>(() => value.AsBoolean());
-            Assert.Throws<RuntimeException>(() => value.AsObject());
-            Assert.Throws<RuntimeException>(() => value.AsDate());
+            Assert.ThrowsAny<BslRuntimeException>(() => value.AsNumber());
+            Assert.ThrowsAny<BslRuntimeException>(() => value.AsBoolean());
+            Assert.ThrowsAny<BslRuntimeException>(() => value.AsObject());
+            Assert.ThrowsAny<BslRuntimeException>(() => value.AsDate());
         }
 
         [Fact]
@@ -149,10 +149,10 @@ namespace OneScript.Core.Tests
             Assert.True(typeValue.SystemType == BasicTypes.Type);
             Assert.Equal("Строка", typeValue.AsString());
 
-            Assert.Throws<RuntimeException>(() => typeValue.AsNumber());
-            Assert.Throws<RuntimeException>(() => typeValue.AsBoolean());
-            Assert.Throws<RuntimeException>(() => typeValue.AsObject());
-            Assert.Throws<RuntimeException>(() => typeValue.AsDate());
+            Assert.ThrowsAny<BslRuntimeException>(() => typeValue.AsNumber());
+            Assert.ThrowsAny<BslRuntimeException>(() => typeValue.AsBoolean());
+            Assert.ThrowsAny<BslRuntimeException>(() => typeValue.AsObject());
+            Assert.ThrowsAny<BslRuntimeException>(() => typeValue.AsDate());
 
         }
 
@@ -176,8 +176,8 @@ namespace OneScript.Core.Tests
             var num1 = ValueFactory.Create(1);
             var num2 = ValueFactory.Create("2");
 
-            Assert.Throws<RuntimeException>(() => num1.CompareTo(num2));
-            Assert.Throws<RuntimeException>(() => num2.CompareTo(num1));
+            Assert.ThrowsAny<BslRuntimeException>(() => num1.CompareTo(num2));
+            Assert.ThrowsAny<BslRuntimeException>(() => num2.CompareTo(num1));
         }
 
         [Fact]
@@ -186,18 +186,8 @@ namespace OneScript.Core.Tests
             var v1 = ValueFactory.Create();
             var v2 = ValueFactory.Create(true);
 
-            try
-            {
-                v1.CompareTo(v2);
-            }
-            catch(RuntimeException e)
-            {
-                var validExc = RuntimeException.ComparisonNotSupportedException();
-                Assert.True(e.Message == validExc.Message);
-                return;
-            }
-
-            throw new Exception("No exception thrown");
+            //TODO: типизировать исключение ComparisonNotSupportedException
+            Assert.ThrowsAny<BslRuntimeException>(() => v1.CompareTo(v2));
         }
 
         [Fact]
@@ -235,7 +225,7 @@ namespace OneScript.Core.Tests
         [InlineData("Ложь", DataType.Boolean, typeof(BslBooleanValue))]
         [InlineData("True", DataType.Boolean, typeof(BslBooleanValue))]
         [InlineData("False", DataType.Boolean, typeof(BslBooleanValue))]
-        [InlineData("20140105", DataType.Date, typeof(BslBooleanValue))]
+        [InlineData("20140105", DataType.Date, typeof(BslDateValue))]
         [InlineData("20140105010101", DataType.Date, typeof(BslDateValue))]
         [InlineData("Неопределено", DataType.Undefined, typeof(BslUndefinedValue))]
         [InlineData("Undefined", DataType.Undefined, typeof(BslUndefinedValue))]

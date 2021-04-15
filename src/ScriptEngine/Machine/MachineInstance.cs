@@ -510,7 +510,7 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
-                    if (exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT)
+                    if (exc.AdditionalInfo == default) // TODO: тут нужно вменяемое условие
                         SetScriptExceptionSource(exc);
 
                     if (ShouldRethrowException(exc))
@@ -598,7 +598,7 @@ namespace ScriptEngine.Machine
                     _commands[(int) command.Code](command.Argument);
                 }
             }
-            catch (RuntimeException)
+            catch (BslRuntimeException)
             {
                 throw;
             }
@@ -616,17 +616,19 @@ namespace ScriptEngine.Machine
 
         private void SetScriptExceptionSource(RuntimeException exc)
         {
-            exc.LineNumber = _currentFrame.LineNumber;
+            var epi = new ErrorPositionInfo();
+            epi.LineNumber = _currentFrame.LineNumber;
             if (_module.ModuleInfo != null)
             {
-                exc.ModuleName = _module.ModuleInfo.ModuleName;
-                exc.Code = _module.ModuleInfo.CodeIndexer?.GetCodeLine(exc.LineNumber) ?? "<исходный код недоступен>";
+                epi.ModuleName = _module.ModuleInfo.ModuleName;
+                epi.Code = _module.ModuleInfo.CodeIndexer?.GetCodeLine(epi.LineNumber) ?? "<исходный код недоступен>";
             }
             else
             {
-                exc.ModuleName = "<имя модуля недоступно>";
-                exc.Code = "<исходный код недоступен>";
+                epi.ModuleName = "<имя модуля недоступно>";
+                epi.Code = "<исходный код недоступен>";
             }
+            exc.AdditionalInfo = epi;
         }
 
         #region Commands
@@ -1360,7 +1362,7 @@ namespace ScriptEngine.Machine
             for (int i = argCount - 1; i >= 0; i--)
             {
                 var argValue = _operationStack.Pop();
-                if(argValue.IsSkippedArgument())
+                if(!argValue.IsSkippedArgument())
                     argValues[i] = BreakVariableLink(argValue);
             }
 
@@ -2436,12 +2438,7 @@ namespace ScriptEngine.Machine
         {
             if (_currentFrame.LastException != null)
             {
-                ExceptionInfoContext excInfo;
-                if (_currentFrame.LastException is ParametrizedRuntimeException)
-                    excInfo = new ExceptionInfoContext((ParametrizedRuntimeException)_currentFrame.LastException);
-                else
-                    excInfo = new ExceptionInfoContext(_currentFrame.LastException);
-
+                var excInfo = new ExceptionInfoContext(_currentFrame.LastException);
                 _operationStack.Push(excInfo);
             }
             else

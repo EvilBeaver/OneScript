@@ -138,7 +138,7 @@ namespace OneScript.Native.Compiler
             catch (Exception e)
             {
                 RestoreNestingLevel(nestingLevel);
-                if (e is BslCoreException)
+                if (e is BslRuntimeException)
                     throw;
 
                 var msg = new BilingualString(

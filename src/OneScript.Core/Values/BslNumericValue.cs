@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Dynamic;
 using System.Globalization;
+using OneScript.Commons;
 using OneScript.Types;
 
 namespace OneScript.Values
@@ -283,9 +284,7 @@ namespace OneScript.Values
             }
             catch (FormatException)
             {
-                // TODO: сделать исключение правильного Runtime типа
-                throw;
-                //throw RuntimeException.ConvertToNumberException();
+                throw BslExceptions.ConvertToNumberException();
             }
         }
     }
