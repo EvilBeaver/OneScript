@@ -510,7 +510,7 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
-                    if (exc.RuntimeSpecificInfo == default) // TODO: тут нужно вменяемое условие
+                    if(exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT) 
                         SetScriptExceptionSource(exc);
 
                     if (ShouldRethrowException(exc))
@@ -628,7 +628,9 @@ namespace ScriptEngine.Machine
                 epi.ModuleName = "<имя модуля недоступно>";
                 epi.Code = "<исходный код недоступен>";
             }
-            exc.RuntimeSpecificInfo = epi;
+            exc.Code = epi.Code;
+            exc.LineNumber = epi.LineNumber;
+            exc.ModuleName = epi.ModuleName;
         }
 
         #region Commands

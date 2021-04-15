@@ -11,18 +11,23 @@ using OneScript.Language;
 
 namespace ScriptEngine.Machine
 {
-    public class RuntimeException : BslRuntimeException
+    public class RuntimeException : ScriptException
     {
         private List<ExecutionFrameInfo> _frames;
+
+        public RuntimeException() : base()
+        {
+        }
 
         public RuntimeException(string msg) : base(msg)
         {
         }
-        
-        public RuntimeException(string msg, object runtimeSpecificInfo)
-            : base(msg, runtimeSpecificInfo)
-        {}
-        
+
+        public RuntimeException(string msg, Exception inner)
+            : base(new ErrorPositionInfo(), msg, inner)
+        {
+        }
+
         public IEnumerable<ExecutionFrameInfo> GetStackTrace()
         {
             return _frames.AsReadOnly();
@@ -38,6 +43,21 @@ namespace ScriptEngine.Machine
         public static RuntimeException DeprecatedMethodCall(string name)
         {
             return new RuntimeException($"Вызов безнадёжно устаревшего метода {name}");
+        }
+
+        public static RuntimeException ConvertToNumberException()
+        {
+            return new RuntimeException("Преобразование к типу 'Число' не поддерживается");
+        }
+
+        public static RuntimeException ConvertToBooleanException()
+        {
+            return new RuntimeException("Преобразование к типу 'Булево' не поддерживается");
+        }
+
+        public static RuntimeException ConvertToDateException()
+        {
+            return new RuntimeException("Преобразование к типу 'Дата' не поддерживается");
         }
 
         public static RuntimeException PropIsNotReadableException(string prop)
@@ -63,6 +83,11 @@ namespace ScriptEngine.Machine
         public static RuntimeException MethodNotFoundException(string methodName, string objectName)
         {
             return new RuntimeException($"Метод объекта не обнаружен ({{{objectName}}}::{methodName})");
+        }
+
+        public static RuntimeException ValueIsNotObjectException()
+        {
+            return new RuntimeException("Значение не является значением объектного типа");
         }
 
         public static RuntimeException TooManyArgumentsPassed()

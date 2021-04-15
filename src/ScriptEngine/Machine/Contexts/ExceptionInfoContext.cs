@@ -18,29 +18,20 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
     public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
-        private readonly ScriptException _exc;
+        readonly ScriptException _exc;
         IValue _innerException;
 
-        public ExceptionInfoContext()
+        public ExceptionInfoContext(ScriptException source)
         {
+            if (source == null)
+                throw new ArgumentNullException();
+            
+            _exc = source;
         }
 
-        public ExceptionInfoContext(BslCoreException source)
-        {
-            if (source is ScriptException scriptException)
-            {
-                _exc = scriptException;
-            }
-            else
-            {
-                _exc = new ScriptException(source);
-            }
-        }
-        
-        public ExceptionInfoContext(ParametrizedRuntimeException source)
+        public ExceptionInfoContext(ParametrizedRuntimeException source):this((ScriptException)source)
         {
             Parameters = source.Parameter;
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -129,7 +120,7 @@ namespace ScriptEngine.Machine.Contexts
         [ContextMethod("ПолучитьСтекВызовов", "GetStackTrace")]
         public IValue GetStackTrace()
         {
-            if (_exc.InnerException is RuntimeException rte)
+            if (_exc is RuntimeException rte)
             {
                 var frames = rte.CallStackFrames;
                 if (frames == null)
@@ -165,7 +156,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (_exc.InnerException == null)
                 return ValueFactory.Create();
-            
+
             bool alreadyWrapped = _exc is ExternalSystemException;
             if (!alreadyWrapped)
             {
@@ -196,7 +187,6 @@ namespace ScriptEngine.Machine.Contexts
 
                 return new ExceptionInfoContext(inner);
             }
-            
         }
 
         /// <summary>

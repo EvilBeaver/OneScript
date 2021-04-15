@@ -7,14 +7,19 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Text;
-using OneScript.Commons;
 
 namespace OneScript.Language
 {
-    public class ScriptException : BslCoreException
+    public class ScriptException : ApplicationException
     {
         private readonly ErrorPositionInfo _codePosition;
-        
+
+        public ScriptException() 
+        {
+            _codePosition = new ErrorPositionInfo();
+            _codePosition.LineNumber = -1;
+        }
+
         public ScriptException(string message)
             : this(new ErrorPositionInfo(), message, null)
         {
