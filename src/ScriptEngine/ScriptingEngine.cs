@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OneScript.DependencyInjection;
 using OneScript.Types;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine;
@@ -28,7 +29,8 @@ namespace ScriptEngine
             IGlobalsManager globals,
             RuntimeEnvironment env,
             ICompilerServiceFactory compilerFactory, 
-            ConfigurationProviders configurationProviders)
+            ConfigurationProviders configurationProviders,
+            IServiceContainer services)
         {
             Configuration = configurationProviders;
             _compilerFactory = compilerFactory;
@@ -40,9 +42,12 @@ namespace ScriptEngine
             
             Loader = new ScriptSourceFactory();
             ContextDiscoverer = new ContextDiscoverer(types, globals);
+            Services = services;
             
             ApplyConfiguration(Configuration.CreateConfig());
         }
+
+        public IServiceContainer Services { get; }
 
         private void ApplyConfiguration(KeyValueConfig config)
         {
@@ -101,7 +106,7 @@ namespace ScriptEngine
 
         public void UpdateContexts()
         {
-            var mem = new MachineEnvironment(TypeManager, Environment, GlobalsManager);
+            var mem = Services.Resolve<MachineEnvironment>();
             MachineInstance.Current.SetMemory(mem);
         }
 

@@ -174,18 +174,42 @@ namespace OneScript.Native.Compiler
 
         public static Expression ConvertToType(Expression value, Type targetType)
         {
-            if (targetType.IsValue())
+            if (!TryStaticConversion(value, targetType, out var result))
             {
-                return ConvertToDynamicValue(value, targetType);
+                throw new Exception("Fucked UP!");
+                return DynamicallyCastToClrType(value, targetType);
+            }
+
+            return result;
+        }
+
+        public static bool TryStaticConversion(Expression value, Type targetType, out Expression result)
+        {
+            if (targetType == typeof(BslValue))
+            {
+                result = ConvertToBslValue(value, targetType);
+                return true;
+            }
+            else if (typeof(BslObjectValue).IsAssignableFrom(targetType) && value.Type == typeof(BslUndefinedValue))
+            {
+                // это присваивание Неопределено
+                // в переменную строго типизированного объекта
+                // просто обнуляем переменную, не меняя тип на Неопределено
+                result = Expression.Default(targetType);
+                return true;
             }
             else
             {
                 var conversion = TryFindConversionOp(value, targetType);
-                if(conversion == null)
-                    return DynamicallyCastToClrType(value, targetType);
-
-                return conversion;
+                if (conversion != null)
+                {
+                    result = conversion;
+                    return true;
+                }
             }
+
+            result = null;
+            return false;
         }
 
         private static Expression TryFindConversionOp(Expression value, Type targetType)
@@ -277,8 +301,11 @@ namespace OneScript.Native.Compiler
             return default;
         }
 
-        private static Expression ConvertToDynamicValue(Expression value, Type targetType)
+        private static Expression ConvertToBslValue(Expression value, Type targetType)
         {
+            if (value.Type.IsValue())
+                return value;
+            
             var factoryClass = GetValueFactoryType(value.Type);
             if (factoryClass == null)
             {
@@ -288,7 +315,7 @@ namespace OneScript.Native.Compiler
                     // просто верим, что он BslValue
                     var meth = _operationsCache.GetOrAdd(
                         typeof(DynamicOperations),
-                        nameof(DynamicOperations.WrapToValue));
+                        nameof(DynamicOperations.WrapClrObjectToValue));
                     return Expression.Call(meth, value);
                 }
                 throw new CompilerException(new BilingualString(
@@ -336,15 +363,6 @@ namespace OneScript.Native.Compiler
             return factoryClass;
         }
 
-        private static BslValue ConvertRuntimeObject(object value)
-        {
-            var type = value.GetType();
-            if (type.IsValue())
-                return (BslValue)value;
-
-            return DynamicOperations.WrapToValue(value);
-        }
-
         public static bool IsInteger(this Type type)
         {
             switch (Type.GetTypeCode(type))
@@ -361,6 +379,27 @@ namespace OneScript.Native.Compiler
                 default:
                     return false;
             }
+        }
+
+        public static Expression CreateAssignmentSource(Expression source, Type targetType)
+        {
+            if (targetType == typeof(BslValue) && source.Type.IsValue())
+            {
+                // это универсальный вариант - не нужны конверсии
+                return source;
+            }
+            
+            // возможно прямое clr-присваивание
+            if (targetType.IsAssignableFrom(source.Type))
+                return source;
+
+            var canBeCasted = TryStaticConversion(source, targetType, out var conversion);
+            if (canBeCasted)
+                return conversion;
+            
+            throw new CompilerException(new BilingualString(
+                $"Преобразование из типа {targetType} в тип {source.Type} не поддерживается",
+                $"Conversion from type {targetType} into {source.Type} is not supported"));
         }
     }
 }

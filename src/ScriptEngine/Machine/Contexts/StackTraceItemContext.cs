@@ -24,7 +24,7 @@ namespace ScriptEngine.Machine.Contexts
         [ContextProperty("ИмяМодуля", CanWrite = false)]
         public string ModuleName { get; set; }
 
-        public override string AsString()
+        public override string ToString()
         {
             return $"{Method}: {LineNumber} ({ModuleName})";
         }

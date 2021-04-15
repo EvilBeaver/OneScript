@@ -87,7 +87,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             var methId = GetScriptMethod("ОбработкаПолученияПредставления", "PresentationGetProcessing");
             if (methId == -1)
-                _asStringOverride = base.AsString;
+                _asStringOverride = base.ConvertToString;
             else
             {
                 var signature = GetMethodInfo(methId);
@@ -112,7 +112,7 @@ namespace ScriptEngine.Machine.Contexts
             CallScriptMethod(methId, arguments);
 
             if (arguments[1].AsBoolean() == true)
-                return base.AsString();
+                return base.ConvertToString();
 
             return arguments[0].AsString();
         }
@@ -277,7 +277,7 @@ namespace ScriptEngine.Machine.Contexts
             return GetOwnMethodCount() + _module.Methods.Length;
         }
 
-        public override string AsString()
+        protected override string ConvertToString()
         {
             return _asStringOverride();
         }

@@ -6,7 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Linq;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -22,11 +24,16 @@ namespace OneScript.StandardLibrary
         private const string MethodName_Ru = "Выполнить";
         private const string MethodName_En = "Execute";
 
-        private DelegateAction(Func<IValue[], IValue> action)
+        public DelegateAction(Func<IValue[], IValue> action)
         {
             _action = action;
         }
 
+        public DelegateAction(Func<BslValue[], BslValue> action)
+        {
+            _action = parameters => (IValue)action(parameters.Cast<BslValue>().ToArray());
+        }
+        
         public override bool DynamicMethodSignatures => true;
 
         public override int FindMethod(string name)

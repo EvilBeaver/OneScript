@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 
-namespace ScriptEngine.Hosting
+namespace OneScript.DependencyInjection
 {
     public interface IServiceDefinitions
     {

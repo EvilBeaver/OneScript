@@ -6,7 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using FluentAssertions;
 using OneScript.Commons;
 using OneScript.Language;
@@ -14,6 +16,7 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
+using OneScript.Values;
 using Xunit;
 
 namespace OneScript.Dynamic.Tests
@@ -34,7 +37,7 @@ namespace OneScript.Dynamic.Tests
             var module = CreateModule("А = 1");
             module.Methods.Should().HaveCount(1);
         }
-        
+    
         private class CompileHelper
         {
             private IErrorSink _errors = new ListErrorSink();
@@ -68,7 +71,7 @@ namespace OneScript.Dynamic.Tests
                     CodeIndexer = _codeIndexer,
                     Origin = "<text>",
                     ModuleName = "<test>"
-                }, _module, scopes);
+                }, _module, scopes, null);
             }
         }
         

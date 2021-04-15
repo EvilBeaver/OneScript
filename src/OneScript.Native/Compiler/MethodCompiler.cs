@@ -20,6 +20,7 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
+using OneScript.Types;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler
@@ -33,10 +34,12 @@ namespace OneScript.Native.Compiler
         private BslParameterInfo[] _declaredParameters;
         
         private BinaryOperationCompiler _binaryOperationCompiler = new BinaryOperationCompiler();
-        
+        private readonly ITypeManager _typeManager;
+
         public MethodCompiler(BslWalkerContext walkContext, BslMethodInfo method) : base(walkContext)
         {
             _method = method;
+            _typeManager = walkContext.TypeManager;
         }
 
         public void CompileMethod(MethodNode methodNode)
@@ -50,7 +53,10 @@ namespace OneScript.Native.Compiler
         
         public void CompileModuleBody(BslMethodInfo method, BslSyntaxNode moduleBodyNode)
         {
-            CompileFragment(moduleBodyNode, Visit);
+            if(moduleBodyNode != default)
+                CompileFragment(moduleBodyNode, VisitModuleBody);
+            else
+                CompileFragment(null, n => {});
         }
         
         private class InternalFlowInterruptException : Exception
@@ -85,9 +91,12 @@ namespace OneScript.Native.Compiler
                 block.MethodReturn, 
                 Expression.Constant(BslUndefinedValue.Instance)));
             
-            var parameters = _localVariables.Take(_declaredParameters.Length).ToArray(); 
+            var parameters = _localVariables.Take(_declaredParameters.Length).ToArray();
+
+            var blockVariables = _localVariables.Skip(parameters.Length);
+            
             var body = Expression.Block(
-                _localVariables.Skip(parameters.Length).ToArray(),
+                blockVariables.ToArray(),
                 block.GetStatements());
 
             var impl = Expression.Lambda(body, parameters);
@@ -199,6 +208,9 @@ namespace OneScript.Native.Compiler
                 // can create variable
                 var typeOnStack = _statementBuildParts.Peek().Type;
 
+                if (typeOnStack == typeof(BslUndefinedValue))
+                    typeOnStack = typeof(BslValue);
+                
                 var scope = Symbols.TopScope();
                 scope.AddVariable(identifier, typeOnStack);
                 var variable = Expression.Variable(typeOnStack, identifier);
@@ -230,6 +242,8 @@ namespace OneScript.Native.Compiler
                     _blocks.Add(left);
                     return;
                 }
+
+                throw new NotSupportedException($"Dynamic operation {dyn.Binder} is not supported");
             }
             else if (left.NodeType == ExpressionType.Call)
             {
@@ -237,8 +251,9 @@ namespace OneScript.Native.Compiler
                 return;
             }
             
-            var right = _statementBuildParts.Pop();
-            _blocks.Add(MakeAssign(left, right));
+            var right = ExpressionHelpers.CreateAssignmentSource(_statementBuildParts.Pop(), left.Type);
+            
+            _blocks.Add(Expression.Assign(left, right));
         }
 
         protected override void VisitAssignmentLeftPart(BslSyntaxNode node)
@@ -429,16 +444,6 @@ namespace OneScript.Native.Compiler
                 AddError(e.Message, binaryOperationNode.Location);
                 return null;
             }
-        }
-        
-        private Expression MakeAssign(Expression left, Expression right)
-        {
-            if (!left.Type.IsAssignableFrom(right.Type))
-            {
-                right = ExpressionHelpers.ConvertToType(right, left.Type);
-            }
-            
-            return Expression.Assign(left, right);
         }
         
         protected override void VisitReturnNode(BslSyntaxNode node)
@@ -808,8 +813,11 @@ namespace OneScript.Native.Compiler
                     typeof(object).GetMethod("ToString"));
                 
                 var exceptionType = typeof(BslRuntimeException);
-                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString)});
-                var exceptionExpression = Expression.New(ctor, Expression.Convert(expression, typeof(BilingualString)));
+                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString), typeof(object)});
+                var exceptionExpression = Expression.New(
+                    ctor, 
+                    Expression.Convert(expression, typeof(BilingualString)),
+                    Expression.Default(typeof(object)));
                 _blocks.Add(Expression.Throw(exceptionExpression));
             }
             base.VisitRaiseNode(node);
@@ -853,6 +861,29 @@ namespace OneScript.Native.Compiler
             return Expression.Call(context, symbol.MethodInfo, args);
         }
         
+        #endregion
+
+        #region Constructors
+
+        protected override void VisitNewObjectCreation(NewObjectNode node)
+        {
+            Expression typeName;
+            Type staticallyKnownType = null;
+            if (node.IsDynamic)
+            {
+                typeName = ConvertToExpressionTree(node.TypeNameNode);
+            }
+            else
+            {
+                var typeNameString = node.TypeNameNode.GetIdentifier();
+                typeName = Expression.Constant(typeNameString);
+                var typeDescriptor = _typeManager.GetTypeByName(typeNameString);
+                var factory = _typeManager.GetFactoryFor(typeDescriptor);
+                
+                
+            }
+        }
+
         #endregion
         
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)

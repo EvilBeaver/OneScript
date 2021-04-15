@@ -8,8 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using FluentAssertions;
+using OneScript.DependencyInjection;
 using ScriptEngine;
-using ScriptEngine.Hosting;
 using Xunit;
 
 namespace OneScript.Core.Tests

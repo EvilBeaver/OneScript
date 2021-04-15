@@ -13,6 +13,7 @@ using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;
+using OneScript.Types;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler
@@ -20,7 +21,8 @@ namespace OneScript.Native.Compiler
     public class ModuleCompiler : ExpressionTreeGeneratorBase
     {
         private DynamicModule _module;
-        
+        private ITypeManager  _typeManager;
+
         public ModuleCompiler(IErrorSink errors) : base(errors)
         {
         }
@@ -28,10 +30,12 @@ namespace OneScript.Native.Compiler
         public DynamicModule Compile(
             ModuleInformation moduleInfo,
             BslSyntaxNode moduleNode,
-            SymbolTable symbols
+            SymbolTable symbols,
+            ITypeManager typeManager
             )
         {
             InitContext(Errors, moduleInfo, symbols);
+            _typeManager = typeManager;
             
             _module = new DynamicModule
             {
@@ -41,6 +45,13 @@ namespace OneScript.Native.Compiler
             Visit(moduleNode);
 
             return _module;
+        }
+
+        protected override BslWalkerContext MakeContext()
+        {
+            var c = base.MakeContext();
+            c.TypeManager = _typeManager;
+            return c;
         }
 
         /// <summary>

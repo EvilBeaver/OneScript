@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Commons;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Types;
@@ -28,20 +29,20 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public decimal AsNumber()
         {
-            throw RuntimeException.ConvertToNumberException();
+            throw BslExceptions.ConvertToNumberException();
         }
 
         public DateTime AsDate()
         {
-            throw RuntimeException.ConvertToDateException();
+            throw BslExceptions.ConvertToDateException();
         }
 
         public bool AsBoolean()
         {
-            throw RuntimeException.ConvertToBooleanException();
+            throw BslExceptions.ConvertToBooleanException();
         }
 
-        public virtual string AsString()
+        public override string ToString()
         {
             return SystemType.Name;
         }

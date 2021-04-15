@@ -60,7 +60,8 @@ namespace OneScript.Native.Compiler
                 {
                     Name = attr.GetName(),
                     Alias = attr.GetAlias(),
-                    MemberInfo = info
+                    MemberInfo = info,
+                    Target = target
                 };
 
                 scope.AddVariable(symbol);

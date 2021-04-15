@@ -5,20 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Language;
-using OneScript.Language.SyntaxAnalysis;
-using OneScript.Types;
+using OneScript.DependencyInjection;
 
-namespace OneScript.Native.Compiler
+namespace OneScript.Types
 {
-    public class BslWalkerContext
+    public struct TypeActivationContext
     {
-        public SymbolTable Symbols { get; set; }
-        
-        public IErrorSink Errors { get; set; }
-        
-        public ModuleInformation Module { get; set; }
+        public string TypeName { get; set; }
         
         public ITypeManager TypeManager { get; set; }
+
+        public IServiceContainer Services { get; set; }
     }
 }

@@ -69,7 +69,7 @@ namespace OneScript.StandardLibrary.Binary
 
         public byte[] Buffer => _buffer;
 
-        public override string AsString()
+        protected override string ConvertToString()
         {
             if (_buffer.Length == 0)
                 return "";

@@ -19,8 +19,8 @@ namespace ScriptEngine.Machine
         {
         }
         
-        public RuntimeException(string msg, object additionalInfo)
-            : base(msg, additionalInfo)
+        public RuntimeException(string msg, object runtimeSpecificInfo)
+            : base(msg, runtimeSpecificInfo)
         {}
         
         public IEnumerable<ExecutionFrameInfo> GetStackTrace()
@@ -38,21 +38,6 @@ namespace ScriptEngine.Machine
         public static RuntimeException DeprecatedMethodCall(string name)
         {
             return new RuntimeException($"Вызов безнадёжно устаревшего метода {name}");
-        }
-
-        public static RuntimeException ConvertToNumberException()
-        {
-            return new RuntimeException("Преобразование к типу 'Число' не поддерживается");
-        }
-
-        public static RuntimeException ConvertToBooleanException()
-        {
-            return new RuntimeException("Преобразование к типу 'Булево' не поддерживается");
-        }
-
-        public static RuntimeException ConvertToDateException()
-        {
-            return new RuntimeException("Преобразование к типу 'Дата' не поддерживается");
         }
 
         public static RuntimeException PropIsNotReadableException(string prop)
@@ -78,11 +63,6 @@ namespace ScriptEngine.Machine
         public static RuntimeException MethodNotFoundException(string methodName, string objectName)
         {
             return new RuntimeException($"Метод объекта не обнаружен ({{{objectName}}}::{methodName})");
-        }
-
-        public static RuntimeException ValueIsNotObjectException()
-        {
-            return new RuntimeException("Значение не является значением объектного типа");
         }
 
         public static RuntimeException TooManyArgumentsPassed()

@@ -58,6 +58,6 @@ namespace OneScript.StandardLibrary.Xml
                 return base.Equals(other);
         }
 
-        public override string AsString() => $"{{{NamespaceURI}}}{LocalName}";
+        protected override string ConvertToString() => $"{{{NamespaceURI}}}{LocalName}";
     }
 }

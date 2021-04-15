@@ -260,8 +260,12 @@ namespace OneScript.StandardLibrary.XDTO
         #region Constructors
 
         [ScriptConstructor(Name = "По умолчанию")]
-        public static XDTOSerializer CreateInstance(TypeActivationContext context) => new XDTOSerializer(context.TypeManager, context.GlobalsManager);
-        
+        public static XDTOSerializer CreateInstance(TypeActivationContext context)
+        {
+            var globalsManager = context.Services.Resolve<IGlobalsManager>();
+            return new XDTOSerializer(context.TypeManager, globalsManager);
+        }
+
         #endregion
 
         #endregion

@@ -510,7 +510,7 @@ namespace ScriptEngine.Machine
                 }
                 catch (RuntimeException exc)
                 {
-                    if (exc.AdditionalInfo == default) // TODO: тут нужно вменяемое условие
+                    if (exc.RuntimeSpecificInfo == default) // TODO: тут нужно вменяемое условие
                         SetScriptExceptionSource(exc);
 
                     if (ShouldRethrowException(exc))
@@ -598,11 +598,11 @@ namespace ScriptEngine.Machine
                     _commands[(int) command.Code](command.Argument);
                 }
             }
-            catch (BslRuntimeException)
+            catch (ScriptInterruptionException)
             {
                 throw;
             }
-            catch (ScriptInterruptionException)
+            catch (BslRuntimeException)
             {
                 throw;
             }
@@ -628,7 +628,7 @@ namespace ScriptEngine.Machine
                 epi.ModuleName = "<имя модуля недоступно>";
                 epi.Code = "<исходный код недоступен>";
             }
-            exc.AdditionalInfo = epi;
+            exc.RuntimeSpecificInfo = epi;
         }
 
         #region Commands
@@ -1377,7 +1377,8 @@ namespace ScriptEngine.Machine
             var context = new TypeActivationContext
             {
                 TypeName = typeName,
-                MachineEnvironment = _mem
+                TypeManager = _mem.TypeManager,
+                Services = _mem.Services
             };
             
             var instance = factory.Activate(context, argValues);
