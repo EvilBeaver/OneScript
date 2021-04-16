@@ -29,7 +29,7 @@ using ScriptEngine.Types;
 namespace OneScript.StandardLibrary.Native
 {
     [ContextClass("СкомпилированныйФрагмент", "CompiledCodeBlock")]
-    public class CompiledBlock
+    public class CompiledBlock : AutoContext<CompiledBlock>
     {
         private string _codeBlock;
         private BslSyntaxNode _ast;
@@ -148,6 +148,8 @@ namespace OneScript.StandardLibrary.Native
 
             if (Symbols == null)
                 Symbols = new OneScript.Native.Compiler.SymbolTable();
+            
+            Symbols.AddScope(SymbolScope.FromContext(new StandardGlobalContext()));
             
             var methodInfo = CreateMethodInfo();
             var moduleInfo = new ModuleInformation

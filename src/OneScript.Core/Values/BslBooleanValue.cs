@@ -68,7 +68,7 @@ namespace OneScript.Values
         {
             return _flag? _stringTrue.ToString() : _stringFalse.ToString();
         }
-
+        
         public override bool Equals(BslValue other)
         {
             if (ReferenceEquals(null, other))
@@ -76,7 +76,17 @@ namespace OneScript.Values
             if (ReferenceEquals(this, other))
                 return true;
 
-            return other.Equals(this);
+            return false;
+        }
+
+        public override int CompareTo(BslValue other)
+        {
+            if (other is BslNumericValue || other is BslBooleanValue)
+            {
+                return ((decimal)this).CompareTo((decimal)other);
+            }
+
+            return base.CompareTo(other);
         }
 
         public static BslValue Create(bool boolean)
