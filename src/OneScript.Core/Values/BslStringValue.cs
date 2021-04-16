@@ -44,5 +44,18 @@ namespace OneScript.Values
         {
             return other is BslStringValue sv ? _value.Equals(sv._value) : base.Equals(other);
         }
+
+        public override int CompareTo(BslValue other)
+        {
+            if (ReferenceEquals(null, other))
+                return -1;
+            
+            if (other is BslStringValue s)
+                return String.Compare(_value, s._value, StringComparison.Ordinal);
+            if (other is BslUndefinedValue)
+                return 1;
+
+            return base.CompareTo(other);
+        }
     }
 }

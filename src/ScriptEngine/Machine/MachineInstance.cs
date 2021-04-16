@@ -837,7 +837,7 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Sub(op1, op2));
+            _operationStack.Push(ValueFactory.Sub(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
         }
 
@@ -845,7 +845,7 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Mul(op1, op2));
+            _operationStack.Push(ValueFactory.Mul(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
         }
 
@@ -853,7 +853,7 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Div(op1, op2));
+            _operationStack.Push(ValueFactory.Div(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
         }
 
@@ -861,68 +861,68 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Mod(op1, op2));
+            _operationStack.Push(ValueFactory.Mod(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
         }
 
         private void Neg(int arg)
         {
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Neg(op1));
+            _operationStack.Push(ValueFactory.Neg(op1.GetRawValue()));
             NextInstruction();
         }
 
         private void Equals(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.Equals(op2)));
             NextInstruction();
         }
 
         private void Less(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) < 0));
             NextInstruction();
         }
 
         private void Greater(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) > 0));
             NextInstruction();
         }
 
         private void LessOrEqual(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) <= 0));
             NextInstruction();
         }
 
         private void GreaterOrEqual(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) >= 0));
             NextInstruction();
         }
 
         private void NotEqual(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(!op1.Equals(op2)));
             NextInstruction();
         }
 
         private void Not(int arg)
         {
-            var op1 = _operationStack.Pop();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(!op1.AsBoolean()));
             NextInstruction();
         }
@@ -2395,10 +2395,10 @@ namespace ScriptEngine.Machine
         {
             System.Diagnostics.Debug.Assert(argCount > 0);
 
-            IValue min = _operationStack.Pop();
+            IValue min = _operationStack.Pop().GetRawValue();
             while (--argCount > 0)
             {
-                var current = _operationStack.Pop();
+                var current = _operationStack.Pop().GetRawValue();
                 if (current.CompareTo(min) < 0)
                     min = current;
             }

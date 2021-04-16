@@ -50,6 +50,20 @@ namespace OneScript.Values
                 throw BslExceptions.ConvertToBooleanException();
         }
 
+        public override int CompareTo(BslValue other)
+        {
+            if (ReferenceEquals(null, other))
+                return -1;
+            
+            if (other is BslBooleanValue b)
+                return _flag.CompareTo(b._flag);
+
+            if (other is BslNumericValue n)
+                return _flag.CompareTo((bool)n);
+
+            return base.CompareTo(other);
+        }
+
         public override string ToString()
         {
             return _flag? _stringTrue.ToString() : _stringFalse.ToString();

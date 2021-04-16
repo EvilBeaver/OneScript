@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using OneScript.Commons;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine.Values;
@@ -101,7 +102,7 @@ namespace ScriptEngine.Machine
 
             if (op1 is BslDateValue date && op2.SystemType == BasicTypes.Number)
             {
-                return Create(date + op1.AsNumber());
+                return Create(date + op2.AsNumber());
             }
 
             // все к числовому типу.
@@ -110,6 +111,9 @@ namespace ScriptEngine.Machine
 
         public static IValue Sub(IValue op1, IValue op2)
         {
+            // принимаем только RawValue
+            Debug.Assert(!(op1 is IVariable || op2 is IVariable));
+            
             if (op1 is BslNumericValue n)
             {
                 return Create(n - op2.AsNumber());
@@ -131,11 +135,17 @@ namespace ScriptEngine.Machine
 
         public static IValue Mul(IValue op1, IValue op2)
         {
+            // принимаем только RawValue
+            Debug.Assert(!(op1 is IVariable || op2 is IVariable));
+            
             return Create(op1.AsNumber() * op2.AsNumber());
         }
 
         public static IValue Div(IValue op1, IValue op2)
         {
+            // принимаем только RawValue
+            Debug.Assert(!(op1 is IVariable || op2 is IVariable));
+            
             if (op2.AsNumber() == 0)
             {
                 throw RuntimeException.DivideByZero();
@@ -145,6 +155,9 @@ namespace ScriptEngine.Machine
 
         public static IValue Mod(IValue op1, IValue op2)
         {
+            // принимаем только RawValue
+            Debug.Assert(!(op1 is IVariable || op2 is IVariable));
+            
             if (op2.AsNumber() == 0)
             {
                 throw RuntimeException.DivideByZero();
@@ -154,6 +167,9 @@ namespace ScriptEngine.Machine
 
         public static IValue Neg(IValue op1)
         {
+            // принимаем только RawValue
+            Debug.Assert(!(op1 is IVariable));
+            
             return Create(op1.AsNumber() * -1);
         }
     }

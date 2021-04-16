@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Values;
@@ -119,6 +120,9 @@ namespace OneScript.StandardLibrary
             {
                 return false;
             }
+
+            if (value is BslUndefinedValue)
+                return false;
 
             switch (value)
             {
