@@ -33,7 +33,7 @@ namespace OneScript.Values
             target is BslNumericValue v ? (decimal) v :
             target is BslStringValue sv ? (decimal) sv :
             target is BslBooleanValue bv ? (decimal) bv :
-            throw BslExceptions.ConvertToNumberException();
+            throw BslExceptions.ConvertToNumberException(target);
 
         public static explicit operator int(BslValue target) =>
             target is BslNumericValue v ? (int) (decimal) v :
