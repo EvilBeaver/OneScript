@@ -9,7 +9,7 @@ using OneScript.Commons;
 
 namespace ScriptEngine.Machine
 {
-    public class ParametrizedRuntimeException : BslRuntimeException
+    public class ParametrizedRuntimeException : RuntimeException
     {
         public ParametrizedRuntimeException(string msg, IValue parameter) : base(msg)
         {

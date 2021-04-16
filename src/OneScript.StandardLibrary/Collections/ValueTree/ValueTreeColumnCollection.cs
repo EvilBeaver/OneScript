@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Commons;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -217,7 +218,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             var column = FindColumnByName(name);
             if (column == null)
-                throw RuntimeException.PropNotFoundException(name);
+                throw OldRuntimeException.PropNotFoundException(name);
             return _columns.IndexOf(column);
         }
 
@@ -247,7 +248,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             {
                 var column = FindColumnByName(index.AsString());
                 if (column == null)
-                    throw RuntimeException.PropNotFoundException(index.AsString());
+                    throw OldRuntimeException.PropNotFoundException(index.AsString());
                 return column;
             }
 
@@ -328,7 +329,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
                     var column = FindColumnByName(name.Trim());
 
                     if (column == null)
-                        throw RuntimeException.PropNotFoundException(name.Trim());
+                        throw OldRuntimeException.PropNotFoundException(name.Trim());
 
                     processingList.Add(column);
                 }

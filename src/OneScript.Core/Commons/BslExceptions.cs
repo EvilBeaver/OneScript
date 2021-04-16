@@ -25,7 +25,7 @@ namespace OneScript.Commons
             return  $"{typeDescription}: {presentation}";
         }
         
-        public static BslRuntimeException ConvertToNumberException(object source = null)
+        public static RuntimeException ConvertToNumberException(object source = null)
         {
             var sourceTypeInfo = SourceTypeInfo(source);
             return new TypeConversionException(new BilingualString(
@@ -33,21 +33,21 @@ namespace OneScript.Commons
                 $"{sourceTypeInfo}Conversion to type 'Number' is not supported"));
         }
 
-        public static BslRuntimeException ConvertToBooleanException()
+        public static RuntimeException ConvertToBooleanException()
         {
             return new TypeConversionException(new BilingualString(
                 "Преобразование к типу 'Булево' не поддерживается",
                 "Conversion to type 'Boolean' is not supported"));
         }
 
-        public static BslRuntimeException ConvertToDateException()
+        public static RuntimeException ConvertToDateException()
         {
             return new TypeConversionException(new BilingualString(
                 "Преобразование к типу 'Дата' не поддерживается",
                 "Conversion to type 'Date' is not supported"));
         }
 
-        public static BslRuntimeException ValueIsNotObjectException()
+        public static RuntimeException ValueIsNotObjectException()
         {
             return new TypeConversionException(new BilingualString(
                 "Значение не является значением объектного типа",

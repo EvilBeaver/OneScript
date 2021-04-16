@@ -812,7 +812,7 @@ namespace OneScript.Native.Compiler
                     _statementBuildParts.Pop(),
                     typeof(object).GetMethod("ToString"));
                 
-                var exceptionType = typeof(BslRuntimeException);
+                var exceptionType = typeof(RuntimeException);
                 var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString), typeof(object)});
                 var exceptionExpression = Expression.New(
                     ctor, 

@@ -119,7 +119,7 @@ namespace OneScript.StandardLibrary
                 var idx = target.FindMethod(methodName);
                 return idx >= 0;
             }
-            catch (BslRuntimeException)
+            catch (RuntimeException)
             {
                 return false;
             }
@@ -193,7 +193,7 @@ namespace OneScript.StandardLibrary
             return reflectableType;
         }
 
-        private static BslRuntimeException NonReflectableType()
+        private static RuntimeException NonReflectableType()
         {
             return RuntimeException.InvalidArgumentValue("Тип не может быть отражен.");
         }

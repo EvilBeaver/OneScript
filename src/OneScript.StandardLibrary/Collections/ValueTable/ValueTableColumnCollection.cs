@@ -161,7 +161,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             int idx = _columns.FindIndex(column => _namesComparer.Equals(name, column.Name));
             if (idx == -1)
-                throw RuntimeException.PropNotFoundException(name);
+                throw OldRuntimeException.PropNotFoundException(name);
             return idx;
         }
 
@@ -191,7 +191,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             {
                 ValueTableColumn Column = FindColumnByName(index.AsString());
                 if (Column == null)
-                    throw RuntimeException.PropNotFoundException(index.AsString());
+                    throw OldRuntimeException.PropNotFoundException(index.AsString());
                 return Column;
             }
 

@@ -1480,7 +1480,7 @@ namespace ScriptEngine.Machine
                     // Если в блоке Исключение была еще одна Попытка, то она затерла lastException
                     // 1С в этом случае бросает новое пустое исключение
                     //throw new RuntimeException("");
-                    throw new BslRuntimeException("");
+                    throw new RuntimeException("");
                 }
 
                 throw _currentFrame.LastException;
@@ -1494,7 +1494,7 @@ namespace ScriptEngine.Machine
                 }
                 else
                 {
-                    throw new BslRuntimeException(exceptionValue.AsString());
+                    throw new RuntimeException(exceptionValue.AsString());
                 }
             }
         }

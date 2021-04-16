@@ -9,7 +9,7 @@ using OneScript.Localization;
 
 namespace OneScript.Commons
 {
-    public class TypeConversionException : BslRuntimeException
+    public class TypeConversionException : RuntimeException
     {
         public TypeConversionException(BilingualString message) : base(message)
         {
