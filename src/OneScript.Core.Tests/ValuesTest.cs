@@ -36,8 +36,8 @@ namespace OneScript.Core.Tests
 
             Assert.True(BslBooleanValue.True.CompareTo(BslBooleanValue.False) > 0);
 
-            Assert.ThrowsAny<RuntimeException>(() => BslBooleanValue.True.AsDate());
-            Assert.ThrowsAny<RuntimeException>(() => BslBooleanValue.True.AsObject());
+            Assert.ThrowsAny<TypeConversionException>(() => BslBooleanValue.True.AsDate());
+            Assert.ThrowsAny<TypeConversionException>(() => BslBooleanValue.True.AsObject());
         }
 
         [Theory]
@@ -76,8 +76,8 @@ namespace OneScript.Core.Tests
             Assert.True(num4.CompareTo(num3) < 0);
 
             Assert.Equal("12.5", num1.AsString());
-            Assert.ThrowsAny<RuntimeException>(() => num1.AsDate());
-            Assert.ThrowsAny<RuntimeException>(() => num1.AsObject());
+            Assert.ThrowsAny<TypeConversionException>(() => num1.AsDate());
+            Assert.ThrowsAny<TypeConversionException>(() => num1.AsObject());
         }
 
         [Fact]
@@ -111,8 +111,8 @@ namespace OneScript.Core.Tests
             var numString = ValueFactory.Create("012.12");
             Assert.True(numString.AsNumber() == 12.12m);
 
-            Assert.ThrowsAny<RuntimeException>(() => dateString.AsObject());
-            Assert.ThrowsAny<RuntimeException>(() => trueString.AsNumber());
+            Assert.ThrowsAny<TypeConversionException>(() => dateString.AsObject());
+            Assert.ThrowsAny<TypeConversionException>(() => trueString.AsNumber());
         }
         
         [Fact]
@@ -122,10 +122,10 @@ namespace OneScript.Core.Tests
             Assert.True(value.SystemType == BasicTypes.Undefined);
             Assert.True(value.AsString() == "");
 
-            Assert.ThrowsAny<RuntimeException>(() => value.AsNumber());
-            Assert.ThrowsAny<RuntimeException>(() => value.AsBoolean());
-            Assert.ThrowsAny<RuntimeException>(() => value.AsObject());
-            Assert.ThrowsAny<RuntimeException>(() => value.AsDate());
+            Assert.ThrowsAny<TypeConversionException>(() => value.AsNumber());
+            Assert.ThrowsAny<TypeConversionException>(() => value.AsBoolean());
+            Assert.ThrowsAny<TypeConversionException>(() => value.AsObject());
+            Assert.ThrowsAny<TypeConversionException>(() => value.AsDate());
         }
 
         [Fact]
@@ -136,10 +136,10 @@ namespace OneScript.Core.Tests
             Assert.True(ReferenceEquals(value, BslNullValue.Instance));
             Assert.True(value.AsString() == "");
 
-            Assert.ThrowsAny<RuntimeException>(() => value.AsNumber());
-            Assert.ThrowsAny<RuntimeException>(() => value.AsBoolean());
-            Assert.ThrowsAny<RuntimeException>(() => value.AsObject());
-            Assert.ThrowsAny<RuntimeException>(() => value.AsDate());
+            Assert.ThrowsAny<TypeConversionException>(() => value.AsNumber());
+            Assert.ThrowsAny<TypeConversionException>(() => value.AsBoolean());
+            Assert.ThrowsAny<TypeConversionException>(() => value.AsObject());
+            Assert.ThrowsAny<TypeConversionException>(() => value.AsDate());
         }
 
         [Fact]
@@ -149,10 +149,10 @@ namespace OneScript.Core.Tests
             Assert.True(typeValue.SystemType == BasicTypes.Type);
             Assert.Equal("Строка", typeValue.AsString());
 
-            Assert.ThrowsAny<RuntimeException>(() => typeValue.AsNumber());
-            Assert.ThrowsAny<RuntimeException>(() => typeValue.AsBoolean());
-            Assert.ThrowsAny<RuntimeException>(() => typeValue.AsObject());
-            Assert.ThrowsAny<RuntimeException>(() => typeValue.AsDate());
+            Assert.ThrowsAny<TypeConversionException>(() => typeValue.AsNumber());
+            Assert.ThrowsAny<TypeConversionException>(() => typeValue.AsBoolean());
+            Assert.ThrowsAny<TypeConversionException>(() => typeValue.AsObject());
+            Assert.ThrowsAny<TypeConversionException>(() => typeValue.AsDate());
 
         }
 
@@ -271,6 +271,8 @@ namespace OneScript.Core.Tests
             new object[] { ValueFactory.Create()},
             new object[] { ValueFactory.Create(DateTime.MinValue)},
             new object[] { ValueFactory.CreateNullValue()},
+            new object[] { ValueFactory.Create("")},
+            new object[] { ValueFactory.Create("    ")},
             new object[] { new GuidWrapper(Guid.Empty.ToString())}
         };
         

@@ -122,15 +122,22 @@ namespace OneScript.StandardLibrary
                 return false;
             }
 
-            if (value is BslUndefinedValue)
-                return false;
-
             switch (value)
             {
                 case IEmptyValueCheck emptyHandler:
                     return !emptyHandler.IsEmpty;
+                case BslStringValue v:
+                    return !string.IsNullOrWhiteSpace(v.ToString());
                 case ICollectionContext collection:
                     return collection.Count() != 0;
+                case BslNumericValue v:
+                    return v != 0;
+                case BslUndefinedValue v:
+                    return false;
+                case BslNullValue v:
+                    return false;
+                case BslDateValue v:
+                    return !((DateTime)v).Equals(DateTime.MinValue);
                 default:
                     return true;
             }
