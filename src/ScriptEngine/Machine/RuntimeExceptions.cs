@@ -5,24 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
 using OneScript.Commons;
-using OneScript.Language;
 
 namespace ScriptEngine.Machine
 {
-    public class OldRuntimeException : ScriptException
+    [Obsolete]
+    public static class OldRuntimeException
     {
-        
-        public OldRuntimeException(string msg) : base(msg)
-        {
-        }
-
-        public OldRuntimeException(string msg, Exception inner)
-            : base(new ErrorPositionInfo(), msg, inner)
-        {
-        }
-
         public static RuntimeException PropIsNotReadableException(string prop)
         {
             return PropertyAccessException.GetPropIsNotReadableException(prop);
@@ -71,16 +60,6 @@ namespace ScriptEngine.Machine
             return new PropertyAccessException(string.Format("Свойство объекта не обнаружено ({0})", prop));
         }
 
-    }
-
-    public class ScriptInterruptionException : ApplicationException
-    {
-        public ScriptInterruptionException(int exitCode) : base("Script interrupted")
-        {
-            ExitCode = exitCode;
-        }
-
-        public int ExitCode { get; private set; }
     }
 
     public class ValueMarshallingException : RuntimeException
