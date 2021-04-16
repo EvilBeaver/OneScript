@@ -32,6 +32,12 @@ namespace OneScript.Language
             _codePosition = errorInfo ?? throw new ArgumentNullException(nameof(errorInfo));
         }
         
+        public ScriptException(Exception innerException)
+            : base(innerException.Message, innerException)
+        {
+            _codePosition = new ErrorPositionInfo();
+        }
+        
         public int LineNumber
         {
             get => _codePosition.LineNumber;
