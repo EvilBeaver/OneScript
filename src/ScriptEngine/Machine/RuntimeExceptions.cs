@@ -13,12 +13,7 @@ namespace ScriptEngine.Machine
 {
     public class RuntimeException : ScriptException
     {
-        private List<ExecutionFrameInfo> _frames;
-
-        public RuntimeException() : base()
-        {
-        }
-
+        
         public RuntimeException(string msg) : base(msg)
         {
         }
@@ -28,144 +23,132 @@ namespace ScriptEngine.Machine
         {
         }
 
-        public IEnumerable<ExecutionFrameInfo> GetStackTrace()
+        public static BslRuntimeException DeprecatedMethodCall(string name)
         {
-            return _frames.AsReadOnly();
+            return new BslRuntimeException($"Вызов безнадёжно устаревшего метода {name}");
         }
 
-        internal IList<ExecutionFrameInfo> CallStackFrames => _frames;
-
-        internal void InitCallStackFrames(IEnumerable<ExecutionFrameInfo> src)
+        public static BslRuntimeException ConvertToNumberException()
         {
-            _frames = src == null ? new List<ExecutionFrameInfo>() : new List<ExecutionFrameInfo>(src);
+            return new BslRuntimeException("Преобразование к типу 'Число' не поддерживается");
         }
 
-        public static RuntimeException DeprecatedMethodCall(string name)
+        public static BslRuntimeException ConvertToBooleanException()
         {
-            return new RuntimeException($"Вызов безнадёжно устаревшего метода {name}");
+            return new BslRuntimeException("Преобразование к типу 'Булево' не поддерживается");
         }
 
-        public static RuntimeException ConvertToNumberException()
+        public static BslRuntimeException ConvertToDateException()
         {
-            return new RuntimeException("Преобразование к типу 'Число' не поддерживается");
+            return new BslRuntimeException("Преобразование к типу 'Дата' не поддерживается");
         }
 
-        public static RuntimeException ConvertToBooleanException()
-        {
-            return new RuntimeException("Преобразование к типу 'Булево' не поддерживается");
-        }
-
-        public static RuntimeException ConvertToDateException()
-        {
-            return new RuntimeException("Преобразование к типу 'Дата' не поддерживается");
-        }
-
-        public static RuntimeException PropIsNotReadableException(string prop)
+        public static BslRuntimeException PropIsNotReadableException(string prop)
         {
             return PropertyAccessException.GetPropIsNotReadableException(prop);
         }
 
-        public static RuntimeException PropIsNotWritableException(string prop)
+        public static BslRuntimeException PropIsNotWritableException(string prop)
         {
             return PropertyAccessException.GetPropIsNotWritableException(prop);
         }
 
-        public static RuntimeException PropNotFoundException(string prop)
+        public static BslRuntimeException PropNotFoundException(string prop)
         {
             return PropertyAccessException.GetPropNotFoundException(prop);
         }
         
-        public static RuntimeException MethodNotFoundException(string methodName)
+        public static BslRuntimeException MethodNotFoundException(string methodName)
         {
-            return new RuntimeException($"Метод объекта не обнаружен ({methodName})");
+            return new BslRuntimeException($"Метод объекта не обнаружен ({methodName})");
         }
 
-        public static RuntimeException MethodNotFoundException(string methodName, string objectName)
+        public static BslRuntimeException MethodNotFoundException(string methodName, string objectName)
         {
-            return new RuntimeException($"Метод объекта не обнаружен ({{{objectName}}}::{methodName})");
+            return new BslRuntimeException($"Метод объекта не обнаружен ({{{objectName}}}::{methodName})");
         }
 
-        public static RuntimeException ValueIsNotObjectException()
+        public static BslRuntimeException ValueIsNotObjectException()
         {
-            return new RuntimeException("Значение не является значением объектного типа");
+            return new BslRuntimeException("Значение не является значением объектного типа");
         }
 
-        public static RuntimeException TooManyArgumentsPassed()
+        public static BslRuntimeException TooManyArgumentsPassed()
         {
-            return new RuntimeException("Слишком много фактических параметров");
+            return new BslRuntimeException("Слишком много фактических параметров");
         }
 
-        public static RuntimeException TooFewArgumentsPassed()
+        public static BslRuntimeException TooFewArgumentsPassed()
         {
-            return new RuntimeException("Недостаточно фактических параметров");
+            return new BslRuntimeException("Недостаточно фактических параметров");
         }
 
-        public static RuntimeException InvalidArgumentType()
+        public static BslRuntimeException InvalidArgumentType()
         {
-            return new RuntimeException("Неверный тип аргумента");
+            return new BslRuntimeException("Неверный тип аргумента");
         }
 
-        public static RuntimeException InvalidArgumentType(string argName)
+        public static BslRuntimeException InvalidArgumentType(string argName)
         {
-            return new RuntimeException(String.Format("Неверный тип аргумента '{0}'", argName));
+            return new BslRuntimeException(String.Format("Неверный тип аргумента '{0}'", argName));
         }
 
-        public static RuntimeException InvalidNthArgumentType(int argNum)
+        public static BslRuntimeException InvalidNthArgumentType(int argNum)
         {
-            return new RuntimeException(String.Format("Неверный тип аргумента номер {0}", argNum));
+            return new BslRuntimeException(String.Format("Неверный тип аргумента номер {0}", argNum));
         }
 
-        public static RuntimeException InvalidArgumentType(int argNum, string argName )
+        public static BslRuntimeException InvalidArgumentType(int argNum, string argName )
         {
-            return new RuntimeException(String.Format("Неверный тип аргумента номер {0} '{1}'", argNum, argName ));
+            return new BslRuntimeException(String.Format("Неверный тип аргумента номер {0} '{1}'", argNum, argName ));
         }
 
-        public static RuntimeException InvalidArgumentValue()
+        public static BslRuntimeException InvalidArgumentValue()
         {
-            return new RuntimeException("Неверное значение аргумента");
+            return new BslRuntimeException("Неверное значение аргумента");
         }
 
-        public static RuntimeException InvalidNthArgumentValue(int argNum)
+        public static BslRuntimeException InvalidNthArgumentValue(int argNum)
         {
-            return new RuntimeException(String.Format("Неверное значение аргумента номер {0}", argNum));
+            return new BslRuntimeException(String.Format("Неверное значение аргумента номер {0}", argNum));
         }
 
-        public static RuntimeException InvalidArgumentValue(object value)
+        public static BslRuntimeException InvalidArgumentValue(object value)
         {
-            return new RuntimeException("Неверное значение аргумента {"+value.ToString()+"}");
+            return new BslRuntimeException("Неверное значение аргумента {"+value.ToString()+"}");
         }
 
-        public static RuntimeException ComparisonNotSupportedException()
+        public static BslRuntimeException ComparisonNotSupportedException()
         {
-            return new RuntimeException("Сравнение на больше/меньше для данного типа не поддерживается");
+            return new BslRuntimeException("Сравнение на больше/меньше для данного типа не поддерживается");
         }
 
-        public static RuntimeException IndexedAccessIsNotSupportedException()
+        public static BslRuntimeException IndexedAccessIsNotSupportedException()
         {
-            return new RuntimeException("Объект не поддерживает доступ по индексу");
+            return new BslRuntimeException("Объект не поддерживает доступ по индексу");
         }
 
-        public static RuntimeException IteratorIsNotDefined()
+        public static BslRuntimeException IteratorIsNotDefined()
         {
-            return new RuntimeException("Итератор не определен");
+            return new BslRuntimeException("Итератор не определен");
         }
 
-        public static RuntimeException UseProcAsAFunction()
+        public static BslRuntimeException UseProcAsAFunction()
         {
-            return new RuntimeException("Использование процедуры, как функции");
+            return new BslRuntimeException("Использование процедуры, как функции");
         }
 
-        public static RuntimeException DivideByZero()
+        public static BslRuntimeException DivideByZero()
         {
-            return new RuntimeException("Деление на ноль");
+            return new BslRuntimeException("Деление на ноль");
         }
 
-        public static RuntimeException ConstructorNotFound(string typeName)
+        public static BslRuntimeException ConstructorNotFound(string typeName)
         {
             var template = Locale.NStr("ru = 'Конструктор не найден ({0})';" +
                                        "en = 'Constructor not found ({0})'");
 
-            return new RuntimeException(string.Format(template, typeName));
+            return new BslRuntimeException(string.Format(template, typeName));
         }
     }
 
@@ -178,7 +161,7 @@ namespace ScriptEngine.Machine
         }
     }
 
-    public class PropertyAccessException : RuntimeException
+    public class PropertyAccessException : BslRuntimeException
     {
         private PropertyAccessException(string msg) : base (msg)
         {
@@ -212,7 +195,7 @@ namespace ScriptEngine.Machine
         public int ExitCode { get; private set; }
     }
 
-    public class ValueMarshallingException : RuntimeException
+    public class ValueMarshallingException : BslRuntimeException
     {
         public ValueMarshallingException() : this("Неклассифицированная ошибка маршаллинга значений")
         {

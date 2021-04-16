@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections.Generic;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Language;
@@ -23,17 +24,13 @@ namespace ScriptEngine.Machine.Contexts
 
         public ExceptionInfoContext(ScriptException source)
         {
-            if (source == null)
-                throw new ArgumentNullException();
-            
-            _exc = source;
+            _exc = source ?? throw new ArgumentNullException();
+            if (source.InnerException is ParametrizedRuntimeException pre)
+            {
+                Parameters = pre.Parameter;
+            }
         }
-
-        public ExceptionInfoContext(ParametrizedRuntimeException source):this((ScriptException)source)
-        {
-            Parameters = source.Parameter;
-        }
-
+        
         /// <summary>
         /// Значение, переданное при создании исключения в конструкторе объекта ИнформацияОбОшибке.
         /// </summary>
@@ -120,21 +117,19 @@ namespace ScriptEngine.Machine.Contexts
         [ContextMethod("ПолучитьСтекВызовов", "GetStackTrace")]
         public IValue GetStackTrace()
         {
-            if (_exc is RuntimeException rte)
+            if (_exc.RuntimeSpecificInfo is IList<ExecutionFrameInfo> frames)
             {
-                var frames = rte.CallStackFrames;
-                if (frames == null)
-                    return ValueFactory.Create();
-
+                // var frames = rte.CallStackFrames;
+                // if (frames == null)
+                //    return ValueFactory.Create();
                 return new StackTraceCollectionContext(frames);
             }
-            else
-                return ValueFactory.Create();
+            return ValueFactory.Create();
         }
 
         private string SafeMarshallingNullString(string src)
         {
-            return src == null ? "" : src;
+            return src ?? "";
         }
 
         /// <summary>

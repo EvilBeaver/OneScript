@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Commons;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.TypeDescriptions;
@@ -118,7 +119,7 @@ namespace OneScript.StandardLibrary
                 var idx = target.FindMethod(methodName);
                 return idx >= 0;
             }
-            catch (RuntimeException)
+            catch (BslRuntimeException)
             {
                 return false;
             }
@@ -192,7 +193,7 @@ namespace OneScript.StandardLibrary
             return reflectableType;
         }
 
-        private static RuntimeException NonReflectableType()
+        private static BslRuntimeException NonReflectableType()
         {
             return RuntimeException.InvalidArgumentValue("Тип не может быть отражен.");
         }

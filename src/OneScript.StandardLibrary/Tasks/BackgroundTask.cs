@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
+using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -94,7 +95,7 @@ namespace OneScript.StandardLibrary.Tasks
 
                 State = TaskStateEnum.Completed;
             }
-            catch (RuntimeException exception)
+            catch (ScriptException exception)
             {
                 State = TaskStateEnum.CompletedWithErrors;
                 ExceptionInfo = new ExceptionInfoContext(exception);
