@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Language;
 
 namespace ScriptEngine.Machine
 {
@@ -16,7 +17,7 @@ namespace ScriptEngine.Machine
         public int LineNumber;
         public bool DiscardReturnValue;
         public string MethodName;
-        public RuntimeException LastException;
+        public ScriptException LastException;
         public LoadedModule Module;
         public bool IsReentrantCall;
         

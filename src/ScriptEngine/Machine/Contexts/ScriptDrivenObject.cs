@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OneScript.Commons;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -267,7 +268,7 @@ namespace ScriptEngine.Machine.Contexts
                 if (_propertySearchCache.TryGetValue(name, out index))
                     return index;
                 else
-                    throw RuntimeException.PropNotFoundException(name);
+                    throw OldRuntimeException.PropNotFoundException(name);
             }
         }
 
@@ -405,7 +406,7 @@ namespace ScriptEngine.Machine.Contexts
             if (_allPropertiesSearchCache.TryGetValue(name, out index))
                 return index;
             else
-                throw RuntimeException.PropNotFoundException(name);
+                throw OldRuntimeException.PropNotFoundException(name);
         }
 
         public string[] GetExportedProperties()

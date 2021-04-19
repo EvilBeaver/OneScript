@@ -49,7 +49,7 @@ namespace OneScript.Values
             else
                 throw BslExceptions.ConvertToBooleanException();
         }
-
+        
         public override string ToString()
         {
             return _flag? _stringTrue.ToString() : _stringFalse.ToString();

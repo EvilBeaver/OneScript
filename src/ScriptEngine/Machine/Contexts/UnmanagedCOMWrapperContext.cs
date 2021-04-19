@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Commons;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine.Rcw;
@@ -83,7 +84,7 @@ namespace ScriptEngine.Machine.Contexts
         public override int FindProperty(string name)
         {
             if(!TryFindProperty(name, out var md))
-                throw RuntimeException.PropNotFoundException(name);
+                throw OldRuntimeException.PropNotFoundException(name);
 
             return _props.IndexOf(md);
         }
@@ -112,11 +113,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.PropNotFoundException(prop.Name);
+                throw OldRuntimeException.PropNotFoundException(prop.Name);
             }
             catch (System.MemberAccessException)
             {
-                throw RuntimeException.PropIsNotReadableException(prop.Name);
+                throw OldRuntimeException.PropIsNotReadableException(prop.Name);
             }
         }
 
@@ -156,11 +157,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw RuntimeException.PropNotFoundException(prop.Name);
+                throw OldRuntimeException.PropNotFoundException(prop.Name);
             }
             catch (System.MemberAccessException)
             {
-                throw RuntimeException.PropIsNotWritableException(prop.Name);
+                throw OldRuntimeException.PropIsNotWritableException(prop.Name);
             }
         }
 

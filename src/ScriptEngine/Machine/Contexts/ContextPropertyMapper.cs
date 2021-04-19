@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Commons;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
@@ -29,12 +30,12 @@ namespace ScriptEngine.Machine.Contexts
 
             IValue CantReadAction(TInstance inst)
             {
-                throw RuntimeException.PropIsNotReadableException(_name);
+                throw OldRuntimeException.PropIsNotReadableException(_name);
             }
 
             void CantWriteAction(TInstance inst, IValue val)
             {
-                throw RuntimeException.PropIsNotWritableException(_name);
+                throw OldRuntimeException.PropIsNotWritableException(_name);
             }
 
             this.CanRead = attrib.CanRead;
@@ -155,7 +156,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             var idx = GetPropertyIndex(name);
             if (idx < 0)
-                throw RuntimeException.PropNotFoundException(name);
+                throw OldRuntimeException.PropNotFoundException(name);
 
             return idx;
         }

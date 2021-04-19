@@ -57,7 +57,7 @@ namespace ScriptEngine.Machine.Contexts
             if (_propNumbers.TryGetValue(name, out var index))
                 return index;
             
-            throw RuntimeException.PropNotFoundException(name);
+            throw OldRuntimeException.PropNotFoundException(name);
         }
 
         public string GetPropertyName(int idx)

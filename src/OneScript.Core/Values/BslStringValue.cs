@@ -47,8 +47,13 @@ namespace OneScript.Values
 
         public override int CompareTo(BslValue other)
         {
-            if(other is BslStringValue)
-                return String.Compare(_value, (string)other, StringComparison.CurrentCulture);
+            if (ReferenceEquals(null, other))
+                return -1;
+            
+            if (other is BslStringValue s)
+                return String.Compare(_value, s._value, StringComparison.Ordinal);
+            if (other is BslUndefinedValue)
+                return 1;
 
             return base.CompareTo(other);
         }

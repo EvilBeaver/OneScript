@@ -14,11 +14,13 @@ namespace OneScript.Values
     {
         public override int CompareTo(BslValue other)
         {
+            var typeOfThis = this.GetType();
+            var typeOfOther = other.GetType();
             var message = new BilingualString(
-                "Сравнение на больше/меньше для данного типа не поддерживается",
-                "Comparison for greater/less than is not supported for this type");
+                $"{this}({typeOfThis}),{other}({typeOfOther}): Сравнение на больше/меньше для данного типа не поддерживается",
+                $"{this}({typeOfThis}),{other}({typeOfOther}): Comparison for greater/less than is not supported for this type");
             
-            throw new BslCoreException(message);
+            throw new RuntimeException(message);
         }
 
         public override bool Equals(BslValue other) => false;
