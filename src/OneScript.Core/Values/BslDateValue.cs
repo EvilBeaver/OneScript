@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Globalization;
 using OneScript.Commons;
 using OneScript.Types;
 
@@ -49,6 +50,11 @@ namespace OneScript.Values
         #region Conversions
 
         public static explicit operator DateTime(BslDateValue date) => date._value;
+
+        public override string ToString()
+        {
+            return _value.ToString(CultureInfo.CurrentCulture);
+        }
 
         #endregion
 

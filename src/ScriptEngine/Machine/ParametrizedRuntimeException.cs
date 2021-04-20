@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Commons;
+
 namespace ScriptEngine.Machine
 {
     public class ParametrizedRuntimeException : RuntimeException

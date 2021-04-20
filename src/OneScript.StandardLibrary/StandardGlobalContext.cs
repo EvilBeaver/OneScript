@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using OneScript.Commons;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -121,7 +122,7 @@ namespace OneScript.StandardLibrary
                 return false;
             }
 
-            switch (value.GetRawValue())
+            switch (value)
             {
                 case IEmptyValueCheck emptyHandler:
                     return !emptyHandler.IsEmpty;

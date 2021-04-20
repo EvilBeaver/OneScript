@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Moq;
+using OneScript.Commons;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using Xunit;

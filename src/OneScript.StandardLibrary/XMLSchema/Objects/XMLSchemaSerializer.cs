@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Xml;
 using System.Xml.Schema;
+using OneScript.Commons;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
 using ScriptEngine.Machine;

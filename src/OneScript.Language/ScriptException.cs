@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace OneScript.Language
@@ -13,13 +14,7 @@ namespace OneScript.Language
     public class ScriptException : ApplicationException
     {
         private readonly ErrorPositionInfo _codePosition;
-
-        public ScriptException() 
-        {
-            _codePosition = new ErrorPositionInfo();
-            _codePosition.LineNumber = -1;
-        }
-
+        
         public ScriptException(string message)
             : this(new ErrorPositionInfo(), message, null)
         {
@@ -31,6 +26,18 @@ namespace OneScript.Language
             _codePosition = errorInfo ?? throw new ArgumentNullException(nameof(errorInfo));
         }
 
+        public ScriptException(ErrorPositionInfo errorInfo, Exception innerException)
+            : base(innerException.Message, innerException)
+        {
+            _codePosition = errorInfo ?? throw new ArgumentNullException(nameof(errorInfo));
+        }
+        
+        public ScriptException(Exception innerException)
+            : base(innerException.Message, innerException)
+        {
+            _codePosition = new ErrorPositionInfo();
+        }
+        
         public int LineNumber
         {
             get => _codePosition.LineNumber;
@@ -66,10 +73,21 @@ namespace OneScript.Language
         {
             get
             {
-                if (ColumnNumber != ErrorPositionInfo.OUT_OF_TEXT)
-                    return $"{{Модуль {ModuleName} / Ошибка в строке: {LineNumber},{ColumnNumber} / {base.Message}}}";
-                
-                return $"{{Модуль {ModuleName} / Ошибка в строке: {LineNumber} / {base.Message}}}";
+                var parts = new List<string>();
+
+                if (!string.IsNullOrEmpty(ModuleName))
+                    parts.Add($"Модуль {ModuleName}");
+
+                if (LineNumber != ErrorPositionInfo.OUT_OF_TEXT)
+                {
+                    parts.Add(ColumnNumber != ErrorPositionInfo.OUT_OF_TEXT
+                        ? $"Ошибка в строке: {LineNumber},{ColumnNumber}"
+                        : $"Ошибка в строке: {LineNumber}");
+                }
+                parts.Add(base.Message);
+
+                var unquotedResult = string.Join(" / ", parts);
+                return $"{{{unquotedResult}}}";
             }
         }
 
@@ -84,5 +102,7 @@ namespace OneScript.Language
                 return sb.ToString();
             }
         }
+        
+        public object RuntimeSpecificInfo { get; set; }
     }
 }

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Dynamic;
 using System.Linq;
+using OneScript.Commons;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Types;
@@ -125,7 +126,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual int FindProperty(string name)
         {
-            throw RuntimeException.PropNotFoundException(name);
+            throw OldRuntimeException.PropNotFoundException(name);
         }
         public virtual bool IsPropReadable(int propNum)
         {

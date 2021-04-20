@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Commons;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
@@ -42,7 +43,7 @@ namespace ScriptEngine.Machine.Contexts
             if (IsPropReadable(n))
                 return GetPropValue(n);
             else
-                throw RuntimeException.PropIsNotReadableException(index.AsString());
+                throw OldRuntimeException.PropIsNotReadableException(index.AsString());
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
@@ -56,7 +57,7 @@ namespace ScriptEngine.Machine.Contexts
             if (IsPropWritable(n))
                 SetPropValue(n, val);
             else
-                throw RuntimeException.PropIsNotWritableException(index.AsString());
+                throw OldRuntimeException.PropIsNotWritableException(index.AsString());
         }
     }
 }

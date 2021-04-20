@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Runtime.InteropServices;
+using OneScript.Commons;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Types;
@@ -119,7 +120,7 @@ namespace OneScript.StandardLibrary.NativeApi
         {
             var propNumber = NativeApiProxy.FindProp(_object, name);
             if (propNumber < 0)
-                throw RuntimeException.PropNotFoundException(name);
+                throw OldRuntimeException.PropNotFoundException(name);
             return propNumber;
         }
 

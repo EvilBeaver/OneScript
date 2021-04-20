@@ -508,9 +508,9 @@ namespace ScriptEngine.Machine
                     MainCommandLoop();
                     break;
                 }
-                catch (RuntimeException exc)
+                catch (ScriptException exc)
                 {
-                    if (exc.RuntimeSpecificInfo == default) // TODO: тут нужно вменяемое условие
+                    if(exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT) 
                         SetScriptExceptionSource(exc);
 
                     if (ShouldRethrowException(exc))
@@ -519,17 +519,20 @@ namespace ScriptEngine.Machine
             }
         }
 
-        private bool ShouldRethrowException(RuntimeException exc)
+        private bool ShouldRethrowException(ScriptException exc)
         {
             if (_exceptionsStack.Count == 0)
             {
                 return true;
             }
 
-            if (exc.CallStackFrames == null)
+            var callStackFrames = exc.RuntimeSpecificInfo as IList<ExecutionFrameInfo>;
+
+            if (callStackFrames == null)
             {
                 CreateFullCallstack();
-                exc.InitCallStackFrames(_fullCallstackCache);
+                callStackFrames = new List<ExecutionFrameInfo>(_fullCallstackCache);
+                exc.RuntimeSpecificInfo = callStackFrames;
             }
 
             var handler = _exceptionsStack.Pop();
@@ -602,9 +605,13 @@ namespace ScriptEngine.Machine
             {
                 throw;
             }
-            catch (BslRuntimeException)
+            catch (ScriptException)
             {
                 throw;
+            }
+            catch (BslCoreException exc)
+            {
+                throw new ScriptException(getPositionInfo(), exc);
             }
             catch (Exception exc)
             {
@@ -614,7 +621,7 @@ namespace ScriptEngine.Machine
             }
         }
 
-        private void SetScriptExceptionSource(RuntimeException exc)
+        private ErrorPositionInfo getPositionInfo()
         {
             var epi = new ErrorPositionInfo();
             epi.LineNumber = _currentFrame.LineNumber;
@@ -628,7 +635,15 @@ namespace ScriptEngine.Machine
                 epi.ModuleName = "<имя модуля недоступно>";
                 epi.Code = "<исходный код недоступен>";
             }
-            exc.RuntimeSpecificInfo = epi;
+            return  epi;
+        }
+
+        private void SetScriptExceptionSource(ScriptException exc)
+        {
+            var epi = getPositionInfo();
+            exc.Code = epi.Code;
+            exc.LineNumber = epi.LineNumber;
+            exc.ModuleName = epi.ModuleName;
         }
 
         #region Commands
@@ -843,7 +858,7 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Mul(op1, op2));
+            _operationStack.Push(ValueFactory.Mul(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
         }
 
@@ -851,7 +866,7 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Div(op1, op2));
+            _operationStack.Push(ValueFactory.Div(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
         }
 
@@ -859,68 +874,68 @@ namespace ScriptEngine.Machine
         {
             var op2 = _operationStack.Pop();
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Mod(op1, op2));
+            _operationStack.Push(ValueFactory.Mod(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
         }
 
         private void Neg(int arg)
         {
             var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Neg(op1));
+            _operationStack.Push(ValueFactory.Neg(op1.GetRawValue()));
             NextInstruction();
         }
 
         private void Equals(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.Equals(op2)));
             NextInstruction();
         }
 
         private void Less(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) < 0));
             NextInstruction();
         }
 
         private void Greater(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) > 0));
             NextInstruction();
         }
 
         private void LessOrEqual(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) <= 0));
             NextInstruction();
         }
 
         private void GreaterOrEqual(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) >= 0));
             NextInstruction();
         }
 
         private void NotEqual(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
+            var op2 = _operationStack.Pop().GetRawValue();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(!op1.Equals(op2)));
             NextInstruction();
         }
 
         private void Not(int arg)
         {
-            var op1 = _operationStack.Pop();
+            var op1 = _operationStack.Pop().GetRawValue();
             _operationStack.Push(ValueFactory.Create(!op1.AsBoolean()));
             NextInstruction();
         }
@@ -1461,9 +1476,12 @@ namespace ScriptEngine.Machine
             if (arg < 0)
             {
                 if (_currentFrame.LastException == null)
+                {
                     // Если в блоке Исключение была еще одна Попытка, то она затерла lastException
                     // 1С в этом случае бросает новое пустое исключение
+                    //throw new RuntimeException("");
                     throw new RuntimeException("");
+                }
 
                 throw _currentFrame.LastException;
             }
@@ -2393,10 +2411,10 @@ namespace ScriptEngine.Machine
         {
             System.Diagnostics.Debug.Assert(argCount > 0);
 
-            IValue min = _operationStack.Pop();
+            IValue min = _operationStack.Pop().GetRawValue();
             while (--argCount > 0)
             {
-                var current = _operationStack.Pop();
+                var current = _operationStack.Pop().GetRawValue();
                 if (current.CompareTo(min) < 0)
                     min = current;
             }
@@ -2425,7 +2443,7 @@ namespace ScriptEngine.Machine
         private void Format(int arg)
         {
             var formatString = _operationStack.Pop().AsString();
-            var valueToFormat = _operationStack.Pop();
+            var valueToFormat = _operationStack.Pop().GetRawValue();
 
             var formatted = ValueFormatter.Format(valueToFormat, formatString);
 

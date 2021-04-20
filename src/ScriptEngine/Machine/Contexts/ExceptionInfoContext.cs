@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections.Generic;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Language;
@@ -18,34 +19,18 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
     public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
-        private readonly BslRuntimeException _rte;
-        private readonly ScriptException _exc;
+        readonly ScriptException _exc;
         IValue _innerException;
 
-        public ExceptionInfoContext()
+        public ExceptionInfoContext(ScriptException source)
         {
-        }
-
-        public ExceptionInfoContext(BslRuntimeException source)
-        {
-            _rte = source;
-            switch (source.RuntimeSpecificInfo)
+            _exc = source ?? throw new ArgumentNullException();
+            if (source.InnerException is ParametrizedRuntimeException pre)
             {
-                case ErrorPositionInfo info:
-                    _exc = new ScriptException(info, source.Message, source);
-                    break;
-                case ScriptException info:
-                    _exc = info;
-                    break;
+                Parameters = pre.Parameter;
             }
         }
-
-        public ExceptionInfoContext(ParametrizedRuntimeException source)
-            : this((BslRuntimeException)source)
-        {
-            Parameters = source.Parameter;
-        }
-
+        
         /// <summary>
         /// Значение, переданное при создании исключения в конструкторе объекта ИнформацияОбОшибке.
         /// </summary>
@@ -131,22 +116,20 @@ namespace ScriptEngine.Machine.Contexts
         /// <returns></returns>
         [ContextMethod("ПолучитьСтекВызовов", "GetStackTrace")]
         public IValue GetStackTrace()
-        { /*
-            if (_exc is RuntimeException rte)
+        {
+            if (_exc.RuntimeSpecificInfo is IList<ExecutionFrameInfo> frames)
             {
-                var frames = rte.CallStackFrames;
-                if (frames == null)
-                    return ValueFactory.Create();
-
+                // var frames = rte.CallStackFrames;
+                // if (frames == null)
+                //    return ValueFactory.Create();
                 return new StackTraceCollectionContext(frames);
             }
-            else */
-                return ValueFactory.Create();
+            return ValueFactory.Create();
         }
 
         private string SafeMarshallingNullString(string src)
         {
-            return src == null ? "" : src;
+            return src ?? "";
         }
 
         /// <summary>
@@ -166,9 +149,9 @@ namespace ScriptEngine.Machine.Contexts
 
         private IValue CreateInnerExceptionInfo()
         {
-            //if (_exc.InnerException == null)
+            if (_exc.InnerException == null)
                 return ValueFactory.Create();
-            /*
+
             bool alreadyWrapped = _exc is ExternalSystemException;
             if (!alreadyWrapped)
             {
@@ -199,7 +182,6 @@ namespace ScriptEngine.Machine.Contexts
 
                 return new ExceptionInfoContext(inner);
             }
-            */
         }
 
         /// <summary>

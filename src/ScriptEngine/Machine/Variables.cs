@@ -178,7 +178,7 @@ namespace ScriptEngine.Machine
                         if (_context.IsPropReadable(_contextPropertyNumber))
                             return _context.GetPropValue(_contextPropertyNumber);
                         else
-                            throw RuntimeException.PropIsNotReadableException("");
+                            throw OldRuntimeException.PropIsNotReadableException("");
                     }
                     else
                     {
@@ -196,7 +196,7 @@ namespace ScriptEngine.Machine
                         if(_context.IsPropWritable(_contextPropertyNumber))
                             _context.SetPropValue(_contextPropertyNumber, value);
                         else
-                            throw RuntimeException.PropIsNotWritableException("");
+                            throw OldRuntimeException.PropIsNotWritableException("");
                     }
                     else
                     {

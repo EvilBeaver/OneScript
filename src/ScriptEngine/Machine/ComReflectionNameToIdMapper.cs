@@ -54,7 +54,7 @@ namespace ScriptEngine.Machine
             GetAllProperties();
             var hasProperty = _propertyNames.TryGetIdOfName(name, out var id);
             if (!hasProperty)
-                throw RuntimeException.PropNotFoundException(name);
+                throw OldRuntimeException.PropNotFoundException(name);
 
             return id;
         }

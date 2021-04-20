@@ -176,8 +176,8 @@ namespace OneScript.Core.Tests
             var num1 = ValueFactory.Create(1);
             var num2 = ValueFactory.Create("2");
 
-            Assert.ThrowsAny<BslCoreException>(() => num1.CompareTo(num2));
-            Assert.ThrowsAny<BslCoreException>(() => num2.CompareTo(num1));
+            Assert.ThrowsAny<RuntimeException>(() => num1.CompareTo(num2));
+            Assert.ThrowsAny<RuntimeException>(() => num2.CompareTo(num1));
         }
 
         [Fact]
@@ -187,7 +187,7 @@ namespace OneScript.Core.Tests
             var v2 = ValueFactory.Create(true);
 
             //TODO: типизировать исключение ComparisonNotSupportedException
-            Assert.ThrowsAny<BslCoreException>(() => v1.CompareTo(v2));
+            Assert.ThrowsAny<RuntimeException>(() => v1.CompareTo(v2));
         }
 
         [Fact]
