@@ -67,7 +67,19 @@ namespace OneScript.StandardLibrary.Native
             _errors = new ListErrorSink();
             var parser = new DefaultBslParser(lexer, new DefaultAstBuilder(), _errors, new PreprocessorHandlers());
 
-            _ast = parser.ParseCodeBatch(true);
+            try
+            {
+                _ast = parser.ParseCodeBatch(true);
+            }
+            catch (ScriptException e)
+            {
+                _errors.AddError(new ParseError
+                {
+                    Description = e.Message,
+                    Position = e.GetPosition()
+                });
+            }
+            
             if (_errors.HasErrors)
             {
                 var prefix = Locale.NStr("ru = 'Ошибка комиляции модуля'; en = 'Module compilation error'");
