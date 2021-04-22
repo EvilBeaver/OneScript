@@ -159,6 +159,11 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Деление на ноль");
         }
 
+        public static RuntimeException InvalidEncoding(string encoding)
+        {
+            return new RuntimeException($"Неправильное имя кодировки '{encoding}'");
+        }
+
     }
 
     public class WrongStackConditionException : ApplicationException
