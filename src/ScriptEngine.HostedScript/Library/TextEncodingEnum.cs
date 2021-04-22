@@ -110,11 +110,11 @@ namespace ScriptEngine.HostedScript.Library
         public static Encoding GetEncodingByName(string encoding, bool addBOM = true)
         {
             Encoding enc;
-            if (encoding == null)
+            if (string.IsNullOrEmpty(encoding))
                 enc = new UTF8Encoding(addBOM);
             else
             {
-                switch (encoding.ToUpper())
+                switch (encoding.Trim().ToUpper())
                 {
                     case "UTF-8":
                         enc = new UTF8Encoding(addBOM);
@@ -142,9 +142,15 @@ namespace ScriptEngine.HostedScript.Library
                         enc = new UTF32Encoding(true, addBOM);
                         break;
                     default:
-                        enc = Encoding.GetEncoding(encoding);
-                        break;
-
+                        try
+                        {
+                            enc = Encoding.GetEncoding(encoding);
+                            break;
+                        }
+                        catch
+                        {
+                            throw RuntimeException.InvalidEncoding(encoding);
+                        }
                 }
             }
 
