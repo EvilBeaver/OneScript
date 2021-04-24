@@ -11,11 +11,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.CSharp.RuntimeBinder;
+using OneScript.DependencyInjection;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
 using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine.Machine;
 
 namespace OneScript.Native.Compiler
 {
@@ -174,7 +176,7 @@ namespace OneScript.Native.Compiler
 
         public static bool TryStaticConversion(Expression value, Type targetType, out Expression result)
         {
-            if (targetType == typeof(BslValue))
+            if (targetType == typeof(BslValue) || targetType == typeof(IValue))
             {
                 result = ConvertToBslValue(value);
                 return true;
@@ -286,9 +288,8 @@ namespace OneScript.Native.Compiler
             {
                 return ToString(parameter);
             }
-
-            var conversionOp = TryFindConversionOp(parameter, targetType);
-            return conversionOp;
+            
+            return ConvertToType(parameter, targetType);
         }
 
         private static Expression ConvertToBslValue(Expression value)
@@ -392,7 +393,7 @@ namespace OneScript.Native.Compiler
                 $"Conversion from type {source.Type} into {targetType} is not supported"));
         }
 
-        public static Expression ConstructorCall(Expression typeManager, Expression services, Expression type,
+        public static Expression ConstructorCall(ITypeManager typeManager, Expression services, Expression type,
             Expression[] argsArray)
         {
             var method = _operationsCache.GetOrAdd(
@@ -402,9 +403,27 @@ namespace OneScript.Native.Compiler
             var arrayOfArgs = Expression.NewArrayInit(typeof(BslValue), argsArray.Select(ConvertToBslValue));
             
             return Expression.Call(method, 
-                typeManager,
+                Expression.Constant(typeManager),
                 services,
                 type,
+                arrayOfArgs);
+        }
+        
+        public static Expression ConstructorCall(ITypeManager typeManager, Expression services, TypeDescriptor knownType,
+            Expression[] argsArray)
+        {
+            var genericMethod = _operationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.StrictConstructorCall));
+
+            var method = genericMethod.MakeGenericMethod(knownType.ImplementingClass);
+            
+            var arrayOfArgs = Expression.NewArrayInit(typeof(BslValue), argsArray.Select(ConvertToBslValue));
+            
+            return Expression.Call(method, 
+                Expression.Constant(typeManager),
+                services,
+                Expression.Constant(knownType.Name),
                 arrayOfArgs);
         }
 

@@ -12,19 +12,16 @@ namespace ScriptEngine.Machine
 {
     public class MachineEnvironment
     {
-        public MachineEnvironment(IServiceContainer services)
-        {
-            TypeManager = services.Resolve<ITypeManager>();
-            GlobalNamespace = services.Resolve<RuntimeEnvironment>();
-            GlobalInstances = services.Resolve<IGlobalsManager>();
-            Services = services;
-        }
-        
-        internal MachineEnvironment(ITypeManager typeManager, RuntimeEnvironment globalNamespace, IGlobalsManager globalInstances)
+        public MachineEnvironment(
+            ITypeManager typeManager,
+            RuntimeEnvironment globalNamespace,
+            IGlobalsManager globalInstances,
+            IServiceContainer services)
         {
             TypeManager = typeManager;
             GlobalNamespace = globalNamespace;
             GlobalInstances = globalInstances;
+            Services = services;
         }
         
         public ITypeManager TypeManager { get; }

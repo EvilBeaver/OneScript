@@ -39,6 +39,9 @@ namespace OneScript.Native.Compiler
         private readonly IServiceContainer _services;
         private readonly BuiltInFunctionsCache _builtInFunctions = new BuiltInFunctionsCache();
 
+        private ContextMethodsCache _methodsCache = new ContextMethodsCache();
+        private ReflectedPropertiesCache _propertiesCache = new ReflectedPropertiesCache();
+
         public MethodCompiler(BslWalkerContext walkContext, BslMethodInfo method) : base(walkContext)
         {
             _method = method;
@@ -231,6 +234,8 @@ namespace OneScript.Native.Compiler
 
                 if (typeOnStack == typeof(BslUndefinedValue))
                     typeOnStack = typeof(BslValue);
+                if (typeOnStack.IsNumeric())
+                    typeOnStack = typeof(decimal);
                 
                 var scope = Symbols.TopScope();
                 scope.AddVariable(identifier, typeOnStack);
@@ -872,6 +877,60 @@ namespace OneScript.Native.Compiler
             _statementBuildParts.Push(expression);
         }
 
+        protected override void VisitObjectProcedureCall(BslSyntaxNode node)
+        {
+            var target = _statementBuildParts.Pop();
+            var call = (CallNode) node;
+
+            var targetType = target.Type;
+            var name = call.Identifier.GetIdentifier();
+
+            var methodInfo = FindMethodOfType(node, targetType, name);
+            
+            var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters());
+            
+            _blocks.Add(Expression.Call(target, methodInfo, args));
+        }
+
+        protected override void VisitObjectFunctionCall(BslSyntaxNode node)
+        {
+            var target = _statementBuildParts.Pop();
+            var call = (CallNode) node;
+
+            var targetType = target.Type;
+            var name = call.Identifier.GetIdentifier();
+
+            var methodInfo = FindMethodOfType(node, targetType, name);
+
+            if (methodInfo.ReturnType == typeof(void))
+            {
+                throw new CompilerException(new BilingualString(
+                    $"Метод {targetType}.{name} не является функцией",
+                    $"Method {targetType}.{name} is not a function"), ToCodePosition(node.Location));
+            }
+            
+            var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters());
+            
+            _statementBuildParts.Push(Expression.Call(target, methodInfo, args));
+        }
+
+        private MethodInfo FindMethodOfType(BslSyntaxNode node, Type targetType, string name)
+        {
+            MethodInfo methodInfo;
+            try
+            {
+                methodInfo = _methodsCache.GetOrAdd(targetType, name);
+            }
+            catch (InvalidOperationException)
+            {
+                throw new CompilerException(new BilingualString(
+                    $"Метод {name} не определен для типа {targetType}",
+                    $"Method {name} is not defined for type {targetType}"), ToCodePosition(node.Location));
+            }
+
+            return methodInfo;
+        }
+
         private Expression CreateMethodCall(CallNode node)
         {
             if (!Symbols.FindMethod(node.Identifier.GetIdentifier(), out var binding))
@@ -886,45 +945,6 @@ namespace OneScript.Native.Compiler
             var context = Expression.Constant(symbol.Target);
             return Expression.Call(context, symbol.MethodInfo, args);
         }
-        
-        #endregion
-
-        #region Constructors
-
-        protected override void VisitNewObjectCreation(NewObjectNode node)
-        {
-            Expression typeName;
-            if (node.IsDynamic)
-            {
-                typeName = ConvertToExpressionTree(node.TypeNameNode);
-            }
-            else
-            {
-                var typeNameString = node.TypeNameNode.GetIdentifier();
-                typeName = Expression.Constant(typeNameString);
-            }
-            
-            var typeManager = Expression.Constant(CurrentTypeManager);
-            var services = Expression.Constant(_services);
-
-            Expression[] parameters;
-            if (node.ConstructorArguments != default)
-            {
-                parameters = node.ConstructorArguments.Children.Select(passedArg => 
-                    passedArg.Children.Count > 0 ? 
-                        ConvertToExpressionTree(passedArg.Children[0]) :
-                        Expression.Default(typeof(BslValue))).ToArray();
-            }
-            else
-            {
-                parameters = new Expression[0];
-            }
-
-            var call = ExpressionHelpers.ConstructorCall(typeManager, services, typeName, parameters);
-            _statementBuildParts.Push(call);
-        }
-        
-        #endregion
         
         private Expression CreateBuiltInFunctionCall(CallNode node)
         {
@@ -1078,6 +1098,45 @@ namespace OneScript.Native.Compiler
             return convertedOrDirect;
         }
 
+        #endregion
+
+        #region Constructors
+
+        protected override void VisitNewObjectCreation(NewObjectNode node)
+        {
+            var services = Expression.Constant(_services);
+            
+            Expression[] parameters;
+            if (node.ConstructorArguments != default)
+            {
+                parameters = node.ConstructorArguments.Children.Select(passedArg => 
+                    passedArg.Children.Count > 0 ? 
+                        ConvertToExpressionTree(passedArg.Children[0]) :
+                        Expression.Default(typeof(BslValue))).ToArray();
+            }
+            else
+            {
+                parameters = new Expression[0];
+            }
+
+            if (node.IsDynamic)
+            {
+                var typeName = ConvertToExpressionTree(node.TypeNameNode);
+                var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeName, parameters);
+                _statementBuildParts.Push(call);
+            }
+            else
+            {
+                var typeNameString = node.TypeNameNode.GetIdentifier();
+                var typeDef = CurrentTypeManager.GetTypeByName(typeNameString);
+                var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeDef, parameters);
+                _statementBuildParts.Push(call);
+            }
+            
+        }
+        
+        #endregion
+        
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
         {
             VisitExpression(arg);

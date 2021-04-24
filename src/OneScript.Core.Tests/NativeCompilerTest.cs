@@ -586,6 +586,10 @@ namespace OneScript.Core.Tests
                 БулевТип = Булево(ЧисловойТип);";
 
             var l = block.MakeExpression();
+            l.Body.As<BlockExpression>().Expressions[2].As<BinaryExpression>()
+                .Right.NodeType
+                .Should()
+                .Be(ExpressionType.Call);
         }
         
         [Fact]
@@ -598,6 +602,39 @@ namespace OneScript.Core.Tests
             var statement = l.Body.As<BlockExpression>().Expressions[0].As<BinaryExpression>();
 
             statement.Right.NodeType.Should().Be(ExpressionType.Call);
+        }
+
+        [Fact]
+        public void Can_Call_Member_Procedures()
+        {
+            var tm = new DefaultTypeManager();
+            var arrayType = tm.RegisterClass(typeof(ArrayImpl));
+            
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Массив", new BslTypeValue(arrayType));
+            block.CodeBlock = "Массив.Добавить(1); Массив.Добавить(2);";
+
+            var method = block.CreateDelegate<Func<ArrayImpl, BslValue>>();
+            var array = new ArrayImpl();
+            method(array);
+
+            array.Should().HaveCount(2);
+        }
+        
+        [Fact]
+        public void Can_Call_Member_Functions()
+        {
+            var tm = new DefaultTypeManager();
+            var arrayType = tm.RegisterClass(typeof(ArrayImpl));
+            
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Массив", new BslTypeValue(arrayType));
+            block.CodeBlock = "Массив.Добавить(1); Массив.Добавить(2); А = Массив.Количество()";
+
+            var lambda = block.MakeExpression();
+
+            var lastAssignment = lambda.Body.As<BlockExpression>().Expressions[^2].As<BinaryExpression>();
+            lastAssignment.Right.Type.Should().Be(typeof(decimal));
         }
     }
 }

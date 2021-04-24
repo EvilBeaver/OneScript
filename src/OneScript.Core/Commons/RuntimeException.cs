@@ -12,17 +12,14 @@ namespace OneScript.Commons
 {
     public class RuntimeException : BslCoreException
     {
-        public RuntimeException(BilingualString message, object runtimeSpecificInfo) : base(message)
+        public RuntimeException(BilingualString message, Exception innerException) : base(message, innerException)
         {
-            RuntimeSpecificInfo = runtimeSpecificInfo;
         }
         
         public RuntimeException(BilingualString message) : base(message)
         {
         }
 
-        public object RuntimeSpecificInfo { get; set; }
-        
         public static RuntimeException DeprecatedMethodCall(string name)
         {
             return new RuntimeException($"Вызов безнадёжно устаревшего метода {name}");

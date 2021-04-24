@@ -126,5 +126,12 @@ namespace OneScript.Native.Runtime
             
             return (BslValue) factory.Activate(context, args.Cast<IValue>().ToArray());
         }
+        
+        // TODO: Сделать прямой маппинг на статические фабрики-методы, а не через Factory.Activate
+        public static T StrictConstructorCall<T>(ITypeManager typeManager, IServiceContainer services, string typeName, BslValue[] args)
+            where T : BslValue
+        {
+            return (T) ConstructorCall(typeManager, services, typeName, args);
+        }
     }
 }

@@ -24,6 +24,7 @@ namespace OneScript.Language
 
         private static int _alphabetLength;
         private TrieNode[] _alphabet;
+        private int _count;
 
         static LexemTrie()
         {
@@ -45,6 +46,8 @@ namespace OneScript.Language
             _alphabet = new TrieNode[_alphabetLength];
         }
 
+        public int Count => _count;
+        
         private static int GetIndex(char c)
         {
             var code = (int) c;
@@ -150,6 +153,7 @@ namespace OneScript.Language
             Debug.Assert(node != null);
 
             node.value = value;
+            ++_count;
         }
 
         public T Get(string key)

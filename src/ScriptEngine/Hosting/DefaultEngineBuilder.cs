@@ -35,8 +35,7 @@ namespace ScriptEngine.Hosting
             var container = GetContainer();
 
             var engine = container.Resolve<ScriptingEngine>();
-
-            var env = new MachineEnvironment(engine.TypeManager, engine.Environment, engine.GlobalsManager);
+            var env = container.Resolve<MachineEnvironment>();
             
             EnvironmentProviders.Invoke(env);
             

@@ -11,27 +11,19 @@ using OneScript.Language;
 
 namespace OneScript.Native.Compiler
 {
-    public class ReflectedMethodsCache
+    public class ReflectedMethodsCache : ReflectedMembersCache<MethodInfo>
     {
-        private LexemTrie<MethodInfo> _cache = new LexemTrie<MethodInfo>();
-
-        public MethodInfo GetOrAdd(Type type, string name)
+        public ReflectedMethodsCache() : base()
         {
-            return GetOrAdd(type, name, BindingFlags.Public | BindingFlags.Static);
         }
         
-        public MethodInfo GetOrAdd(Type type, string name, BindingFlags flags)
+        public ReflectedMethodsCache(int size) : base(size)
         {
-            var key = $"{type.Name}.{name}";
-            if (!_cache.TryGetValue(key, out var result))
-            {
-                result = type.GetMethod(name, flags);
-                if (result == null)
-                    throw new InvalidOperationException($"No method found {key}");
-                _cache.Add(key, result);
-            }
+        }
 
-            return result;
+        protected override MethodInfo SearchImpl(Type type, string name, BindingFlags flags)
+        {
+            return type.GetMethod(name, flags);
         }
     }
 }
