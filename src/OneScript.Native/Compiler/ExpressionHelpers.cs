@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.CSharp.RuntimeBinder;
@@ -27,25 +28,6 @@ namespace OneScript.Native.Compiler
         {
             return Expression.Convert(value, typeof(decimal));
         }
-
-        // public static Type GetClrType(TypeDescriptor type)
-        // {
-        //     Type clrType;
-        //     if (type == BasicTypes.String)
-        //         clrType = typeof(string);
-        //     else if (type == BasicTypes.Date)
-        //         clrType = typeof(DateTime);
-        //     else if (type == BasicTypes.Boolean)
-        //         clrType = typeof(bool);
-        //     else if (type == BasicTypes.Number)
-        //         clrType = typeof(decimal);
-        //     else if (type == BasicTypes.Type)
-        //         clrType = typeof(TypeTypeValue);
-        //     else
-        //         clrType = type.ImplementingClass;
-        //
-        //     return clrType;
-        // }
 
         public static ExpressionType TokenToOperationCode(Token stackOp)
         {
@@ -187,7 +169,7 @@ namespace OneScript.Native.Compiler
         {
             if (targetType == typeof(BslValue))
             {
-                result = ConvertToBslValue(value, targetType);
+                result = ConvertToBslValue(value);
                 return true;
             }
             else if (typeof(BslObjectValue).IsAssignableFrom(targetType) && value.Type == typeof(BslUndefinedValue))
@@ -301,7 +283,7 @@ namespace OneScript.Native.Compiler
             return default;
         }
 
-        private static Expression ConvertToBslValue(Expression value, Type targetType)
+        private static Expression ConvertToBslValue(Expression value)
         {
             if (value.Type.IsValue())
                 return value;
@@ -319,8 +301,8 @@ namespace OneScript.Native.Compiler
                     return Expression.Call(meth, value);
                 }
                 throw new CompilerException(new BilingualString(
-                    $"Преобразование из типа {targetType} в тип {value.Type} не поддерживается",
-                    $"Conversion from type {targetType} into {value.Type} is not supported"));
+                    $"Преобразование из типа {value.Type} в тип BslValue не поддерживается",
+                    $"Conversion from type {value.Type} into BslValue is not supported"));
             }
             
             if (value.Type == typeof(int) ||
@@ -400,6 +382,22 @@ namespace OneScript.Native.Compiler
             throw new CompilerException(new BilingualString(
                 $"Преобразование из типа {targetType} в тип {source.Type} не поддерживается",
                 $"Conversion from type {targetType} into {source.Type} is not supported"));
+        }
+
+        public static Expression ConstructorCall(Expression typeManager, Expression services, Expression type,
+            Expression[] argsArray)
+        {
+            var method = _operationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.ConstructorCall));
+
+            var arrayOfArgs = Expression.NewArrayInit(typeof(BslValue), argsArray.Select(ConvertToBslValue));
+            
+            return Expression.Call(method, 
+                typeManager,
+                services,
+                type,
+                arrayOfArgs);
         }
     }
 }

@@ -65,7 +65,7 @@ namespace OneScript.Dynamic.Tests
 
             public DynamicModule Compile(SymbolTable scopes)
             {
-                var compiler = new ModuleCompiler(_errors);
+                var compiler = new ModuleCompiler(_errors, null);
                 return compiler.Compile(new ModuleInformation()
                 {
                     CodeIndexer = _codeIndexer,

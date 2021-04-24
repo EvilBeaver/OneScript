@@ -12,7 +12,7 @@ using TinyIoC;
 
 namespace ScriptEngine.Hosting
 {
-    internal class TinyIocImplementation : IServiceDefinitions, IServiceContainer
+    public class TinyIocImplementation : IServiceDefinitions, IServiceContainer
     {
         private readonly TinyIoCContainer _container;
         private readonly Dictionary<Type, List<Type>> _multiRegistrations = new Dictionary<Type, List<Type>>();

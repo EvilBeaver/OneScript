@@ -12,6 +12,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using OneScript.Commons;
+using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -23,26 +24,24 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Values;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Native
 {
     [ContextClass("СкомпилированныйФрагмент", "CompiledCodeBlock")]
     public class CompiledBlock : AutoContext<CompiledBlock>
     {
+        private readonly IServiceContainer _services;
         private string _codeBlock;
         private BslSyntaxNode _ast;
-        private ITypeManager _typeManager;
         private IErrorSink _errors;
         private ISourceCodeIndexer _codeLinesReferences;
 
-        public CompiledBlock(ITypeManager tm)
+        public CompiledBlock(IServiceContainer services)
         {
-            _typeManager = tm;
+            _services = services;
         }
-
-        public OneScript.Native.Compiler.SymbolTable Symbols { get; set; }
+        
+        public SymbolTable Symbols { get; set; }
         
         [ContextProperty("Параметры", "Parameters")]
         public StructureImpl Parameters { get; set; } = new StructureImpl();
@@ -174,7 +173,8 @@ namespace OneScript.StandardLibrary.Native
             {
                 Errors = _errors,
                 Module = moduleInfo,
-                Symbols = Symbols
+                Symbols = Symbols,
+                Services = _services
             }, methodInfo);
             
             methodCompiler.CompileModuleBody(methodInfo, _ast.Children.FirstOrDefault(x => x.Kind == NodeKind.ModuleBody));
@@ -228,7 +228,7 @@ namespace OneScript.StandardLibrary.Native
         [ScriptConstructor]
         public static CompiledBlock Create(TypeActivationContext context)
         {
-            return new CompiledBlock(context.TypeManager);
+            return new CompiledBlock(context.Services);
         }
     }
 }

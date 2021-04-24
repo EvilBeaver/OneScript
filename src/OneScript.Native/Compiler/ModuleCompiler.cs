@@ -6,9 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
+using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
@@ -20,11 +19,12 @@ namespace OneScript.Native.Compiler
 {
     public class ModuleCompiler : ExpressionTreeGeneratorBase
     {
+        private readonly IServiceContainer _runtimeServices;
         private DynamicModule _module;
-        private ITypeManager  _typeManager;
 
-        public ModuleCompiler(IErrorSink errors) : base(errors)
+        public ModuleCompiler(IErrorSink errors, IServiceContainer runtimeServices) : base(errors)
         {
+            _runtimeServices = runtimeServices;
         }
         
         public DynamicModule Compile(
@@ -35,7 +35,6 @@ namespace OneScript.Native.Compiler
             )
         {
             InitContext(Errors, moduleInfo, symbols);
-            _typeManager = typeManager;
             
             _module = new DynamicModule
             {
@@ -50,7 +49,7 @@ namespace OneScript.Native.Compiler
         protected override BslWalkerContext MakeContext()
         {
             var c = base.MakeContext();
-            c.TypeManager = _typeManager;
+            c.Services = _runtimeServices;
             return c;
         }
 

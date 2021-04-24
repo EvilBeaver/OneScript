@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
@@ -19,6 +20,6 @@ namespace OneScript.Native.Compiler
         
         public ModuleInformation Module { get; set; }
         
-        public ITypeManager TypeManager { get; set; }
+        public IServiceContainer Services { get; set; }
     }
 }

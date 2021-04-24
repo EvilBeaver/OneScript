@@ -17,7 +17,7 @@ using Refl = System.Reflection;
 
 namespace ScriptEngine.Machine
 {
-    public delegate IValue InstanceConstructor(TypeActivationContext context, IValue[] arguments);
+    internal delegate IValue InstanceConstructor(TypeActivationContext context, IValue[] arguments);
     
     public class TypeFactory : ITypeFactory
     {

@@ -1396,7 +1396,7 @@ namespace ScriptEngine.Machine
                 Services = _mem.Services
             };
             
-            var instance = factory.Activate(context, argValues);
+            var instance = (IValue)factory.Activate(context, argValues);
             _operationStack.Push(instance);
             NextInstruction();
 

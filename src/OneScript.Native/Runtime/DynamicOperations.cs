@@ -6,9 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Linq;
 using OneScript.Commons;
+using OneScript.DependencyInjection;
 using OneScript.Localization;
+using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine.Machine;
 
 namespace OneScript.Native.Runtime
 {
@@ -107,6 +111,20 @@ namespace OneScript.Native.Runtime
                     $"Невозможно преобразовать {value.GetType()} в тип {nameof(BslValue)}",
                     $"Can't Convert {value.GetType()} to {nameof(BslValue)}"))
             };
+        }
+        
+        public static BslValue ConstructorCall(ITypeManager typeManager, IServiceContainer services, string typeName, BslValue[] args)
+        {
+            var type = typeManager.GetTypeByName(typeName);
+            var factory = typeManager.GetFactoryFor(type);
+            var context = new TypeActivationContext
+            {
+                TypeManager = typeManager,
+                Services = services,
+                TypeName = type.Name
+            };
+            
+            return (BslValue) factory.Activate(context, args.Cast<IValue>().ToArray());
         }
     }
 }

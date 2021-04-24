@@ -14,6 +14,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using OneScript.Commons;
+using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -34,14 +35,30 @@ namespace OneScript.Native.Compiler
         private BslParameterInfo[] _declaredParameters;
         
         private BinaryOperationCompiler _binaryOperationCompiler = new BinaryOperationCompiler();
-        private readonly ITypeManager _typeManager;
+        private ITypeManager _typeManager;
+        private readonly IServiceContainer _services;
 
         public MethodCompiler(BslWalkerContext walkContext, BslMethodInfo method) : base(walkContext)
         {
             _method = method;
-            _typeManager = walkContext.TypeManager;
+            _services = walkContext.Services;
         }
 
+        public ITypeManager CurrentTypeManager
+        {
+            get
+            {
+                if (_typeManager == default)
+                {
+                    _typeManager = _services.TryResolve<ITypeManager>();
+                    if (_typeManager == default)
+                        throw new NotSupportedException("Type manager is not registered in services.");
+                }
+
+                return _typeManager;
+            }
+        }
+        
         public void CompileMethod(MethodNode methodNode)
         {
             _localVariables.AddRange(
@@ -868,7 +885,6 @@ namespace OneScript.Native.Compiler
         protected override void VisitNewObjectCreation(NewObjectNode node)
         {
             Expression typeName;
-            Type staticallyKnownType = null;
             if (node.IsDynamic)
             {
                 typeName = ConvertToExpressionTree(node.TypeNameNode);
@@ -877,13 +893,28 @@ namespace OneScript.Native.Compiler
             {
                 var typeNameString = node.TypeNameNode.GetIdentifier();
                 typeName = Expression.Constant(typeNameString);
-                var typeDescriptor = _typeManager.GetTypeByName(typeNameString);
-                var factory = _typeManager.GetFactoryFor(typeDescriptor);
-                
-                
             }
-        }
+            
+            var typeManager = Expression.Constant(CurrentTypeManager);
+            var services = Expression.Constant(_services);
 
+            Expression[] parameters;
+            if (node.ConstructorArguments != default)
+            {
+                parameters = node.ConstructorArguments.Children.Select(passedArg => 
+                    passedArg.Children.Count > 0 ? 
+                        ConvertToExpressionTree(passedArg.Children[0]) :
+                        Expression.Default(typeof(BslValue))).ToArray();
+            }
+            else
+            {
+                parameters = new Expression[0];
+            }
+
+            var call = ExpressionHelpers.ConstructorCall(typeManager, services, typeName, parameters);
+            _statementBuildParts.Push(call);
+        }
+        
         #endregion
         
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
