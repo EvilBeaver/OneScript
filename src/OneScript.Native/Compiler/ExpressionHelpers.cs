@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -13,6 +14,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
+using OneScript.Types;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler
@@ -158,11 +160,16 @@ namespace OneScript.Native.Compiler
         {
             if (!TryStaticConversion(value, targetType, out var result))
             {
-                throw new Exception("Fucked UP!");
-                return DynamicallyCastToClrType(value, targetType);
+                return ConvertThroughBslValue(value, targetType);
             }
 
             return result;
+        }
+
+        private static Expression ConvertThroughBslValue(Expression value, Type targetType)
+        {
+            var bslVal = ConvertToBslValue(value);
+            return ConvertToType(bslVal, targetType);
         }
 
         public static bool TryStaticConversion(Expression value, Type targetType, out Expression result)
@@ -279,8 +286,9 @@ namespace OneScript.Native.Compiler
             {
                 return ToString(parameter);
             }
-            
-            return default;
+
+            var conversionOp = TryFindConversionOp(parameter, targetType);
+            return conversionOp;
         }
 
         private static Expression ConvertToBslValue(Expression value)
@@ -380,8 +388,8 @@ namespace OneScript.Native.Compiler
                 return conversion;
             
             throw new CompilerException(new BilingualString(
-                $"Преобразование из типа {targetType} в тип {source.Type} не поддерживается",
-                $"Conversion from type {targetType} into {source.Type} is not supported"));
+                $"Преобразование из типа {source.Type} в тип {targetType} не поддерживается",
+                $"Conversion from type {source.Type} into {targetType} is not supported"));
         }
 
         public static Expression ConstructorCall(Expression typeManager, Expression services, Expression type,
@@ -398,6 +406,16 @@ namespace OneScript.Native.Compiler
                 services,
                 type,
                 arrayOfArgs);
+        }
+
+        public static Expression TypeByNameCall(ITypeManager manager, Expression argument)
+        {
+            var method = _operationsCache.GetOrAdd(typeof(ITypeManager), nameof(ITypeManager.GetTypeByName),
+                BindingFlags.Instance | BindingFlags.Public);
+            
+            Debug.Assert(method != null);
+
+            return Expression.Call(Expression.Constant(manager), method, argument);
         }
     }
 }

@@ -537,14 +537,10 @@ namespace OneScript.Native.Runtime
         //     NextInstruction();
         // }
 
-        // private void ValType(int arg)
-        // {
-        //     var value = _operationStack.Pop();
-        //     var valueType = new BslTypeValue(value.SystemType);
-        //     _operationStack.Push(valueType);
-        //     NextInstruction();
-        // }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [ContextMethod("ТипЗнч", "TypeOf")]
+        public static BslValue ValType(BslValue value) => new BslTypeValue(value.SystemType);
+        
         private static decimal PowInt(decimal bas, uint exp)
         {
             decimal pow = 1;

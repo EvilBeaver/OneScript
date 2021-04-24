@@ -575,5 +575,29 @@ namespace OneScript.Core.Tests
                 System.IO.File.Delete(tempFile);
             }
         }
+
+        [Fact]
+        public void Can_Call_TypeConversions()
+        {
+            var block = new CompiledBlock(default);
+            block.CodeBlock = 
+                @"БулевТип = Истина;
+                ЧисловойТип = 1;
+                БулевТип = Булево(ЧисловойТип);";
+
+            var l = block.MakeExpression();
+        }
+        
+        [Fact]
+        public void Can_Call_ParameterlessFunctions()
+        {
+            var block = new CompiledBlock(default);
+            block.CodeBlock = "А = ТекущаяДата()";
+
+            var l = block.MakeExpression();
+            var statement = l.Body.As<BlockExpression>().Expressions[0].As<BinaryExpression>();
+
+            statement.Right.NodeType.Should().Be(ExpressionType.Call);
+        }
     }
 }

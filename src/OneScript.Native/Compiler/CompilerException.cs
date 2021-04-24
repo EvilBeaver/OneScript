@@ -30,6 +30,6 @@ namespace OneScript.Native.Compiler
             Position = position;
         }
 
-        public override string Message => $"{base.Message} ({Position?.LineNumber ?? -1}\n{StackTrace}";
+        public override string Message => $"{base.Message} ({Position?.LineNumber ?? -1})\n{StackTrace}";
     }
 }

@@ -37,6 +37,7 @@ namespace OneScript.Native.Compiler
         private BinaryOperationCompiler _binaryOperationCompiler = new BinaryOperationCompiler();
         private ITypeManager _typeManager;
         private readonly IServiceContainer _services;
+        private readonly BuiltInFunctionsCache _builtInFunctions = new BuiltInFunctionsCache();
 
         public MethodCompiler(BslWalkerContext walkContext, BslMethodInfo method) : base(walkContext)
         {
@@ -155,9 +156,12 @@ namespace OneScript.Native.Compiler
             catch (Exception e)
             {
                 RestoreNestingLevel(nestingLevel);
-                if (e is BslCoreException)
+                if (e is CompilerException ce)
+                {
+                    ce.Position = ToCodePosition(statement.Location);
                     throw;
-
+                }
+                
                 var msg = new BilingualString(
                     "Ошибка компиляции статического модуля\n" + e,
                     "Error compiling static module\n" + e);
@@ -859,6 +863,11 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitGlobalFunctionCall(CallNode node)
         {
+            if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
+            {
+                _statementBuildParts.Push(CreateBuiltInFunctionCall(node));
+                return;
+            }
             var expression = CreateMethodCall(node);
             _statementBuildParts.Push(expression);
         }
@@ -872,7 +881,7 @@ namespace OneScript.Native.Compiler
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
-            var args = node.ArgumentList.Children.Select(ConvertToExpressionTree);
+            var args = PrepareCallArguments(node.ArgumentList, symbol.MethodInfo.GetParameters());
 
             var context = Expression.Constant(symbol.Target);
             return Expression.Call(context, symbol.MethodInfo, args);
@@ -917,6 +926,158 @@ namespace OneScript.Native.Compiler
         
         #endregion
         
+        private Expression CreateBuiltInFunctionCall(CallNode node)
+        {
+            Expression result;
+            switch (node.Identifier.Lexem.Token)
+            {
+                case Token.Bool:
+                    result = DirectConversionCall(node, typeof(bool));
+                    break;
+                case Token.Number:
+                    result = DirectConversionCall(node, typeof(decimal));
+                    break;
+                case Token.Str:
+                    result = DirectConversionCall(node, typeof(string));
+                    break;
+                case Token.Date:
+                    result = DirectConversionCall(node, typeof(string));
+                    break;
+                case Token.Type:
+                    CheckArgumentsCount(node.ArgumentList, 1);
+                    result = ExpressionHelpers.TypeByNameCall(CurrentTypeManager,
+                        ConvertToExpressionTree(node.ArgumentList.Children[0]));
+                    break;
+                case Token.ExceptionInfo:
+                    CheckArgumentsCount(node.ArgumentList, 0);
+                    throw new NotImplementedException();
+                    break;
+                case Token.ExceptionDescr:
+                    CheckArgumentsCount(node.ArgumentList, 0);
+                    throw new NotImplementedException();
+                    break;
+                default:
+                    var methodName = node.Identifier.GetIdentifier();
+                    var method = _builtInFunctions.GetMethod(methodName);
+                    var declaredParameters = method.GetParameters();
+
+                    var args = PrepareCallArguments(node.ArgumentList, declaredParameters);
+
+                    result = Expression.Call(method, args);
+                    break;
+            }
+
+            return result;
+        }
+
+        private void CheckArgumentsCount(BslSyntaxNode argList, int needed)
+        {
+            if (argList.Children.Count < needed)
+            {
+                var errText = new BilingualString("Недостаточно фактических параметров",
+                    "Not enough actual parameters");
+                AddError(errText, argList.Location);
+            }
+
+            if (argList.Children.Count > needed || argList.Children.Any(x => x.Children.Count == 0))
+            {
+                var errText = new BilingualString("Слишком много фактических параметров",
+                    "Too many actual parameters");
+                AddError(errText, argList.Location);
+            }
+        }
+
+        private Expression DirectConversionCall(CallNode node, Type type)
+        {
+            CheckArgumentsCount(node.ArgumentList, 1);
+            return ExpressionHelpers.ConvertToType(
+                ConvertToExpressionTree(node.ArgumentList.Children[0].Children[0]),
+                type);
+        }
+
+        private IEnumerable<Expression> PrepareCallArguments(BslSyntaxNode argList, ParameterInfo[] declaredParameters)
+        {
+            var factArguments = new List<Expression>();
+
+            var parameters = argList.Children.Select(passedArg =>
+                passedArg.Children.Count > 0
+                    ? ConvertToExpressionTree(passedArg.Children[0])
+                    : null).ToArray();
+
+            var parametersToProcess = declaredParameters.Length;
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if (parametersToProcess == 0)
+                {
+                    var errText = new BilingualString("Слишком много фактических параметров",
+                        "Too many actual parameters");
+                    AddError(errText, argList.Location);
+                }
+
+                var passedArg = parameters[i];
+                var declaredParam = declaredParameters[i];
+
+                if (declaredParam.GetCustomAttribute<ParamArrayAttribute>() != null)
+                {
+                    // это спецпараметр
+                    var remainParameters = parameters
+                        .Skip(i)
+                        .Select(x => PassSingleParameter(x, declaredParam.ParameterType, argList.Location));
+
+                    var paramArray = Expression.NewArrayInit(declaredParam.ParameterType, remainParameters);
+                    factArguments.Add(paramArray);
+                    
+                    parametersToProcess = 0;
+                    break;
+                }
+                else
+                {
+                    var convertedOrDirect = PassSingleParameter(passedArg, declaredParam.ParameterType, argList.Location);
+                    factArguments.Add(convertedOrDirect);
+                }
+
+                --parametersToProcess;
+            }
+
+            if (parametersToProcess > 0)
+            {
+                foreach (var declaredParam in declaredParameters.Skip(parameters.Length))
+                {
+                    if (declaredParam.HasDefaultValue)
+                    {
+                        factArguments.Add(Expression.Constant(declaredParam.DefaultValue));
+                    }
+                    else
+                    {
+                        var errText = new BilingualString("Недостаточно фактических параметров",
+                            "Not enough actual parameters");
+                        AddError(errText, argList.Location);
+                    }
+                }
+            }
+
+            return factArguments;
+        }
+
+        private Expression PassSingleParameter(Expression passedArg, Type targetType, CodeRange location)
+        {
+            if (passedArg == null)
+            {
+                return Expression.Default(targetType);
+            }
+            
+            var convertedOrDirect = ExpressionHelpers.TryConvertParameter(passedArg, targetType);
+            if (convertedOrDirect == null)
+            {
+                AddError(
+                    new BilingualString(
+                        $"Не удается выполнить преобразование из типа {passedArg.Type} в тип {targetType}"),
+                    location);
+            }
+
+            return convertedOrDirect;
+        }
+
         private Expression ConvertToExpressionTree(BslSyntaxNode arg)
         {
             VisitExpression(arg);

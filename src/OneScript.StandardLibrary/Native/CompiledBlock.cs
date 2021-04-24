@@ -146,8 +146,6 @@ namespace OneScript.StandardLibrary.Native
                 throw new RuntimeException(sb.ToString());
             }
 
-            
-
             return expression;
         }
 
