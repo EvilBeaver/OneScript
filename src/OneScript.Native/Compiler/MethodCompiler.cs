@@ -231,11 +231,16 @@ namespace OneScript.Native.Compiler
             if (props.Length == 1)
             {
                 var instance = _statementBuildParts.Pop();
-                _statementBuildParts.Push(Expression.MakeMemberAccess(instance, props[0]));
+                var expression = Expression.MakeMemberAccess(instance, props[0]);
                 if (!toWrite)
                 {
-                    _statementBuildParts.Push(Expression.TypeAs(_statementBuildParts.Pop(), typeof(BslValue)));
+                    if (!typeof(IRuntimeContextInstance).IsAssignableFrom(expression.Type))
+                    {
+                        _statementBuildParts.Push(Expression.TypeAs(expression, typeof(BslValue)));
+                        return;
+                    }
                 }
+                _statementBuildParts.Push(expression);
                 return;
             }
 
