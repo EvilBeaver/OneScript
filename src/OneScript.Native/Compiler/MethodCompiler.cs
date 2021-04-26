@@ -210,7 +210,7 @@ namespace OneScript.Native.Compiler
             }
         }
 
-        protected override void VisitResolveProperty(TerminalNode operand)
+        private void MakePropertyAccess(TerminalNode operand, bool toRead, bool toWrite)
         {
             var memberName = operand.Lexem.Content;
             var top = _statementBuildParts.Peek();
@@ -232,6 +232,10 @@ namespace OneScript.Native.Compiler
             {
                 var instance = _statementBuildParts.Pop();
                 _statementBuildParts.Push(Expression.MakeMemberAccess(instance, props[0]));
+                if (toRead)
+                {
+                    _statementBuildParts.Push(Expression.TypeAs(_statementBuildParts.Pop(), typeof(BslValue)));
+                }
                 return;
             }
 
@@ -258,25 +262,37 @@ namespace OneScript.Native.Compiler
                 var miFindProperty = topType.GetMethod("FindProperty",
                     BindingFlags.Public | BindingFlags.Instance,
                     null, CallingConventions.Any, new[] {typeof(string)}, null);
-                var miGetPropValue = topType.GetMethod("GetPropValue",
-                    BindingFlags.Public | BindingFlags.Instance,
-                    null, CallingConventions.Any, new[] {typeof(int)}, null);
 
-                var b = Expression.Block(new[] {obj, tmp},
-                    new Expression[]
-                    {
-                        Expression.Assign(obj, instance),
-                        Expression.Assign(tmp,
-                            Expression.Call(obj, miFindProperty, Expression.Constant(memberName))),
-                        Expression.TypeAs(Expression.Call(obj, miGetPropValue, tmp), typeof(BslValue))
-                    });
+                if (toRead)
+                {
+                    var miGetPropValue = topType.GetMethod("GetPropValue",
+                        BindingFlags.Public | BindingFlags.Instance,
+                        null, CallingConventions.Any, new[] {typeof(int)}, null);
 
-                _statementBuildParts.Push(b);
+                    var b = Expression.Block(new[] {obj, tmp},
+                        new Expression[]
+                        {
+                            Expression.Assign(obj, instance),
+                            Expression.Assign(tmp,
+                                Expression.Call(obj, miFindProperty, Expression.Constant(memberName))),
+                            Expression.TypeAs(Expression.Call(obj, miGetPropValue, tmp), typeof(BslValue))
+                        });
+
+                    _statementBuildParts.Push(b);
+                } else if (toWrite)
+                {
+                    throw new NotImplementedException("Dynamic property set, SetPropVal");
+                }
             }
             else
             {
                 throw new NotImplementedException("Dynamic");
             }
+        }
+
+        protected override void VisitResolveProperty(TerminalNode operand)
+        {
+            MakePropertyAccess(operand, toRead: true, toWrite: false);
         }
 
         protected override void VisitVariableWrite(TerminalNode node)
@@ -368,10 +384,27 @@ namespace OneScript.Native.Compiler
             }
             else
             {
-                VisitReferenceRead(node);
+                VisitReferenceWrite(node);
             }
         }
-        
+
+        protected override void VisitReferenceWrite(BslSyntaxNode node)
+        {
+            var instanceNode = node.Children[0];
+            var memberNode = node.Children[1] as TerminalNode;
+
+            if (instanceNode is TerminalNode terminalNode)
+            {
+                VisitVariableRead(terminalNode);
+            }
+            else
+            {
+                DefaultVisit(instanceNode);
+            }
+
+            MakePropertyAccess(memberNode, toRead: false, toWrite: true);
+        }
+
         protected override void VisitBinaryOperation(BinaryOperationNode binaryOperationNode)
         {
             VisitExpression(binaryOperationNode.Children[0]);

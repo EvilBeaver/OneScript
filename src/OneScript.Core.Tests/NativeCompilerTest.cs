@@ -14,6 +14,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Native.Compiler;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Collections.ValueList;
 using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.Json;
 using OneScript.StandardLibrary.Native;
@@ -706,6 +707,31 @@ namespace OneScript.Core.Tests
             testData.Insert("Свойство1", innerTestData);
             
             ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData })).Should().Be(2M);
+        }
+        [Fact]
+        
+        public void Can_Do_PropWrite_Static()
+        {
+            var tm = new DefaultTypeManager();
+            tm.RegisterClass(typeof(ValueListImpl));
+            var objectType = tm.RegisterClass(typeof(ValueListItem));
+            
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.Parameters.Insert("НовоеЗначение", new BslTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Ф.Значение = НовоеЗначение; Возврат Ф.Значение";
+            var expression = block.MakeExpression();
+
+            var func = expression.Compile();
+
+            var testStructure = new ValueListImpl();
+            testStructure.Add(ValueFactory.Create(1M));
+
+            var testData = testStructure.FirstOrDefault();
+
+            ((decimal) (BslNumericValue) func.DynamicInvoke(new object[] {testData, 2M}))
+                .Should().Be(2M);
         }
     }
 }
