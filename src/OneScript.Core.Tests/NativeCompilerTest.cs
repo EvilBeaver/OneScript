@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using FluentAssertions;
+using OneScript.DependencyInjection;
 using OneScript.Native.Compiler;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
@@ -19,7 +20,6 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 using Xunit;
 
@@ -27,6 +27,24 @@ namespace OneScript.Core.Tests
 {
     public class NativeCompilerTest
     {
+        private CompiledBlock GetCompiler(Action<ITypeManager, IServiceDefinitions> setup)
+        {
+            var tm = new DefaultTypeManager();
+            var services = new TinyIocImplementation();
+            services.Register<ITypeManager>(tm);
+            setup(tm, services);
+
+            return new CompiledBlock(services.CreateContainer());
+        }
+        
+        private CompiledBlock GetCompiler(ITypeManager tm)
+        {
+            var services = new TinyIocImplementation();
+            services.Register(tm);
+
+            return new CompiledBlock(services.CreateContainer());
+        }
+        
         [Fact]
         public void CanInjectContext_As_Symbols()
         {
@@ -516,13 +534,7 @@ namespace OneScript.Core.Tests
         [Fact]
         public void Can_Call_Parameterless_Constructor()
         {
-            var tm = new DefaultTypeManager();
-            tm.RegisterClass(typeof(ArrayImpl));
-
-            var services = new TinyIocImplementation();
-            services.Register<ITypeManager>(tm);
-            
-            var block = new CompiledBlock(services.CreateContainer());
+            var block = GetCompiler((tm, s) => tm.RegisterClass(typeof(ArrayImpl)));
             block.CodeBlock = "Возврат Новый Массив";
 
             var func = block.CreateDelegate<Func<BslValue>>();
@@ -622,12 +634,32 @@ namespace OneScript.Core.Tests
         }
         
         [Fact]
-        public void Can_Call_Member_Procedures_With_Defaults()
+        public void Can_Call_Member_Procedures_On_Dynamics()
         {
             var tm = new DefaultTypeManager();
             var arrayType = tm.RegisterClass(typeof(ArrayImpl));
             
-            var block = new CompiledBlock(default);
+            var block = GetCompiler(tm);
+            block.Parameters.Insert("Массив", new BslTypeValue(arrayType));
+            block.CodeBlock = "Массив.Добавить(Новый Массив); Массив[0].Добавить(2)";
+
+            var l = block.MakeExpression();
+            var method = block.CreateDelegate<Func<ArrayImpl, BslValue>>();
+            var array = new ArrayImpl();
+            method(array);
+
+            array.Should().HaveCount(1);
+            array.Get(0).As<ArrayImpl>().Should().HaveCount(1);
+        }
+        
+        [Fact]
+        public void Can_Call_Member_Procedures_With_Defaults()
+        {
+            var tm = new DefaultTypeManager();
+            var arrayType = tm.RegisterClass(typeof(ArrayImpl));
+            var services = new TinyIocImplementation();
+            services.Register<ITypeManager>(tm);
+            var block = new CompiledBlock(services);
             block.Parameters.Insert("Массив", new BslTypeValue(arrayType));
             block.CodeBlock = "Массив.Добавить();";
 
