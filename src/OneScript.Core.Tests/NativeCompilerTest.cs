@@ -8,10 +8,13 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using FluentAssertions;
+using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Native.Compiler;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.Json;
 using OneScript.StandardLibrary.Native;
 using OneScript.StandardLibrary.Text;
@@ -651,6 +654,58 @@ namespace OneScript.Core.Tests
 
             var lastAssignment = lambda.Body.As<BlockExpression>().Expressions[^2].As<BinaryExpression>();
             lastAssignment.Right.Type.Should().Be(typeof(decimal));
+        }
+        
+        static object GetDynamicMember(object obj, string memberName)
+        {
+            var binder = Binder.GetMember(CSharpBinderFlags.None, memberName, obj.GetType(),
+                new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
+            var callsite = CallSite<Func<CallSite, object, object>>.Create(binder);
+            return callsite.Target(callsite, obj);
+        }
+        
+        [Fact]
+        public void Can_Do_PropRead_Static()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(ValueTable));
+            
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.CodeBlock = 
+                "Возврат Ф.Колонки.Количество();";
+            var expression = block.MakeExpression();
+
+            var func = expression.Compile();
+
+            var testData = new ValueTable();
+            testData.Columns.Add("Колонка1");
+            testData.Columns.Add("Колонка2");
+
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData })).Should().Be(2M);
+        }
+        
+        [Fact]
+        public void Can_Do_PropRead_Dynamic()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(StructureImpl));
+            
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.CodeBlock = 
+                "Возврат Ф.Свойство1.ВложенноеСвойство1;";
+            var expression = block.MakeExpression();
+
+            var func = expression.Compile();
+
+            var innerTestData = new StructureImpl();
+            innerTestData.Insert("ВложенноеСвойство1", ValueFactory.Create(2M));
+
+            var testData = new StructureImpl();
+            testData.Insert("Свойство1", innerTestData);
+            
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData })).Should().Be(2M);
         }
     }
 }

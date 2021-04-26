@@ -13,6 +13,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Commons;
 using OneScript.DependencyInjection;
 using OneScript.Language;
@@ -23,6 +24,10 @@ using OneScript.Localization;
 using OneScript.Native.Runtime;
 using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
+using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
+using MethodInfo = System.Reflection.MethodInfo;
 
 namespace OneScript.Native.Compiler
 {
@@ -202,6 +207,75 @@ namespace OneScript.Native.Compiler
                 // prop read
                 var target = symbol.Target;
                 _statementBuildParts.Push(Expression.Constant(target));
+            }
+        }
+
+        protected override void VisitResolveProperty(TerminalNode operand)
+        {
+            var memberName = operand.Lexem.Content;
+            var top = _statementBuildParts.Peek();
+            var topType = top.Type;
+            var props = topType.FindMembers(
+                MemberTypes.Field | MemberTypes.Property,
+                BindingFlags.Public | BindingFlags.Instance,
+                (info, criteria) =>
+                {
+                    var a = info.CustomAttributes.FirstOrDefault(data =>
+                        data.AttributeType == typeof(ContextPropertyAttribute));
+                    if (a == null) return false;
+                    return a.ConstructorArguments.Any(alias =>
+                        StringComparer.CurrentCultureIgnoreCase.Equals(alias.Value.ToString(), memberName));
+                },
+                null);
+
+            if (props.Length == 1)
+            {
+                var instance = _statementBuildParts.Pop();
+                _statementBuildParts.Push(Expression.MakeMemberAccess(instance, props[0]));
+                return;
+            }
+
+            if (props.Length > 1)
+            {
+                throw new NotImplementedException("Ambiguous");
+            }
+
+            // (props.Length == 0) - будем искать рефлексией времени исполнения
+
+            if (typeof(IRuntimeContextInstance).IsAssignableFrom(topType)
+                || typeof(IValue).IsAssignableFrom(topType))
+            {
+                var instance = _statementBuildParts.Pop();
+                if (!typeof(IRuntimeContextInstance).IsAssignableFrom(topType))
+                {
+                    instance = Expression.TypeAs(instance, typeof(IRuntimeContextInstance));
+                    topType = typeof(IRuntimeContextInstance);
+                }
+
+                var tmp = Expression.Parameter(typeof(int));
+                var obj = Expression.Parameter(instance.Type);
+
+                var miFindProperty = topType.GetMethod("FindProperty",
+                    BindingFlags.Public | BindingFlags.Instance,
+                    null, CallingConventions.Any, new[] {typeof(string)}, null);
+                var miGetPropValue = topType.GetMethod("GetPropValue",
+                    BindingFlags.Public | BindingFlags.Instance,
+                    null, CallingConventions.Any, new[] {typeof(int)}, null);
+
+                var b = Expression.Block(new[] {obj, tmp},
+                    new Expression[]
+                    {
+                        Expression.Assign(obj, instance),
+                        Expression.Assign(tmp,
+                            Expression.Call(obj, miFindProperty, Expression.Constant(memberName))),
+                        Expression.TypeAs(Expression.Call(obj, miGetPropValue, tmp), typeof(BslValue))
+                    });
+
+                _statementBuildParts.Push(b);
+            }
+            else
+            {
+                throw new NotImplementedException("Dynamic");
             }
         }
 

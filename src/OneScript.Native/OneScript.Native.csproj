@@ -7,6 +7,7 @@
     <ItemGroup>
         <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
         <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
+        <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
     </ItemGroup>
 
     <ItemGroup>
