@@ -222,7 +222,7 @@ namespace ScriptEngine.Machine.Contexts
             try
             {
                 var propIdx = FindProperty(binder.Name);
-                if (IsPropWritable(propIdx))
+                if (!IsPropWritable(propIdx))
                 {
                     return false;
                 }

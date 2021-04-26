@@ -24,9 +24,6 @@ using OneScript.Localization;
 using OneScript.Native.Runtime;
 using OneScript.Types;
 using OneScript.Values;
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
-using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
 using MethodInfo = System.Reflection.MethodInfo;
 
 namespace OneScript.Native.Compiler
@@ -228,78 +225,63 @@ namespace OneScript.Native.Compiler
                 },
                 null);
 
-            if (props.Length == 1)
-            {
-                var instance = _statementBuildParts.Pop();
-                var expression = Expression.MakeMemberAccess(instance, props[0]);
-                if (!toWrite)
-                {
-                    if (!typeof(IRuntimeContextInstance).IsAssignableFrom(expression.Type))
-                    {
-                        _statementBuildParts.Push(Expression.TypeAs(expression, typeof(BslValue)));
-                        return;
-                    }
-                }
-                _statementBuildParts.Push(expression);
-                return;
-            }
-
             if (props.Length > 1)
             {
                 throw new NotImplementedException("Ambiguous");
             }
+            
+            var instance = _statementBuildParts.Pop();
+
+            if (props.Length == 1)
+            {
+                var expression = Expression.MakeMemberAccess(instance, props[0]);
+
+                if (!toWrite && false)
+                {
+                    _statementBuildParts.Push(Expression.TypeAs(expression, typeof(BslValue)));
+                    return;
+                }
+
+                _statementBuildParts.Push(expression);
+                return;
+            }
 
             // (props.Length == 0) - будем искать рефлексией времени исполнения
-
-            if (typeof(IRuntimeContextInstance).IsAssignableFrom(topType)
-                || typeof(IValue).IsAssignableFrom(topType))
+            if (!toWrite)
             {
-                var instance = _statementBuildParts.Pop();
-                if (!typeof(IRuntimeContextInstance).IsAssignableFrom(topType))
-                {
-                    instance = Expression.TypeAs(instance, typeof(IRuntimeContextInstance));
-                    topType = typeof(IRuntimeContextInstance);
-                }
+                var args = new List<Expression>();
+                args.Add(instance);
+                var csharpArgs = new List<CSharpArgumentInfo>();
+                csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
+                csharpArgs.AddRange(args.Select(x =>
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
 
-                if (!toWrite)
-                {
-                    var tmp = Expression.Parameter(typeof(int));
-                    var obj = Expression.Parameter(instance.Type);
-
-                    var miFindProperty = topType.GetMethod("FindProperty",
-                        BindingFlags.Public | BindingFlags.Instance,
-                        null, CallingConventions.Any, new[] {typeof(string)}, null);
-
-                    var miGetPropValue = topType.GetMethod("GetPropValue",
-                        BindingFlags.Public | BindingFlags.Instance,
-                        null, CallingConventions.Any, new[] {typeof(int)}, null);
-
-                    var b = Expression.Block(new[] {obj, tmp},
-                        new Expression[]
-                        {
-                            Expression.Assign(obj, instance),
-                            Expression.Assign(tmp,
-                                Expression.Call(obj, miFindProperty, Expression.Constant(memberName))),
-                            Expression.TypeAs(Expression.Call(obj, miGetPropValue, tmp), typeof(BslValue))
-                        });
-
-                    _statementBuildParts.Push(b);
-                } else
-                {
-                    var valueToSet = _statementBuildParts.Pop();
-                    var miSetPropValue = (typeof(DynamicOperations)).GetMethod("SetPropValue",
-                        BindingFlags.Public | BindingFlags.Static,
-                        null, CallingConventions.Any, 
-                        new[] {typeof(IRuntimeContextInstance), typeof(string), typeof(object)}, 
-                        null);
-
-                    _statementBuildParts.Push(Expression.Call(null, miSetPropValue, instance, Expression.Constant(memberName), 
-                        Expression.TypeAs(valueToSet, typeof(object))));
-                }
+                var binder = Microsoft.CSharp.RuntimeBinder.Binder.GetMember(
+                    CSharpBinderFlags.InvokeSimpleName,
+                    memberName,
+                    typeof(BslObjectValue), csharpArgs);
+                var expr = Expression.Dynamic(binder, typeof(object), args);
+                _statementBuildParts.Push((expr));
             }
             else
             {
-                throw new NotImplementedException("Dynamic");
+                var valueToSet = _statementBuildParts.Pop();
+                
+                var args = new List<Expression>();
+                args.Add(instance);
+                args.Add(valueToSet);
+                
+                var csharpArgs = new List<CSharpArgumentInfo>();
+                csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
+                csharpArgs.AddRange(args.Select(x =>
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
+
+                var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(
+                    CSharpBinderFlags.InvokeSimpleName,
+                    memberName,
+                    typeof(BslObjectValue), csharpArgs);
+                var expr = Expression.Dynamic(binder, typeof(object), args);
+                _statementBuildParts.Push((expr));
             }
         }
 
