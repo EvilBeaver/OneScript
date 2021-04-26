@@ -839,11 +839,10 @@ namespace OneScript.Native.Compiler
                     typeof(object).GetMethod("ToString"));
                 
                 var exceptionType = typeof(RuntimeException);
-                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString), typeof(object)});
+                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString)});
                 var exceptionExpression = Expression.New(
                     ctor, 
-                    Expression.Convert(expression, typeof(BilingualString)),
-                    Expression.Default(typeof(object)));
+                    Expression.Convert(expression, typeof(BilingualString)));
                 _blocks.Add(Expression.Throw(exceptionExpression));
             }
             base.VisitRaiseNode(node);
