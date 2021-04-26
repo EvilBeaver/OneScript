@@ -622,6 +622,22 @@ namespace OneScript.Core.Tests
         }
         
         [Fact]
+        public void Can_Call_Member_Procedures_With_Defaults()
+        {
+            var tm = new DefaultTypeManager();
+            var arrayType = tm.RegisterClass(typeof(ArrayImpl));
+            
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Массив", new BslTypeValue(arrayType));
+            block.CodeBlock = "Массив.Добавить();";
+
+            var method = block.CreateDelegate<Func<ArrayImpl, BslValue>>();
+            var array = new ArrayImpl();
+            method(array);
+
+            array.Should().HaveCount(1);
+        }
+        [Fact]
         public void Can_Call_Member_Functions()
         {
             var tm = new DefaultTypeManager();
