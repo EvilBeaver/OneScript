@@ -24,6 +24,7 @@ using OneScript.Localization;
 using OneScript.Native.Runtime;
 using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine.Machine;
 using MethodInfo = System.Reflection.MethodInfo;
 
 namespace OneScript.Native.Compiler
@@ -207,36 +208,18 @@ namespace OneScript.Native.Compiler
             }
         }
 
-        private void MakePropertyAccess(TerminalNode operand, bool toWrite = false)
+        private void MakeReadPropertyAccess(TerminalNode operand)
         {
             var memberName = operand.Lexem.Content;
-            var top = _statementBuildParts.Peek();
-            var topType = top.Type;
-            var props = topType.FindMembers(
-                MemberTypes.Field | MemberTypes.Property,
-                BindingFlags.Public | BindingFlags.Instance,
-                (info, criteria) =>
-                {
-                    var a = info.CustomAttributes.FirstOrDefault(data =>
-                        data.AttributeType == typeof(ContextPropertyAttribute));
-                    if (a == null) return false;
-                    return a.ConstructorArguments.Any(alias =>
-                        StringComparer.CurrentCultureIgnoreCase.Equals(alias.Value.ToString(), memberName));
-                },
-                null);
-
-            if (props.Length > 1)
-            {
-                throw new NotImplementedException("Ambiguous");
-            }
-            
             var instance = _statementBuildParts.Pop();
+            var instanceType = instance.Type;
+            var prop = FindPropertyOfType(operand, instanceType, memberName);
 
-            if (props.Length == 1)
+            if (prop != null)
             {
-                var expression = Expression.MakeMemberAccess(instance, props[0]);
+                var expression = Expression.MakeMemberAccess(instance, prop);
 
-                if (!toWrite && false)
+                if (typeof(IValue) == expression.Type)
                 {
                     _statementBuildParts.Push(Expression.TypeAs(expression, typeof(BslValue)));
                     return;
@@ -246,48 +229,56 @@ namespace OneScript.Native.Compiler
                 return;
             }
 
-            // (props.Length == 0) - будем искать рефлексией времени исполнения
-            if (!toWrite)
-            {
-                var args = new List<Expression>();
-                args.Add(instance);
-                var csharpArgs = new List<CSharpArgumentInfo>();
-                csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
-                csharpArgs.AddRange(args.Select(x =>
-                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
+            var args = new List<Expression>();
+            args.Add(instance);
+            var csharpArgs = new List<CSharpArgumentInfo>();
+            csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
+            csharpArgs.AddRange(args.Select(x =>
+                CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
 
-                var binder = Microsoft.CSharp.RuntimeBinder.Binder.GetMember(
-                    CSharpBinderFlags.InvokeSimpleName,
-                    memberName,
-                    typeof(BslObjectValue), csharpArgs);
-                var expr = Expression.Dynamic(binder, typeof(object), args);
-                _statementBuildParts.Push((expr));
-            }
-            else
-            {
-                var valueToSet = _statementBuildParts.Pop();
-                
-                var args = new List<Expression>();
-                args.Add(instance);
-                args.Add(valueToSet);
-                
-                var csharpArgs = new List<CSharpArgumentInfo>();
-                csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
-                csharpArgs.AddRange(args.Select(x =>
-                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
+            var binder = Microsoft.CSharp.RuntimeBinder.Binder.GetMember(
+                CSharpBinderFlags.InvokeSimpleName,
+                memberName,
+                typeof(BslObjectValue), csharpArgs);
+            var expr = Expression.Dynamic(binder, typeof(object), args);
+            _statementBuildParts.Push((expr));
+        }
 
-                var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(
-                    CSharpBinderFlags.InvokeSimpleName,
-                    memberName,
-                    typeof(BslObjectValue), csharpArgs);
-                var expr = Expression.Dynamic(binder, typeof(object), args);
-                _statementBuildParts.Push((expr));
+        private void MakeWritePropertyAccess(TerminalNode operand)
+        {
+            var memberName = operand.Lexem.Content;
+            var instance = _statementBuildParts.Pop();
+            var instanceType = instance.Type;
+            var prop = FindPropertyOfType(operand, instanceType, memberName);
+
+            if (prop != null)
+            {
+                _statementBuildParts.Push(Expression.MakeMemberAccess(instance, prop));
+                return;
             }
+
+            var valueToSet = _statementBuildParts.Pop();
+
+            var args = new List<Expression>();
+            args.Add(instance);
+            args.Add(valueToSet);
+
+            var csharpArgs = new List<CSharpArgumentInfo>();
+            csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
+            csharpArgs.AddRange(args.Select(x =>
+                CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
+
+            var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(
+                CSharpBinderFlags.InvokeSimpleName,
+                memberName,
+                typeof(BslObjectValue), csharpArgs);
+            var expr = Expression.Dynamic(binder, typeof(object), args);
+            _statementBuildParts.Push((expr));
         }
 
         protected override void VisitResolveProperty(TerminalNode operand)
         {
-            MakePropertyAccess(operand);
+            MakeReadPropertyAccess(operand);
         }
 
         protected override void VisitVariableWrite(TerminalNode node)
@@ -397,7 +388,7 @@ namespace OneScript.Native.Compiler
                 DefaultVisit(instanceNode);
             }
 
-            MakePropertyAccess(memberNode, true);
+            MakeWritePropertyAccess(memberNode);
         }
 
         protected override void VisitBinaryOperation(BinaryOperationNode binaryOperationNode)
@@ -1063,6 +1054,29 @@ namespace OneScript.Native.Compiler
             }
 
             return methodInfo;
+        }
+
+        private PropertyInfo FindPropertyOfType(BslSyntaxNode node, Type targetType, string name)
+        {
+            var props = targetType.FindMembers(
+                MemberTypes.Field | MemberTypes.Property,
+                BindingFlags.Public | BindingFlags.Instance,
+                (info, criteria) =>
+                {
+                    var a = info.CustomAttributes.FirstOrDefault(data =>
+                        data.AttributeType == typeof(ContextPropertyAttribute));
+                    if (a == null) return false;
+                    return a.ConstructorArguments.Any(alias =>
+                        StringComparer.CurrentCultureIgnoreCase.Equals(alias.Value.ToString(), name));
+                },
+                null);
+
+            if (props.Length != 1)
+            {
+                return null;
+            }
+
+            return props[0] as PropertyInfo;
         }
 
         private Expression CreateMethodCall(CallNode node)
