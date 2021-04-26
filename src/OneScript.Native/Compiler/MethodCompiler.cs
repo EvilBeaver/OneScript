@@ -210,7 +210,7 @@ namespace OneScript.Native.Compiler
             }
         }
 
-        private void MakePropertyAccess(TerminalNode operand, bool toRead, bool toWrite)
+        private void MakePropertyAccess(TerminalNode operand, bool toWrite = false)
         {
             var memberName = operand.Lexem.Content;
             var top = _statementBuildParts.Peek();
@@ -232,7 +232,7 @@ namespace OneScript.Native.Compiler
             {
                 var instance = _statementBuildParts.Pop();
                 _statementBuildParts.Push(Expression.MakeMemberAccess(instance, props[0]));
-                if (toRead)
+                if (!toWrite)
                 {
                     _statementBuildParts.Push(Expression.TypeAs(_statementBuildParts.Pop(), typeof(BslValue)));
                 }
@@ -256,15 +256,15 @@ namespace OneScript.Native.Compiler
                     topType = typeof(IRuntimeContextInstance);
                 }
 
-                var tmp = Expression.Parameter(typeof(int));
-                var obj = Expression.Parameter(instance.Type);
-
-                var miFindProperty = topType.GetMethod("FindProperty",
-                    BindingFlags.Public | BindingFlags.Instance,
-                    null, CallingConventions.Any, new[] {typeof(string)}, null);
-
-                if (toRead)
+                if (!toWrite)
                 {
+                    var tmp = Expression.Parameter(typeof(int));
+                    var obj = Expression.Parameter(instance.Type);
+
+                    var miFindProperty = topType.GetMethod("FindProperty",
+                        BindingFlags.Public | BindingFlags.Instance,
+                        null, CallingConventions.Any, new[] {typeof(string)}, null);
+
                     var miGetPropValue = topType.GetMethod("GetPropValue",
                         BindingFlags.Public | BindingFlags.Instance,
                         null, CallingConventions.Any, new[] {typeof(int)}, null);
@@ -279,9 +279,17 @@ namespace OneScript.Native.Compiler
                         });
 
                     _statementBuildParts.Push(b);
-                } else if (toWrite)
+                } else
                 {
-                    throw new NotImplementedException("Dynamic property set, SetPropVal");
+                    var valueToSet = _statementBuildParts.Pop();
+                    var miSetPropValue = (typeof(DynamicOperations)).GetMethod("SetPropValue",
+                        BindingFlags.Public | BindingFlags.Static,
+                        null, CallingConventions.Any, 
+                        new[] {typeof(IRuntimeContextInstance), typeof(string), typeof(object)}, 
+                        null);
+
+                    _statementBuildParts.Push(Expression.Call(null, miSetPropValue, instance, Expression.Constant(memberName), 
+                        Expression.TypeAs(valueToSet, typeof(object))));
                 }
             }
             else
@@ -292,7 +300,7 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitResolveProperty(TerminalNode operand)
         {
-            MakePropertyAccess(operand, toRead: true, toWrite: false);
+            MakePropertyAccess(operand);
         }
 
         protected override void VisitVariableWrite(TerminalNode node)
@@ -402,7 +410,7 @@ namespace OneScript.Native.Compiler
                 DefaultVisit(instanceNode);
             }
 
-            MakePropertyAccess(memberNode, toRead: false, toWrite: true);
+            MakePropertyAccess(memberNode, true);
         }
 
         protected override void VisitBinaryOperation(BinaryOperationNode binaryOperationNode)

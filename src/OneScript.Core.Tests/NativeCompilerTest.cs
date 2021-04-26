@@ -708,8 +708,8 @@ namespace OneScript.Core.Tests
             
             ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData })).Should().Be(2M);
         }
-        [Fact]
         
+        [Fact]
         public void Can_Do_PropWrite_Static()
         {
             var tm = new DefaultTypeManager();
@@ -732,6 +732,33 @@ namespace OneScript.Core.Tests
 
             ((decimal) (BslNumericValue) func.DynamicInvoke(new object[] {testData, 2M}))
                 .Should().Be(2M);
+        }
+        
+        [Fact]
+        public void Can_Do_PropWrite_Dynamic()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(StructureImpl));
+            
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.Parameters.Insert("П", new BslTypeValue(objectType));
+            block.Parameters.Insert("Ж", new BslTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Ф.Свойство1 = П;" +
+                "Ф.Свойство1.ВложенноеСвойство1 = Ж;" +
+                "Возврат Ф.Свойство1.ВложенноеСвойство1;";
+            var expression = block.MakeExpression();
+
+            var func = expression.Compile();
+
+            var innerTestData = new StructureImpl();
+            innerTestData.Insert("ВложенноеСвойство1", ValueFactory.Create(1M));
+
+            var testData = new StructureImpl();
+            testData.Insert("Свойство1", innerTestData);
+            
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData, innerTestData, 2M })).Should().Be(2M);
         }
     }
 }

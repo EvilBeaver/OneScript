@@ -133,5 +133,17 @@ namespace OneScript.Native.Runtime
         {
             return (T) ConstructorCall(typeManager, services, typeName, args);
         }
+
+        public static void SetPropValue(IRuntimeContextInstance instance, string propName, object value)
+        {
+            var propNum = instance.FindProperty(propName);
+            if (value is IValue)
+            {
+                instance.SetPropValue(propNum, (IValue)value);
+                return;
+            }
+            
+            instance.SetPropValue(propNum, WrapClrObjectToValue(value));
+        }
     }
 }
