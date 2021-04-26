@@ -1064,7 +1064,7 @@ namespace OneScript.Native.Compiler
                 {
                     if (declaredParam.HasDefaultValue)
                     {
-                        factArguments.Add(Expression.Constant(declaredParam.DefaultValue));
+                        factArguments.Add(Expression.Constant(declaredParam.DefaultValue, declaredParam.ParameterType));
                     }
                     else
                     {
