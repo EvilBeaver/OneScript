@@ -1003,12 +1003,45 @@ namespace OneScript.Native.Compiler
 
             var targetType = target.Type;
             var name = call.Identifier.GetIdentifier();
+            if (targetType.IsObjectValue())
+            {
+                var methodInfo = FindMethodOfType(node, targetType, name);
+                var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters());
 
-            var methodInfo = FindMethodOfType(node, targetType, name);
-            
-            var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters());
-            
-            _blocks.Add(Expression.Call(target, methodInfo, args));
+                _blocks.Add(Expression.Call(target, methodInfo, args));
+            }
+            else if (targetType.IsValue())
+            {
+                var args = new List<Expression>();
+                args.Add(target);
+                args.AddRange(PrepareDynamicCallArguments(call.ArgumentList));
+
+                var csharpArgs = new List<CSharpArgumentInfo>();
+                csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
+                csharpArgs.AddRange(args.Select(x => CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
+                
+                var binder = Microsoft.CSharp.RuntimeBinder.Binder.InvokeMember(
+                    CSharpBinderFlags.InvokeSimpleName,
+                    name,
+                    null,
+                    typeof(BslObjectValue),
+                    csharpArgs);
+
+                var objectExpr = Expression.Dynamic(binder, typeof(object), args); 
+                _blocks.Add(ExpressionHelpers.ConvertToType(objectExpr, typeof(BslValue)));
+            }
+            else
+            {
+                AddError(new BilingualString($"Тип {targetType} не является объектным типом.",$"Type {targetType} is not an object type."), node.Location);
+            }
+        }
+
+        private IEnumerable<Expression> PrepareDynamicCallArguments(BslSyntaxNode argList)
+        {
+            return argList.Children.Select(passedArg =>
+                passedArg.Children.Count > 0
+                    ? ConvertToExpressionTree(passedArg.Children[0])
+                    : null);
         }
 
         protected override void VisitObjectFunctionCall(BslSyntaxNode node)
