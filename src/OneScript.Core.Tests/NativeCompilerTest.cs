@@ -687,7 +687,8 @@ namespace OneScript.Core.Tests
             var lastAssignment = lambda.Body.As<BlockExpression>().Expressions[^2].As<BinaryExpression>();
             lastAssignment.Right.Type.Should().Be(typeof(decimal));
         }
-                [Fact]
+        
+        [Fact]
         public void Can_Do_PropRead_Static()
         {
             var tm = new DefaultTypeManager();
@@ -757,8 +758,8 @@ namespace OneScript.Core.Tests
 
             ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData, innerTestData, 2M })).Should().Be(2M);
         }
+        
         [Fact]
-
         public void Can_Do_PropWrite_Static()
         {
             var tm = new DefaultTypeManager();
