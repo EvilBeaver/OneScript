@@ -30,8 +30,7 @@ namespace OneScript.Native.Compiler
         public DynamicModule Compile(
             ModuleInformation moduleInfo,
             BslSyntaxNode moduleNode,
-            SymbolTable symbols,
-            ITypeManager typeManager
+            SymbolTable symbols
             )
         {
             InitContext(Errors, moduleInfo, symbols);
@@ -67,7 +66,7 @@ namespace OneScript.Native.Compiler
             foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
             {
                 var methodInfo = new BslMethodInfo();
-                VisitMethodSignature(methodNode.Signature);
+                VisitMethodSignature(methodInfo, methodNode.Signature);
 
                 var symbol = new MethodSymbol
                 {
@@ -76,7 +75,6 @@ namespace OneScript.Native.Compiler
                 };
                 
                 Symbols.TopScope().Methods.Add(symbol, methodInfo.Name);
-                
             }
         }
 
@@ -87,6 +85,8 @@ namespace OneScript.Native.Compiler
             info.SetPrivate(!node.IsExported);
 
             var parameters = node.GetParameters().Select(CreateParameterInfo);
+            
+            info.Parameters.AddRange(parameters);
         }
 
         private BslParameterInfo CreateParameterInfo(MethodParameterNode paramNode)
@@ -147,7 +147,7 @@ namespace OneScript.Native.Compiler
             
             var context = MakeContext();
             var methCompiler = new MethodCompiler(context, method);
-            methCompiler.CompileModuleBody(method, moduleBody);
+            methCompiler.CompileModuleBody(moduleBody);
         }
     }
 }

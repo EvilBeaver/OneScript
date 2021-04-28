@@ -75,7 +75,7 @@ namespace OneScript.Native.Compiler
             CompileFragment(methodNode, x=>VisitMethodBody((MethodNode)x));
         }
         
-        public void CompileModuleBody(BslMethodInfo method, BslSyntaxNode moduleBodyNode)
+        public void CompileModuleBody(BslSyntaxNode moduleBodyNode)
         {
             if(moduleBodyNode != default)
                 CompileFragment(moduleBodyNode, VisitModuleBody);
