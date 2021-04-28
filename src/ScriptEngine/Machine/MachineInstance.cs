@@ -611,7 +611,7 @@ namespace ScriptEngine.Machine
             }
             catch (BslCoreException exc)
             {
-                throw new ScriptException(getPositionInfo(), exc);
+                throw new ScriptException(GetPositionInfo(), exc);
             }
             catch (Exception exc)
             {
@@ -621,7 +621,7 @@ namespace ScriptEngine.Machine
             }
         }
 
-        private ErrorPositionInfo getPositionInfo()
+        private ErrorPositionInfo GetPositionInfo()
         {
             var epi = new ErrorPositionInfo();
             epi.LineNumber = _currentFrame.LineNumber;
@@ -640,7 +640,7 @@ namespace ScriptEngine.Machine
 
         private void SetScriptExceptionSource(ScriptException exc)
         {
-            var epi = getPositionInfo();
+            var epi = GetPositionInfo();
             exc.Code = epi.Code;
             exc.LineNumber = epi.LineNumber;
             exc.ModuleName = epi.ModuleName;

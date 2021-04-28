@@ -25,14 +25,10 @@ namespace OneScript.Native.Compiler
             public MethodInfo Method;
         }
 
-        private const int _l2Size = 1024;
+        private const int _l2Size = 128;
         private Dictionary<Type, CacheRecord[]> _methodCache = new Dictionary<Type, CacheRecord[]>();
         
-        public ContextMethodsCache() : base()
-        {
-        }
-        
-        public ContextMethodsCache(int size) : base(size)
+        public ContextMethodsCache() : base(32)
         {
         }
 

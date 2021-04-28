@@ -886,7 +886,10 @@ namespace OneScript.Native.Compiler
         
         protected override void VisitTryExceptNode(TryExceptNode node)
         {
-            _blocks.EnterBlock();
+            _blocks.EnterBlock(new JumpInformationRecord
+            {
+                ExceptionInfo = Expression.Parameter(typeof(Exception))
+            });
             base.VisitTryExceptNode(node);
             
             // TODO доделать все переобертки RuntimeException для стековой машины и для нативной
@@ -896,7 +899,7 @@ namespace OneScript.Native.Compiler
             var tryBlock = block.BuildStack.Pop();
             
             _blocks.Add(Expression.TryCatch(tryBlock,
-                Expression.Catch(typeof(Exception), except))
+                Expression.Catch(block.CurrentException, except))
             );
         }
 
@@ -906,7 +909,7 @@ namespace OneScript.Native.Compiler
             base.VisitTryBlock(node);
             var block = _blocks.LeaveBlock();
             
-            _blocks.GetCurrentBlock().BuildStack.Push(Expression.Block(block.GetStatements()));
+            _blocks.GetCurrentBlock().BuildStack.Push(Expression.Block(typeof(void),block.GetStatements()));
         }
 
         protected override void VisitExceptBlock(CodeBatchNode node)
@@ -915,7 +918,7 @@ namespace OneScript.Native.Compiler
             base.VisitExceptBlock(node);
             var block = _blocks.LeaveBlock();
             
-            _blocks.GetCurrentBlock().BuildStack.Push(Expression.Block(block.GetStatements()));
+            _blocks.GetCurrentBlock().BuildStack.Push(Expression.Block(typeof(void),block.GetStatements()));
         }
 
         protected override void VisitRaiseNode(BslSyntaxNode node)
@@ -1118,11 +1121,12 @@ namespace OneScript.Native.Compiler
                     break;
                 case Token.ExceptionInfo:
                     CheckArgumentsCount(node.ArgumentList, 0);
-                    throw new NotImplementedException();
+                    result = GetRuntimeExceptionObject();
+                    
                     break;
                 case Token.ExceptionDescr:
                     CheckArgumentsCount(node.ArgumentList, 0);
-                    throw new NotImplementedException();
+                    result = GetRuntimeExceptionDescription();
                     break;
                 default:
                     var methodName = node.Identifier.GetIdentifier();
@@ -1136,6 +1140,24 @@ namespace OneScript.Native.Compiler
             }
 
             return result;
+        }
+
+        private Expression GetRuntimeExceptionDescription()
+        {
+            var excInfo = GetRuntimeExceptionObject();
+            if (excInfo.Type == typeof(BslUndefinedValue))
+                return excInfo;
+            
+            return Expression.Property(excInfo, nameof(ExceptionInfoClass.Description));
+        }
+
+        private Expression GetRuntimeExceptionObject()
+        {
+            var excVariable = _blocks.GetCurrentBlock().CurrentException;
+            if (excVariable == null)
+                return Expression.Constant(BslUndefinedValue.Instance);
+            
+            return ExpressionHelpers.GetExceptionInfo(excVariable);
         }
 
         private void CheckArgumentsCount(BslSyntaxNode argList, int needed)

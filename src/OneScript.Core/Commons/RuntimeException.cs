@@ -20,6 +20,10 @@ namespace OneScript.Commons
         {
         }
 
+        
+        
+        #region Static Factory Methods
+
         public static RuntimeException DeprecatedMethodCall(string name)
         {
             return new RuntimeException($"Вызов безнадёжно устаревшего метода {name}");
@@ -124,6 +128,8 @@ namespace OneScript.Commons
         {
             return new RuntimeException("Деление на ноль");
         }
+
+        #endregion
 
         public static RuntimeException ConstructorNotFound(string typeName)
         {

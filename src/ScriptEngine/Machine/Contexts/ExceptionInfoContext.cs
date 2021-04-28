@@ -77,37 +77,19 @@ namespace ScriptEngine.Machine.Contexts
         /// Имя модуля, вызвавшего исключение.
         /// </summary>
         [ContextProperty("ИмяМодуля", "ModuleName")]
-        public string ModuleName
-        {
-            get
-            {
-                return SafeMarshallingNullString(_exc.ModuleName);
-            }
-        }
+        public string ModuleName => _exc.ModuleName ?? string.Empty;
 
         /// <summary>
         /// Номер строки, вызвавшей исключение.
         /// </summary>
         [ContextProperty("НомерСтроки", "LineNumber")]
-        public int LineNumber
-        {
-            get
-            {
-                return _exc.LineNumber;
-            }
-        }
+        public int LineNumber => _exc.LineNumber;
 
         /// <summary>
         /// Строка исходного кода, вызвавшего исключение.
         /// </summary>
         [ContextProperty("ИсходнаяСтрока", "SourceLine")]
-        public string SourceLine
-        {
-            get
-            {
-                return SafeMarshallingNullString(_exc.Code);
-            }
-        }
+        public string SourceLine => _exc.Code ?? string.Empty;
 
         /// <summary>
         /// Предоставляет доступ к стеку вызовов процедур.
@@ -127,7 +109,7 @@ namespace ScriptEngine.Machine.Contexts
             return ValueFactory.Create();
         }
 
-        private string SafeMarshallingNullString(string src)
+        private static string SafeMarshallingNullString(string src)
         {
             return src ?? "";
         }

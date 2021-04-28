@@ -16,5 +16,7 @@ namespace OneScript.Native.Compiler
         public LabelTarget LoopContinue { get; set; }
         
         public LabelTarget LoopBreak { get; set; }
+        
+        public ParameterExpression ExceptionInfo { get; set; }
     }
 }

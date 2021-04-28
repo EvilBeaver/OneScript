@@ -11,6 +11,7 @@ using System.Linq.Expressions;
 using FluentAssertions;
 using OneScript.DependencyInjection;
 using OneScript.Native.Compiler;
+using OneScript.Native.Runtime;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueList;
@@ -782,6 +783,34 @@ namespace OneScript.Core.Tests
 
             ((decimal) (BslNumericValue) func.DynamicInvoke(new object[] {testData, 2M}))
                 .Should().Be(2M);
+        }
+
+        [Fact]
+        public void ExceptionInfo_ReturnsUndefined_OutsideOfCatch()
+        {
+            var block = GetCompiler(new DefaultTypeManager());
+            block.CodeBlock = "А = ИнформацияОбОшибке();";
+
+            var lambda = block.MakeExpression();
+            lambda.Body.As<BlockExpression>().Expressions[0].Type.Should().Be(typeof(BslValue));
+        }
+        
+        [Fact]
+        public void ExceptionInfo_ReturnsClass_InCatch()
+        {
+            var block = GetCompiler(new DefaultTypeManager());
+            block.CodeBlock = "Попытка\n" +
+                              "  ;\n" +
+                              "Исключение\n" +
+                              " А = ИнформацияОбОшибке();\n" +
+                              "КонецПопытки;";
+            
+            var lambda = block.MakeExpression();
+            var tryBlock = lambda.Body.As<BlockExpression>().Expressions[0].As<TryExpression>();
+
+            tryBlock.Handlers.First().Body.As<BlockExpression>().Expressions[0].Type
+                .Should()
+                .Be(typeof(ExceptionInfoClass));
         }
     }
 }

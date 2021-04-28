@@ -24,6 +24,7 @@ namespace OneScript.Native.Compiler
                 newJumpStates.MethodReturn ??= current.MethodReturn;
                 newJumpStates.LoopBreak ??= current.LoopBreak;
                 newJumpStates.LoopContinue ??= current.LoopContinue;
+                newJumpStates.ExceptionInfo ??= current.CurrentException;
             }
 
             var block = new StatementsBlockRecord(newJumpStates);

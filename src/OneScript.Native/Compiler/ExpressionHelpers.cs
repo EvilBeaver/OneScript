@@ -429,12 +429,21 @@ namespace OneScript.Native.Compiler
 
         public static Expression TypeByNameCall(ITypeManager manager, Expression argument)
         {
-            var method = _operationsCache.GetOrAdd(typeof(ITypeManager), nameof(ITypeManager.GetTypeByName),
+            var method = _operationsCache.GetOrAdd(typeof(DynamicOperations), nameof(DynamicOperations.GetTypeByName),
                 BindingFlags.Instance | BindingFlags.Public);
             
             Debug.Assert(method != null);
 
-            return Expression.Call(Expression.Constant(manager), method, argument);
+            return Expression.Call(method, Expression.Constant(manager), argument);
+        }
+
+        public static Expression GetExceptionInfo(ParameterExpression excVariable)
+        {
+            var method = _operationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.GetExceptionInfo));
+
+            return Expression.Call(method, excVariable);
         }
     }
 }

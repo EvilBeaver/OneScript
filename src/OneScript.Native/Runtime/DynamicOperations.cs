@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.DependencyInjection;
+using OneScript.Language;
 using OneScript.Localization;
 using OneScript.Types;
 using OneScript.Values;
@@ -132,6 +133,29 @@ namespace OneScript.Native.Runtime
             where T : BslValue
         {
             return (T) ConstructorCall(typeManager, services, typeName, args);
+        }
+
+        public static ExceptionInfoClass GetExceptionInfo(Exception e)
+        {
+            if (e is ScriptException s)
+                return new ExceptionInfoClass(s);
+
+            var wrapper = new ExternalSystemException(e);
+
+            return new ExceptionInfoClass(wrapper);
+        }
+
+        public static TypeDescriptor GetTypeByName(ITypeManager manager, string name)
+        {
+            var firstTry = manager.GetTypeByName(name);
+            
+            // костыль подмены типа для Тип("ИнформацияОбОшибке")
+            if (firstTry.Name == ExceptionInfoClass.LanguageType.Name)
+            {
+                return ExceptionInfoClass.LanguageType;
+            }
+
+            return firstTry;
         }
     }
 }

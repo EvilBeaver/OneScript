@@ -29,6 +29,7 @@ namespace OneScript.Native.Compiler
         public LabelTarget MethodReturn => _jumpContext.MethodReturn;
         public LabelTarget LoopContinue => _jumpContext.LoopContinue;
         public LabelTarget LoopBreak => _jumpContext.LoopBreak;
+        public ParameterExpression CurrentException => _jumpContext.ExceptionInfo;
 
         public void Add(Expression statement) => _statements.Add(statement);
 
