@@ -175,7 +175,7 @@ namespace OneScript.StandardLibrary.Native
                 Services = _services
             }, methodInfo);
             
-            methodCompiler.CompileModuleBody(methodInfo, _ast.Children.FirstOrDefault(x => x.Kind == NodeKind.ModuleBody));
+            methodCompiler.CompileModuleBody(_ast.Children.FirstOrDefault(x => x.Kind == NodeKind.ModuleBody));
             return methodInfo.Implementation;
         }
 
