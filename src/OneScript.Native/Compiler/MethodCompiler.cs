@@ -70,7 +70,7 @@ namespace OneScript.Native.Compiler
         {
             _localVariables.AddRange(
                 _method.GetParameters()
-                    .Select(x => Expression.Parameter(typeof(BslValue), x.Name)));
+                    .Select(x => Expression.Parameter(x.ParameterType, x.Name)));
             
             CompileFragment(methodNode, x=>VisitMethodBody((MethodNode)x));
         }
