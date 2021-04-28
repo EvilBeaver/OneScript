@@ -13,6 +13,8 @@ using OneScript.DependencyInjection;
 using OneScript.Native.Compiler;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Collections.ValueList;
+using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.Json;
 using OneScript.StandardLibrary.Native;
 using OneScript.StandardLibrary.Text;
@@ -20,6 +22,7 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 using Xunit;
 
@@ -683,6 +686,102 @@ namespace OneScript.Core.Tests
 
             var lastAssignment = lambda.Body.As<BlockExpression>().Expressions[^2].As<BinaryExpression>();
             lastAssignment.Right.Type.Should().Be(typeof(decimal));
+        }
+        
+        [Fact]
+        public void Can_Do_PropRead_Static()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(ValueTable));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.CodeBlock = 
+                "Возврат Ф.Колонки.Количество();";
+            var expression = block.MakeExpression();
+
+            var func = expression.Compile();
+
+            var testData = new ValueTable();
+            testData.Columns.Add("Колонка1");
+            testData.Columns.Add("Колонка2");
+
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData })).Should().Be(2M);
+        }
+
+        [Fact]
+        public void Can_Do_PropRead_Dynamic()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(StructureImpl));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.CodeBlock = 
+                "Возврат Ф.Свойство1.ВложенноеСвойство1;";
+            var expression = block.MakeExpression();
+
+            var func = expression.Compile();
+
+            var innerTestData = new StructureImpl();
+            innerTestData.Insert("ВложенноеСвойство1", ValueFactory.Create(2M));
+
+            var testData = new StructureImpl();
+            testData.Insert("Свойство1", innerTestData);
+
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData })).Should().Be(2M);
+        }
+
+        [Fact]
+        public void Can_Do_PropWrite_Dynamic()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(StructureImpl));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.Parameters.Insert("П", new BslTypeValue(objectType));
+            block.Parameters.Insert("Ж", new BslTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Ф.Свойство1 = П;" +
+                "Ф.Свойство1.ВложенноеСвойство1 = Ж;" +
+                "Возврат Ф.Свойство1.ВложенноеСвойство1;";
+            var expression = block.MakeExpression();
+
+            var func = expression.Compile();
+
+            var innerTestData = new StructureImpl();
+            innerTestData.Insert("ВложенноеСвойство1", ValueFactory.Create(1M));
+
+            var testData = new StructureImpl();
+            testData.Insert("Свойство1", innerTestData);
+
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData, innerTestData, 2M })).Should().Be(2M);
+        }
+        
+        [Fact]
+        public void Can_Do_PropWrite_Static()
+        {
+            var tm = new DefaultTypeManager();
+            tm.RegisterClass(typeof(ValueListImpl));
+            var objectType = tm.RegisterClass(typeof(ValueListItem));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.Parameters.Insert("НовоеЗначение", new BslTypeValue(BasicTypes.Number));
+            block.CodeBlock = 
+                "Ф.Значение = НовоеЗначение; Возврат Ф.Значение";
+            var expression = block.MakeExpression();
+
+            var func = expression.Compile();
+
+            var testStructure = new ValueListImpl();
+            testStructure.Add(ValueFactory.Create(1M));
+
+            var testData = testStructure.FirstOrDefault();
+
+            ((decimal) (BslNumericValue) func.DynamicInvoke(new object[] {testData, 2M}))
+                .Should().Be(2M);
         }
     }
 }
