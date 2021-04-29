@@ -160,6 +160,10 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Деление на ноль");
         }
 
+        public static RuntimeException InvalidEncoding(string encoding)
+        {
+            return new RuntimeException($"Неправильное имя кодировки '{encoding}'");
+        }
         public static RuntimeException ConstructorNotFound(string typeName)
         {
             var template = Locale.NStr("ru = 'Конструктор не найден ({0})';" +
