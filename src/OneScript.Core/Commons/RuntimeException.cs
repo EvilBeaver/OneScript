@@ -129,12 +129,17 @@ namespace OneScript.Commons
             return new RuntimeException("Деление на ноль");
         }
 
-        #endregion
-
         public static RuntimeException ConstructorNotFound(string typeName)
         {
             return new RuntimeException(new BilingualString($"ru = 'Конструктор не найден ({typeName})';",
                 $"en = 'Constructor not found ({typeName})'"));
         }
+        
+        public static RuntimeException InvalidEncoding(string encoding)
+        {
+            return new RuntimeException($"Неправильное имя кодировки '{encoding}'");
+        }
+        
+        #endregion
     }
 }

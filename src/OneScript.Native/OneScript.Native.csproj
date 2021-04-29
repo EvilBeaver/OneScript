@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+    <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+    
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>

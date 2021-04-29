@@ -106,7 +106,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="multiline">Булево, определяет режим ввода многострочного текста. Необязательный, по умолчанию - Ложь.</param>
         /// <returns>Булево. Истина, если пользователь ввел данные, Ложь, если отказался.</returns>
         [ContextMethod("ВвестиСтроку", "InputString")]
-        public bool InputString([ByRef] IVariable resut, IValue prompt = null, IValue len = null, IValue multiline = null)
+        public bool InputString([ByRef] IVariable resut, string prompt = null, int? len = null, bool? multiline = null)
         {
             string input;
             bool inputIsDone;
@@ -117,26 +117,17 @@ namespace ScriptEngine.HostedScript.Library
 
             if (prompt != null)
             {
-                if (prompt.DataType != DataType.String)
-                    throw RuntimeException.InvalidNthArgumentType(2);
-
-                strPrompt = prompt.AsString();
+                strPrompt = prompt;
             }
 
             if (len != null)
             {
-                if (len.DataType != DataType.Number)
-                    throw RuntimeException.InvalidNthArgumentType(3);
-
-                length = (int)len.AsNumber();
+                length = (int)len;
             }
 
             if (multiline != null)
             {
-                if (multiline.DataType != DataType.Boolean)
-                    throw RuntimeException.InvalidNthArgumentType(4);
-
-                flagML = multiline.AsBoolean();
+                flagML = (bool)multiline;
             }
 
             inputIsDone = ApplicationHost.InputString(out input, strPrompt, length, flagML);

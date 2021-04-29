@@ -26,13 +26,7 @@ namespace ScriptEngine.Machine
         {
             return PropertyAccessException.GetPropNotFoundException(prop);
         }
-        
-        }
-        
-        public static RuntimeException InvalidEncoding(string encoding)
-        {
-            return new RuntimeException($"Неправильное имя кодировки '{encoding}'");
-        }    }
+    }
 
     public class WrongStackConditionException : ApplicationException
     {
