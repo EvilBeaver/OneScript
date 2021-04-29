@@ -49,7 +49,7 @@ namespace ScriptEngine.Machine.Values
         public override int CompareTo(IValue other)
         {
             if(other?.DataType == DataType.String)
-                return String.Compare(_value, other.AsString(), StringComparison.Ordinal);
+                return String.Compare(_value, other.AsString(), StringComparison.CurrentCulture);
 
             throw RuntimeException.ComparisonNotSupportedException();
         }

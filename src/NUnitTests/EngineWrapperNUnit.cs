@@ -71,7 +71,7 @@ namespace NUnitTests
 			return commandLineArgs;
 		}
 
-		public bool InputString(out string result, int maxLen)
+		public bool InputString(out string result, string prompt, int maxLen, bool multiline)
 		{
 			result = "";
 			return false;

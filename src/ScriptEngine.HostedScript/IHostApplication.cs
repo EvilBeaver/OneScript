@@ -13,7 +13,7 @@ namespace ScriptEngine.HostedScript
     {
 		void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary);
         void ShowExceptionInfo(Exception exc);
-        bool InputString(out string result, int maxLen);
+        bool InputString(out string result, string prompt, int maxLen, bool multiline);
         string[] GetCommandLineArguments();
     }
 }

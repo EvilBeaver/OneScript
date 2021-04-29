@@ -34,11 +34,36 @@ namespace VSCode.DebugAdapter
             var debuggerUri = Binder.GetDebuggerUri(_port); 
             
             SessionLog.WriteLine("Creating commands tcp channel");
-            _commandsChannel = new BinaryChannel(new TcpClient(debuggerUri.Host, debuggerUri.Port));
+
+            var client = new TcpClient();
+            TryConnect(client, debuggerUri);
+            _commandsChannel = new BinaryChannel(client);
             
             SessionLog.WriteLine("connected");
 
             RunEventsListener(_commandsChannel);
+        }
+
+        private static void TryConnect(TcpClient client, Uri debuggerUri)
+        {
+            const int limit = 3;
+            // TODO: параметризовать ожидания и попытки
+            for (int i = 0; i < limit; ++i)
+            {
+                try
+                {
+                    client.Connect(debuggerUri.Host, debuggerUri.Port);
+                    break;
+                }
+                catch (SocketException)
+                {
+                    if (i == limit - 1)
+                        throw;
+                    
+                    SessionLog.WriteLine("Error. Retry connect");
+                    Thread.Sleep(1500);
+                }
+            }
         }
 
         private void RunEventsListener(ICommunicationChannel channelToListen)

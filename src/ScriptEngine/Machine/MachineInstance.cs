@@ -1360,9 +1360,8 @@ namespace ScriptEngine.Machine
             else
             {
                 var exceptionValue = _operationStack.Pop().GetRawValue();
-                if (exceptionValue is ExceptionTemplate)
+                if (exceptionValue is ExceptionTemplate excInfo)
                 {
-                    var excInfo = exceptionValue as ExceptionTemplate;
                     throw new ParametrizedRuntimeException(excInfo.Message, excInfo.Parameter);
                 }
                 else
