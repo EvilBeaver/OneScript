@@ -100,16 +100,46 @@ namespace ScriptEngine.HostedScript.Library
         /// Ввод строки пользователем. Позволяет запросить у пользователя информацию.
         /// </summary>
         /// <param name="resut">Выходной параметр. Введенные данные в виде строки.</param>
-        /// <param name="len">Максимальная длина вводимой строки. 
-        /// Возможно указание неограниченной длины (длина=ноль), но данное поведение может не поддерживаться хост-приложением.</param>
+        /// <param name="prompt">Строка, выводимая в качестве подсказки. Необязательный, по умолчанию - пустая строка.</param>
+        /// <param name="len">Максимальная длина вводимой строки. Необязательный, по умолчанию - 0 (неограниченная длина).
+        /// Указание неограниченной длины может не поддерживаться хост-приложением.</param>
+        /// <param name="multiline">Булево, определяет режим ввода многострочного текста. Необязательный, по умолчанию - Ложь.</param>
         /// <returns>Булево. Истина, если пользователь ввел данные, Ложь, если отказался.</returns>
         [ContextMethod("ВвестиСтроку", "InputString")]
-        public bool InputString([ByRef] IVariable resut, int len = 0)
+        public bool InputString([ByRef] IVariable resut, IValue prompt = null, IValue len = null, IValue multiline = null)
         {
             string input;
             bool inputIsDone;
+            
+            string strPrompt = null;
+            int length = 0;
+            bool flagML = false;
 
-            inputIsDone = ApplicationHost.InputString(out input, len);
+            if (prompt != null)
+            {
+                if (prompt.DataType != DataType.String)
+                    throw RuntimeException.InvalidNthArgumentType(2);
+
+                strPrompt = prompt.AsString();
+            }
+
+            if (len != null)
+            {
+                if (len.DataType != DataType.Number)
+                    throw RuntimeException.InvalidNthArgumentType(3);
+
+                length = (int)len.AsNumber();
+            }
+
+            if (multiline != null)
+            {
+                if (multiline.DataType != DataType.Boolean)
+                    throw RuntimeException.InvalidNthArgumentType(4);
+
+                flagML = multiline.AsBoolean();
+            }
+
+            inputIsDone = ApplicationHost.InputString(out input, strPrompt, length, flagML);
 
             if (inputIsDone)
             {
