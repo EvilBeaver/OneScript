@@ -86,7 +86,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
                 }
                 catch
                 {
-                    // ignore
+                    SystemLogger.Write($"WARNING! Can't delete temporary file {_backingFile.Name}");
                 }
                 finally
                 {

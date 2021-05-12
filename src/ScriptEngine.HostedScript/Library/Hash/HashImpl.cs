@@ -100,7 +100,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
                     stream.Seek((int) length, StreamPositionEnum.Current);
                     break;
                 case DataType.Object when toAdd is BinaryDataContext binaryData:
-                    AddStream(new MemoryStream(binaryData.Buffer));
+                    AddStream(binaryData.GetStream());
                     break;
                 default:
                     throw RuntimeException.InvalidArgumentType();
