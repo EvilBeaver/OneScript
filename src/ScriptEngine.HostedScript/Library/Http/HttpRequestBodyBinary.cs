@@ -25,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         public HttpRequestBodyBinary(BinaryDataContext data)
         {
-            _memoryStream.Write(data.Buffer, 0, data.Size());
+            data.CopyTo(_memoryStream);
         }
 
         public HttpRequestBodyBinary(string body, IValue encoding = null,

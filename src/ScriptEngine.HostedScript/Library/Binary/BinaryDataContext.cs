@@ -18,14 +18,29 @@ namespace ScriptEngine.HostedScript.Library.Binary
     [ContextClass("ДвоичныеДанные", "BinaryData")]
     public class BinaryDataContext : AutoContext<BinaryDataContext>, IDisposable
     {
+        private const int INMEMORY_LIMIT = 1024 * 1024 * 50; // 50 Mb
+
         private byte[] _buffer;
+        
+        FileStream _backingFile;
+
+        public bool InMemory => _backingFile == null;
 
         public BinaryDataContext(string filename)
         {
             using(var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
-                _buffer = new byte[fs.Length];
-                fs.Read(_buffer, 0, _buffer.Length);
+                if (fs.Length < INMEMORY_LIMIT)
+                {
+                    LoadToBuffer(fs);
+                }
+                else
+                {
+                    _buffer = null;
+                    var backingFileName = Path.GetTempFileName();
+                    File.Copy(filename, backingFileName, true);
+                    _backingFile = new FileStream(backingFileName, FileMode.Open);
+                }
             }
         }
 
@@ -34,31 +49,73 @@ namespace ScriptEngine.HostedScript.Library.Binary
             _buffer = buffer;
         }
 
+        public void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                GC.SuppressFinalize(this);
+                _buffer = null;
+            }
+            DeleteTemporaryFile();
+        }
+
         public void Dispose()
         {
-            _buffer = null;
+            Dispose(true);
         }
 
-        [ContextMethod("Размер","Size")]
-        public int Size()
+        ~BinaryDataContext()
         {
-            return _buffer.Length;
+            Dispose(false);
         }
 
-        [ContextMethod("Записать","Write")]
-        public void Write(IValue filenameOrStream)
+        private void LoadToBuffer(FileStream fs)
         {
-            if(filenameOrStream.DataType == DataType.String)
+            _buffer = new byte[fs.Length];
+            fs.Read(_buffer, 0, _buffer.Length);
+        }
+
+        private void DeleteTemporaryFile()
+        {
+            if (_backingFile != null && File.Exists(_backingFile.Name))
             {
-                var filename = filenameOrStream.AsString();
-                using (var fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
+                try
                 {
-                    fs.Write(_buffer, 0, _buffer.Length);
+                    _backingFile.Close();
+                    File.Delete(_backingFile.Name);
+                }
+                catch
+                {
+                    // ignore
+                }
+                finally
+                {
+                    _backingFile = null;
                 }
             }
-            else if(filenameOrStream.AsObject() is IStreamWrapper stream)
+        }
+
+        [ContextMethod("Размер", "Size")]
+        public long Size()
+        {
+            return _backingFile?.Length ?? _buffer?.Length ??  0;
+        }
+
+        [ContextMethod("Записать", "Write")]
+        public void Write(IValue filenameOrStream)
+        {
+            if (filenameOrStream.DataType == DataType.String)
             {
-                stream.GetUnderlyingStream().Write(_buffer, 0, _buffer.Length);
+                var filename = filenameOrStream.AsString();
+
+                using(var fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
+                {
+                    CopyTo(fs);
+                }
+            }
+            else if (filenameOrStream.AsObject() is IStreamWrapper stream)
+            {
+                 CopyTo(stream.GetUnderlyingStream());
             }
             else
             {
@@ -66,25 +123,86 @@ namespace ScriptEngine.HostedScript.Library.Binary
             }
         }
 
+        public void CopyTo(Stream stream)
+        {
+            if (InMemory)
+            {
+                stream.Write(_buffer, 0, _buffer.Length);
+            }
+            else
+            {
+                _backingFile.Seek(0, SeekOrigin.Begin);
+                _backingFile.CopyTo(stream);
+            }
+        }
 
-        public byte[] Buffer => _buffer;
+        public Stream GetStream()
+        {
+            if (InMemory)
+            {
+                return new MemoryStream(_buffer, 0, _buffer.Length, false, true);
+            }
+            else
+            {
+                _backingFile.Seek(0,SeekOrigin.Begin);
+                return _backingFile;
+            }
+        }
+
+        public byte[] Buffer
+        {
+            get
+            {
+                if (!InMemory)
+                {
+                    _backingFile.Seek(0, SeekOrigin.Begin);
+                    try
+                    {
+                        LoadToBuffer(_backingFile);
+                    }
+                    finally
+                    {
+                        DeleteTemporaryFile();
+                    }
+                }
+
+                return _buffer;
+            }
+        }
 
         public override string AsString()
         {
-            if (_buffer.Length == 0)
-                return "";
-
             const int LIMIT = 64;
-            int length = Math.Min(_buffer.Length, LIMIT);
+            int length;
+            byte[] buffer;
+
+            if (InMemory)
+            {
+                length = Math.Min(_buffer.Length, LIMIT);
+                if (length == 0)
+                    return "";
+
+                buffer = _buffer;
+            }
+            else
+            {
+                length = (int)Math.Min(_backingFile.Length, LIMIT);
+                if (length == 0)
+                    return "";
+
+                buffer = new byte[length];
+                _backingFile.Seek(0, SeekOrigin.Begin);
+                _backingFile.Read(buffer, 0, length);
+            }
             
             StringBuilder hex = new StringBuilder(length*3);
-            hex.AppendFormat("{0:X2}", _buffer[0]);
+            hex.AppendFormat("{0:X2}", buffer[0]);
             for (int i = 1; i < length; ++i)
             {
-                hex.AppendFormat(" {0:X2}", _buffer[i]);
+                hex.AppendFormat(" {0:X2}", buffer[i]);
             }
 
-            if (_buffer.Length > LIMIT)
+            if (Size() > LIMIT)
                 hex.Append('…');
 
             return hex.ToString();
@@ -103,8 +221,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("ОткрытьПотокДляЧтения", "OpenStreamForRead")]
         public GenericStream OpenStreamForRead()
         {
-            var stream = new MemoryStream(_buffer, 0, _buffer.Length, false, true);
-            return new GenericStream(stream, true);
+            return new GenericStream(GetStream(), true);
         }
 
         [ScriptConstructor(Name = "На основании файла")]
@@ -123,7 +240,10 @@ namespace ScriptEngine.HostedScript.Library.Binary
                 var binData = other.GetRawValue() as BinaryDataContext;
                 Debug.Assert(binData != null);
 
-                return ArraysAreEqual(_buffer, binData._buffer);
+                if (InMemory && binData.InMemory)
+                   return ArraysAreEqual(_buffer, binData._buffer);
+                else
+                   return StreamsAreEqual(GetStream(), binData.GetStream());
             }
 
             return false;
@@ -136,6 +256,22 @@ namespace ScriptEngine.HostedScript.Library.Binary
                 for (long i = 0; i < a1.LongLength; i++)
                 {
                     if (a1[i] != a2[i])
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private static bool StreamsAreEqual(Stream s1, Stream s2)
+        {
+            if (s1.Length == s2.Length)
+            {
+                for (long i = 0; i < s1.Length; i++)
+                {
+                    if (s1.ReadByte() != s2.ReadByte())
                     {
                         return false;
                     }

@@ -235,7 +235,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             if (binData == null) //TODO: Поддержкать класс РезультатЧтенияДанных
                 throw RuntimeException.InvalidArgumentType();
 
-            _binaryWriter.Write(binData.Buffer, 0, binData.Size());
+            binData.CopyTo(_binaryWriter.BaseStream);
         }
     
         /// <summary>
