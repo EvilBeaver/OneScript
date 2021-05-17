@@ -30,23 +30,35 @@ namespace ScriptEngine.HostedScript.Library.Binary
         {
             using(var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
-                if (fs.Length < INMEMORY_LIMIT)
-                {
-                    LoadToBuffer(fs);
-                }
-                else
-                {
-                    _buffer = null;
-                    var backingFileName = Path.GetTempFileName();
-                    File.Copy(filename, backingFileName, true);
-                    _backingFile = new FileStream(backingFileName, FileMode.Open);
-                }
+                ReadFromStream(fs);
             }
         }
 
         public BinaryDataContext(byte[] buffer)
         {
             _buffer = buffer;
+        }
+
+        public BinaryDataContext(Stream stream)
+        {
+            var pos = stream.Position;
+            ReadFromStream(stream);
+            stream.Position = pos;
+        }
+
+        private void ReadFromStream(Stream stream)
+        {
+            if (stream.Length < INMEMORY_LIMIT)
+            {
+                LoadToBuffer(stream);
+            }
+            else
+            {
+                _buffer = null;
+                var backingFileName = Path.GetTempFileName();
+                _backingFile = new FileStream(backingFileName, FileMode.Create);
+                stream.CopyTo(_backingFile);
+            }
         }
 
         public void Dispose(bool disposing)
@@ -69,7 +81,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             Dispose(false);
         }
 
-        private void LoadToBuffer(FileStream fs)
+        private void LoadToBuffer(Stream fs)
         {
             _buffer = new byte[fs.Length];
             fs.Read(_buffer, 0, _buffer.Length);

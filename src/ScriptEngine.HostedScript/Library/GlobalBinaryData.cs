@@ -60,8 +60,8 @@ namespace ScriptEngine.HostedScript.Library
                     byte[] buffer = ((BinaryDataContext) cbd.AsObject()).Buffer;
                     stream.Write(buffer, 0, buffer.Length);
                 }
-
-                return new BinaryDataContext(stream.ToArray());
+                stream.Position = 0;
+                return new BinaryDataContext(stream);
             }
         }
 

@@ -141,7 +141,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             if ((_bodyStream as MemoryStream) == null)
                 return null;
             else
-                return new BinaryDataContext(((MemoryStream)_bodyStream).GetBuffer());
+                return new BinaryDataContext(_bodyStream);
         }
 
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]

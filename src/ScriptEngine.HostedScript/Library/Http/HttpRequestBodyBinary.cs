@@ -51,7 +51,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         public IValue GetAsBinary()
         {
             _memoryStream.Seek(0, SeekOrigin.Begin);
-            return new BinaryDataContext(_memoryStream.ToArray());
+            return new BinaryDataContext(_memoryStream);
         }
 
         public IValue GetAsFilename()
