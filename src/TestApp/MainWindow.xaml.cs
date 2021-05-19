@@ -200,7 +200,7 @@ namespace TestApp
                 result.AppendText("\nError detected. Exit code = " + returnCode.ToString());
             }
             result.AppendText("\nScript completed: " + DateTime.Now.ToString());
-            result.AppendText("\nDuration: " + sw.Elapsed.ToString());
+            result.AppendText("\nDuration: " + sw.Elapsed.ToString() + "\n");
             
         }
 
