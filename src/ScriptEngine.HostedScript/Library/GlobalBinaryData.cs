@@ -6,9 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Text;
+
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-
 using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library
@@ -19,24 +20,73 @@ namespace ScriptEngine.HostedScript.Library
     [GlobalContext(Category = "Процедуры и функции работы с двоичными данными")]
     public sealed class GlobalBinaryData : GlobalContextBase<GlobalBinaryData>
     {
-        private static byte[] StringToByteArray(String hex)
+        private static byte[] HexStringToByteArray(String hex)
         {
-            try
-            {
-                var newHex = hex.Replace(" ", String.Empty);
-                int numberChars = newHex.Length;
-                byte[] bytes = new byte[numberChars / 2];
-                for (int i = 0; i < numberChars; i += 2)
-                    bytes[i / 2] = Convert.ToByte(newHex.Substring(i, 2), 16);
-                return bytes;
-            }
-            catch (FormatException)
-            {
+            var newHex = System.Text.RegularExpressions.Regex.Replace(hex, @"[^0-9A-Fa-f]", "");
+            int numberChars = newHex.Length;
+            if (numberChars % 2 == 1)
                 throw new FormatException("Неверный формат шестнадцатеричной строки");
-            }
-            
+
+            byte[] bytes = new byte[numberChars / 2];
+            for (int i = 0; i < numberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(newHex.Substring(i, 2), 16);
+
+            return bytes;
         }
-        
+
+        private static int[] hexDigitsValues = new[]
+        {
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,-1,-1,-1,-1,-1,-1,
+                -1,10,11,12,13,14,15,16,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,10,11,12,13,14,15,16,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+        };
+        private static int CharCodeToHex(byte code)
+        {
+            return hexDigitsValues[code];
+        }
+
+        private static byte[] HexArrayToByteArray(byte[] hex)
+        {
+            var bytes = new byte[hex.Length / 2];
+            int pos = 0;
+
+            int hexDig1;
+            int hexDig2 =-1;
+            for (int i = 0; i < hex.Length; ++i)
+            {
+                hexDig1 = CharCodeToHex(hex[i]);
+                if (hexDig1 < 0)
+                    continue;
+
+                if (hexDig2 < 0)
+                {
+                    hexDig2 = hexDig1;
+                    continue;
+                }
+
+                bytes[pos] = (byte)(hexDig2 * 16 + hexDig1);
+                ++pos;
+                hexDig2 = -1;
+            }
+
+            if (pos < bytes.Length)
+                Array.Resize(ref bytes, pos);
+            return bytes;
+        }
+
         public static IAttachableContext CreateInstance()
         {
             return new GlobalBinaryData();
@@ -114,8 +164,27 @@ namespace ScriptEngine.HostedScript.Library
             return new BinaryDataContext(enc.GetBytes(str));
         }
 
-        // ToDo: ПолучитьБуферДвоичныхДанныхИзСтроки 
+        /// <summary>
+        /// Преобразует строку в буфер двоичных данных с учетом кодировки текста.
+        /// </summary>
+        /// <param name="str">Строка, которую требуется преобразовать в БуферДвоичныхДанных.</param>
+        /// <param name="encoding">Кодировка текста</param>
+        /// <param name="addBOM">Определяет, будет ли добавлена метка порядка байт (BOM) кодировки текста в начало данных.</param>
+        /// <returns>Тип: БуферДвоичныхДанных.</returns>
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзСтроки")]
+        public BinaryDataBuffer GetBinaryDataBufferFromString(string str, IValue encoding = null, bool addBOM = false)
+        {
+            var enc = (encoding != null)? TextEncodingEnum.GetEncoding(encoding, addBOM) : Encoding.UTF8;
 
+            return new BinaryDataBuffer(enc.GetBytes(str));
+        }
+
+        /// <summary>
+        /// Преобразует двоичные данные в строку с заданной кодировкой текста.
+        /// </summary>
+        /// <param name="data">Двоичные данные, которые требуется преобразовать в строку.</param>
+        /// <param name="encoding">Кодировка текста</param>
+        /// <returns>Тип: Строка.</returns>
         [ContextMethod("ПолучитьСтрокуИзДвоичныхДанных")]
         public string GetStringFromBinaryData(BinaryDataContext data, IValue encoding = null)
         {
@@ -129,8 +198,19 @@ namespace ScriptEngine.HostedScript.Library
             return enc.GetString(data.Buffer);
         }
 
-        // ToDo: ПолучитьСтрокуИзБуфераДвоичныхДанных
+        /// <summary>
+        /// Преобразует буфер двоичных данных в строку с заданной кодировкой текста.
+        /// </summary>
+        /// <param name="buffer">Буфер двоичных данных, который требуется преобразовать в строку.</param>
+        /// <param name="encoding">Кодировка текста</param>
+        /// <returns>Тип: Строка.</returns>
+        [ContextMethod("ПолучитьСтрокуИзБуфераДвоичныхДанных")]
+        public string GetStringFromBinaryDataBuffer(BinaryDataBuffer buffer, IValue encoding = null)
+        {
+            var enc = (encoding != null) ? TextEncodingEnum.GetEncoding(encoding) : Encoding.UTF8;
 
+            return enc.GetString(buffer.Bytes);
+        }
 
         /// <summary>
         /// Преобразует строку формата Base64 в двоичные данные.
@@ -140,26 +220,127 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьДвоичныеДанныеИзBase64Строки")]
         public BinaryDataContext GetBinaryDataFromBase64String(string str)
         {
-            return new BinaryDataContext(System.Convert.FromBase64String(str));
+            try
+            {
+                return new BinaryDataContext(Convert.FromBase64String(str));
+            }
+            catch
+            {
+                return new BinaryDataContext(new byte[0]);
+            }
         }
 
-        // ToDo: ПолучитьБуферДвоичныхДанныхИзBase64Строки
+        /// <summary>
+        /// Преобразует строку формата Base64 в буфер двоичных данных.
+        /// </summary>
+        /// <param name="str">Строка в формате Base64.</param>
+        /// <returns>Тип: ДвоичныеДанные.</returns>
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзBase64Строки")]
+        public BinaryDataBuffer GetBinaryDataBufferFromBase64String(string str)
+        {
+            try
+            {
+                return new BinaryDataBuffer(Convert.FromBase64String(str));
+            }
+            catch
+            {
+                return new BinaryDataBuffer(new byte[0]);
+            }
+        }
 
+        /// <summary>
+        /// Преобразует двоичные данные в строку формата Base64.
+        /// Полученный текст разбивается на строки длиной 76 символов.
+        /// В качестве разделителя строк используется сочетание символов CR+LF.
+        /// </summary>
+        /// <param name="data">Двоичные данные.</param>
+        /// <returns>Тип: Строка.</returns>
         [ContextMethod("ПолучитьBase64СтрокуИзДвоичныхДанных")]
         public string GetBase64StringFromBinaryData(BinaryDataContext data)
         {
-            return System.Convert.ToBase64String(data.Buffer);
+            return Convert.ToBase64String(data.Buffer, Base64FormattingOptions.InsertLineBreaks);
         }
 
-        // ToDo: ПолучитьBase64СтрокуИзБуфераДвоичныхДанных
+        /// <summary>
+        /// Преобразует буфер двоичных данных в строку формата Base64.
+        /// Полученный текст разбивается на строки длиной 76 символов.
+        /// В качестве разделителя строк используется сочетание символов CR+LF.
+        /// </summary>
+        /// <param name="buffer">Буфер двоичных данных.</param>
+        /// <returns>Тип: Строка.</returns>
+        [ContextMethod("ПолучитьBase64СтрокуИзБуфераДвоичныхДанных")]
+        public string GetBase64StringFromBinaryDataBuffer(BinaryDataBuffer buffer)
+        {
+            return Convert.ToBase64String(buffer.Bytes, Base64FormattingOptions.InsertLineBreaks);
+        }
 
-        // ToDo: ПолучитьДвоичныеДанныеИзBase64ДвоичныхДанных
+        /// <summary>
+        /// Преобразует двоичные данные из формата Base64 в ДвоичныеДанные.
+        /// </summary>
+        /// <param name="data">Двоичные данные, закодированные по методу Base64.</param>
+        /// <returns>Тип: ДвоичныеДанные.</returns>
+        [ContextMethod("ПолучитьДвоичныеДанныеИзBase64ДвоичныхДанных")]
+        public BinaryDataContext GetBinaryDataFromBase64BinaryData(BinaryDataContext data)
+        {
+            try
+            {
+                var enc = new UTF8Encoding(false,true);
+                var str = enc.GetString(data.Buffer, 0, data.Buffer.Length);
+                return new BinaryDataContext(Convert.FromBase64String(str));
+            }
+            catch
+            {
+                return new BinaryDataContext(new byte[0]);
+            }
+        }
 
-        // ToDo: ПолучитьБуферДвоичныхДанныхИзBase64БуфераДвоичныхДанных
+        /// <summary>
+        /// Преобразует буфер двоичных данных из формата Base64 в БуферДвоичныхДанных.
+        /// </summary>
+        /// <param name="buffer">Буфер двоичных данных.</param>
+        /// <returns>Тип: ДвоичныеДанные.</returns>
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзBase64БуфераДвоичныхДанных")]
+        public BinaryDataBuffer GetBinaryDataBufferFromBase64BinaryDataBuffer(BinaryDataBuffer buffer)
+        {
+            try
+            {
+                var enc = new UTF8Encoding(false, true);
+                var str = enc.GetString(buffer.Bytes, 0, buffer.Bytes.Length);
+                return new BinaryDataBuffer(Convert.FromBase64String(str));
+            }
+            catch
+            {
+                return new BinaryDataBuffer(new byte[0]);
+            }
+        }
 
-        // ToDo: ПолучитьBase64ДвоичныеДанныеИзДвоичныхДанных
+        /// <summary>
+        /// Преобразует двоичные данные в формат Base64.
+        /// Полученный текст разбивается на строки длиной 76 символов.
+        /// В качестве разделителя строк используется сочетание символов CR+LF.
+        /// </summary>
+        /// <param name="data">Двоичные данные.</param>
+        /// <returns>Тип: ДвоичныеДанные.</returns>
+        [ContextMethod("ПолучитьBase64ДвоичныеДанныеИзДвоичныхДанных")]
+        public BinaryDataContext GetBase64BinaryDataFromBinaryData(BinaryDataContext data)
+        {
+            var base64str = Convert.ToBase64String(data.Buffer, Base64FormattingOptions.InsertLineBreaks);
+            return new BinaryDataContext(Encoding.ASCII.GetBytes(base64str));
+        }
 
-        // ToDo: ПолучитьBase64БуферДвоичныхДанныхИзБуфераДвоичныхДанных
+        /// <summary>
+        /// Преобразует буфер двоичных данных в формат Base64.
+        /// Полученный текст разбивается на строки длиной 76 символов.
+        /// В качестве разделителя строк используется сочетание символов CR+LF.
+        /// </summary>
+        /// <param name="buffer">Буфер двоичных данных.</param>
+        /// <returns>Тип: БуферДвоичныхДанных.</returns>
+        [ContextMethod("ПолучитьBase64БуферДвоичныхДанныхИзБуфераДвоичныхДанных")]
+        public BinaryDataBuffer GetBase64BinaryDataBufferFromBinaryDataBuffer(BinaryDataBuffer buffer)
+        {
+            var base64str = Convert.ToBase64String(buffer.Bytes, Base64FormattingOptions.InsertLineBreaks);
+            return new BinaryDataBuffer(Encoding.ASCII.GetBytes(base64str));
+        }
 
         /// <summary>
         /// Преобразует строку формата Base 16 (Hex) в двоичные данные.
@@ -169,7 +350,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьДвоичныеДанныеИзHexСтроки")]
         public BinaryDataContext GetBinaryDataFromHexString(string hex)
         {
-            return new BinaryDataContext(StringToByteArray(hex));
+            return new BinaryDataContext(HexStringToByteArray(hex));
         }
         
         /// <summary>
@@ -180,7 +361,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьБуферДвоичныхДанныхИзHexСтроки")]
         public BinaryDataBuffer GetBinaryDataBufferFromHexString(string hex)
         {
-            return new BinaryDataBuffer(StringToByteArray(hex));
+            return new BinaryDataBuffer(HexStringToByteArray(hex));
         }
         
         /// <summary>
@@ -205,13 +386,51 @@ namespace ScriptEngine.HostedScript.Library
             return BitConverter.ToString(buffer.Bytes).Replace("-","");
         }
 
-        // ToDo: ПолучитьДвоичныеДанныеИзHexДвоичныхДанных
+        /// <summary>
+        /// Преобразует двоичные данные из формата Base 16 (Hex) в ДвоичныеДанные.
+        /// </summary>
+        /// <param name="data">Двоичные данные в формате Base 16 (Hex).</param>
+        /// <returns>Тип: ДвоичныеДанные. </returns>
+        [ContextMethod("ПолучитьДвоичныеДанныеИзHexДвоичныхДанных")]
+        public BinaryDataContext GetBinaryDataFromHexBinaryData(BinaryDataContext data)
+        {
+            return new BinaryDataContext(HexArrayToByteArray(data.Buffer));
+        }
 
-        // ToDo: ПолучитьБуферДвоичныхДанныхИзHexБуфераДвоичныхДанных
+        /// <summary>
+        /// Преобразует буфер двоичных данных из формата Base 16 (Hex) в БуферДвоичныхДанных.
+        /// </summary>
+        /// <param name="buffer">Буфер двоичных данных в формате Base 16 (Hex).</param>
+        /// <returns>Тип: БуферДвоичныхДанных.</returns>
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзHexБуфераДвоичныхДанных")]
+        public BinaryDataBuffer GetBinaryDataBufferFromHexBinaryDataBuffer(BinaryDataBuffer buffer)
+        {
+            return new BinaryDataBuffer(HexArrayToByteArray(buffer.Bytes));
+        }
 
-        // ToDo: ПолучитьHexДвоичныеДанныеИзДвоичныхДанных
+        /// <summary>
+        /// Преобразует двоичные данные в формат Base 16 (Hex).
+        /// </summary>
+        /// <param name="data">Двоичные данные.</param>
+        /// <returns>Тип: ДвоичныеДанные. </returns>
+        [ContextMethod("ПолучитьHexДвоичныеДанныеИзДвоичныхДанных")]
+        public BinaryDataContext GetHexBinaryDataFromBinaryData(BinaryDataContext data)
+        {
+            var str = GetHexStringFromBinaryData(data);
+            return GetBinaryDataFromString(str);
+        }
 
-        // ToDo: ПолучитьHexБуферДвоичныхДанныхИзБуфераДвоичныхДанных
+        /// <summary>
+        /// Преобразует буфер двоичных данных в формат Base 16 (Hex).
+        /// </summary>
+        /// <param name="buffer">Буфер двоичных данных.</param>
+        /// <returns>Тип: БуферДвоичныхДанных.</returns>
+        [ContextMethod("ПолучитьHexБуферДвоичныхДанныхИзБуфераДвоичныхДанных")]
+        public BinaryDataBuffer GetHexBinaryDataBufferFromBinaryDataBuffer(BinaryDataBuffer buffer)
+        {
+            var str = GetHexStringFromBinaryDataBuffer(buffer);
+            return GetBinaryDataBufferFromString(str);
+        }
 
         /// <summary>
         /// Преобразует двоичные данные в буфер двоичных данных.
