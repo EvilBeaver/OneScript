@@ -6,13 +6,11 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library;
 using ScriptEngine.HostedScript.Library.Binary;
 
 /// <summary>
@@ -61,21 +59,8 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
 
         Stream _bodyStream = new MemoryStream();
 
-        public Stream BodyStream
-        {
-            get
-            {
-                return _bodyStream;
-            }
-        }
-
-        public string ContentCharset
-        {
-            get
-            {
-                return _contentCharset;
-            }
-        }
+        public Stream BodyStream => _bodyStream;
+        public string ContentCharset => _contentCharset;
 
         public HTTPServiceResponseImpl()
         {
@@ -141,7 +126,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             if ((_bodyStream as MemoryStream) == null)
                 return null;
             else
-                return new BinaryDataContext(_bodyStream);
+                return new BinaryDataContext(((MemoryStream)_bodyStream).GetBuffer());
         }
 
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
@@ -153,12 +138,13 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
         public IValue GetBodyAsString()
         {
-            if ((_bodyStream as MemoryStream) == null)
+            var body = _bodyStream as MemoryStream;
+            if (body == null)
                 return ValueFactory.Create();
             else
             {
                 // Выяснено экспериментальным путем, используется UTF8 (8.3.10.2650)
-                return ValueFactory.Create(Encoding.UTF8.GetString(((MemoryStream)_bodyStream).GetBuffer()));
+                return ValueFactory.Create(Encoding.UTF8.GetString(body.GetBuffer(), 0, (int)body.Length));
             }
         }
 
@@ -173,6 +159,9 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         public void SetBodyFromBinaryData(BinaryDataContext binaryData)
         {
             _contentCharset = Encoding.UTF8.WebName;
+            _bodyStream = new MemoryStream();
+            _bodyStream.Write(binaryData.Buffer, 0, binaryData.Buffer.Length);
+            _bodyStream.Seek(0, SeekOrigin.Begin);
             _bodyStream = new MemoryStream();
             binaryData.CopyTo(_bodyStream);
             _bodyStream.Seek(0, SeekOrigin.Begin);
@@ -203,7 +192,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             var response = new HTTPServiceResponseImpl();
 
-            response._statusCode = System.Convert.ToInt16(statusCode.AsNumber());
+            response._statusCode = Convert.ToInt16(statusCode.AsNumber());
 
             if (reason != null)
                 response._reason = reason.AsString();
