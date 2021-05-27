@@ -122,21 +122,31 @@ namespace ScriptEngine.HostedScript.Library
         /// <param name="size">Размер одной части данных.</param>
         /// <returns>Массив объектов типа ДвоичныеДанные.</returns>
         [ContextMethod("РазделитьДвоичныеДанные")]
-        public ArrayImpl SplitBinaryData(BinaryDataContext data, int size)
+        public ArrayImpl SplitBinaryData(BinaryDataContext data, long size)
         {
-            // Сделано на int т.к. BinaryContext.Size имеет тип int;
+            if (size <= 0 || size > Int32.MaxValue)
+                throw RuntimeException.InvalidNthArgumentValue(2);
+
             ArrayImpl array = new ArrayImpl();
+            long dataSize = data.Size();
+
+            if (dataSize < size)
+            {
+                array.Add(data);
+                return array;
+            }
 
             int readedBytes = 0;
-            
-            while (readedBytes < data.Buffer.Length)
+            var dataStream = data.GetStream();
+
+            while (readedBytes < dataSize)
             {
-                int bytesToRead = size;
-                if (bytesToRead > data.Buffer.Length - readedBytes)
-                    bytesToRead = data.Buffer.Length - readedBytes;
+                int bytesToRead = (int)size;
+                if (bytesToRead > dataSize - readedBytes)
+                    bytesToRead = (int)(dataSize - readedBytes);
 
                 byte[] buffer = new byte[bytesToRead];
-                Buffer.BlockCopy(data.Buffer, readedBytes, buffer, 0, bytesToRead);
+                dataStream.Read(buffer, 0, bytesToRead);
                 readedBytes += bytesToRead;
                 array.Add(new BinaryDataContext(buffer));
             }
