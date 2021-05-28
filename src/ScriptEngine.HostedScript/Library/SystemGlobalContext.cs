@@ -38,16 +38,6 @@ namespace ScriptEngine.HostedScript.Library
             RegisterProperty("ФайловыеПотоки", () => FileStreams);
             RegisterProperty("FileStreams", () => FileStreams);
 
-            MemoryStreamContext StandartInput = MemoryStreamContext.Constructor();
-            if (Console.IsInputRedirected)
-            {
-                GenericStream ConsoleInput = new GenericStream(Console.OpenStandardInput(), true);
-                ConsoleInput.CopyTo(StandartInput);
-                ConsoleInput.Close();
-            }
-            RegisterProperty("СтандартныйПотокВвода", () => StandartInput);
-            RegisterProperty("StandartInput", () => StandartInput);
-
             RegisterProperty("Символы", () => (IValue)Chars);
 			RegisterProperty("Chars", () => (IValue)Chars);
         }
