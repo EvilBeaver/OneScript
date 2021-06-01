@@ -45,10 +45,10 @@ namespace OneScript.Native.Compiler
                     opCode = ExpressionType.NotEqual;
                     break;
                 case Token.And:
-                    opCode = ExpressionType.And;
+                    opCode = ExpressionType.AndAlso;
                     break;
                 case Token.Or:
-                    opCode = ExpressionType.Or;
+                    opCode = ExpressionType.OrElse;
                     break;
                 case Token.Plus:
                     opCode = ExpressionType.Add;

@@ -812,5 +812,39 @@ namespace OneScript.Core.Tests
                 .Should()
                 .Be(typeof(ExceptionInfoClass));
         }
+        
+        [Fact]
+        public void LazyBoolOr()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(StructureImpl));
+            var block = GetCompiler(new DefaultTypeManager());
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.CodeBlock = "Возврат Истина Или Ф;"; // Ф не должен быть вычислен
+            
+            var lambda = block.MakeExpression();
+            var func = lambda.Compile();
+
+            var testData = new StructureImpl();
+
+            ((bool)(BslBooleanValue)func.DynamicInvoke(new object[] { testData })).Should().Be(true);
+        }
+        
+        [Fact]
+        public void LazyBoolAnd()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(StructureImpl));
+            var block = GetCompiler(new DefaultTypeManager());
+            block.Parameters.Insert("Ф", new BslTypeValue(objectType));
+            block.CodeBlock = "Возврат Ложь И Ф;"; // Ф не должен быть вычислен
+            
+            var lambda = block.MakeExpression();
+            var func = lambda.Compile();
+
+            var testData = new StructureImpl();
+
+            ((bool)(BslBooleanValue)func.DynamicInvoke(new object[] { testData })).Should().Be(false);
+        }
     }
 }
