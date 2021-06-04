@@ -1116,6 +1116,43 @@ namespace ScriptEngine.Machine
             return needsDiscarding;
         }
 
+        private void CallContext(IRuntimeContextInstance instance, int index, ref System.Reflection.MethodInfo methInfo, IValue[] argValues, bool asFunc)
+        {
+            IValue[] realArgs;
+            if (!instance.DynamicMethodSignatures)
+            {
+                realArgs = new IValue[methInfo.GetParameters().Length];
+                var skippedArg = ValueFactory.CreateInvalidValueMarker();
+                for (int i = 0; i < realArgs.Length; i++)
+                {
+                    if (i < argValues.Length)
+                    {
+                        realArgs[i] = argValues[i];
+                    }
+                    else
+                    {
+                        realArgs[i] = skippedArg;
+                    }
+                }
+            }
+            else
+            {
+                realArgs = argValues;
+            }
+
+            if (asFunc)
+            {
+                IValue retVal;
+                instance.CallAsFunction(index, realArgs, out retVal);
+                _operationStack.Push(retVal);
+            }
+            else
+            {
+                instance.CallAsProcedure(index, realArgs);
+            }
+            NextInstruction();
+        }
+        
         private void CallContext(IRuntimeContextInstance instance, int index, ref MethodInfo methInfo, IValue[] argValues, bool asFunc)
         {
             IValue[] realArgs;
@@ -1273,6 +1310,20 @@ namespace ScriptEngine.Machine
             }
         }
 
+        private void CheckFactArguments(System.Reflection.MethodInfo methInfo, bool[] argsPassed)
+        {
+            var parameters = methInfo.GetParameters();
+            if (argsPassed.Length > parameters.Length)
+            {
+                throw RuntimeException.TooManyArgumentsPassed();
+            }
+
+            if (parameters.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
+            {
+                throw RuntimeException.TooFewArgumentsPassed();
+            }
+        }
+        
         private void CheckFactArguments(MethodInfo methInfo, bool[] argsPassed)
         {
             if (argsPassed.Length > methInfo.Params.Length)

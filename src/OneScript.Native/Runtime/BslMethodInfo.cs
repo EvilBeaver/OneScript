@@ -11,16 +11,16 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using OneScript.Contexts;
 using OneScript.Native.Compiler;
 
 namespace OneScript.Native.Runtime
 {
-    public class BslMethodInfo : MethodInfo
+    public class BslMethodInfo : BslMethodInfoBase
     {
         private Type _declaringType;
         private Type _returnType;
         private string _name;
-        private object[] _annotations;
         
         int _dispId = -1;
         bool _isPrivate = true;
@@ -61,21 +61,6 @@ namespace OneScript.Native.Runtime
         
         public LambdaExpression Implementation { get; private set; }
         
-        public override object[] GetCustomAttributes(bool inherit)
-        {
-            return _annotations ?? new object[0];
-        }
-
-        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
-        {
-            return GetCustomAttributes(inherit).Where(x => x.GetType() == attributeType).ToArray();
-        }
-        
-        public override bool IsDefined(Type attributeType, bool inherit)
-        {
-            return GetCustomAttributes(inherit).Any(x => x.GetType() == attributeType);
-        }
-
         public override Type DeclaringType => _declaringType;
         
         public override string Name => _name;

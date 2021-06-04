@@ -10,14 +10,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using OneScript.Contexts;
 
 namespace OneScript.Native.Runtime
 {
-    public class BslFieldInfo : FieldInfo
+    public class BslFieldInfo : BslFieldInfoBase
     {
         private Type _declaringType;
         private bool _isPublic;
-        private object[] _annotations;
         
         public BslFieldInfo(string name)
         {
@@ -36,24 +36,9 @@ namespace OneScript.Native.Runtime
 
         public void SetAnnotations(IEnumerable<object> attributes)
         {
-            _annotations = attributes.ToArray();
+            SetAnnotations(new AnnotationHolder(attributes.ToArray()));
         }
-
-        public override object[] GetCustomAttributes(bool inherit)
-        {
-            return _annotations ?? new object[0];
-        }
-
-        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
-        {
-            return GetCustomAttributes(true).Where(x => x.GetType() == attributeType).ToArray();
-        }
-
-        public override bool IsDefined(Type attributeType, bool inherit)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public override Type DeclaringType => _declaringType;
         public override string Name { get; }
         public override Type ReflectedType => _declaringType;
