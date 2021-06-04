@@ -82,7 +82,7 @@ namespace ScriptEngine.Machine
 
         #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
         {
             variables = new IVariable[this.Count];
             var props = GetProperties().OrderBy(x => x.Value).Select(x=>x.Key).ToArray();
@@ -93,7 +93,7 @@ namespace ScriptEngine.Machine
                 variables[i] = Variable.CreateContextPropertyReference(this, i, props[i]);
             }
 
-            methods = new MethodInfo[0];
+            methods = new MethodSignature[0];
         }
 
         #endregion

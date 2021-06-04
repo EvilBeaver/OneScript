@@ -87,7 +87,7 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.Count;
         }
 
-        public override MethodInfo GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);
         }

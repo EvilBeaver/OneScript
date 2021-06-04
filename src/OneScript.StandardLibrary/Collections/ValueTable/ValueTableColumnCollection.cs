@@ -10,10 +10,8 @@ using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
-using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
@@ -245,7 +243,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         private static readonly ContextMethodsMapper<ValueTableColumnCollection> _methods = new ContextMethodsMapper<ValueTableColumnCollection>();
 
-        public override MethodInfo GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);
         }

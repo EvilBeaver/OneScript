@@ -18,8 +18,6 @@ using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Reflection;
-using ScriptEngine.Machine.Values;
-using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
 namespace OneScript.StandardLibrary
 {
@@ -70,7 +68,7 @@ namespace OneScript.StandardLibrary
             return retValue;
         }
 
-        private static IValue[] GetArgsToPass(ArrayImpl arguments, MethodInfo methInfo)
+        private static IValue[] GetArgsToPass(ArrayImpl arguments, MethodSignature signature)
         {
             var argsToPass = new List<IValue>();
             if (arguments != null)
@@ -78,15 +76,15 @@ namespace OneScript.StandardLibrary
                 argsToPass.AddRange(arguments);
             }
 
-            if (methInfo.ArgCount < argsToPass.Count)
+            if (signature.ArgCount < argsToPass.Count)
                 throw RuntimeException.TooManyArgumentsPassed();
 
             for (int i = 0; i < argsToPass.Count; i++)
             {
-                if (!methInfo.Params[i].IsByValue)
+                if (!signature.Params[i].IsByValue)
                     argsToPass[i] = Variable.Create(argsToPass[i], $"reflectorArg{i}");
             }
-            while (argsToPass.Count < methInfo.ArgCount)
+            while (argsToPass.Count < signature.ArgCount)
             {
                 argsToPass.Add(null);
             }
@@ -229,12 +227,12 @@ namespace OneScript.StandardLibrary
             FillMethodsTable(result, ConvertToOsMethods(clrMethods));
         }
 
-        private static IEnumerable<MethodInfo> ConvertToOsMethods(IEnumerable<System.Reflection.MethodInfo> source)
+        private static IEnumerable<MethodSignature> ConvertToOsMethods(IEnumerable<System.Reflection.MethodInfo> source)
         {
-            var dest = new List<MethodInfo>();
+            var dest = new List<MethodSignature>();
             foreach (var methodInfo in source)
             {
-                var osMethod = new MethodInfo();
+                var osMethod = new MethodSignature();
                 osMethod.Name = methodInfo.Name;
                 osMethod.Alias = null;
                 osMethod.IsExport = methodInfo.IsPublic;
@@ -313,7 +311,7 @@ namespace OneScript.StandardLibrary
 
         }
 
-        private static void FillMethodsTable(ValueTable result, IEnumerable<MethodInfo> methods)
+        private static void FillMethodsTable(ValueTable result, IEnumerable<MethodSignature> methods)
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var countColumn = result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");

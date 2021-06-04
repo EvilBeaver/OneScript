@@ -7,14 +7,10 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Linq;
 using FluentAssertions;
-using OneScript.Language.SyntaxAnalysis;
-using OneScript.StandardLibrary.Collections;
 using OneScript.Values;
-using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Values;
 using Xunit;
 
 namespace OneScript.Core.Tests

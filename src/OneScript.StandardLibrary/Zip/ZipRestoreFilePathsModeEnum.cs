@@ -6,8 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using ScriptEngine;
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Zip
 {

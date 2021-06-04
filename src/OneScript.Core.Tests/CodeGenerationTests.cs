@@ -13,7 +13,6 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using ScriptEngine;
 using ScriptEngine.Compiler;
-using ScriptEngine.Environment;
 using Xunit;
 using AstBasedCodeGenerator = ScriptEngine.Compiler.AstBasedCodeGenerator;
 

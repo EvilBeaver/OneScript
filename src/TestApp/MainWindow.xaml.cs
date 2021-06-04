@@ -13,12 +13,10 @@ using System.Windows.Input;
 using ScriptEngine.HostedScript;
 using System.Collections.Generic;
 using OneScript.StandardLibrary;
-using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.HostedScript.Extensions;
-using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Hosting;
 
 namespace TestApp

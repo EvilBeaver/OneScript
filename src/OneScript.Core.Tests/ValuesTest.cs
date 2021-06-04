@@ -14,8 +14,6 @@ using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Values;
-using ScriptEngine.Types;
 using Xunit;
 
 namespace OneScript.Core.Tests

@@ -6,9 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Types;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Types;
 using sysFolder = System.Environment.SpecialFolder;
 
 namespace OneScript.StandardLibrary

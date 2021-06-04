@@ -16,8 +16,6 @@ using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
 using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.Hosting;
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 
 namespace StandaloneRunner
 {

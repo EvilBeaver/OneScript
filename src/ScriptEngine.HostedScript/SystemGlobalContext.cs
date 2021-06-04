@@ -7,8 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
@@ -185,13 +183,13 @@ namespace ScriptEngine.HostedScript.Library
 
         public void OnAttach(MachineInstance machine, 
             out IVariable[] variables, 
-            out MethodInfo[] methods)
+            out MethodSignature[] methods)
         {
             if (_state == null)
                 InitContextVariables();
 
             variables = _state;
-            methods = new MethodInfo[_methods.Count];
+            methods = new MethodSignature[_methods.Count];
             for (int i = 0; i < _methods.Count; i++)
             {
                 methods[i] = _methods.GetMethodInfo(i);
@@ -268,7 +266,7 @@ namespace ScriptEngine.HostedScript.Library
             return _methods.FindMethod(name);
         }
 
-        public MethodInfo GetMethodInfo(int methodNumber)
+        public MethodSignature GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);
         }

@@ -394,7 +394,7 @@ namespace ScriptEngine.Compiler
 
             if (entry != _module.Code.Count)
             {
-                var bodyMethod = new MethodInfo();
+                var bodyMethod = new MethodSignature();
                 bodyMethod.Name = BODY_METHOD_NAME;
                 var descriptor = new MethodDescriptor();
                 descriptor.EntryPoint = entry;
@@ -471,7 +471,7 @@ namespace ScriptEngine.Compiler
 
             int definitionLine = _lexer.CurrentLine;
             int definitionColumn = _lexer.CurrentColumn;
-            MethodInfo method = new MethodInfo();
+            MethodSignature method = new MethodSignature();
             method.Name = _lastExtractedLexem.Content;
             method.IsFunction = _isFunctionProcessed;
             method.Annotations = ExtractAnnotations();
@@ -1784,9 +1784,9 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void CheckFactArguments(MethodInfo methInfo, bool[] argsPassed)
+        private void CheckFactArguments(MethodSignature signature, bool[] argsPassed)
         {
-            CheckFactArguments(methInfo.Params, argsPassed);
+            CheckFactArguments(signature.Params, argsPassed);
         }
 
         private void CheckFactArguments(ParameterDefinition[] parameters, bool[] argsPassed)

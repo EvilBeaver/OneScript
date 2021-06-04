@@ -19,15 +19,15 @@ namespace ScriptEngine.Compiler
 
         readonly Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        readonly List<MethodInfo> _methods = new List<MethodInfo>();
+        readonly List<MethodSignature> _methods = new List<MethodSignature>();
 
-        public MethodInfo GetMethod(string name)
+        public MethodSignature GetMethod(string name)
         {
             var num = GetMethodNumber(name);
             return _methods[num];
         }
 
-        public MethodInfo GetMethod(int number)
+        public MethodSignature GetMethod(int number)
         {
             return _methods[number];
         }
@@ -111,7 +111,7 @@ namespace ScriptEngine.Compiler
             return newIdx;
         }
         
-        public int DefineMethod(MethodInfo method)
+        public int DefineMethod(MethodSignature method)
         {
             if (!IsMethodDefined(method.Name))
             {

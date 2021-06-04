@@ -158,7 +158,7 @@ namespace ScriptEngine.Compiler
             return _scopeStack.IndexOf(scope);
         }
 
-        public SymbolBinding DefineMethod(MethodInfo method)
+        public SymbolBinding DefineMethod(MethodSignature method)
         {
             if (_scopeStack.Count > 0)
             {

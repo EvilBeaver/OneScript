@@ -9,7 +9,6 @@ using System;
 using OneScript.Commons;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
 

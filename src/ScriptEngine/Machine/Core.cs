@@ -180,7 +180,7 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
-    public struct MethodInfo
+    public struct MethodSignature
     {
         public string Name;
         public string Alias;

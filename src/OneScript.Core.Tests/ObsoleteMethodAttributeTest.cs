@@ -11,7 +11,6 @@ using FluentAssertions;
 using Moq;
 using OneScript.Commons;
 using ScriptEngine;
-using ScriptEngine.Machine;
 using Xunit;
 
 namespace OneScript.Core.Tests

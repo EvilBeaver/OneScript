@@ -109,7 +109,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        protected override MethodInfo GetOwnMethod(int index)
+        protected override MethodSignature GetOwnMethod(int index)
         {
             return _ownMethods.GetMethodInfo(index);
         }

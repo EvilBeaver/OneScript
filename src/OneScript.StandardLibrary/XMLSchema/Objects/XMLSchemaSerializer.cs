@@ -10,7 +10,6 @@ using System.Xml.Schema;
 using OneScript.Commons;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
-using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {

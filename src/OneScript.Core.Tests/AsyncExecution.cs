@@ -5,10 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
 using OneScript.StandardLibrary;
-using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;

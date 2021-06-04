@@ -173,17 +173,17 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        private ReflectedMethodInfo CreateMethodInfo(MethodInfo methInfo)
+        private ReflectedMethodInfo CreateMethodInfo(MethodSignature signature)
         {
-            var reflectedMethod = new ReflectedMethodInfo(methInfo.Name);
-            reflectedMethod.SetPrivate(!methInfo.IsExport);
-            reflectedMethod.IsFunction = methInfo.IsFunction;
+            var reflectedMethod = new ReflectedMethodInfo(signature.Name);
+            reflectedMethod.SetPrivate(!signature.IsExport);
+            reflectedMethod.IsFunction = signature.IsFunction;
 
             var unknownVal = ValueFactory.CreateInvalidValueMarker();
 
-            for (int i = 0; i < methInfo.Params.Length; i++)
+            for (int i = 0; i < signature.Params.Length; i++)
             {
-                var currentParam = methInfo.Params[i];
+                var currentParam = signature.Params[i];
                 var reflectedParam = new ReflectedParamInfo(currentParam.Name, currentParam.IsByValue);
                 reflectedParam.SetOwner(reflectedMethod);
                 reflectedParam.SetPosition(i);
@@ -204,9 +204,9 @@ namespace ScriptEngine.Machine.Reflection
                 reflectedMethod.Parameters.Add(reflectedParam);
             }
 
-            if(methInfo.Annotations != null)
+            if(signature.Annotations != null)
             {
-                foreach (var annotation in methInfo.Annotations)
+                foreach (var annotation in signature.Annotations)
                 {
                     reflectedMethod.AddAnnotation(annotation);
                 }

@@ -166,7 +166,7 @@ namespace ScriptEngine.Machine.Contexts
             return base.FindOwnProperty(name);
         }
 
-        protected override MethodInfo GetOwnMethod(int index)
+        protected override MethodSignature GetOwnMethod(int index)
         {
             Debug.Assert(index == RAIZEEVENT_INDEX);
 
@@ -179,10 +179,10 @@ namespace ScriptEngine.Machine.Contexts
             GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x));
         }
         
-        private static MethodInfo[] GetOwnMethodsDefinition()
+        private static MethodSignature[] GetOwnMethodsDefinition()
         {
             return new []{
-                new MethodInfo {
+                new MethodSignature {
                     Name = RAISEEVENT_RU,
                     Alias = RAISEEVENT_EN,
                     IsFunction = false,

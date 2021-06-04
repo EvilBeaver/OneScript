@@ -141,7 +141,7 @@ namespace ScriptEngine.Machine.Contexts
             return _nameMapper.FindMethod(Instance, name);
         }
 
-        public override MethodInfo GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
             var methodInfo = _nameMapper.GetMethod(methodNumber);
             return GetReflectableMethod(methodInfo.Method);
@@ -173,23 +173,23 @@ namespace ScriptEngine.Machine.Contexts
             retValue = CreateIValue(result);
         }
 
-        private MethodInfo GetReflectableMethod(System.Reflection.MethodInfo reflectionMethod)
+        private MethodSignature GetReflectableMethod(System.Reflection.MethodInfo reflectionMethod)
         {
-            MethodInfo methodInfo;
+            MethodSignature methodSignature;
 
-            methodInfo = new MethodInfo();
-            methodInfo.Name = reflectionMethod.Name;
+            methodSignature = new MethodSignature();
+            methodSignature.Name = reflectionMethod.Name;
 
             var reflectedMethod = reflectionMethod as System.Reflection.MethodInfo;
 
             if (reflectedMethod != null)
             {
-                methodInfo.IsFunction = reflectedMethod.ReturnType != typeof(void);
+                methodSignature.IsFunction = reflectedMethod.ReturnType != typeof(void);
                 var reflectionParams = reflectedMethod.GetParameters();
-                FillMethodInfoParameters(ref methodInfo, reflectionParams);
+                FillMethodInfoParameters(ref methodSignature, reflectionParams);
             }
 
-            return methodInfo;
+            return methodSignature;
         }
         
         private static Type[] GetMethodParametersTypes(System.Reflection.MethodInfo method)
@@ -199,16 +199,16 @@ namespace ScriptEngine.Machine.Contexts
                 .ToArray();
         }
 
-        private static void FillMethodInfoParameters(ref MethodInfo methodInfo, System.Reflection.ParameterInfo[] reflectionParams)
+        private static void FillMethodInfoParameters(ref MethodSignature methodSignature, System.Reflection.ParameterInfo[] reflectionParams)
         {
-            methodInfo.Params = new ParameterDefinition[reflectionParams.Length];
+            methodSignature.Params = new ParameterDefinition[reflectionParams.Length];
             for (int i = 0; i < reflectionParams.Length; i++)
             {
                 var reflectedParam = reflectionParams[i];
                 var param = new ParameterDefinition();
                 param.HasDefaultValue = reflectedParam.IsOptional;
                 param.IsByValue = !reflectedParam.IsOut;
-                methodInfo.Params[i] = param;
+                methodSignature.Params[i] = param;
             }
         }
     }

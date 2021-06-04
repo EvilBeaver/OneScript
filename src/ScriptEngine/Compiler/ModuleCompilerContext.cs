@@ -25,7 +25,7 @@ namespace ScriptEngine.Compiler
         
         #region ICompilerContext Members
 
-        public SymbolBinding DefineMethod(MethodInfo method)
+        public SymbolBinding DefineMethod(MethodSignature method)
         {
             var sb = _moduleCtx.DefineMethod(method);
             ShiftIndex(ref sb);

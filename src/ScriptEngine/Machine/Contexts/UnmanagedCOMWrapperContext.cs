@@ -10,7 +10,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
-using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine.Rcw;
 
@@ -173,15 +172,15 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.IndexOf(md);
         }
 
-        public override MethodInfo GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
             return GetMethodDescription(methodNumber);
         }
 
-        private MethodInfo GetMethodDescription(int methodNumber)
+        private MethodSignature GetMethodDescription(int methodNumber)
         {
             //TODO: Доработать RcwMethodMetadata
-            return new MethodInfo();
+            return new MethodSignature();
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)

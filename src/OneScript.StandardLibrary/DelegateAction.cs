@@ -52,9 +52,9 @@ namespace OneScript.StandardLibrary
             return 1;
         }
 
-        public override MethodInfo GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
-            return new MethodInfo
+            return new MethodSignature
             {
                 Name = MethodName_Ru,
                 Alias = MethodName_En,

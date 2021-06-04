@@ -90,7 +90,7 @@ namespace ScriptEngine.Machine.Contexts
             return Methods.FindMethod(name);
         }
 
-        public virtual MethodInfo GetMethodInfo(int methodNumber)
+        public virtual MethodSignature GetMethodInfo(int methodNumber)
         {
             return Methods.GetMethodInfo(methodNumber);
         }
@@ -114,7 +114,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext members
 
-        public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
+        public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
         {
             variables = this.GetProperties()
                 .OrderBy(x => x.Index)

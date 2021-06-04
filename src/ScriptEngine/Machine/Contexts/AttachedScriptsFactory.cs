@@ -11,7 +11,6 @@ using ScriptEngine.Environment;
 using System.Security.Cryptography;
 using OneScript.Commons;
 using OneScript.Types;
-using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {

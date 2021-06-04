@@ -20,7 +20,7 @@ namespace ScriptEngine
         
         int DefineVariable(string name, string alias, SymbolType type);
         
-        int DefineMethod(MethodInfo methodInfo);
+        int DefineMethod(MethodSignature methodSignature);
         
         void DefinePreprocessorValue(string name);
         

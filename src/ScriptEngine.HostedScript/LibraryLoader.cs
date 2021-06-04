@@ -156,7 +156,7 @@ namespace ScriptEngine.HostedScript
             return _methods.FindMethod(name);
         }
 
-        protected override MethodInfo GetOwnMethod(int index)
+        protected override MethodSignature GetOwnMethod(int index)
         {
             return _methods.GetMethodInfo(index);
         }

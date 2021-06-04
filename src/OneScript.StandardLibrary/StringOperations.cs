@@ -10,7 +10,6 @@ using System.Linq;
 using OneScript.Commons;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
-using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -221,9 +220,9 @@ namespace OneScript.StandardLibrary
             return base.GetMethodsCount() + 1;
         }
 
-        private static MethodInfo CreateStrTemplateMethodInfo()
+        private static MethodSignature CreateStrTemplateMethodInfo()
         {
-            var strTemplateMethodInfo = new MethodInfo();
+            var strTemplateMethodInfo = new MethodSignature();
             strTemplateMethodInfo.IsFunction = true;
             strTemplateMethodInfo.Name = STRTEMPLATE_NAME_RU;
             strTemplateMethodInfo.Alias = STRTEMPLATE_NAME_EN;
@@ -246,7 +245,7 @@ namespace OneScript.StandardLibrary
             return strTemplateMethodInfo;
         }
 
-        public override MethodInfo GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
             if (methodNumber == STRTEMPLATE_ID)
                 return CreateStrTemplateMethodInfo();

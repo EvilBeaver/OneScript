@@ -17,8 +17,6 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
-using ScriptEngine.Machine.Values;
-using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine
 {
@@ -52,7 +50,7 @@ namespace ScriptEngine.Machine
         public void AttachContext(IAttachableContext context)
         {
             IVariable[] vars;
-            MethodInfo[] methods;
+            MethodSignature[] methods;
             context.OnAttach(this, out vars, out methods);
             var scope = new Scope()
             {
@@ -67,7 +65,7 @@ namespace ScriptEngine.Machine
         private Scope CreateModuleScope(IAttachableContext context)
         {
             IVariable[] vars;
-            MethodInfo[] methods;
+            MethodSignature[] methods;
             context.OnAttach(this, out vars, out methods);
             var scope = new Scope()
             {
@@ -1153,12 +1151,12 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
         
-        private void CallContext(IRuntimeContextInstance instance, int index, ref MethodInfo methInfo, IValue[] argValues, bool asFunc)
+        private void CallContext(IRuntimeContextInstance instance, int index, ref MethodSignature signature, IValue[] argValues, bool asFunc)
         {
             IValue[] realArgs;
             if (!instance.DynamicMethodSignatures)
             {
-                realArgs = new IValue[methInfo.ArgCount];
+                realArgs = new IValue[signature.ArgCount];
                 var skippedArg = ValueFactory.CreateInvalidValueMarker();
                 for (int i = 0; i < realArgs.Length; i++)
                 {
@@ -1324,14 +1322,14 @@ namespace ScriptEngine.Machine
             }
         }
         
-        private void CheckFactArguments(MethodInfo methInfo, bool[] argsPassed)
+        private void CheckFactArguments(MethodSignature signature, bool[] argsPassed)
         {
-            if (argsPassed.Length > methInfo.Params.Length)
+            if (argsPassed.Length > signature.Params.Length)
             {
                 throw RuntimeException.TooManyArgumentsPassed();
             }
 
-            if (methInfo.Params.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
+            if (signature.Params.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
                 throw RuntimeException.TooFewArgumentsPassed();
             }

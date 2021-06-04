@@ -8,9 +8,7 @@ using System;
 using System.Diagnostics;
 using OneScript.DebugProtocol;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Linq;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 

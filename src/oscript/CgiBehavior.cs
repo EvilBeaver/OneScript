@@ -7,24 +7,17 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.StandardLibrary;
 using OneScript.Types;
 using oscript.Web;
 
 using ScriptEngine.HostedScript;
-using ScriptEngine.HostedScript.Extensions;
-using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-
-using MethodInfo = ScriptEngine.Machine.MethodInfo;
 
 namespace oscript
 {
@@ -101,7 +94,7 @@ namespace oscript
 			return exitCode;
 		}
 
-		public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
+		public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
 		{
 			variables = new IVariable[0];
 			methods = this.GetMethods().ToArray();
@@ -245,7 +238,7 @@ namespace oscript
 			return _methods.FindMethod(name);
 		}
 
-		public MethodInfo GetMethodInfo(int methodNumber)
+		public MethodSignature GetMethodInfo(int methodNumber)
 		{
 			return _methods.GetMethodInfo(methodNumber);
 		}

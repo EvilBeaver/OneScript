@@ -29,7 +29,7 @@ namespace ScriptEngine.Machine
 
         int FindMethod(string name);
         int GetMethodsCount();
-        MethodInfo GetMethodInfo(int methodNumber);
+        MethodSignature GetMethodInfo(int methodNumber);
         VariableInfo GetPropertyInfo(int propertyNumber);
         void CallAsProcedure(int methodNumber, IValue[] arguments);
         void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue);
@@ -37,9 +37,9 @@ namespace ScriptEngine.Machine
 
     public static class RCIHelperExtensions
     {
-        public static IEnumerable<MethodInfo> GetMethods(this IRuntimeContextInstance context)
+        public static IEnumerable<MethodSignature> GetMethods(this IRuntimeContextInstance context)
         {
-            MethodInfo[] methods = new MethodInfo[context.GetMethodsCount()];
+            MethodSignature[] methods = new MethodSignature[context.GetMethodsCount()];
             for (int i = 0; i < methods.Length; i++)
             {
                 methods[i] = context.GetMethodInfo(i);

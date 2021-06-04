@@ -13,10 +13,6 @@ using System.Text;
 using OneScript.Commons;
 using OneScript.Language;
 using ScriptEngine.Compiler;
-using ScriptEngine.Environment;
-using ScriptEngine.HostedScript.Extensions;
-using ScriptEngine.Hosting;
-using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript
 {

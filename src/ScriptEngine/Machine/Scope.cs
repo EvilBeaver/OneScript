@@ -10,7 +10,7 @@ namespace ScriptEngine.Machine
     struct Scope
     {
         public IVariable[] Variables;
-        public MethodInfo[] Methods;
+        public MethodSignature[] Methods;
         public IRuntimeContextInstance Instance;
     }
 

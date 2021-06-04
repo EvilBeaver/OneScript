@@ -19,7 +19,7 @@ namespace OneScript.StandardLibrary.Tasks
     [ContextClass("ФоновоеЗадание", "BackgroundTask")]
     public class BackgroundTask : AutoContext<BackgroundTask>
     {
-        private readonly MethodInfo _method;
+        private readonly MethodSignature _method;
         private readonly int _methIndex;
         private Task _workerTask;
         private int _taskId;

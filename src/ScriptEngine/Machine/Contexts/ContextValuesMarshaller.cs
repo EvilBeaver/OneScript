@@ -8,7 +8,6 @@ using System;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.Values;
-using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {

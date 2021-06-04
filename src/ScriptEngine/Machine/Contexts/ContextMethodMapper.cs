@@ -41,7 +41,7 @@ namespace ScriptEngine.Machine.Contexts
                         _methodNumbers = new IdentifiersTrie<int>();
                         for (int idx = 0; idx < localPtrs.Count; ++idx)
                         {
-                            var methinfo = localPtrs[idx].MethodInfo;
+                            var methinfo = localPtrs[idx].MethodSignature;
 
                             _methodNumbers.Add(methinfo.Name, idx);
                             if (methinfo.Alias != null)
@@ -60,16 +60,16 @@ namespace ScriptEngine.Machine.Contexts
             return _methodPtrs[number].Method;
         }
 
-        public ScriptEngine.Machine.MethodInfo GetMethodInfo(int number)
+        public ScriptEngine.Machine.MethodSignature GetMethodInfo(int number)
         {
             Init();
-            return _methodPtrs[number].MethodInfo;
+            return _methodPtrs[number].MethodSignature;
         }
 
-        public IEnumerable<MethodInfo> GetMethods()
+        public IEnumerable<MethodSignature> GetMethods()
         {
             Init();
-            return _methodPtrs.Select(x => x.MethodInfo);
+            return _methodPtrs.Select(x => x.MethodSignature);
         }
 
         public int FindMethod(string name)
@@ -102,7 +102,7 @@ namespace ScriptEngine.Machine.Contexts
         private class InternalMethInfo
         {
             private readonly Lazy<ContextCallableDelegate<TInstance>> _method;
-            public MethodInfo MethodInfo { get; }
+            public MethodSignature MethodSignature { get; }
 
             public InternalMethInfo(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
             {
@@ -112,12 +112,12 @@ namespace ScriptEngine.Machine.Contexts
                     return isFunc ? CreateFunction(target) : CreateProcedure(target);
                 });
 
-                MethodInfo = CreateMetadata(target, binding);
+                MethodSignature = CreateMetadata(target, binding);
             }
 
             public ContextCallableDelegate<TInstance> Method => _method.Value;
 
-            private static MethodInfo CreateMetadata(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
+            private static MethodSignature CreateMetadata(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
             {
                 var parameters = target.GetParameters();
                 var isFunc = target.ReturnType != typeof(void);
@@ -150,7 +150,7 @@ namespace ScriptEngine.Machine.Contexts
 
                 }
 
-                var scriptMethInfo = new ScriptEngine.Machine.MethodInfo();
+                var scriptMethInfo = new ScriptEngine.Machine.MethodSignature();
                 scriptMethInfo.IsFunction = isFunc;
                 scriptMethInfo.IsExport = true;
                 scriptMethInfo.IsDeprecated = binding.IsDeprecated;

@@ -5,18 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using System.Text;
-using OneScript.Language.SyntaxAnalysis;
 using OneScript.StandardLibrary;
-using OneScript.StandardLibrary.Collections;
-using ScriptEngine;
-using ScriptEngine.Compiler;
-using ScriptEngine.Environment;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Hosting;
 using ScriptEngine.HostedScript.Extensions;
-using ScriptEngine.Machine;
 
 namespace oscript
 {

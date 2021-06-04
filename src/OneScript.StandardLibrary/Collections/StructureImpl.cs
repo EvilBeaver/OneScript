@@ -9,10 +9,8 @@ using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Types;
 using OneScript.Values;
-using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Values;
 
 namespace OneScript.StandardLibrary.Collections
 {
@@ -134,7 +132,7 @@ namespace OneScript.StandardLibrary.Collections
             return GetPropertyName(propNum);
         }
 
-        public override MethodInfo GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);
         }

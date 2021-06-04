@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 using FluentAssertions;
 using Moq;
 using OneScript.StandardLibrary.Collections;

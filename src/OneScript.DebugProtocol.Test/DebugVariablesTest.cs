@@ -13,8 +13,6 @@ using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTree;
 using OneScript.Types;
-using ScriptEngine;
-using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Types;
 using Xunit;

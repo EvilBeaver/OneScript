@@ -10,7 +10,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine;
-using ScriptEngine.Environment;
 using Xunit;
 
 namespace OneScript.Core.Tests

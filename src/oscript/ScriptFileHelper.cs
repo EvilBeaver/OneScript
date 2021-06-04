@@ -5,8 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using System.IO;
 #if NETFRAMEWORK
 using System.Net.Configuration;
 using System.Reflection;

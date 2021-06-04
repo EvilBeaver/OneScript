@@ -14,7 +14,6 @@ using OneScript.Commons;
 using OneScript.StandardLibrary.Text;
 using OneScript.Types;
 using OneScript.Values;
-using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

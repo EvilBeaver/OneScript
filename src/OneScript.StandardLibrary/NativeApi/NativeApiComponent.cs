@@ -10,7 +10,6 @@ using System.Runtime.InteropServices;
 using OneScript.Commons;
 using OneScript.Types;
 using ScriptEngine.Machine;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.NativeApi
 {
@@ -178,7 +177,7 @@ namespace OneScript.StandardLibrary.NativeApi
             return methodNumber;
         }
 
-        public MethodInfo GetMethodInfo(int methodNumber)
+        public MethodSignature GetMethodInfo(int methodNumber)
         {
             if (methodNumber < 0)
                 throw new RuntimeException("Метод не найден");
@@ -205,7 +204,7 @@ namespace OneScript.StandardLibrary.NativeApi
                 });
             }
 
-            return new MethodInfo
+            return new MethodSignature
             {
                 Name = name,
                 Alias = alias,

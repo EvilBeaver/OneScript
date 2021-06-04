@@ -11,7 +11,7 @@ namespace ScriptEngine.Machine
     {
         void OnAttach(MachineInstance machine,
                       out IVariable[] variables,
-                      out MethodInfo[] methods);
+                      out MethodSignature[] methods);
     }
 
     public interface IRunnable : IAttachableContext

@@ -13,7 +13,6 @@ using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTree
@@ -275,7 +274,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             return GetColumnByIIndex(index);
         }
 
-        public override MethodInfo GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodInfo(methodNumber);
         }

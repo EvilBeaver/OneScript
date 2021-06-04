@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine.Contexts
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
-        private MethodInfo[] _attachableMethods;
+        private MethodSignature[] _attachableMethods;
         private readonly Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _allPropertiesSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -199,7 +199,7 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        protected virtual MethodInfo GetOwnMethod(int index)
+        protected virtual MethodSignature GetOwnMethod(int index)
         {
             throw new NotImplementedException();
         }
@@ -218,7 +218,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodInfo[] methods)
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
         {
             UpdateState();
 
@@ -226,13 +226,13 @@ namespace ScriptEngine.Machine.Contexts
             methods = AttachMethods();
         }
 
-        private MethodInfo[] AttachMethods()
+        private MethodSignature[] AttachMethods()
         {
             if (_attachableMethods != null)
                 return _attachableMethods;
 
             int totalMethods = METHOD_COUNT + _module.Methods.Length;
-            _attachableMethods = new MethodInfo[totalMethods];
+            _attachableMethods = new MethodSignature[totalMethods];
 
             var moduleMethods = _module.Methods.Select(x => x.Signature).ToArray();
 
@@ -339,7 +339,7 @@ namespace ScriptEngine.Machine.Contexts
             
         }
 
-        public override MethodInfo GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
             if (MethodDefinedInScript(methodNumber))
             {

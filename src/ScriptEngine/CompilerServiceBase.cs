@@ -49,11 +49,11 @@ namespace ScriptEngine
             }
         }
 
-        public int DefineMethod(MethodInfo methodInfo)
+        public int DefineMethod(MethodSignature methodSignature)
         {
             RegisterScopeIfNeeded();
 
-            return _currentContext.DefineMethod(methodInfo).CodeIndex;
+            return _currentContext.DefineMethod(methodSignature).CodeIndex;
         }
 
         public void DefinePreprocessorValue(string name)

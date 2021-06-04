@@ -11,7 +11,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.CSharp.RuntimeBinder;
-using OneScript.DependencyInjection;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;

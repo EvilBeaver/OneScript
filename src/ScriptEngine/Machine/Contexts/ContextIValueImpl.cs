@@ -10,7 +10,6 @@ using System.Linq;
 using OneScript.Commons;
 using OneScript.Types;
 using OneScript.Values;
-using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -165,7 +164,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw RuntimeException.MethodNotFoundException(name);
         }
-        public virtual MethodInfo GetMethodInfo(int methodNumber)
+        public virtual MethodSignature GetMethodInfo(int methodNumber)
         {
             throw new NotImplementedException();
         }

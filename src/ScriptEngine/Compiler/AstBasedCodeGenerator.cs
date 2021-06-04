@@ -198,7 +198,7 @@ namespace ScriptEngine.Compiler
 
             if (entry != _module.Code.Count)
             {
-                var bodyMethod = new MethodInfo();
+                var bodyMethod = new MethodSignature();
                 bodyMethod.Name = ModuleImage.BODY_METHOD_NAME;
                 var descriptor = new MethodDescriptor();
                 descriptor.EntryPoint = entry;
@@ -231,7 +231,7 @@ namespace ScriptEngine.Compiler
         {
             var signature = methodNode.Signature;
             
-            MethodInfo method = new MethodInfo();
+            MethodSignature method = new MethodSignature();
             method.Name = signature.MethodName;
             method.IsFunction = signature.IsFunction;
             method.Annotations = GetAnnotations(methodNode);
@@ -649,7 +649,7 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void CheckFactArguments(MethodInfo method, BslSyntaxNode argList)
+        private void CheckFactArguments(MethodSignature method, BslSyntaxNode argList)
         {
             CheckFactArguments(method.Params, argList);
         }

@@ -47,7 +47,7 @@ namespace ScriptEngine
     [Serializable]
     public struct MethodDescriptor
     {
-        public MethodInfo Signature;
+        public MethodSignature Signature;
         public VariablesFrame Variables;
         public int EntryPoint;
     }

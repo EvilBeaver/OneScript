@@ -23,7 +23,6 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 using Xunit;
 

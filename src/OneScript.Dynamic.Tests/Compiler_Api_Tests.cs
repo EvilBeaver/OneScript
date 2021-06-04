@@ -6,9 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using FluentAssertions;
 using OneScript.Commons;
 using OneScript.Language;
@@ -16,7 +14,6 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
-using OneScript.Values;
 using Xunit;
 
 namespace OneScript.Dynamic.Tests

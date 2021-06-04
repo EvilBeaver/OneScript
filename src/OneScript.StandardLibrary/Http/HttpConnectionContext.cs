@@ -13,7 +13,6 @@ using System.Text;
 using OneScript.Commons;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
-using OneScript.Values;
 using RegExp = System.Text.RegularExpressions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Language.LexicalAnalysis;
-using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {

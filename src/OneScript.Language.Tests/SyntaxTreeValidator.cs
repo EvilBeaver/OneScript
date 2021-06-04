@@ -6,11 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using FluentAssertions;
 using OneScript.Language.SyntaxAnalysis;
-using OneScript.Language.SyntaxAnalysis.AstNodes;
 using Xunit;
-using Xunit.Sdk;
 
 namespace OneScript.Language.Tests
 {

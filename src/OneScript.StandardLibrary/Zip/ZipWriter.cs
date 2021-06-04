@@ -13,7 +13,6 @@ using Ionic.Zip;
 using Ionic.Zlib;
 using OneScript.Commons;
 using OneScript.Types;
-using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

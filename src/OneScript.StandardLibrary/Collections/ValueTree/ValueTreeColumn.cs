@@ -6,10 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Commons;
-using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
 

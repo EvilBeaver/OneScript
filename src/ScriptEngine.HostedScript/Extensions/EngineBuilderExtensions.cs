@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using System.IO;
-using ScriptEngine.Compiler;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 

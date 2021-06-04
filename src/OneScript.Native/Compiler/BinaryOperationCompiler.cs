@@ -9,7 +9,6 @@ using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
-using OneScript;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Values;
 

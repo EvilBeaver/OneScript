@@ -10,7 +10,6 @@ using System.IO;
 using System.Xml;
 using Ionic.Zip;
 using OneScript.Commons;
-using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
 {
