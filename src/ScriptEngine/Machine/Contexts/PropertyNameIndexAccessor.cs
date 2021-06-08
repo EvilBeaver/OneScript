@@ -43,7 +43,7 @@ namespace ScriptEngine.Machine.Contexts
             if (IsPropReadable(n))
                 return GetPropValue(n);
             else
-                throw OldRuntimeException.PropIsNotReadableException(index.AsString());
+                throw PropertyAccessException.PropIsNotReadableException(index.AsString());
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
@@ -57,7 +57,7 @@ namespace ScriptEngine.Machine.Contexts
             if (IsPropWritable(n))
                 SetPropValue(n, val);
             else
-                throw OldRuntimeException.PropIsNotWritableException(index.AsString());
+                throw PropertyAccessException.PropIsNotWritableException(index.AsString());
         }
     }
 }

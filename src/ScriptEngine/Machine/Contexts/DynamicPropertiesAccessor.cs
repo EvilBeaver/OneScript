@@ -73,7 +73,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (KeyNotFoundException)
             {
-                throw OldRuntimeException.PropNotFoundException(name);
+                throw PropertyAccessException.PropNotFoundException(name);
             }
         }
 

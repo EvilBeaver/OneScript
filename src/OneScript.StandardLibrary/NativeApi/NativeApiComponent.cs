@@ -119,7 +119,7 @@ namespace OneScript.StandardLibrary.NativeApi
         {
             var propNumber = NativeApiProxy.FindProp(_object, name);
             if (propNumber < 0)
-                throw OldRuntimeException.PropNotFoundException(name);
+                throw PropertyAccessException.PropNotFoundException(name);
             return propNumber;
         }
 

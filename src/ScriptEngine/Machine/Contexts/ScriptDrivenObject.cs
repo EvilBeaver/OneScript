@@ -268,7 +268,7 @@ namespace ScriptEngine.Machine.Contexts
                 if (_propertySearchCache.TryGetValue(name, out index))
                     return index;
                 else
-                    throw OldRuntimeException.PropNotFoundException(name);
+                    throw PropertyAccessException.PropNotFoundException(name);
             }
         }
 
@@ -406,7 +406,7 @@ namespace ScriptEngine.Machine.Contexts
             if (_allPropertiesSearchCache.TryGetValue(name, out index))
                 return index;
             else
-                throw OldRuntimeException.PropNotFoundException(name);
+                throw PropertyAccessException.PropNotFoundException(name);
         }
 
         public string[] GetExportedProperties()

@@ -12,19 +12,9 @@ namespace ScriptEngine.Machine
     [Obsolete]
     public static class OldRuntimeException
     {
-        public static RuntimeException PropIsNotReadableException(string prop)
-        {
-            return PropertyAccessException.GetPropIsNotReadableException(prop);
-        }
-
-        public static RuntimeException PropIsNotWritableException(string prop)
-        {
-            return PropertyAccessException.GetPropIsNotWritableException(prop);
-        }
-
         public static RuntimeException PropNotFoundException(string prop)
         {
-            return PropertyAccessException.GetPropNotFoundException(prop);
+            return PropertyAccessException.PropNotFoundException(prop);
         }
     }
 
@@ -44,17 +34,17 @@ namespace ScriptEngine.Machine
 
         }
 
-        public static PropertyAccessException GetPropIsNotReadableException(string prop)
+        public static PropertyAccessException PropIsNotReadableException(string prop)
         {
             return new PropertyAccessException(string.Format("Свойство {0} недоступно для чтения", prop));
         }
 
-        public static PropertyAccessException GetPropIsNotWritableException(string prop)
+        public static PropertyAccessException PropIsNotWritableException(string prop)
         {
             return new PropertyAccessException(string.Format("Свойство {0} недоступно для записи", prop));
         }
 
-        public static PropertyAccessException GetPropNotFoundException(string prop)
+        public static PropertyAccessException PropNotFoundException(string prop)
         {
             return new PropertyAccessException(string.Format("Свойство объекта не обнаружено ({0})", prop));
         }

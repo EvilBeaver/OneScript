@@ -125,7 +125,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual int FindProperty(string name)
         {
-            throw OldRuntimeException.PropNotFoundException(name);
+            throw PropertyAccessException.PropNotFoundException(name);
         }
         public virtual bool IsPropReadable(int propNum)
         {

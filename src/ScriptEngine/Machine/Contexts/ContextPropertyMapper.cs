@@ -29,12 +29,12 @@ namespace ScriptEngine.Machine.Contexts
 
             IValue CantReadAction(TInstance inst)
             {
-                throw OldRuntimeException.PropIsNotReadableException(_name);
+                throw PropertyAccessException.PropIsNotReadableException(_name);
             }
 
             void CantWriteAction(TInstance inst, IValue val)
             {
-                throw OldRuntimeException.PropIsNotWritableException(_name);
+                throw PropertyAccessException.PropIsNotWritableException(_name);
             }
 
             this.CanRead = attrib.CanRead;
@@ -155,7 +155,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             var idx = GetPropertyIndex(name);
             if (idx < 0)
-                throw OldRuntimeException.PropNotFoundException(name);
+                throw PropertyAccessException.PropNotFoundException(name);
 
             return idx;
         }

@@ -176,7 +176,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             var column = cols.FindColumnByName(name);
             
             if(column == null)
-                throw OldRuntimeException.PropNotFoundException(name);
+                throw PropertyAccessException.PropNotFoundException(name);
 
             return GetColumnPropIndex(cols.IndexOf(column));
         }

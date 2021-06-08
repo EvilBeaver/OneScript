@@ -244,7 +244,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             {
                 ValueTreeColumn column = Columns.FindColumnByName(kv.Key.AsString());
                 if (column == null)
-                    throw OldRuntimeException.PropNotFoundException(kv.Key.AsString());
+                    throw PropertyAccessException.PropNotFoundException(kv.Key.AsString());
 
                 IValue current = row.Get(column);
                 if (!current.Equals(kv.Value))
@@ -368,12 +368,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             {
                 string[] description = column.Trim().Split(' ');
                 if (description.Count() == 0)
-                    throw OldRuntimeException.PropNotFoundException(""); // TODO: WrongColumnNameException
+                    throw PropertyAccessException.PropNotFoundException(""); // TODO: WrongColumnNameException
 
                 ValueTreeSortRule desc = new ValueTreeSortRule();
                 desc.Column = this.Columns.FindColumnByName(description[0]);
                 if (desc.Column == null)
-                    throw OldRuntimeException.PropNotFoundException(description[0]);
+                    throw PropertyAccessException.PropNotFoundException(description[0]);
 
                 if (description.Count() > 1)
                 {

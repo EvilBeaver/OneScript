@@ -83,7 +83,7 @@ namespace ScriptEngine.Machine.Contexts
         public override int FindProperty(string name)
         {
             if(!TryFindProperty(name, out var md))
-                throw OldRuntimeException.PropNotFoundException(name);
+                throw PropertyAccessException.PropNotFoundException(name);
 
             return _props.IndexOf(md);
         }
@@ -112,11 +112,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw OldRuntimeException.PropNotFoundException(prop.Name);
+                throw PropertyAccessException.PropNotFoundException(prop.Name);
             }
             catch (System.MemberAccessException)
             {
-                throw OldRuntimeException.PropIsNotReadableException(prop.Name);
+                throw PropertyAccessException.PropIsNotReadableException(prop.Name);
             }
         }
 
@@ -156,11 +156,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw OldRuntimeException.PropNotFoundException(prop.Name);
+                throw PropertyAccessException.PropNotFoundException(prop.Name);
             }
             catch (System.MemberAccessException)
             {
-                throw OldRuntimeException.PropIsNotWritableException(prop.Name);
+                throw PropertyAccessException.PropIsNotWritableException(prop.Name);
             }
         }
 

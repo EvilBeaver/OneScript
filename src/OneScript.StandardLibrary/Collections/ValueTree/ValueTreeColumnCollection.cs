@@ -217,7 +217,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             var column = FindColumnByName(name);
             if (column == null)
-                throw OldRuntimeException.PropNotFoundException(name);
+                throw PropertyAccessException.PropNotFoundException(name);
             return _columns.IndexOf(column);
         }
 
@@ -247,7 +247,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             {
                 var column = FindColumnByName(index.AsString());
                 if (column == null)
-                    throw OldRuntimeException.PropNotFoundException(index.AsString());
+                    throw PropertyAccessException.PropNotFoundException(index.AsString());
                 return column;
             }
 
@@ -328,7 +328,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
                     var column = FindColumnByName(name.Trim());
 
                     if (column == null)
-                        throw OldRuntimeException.PropNotFoundException(name.Trim());
+                        throw PropertyAccessException.PropNotFoundException(name.Trim());
 
                     processingList.Add(column);
                 }

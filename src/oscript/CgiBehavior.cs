@@ -210,7 +210,7 @@ namespace oscript
 
 		public int FindProperty(string name)
 		{
-			throw OldRuntimeException.PropNotFoundException(name);
+			throw PropertyAccessException.PropNotFoundException(name);
 		}
 
 		public bool IsPropReadable(int propNum)
