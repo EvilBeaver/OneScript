@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Linq;
+using OneScript.Contexts;
 using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
@@ -116,12 +117,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
         {
-            variables = this.GetProperties()
+            variables = RCIHelperExtensions.GetProperties(this)
                 .OrderBy(x => x.Index)
                 .Select(x => Variable.CreateContextPropertyReference(this, x.Index, x.Identifier))
                 .ToArray();
 
-            methods = this.GetMethods().ToArray();
+            methods = RCIHelperExtensions.GetMethods(this).ToArray();
         }
         
         public virtual int GetMethodsCount()
@@ -131,12 +132,22 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-        public override int CompareTo(BslValue other)
+        public override BslMethodInfo GetMethod(string name)
         {
             throw new NotImplementedException();
         }
 
-        public override bool Equals(BslValue other)
+        public override BslMethodInfo[] GetMethods()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override BslPropertyInfo GetProperty(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override BslPropertyInfo[] GetProperties()
         {
             throw new NotImplementedException();
         }

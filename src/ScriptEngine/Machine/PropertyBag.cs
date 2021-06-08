@@ -85,7 +85,7 @@ namespace ScriptEngine.Machine
         public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
         {
             variables = new IVariable[this.Count];
-            var props = GetProperties().OrderBy(x => x.Value).Select(x=>x.Key).ToArray();
+            var props = GetDynamicProperties().OrderBy(x => x.Value).Select(x=>x.Key).ToArray();
             Debug.Assert(props.Length == variables.Length);
 
             for (var i = 0; i < variables.Length; i++)

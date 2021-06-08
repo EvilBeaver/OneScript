@@ -284,7 +284,7 @@ namespace ScriptEngine.Machine.Contexts
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
-            var propVariables = this.GetProperties()
+            var propVariables = RCIHelperExtensions.GetProperties(this)
                 .Where(x => x.Identifier != ThisAwareScriptedObjectBase.THISOBJ_RU)
                 .Select(x => Variable.Create(GetPropValue(x.Index), x.Identifier));
             

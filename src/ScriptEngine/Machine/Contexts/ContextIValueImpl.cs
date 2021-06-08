@@ -8,12 +8,13 @@ using System;
 using System.Dynamic;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
 using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public abstract class ContextIValueImpl : BslObjectValue, IRuntimeContextInstance, IValue, ISystemTypeAcceptor
+    public abstract class ContextIValueImpl : BslObjectValue, IRuntimeContextInstance, ISystemTypeAcceptor
     {
         private TypeDescriptor _type;
 
@@ -323,6 +324,30 @@ namespace ScriptEngine.Machine.Contexts
 
             return ReferenceEquals(this, other);
         }
+        
+        #region ReflectionBased API for accessing members
+
+        public override BslMethodInfo GetMethod(string name)
+        {
+            return default;
+        }
+
+        public override BslMethodInfo[] GetMethods()
+        {
+            return new BslMethodInfo[0];
+        }
+
+        public override BslPropertyInfo GetProperty(string name)
+        {
+            return default;
+        }
+
+        public override BslPropertyInfo[] GetProperties()
+        {
+            return new BslPropertyInfo[0];
+        }
+
+        #endregion
     }
 
     [AttributeUsage(AttributeTargets.Method)]

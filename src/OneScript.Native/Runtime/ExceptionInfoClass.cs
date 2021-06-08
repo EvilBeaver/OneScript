@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Reflection;
+using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Types;
 using OneScript.Values;
@@ -83,6 +85,26 @@ namespace OneScript.Native.Runtime
             var position = _exc.InnerException is ScriptException scr ? scr.GetPosition() : _errorPosition;
 
             return new ExceptionInfoClass(_exc.InnerException, position);
+        }
+
+        public override Contexts.BslMethodInfo GetMethod(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Contexts.BslMethodInfo[] GetMethods()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override BslPropertyInfo GetProperty(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override BslPropertyInfo[] GetProperties()
+        {
+            throw new NotImplementedException();
         }
     }
 }

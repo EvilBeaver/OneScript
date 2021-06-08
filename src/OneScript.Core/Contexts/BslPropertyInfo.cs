@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace OneScript.Contexts
 {
-    public abstract class BslMethodInfoBase : MethodInfo, IAliasedMemberInfo
+    public abstract class BslPropertyInfo : PropertyInfo, IAliasedMemberInfo
     {
         public string Alias { get; protected set; }
         

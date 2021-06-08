@@ -10,10 +10,8 @@ using System.Reflection;
 
 namespace OneScript.Contexts
 {
-    public abstract class BslPropertyInfoBase : PropertyInfo, IAliasedMemberInfo
+    public abstract class BslFieldInfo : FieldInfo
     {
-        public string Alias { get; protected set; }
-        
         private AnnotationHolder _annotations;
         
         private AnnotationHolder Annotations
@@ -36,7 +34,7 @@ namespace OneScript.Contexts
         {
             return new AnnotationHolder(new object[0]);
         }
-        
+
         public override object[] GetCustomAttributes(bool inherit)
         {
             return Annotations.GetCustomAttributes(inherit);

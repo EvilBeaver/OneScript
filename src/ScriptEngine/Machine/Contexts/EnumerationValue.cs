@@ -40,14 +40,14 @@ namespace ScriptEngine.Machine.Contexts
             get { return Machine.DataType.GenericValue; }
         }
 
-        public virtual TypeDescriptor SystemType => _owner.ValuesType;
+        public override TypeDescriptor SystemType => _owner.ValuesType;
 
         public override string ToString()
         {
             return ValuePresentation == null ? SystemType.Name : ValuePresentation;
         }
 
-        public IValue GetRawValue()
+        public override IValue GetRawValue()
         {
             return this;
         }

@@ -6,11 +6,12 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Localization;
 
 namespace OneScript.Values
 {
-    public abstract class BslObjectValue : BslValue
+    public abstract class BslObjectValue : BslValue, IContext
     {
         public override int CompareTo(BslValue other)
         {
@@ -24,5 +25,10 @@ namespace OneScript.Values
         {
             return ReferenceEquals(this, other);
         }
+
+        public abstract BslMethodInfo GetMethod(string name);
+        public abstract BslMethodInfo[] GetMethods();
+        public abstract BslPropertyInfo GetProperty(string name);
+        public abstract BslPropertyInfo[] GetProperties();
     }
 }

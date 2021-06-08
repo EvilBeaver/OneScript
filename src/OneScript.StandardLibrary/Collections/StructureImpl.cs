@@ -203,7 +203,7 @@ namespace OneScript.StandardLibrary.Collections
 
         public IEnumerator<KeyAndValueImpl> GetEnumerator()
         {
-            foreach (var item in GetProperties())
+            foreach (var item in GetDynamicProperties())
             {
                 yield return new KeyAndValueImpl(
                     ValueFactory.Create(item.Key),

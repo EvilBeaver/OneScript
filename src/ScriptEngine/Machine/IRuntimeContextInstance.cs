@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using OneScript.Commons;
 
@@ -35,6 +36,7 @@ namespace ScriptEngine.Machine
         void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue);
     }
 
+    [Obsolete]
     public static class RCIHelperExtensions
     {
         public static IEnumerable<MethodSignature> GetMethods(this IRuntimeContextInstance context)

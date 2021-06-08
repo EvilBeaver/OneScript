@@ -14,7 +14,7 @@ using OneScript.Contexts;
 
 namespace OneScript.Native.Runtime
 {
-    public class BslFieldInfo : BslFieldInfoBase
+    public class BslFieldInfo : Contexts.BslFieldInfo
     {
         private Type _declaringType;
         private bool _isPublic;

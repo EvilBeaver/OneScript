@@ -14,7 +14,7 @@ using OneScript.Contexts;
 
 namespace OneScript.Native.Runtime
 {
-    public class BslMethodInfo : BslMethodInfoBase
+    public class BslMethodInfo : Contexts.BslMethodInfo
     {
         private Type _declaringType;
         private Type _returnType;
@@ -62,6 +62,8 @@ namespace OneScript.Native.Runtime
         public override Type DeclaringType => _declaringType;
         
         public override string Name => _name;
+
+        public override string Alias => default;
 
         public override Type ReflectedType => _declaringType;
         

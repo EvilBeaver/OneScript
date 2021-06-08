@@ -9,11 +9,12 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using OneScript.Commons;
 using OneScript.Types;
 
 namespace OneScript.Contexts
 {
-    public sealed class ContextMethodInfo : MethodInfo/*, IObjectWrapper*/
+    public sealed class ContextMethodInfo : BslMethodInfo, IObjectWrapper
     {
         private readonly MethodInfo _realMethod;
         private readonly ContextMethodAttribute _scriptMark;
@@ -62,7 +63,7 @@ namespace OneScript.Contexts
 
         public override string Name => _scriptMark.GetName();
         
-        public string Alias => _scriptMark.GetAlias();
+        public override string Alias => _scriptMark.GetAlias();
 
         public override Type DeclaringType => _realMethod.DeclaringType;
 
@@ -77,7 +78,7 @@ namespace OneScript.Contexts
             return _realMethod.GetCustomAttributes(attributeType, inherit);
         }
 
-        public object GetUnderlyingObject() => _realMethod;
+        public object UnderlyingObject => _realMethod;
 
         public MethodInfo GetWrappedMethod() => _realMethod;
     }

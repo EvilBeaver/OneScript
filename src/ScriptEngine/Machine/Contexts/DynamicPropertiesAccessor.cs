@@ -43,7 +43,7 @@ namespace ScriptEngine.Machine.Contexts
             return _propHolder.GetPropertyName(idx);
         }
 
-        protected virtual IEnumerable<KeyValuePair<string, int>> GetProperties()
+        protected virtual IEnumerable<KeyValuePair<string, int>> GetDynamicProperties()
         {
             return _propHolder.GetProperties();
         }
