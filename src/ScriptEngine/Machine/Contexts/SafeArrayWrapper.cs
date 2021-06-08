@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 //#if !__MonoCS__
 using System;
 using System.Collections.Generic;
+using OneScript.Commons;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
