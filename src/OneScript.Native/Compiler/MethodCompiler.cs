@@ -15,6 +15,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Commons;
+using OneScript.Contexts.Reflection;
 using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
@@ -31,7 +32,7 @@ namespace OneScript.Native.Compiler
 {
     public class MethodCompiler : ExpressionTreeGeneratorBase
     {
-        private readonly BslMethodInfo _method;
+        private readonly NativeScriptMethodInfo _method;
         private readonly List<ParameterExpression> _localVariables = new List<ParameterExpression>();
         private readonly StatementBlocksWriter _blocks = new StatementBlocksWriter();
         private readonly Stack<Expression> _statementBuildParts = new Stack<Expression>();
@@ -45,7 +46,7 @@ namespace OneScript.Native.Compiler
         private ContextMethodsCache _methodsCache = new ContextMethodsCache();
         private ReflectedPropertiesCache _propertiesCache = new ReflectedPropertiesCache();
 
-        public MethodCompiler(BslWalkerContext walkContext, BslMethodInfo method) : base(walkContext)
+        public MethodCompiler(BslWalkerContext walkContext, NativeScriptMethodInfo method) : base(walkContext)
         {
             _method = method;
             _services = walkContext.Services;

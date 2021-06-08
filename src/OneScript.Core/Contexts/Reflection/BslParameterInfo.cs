@@ -11,7 +11,7 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Values;
 
-namespace OneScript.Native.Runtime
+namespace OneScript.Contexts.Reflection
 {
     public class BslParameterInfo : ParameterInfo
     {

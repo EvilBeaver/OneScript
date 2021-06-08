@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Globalization;
 using System.Reflection;
+using OneScript.Contexts;
 
 /*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 

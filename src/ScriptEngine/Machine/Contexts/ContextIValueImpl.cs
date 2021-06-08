@@ -8,6 +8,8 @@ using System;
 using System.Dynamic;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Contexts;
+using OneScript.Contexts.Reflection;
 using OneScript.Types;
 using OneScript.Values;
 
@@ -164,20 +166,13 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw RuntimeException.MethodNotFoundException(name);
         }
-        public virtual MethodSignature GetMethodInfo(int methodNumber)
+        public virtual BslMethodInfoBase GetMethodInfo(int methodNumber)
         {
             throw new NotImplementedException();
         }
-        public virtual VariableInfo GetPropertyInfo(int propertyNumber)
+        public virtual BslPropertyInfoBase GetPropertyInfo(int propertyNumber)
         {
-            return new VariableInfo
-            {
-                Identifier = GetPropName(propertyNumber),
-                CanGet = IsPropReadable(propertyNumber),
-                CanSet = IsPropWritable(propertyNumber),
-                Index = propertyNumber,
-                Type = SymbolType.ContextProperty
-            };
+            throw new NotImplementedException();
         }
         public virtual void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
@@ -279,7 +274,7 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             var methInfo = GetMethodInfo(methIdx);
-            var valueArgs = new IValue[methInfo.Params.Length];
+            var valueArgs = new IValue[methInfo.GetParameters().Length];
             var passedArgs = args.Select(x => ContextValuesMarshaller.ConvertReturnValue(x, x.GetType())).ToArray();
             for (int i = 0; i < valueArgs.Length; i++)
             {

@@ -11,7 +11,7 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Types;
 
-namespace OneScript.Contexts
+namespace OneScript.Contexts.Reflection
 {
     public sealed class ContextMethodInfo : MethodInfo/*, IObjectWrapper*/
     {

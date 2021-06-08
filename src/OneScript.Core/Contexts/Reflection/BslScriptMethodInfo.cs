@@ -5,17 +5,18 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
-using OneScript.Contexts;
+using System.Globalization;
+using System.Linq.Expressions;
+using System.Reflection;
 
-namespace ScriptEngine.Machine
+namespace OneScript.Contexts.Reflection
 {
-    public interface IDebugValueVisitor
+    /// <summary>
+    /// Метод, объявленный в скриптовом модуле
+    /// </summary>
+    public class BslScriptMethodInfo : CustomizableMethodInfo
     {
-        void ShowProperties(IRuntimeContextInstance context);
-        
-        void ShowCollectionItems(IEnumerable<IValue> collection);
-
-        void ShowCustom(ICollection<IVariable> variablesToShow);
     }
 }

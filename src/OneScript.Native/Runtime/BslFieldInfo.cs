@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
+using OneScript.Contexts.Reflection;
 
 namespace OneScript.Native.Runtime
 {

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;

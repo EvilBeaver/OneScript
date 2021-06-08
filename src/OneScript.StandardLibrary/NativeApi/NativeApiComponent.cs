@@ -8,7 +8,10 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Runtime.InteropServices;
 using OneScript.Commons;
+using OneScript.Contexts;
+using OneScript.Contexts.Reflection;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
@@ -177,7 +180,7 @@ namespace OneScript.StandardLibrary.NativeApi
             return methodNumber;
         }
 
-        public MethodSignature GetMethodInfo(int methodNumber)
+        public BslMethodInfoBase GetMethodInfo(int methodNumber)
         {
             if (methodNumber < 0)
                 throw new RuntimeException("Метод не найден");
@@ -190,7 +193,7 @@ namespace OneScript.StandardLibrary.NativeApi
                 str => alias = NativeApiProxy.Str(str)
             );
             var paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
-            var paramArray = new ParameterDefinition[paramCount];
+            var paramArray = new BslParameterInfo[paramCount];
             for (int i = 0; i < paramCount; i++)
             {
                 var localCopyOfIndex = i;
@@ -198,38 +201,34 @@ namespace OneScript.StandardLibrary.NativeApi
                 {
                     if (NativeApiVariant.NotEmpty(variant))
                     {
-                        paramArray[localCopyOfIndex].HasDefaultValue = true;
-                        paramArray[localCopyOfIndex].DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX;
+                        paramArray[localCopyOfIndex].SetDefaultValue(default);
                     }
                 });
             }
 
-            return new MethodSignature
-            {
-                Name = name,
-                Alias = alias,
-                IsFunction = NativeApiProxy.HasRetVal(_object, methodNumber),
-                IsDeprecated = false,
-                IsExport = false,
-                ThrowOnUseDeprecated = false,
-                Params = paramArray,
-            };
+            var mi = new NativeApiMethodInfo();
+            mi.SetName(name);
+            mi.SetAlias(alias);
+            if(NativeApiProxy.HasRetVal(_object, methodNumber))
+                mi.SetReturnType(typeof(BslValue));
+            mi.SetPrivate(false);
+            mi.Parameters.AddRange(paramArray);
+
+            return mi;
         }
 
-        public VariableInfo GetPropertyInfo(int propertyNumber)
+        public BslPropertyInfoBase GetPropertyInfo(int propertyNumber)
         {
             var propName = GetPropName(propertyNumber);
             var isReadable = IsPropReadable(propertyNumber);
             var isWritable = IsPropWritable(propertyNumber);
 
-            return new VariableInfo
-            {
-                Identifier = propName,
-                CanGet = isReadable,
-                CanSet = isWritable,
-                Index = propertyNumber,
-                Type = SymbolType.ContextProperty
-            };
+            var propInfo = new CustomizablePropertyInfo();
+            propInfo.SetName(propName);
+            propInfo.SetAccessibility(isReadable, isWritable);
+            propInfo.SetDispatchId(propertyNumber);
+
+            return propInfo;
         }
 
         private void SetDefValues(int methodNumber, int paramCount, IValue[] arguments)

@@ -8,12 +8,10 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Reflection;
 
-namespace OneScript.Contexts
+namespace OneScript.Contexts.Reflection
 {
-    public abstract class BslPropertyInfoBase : PropertyInfo, IAliasedMemberInfo
+    public abstract class BslFieldInfoBase : FieldInfo
     {
-        public string Alias { get; protected set; }
-        
         private AnnotationHolder _annotations;
         
         private AnnotationHolder Annotations
@@ -36,7 +34,7 @@ namespace OneScript.Contexts
         {
             return new AnnotationHolder(new object[0]);
         }
-        
+
         public override object[] GetCustomAttributes(bool inherit)
         {
             return Annotations.GetCustomAttributes(inherit);

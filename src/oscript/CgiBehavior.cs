@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.Types;
 using oscript.Web;

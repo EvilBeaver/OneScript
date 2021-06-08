@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Contexts.Reflection;
 using OneScript.Values;
 using ScriptEngine.Machine.Rcw;
 
@@ -172,15 +173,15 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.IndexOf(md);
         }
 
-        public override MethodSignature GetMethodInfo(int methodNumber)
+        public override BslMethodInfoBase GetMethodInfo(int methodNumber)
         {
             return GetMethodDescription(methodNumber);
         }
 
-        private MethodSignature GetMethodDescription(int methodNumber)
+        private BslMethodInfoBase GetMethodDescription(int methodNumber)
         {
             //TODO: Доработать RcwMethodMetadata
-            return new MethodSignature();
+            return new BslScriptMethodInfo();
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)

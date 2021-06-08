@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Types;
@@ -1233,7 +1234,7 @@ namespace ScriptEngine.Machine
             IValue[] argValues;
             PrepareContextCallArguments(arg, out context, out methodId, out argValues);
 
-            if (!context.DynamicMethodSignatures && !context.GetMethodInfo(methodId).IsFunction)
+            if (!context.DynamicMethodSignatures && context.GetMethodInfo(methodId).ReturnType == typeof(void))
             {
                 throw RuntimeException.UseProcAsAFunction();
             }
@@ -1259,11 +1260,12 @@ namespace ScriptEngine.Machine
             var methodName = _module.Constants[arg].AsString();
             methodId = context.FindMethod(methodName);
             var methodInfo = context.GetMethodInfo(methodId);
+            var methodParameters = methodInfo.GetParameters();
 
             if(context.DynamicMethodSignatures)
                 argValues = new IValue[argCount];
             else
-                argValues = new IValue[methodInfo.Params.Length];
+                argValues = new IValue[methodParameters.Length];
 
             bool[] signatureCheck = new bool[argCount];
 
@@ -1282,7 +1284,7 @@ namespace ScriptEngine.Machine
                     {
                         argValues[i] = BreakVariableLink(argValue);
                     }
-                    else if (i < methodInfo.Params.Length)
+                    else if (i < methodParameters.Length)
                     {
                         if (methodInfo.Params[i].IsByValue)
                             argValues[i] = BreakVariableLink(argValue);
