@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq;
-using OneScript.Contexts.Reflection;
 using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
@@ -65,7 +64,7 @@ namespace OneScript.Native.Compiler
             
             foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
             {
-                var methodInfo = new NativeScriptMethodInfo();
+                var methodInfo = new BslMethodInfo();
                 VisitMethodSignature(methodInfo, methodNode.Signature);
 
                 var symbol = new MethodSymbol
@@ -78,7 +77,7 @@ namespace OneScript.Native.Compiler
             }
         }
 
-        private void VisitMethodSignature(BslScriptMethodInfo info, MethodSignatureNode node)
+        private void VisitMethodSignature(BslMethodInfo info, MethodSignatureNode node)
         {
             info.SetName(node.MethodName);
             info.SetReturnType(node.IsFunction ? typeof(BslValue): typeof(void));
@@ -131,7 +130,7 @@ namespace OneScript.Native.Compiler
         protected override void VisitMethod(MethodNode methodNode)
         {
             var methodSymbol = Symbols.TopScope().Methods[methodNode.Signature.MethodName];
-            var methodInfo = (NativeScriptMethodInfo)methodSymbol.MethodInfo;
+            var methodInfo = (BslMethodInfo)methodSymbol.MethodInfo;
 
             var context = MakeContext();
             var methCompiler = new MethodCompiler(context, methodInfo);
@@ -140,7 +139,7 @@ namespace OneScript.Native.Compiler
  
         protected override void VisitModuleBody(BslSyntaxNode moduleBody)
         {
-            var method = new NativeScriptMethodInfo();
+            var method = new BslMethodInfo();
             method.SetName("$entry");
             
             _module.Methods.Add(method);

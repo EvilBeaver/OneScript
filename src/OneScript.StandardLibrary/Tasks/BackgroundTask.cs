@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
-using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;

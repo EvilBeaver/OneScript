@@ -71,8 +71,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Dynamic.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Native", "OneScript.Native\OneScript.Native.csproj", "{90E896C1-FEAE-4C71-8E47-3E3F2D9C926C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.StackRuntime", "OneScript.StackRuntime\OneScript.StackRuntime.csproj", "{8DE3E22E-D2BC-46ED-8D7E-35BDF3D3209A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -251,14 +249,6 @@ Global
 		{90E896C1-FEAE-4C71-8E47-3E3F2D9C926C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{90E896C1-FEAE-4C71-8E47-3E3F2D9C926C}.Release|x86.ActiveCfg = Release|Any CPU
 		{90E896C1-FEAE-4C71-8E47-3E3F2D9C926C}.Release|x86.Build.0 = Release|Any CPU
-		{8DE3E22E-D2BC-46ED-8D7E-35BDF3D3209A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8DE3E22E-D2BC-46ED-8D7E-35BDF3D3209A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8DE3E22E-D2BC-46ED-8D7E-35BDF3D3209A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8DE3E22E-D2BC-46ED-8D7E-35BDF3D3209A}.Debug|x86.Build.0 = Debug|Any CPU
-		{8DE3E22E-D2BC-46ED-8D7E-35BDF3D3209A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8DE3E22E-D2BC-46ED-8D7E-35BDF3D3209A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8DE3E22E-D2BC-46ED-8D7E-35BDF3D3209A}.Release|x86.ActiveCfg = Release|Any CPU
-		{8DE3E22E-D2BC-46ED-8D7E-35BDF3D3209A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -8,27 +8,20 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Reflection;
+using OneScript.Contexts;
 
-namespace OneScript.Contexts.Reflection
+namespace OneScript.Native.Runtime
 {
-    public abstract class CustomizableMethodInfo : BslMethodInfoBase
+    public class BslMethodInfo : BslMethodInfoBase
     {
         private Type _declaringType;
         private Type _returnType;
         private string _name;
-        private bool _isPrivate = true;
         
-        public override Type ReturnType => _returnType;
-        public override Type DeclaringType => _declaringType;
-        public override string Name => _name;
-        public override Type ReflectedType => _declaringType;
-
-        public List<BslParameterInfo> Parameters { get; } = new List<BslParameterInfo>();
-        public override MethodImplAttributes GetMethodImplementationFlags() => MethodImplAttributes.Managed;
-        public override ParameterInfo[] GetParameters() => Parameters.ToArray();
-        
-        protected bool IsPrivate => _isPrivate;
+        int _dispId = -1;
+        bool _isPrivate = true;
         
         public void SetDeclaringType(Type type)
         {
@@ -39,18 +32,12 @@ namespace OneScript.Contexts.Reflection
         {
             _name = name;
         }
-        
-        public void SetAlias(string alias)
+
+        public void SetImplementation(LambdaExpression lambda)
         {
-            Alias = alias;
+            Implementation = lambda;
         }
 
-        public void SetNames(string name, string alias)
-        {
-            SetName(name);
-            SetAlias(alias);
-        }
-        
         public void SetReturnType(Type type)
         {
             _returnType = type;
@@ -61,12 +48,33 @@ namespace OneScript.Contexts.Reflection
             _isPrivate = makePrivate;
         }
         
+        public void SetDispId(int p)
+        {
+            _dispId = p;
+        }
+        
+        public override Type ReturnType => _returnType;
+
+        public List<BslParameterInfo> Parameters { get; } = new List<BslParameterInfo>();
+        
+        public LambdaExpression Implementation { get; private set; }
+        
+        public override Type DeclaringType => _declaringType;
+        
+        public override string Name => _name;
+
+        public override Type ReflectedType => _declaringType;
+        
+        public override MethodImplAttributes GetMethodImplementationFlags() => MethodImplAttributes.Managed;
+
+        public override ParameterInfo[] GetParameters() => Parameters.ToArray();
+
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
 
-        public override MethodAttributes Attributes => IsPrivate ? MethodAttributes.Private : MethodAttributes.Public;
+        public override MethodAttributes Attributes => _isPrivate ? MethodAttributes.Private : MethodAttributes.Public;
 
         public override RuntimeMethodHandle MethodHandle => throw new NotImplementedException();
         

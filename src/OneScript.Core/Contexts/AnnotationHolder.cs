@@ -9,7 +9,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace OneScript.Contexts.Reflection
+namespace OneScript.Contexts
 {
     public class AnnotationHolder : ICustomAttributeProvider
     {

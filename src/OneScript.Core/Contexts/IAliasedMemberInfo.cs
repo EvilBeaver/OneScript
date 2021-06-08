@@ -5,14 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using System.Globalization;
-using System.Reflection;
-using OneScript.Contexts.Reflection;
-
-namespace OneScript.StandardLibrary.NativeApi
+namespace OneScript.Contexts
 {
-    public class NativeApiMethodInfo : CustomizableMethodInfo
+    public interface IAliasedMemberInfo
     {
+        public string Alias { get; } 
     }
 }

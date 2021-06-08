@@ -8,9 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Reflection;
 
-namespace OneScript.Contexts.Reflection
+namespace OneScript.Contexts
 {
-    public abstract class BslPropertyInfoBase : PropertyInfo, IAliasedMemberInfo
+    public abstract class BslMethodInfoBase : MethodInfo, IAliasedMemberInfo
     {
         public string Alias { get; protected set; }
         

@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
-using OneScript.Contexts.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -142,16 +141,23 @@ namespace ScriptEngine.Machine.Contexts
             return _nameMapper.FindMethod(Instance, name);
         }
 
-        public override BslMethodInfoBase GetMethodInfo(int methodNumber)
+        public override MethodSignature GetMethodInfo(int methodNumber)
         {
             var methodInfo = _nameMapper.GetMethod(methodNumber);
-            throw new NotImplementedException("Wrap into ContextMethodnfo");
+            return GetReflectableMethod(methodInfo.Method);
         }
 
-        public override BslPropertyInfoBase GetPropertyInfo(int propertyNumber)
+        public override VariableInfo GetPropertyInfo(int propertyNumber)
         {
             var info = _nameMapper.GetProperty(propertyNumber);
-            throw new NotImplementedException("Wrap into ContextPropertyInfo");
+            return new VariableInfo
+            {
+                Identifier = info.Name,
+                Index = propertyNumber,
+                CanGet = info.CanRead,
+                CanSet = info.CanWrite,
+                Type = SymbolType.ContextProperty
+            };
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)

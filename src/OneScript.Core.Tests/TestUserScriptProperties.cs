@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Linq;
 using FluentAssertions;
-using OneScript.Contexts;
 using OneScript.Values;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;

@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using OneScript.Contexts;
 using OneScript.Types;
 using SysReflection = System.Reflection;
 using ScriptEngine.Machine.Contexts;
