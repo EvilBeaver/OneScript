@@ -43,7 +43,7 @@ namespace ScriptEngine.Machine.Contexts
         
         #region IValue Members
 
-        public TypeDescriptor SystemType
+        public override TypeDescriptor SystemType
         {
             get
             {
