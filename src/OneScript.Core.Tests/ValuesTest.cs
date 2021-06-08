@@ -196,7 +196,7 @@ namespace OneScript.Core.Tests
 
             Assert.True(str1.CompareTo(str2) < 0);
             Assert.True(str2.CompareTo(str1) > 0);
-            Assert.True(str1.CompareTo(ValueFactory.Create("абв")) != 0);
+            Assert.True(str1.CompareTo(ValueFactory.Create("абв")) == 0);
         }
 
         [Fact]
