@@ -131,25 +131,5 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         #endregion
-
-        public override BslMethodInfo GetMethod(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override BslMethodInfo[] GetMethods()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override BslPropertyInfo GetProperty(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override BslPropertyInfo[] GetProperties()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

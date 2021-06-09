@@ -86,25 +86,5 @@ namespace OneScript.Native.Runtime
 
             return new ExceptionInfoClass(_exc.InnerException, position);
         }
-
-        public override Contexts.BslMethodInfo GetMethod(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Contexts.BslMethodInfo[] GetMethods()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override BslPropertyInfo GetProperty(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override BslPropertyInfo[] GetProperties()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

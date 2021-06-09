@@ -324,30 +324,6 @@ namespace ScriptEngine.Machine.Contexts
 
             return ReferenceEquals(this, other);
         }
-        
-        #region ReflectionBased API for accessing members
-
-        public override BslMethodInfo GetMethod(string name)
-        {
-            return default;
-        }
-
-        public override BslMethodInfo[] GetMethods()
-        {
-            return new BslMethodInfo[0];
-        }
-
-        public override BslPropertyInfo GetProperty(string name)
-        {
-            return default;
-        }
-
-        public override BslPropertyInfo[] GetProperties()
-        {
-            return new BslPropertyInfo[0];
-        }
-
-        #endregion
     }
 
     [AttributeUsage(AttributeTargets.Method)]
