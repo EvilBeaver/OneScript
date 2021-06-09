@@ -4,8 +4,10 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -60,7 +62,7 @@ namespace ScriptEngine.Machine.Contexts
             return _methodPtrs[number].Method;
         }
 
-        public ScriptEngine.Machine.MethodSignature GetMethodInfo(int number)
+        public MethodSignature GetMethodInfo(int number)
         {
             Init();
             return _methodPtrs[number].MethodSignature;
@@ -104,7 +106,7 @@ namespace ScriptEngine.Machine.Contexts
             private readonly Lazy<ContextCallableDelegate<TInstance>> _method;
             public MethodSignature MethodSignature { get; }
 
-            public InternalMethInfo(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
+            public InternalMethInfo(MethodInfo target, ContextMethodAttribute binding)
             {
                 _method = new Lazy<ContextCallableDelegate<TInstance>>(() =>
                 {
@@ -117,7 +119,7 @@ namespace ScriptEngine.Machine.Contexts
 
             public ContextCallableDelegate<TInstance> Method => _method.Value;
 
-            private static MethodSignature CreateMetadata(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
+            private static MethodSignature CreateMetadata(MethodInfo target, ContextMethodAttribute binding)
             {
                 var parameters = target.GetParameters();
                 var isFunc = target.ReturnType != typeof(void);
@@ -150,7 +152,7 @@ namespace ScriptEngine.Machine.Contexts
 
                 }
 
-                var scriptMethInfo = new ScriptEngine.Machine.MethodSignature();
+                var scriptMethInfo = new MethodSignature();
                 scriptMethInfo.IsFunction = isFunc;
                 scriptMethInfo.IsExport = true;
                 scriptMethInfo.IsDeprecated = binding.IsDeprecated;
@@ -163,12 +165,12 @@ namespace ScriptEngine.Machine.Contexts
                 return scriptMethInfo;
             }
 
-            private static ContextCallableDelegate<TInstance> CreateFunction(System.Reflection.MethodInfo target)
+            private static ContextCallableDelegate<TInstance> CreateFunction(MethodInfo target)
             {
                 var methodCall = MethodCallExpression(target, out var instParam, out var argsParam);
 
                 var convertRetMethod = typeof(InternalMethInfo).GetMethod("ConvertReturnValue", BindingFlags.Static | BindingFlags.NonPublic)?.MakeGenericMethod(target.ReturnType);
-                System.Diagnostics.Debug.Assert(convertRetMethod != null);
+                Debug.Assert(convertRetMethod != null);
                 var convertReturnCall = Expression.Call(convertRetMethod, methodCall);
                 var body = convertReturnCall;
 
@@ -177,7 +179,7 @@ namespace ScriptEngine.Machine.Contexts
                 return l.Compile();
 
             }
-            private static ContextCallableDelegate<TInstance> CreateProcedure(System.Reflection.MethodInfo target)
+            private static ContextCallableDelegate<TInstance> CreateProcedure(MethodInfo target)
             {
                 var methodCall = MethodCallExpression(target, out var instParam, out var argsParam);
                 var returnLabel = Expression.Label(typeof(IValue));
@@ -198,7 +200,7 @@ namespace ScriptEngine.Machine.Contexts
                 return l.Compile();
             }
 
-            private static InvocationExpression MethodCallExpression(System.Reflection.MethodInfo target, out ParameterExpression instParam, out ParameterExpression argsParam)
+            private static InvocationExpression MethodCallExpression(MethodInfo target, out ParameterExpression instParam, out ParameterExpression argsParam)
             {
                 // For those who dare:
                 // Код ниже формирует следующую лямбду с 2-мя замыканиями realMethodDelegate и defaults:
@@ -227,13 +229,13 @@ namespace ScriptEngine.Machine.Contexts
                     var convertMethod = typeof(InternalMethInfo).GetMethod("ConvertParam",
                                             BindingFlags.Static | BindingFlags.NonPublic,
                                             null,
-                                            new Type[]
+                                            new[]
                                             {
                                                 typeof(IValue),
                                                 typeof(object)
                                             },
                                             null)?.MakeGenericMethod(parameters[i].ParameterType);
-                    System.Diagnostics.Debug.Assert(convertMethod != null);
+                    Debug.Assert(convertMethod != null);
 
                     if (parameters[i].HasDefaultValue)
                     {
@@ -251,7 +253,7 @@ namespace ScriptEngine.Machine.Contexts
                 return methodCall;
             }
 
-            private static Expression CreateDelegateExpr(System.Reflection.MethodInfo target)
+            private static Expression CreateDelegateExpr(MethodInfo target)
             {
                 var types = new List<Type>();
                 types.Add(target.DeclaringType);
@@ -295,7 +297,7 @@ namespace ScriptEngine.Machine.Contexts
 
             private static IValue ConvertReturnValue<TRet>(TRet param)
             {
-                return ContextValuesMarshaller.ConvertReturnValue<TRet>(param);
+                return ContextValuesMarshaller.ConvertReturnValue(param);
             }
         }
 
