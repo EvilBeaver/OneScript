@@ -12,6 +12,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Types;
 
@@ -105,6 +106,8 @@ namespace ScriptEngine.Machine.Contexts
         {
             private readonly Lazy<ContextCallableDelegate<TInstance>> _method;
             public MethodSignature MethodSignature { get; }
+            
+            public BslMethodInfo ClrMethod { get; }
 
             public InternalMethInfo(MethodInfo target, ContextMethodAttribute binding)
             {
@@ -115,6 +118,7 @@ namespace ScriptEngine.Machine.Contexts
                 });
 
                 MethodSignature = CreateMetadata(target, binding);
+                ClrMethod = new ContextMethodInfo(target, binding);
             }
 
             public ContextCallableDelegate<TInstance> Method => _method.Value;

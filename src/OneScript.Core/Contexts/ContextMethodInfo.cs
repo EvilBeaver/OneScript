@@ -25,6 +25,12 @@ namespace OneScript.Contexts
             _scriptMark = (ContextMethodAttribute)GetCustomAttributes(typeof(ContextMethodAttribute), false).First();
         }
 
+        public ContextMethodInfo(MethodInfo realMethod, ContextMethodAttribute binding)
+        {
+            _realMethod = realMethod;
+            _scriptMark = (ContextMethodAttribute)GetCustomAttributes(typeof(ContextMethodAttribute), false).First();
+        }
+
         public override Type ReturnType => _realMethod.ReturnType;
 
         public override ParameterInfo ReturnParameter => _realMethod.ReturnParameter;
