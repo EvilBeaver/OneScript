@@ -14,12 +14,12 @@ using OneScript.Contexts;
 
 namespace OneScript.Native.Runtime
 {
-    public class BslFieldInfo : Contexts.BslFieldInfo
+    public class BslNativeFieldInfo : BslFieldInfo
     {
         private Type _declaringType;
         private bool _isPublic;
         
-        public BslFieldInfo(string name)
+        public BslNativeFieldInfo(string name)
         {
             Name = name;
         }

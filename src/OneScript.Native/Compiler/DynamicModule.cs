@@ -13,9 +13,9 @@ namespace OneScript.Native.Compiler
 {
     public class DynamicModule
     {
-        public IList<BslFieldInfo> Fields { get; } = new List<BslFieldInfo>();
+        public IList<BslNativeFieldInfo> Fields { get; } = new List<BslNativeFieldInfo>();
         
-        public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
+        public IList<BslNativeMethodInfo> Methods { get; } = new List<BslNativeMethodInfo>();
         public ModuleInformation ModuleInformation { get; set; }
     }
 }

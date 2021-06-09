@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
@@ -178,9 +179,9 @@ namespace OneScript.StandardLibrary.Native
             return methodInfo.Implementation;
         }
 
-        private BslMethodInfo CreateMethodInfo()
+        private BslNativeMethodInfo CreateMethodInfo()
         {
-            var methodInfo = new BslMethodInfo();
+            var methodInfo = new BslNativeMethodInfo();
             methodInfo.SetName("$__compiled");
             methodInfo.SetReturnType(typeof(IValue));
 

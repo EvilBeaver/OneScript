@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq;
+using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
@@ -64,7 +65,7 @@ namespace OneScript.Native.Compiler
             
             foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
             {
-                var methodInfo = new BslMethodInfo();
+                var methodInfo = new BslNativeMethodInfo();
                 VisitMethodSignature(methodInfo, methodNode.Signature);
 
                 var symbol = new MethodSymbol
@@ -77,7 +78,7 @@ namespace OneScript.Native.Compiler
             }
         }
 
-        private void VisitMethodSignature(BslMethodInfo info, MethodSignatureNode node)
+        private void VisitMethodSignature(BslNativeMethodInfo info, MethodSignatureNode node)
         {
             info.SetName(node.MethodName);
             info.SetReturnType(node.IsFunction ? typeof(BslValue): typeof(void));
@@ -120,7 +121,7 @@ namespace OneScript.Native.Compiler
         protected override void VisitModuleVariable(VariableDefinitionNode varNode)
         {
             var annotations = CompilerHelpers.GetAnnotations(varNode.Annotations);
-            var field = new BslFieldInfo(varNode.Name);
+            var field = new BslNativeFieldInfo(varNode.Name);
             field.SetExportFlag(varNode.IsExported);
             field.SetAnnotations(annotations);
             
@@ -130,7 +131,7 @@ namespace OneScript.Native.Compiler
         protected override void VisitMethod(MethodNode methodNode)
         {
             var methodSymbol = Symbols.TopScope().Methods[methodNode.Signature.MethodName];
-            var methodInfo = (BslMethodInfo)methodSymbol.MethodInfo;
+            var methodInfo = (BslNativeMethodInfo)methodSymbol.MethodInfo;
 
             var context = MakeContext();
             var methCompiler = new MethodCompiler(context, methodInfo);
@@ -139,7 +140,7 @@ namespace OneScript.Native.Compiler
  
         protected override void VisitModuleBody(BslSyntaxNode moduleBody)
         {
-            var method = new BslMethodInfo();
+            var method = new BslNativeMethodInfo();
             method.SetName("$entry");
             
             _module.Methods.Add(method);
