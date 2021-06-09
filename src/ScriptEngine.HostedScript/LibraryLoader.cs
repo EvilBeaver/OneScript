@@ -61,7 +61,7 @@ namespace ScriptEngine.HostedScript
             
             for (int i = 0; i < _methods.Count; i++)
             {
-                var mi = _methods.GetMethodInfo(i);
+                var mi = _methods.GetMethodSignature(i);
                 compiler.DefineMethod(mi);
             }
 
@@ -158,17 +158,17 @@ namespace ScriptEngine.HostedScript
 
         protected override MethodSignature GetOwnMethod(int index)
         {
-            return _methods.GetMethodInfo(index);
+            return _methods.GetMethodSignature(index);
         }
 
         protected override void CallOwnProcedure(int index, IValue[] arguments)
         {
-            _methods.GetMethod(index)(this, arguments);
+            _methods.GetCallableDelegate(index)(this, arguments);
         }
 
         protected override IValue CallOwnFunction(int index, IValue[] arguments)
         {
-            return _methods.GetMethod(index)(this, arguments);
+            return _methods.GetCallableDelegate(index)(this, arguments);
         }
 
         public ExternalLibraryDef ProcessLibrary(string libraryPath)

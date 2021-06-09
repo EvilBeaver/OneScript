@@ -57,22 +57,22 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public ContextCallableDelegate<TInstance> GetMethod(int number)
+        public ContextCallableDelegate<TInstance> GetCallableDelegate(int number)
         {
             Init();
             return _methodPtrs[number].Method;
         }
 
-        public MethodSignature GetMethodInfo(int number)
+        public MethodSignature GetMethodSignature(int number)
         {
             Init();
             return _methodPtrs[number].MethodSignature;
         }
 
-        public IEnumerable<MethodSignature> GetMethods()
+        public IEnumerable<BslMethodInfo> GetMethods()
         {
             Init();
-            return _methodPtrs.Select(x => x.MethodSignature);
+            return _methodPtrs.Select(x => x.ClrMethod);
         }
 
         public int FindMethod(string name)

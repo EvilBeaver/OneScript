@@ -192,7 +192,7 @@ namespace ScriptEngine.HostedScript.Library
             methods = new MethodSignature[_methods.Count];
             for (int i = 0; i < _methods.Count; i++)
             {
-                methods[i] = _methods.GetMethodInfo(i);
+                methods[i] = _methods.GetMethodSignature(i);
             }
         }
 
@@ -268,7 +268,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public MethodSignature GetMethodInfo(int methodNumber)
         {
-            return _methods.GetMethodInfo(methodNumber);
+            return _methods.GetMethodSignature(methodNumber);
         }
 
         public VariableInfo GetPropertyInfo(int propertyNumber)
@@ -283,12 +283,12 @@ namespace ScriptEngine.HostedScript.Library
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
-            _methods.GetMethod(methodNumber)(this, arguments);
+            _methods.GetCallableDelegate(methodNumber)(this, arguments);
         }
 
         public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
-            retValue = _methods.GetMethod(methodNumber)(this, arguments);
+            retValue = _methods.GetCallableDelegate(methodNumber)(this, arguments);
         }
 
 #endregion

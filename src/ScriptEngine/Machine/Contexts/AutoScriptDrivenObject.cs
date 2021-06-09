@@ -111,17 +111,17 @@ namespace ScriptEngine.Machine.Contexts
 
         protected override MethodSignature GetOwnMethod(int index)
         {
-            return _ownMethods.GetMethodInfo(index);
+            return _ownMethods.GetMethodSignature(index);
         }
 
         protected override IValue CallOwnFunction(int index, IValue[] arguments)
         {
-            return _ownMethods.GetMethod(index)((T)this, arguments);
+            return _ownMethods.GetCallableDelegate(index)((T)this, arguments);
         }
 
         protected override void CallOwnProcedure(int index, IValue[] arguments)
         {
-            _ownMethods.GetMethod(index)((T)this, arguments);
+            _ownMethods.GetCallableDelegate(index)((T)this, arguments);
         }
 
         #endregion
@@ -136,7 +136,7 @@ namespace ScriptEngine.Machine.Contexts
 
             for (int i = 0; i < _ownMethods.Count; i++)
             {
-                compiler.DefineMethod(_ownMethods.GetMethodInfo(i));
+                compiler.DefineMethod(_ownMethods.GetMethodSignature(i));
             }
         }
         

@@ -179,12 +179,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public override MethodSignature GetMethodInfo(int methodNumber)
         {
-            return _methods.GetMethodInfo(methodNumber);
+            return _methods.GetMethodSignature(methodNumber);
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
-            var binding = _methods.GetMethod(methodNumber);
+            var binding = _methods.GetCallableDelegate(methodNumber);
             try
             {
                 binding(this, arguments);
@@ -197,7 +197,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
-            var binding = _methods.GetMethod(methodNumber);
+            var binding = _methods.GetCallableDelegate(methodNumber);
             try
             {
                 retValue = binding(this, arguments);

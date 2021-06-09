@@ -89,7 +89,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override MethodSignature GetMethodInfo(int methodNumber)
         {
-            return _methods.GetMethodInfo(methodNumber);
+            return _methods.GetMethodSignature(methodNumber);
         }
 
         public override VariableInfo GetPropertyInfo(int propertyNumber)
@@ -99,7 +99,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private void CheckIfCallIsPossible(int methodNumber, IValue[] arguments)
         {
-            var methodInfo = _methods.GetMethodInfo(methodNumber);
+            var methodInfo = _methods.GetMethodSignature(methodNumber);
             if (!methodInfo.IsDeprecated)
             {
                 return;
@@ -121,7 +121,7 @@ namespace ScriptEngine.Machine.Contexts
             CheckIfCallIsPossible(methodNumber, arguments);
             try
             {
-                _methods.GetMethod(methodNumber)((TInstance)this, arguments);
+                _methods.GetCallableDelegate(methodNumber)((TInstance)this, arguments);
             }
             catch (System.Reflection.TargetInvocationException e)
             {
@@ -135,7 +135,7 @@ namespace ScriptEngine.Machine.Contexts
             CheckIfCallIsPossible(methodNumber, arguments);
             try
             {
-                retValue = _methods.GetMethod(methodNumber)((TInstance)this, arguments);
+                retValue = _methods.GetCallableDelegate(methodNumber)((TInstance)this, arguments);
             }
             catch (System.Reflection.TargetInvocationException e)
             {

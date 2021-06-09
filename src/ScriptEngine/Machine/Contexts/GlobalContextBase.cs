@@ -93,7 +93,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual MethodSignature GetMethodInfo(int methodNumber)
         {
-            return Methods.GetMethodInfo(methodNumber);
+            return Methods.GetMethodSignature(methodNumber);
         }
 
         public virtual VariableInfo GetPropertyInfo(int propertyNumber)
@@ -103,12 +103,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
-            Methods.GetMethod(methodNumber)((T)this, arguments);
+            Methods.GetCallableDelegate(methodNumber)((T)this, arguments);
         }
 
         public virtual void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
-            retValue = Methods.GetMethod(methodNumber)((T)this, arguments);
+            retValue = Methods.GetCallableDelegate(methodNumber)((T)this, arguments);
         }
 
         #endregion

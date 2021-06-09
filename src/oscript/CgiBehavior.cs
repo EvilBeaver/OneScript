@@ -240,7 +240,7 @@ namespace oscript
 
 		public MethodSignature GetMethodInfo(int methodNumber)
 		{
-			return _methods.GetMethodInfo(methodNumber);
+			return _methods.GetMethodSignature(methodNumber);
 		}
 
 		public VariableInfo GetPropertyInfo(int propertyNumber)
@@ -250,12 +250,12 @@ namespace oscript
 
 		public void CallAsProcedure(int methodNumber, IValue[] arguments)
 		{
-			_methods.GetMethod(methodNumber)(this, arguments);
+			_methods.GetCallableDelegate(methodNumber)(this, arguments);
 		}
 
 		public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
 		{
-			retValue = _methods.GetMethod(methodNumber)(this, arguments);
+			retValue = _methods.GetCallableDelegate(methodNumber)(this, arguments);
 		}
 
         public int GetPropCount()
