@@ -181,20 +181,16 @@ namespace OneScript.StandardLibrary.Native
 
         private BslNativeMethodInfo CreateMethodInfo()
         {
-            var methodInfo = new BslNativeMethodInfo();
-            methodInfo.SetName("$__compiled");
-            methodInfo.SetReturnType(typeof(IValue));
-
-            foreach (var parameter in Parameters)
-            {
-                var targetType = parameter.Value as BslTypeValue;
-                var pi = new BslParameterInfo(
-                    parameter.Key.AsString(),
-                    ConvertTypeToClrType(targetType));
-
-                methodInfo.Parameters.Add(pi);
-            }
-
+            var methodInfo = new BslMethodInfoFactory<BslNativeMethodInfo>(()=>new BslNativeMethodInfo())
+                .NewMethod()
+                .Name("$__compiled")
+                .ReturnType(typeof(IValue))
+                .SetParameters(Parameters.Select(parameter => 
+                        new BslParameterInfo(
+                            parameter.Key.AsString(),
+                            ConvertTypeToClrType(parameter.Value as BslTypeValue))))
+                .Build();
+            
             return methodInfo;
         }
 

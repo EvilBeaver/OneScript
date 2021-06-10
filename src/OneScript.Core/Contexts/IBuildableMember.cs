@@ -15,8 +15,14 @@ namespace OneScript.Contexts
         void SetDeclaringType(Type type);
         void SetName(string name);
         void SetAlias(string alias);
-        void SetExportFlag(string isExport);
+        void SetExportFlag(bool isExport);
         void SetDataType(Type type);
         void SetAnnotations(IEnumerable<object> annotations);
+        void SetDispatchIndex(int index);
+    }
+
+    internal interface IBuildableMethod : IBuildableMember
+    {
+        void SetParameters(IEnumerable<BslParameterInfo> parameters);
     }
 }

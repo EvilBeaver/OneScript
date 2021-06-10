@@ -130,7 +130,7 @@ namespace OneScript.Native.Compiler
 
         private void FillParameterVariables()
         {
-            _declaredParameters = _method.Parameters.ToArray();
+            _declaredParameters = _method.GetBslParameters();
             var localScope = Symbols.TopScope();
             foreach (var parameter in _declaredParameters)
             {

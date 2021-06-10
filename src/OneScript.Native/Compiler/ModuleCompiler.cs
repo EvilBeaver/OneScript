@@ -65,9 +65,11 @@ namespace OneScript.Native.Compiler
             
             foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
             {
-                var methodInfo = new BslNativeMethodInfo();
-                VisitMethodSignature(methodInfo, methodNode.Signature);
+                var factory = new BslMethodInfoFactory<BslNativeMethodInfo>(() => new BslNativeMethodInfo());
+                var builder = factory.NewMethod();
+                VisitMethodSignature(builder, methodNode.Signature);
 
+                var methodInfo = builder.Build();
                 var symbol = new MethodSymbol
                 {
                     Name = methodInfo.Name,
@@ -78,15 +80,16 @@ namespace OneScript.Native.Compiler
             }
         }
 
-        private void VisitMethodSignature(BslNativeMethodInfo info, MethodSignatureNode node)
+        private void VisitMethodSignature(BslMethodBuilder<BslNativeMethodInfo> builder, MethodSignatureNode node)
         {
-            info.SetName(node.MethodName);
-            info.SetReturnType(node.IsFunction ? typeof(BslValue): typeof(void));
-            info.SetPrivate(!node.IsExported);
+            builder
+                .Name(node.MethodName)
+                .ReturnType(node.IsFunction ? typeof(BslValue): typeof(void))
+                .IsExported(node.IsExported);
 
             var parameters = node.GetParameters().Select(CreateParameterInfo);
             
-            info.Parameters.AddRange(parameters);
+            builder.SetParameters(parameters);
         }
 
         private BslParameterInfo CreateParameterInfo(MethodParameterNode paramNode)
@@ -140,9 +143,11 @@ namespace OneScript.Native.Compiler
  
         protected override void VisitModuleBody(BslSyntaxNode moduleBody)
         {
-            var method = new BslNativeMethodInfo();
-            method.SetName("$entry");
-            
+            var factory = new BslMethodInfoFactory<BslNativeMethodInfo>(() => new BslNativeMethodInfo());
+            var method = factory.NewMethod()
+                .Name("$entry")
+                .Build();
+
             _module.Methods.Add(method);
             
             var context = MakeContext();

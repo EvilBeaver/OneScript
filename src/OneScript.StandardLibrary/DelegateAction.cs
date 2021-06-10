@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq;
+using OneScript.Contexts;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -24,6 +25,17 @@ namespace OneScript.StandardLibrary
         private const string MethodName_Ru = "Выполнить";
         private const string MethodName_En = "Execute";
 
+        private static BslMethodInfo ExecuteMethodInfo;
+
+        static DelegateAction()
+        {
+            var builder = BslMethodBuilder.Create()
+                .DeclaringType(typeof(DelegateAction))
+                .SetNames(MethodName_Ru, MethodName_En);
+
+            ExecuteMethodInfo = builder.Build();
+        }
+        
         public DelegateAction(Func<IValue[], IValue> action)
         {
             _action = action;
@@ -80,8 +92,7 @@ namespace OneScript.StandardLibrary
 
             Func<IValue[], IValue> action = (parameters) =>
             {
-                IValue retVal;
-                target.CallAsFunction(method, parameters, out retVal);
+                target.CallAsFunction(method, parameters, out var retVal);
                 return retVal;
             };
             
