@@ -9,15 +9,21 @@ using System;
 
 namespace OneScript.Contexts
 {
-    public class BslMethodInfoFactory<T> where T : BslScriptMethodInfo
+    public class BslMethodInfoFactory<TMethodInfo> where TMethodInfo : BslScriptMethodInfo
     {
-        private readonly Func<T> _factory;
+        private readonly Func<TMethodInfo> _factory;
+        private readonly Func<BslParameterInfo> _parameterFactory;
 
-        public BslMethodInfoFactory(Func<T> factory)
+        public BslMethodInfoFactory(Func<TMethodInfo> methodFactory) 
+            : this(methodFactory, () => new BslParameterInfo())
         {
-            _factory = factory;
+        }
+        
+        public BslMethodInfoFactory(Func<TMethodInfo> methodFactory, Func<BslParameterInfo> paramFactory)
+        {
+            _factory = methodFactory;
         }
 
-        public BslMethodBuilder<T> NewMethod() => new BslMethodBuilder<T>(_factory());
+        public BslMethodBuilder<TMethodInfo> NewMethod() => new BslMethodBuilder<TMethodInfo>(_factory(), _parameterFactory);
     }
 }

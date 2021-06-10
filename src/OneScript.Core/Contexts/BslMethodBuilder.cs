@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace OneScript.Contexts
@@ -14,16 +15,20 @@ namespace OneScript.Contexts
     public static class BslMethodBuilder
     {
         public static BslMethodBuilder<BslScriptMethodInfo> Create() => 
-            new BslMethodBuilder<BslScriptMethodInfo>(BslScriptMethodInfo.Create());
+            new BslMethodBuilder<BslScriptMethodInfo>(BslScriptMethodInfo.Create(), () => new BslParameterInfo());
     }
     
     public class BslMethodBuilder<T> where T : BslScriptMethodInfo
     {
         private readonly IBuildableMethod _member;
+        private readonly Func<BslParameterInfo> _parameterFactory;
 
-        internal BslMethodBuilder(IBuildableMethod member)
+        private readonly List<BslParameterBuilder> _parametersToBuild = new List<BslParameterBuilder>();
+
+        internal BslMethodBuilder(IBuildableMethod member, Func<BslParameterInfo> parameterFactory)
         {
             _member = member;
+            _parameterFactory = parameterFactory;
         }
 
         public BslMethodBuilder<T> SetNames(string methodNameRu, string methodNameEn)
@@ -35,6 +40,8 @@ namespace OneScript.Contexts
 
         public T Build()
         {
+            var parameters = _parametersToBuild.Select(x => x.Build());
+            _member.SetParameters(parameters);
             return (T)_member;
         }
         
@@ -68,9 +75,13 @@ namespace OneScript.Contexts
             return this;
         }
         
-        public BslMethodBuilder<T> SetParameters(IEnumerable<BslParameterInfo> parameters)
+        public BslParameterBuilder NewParameter()
         {
-            throw new NotImplementedException();
+            var parameter = _parameterFactory();
+            parameter.SetOwner((MemberInfo)_member);
+            var builder = new BslParameterBuilder(parameter);
+            _parametersToBuild.Add(builder);
+            return builder;
         }
     }
 }

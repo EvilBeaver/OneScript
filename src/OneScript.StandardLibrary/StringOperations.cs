@@ -254,17 +254,17 @@ namespace OneScript.StandardLibrary
                 .SetNames(STRTEMPLATE_NAME_RU, STRTEMPLATE_NAME_EN)
                 .IsExported(true);
 
-            var parameters = new BslParameterInfo[11];
-            parameters[0] = new BslParameterInfo("template", typeof(string));
-            parameters[0].SetByVal();
-
+            method.NewParameter()
+                .Name("template")
+                .ByValue(true);
+            
             for (int i = 1; i < 11; i++)
             {
-                parameters[i].SetByVal();
-                parameters[i].SetDefaultValue(BslSkippedParameterValue.Instance);
+                method.NewParameter()
+                    .ByValue(true)
+                    .DefaultValue(BslSkippedParameterValue.Instance);
             }
-
-            method.SetParameters(parameters);
+            
             return method.Build();
         }
 

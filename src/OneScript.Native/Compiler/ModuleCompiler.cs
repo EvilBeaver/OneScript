@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using System.Linq;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
@@ -87,27 +86,23 @@ namespace OneScript.Native.Compiler
                 .ReturnType(node.IsFunction ? typeof(BslValue): typeof(void))
                 .IsExported(node.IsExported);
 
-            var parameters = node.GetParameters().Select(CreateParameterInfo);
-            
-            builder.SetParameters(parameters);
+            foreach (var parameterNode in node.GetParameters())
+            {
+                CreateParameterInfo(builder.NewParameter(), parameterNode);
+            }
         }
 
-        private BslParameterInfo CreateParameterInfo(MethodParameterNode paramNode)
+        private void CreateParameterInfo(BslParameterBuilder param, MethodParameterNode paramNode)
         {
-            var param = new BslParameterInfo(paramNode.Name);
+            param.Name(paramNode.Name);
             if(paramNode.IsByValue)
-                param.SetByVal();
+                param.ByValue(true);
             
             if(paramNode.HasDefaultValue)
-                param.SetDefaultValue(CompilerHelpers.ValueFromLiteral(paramNode.DefaultValue));
+                param.DefaultValue(CompilerHelpers.ValueFromLiteral(paramNode.DefaultValue));
 
             var attributes = CompilerHelpers.GetAnnotations(paramNode.Annotations);
-            foreach (var attribute in attributes.Cast<Attribute>())
-            {
-                param.AddAttribute(attribute);
-            }
-
-            return param;
+            param.SetAnnotations(attributes);
         }
 
         protected override void VisitModule(ModuleNode node)

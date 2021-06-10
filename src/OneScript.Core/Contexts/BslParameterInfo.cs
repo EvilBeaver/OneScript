@@ -13,77 +13,92 @@ using OneScript.Values;
 
 namespace OneScript.Contexts
 {
-    public class BslParameterInfo : ParameterInfo
+    public class BslParameterInfo : ParameterInfo, IBuildableMember
     {
-        private readonly List<Attribute> _attributes;
+        private AnnotationHolder _annotations;
 
-        public BslParameterInfo(string name) : this(name, typeof(BslValue))
+        internal BslParameterInfo()
         {
+            AttrsImpl = ParameterAttributes.In;
+            ClassImpl = typeof(BslValue);
         }
         
-        public BslParameterInfo(string name, Type type)
+        #region Attributes Infrastructure
+
+        private AnnotationHolder Annotations => _annotations ??= new AnnotationHolder(new object[0]);
+
+        public override object[] GetCustomAttributes(bool inherit)
         {
-            _attributes = new List<Attribute>();
+            return Annotations.GetCustomAttributes(inherit);
+        }
+
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+        {
+            return Annotations.GetCustomAttributes(attributeType, inherit);
+        }
+
+        public override bool IsDefined(Type attributeType, bool inherit)
+        {
+            return Annotations.IsDefined(attributeType, inherit);
+        }
+
+        #endregion
+        
+        public override object DefaultValue => DefaultValueImpl;
+
+        public override bool HasDefaultValue => DefaultValue != null;
+        
+        public virtual bool ExplicitByVal { get; protected set; }
+        
+        void IBuildableMember.SetDeclaringType(Type type)
+        {
+            MemberImpl = type;
+        }
+
+        void IBuildableMember.SetName(string name)
+        {
             NameImpl = name;
-            AttrsImpl = ParameterAttributes.In;
+        }
+
+        void IBuildableMember.SetAlias(string alias)
+        {
+            throw new NotSupportedException();
+        }
+
+        void IBuildableMember.SetExportFlag(bool isExport)
+        {
+            throw new NotSupportedException();
+        }
+
+        void IBuildableMember.SetDataType(Type type)
+        {
             ClassImpl = type;
         }
 
-        internal void SetOwner(MemberInfo owner)
+        void IBuildableMember.SetAnnotations(IEnumerable<object> annotations)
         {
-            MemberImpl = owner;
+            _annotations = new AnnotationHolder(annotations.ToArray());
         }
 
-        internal void SetPosition(int index)
+        void IBuildableMember.SetDispatchIndex(int index)
         {
             PositionImpl = index;
         }
 
-        public void AddAttribute(Attribute value)
+        internal void ByValue(bool byVal)
         {
-            _attributes.Add(value);
+            ExplicitByVal = byVal;
         }
         
-        public void SetDefaultValue(BslPrimitiveValue val)
+        internal void SetDefaultValue(BslPrimitiveValue val)
         {
             DefaultValueImpl = val;
             AttrsImpl |= ParameterAttributes.HasDefault | ParameterAttributes.Optional;
         }
 
-        public void SetByVal()
+        internal void SetOwner(MemberInfo parent)
         {
-            ExplicitByVal = true;
-        }
-        
-        public void SetByRef()
-        {
-            ExplicitByVal = false;
-            ClassImpl = ClassImpl.MakeByRefType();
-        }
-
-        public override object DefaultValue => DefaultValueImpl;
-
-        public override bool HasDefaultValue => DefaultValue != null;
-        
-        public bool ExplicitByVal { get; private set; }
-
-        public override object[] GetCustomAttributes(bool inherit)
-        {
-            return _attributes.ToArray();
-        }
-
-        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
-        {
-            if (attributeType == null)
-                return GetCustomAttributes(inherit);
-            
-            return _attributes.Where(x => attributeType.IsAssignableFrom(x.GetType()))
-                .ToArray();
-        }
-
-        public override bool IsDefined(Type attributeType, bool inherit)
-        {
-            return GetCustomAttributes(inherit).Any(x => x.GetType() == attributeType);
+            MemberImpl = parent;
         }
     }
 }

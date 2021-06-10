@@ -194,22 +194,20 @@ namespace OneScript.StandardLibrary.NativeApi
             );
             
             var paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
-            var paramArray = new BslParameterInfo[paramCount];
             for (int i = 0; i < paramCount; i++)
             {
-                var localCopyOfIndex = i;
+                var param = method.NewParameter();
                 NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
                 {
                     if (NativeApiVariant.NotEmpty(variant))
                     {
-                        paramArray[localCopyOfIndex].SetDefaultValue(BslSkippedParameterValue.Instance);
+                        param.DefaultValue(BslSkippedParameterValue.Instance);
                     }
                 });
             }
 
             method.ReturnType(NativeApiProxy.HasRetVal(_object, methodNumber) ? typeof(BslValue) : typeof(void));
             method.IsExported(true);
-            method.SetParameters(paramArray);
 
             return method.Build();
         }
