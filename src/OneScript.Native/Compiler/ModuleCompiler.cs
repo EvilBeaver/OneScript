@@ -94,6 +94,7 @@ namespace OneScript.Native.Compiler
 
         private void CreateParameterInfo(BslParameterBuilder param, MethodParameterNode paramNode)
         {
+            // TODO: Возможно, в native у нас будут все параметры как byval, даже без Знач
             param.Name(paramNode.Name);
             if(paramNode.IsByValue)
                 param.ByValue(true);
