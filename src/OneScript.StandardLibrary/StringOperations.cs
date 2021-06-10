@@ -8,8 +8,10 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -244,6 +246,27 @@ namespace OneScript.StandardLibrary
             }
             return strTemplateMethodInfo;
         }
+        
+        private static BslMethodInfo CreateStrTemplateRuntimeMethodInfo()
+        {
+            var method = BslMethodBuilder.Create();
+            method.ReturnType(typeof(string))
+                .SetNames(STRTEMPLATE_NAME_RU, STRTEMPLATE_NAME_EN)
+                .IsExported(true);
+
+            var parameters = new BslParameterInfo[11];
+            parameters[0] = new BslParameterInfo("template", typeof(string));
+            parameters[0].SetByVal();
+
+            for (int i = 1; i < 11; i++)
+            {
+                parameters[i].SetByVal();
+                parameters[i].SetDefaultValue(BslSkippedParameterValue.Instance);
+            }
+
+            method.SetParameters(parameters);
+            return method.Build();
+        }
 
         public override MethodSignature GetMethodInfo(int methodNumber)
         {
@@ -251,6 +274,14 @@ namespace OneScript.StandardLibrary
                 return CreateStrTemplateMethodInfo();
             else
                 return base.GetMethodInfo(methodNumber);
+        }
+        
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        {
+            if (methodNumber == STRTEMPLATE_ID)
+                return CreateStrTemplateRuntimeMethodInfo();
+            else
+                return base.GetRuntimeMethodInfo(methodNumber);
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)

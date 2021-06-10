@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using System.Diagnostics;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
@@ -90,6 +91,11 @@ namespace ScriptEngine.Machine.Contexts
         public override MethodSignature GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodSignature(methodNumber);
+        }
+        
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        {
+            return _methods.GetRuntimeMethod(methodNumber);
         }
 
         public override VariableInfo GetPropertyInfo(int propertyNumber)

@@ -9,8 +9,10 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Types;
@@ -998,30 +1000,7 @@ namespace ScriptEngine.Machine
             IValue[] argValues = new IValue[argCount];
 
             // fact args
-            for (int i = argCount - 1; i >= 0; i--)
-            {
-                var argValue = _operationStack.Pop();
-                if (argValue.IsSkippedArgument())
-                {
-                    if (i < methInfo.Params.Length)
-                    {
-                        if (!methInfo.Params[i].IsDefaultValueDefined() || !isLocalCall)
-                            argValue = null;
-                        else
-                        {
-                            var constId = methInfo.Params[i].DefaultValueIndex;
-                            argValue = _module.Constants[constId];
-                        }
-                    }
-                    else
-                    {
-                        argValue = null;
-                    }
-                }
-
-                argValues[i] = argValue;
-
-            }
+            PrepareCallActualArguments(methInfo.Params, isLocalCall, argValues);
 
             bool needsDiscarding;
 
@@ -1114,7 +1093,35 @@ namespace ScriptEngine.Machine
             return needsDiscarding;
         }
 
-        private void CallContext(IRuntimeContextInstance instance, int index, ref System.Reflection.MethodInfo methInfo, IValue[] argValues, bool asFunc)
+        private void PrepareCallActualArguments(ParameterDefinition[] parameters, bool isLocalCall, IValue[] argValues)
+        {
+            int argCount = argValues.Length;
+            for (int i = argCount - 1; i >= 0; i--)
+            {
+                var argValue = _operationStack.Pop();
+                if (argValue.IsSkippedArgument())
+                {
+                    if (i < parameters.Length)
+                    {
+                        if (!parameters[i].IsDefaultValueDefined() || !isLocalCall)
+                            argValue = null;
+                        else
+                        {
+                            var constId = parameters[i].DefaultValueIndex;
+                            argValue = _module.Constants[constId];
+                        }
+                    }
+                    else
+                    {
+                        argValue = null;
+                    }
+                }
+
+                argValues[i] = argValue;
+            }
+        }
+
+        private void CallContext(IRuntimeContextInstance instance, int index, ref MethodInfo methInfo, IValue[] argValues, bool asFunc)
         {
             IValue[] realArgs;
             if (!instance.DynamicMethodSignatures)
@@ -1258,12 +1265,13 @@ namespace ScriptEngine.Machine
             context = objIValue.AsObject();
             var methodName = _module.Constants[arg].AsString();
             methodId = context.FindMethod(methodName);
-            var methodInfo = context.GetMethodInfo(methodId);
-
+            var methodInfo = context.GetRuntimeMethodInfo(methodId);
+            var methodParams = methodInfo.GetParameters();
+            
             if(context.DynamicMethodSignatures)
                 argValues = new IValue[argCount];
             else
-                argValues = new IValue[methodInfo.Params.Length];
+                argValues = new IValue[methodParams.Length];
 
             bool[] signatureCheck = new bool[argCount];
 
@@ -1282,9 +1290,9 @@ namespace ScriptEngine.Machine
                     {
                         argValues[i] = BreakVariableLink(argValue);
                     }
-                    else if (i < methodInfo.Params.Length)
+                    else if (i < methodParams.Length)
                     {
-                        if (methodInfo.Params[i].IsByValue)
+                        if (methodParams[i] is BslParameterInfo {ExplicitByVal: true})
                             argValues[i] = BreakVariableLink(argValue);
                         else
                             argValues[i] = argValue;
@@ -1295,12 +1303,12 @@ namespace ScriptEngine.Machine
             factArgs = null;
             if (!context.DynamicMethodSignatures)
             {
-                CheckFactArguments(methodInfo, signatureCheck);
+                CheckFactArguments(methodParams, signatureCheck);
 
                 //manage default vals
                 for (int i = argCount; i < argValues.Length; i++)
                 {
-                    if (methodInfo.Params[i].HasDefaultValue)
+                    if (methodParams[i].HasDefaultValue)
                     {
                         argValues[i] = null;
                     }
@@ -1308,9 +1316,8 @@ namespace ScriptEngine.Machine
             }
         }
 
-        private void CheckFactArguments(System.Reflection.MethodInfo methInfo, bool[] argsPassed)
+        private void CheckFactArguments(ParameterInfo[] parameters, bool[] argsPassed)
         {
-            var parameters = methInfo.GetParameters();
             if (argsPassed.Length > parameters.Length)
             {
                 throw RuntimeException.TooManyArgumentsPassed();
