@@ -1233,7 +1233,7 @@ namespace ScriptEngine.Machine
             IValue[] argValues;
             PrepareContextCallArguments(arg, out context, out methodId, out argValues);
 
-            if (!context.DynamicMethodSignatures && !context.GetMethodInfo(methodId).IsFunction)
+            if (!context.DynamicMethodSignatures && context.GetRuntimeMethodInfo(methodId).ReturnType == typeof(void))
             {
                 throw RuntimeException.UseProcAsAFunction();
             }

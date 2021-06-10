@@ -16,10 +16,10 @@ namespace OneScript.Contexts
     public class BslScriptMethodInfo : BslMethodInfo, IBuildableMethod
     {
         private Type _declaringType;
-        private Type _returnType;
+        private Type _returnType = typeof(void);
         private string _name;
         private string _alias;
-        private bool _isPrivate;
+        private bool _isPrivate = true;
         private int _dispId = -1;
 
         protected BslScriptMethodInfo()
