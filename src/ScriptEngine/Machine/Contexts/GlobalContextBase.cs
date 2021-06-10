@@ -95,6 +95,11 @@ namespace ScriptEngine.Machine.Contexts
         {
             return Methods.GetMethodSignature(methodNumber);
         }
+        
+        public virtual BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        {
+            return Methods.GetRuntimeMethod(methodNumber);
+        }
 
         public virtual VariableInfo GetPropertyInfo(int propertyNumber)
         {

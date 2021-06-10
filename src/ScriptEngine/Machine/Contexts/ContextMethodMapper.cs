@@ -32,7 +32,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private readonly object _locker = new object();
 
-            private void Init()
+        private void Init()
         {
             if (_methodPtrs == null)
             {
@@ -67,6 +67,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             Init();
             return _methodPtrs[number].MethodSignature;
+        }
+
+        public BslMethodInfo GetRuntimeMethod(int number)
+        {
+            Init();
+            return _methodPtrs[number].ClrMethod;
         }
 
         public IEnumerable<BslMethodInfo> GetMethods()

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.Types;
 using oscript.Web;
@@ -241,6 +242,11 @@ namespace oscript
 		public MethodSignature GetMethodInfo(int methodNumber)
 		{
 			return _methods.GetMethodSignature(methodNumber);
+		}
+		
+		public BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+		{
+			return _methods.GetRuntimeMethod(methodNumber);
 		}
 
 		public VariableInfo GetPropertyInfo(int propertyNumber)

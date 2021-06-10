@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using OneScript.Commons;
+using OneScript.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -30,7 +31,12 @@ namespace ScriptEngine.Machine
 
         int FindMethod(string name);
         int GetMethodsCount();
+        
+        [Obsolete]
         MethodSignature GetMethodInfo(int methodNumber);
+        BslMethodInfo GetRuntimeMethodInfo(int methodNumber);
+        
+        [Obsolete]
         VariableInfo GetPropertyInfo(int propertyNumber);
         void CallAsProcedure(int methodNumber, IValue[] arguments);
         void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue);

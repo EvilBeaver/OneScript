@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Contexts;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -249,6 +250,11 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         public override MethodSignature GetMethodInfo(int methodNumber)
         {
             return _methods.GetMethodSignature(methodNumber);
+        }
+        
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        {
+            return _methods.GetRuntimeMethod(methodNumber);
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)

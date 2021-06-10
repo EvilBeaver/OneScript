@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
@@ -271,6 +272,11 @@ namespace ScriptEngine.HostedScript.Library
             return _methods.GetMethodSignature(methodNumber);
         }
 
+        public virtual BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        {
+            return _methods.GetRuntimeMethod(methodNumber);
+        }
+        
         public VariableInfo GetPropertyInfo(int propertyNumber)
         {
             return _propHolder.GetPropertyInfo(propertyNumber);

@@ -8,7 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Runtime.InteropServices;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
@@ -177,6 +179,41 @@ namespace OneScript.StandardLibrary.NativeApi
             return methodNumber;
         }
 
+        public BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        {
+            var method = BslMethodBuilder.Create();
+            if (methodNumber < 0)
+                throw new RuntimeException("Метод не найден");
+            
+            NativeApiProxy.GetMethodName(_object, methodNumber, 0,
+                str => method.Name(NativeApiProxy.Str(str))
+            );
+            
+            NativeApiProxy.GetMethodName(_object, methodNumber, 1,
+                str => method.Alias(NativeApiProxy.Str(str))
+            );
+            
+            var paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
+            var paramArray = new BslParameterInfo[paramCount];
+            for (int i = 0; i < paramCount; i++)
+            {
+                var localCopyOfIndex = i;
+                NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
+                {
+                    if (NativeApiVariant.NotEmpty(variant))
+                    {
+                        paramArray[localCopyOfIndex].SetDefaultValue(BslSkippedParameterValue.Instance);
+                    }
+                });
+            }
+
+            method.ReturnType(NativeApiProxy.HasRetVal(_object, methodNumber) ? typeof(BslValue) : typeof(void));
+            method.IsExported(true);
+            method.SetParameters(paramArray);
+
+            return method.Build();
+        }
+        
         public MethodSignature GetMethodInfo(int methodNumber)
         {
             if (methodNumber < 0)

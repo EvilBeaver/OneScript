@@ -169,6 +169,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw new NotImplementedException();
         }
+        
+        public virtual BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        {
+            throw new NotImplementedException();
+        }
+        
         public virtual VariableInfo GetPropertyInfo(int propertyNumber)
         {
             return new VariableInfo
