@@ -58,18 +58,18 @@ namespace ScriptEngine.Machine.Contexts
 
             if (methId > -1)
             {
-                var procInfo = GetMethodInfo(GetOwnMethodCount()+methId);
+                var procInfo = GetRuntimeMethodInfo(GetOwnMethodCount()+methId);
 
-                int procParamsCount = procInfo.Params.Count();
-
-                int reqParamsCount = procInfo.Params.Count(x => !x.HasDefaultValue);
+                var parameters = procInfo.GetParameters();
+                int procParamsCount = parameters.Length;
+                int reqParamsCount = parameters.Count(x => !x.HasDefaultValue);
 
                 if (constructorParamsCount < reqParamsCount || constructorParamsCount > procParamsCount)
                     throw new RuntimeException("Параметры конструктора: "
                         + "необходимых параметров: " + Math.Min(procParamsCount, reqParamsCount).ToString()
                         + ", передано параметров " + constructorParamsCount.ToString()
                         );
-                else if (procInfo.Params.Skip(constructorParamsCount).Any(param => !param.HasDefaultValue))
+                else if (parameters.Skip(constructorParamsCount).Any(param => !param.HasDefaultValue))
                     throw RuntimeException.TooFewArgumentsPassed();
 
                 CallScriptMethod(methId, ConstructorParams);
@@ -90,8 +90,8 @@ namespace ScriptEngine.Machine.Contexts
                 _asStringOverride = base.ConvertToString;
             else
             {
-                var signature = GetMethodInfo(methId);
-                if (signature.ArgCount != 2)
+                var signature = GetRuntimeMethodInfo(methId);
+                if (signature.GetParameters().Length != 2)
                     throw new RuntimeException("Обработчик получения представления должен иметь 2 параметра");
 
                 _asStringOverride = () => GetOverridenPresentation(methId);
