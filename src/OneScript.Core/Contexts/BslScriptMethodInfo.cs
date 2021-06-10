@@ -13,6 +13,9 @@ using System.Reflection;
 
 namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Информация о методе, который объявлен в пользовательском скриптовом коде
+    /// </summary>
     public class BslScriptMethodInfo : BslMethodInfo, IBuildableMethod
     {
         private Type _declaringType;

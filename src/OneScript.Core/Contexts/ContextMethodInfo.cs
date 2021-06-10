@@ -14,6 +14,9 @@ using OneScript.Types;
 
 namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Информация о методе, объявленном в классе .NET и помеченном атрибутом ContextMethod
+    /// </summary>
     public sealed class ContextMethodInfo : BslMethodInfo, IObjectWrapper
     {
         private readonly MethodInfo _realMethod;
