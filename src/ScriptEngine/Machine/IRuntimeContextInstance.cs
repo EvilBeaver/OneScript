@@ -45,12 +45,12 @@ namespace ScriptEngine.Machine
     [Obsolete]
     public static class RCIHelperExtensions
     {
-        public static IEnumerable<MethodSignature> GetMethods(this IRuntimeContextInstance context)
+        public static IEnumerable<BslMethodInfo> GetMethods(this IRuntimeContextInstance context)
         {
-            MethodSignature[] methods = new MethodSignature[context.GetMethodsCount()];
+            var methods = new BslMethodInfo[context.GetMethodsCount()];
             for (int i = 0; i < methods.Length; i++)
             {
-                methods[i] = context.GetMethodInfo(i);
+                methods[i] = context.GetRuntimeMethodInfo(i);
             }
 
             return methods;

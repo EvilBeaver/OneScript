@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.TypeDescriptions;
@@ -40,12 +41,12 @@ namespace OneScript.StandardLibrary
         public IValue CallMethod(IRuntimeContextInstance target, string methodName, ArrayImpl arguments = null)
         {
             var methodIdx = target.FindMethod(methodName);
-            var methInfo = target.GetMethodInfo(methodIdx);
+            var methInfo = target.GetRuntimeMethodInfo(methodIdx);
 
-            var argsToPass = GetArgsToPass(arguments, methInfo);
+            var argsToPass = GetArgsToPass(arguments, methInfo.GetParameters());
 
             IValue retValue = ValueFactory.Create();
-            if (methInfo.IsFunction)
+            if (methInfo.IsFunction())
             {
                 target.CallAsFunction(methodIdx, argsToPass, out retValue);
             }
@@ -68,7 +69,7 @@ namespace OneScript.StandardLibrary
             return retValue;
         }
 
-        private static IValue[] GetArgsToPass(ArrayImpl arguments, MethodSignature signature)
+        private static IValue[] GetArgsToPass(ArrayImpl arguments, ParameterInfo[] parameters)
         {
             var argsToPass = new List<IValue>();
             if (arguments != null)
@@ -76,15 +77,15 @@ namespace OneScript.StandardLibrary
                 argsToPass.AddRange(arguments);
             }
 
-            if (signature.ArgCount < argsToPass.Count)
+            if (parameters.Length < argsToPass.Count)
                 throw RuntimeException.TooManyArgumentsPassed();
 
             for (int i = 0; i < argsToPass.Count; i++)
             {
-                if (!signature.Params[i].IsByValue)
+                if (parameters[i].IsByRef())
                     argsToPass[i] = Variable.Create(argsToPass[i], $"reflectorArg{i}");
             }
-            while (argsToPass.Count < signature.ArgCount)
+            while (argsToPass.Count < parameters.Length)
             {
                 argsToPass.Add(null);
             }
@@ -132,7 +133,7 @@ namespace OneScript.StandardLibrary
             return annotationsTable;
         }
 
-        private static ValueTable CreateAnnotationTable(AnnotationDefinition[] annotations)
+        private static ValueTable CreateAnnotationTable(BslAnnotationAttribute[] annotations)
         {
             var annotationsTable = EmptyAnnotationsTable();
             var annotationNameColumn = annotationsTable.Columns.FindColumnByName("Имя");
@@ -145,7 +146,7 @@ namespace OneScript.StandardLibrary
                 {
                     annotationRow.Set(annotationNameColumn, ValueFactory.Create(annotation.Name));
                 }
-                if (annotation.ParamCount != 0)
+                if (annotation.Parameters.Any())
                 {
                     var parametersTable = new ValueTable();
                     var parameterNameColumn = parametersTable.Columns.Add("Имя");
@@ -160,7 +161,7 @@ namespace OneScript.StandardLibrary
                         {
                             parameterRow.Set(parameterNameColumn, ValueFactory.Create(annotationParameter.Name));
                         }
-                        parameterRow.Set(parameterValueColumn, annotationParameter.RuntimeValue);
+                        parameterRow.Set(parameterValueColumn, annotationParameter.Value);
                     }
                 }
             }
@@ -224,7 +225,7 @@ namespace OneScript.StandardLibrary
         {
             var clrType = GetReflectableClrType(type);
             var clrMethods = clrType.GetMethods(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);
-            FillMethodsTable(result, ConvertToOsMethods(clrMethods));
+            FillMethodsTable(result, clrMethods.Select(x=>new Contexts.ContextMethodInfo(x)));
         }
 
         private static IEnumerable<MethodSignature> ConvertToOsMethods(IEnumerable<System.Reflection.MethodInfo> source)
@@ -311,7 +312,7 @@ namespace OneScript.StandardLibrary
 
         }
 
-        private static void FillMethodsTable(ValueTable result, IEnumerable<MethodSignature> methods)
+        private static void FillMethodsTable(ValueTable result, IEnumerable<BslMethodInfo> methods)
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var countColumn = result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
@@ -322,14 +323,16 @@ namespace OneScript.StandardLibrary
 
             foreach (var methInfo in methods)
             {
+                var annotations = methInfo.GetAnnotations();
+                var parameters = methInfo.GetParameters();
                 
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(methInfo.Name));
-                new_row.Set(countColumn, ValueFactory.Create(methInfo.ArgCount));
-                new_row.Set(isFunctionColumn, ValueFactory.Create(methInfo.IsFunction));
-                new_row.Set(isExportlColumn, ValueFactory.Create(methInfo.IsExport));
+                new_row.Set(countColumn, ValueFactory.Create(parameters.Length));
+                new_row.Set(isFunctionColumn, ValueFactory.Create(methInfo.IsFunction()));
+                new_row.Set(isExportlColumn, ValueFactory.Create(methInfo.IsPublic));
 
-                new_row.Set(annotationsColumn, methInfo.AnnotationsCount != 0 ? CreateAnnotationTable(methInfo.Annotations) : EmptyAnnotationsTable());
+                new_row.Set(annotationsColumn, CreateAnnotationTable(annotations));
 
                 var paramTable = new ValueTable();
                 var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
@@ -339,17 +342,17 @@ namespace OneScript.StandardLibrary
                 
                 new_row.Set(paramsColumn, paramTable);
 
-                if (methInfo.ArgCount != 0)
+                if (parameters.Length != 0)
                 {
                     var index = 0;
-                    foreach (var param in methInfo.Params)
+                    foreach (var param in parameters)
                     {
                         var name = string.Format("param{0}", ++index);
                         var paramRow = paramTable.Add();
                         paramRow.Set(paramNameColumn, ValueFactory.Create(name));
-                        paramRow.Set(paramByValue, ValueFactory.Create(param.IsByValue));
+                        paramRow.Set(paramByValue, ValueFactory.Create(!param.IsByRef()));
                         paramRow.Set(paramHasDefaultValue, ValueFactory.Create(param.HasDefaultValue));
-                        paramRow.Set(paramAnnotationsColumn, param.AnnotationsCount != 0 ? CreateAnnotationTable(param.Annotations) : EmptyAnnotationsTable());
+                        paramRow.Set(paramAnnotationsColumn, CreateAnnotationTable(param.GetAnnotations()));
                     }
                 }
             }
@@ -425,7 +428,17 @@ namespace OneScript.StandardLibrary
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(propInfo.Identifier));
 
-                new_row.Set(annotationsColumn, propInfo.AnnotationsCount != 0 ? CreateAnnotationTable(propInfo.Annotations) : EmptyAnnotationsTable());
+                new_row.Set(annotationsColumn, propInfo.AnnotationsCount != 0 ? CreateAnnotationTable(propInfo.Annotations
+                    .Select(x =>
+                    {
+                        var a = new BslAnnotationAttribute(x.Name);
+                        if (x.ParamCount > 0)
+                        {
+                            a.SetParameters(x.Parameters.Select(y => new BslAnnotationParameter(y.Name, (BslPrimitiveValue)y.RuntimeValue)));
+                        }
+
+                        return a;
+                    }).ToArray()) : EmptyAnnotationsTable());
             }
         }
 

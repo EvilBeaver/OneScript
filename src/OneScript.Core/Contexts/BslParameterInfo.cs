@@ -49,6 +49,8 @@ namespace OneScript.Contexts
         public override bool HasDefaultValue => DefaultValue != null;
         
         public virtual bool ExplicitByVal { get; protected set; }
+
+        public int ConstantValueIndex { get; set; } = -1;
         
         void IBuildableMember.SetDeclaringType(Type type)
         {

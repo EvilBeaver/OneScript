@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -18,6 +19,7 @@ namespace OneScript.StandardLibrary.Collections
     public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<KeyAndValueImpl>, IDebugPresentationAcceptor
     {
         private readonly List<IValue> _values = new List<IValue>();
+        private static readonly ContextMethodsMapper<StructureImpl> _methods = new ContextMethodsMapper<StructureImpl>();
         
         public StructureImpl()
         {
@@ -137,6 +139,11 @@ namespace OneScript.StandardLibrary.Collections
             return _methods.GetMethodSignature(methodNumber);
         }
 
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        {
+            return _methods.GetRuntimeMethod(methodNumber);
+        }
+
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             var binding = _methods.GetCallableDelegate(methodNumber);
@@ -221,8 +228,6 @@ namespace OneScript.StandardLibrary.Collections
         }
 
         #endregion 
-
-        private static readonly ContextMethodsMapper<StructureImpl> _methods = new ContextMethodsMapper<StructureImpl>();
 
         [ScriptConstructor]
         public static StructureImpl Constructor()

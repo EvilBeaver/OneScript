@@ -32,7 +32,7 @@ namespace ScriptEngine.Machine
 
             foreach (var item in Instance.GetMethods())
             {
-                Symbols.DefineMethod(item);
+                Symbols.DefineMethod(item.MakeSignature());
             }
         }
 

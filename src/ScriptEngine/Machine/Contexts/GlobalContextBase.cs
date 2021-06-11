@@ -127,7 +127,9 @@ namespace ScriptEngine.Machine.Contexts
                 .Select(x => Variable.CreateContextPropertyReference(this, x.Index, x.Identifier))
                 .ToArray();
 
-            methods = RCIHelperExtensions.GetMethods(this).ToArray();
+            methods = RCIHelperExtensions.GetMethods(this)
+                .Select(x => x.MakeSignature())
+                .ToArray();
         }
         
         public virtual int GetMethodsCount()

@@ -22,6 +22,7 @@ namespace OneScript.Contexts
         public BslMethodInfoFactory(Func<TMethodInfo> methodFactory, Func<BslParameterInfo> paramFactory)
         {
             _factory = methodFactory;
+            _parameterFactory = paramFactory;
         }
 
         public BslMethodBuilder<TMethodInfo> NewMethod() => new BslMethodBuilder<TMethodInfo>(_factory(), _parameterFactory);

@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using OneScript.Values;
 
-namespace OneScript.Native.Runtime
+namespace OneScript.Contexts
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Parameter)]
     public class BslAnnotationAttribute : Attribute
@@ -40,5 +40,7 @@ namespace OneScript.Native.Runtime
         public string Name { get; }
         
         public BslPrimitiveValue Value { get; }
+
+        public int ConstantValueIndex { get; set; } = -1;
     }
 }

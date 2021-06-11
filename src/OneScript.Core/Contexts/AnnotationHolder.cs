@@ -27,7 +27,7 @@ namespace OneScript.Contexts
 
         public object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
-            return GetCustomAttributes(true).Where(x => x.GetType() == attributeType).ToArray();
+            return GetCustomAttributes(true).Where(x => attributeType.IsAssignableFrom(attributeType)).ToArray();
         }
 
         public bool IsDefined(Type attributeType, bool inherit)

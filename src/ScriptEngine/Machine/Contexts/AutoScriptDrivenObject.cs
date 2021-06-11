@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Commons;
+using OneScript.Contexts;
 using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine.Contexts
@@ -109,9 +110,9 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        protected override MethodSignature GetOwnMethod(int index)
+        protected override BslMethodInfo GetOwnMethod(int index)
         {
-            return _ownMethods.GetMethodSignature(index);
+            return _ownMethods.GetRuntimeMethod(index);
         }
 
         protected override IValue CallOwnFunction(int index, IValue[] arguments)

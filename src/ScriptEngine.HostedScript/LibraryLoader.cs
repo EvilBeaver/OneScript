@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
 
 namespace ScriptEngine.HostedScript
@@ -156,9 +157,9 @@ namespace ScriptEngine.HostedScript
             return _methods.FindMethod(name);
         }
 
-        protected override MethodSignature GetOwnMethod(int index)
+        protected override BslMethodInfo GetOwnMethod(int index)
         {
-            return _methods.GetMethodSignature(index);
+            return _methods.GetRuntimeMethod(index);
         }
 
         protected override void CallOwnProcedure(int index, IValue[] arguments)

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
+using OneScript.Contexts;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -199,7 +200,7 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        protected virtual MethodSignature GetOwnMethod(int index)
+        protected virtual BslMethodInfo GetOwnMethod(int index)
         {
             throw new NotImplementedException();
         }
@@ -244,7 +245,7 @@ namespace ScriptEngine.Machine.Contexts
                 }
                 else
                 {
-                    _attachableMethods[i] = GetOwnMethod(i);
+                    _attachableMethods[i] = GetOwnMethod(i).MakeSignature();
                 }
             }
 
@@ -344,6 +345,18 @@ namespace ScriptEngine.Machine.Contexts
             if (MethodDefinedInScript(methodNumber))
             {
                 return _module.Methods[methodNumber-METHOD_COUNT].Signature;
+            }
+            else
+            {
+                return GetOwnMethod(methodNumber).MakeSignature();
+            }
+        }
+        
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        {
+            if (MethodDefinedInScript(methodNumber))
+            {
+                return _module.Methods[methodNumber-METHOD_COUNT].MethodInfo;
             }
             else
             {

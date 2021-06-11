@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
@@ -19,7 +20,7 @@ namespace OneScript.StandardLibrary.Tasks
     [ContextClass("ФоновоеЗадание", "BackgroundTask")]
     public class BackgroundTask : AutoContext<BackgroundTask>
     {
-        private readonly MethodSignature _method;
+        private readonly BslMethodInfo _method;
         private readonly int _methIndex;
         private Task _workerTask;
         private int _taskId;
@@ -34,7 +35,7 @@ namespace OneScript.StandardLibrary.Tasks
             Identifier = new GuidWrapper();
             
             _methIndex = Target.FindMethod(MethodName);
-            _method = Target.GetMethodInfo(_methIndex);
+            _method = Target.GetRuntimeMethodInfo(_methIndex);
         }
 
         public Task WorkerTask
@@ -95,7 +96,7 @@ namespace OneScript.StandardLibrary.Tasks
             try
             {
                 State = TaskStateEnum.Running;
-                if (_method.IsFunction)
+                if (_method.IsFunction())
                 {
                     Target.CallAsFunction(_methIndex, parameters, out var result);
                     Result = result;

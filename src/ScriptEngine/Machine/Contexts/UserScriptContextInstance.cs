@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -166,7 +168,7 @@ namespace ScriptEngine.Machine.Contexts
             return base.FindOwnProperty(name);
         }
 
-        protected override MethodSignature GetOwnMethod(int index)
+        protected override BslMethodInfo GetOwnMethod(int index)
         {
             Debug.Assert(index == RAIZEEVENT_INDEX);
 
@@ -176,34 +178,25 @@ namespace ScriptEngine.Machine.Contexts
         public static void PrepareCompilation(ICompilerService compiler)
         {
             RegisterSymbols(compiler);
-            GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x));
+            GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x.MakeSignature()));
         }
         
-        private static MethodSignature[] GetOwnMethodsDefinition()
+        private static BslMethodInfo[] GetOwnMethodsDefinition()
         {
-            return new []{
-                new MethodSignature {
-                    Name = RAISEEVENT_RU,
-                    Alias = RAISEEVENT_EN,
-                    IsFunction = false,
-                    IsExport = false,
-                    Annotations = new AnnotationDefinition[0],
-                    Params = new[]
-                    {
-                        new ParameterDefinition
-                        {
-                            Name = "eventName",
-                            HasDefaultValue = false
-                        },
-                        new ParameterDefinition
-                        {
-                            Name = "eventArgs",
-                            HasDefaultValue = true,
-                            DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX
-                        }
-                    }
-                }
-            };
+            var methodBuilder = BslMethodBuilder.Create();
+            methodBuilder.SetNames(RAISEEVENT_RU, RAISEEVENT_EN)
+                .DeclaringType(typeof(UserScriptContextInstance));
+
+            methodBuilder.NewParameter()
+                .Name("eventName")
+                .ParameterType(typeof(string));
+
+            methodBuilder.NewParameter()
+                .Name("eventArgs")
+                .ParameterType(typeof(BslValue[]))
+                .DefaultValue(BslSkippedParameterValue.Instance);
+
+            return new BslMethodInfo[]{methodBuilder.Build()};
         }
 
         protected override void CallOwnProcedure(int index, IValue[] arguments)
