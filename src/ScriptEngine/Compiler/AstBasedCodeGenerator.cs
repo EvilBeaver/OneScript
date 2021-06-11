@@ -12,10 +12,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
 using OneScript.Language;
+using OneScript.Language.Extensions;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using ScriptEngine.Compiler.Extensions;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler

@@ -5,9 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Language;
-
-namespace ScriptEngine.Compiler.Extensions
+namespace OneScript.Language.Extensions
 {
     public static class ExceptionHelperExtensions
     {
