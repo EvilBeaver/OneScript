@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Values;
 using ScriptEngine.Machine.Rcw;
 
@@ -172,9 +173,10 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.IndexOf(md);
         }
 
-        public override MethodSignature GetMethodInfo(int methodNumber)
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
         {
-            return GetMethodDescription(methodNumber);
+            //TODO: Доработать RcwMethodMetadata
+            return BslMethodBuilder.Create().Build();
         }
 
         private MethodSignature GetMethodDescription(int methodNumber)

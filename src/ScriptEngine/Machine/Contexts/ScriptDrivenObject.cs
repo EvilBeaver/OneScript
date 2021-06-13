@@ -340,18 +340,6 @@ namespace ScriptEngine.Machine.Contexts
             
         }
 
-        public override MethodSignature GetMethodInfo(int methodNumber)
-        {
-            if (MethodDefinedInScript(methodNumber))
-            {
-                return _module.Methods[methodNumber-METHOD_COUNT].Signature;
-            }
-            else
-            {
-                return GetOwnMethod(methodNumber).MakeSignature();
-            }
-        }
-        
         public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
         {
             if (MethodDefinedInScript(methodNumber))

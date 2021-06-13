@@ -31,9 +31,7 @@ namespace ScriptEngine.Machine
 
         int FindMethod(string name);
         int GetMethodsCount();
-        
-        [Obsolete]
-        MethodSignature GetMethodInfo(int methodNumber);
+
         BslMethodInfo GetRuntimeMethodInfo(int methodNumber);
         
         [Obsolete]

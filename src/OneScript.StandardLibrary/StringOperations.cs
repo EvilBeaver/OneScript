@@ -268,14 +268,6 @@ namespace OneScript.StandardLibrary
             return method.Build();
         }
 
-        public override MethodSignature GetMethodInfo(int methodNumber)
-        {
-            if (methodNumber == STRTEMPLATE_ID)
-                return CreateStrTemplateMethodInfo();
-            else
-                return base.GetMethodInfo(methodNumber);
-        }
-        
         public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
         {
             if (methodNumber == STRTEMPLATE_ID)
