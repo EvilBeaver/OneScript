@@ -98,7 +98,7 @@ namespace oscript
 		public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
 		{
 			variables = new IVariable[0];
-			methods = this.GetMethods().ToArray();
+			methods = this.GetMethods().Select(x=>x.MakeSignature()).ToArray();
 		}
 
 		#region CGIHost

@@ -32,7 +32,7 @@ if "-1"=="%success%" GOTO success_exit
 echo .
 echo Несколько тестов упали
 echo Неудача.  Красная полоса
-echo    Упавщие тесты:
+echo    Упавшие тесты:
 type %logfile%
 
 if ".%1"=="." pause

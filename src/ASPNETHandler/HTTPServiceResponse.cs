@@ -6,17 +6,14 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library;
 
 /// <summary>
 /// 
@@ -62,23 +59,10 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         int _statusCode = 200;
         string _contentCharset = Encoding.UTF8.WebName;
 
-        System.IO.Stream _bodyStream = new System.IO.MemoryStream();
+        Stream _bodyStream = new MemoryStream();
 
-        public System.IO.Stream BodyStream
-        {
-            get
-            {
-                return _bodyStream;
-            }
-        }
-
-        public string ContentCharset
-        {
-            get
-            {
-                return _contentCharset;
-            }
-        }
+        public Stream BodyStream => _bodyStream;
+        public string ContentCharset => _contentCharset;
 
         public HTTPServiceResponseImpl()
         {
@@ -132,19 +116,19 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         [ContextMethod("ПолучитьИмяФайлаТела", "GetBodyFileName")]
         public IValue GetBodyFileName()
         {
-            if ((_bodyStream as System.IO.FileStream) == null)
+            if ((_bodyStream as FileStream) == null)
                 return ValueFactory.Create();
             else
-                return ValueFactory.Create(((System.IO.FileStream)_bodyStream).Name);
+                return ValueFactory.Create(((FileStream)_bodyStream).Name);
         }
 
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
         public BinaryDataContext ПолучитьТелоКакДвоичныеДанные()
         {
-            if ((_bodyStream as System.IO.MemoryStream) == null)
+            if ((_bodyStream as MemoryStream) == null)
                 return null;
             else
-                return new BinaryDataContext(((System.IO.MemoryStream)_bodyStream).GetBuffer());
+                return new BinaryDataContext(((MemoryStream)_bodyStream).GetBuffer());
         }
 
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
@@ -156,12 +140,13 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
         public IValue GetBodyAsString()
         {
-            if ((_bodyStream as System.IO.MemoryStream) == null)
+            var body = _bodyStream as MemoryStream;
+            if (body == null)
                 return ValueFactory.Create();
             else
             {
                 // Выяснено экспериментальным путем, используется UTF8 (8.3.10.2650)
-                return ValueFactory.Create(System.Text.Encoding.UTF8.GetString(((System.IO.MemoryStream)_bodyStream).GetBuffer()));
+                return ValueFactory.Create(Encoding.UTF8.GetString(body.GetBuffer(), 0, (int)body.Length));
             }
         }
 
@@ -169,16 +154,16 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         public void SetBodyFileName(IValue fileName)
         {
             _contentCharset = Encoding.UTF8.WebName;
-            _bodyStream = new System.IO.FileStream(fileName.AsString(), System.IO.FileMode.Open, System.IO.FileAccess.Read);
+            _bodyStream = new FileStream(fileName.AsString(), FileMode.Open, FileAccess.Read);
         }
 
         [ContextMethod("УстановитьТелоИзДвоичныхДанных", "SetBodyFromBinaryData")]
         public void SetBodyFromBinaryData(BinaryDataContext binaryData)
         {
             _contentCharset = Encoding.UTF8.WebName;
-            _bodyStream = new System.IO.MemoryStream();
+            _bodyStream = new MemoryStream();
             _bodyStream.Write(binaryData.Buffer, 0, binaryData.Buffer.Length);
-            _bodyStream.Seek(0, System.IO.SeekOrigin.Begin);
+            _bodyStream.Seek(0, SeekOrigin.Begin);
         }
 
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
@@ -195,10 +180,10 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
 
             _contentCharset = enc.WebName;
 
-            _bodyStream = new System.IO.MemoryStream();
+            _bodyStream = new MemoryStream();
             byte[] buffer = enc.GetBytes(str);
             _bodyStream.Write(buffer, 0, buffer.Length);
-            _bodyStream.Seek(0, System.IO.SeekOrigin.Begin);
+            _bodyStream.Seek(0, SeekOrigin.Begin);
         }
 
         [ScriptConstructor(Name = "По коду состояния, причине и заголовкам")]
@@ -206,7 +191,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
         {
             var response = new HTTPServiceResponseImpl();
 
-            response._statusCode = System.Convert.ToInt16(statusCode.AsNumber());
+            response._statusCode = Convert.ToInt16(statusCode.AsNumber());
 
             if (reason != null)
                 response._reason = reason.AsString();
