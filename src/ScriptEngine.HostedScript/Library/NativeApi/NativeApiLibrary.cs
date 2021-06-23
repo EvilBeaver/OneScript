@@ -17,7 +17,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// Класс, ассоциированный с экземпляром библиотеки внешних компонент 
     /// Native API и осуществляющий непосредственное создание экземпляра компоненты.
     /// </summary>
-    class NativeApiLibrary : NativeApiKernel
+    class NativeApiLibrary
     {
         private delegate IntPtr GetClassNames();
 
@@ -27,16 +27,19 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public NativeApiLibrary(String filepath, String identifier)
         {
+            if (!File.Exists(filepath))
+                return;
+
             using (var stream = File.OpenRead(filepath))
             {
                 if (NativeApiPackage.IsZip(stream))
                 {
                     _tempfile = Path.GetTempFileName();
                     NativeApiPackage.Extract(stream, _tempfile);
-                    Module = LoadLibrary(_tempfile);
+                    Module = NativeApiKernel.LoadLibrary(_tempfile);
                 }
                 else 
-                    Module = LoadLibrary(filepath);
+                    Module = NativeApiKernel.LoadLibrary(filepath);
             }
             if (Loaded) 
                 RegisterComponents(identifier);
@@ -46,7 +49,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         {
             foreach (var component in _components)
                 component.Dispose();
-            if (Loaded && FreeLibrary(Module))
+            if (Loaded && NativeApiKernel.FreeLibrary(Module))
                 if (!String.IsNullOrEmpty(_tempfile))
                     try { File.Delete(_tempfile); } catch (Exception) { }
         }
@@ -60,7 +63,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         private void RegisterComponents(String identifier)
         {
-            var funcPtr = GetProcAddress(Module, "GetClassNames");
+            var funcPtr = NativeApiKernel.GetProcAddress(Module, "GetClassNames");
             if (funcPtr == IntPtr.Zero) 
                 throw new RuntimeException("В библиотеке внешних компонент не обнаружена функция: GetClassNames()");
             var namesPtr = Marshal.GetDelegateForFunctionPointer<GetClassNames>(funcPtr)();
