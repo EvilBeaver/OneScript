@@ -91,7 +91,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             return GetPropValue(propNum);
         }
 
-        public void SetIndexedValue(IValue index, IValue val)
+        public void SetIndexedValue(IValue index, IValue value)
         {
             var propNum = FindProperty(index.AsString());
             SetPropValue(propNum, value);
