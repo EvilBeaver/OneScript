@@ -81,18 +81,20 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             try { NativeApiProxy.DestroyObject(_object); } catch (Exception) { }
         }
 
-        public bool IsIndexed => false;
+        public bool IsIndexed => true;
 
         public bool DynamicMethodSignatures => false;
 
         public IValue GetIndexedValue(IValue index)
         {
-            throw new NotImplementedException();
+            var propNum = FindProperty(index.AsString());
+            return GetPropValue(propNum);
         }
 
         public void SetIndexedValue(IValue index, IValue val)
         {
-            throw new NotImplementedException();
+            var propNum = FindProperty(index.AsString());
+            SetPropValue(propNum, value);
         }
 
         public int FindProperty(string name)
