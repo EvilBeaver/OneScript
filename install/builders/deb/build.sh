@@ -27,6 +27,7 @@ cp ${BUILDERROOT}settings/dirs $DSTPATH/DEBIAN/
 cat ${BUILDERROOT}settings/control | sed -r "s/VERSION/$VERSION/g" > $DSTPATH/DEBIAN/control
 cp ${BINPATH}*.exe $DSTPATH/usr/share/oscript/bin
 cp ${BINPATH}*.dll $DSTPATH/usr/share/oscript/bin
+cp ${BINPATH}*.so $DSTPATH/usr/share/oscript/bin
 cp ${BUILDERROOT}oscript $DSTPATH/usr/bin
 cp ${BUILDERROOT}oscript-cgi $DSTPATH/usr/bin
 cp ${BUILDERROOT}oscript-opm $DSTPATH/usr/bin
