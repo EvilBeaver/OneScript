@@ -64,15 +64,11 @@ namespace OneScript.StandardLibrary
             return 1;
         }
 
-        public override MethodSignature GetMethodInfo(int methodNumber)
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
         {
-            return new MethodSignature
-            {
-                Name = MethodName_Ru,
-                Alias = MethodName_En,
-                Annotations = new AnnotationDefinition[0],
-                Params = new ParameterDefinition[0]
-            };
+            return BslMethodBuilder.Create()
+                .SetNames(MethodName_Ru, MethodName_En)
+                .Build();
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)

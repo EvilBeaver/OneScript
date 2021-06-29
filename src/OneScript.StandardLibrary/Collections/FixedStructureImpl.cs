@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -57,10 +58,9 @@ namespace OneScript.StandardLibrary.Collections
         	return _structure.FindProperty(name);
         }
 
-
-        public override MethodSignature GetMethodInfo(int methodNumber)
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
         {
-            return _methods.GetMethodSignature(methodNumber);
+            return _methods.GetRuntimeMethod(methodNumber);
         }
 
         public override VariableInfo GetPropertyInfo(int propertyNumber)

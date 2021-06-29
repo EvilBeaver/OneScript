@@ -267,11 +267,6 @@ namespace ScriptEngine.HostedScript.Library
             return _methods.FindMethod(name);
         }
 
-        public MethodSignature GetMethodInfo(int methodNumber)
-        {
-            return _methods.GetMethodSignature(methodNumber);
-        }
-
         public virtual BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
         {
             return _methods.GetRuntimeMethod(methodNumber);

@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Contexts;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -177,9 +178,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         private static readonly ContextMethodsMapper<ValueTableRow> _methods = new ContextMethodsMapper<ValueTableRow>();
 
-        public override MethodSignature GetMethodInfo(int methodNumber)
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
         {
-            return _methods.GetMethodSignature(methodNumber);
+            return _methods.GetRuntimeMethod(methodNumber);
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)

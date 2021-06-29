@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -274,9 +275,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             return GetColumnByIIndex(index);
         }
 
-        public override MethodSignature GetMethodInfo(int methodNumber)
+        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
         {
-            return _methods.GetMethodSignature(methodNumber);
+            return _methods.GetRuntimeMethod(methodNumber);
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)

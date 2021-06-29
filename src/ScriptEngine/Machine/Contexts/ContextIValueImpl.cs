@@ -165,10 +165,6 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw RuntimeException.MethodNotFoundException(name);
         }
-        public virtual MethodSignature GetMethodInfo(int methodNumber)
-        {
-            throw new NotImplementedException();
-        }
         
         public virtual BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
         {
