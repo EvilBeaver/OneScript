@@ -9,6 +9,7 @@ using System.Collections;
 using OneScript.Commons;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -53,6 +54,23 @@ namespace OneScript.StandardLibrary
             get
             {
                 return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Тип операционной системы, на которой выполняется сценарий
+        /// </summary>
+        [ContextProperty("ТипПлатформы", "PlatformType")]
+        public PlatformTypeEnum PlatformType
+        {
+            get
+            {
+                switch (System.Environment.OSVersion.Platform) {
+                    case System.PlatformID.Win32NT: return Is64BitOperatingSystem ? PlatformTypeEnum.Windows_x86_64 : PlatformTypeEnum.Windows_x86;
+                    case System.PlatformID.MacOSX: return Is64BitOperatingSystem ? PlatformTypeEnum.MacOS_x86_64 : PlatformTypeEnum.MacOS_x86;
+                    case System.PlatformID.Unix: return Is64BitOperatingSystem ? PlatformTypeEnum.Linux_x86_64 : PlatformTypeEnum.Linux_x86;
+                    default: return PlatformTypeEnum.Unknown;
+                }
             }
         }
 

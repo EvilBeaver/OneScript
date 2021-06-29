@@ -16,7 +16,7 @@ namespace OneScript.StandardLibrary.NativeApi
     /// Фабрика, осуществляющая регистрацию библиотеки внешних 
     /// компонент Native API и создания экземпляров компонент.
     /// </summary>
-    public class NativeApiFactory : NativeApiKernel
+    class NativeApiFactory
     {
         public static bool Register(string filepath, string identifier, ITypeManager typeManager)
         {
