@@ -49,16 +49,15 @@ namespace OneScript.StandardLibrary.NativeApi
                         stream.Seek(0, 0);
                         using (var reader = XmlReader.Create(stream))
                         {
+                            var thisOs = NativeApiProxy.IsLinux ? "Linux" : "Windows";
+                            var thisArch = System.Environment.Is64BitOperatingSystem ? "x86_64" : "i386";
                             while (reader.ReadToFollowing("component"))
                             {
                                 var attrOs = reader.GetAttribute("os");
                                 var attrArch = reader.GetAttribute("arch");
-                                var thisArch = System.Environment.Is64BitOperatingSystem ? "x86_64" : "i386";
-                                if (string.Equals(attrOs, "Windows", StringComparison.OrdinalIgnoreCase)
-                                    && string.Equals(attrArch, thisArch, StringComparison.OrdinalIgnoreCase))
-                                {
+                                if (string.Equals(attrArch, thisArch, StringComparison.OrdinalIgnoreCase)
+                                    && string.Equals(attrOs, thisOs, StringComparison.OrdinalIgnoreCase))
                                     return reader.GetAttribute("path");
-                                }
                             }
                         }
                     }

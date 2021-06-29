@@ -58,7 +58,6 @@ Name: "docs"; Description: "Документация по свойствам и 
 [Files]              
 Source: "{#ArtifactRoot}\{#Binaries}\oscript.exe"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.HostedScript.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.NativeApi.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.StandardLibrary.dll"; DestDir: "{app}\bin"; Components: main
@@ -67,6 +66,12 @@ Source: "{#ArtifactRoot}\{#Binaries}\OneScript.Language.dll"; DestDir: "{app}\bi
 Source: "{#ArtifactRoot}\{#Binaries}\DotNetZip.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
+
+#if Suffix == "x64"
+  Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.NativeApi64.dll"; DestDir: "{app}\bin"; Components: main
+#else  
+  Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.NativeApi32.dll"; DestDir: "{app}\bin"; Components: main
+#endif
 
 Source: "{#ArtifactRoot}\examples\*"; DestDir: "{app}\examples"; Components: main
 

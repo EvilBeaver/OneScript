@@ -16,25 +16,45 @@ namespace OneScript.StandardLibrary.NativeApi
     public class NativeApiKernel
     {
         private const string KernelDll = "kernel32.dll";
+        public static bool IsLinux
+        {
+            get => System.Environment.OSVersion.Platform == PlatformID.Unix;
+        }
 
-        [DllImport(KernelDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        protected static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPWStr)] string lpLibFileName);
+        private const String KernelWin = "kernel32.dll";
+        private const String KernelLin = "libdl.so";
 
-        [DllImport(KernelDll, SetLastError = true, ExactSpelling = true, CharSet = CharSet.Ansi)]
-        protected static extern IntPtr GetProcAddress(IntPtr module, string procName);
+        public static IntPtr LoadLibrary(string filename)
+        {
+            return IsLinux ? LinuxLoad(filename, 1) : WindowsLoad(filename);
+        }
 
-        [DllImport(KernelDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        protected static extern bool FreeLibrary(IntPtr module);
+        public static IntPtr GetProcAddress(IntPtr module, string procName)
+        {
+            return IsLinux ? LinuxProc(module, procName) : WindowsProc(module, procName);
+        }
 
-        private const string libdl = "libdl.so";
+        public static bool FreeLibrary(IntPtr module)
+        {
+            return IsLinux ? LinuxFree(module) == 0 : WindowsFree(module);
+        }
 
-        [DllImport(libdl)]
-        protected static extern IntPtr dlopen(string filename, int flags);
+        [DllImport(KernelWin, SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LoadLibrary")]
+        protected static extern IntPtr WindowsLoad(string lpLibFileName);
 
-        [DllImport(libdl)]
-        protected static extern IntPtr dlsym(IntPtr handle, string symbol);
+        [DllImport(KernelWin, SetLastError = true, ExactSpelling = true, CharSet = CharSet.Ansi, EntryPoint = "GetProcAddress")]
+        protected static extern IntPtr WindowsProc(IntPtr module, string procName);
 
-        [DllImport(libdl)]
-        protected static extern IntPtr dlclose(IntPtr handle);
+        [DllImport(KernelWin, SetLastError = true, EntryPoint = "FreeLibrary")]
+        protected static extern bool WindowsFree(IntPtr module);
+
+        [DllImport(KernelLin, EntryPoint = "dlopen")]
+        protected static extern IntPtr LinuxLoad(string filename, int flags);
+
+        [DllImport(KernelLin, EntryPoint = "dlsym")]
+        protected static extern IntPtr LinuxProc(IntPtr handle, string symbol);
+
+        [DllImport(KernelLin, EntryPoint = "dlclose")]
+        protected static extern int LinuxFree(IntPtr handle);
     }
 }

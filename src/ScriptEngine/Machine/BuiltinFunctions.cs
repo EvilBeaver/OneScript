@@ -78,6 +78,7 @@ namespace ScriptEngine.Machine
             AddFunc(OperationCode.Hour,         MANDATORY_BYVAL);
             AddFunc(OperationCode.Minute,       MANDATORY_BYVAL);
             AddFunc(OperationCode.Second,       MANDATORY_BYVAL);
+            AddFunc(OperationCode.BegOfWeek,    MANDATORY_BYVAL);
             AddFunc(OperationCode.BegOfYear,    MANDATORY_BYVAL);
             AddFunc(OperationCode.BegOfMonth,   MANDATORY_BYVAL);
             AddFunc(OperationCode.BegOfDay,     MANDATORY_BYVAL);
@@ -90,6 +91,7 @@ namespace ScriptEngine.Machine
             AddFunc(OperationCode.EndOfHour,    MANDATORY_BYVAL);
             AddFunc(OperationCode.EndOfMinute,  MANDATORY_BYVAL);
             AddFunc(OperationCode.EndOfQuarter, MANDATORY_BYVAL);
+            AddFunc(OperationCode.EndOfWeek,    MANDATORY_BYVAL);
             AddFunc(OperationCode.WeekOfYear,   MANDATORY_BYVAL);
             AddFunc(OperationCode.DayOfYear,    MANDATORY_BYVAL);
             AddFunc(OperationCode.DayOfWeek,    MANDATORY_BYVAL);

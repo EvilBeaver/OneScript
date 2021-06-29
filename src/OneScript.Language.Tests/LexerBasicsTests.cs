@@ -127,6 +127,7 @@ namespace OneScript.Language.Tests
             Assert.True(LanguageDef.IsBuiltInFunction(Token.Hour));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.Minute));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.Second));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.BegOfWeek));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.BegOfYear));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.BegOfMonth));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.BegOfDay));
@@ -139,6 +140,7 @@ namespace OneScript.Language.Tests
             Assert.True(LanguageDef.IsBuiltInFunction(Token.EndOfHour));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.EndOfMinute));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.EndOfQuarter));
+            Assert.True(LanguageDef.IsBuiltInFunction(Token.EndOfWeek));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.WeekOfYear));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.DayOfYear));
             Assert.True(LanguageDef.IsBuiltInFunction(Token.DayOfWeek));
@@ -272,6 +274,7 @@ namespace OneScript.Language.Tests
             Assert.Equal(Token.Hour, LanguageDef.GetToken("час"));
             Assert.Equal(Token.Minute, LanguageDef.GetToken("минута"));
             Assert.Equal(Token.Second, LanguageDef.GetToken("секунда"));
+            Assert.Equal(Token.BegOfWeek, LanguageDef.GetToken("началонедели"));
             Assert.Equal(Token.BegOfYear, LanguageDef.GetToken("началогода"));
             Assert.Equal(Token.BegOfMonth, LanguageDef.GetToken("началомесяца"));
             Assert.Equal(Token.BegOfDay, LanguageDef.GetToken("началодня"));
@@ -284,6 +287,7 @@ namespace OneScript.Language.Tests
             Assert.Equal(Token.EndOfHour, LanguageDef.GetToken("конецчаса"));
             Assert.Equal(Token.EndOfMinute, LanguageDef.GetToken("конецминуты"));
             Assert.Equal(Token.EndOfQuarter, LanguageDef.GetToken("конецквартала"));
+            Assert.Equal(Token.EndOfWeek, LanguageDef.GetToken("конецнедели"));
             Assert.Equal(Token.WeekOfYear, LanguageDef.GetToken("неделягода"));
             Assert.Equal(Token.DayOfYear, LanguageDef.GetToken("деньгода"));
             Assert.Equal(Token.DayOfWeek, LanguageDef.GetToken("деньнедели"));

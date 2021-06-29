@@ -175,6 +175,7 @@ namespace OneScript.Language
             AddToken(Token.Hour, "час", "hour");
             AddToken(Token.Minute, "минута", "minute");
             AddToken(Token.Second, "секунда", "second");
+            AddToken(Token.BegOfWeek, "началонедели", "begofweek");
             AddToken(Token.BegOfYear, "началогода", "begofyear");
             AddToken(Token.BegOfMonth, "началомесяца", "begofmonth");
             AddToken(Token.BegOfDay, "началодня", "begofday");
@@ -187,6 +188,7 @@ namespace OneScript.Language
             AddToken(Token.EndOfHour, "конецчаса", "endofhour");
             AddToken(Token.EndOfMinute, "конецминуты", "endofminute");
             AddToken(Token.EndOfQuarter, "конецквартала", "endofquarter");
+            AddToken(Token.EndOfWeek, "конецнедели", "endofweek");
             AddToken(Token.WeekOfYear, "неделягода", "weekofyear");
             AddToken(Token.DayOfYear, "деньгода", "dayofyear");
             AddToken(Token.DayOfWeek, "деньнедели", "dayofweek");

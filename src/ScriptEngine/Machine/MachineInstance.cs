@@ -737,12 +737,14 @@ namespace ScriptEngine.Machine
                 Hour,
                 Minute,
                 Second,
+                BegOfWeek,
                 BegOfYear,
                 BegOfMonth,
                 BegOfDay,
                 BegOfHour,
                 BegOfMinute,
                 BegOfQuarter,
+                EndOfWeek,
                 EndOfYear,
                 EndOfMonth,
                 EndOfDay,
@@ -751,7 +753,7 @@ namespace ScriptEngine.Machine
                 EndOfQuarter,
                 WeekOfYear,
                 DayOfYear,
-                this.DayOfWeek,
+                DayOfWeek,
                 AddMonth,
                 CurrentDate,
                 Integer,
@@ -2127,6 +2129,27 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private DateTime DropTimeFraction(in DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, date.Day);
+        }
+        
+        private void BegOfWeek(int arg)
+        {
+            var date = DropTimeFraction(_operationStack.Pop().AsDate());
+            
+            var numDayOfWeek = (int)date.DayOfWeek;
+            if (numDayOfWeek == 0)
+            {
+                numDayOfWeek = 7;
+            }
+
+            var desiredDate = date.AddDays(-(numDayOfWeek - 1));
+            _operationStack.Push(ValueFactory.Create(desiredDate));
+            
+            NextInstruction();
+        }
+        
         private void BegOfYear(int arg)
         {
             var year = _operationStack.Pop().AsDate().Year;
@@ -2259,6 +2282,22 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void EndOfWeek(int arg)
+        {
+            var date = DropTimeFraction(_operationStack.Pop().AsDate());
+            
+            var numDayOfWeek = (int)date.DayOfWeek;
+            if (numDayOfWeek == 0)
+            {
+                numDayOfWeek = 7;
+            }
+
+            var desiredDate = date.AddDays(7 - numDayOfWeek);
+            _operationStack.Push(ValueFactory.Create(new DateTime(desiredDate.Year, desiredDate.Month, desiredDate.Day, 23, 59, 59)));
+            
+            NextInstruction();
+        }
+        
         private void WeekOfYear(int arg)
         {
             var date = _operationStack.Pop().AsDate();
