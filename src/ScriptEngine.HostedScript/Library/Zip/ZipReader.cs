@@ -10,6 +10,7 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.Text;
 using System.IO;
+using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library.Zip
 {
@@ -29,6 +30,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
         public ZipReader(string filename, string password = null)
         {
             Open(filename, password);
+        }
+
+        public ZipReader(GenericStream stream, string password = null)
+        {
+            Open(stream, password);
         }
 
         private void CheckIfOpened()
@@ -51,6 +57,22 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = ChooseEncoding(encoding) });
             _zip.Password = password;
         }
+
+        /// <summary>
+        /// Открывает архив для чтения.
+        /// </summary>
+        /// <param name="stream">Поток, который требуется открыть для чтения.</param>
+        /// <param name="password">Пароль к файлу, если он зашифрован.</param>
+        /// <param name="encoding">Кодировка имен файлов в архиве.</param>
+        [ContextMethod("Открыть", "Open")]
+        public void Open(GenericStream stream, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
+        {
+            ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
+            // fuck non-russian encodings on non-ascii files
+            _zip = ZipFile.Read(stream.GetUnderlyingStream(), new ReadOptions() { Encoding = ChooseEncoding(encoding) });
+            _zip.Password = password;
+        }
+
 
         private Encoding ChooseEncoding(FileNamesEncodingInZipFile encoding)
         {
@@ -141,10 +163,21 @@ namespace ScriptEngine.HostedScript.Library.Zip
             return new ZipReader();
         }
 
-        [ScriptConstructor(Name = "На основании имени файла")]
-        public static ZipReader ConstructByNameAndPassword(IValue filename, IValue password = null)
+        [ScriptConstructor(Name = "На основании имени файла или потока")]
+        public static ZipReader Constructor(IValue dataSource, IValue password = null)
         {
-            return new ZipReader(filename.AsString(), password?.AsString());
+            if (dataSource.DataType == DataType.String)
+            {
+                return new ZipReader(dataSource.AsString(), password?.AsString());
+            } 
+            else if (dataSource is GenericStream)
+            {
+                return new ZipReader((GenericStream)dataSource.AsObject(), password?.AsString());
+            } 
+            else 
+            {
+                throw RuntimeException.InvalidArgumentType("dataSource");
+            }
         }
 
         public void Dispose()
