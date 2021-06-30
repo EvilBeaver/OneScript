@@ -32,7 +32,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             Open(filename, password);
         }
 
-        public ZipReader(GenericStream stream, string password = null)
+        public ZipReader(IStreamWrapper stream, string password = null)
         {
             Open(stream, password);
         }
@@ -65,7 +65,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <param name="password">Пароль к файлу, если он зашифрован.</param>
         /// <param name="encoding">Кодировка имен файлов в архиве.</param>
         [ContextMethod("Открыть", "Open")]
-        public void Open(GenericStream stream, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
+        public void Open(IStreamWrapper stream, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
             ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
             // fuck non-russian encodings on non-ascii files
@@ -172,9 +172,9 @@ namespace ScriptEngine.HostedScript.Library.Zip
             {
                 return new ZipReader(dataSourceRawValue.AsString(), password?.AsString());
             } 
-            else if (dataSourceRawValue is GenericStream)
+            else if (dataSourceRawValue is IStreamWrapper)
             {
-                return new ZipReader((GenericStream)dataSourceRawValue.AsObject(), password?.AsString());
+                return new ZipReader((IStreamWrapper)dataSourceRawValue.AsObject(), password?.AsString());
             } 
             else 
             {
