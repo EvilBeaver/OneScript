@@ -166,13 +166,15 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ScriptConstructor(Name = "На основании имени файла или потока")]
         public static ZipReader Constructor(IValue dataSource, IValue password = null)
         {
-            if (dataSource.GetRawValue().DataType == DataType.String)
+            var dataSourceRawValue = dataSource.GetRawValue();
+
+            if (dataSourceRawValue.DataType == DataType.String)
             {
-                return new ZipReader(dataSource.AsString(), password?.AsString());
+                return new ZipReader(dataSourceRawValue.AsString(), password?.AsString());
             } 
-            else if (dataSource is GenericStream)
+            else if (dataSourceRawValue is GenericStream)
             {
-                return new ZipReader((GenericStream)dataSource.AsObject(), password?.AsString());
+                return new ZipReader((GenericStream)dataSourceRawValue.AsObject(), password?.AsString());
             } 
             else 
             {
