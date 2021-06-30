@@ -86,12 +86,14 @@ namespace ScriptEngine.HostedScript.Library.Hash
         [ContextMethod("Добавить", "Append")]
         public void Append(IValue toAdd, uint count = 0)
         {
-            switch (toAdd.DataType)
+            var toAddRawValue = toAdd.GetRawValue();
+
+            switch (toAddRawValue.DataType)
             {
                 case DataType.String:
-                    AddStream(new MemoryStream(Encoding.UTF8.GetBytes(toAdd.AsString())));
+                    AddStream(new MemoryStream(Encoding.UTF8.GetBytes(toAddRawValue.AsString())));
                     break;
-                case DataType.Object when toAdd is GenericStream stream:
+                case DataType.Object when toAddRawValue is IStreamWrapper stream:
                     var length = Math.Min(count == 0 ? stream.Size() : count, stream.Size() - stream.CurrentPosition());
                     var buffer = (stream.GetUnderlyingStream() as MemoryStream)?.GetBuffer();
                     if (buffer == null)
@@ -99,11 +101,11 @@ namespace ScriptEngine.HostedScript.Library.Hash
                     AddStream(new MemoryStream(buffer, (int) stream.CurrentPosition(), (int) length));
                     stream.Seek((int) length, StreamPositionEnum.Current);
                     break;
-                case DataType.Object when toAdd is BinaryDataContext binaryData:
+                case DataType.Object when toAddRawValue is BinaryDataContext binaryData:
                     AddStream(new MemoryStream(binaryData.Buffer));
                     break;
                 default:
-                    throw RuntimeException.InvalidArgumentType();
+                    throw RuntimeException.InvalidArgumentType(nameof(toAdd));
             }
         }
 

@@ -14,8 +14,12 @@ namespace ScriptEngine.HostedScript.Library.Binary
     public interface IStreamWrapper
     {
         Stream GetUnderlyingStream();
-
+        long Size();
+        long CurrentPosition();
+        long Seek(int offset, StreamPositionEnum initialPosition = StreamPositionEnum.Begin);
+        
         bool IsReadOnly { get; }
+
     }
     
     /// <summary>
