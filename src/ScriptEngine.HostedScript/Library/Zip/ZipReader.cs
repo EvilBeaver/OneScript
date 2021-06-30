@@ -166,7 +166,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         [ScriptConstructor(Name = "На основании имени файла или потока")]
         public static ZipReader Constructor(IValue dataSource, IValue password = null)
         {
-            if (dataSource.DataType == DataType.String)
+            if (dataSource.GetRawValue().DataType == DataType.String)
             {
                 return new ZipReader(dataSource.AsString(), password?.AsString());
             } 
@@ -176,7 +176,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             } 
             else 
             {
-                throw RuntimeException.InvalidArgumentType("dataSource");
+                throw RuntimeException.InvalidArgumentType(nameof(dataSource));
             }
         }
 
