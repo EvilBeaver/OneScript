@@ -18,11 +18,6 @@ using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    [AttributeUsage(AttributeTargets.Parameter)]
-    public class ByRefAttribute : Attribute
-    {
-    }
-
     public delegate IValue ContextCallableDelegate<TInstance>(TInstance instance, IValue[] args);
 
     public class ContextMethodsMapper<TInstance>

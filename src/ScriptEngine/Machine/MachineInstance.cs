@@ -1294,10 +1294,10 @@ namespace ScriptEngine.Machine
                     }
                     else if (i < methodParams.Length)
                     {
-                        if (methodParams[i] is BslParameterInfo {ExplicitByVal: true})
-                            argValues[i] = BreakVariableLink(argValue);
-                        else
+                        if (methodParams[i].IsByRef())
                             argValues[i] = argValue;
+                        else
+                            argValues[i] = BreakVariableLink(argValue);
                     }
                 }
 

@@ -16,7 +16,7 @@ namespace OneScript.Contexts
             if (parameter is BslParameterInfo bslParam)
                 return !bslParam.ExplicitByVal;
 
-            return parameter.ParameterType.IsByRef; 
+            return parameter.ParameterType.IsByRef || parameter.IsDefined(typeof(ByRefAttribute)); 
         }
 
         public static bool IsFunction(this MethodInfo method)
