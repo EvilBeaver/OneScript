@@ -1077,7 +1077,12 @@ namespace ScriptEngine.Compiler
             if (param.Value.Type != LexemType.NotALexem)
             {
                 var constDef = CreateConstDefinition(param.Value);
-                result = new BslAnnotationParameter(param.Name, GetConstNumber(constDef));
+                var constNumber = GetConstNumber(constDef);
+                var runtimeValue = (BslPrimitiveValue)ValueFactory.Parse(constDef.Presentation, constDef.Type);
+                result = new BslAnnotationParameter(param.Name, runtimeValue)
+                {
+                    ConstantValueIndex = constNumber
+                };
             }
             else
             {

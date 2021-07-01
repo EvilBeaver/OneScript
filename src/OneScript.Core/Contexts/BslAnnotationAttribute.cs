@@ -37,12 +37,6 @@ namespace OneScript.Contexts
             Value = value;
         }
         
-        public BslAnnotationParameter(string name, int constantValueIndex)
-        {
-            Name = name;
-            ConstantValueIndex = constantValueIndex;
-        }
-        
         public string Name { get; }
         
         public BslPrimitiveValue Value { get; }

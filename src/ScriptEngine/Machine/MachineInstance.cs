@@ -1302,7 +1302,7 @@ namespace ScriptEngine.Machine
                 }
 
             }
-            factArgs = null;
+            
             if (!context.DynamicMethodSignatures)
             {
                 CheckFactArguments(methodParams, signatureCheck);
