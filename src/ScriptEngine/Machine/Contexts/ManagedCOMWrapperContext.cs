@@ -142,7 +142,7 @@ namespace ScriptEngine.Machine.Contexts
             return _nameMapper.FindMethod(Instance, name);
         }
 
-        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             var methodInfo = _nameMapper.GetMethod(methodNumber).Method;
             return new ContextMethodInfo(methodInfo);

@@ -91,7 +91,7 @@ namespace ScriptEngine.Machine.Contexts
             return Methods.FindMethod(name);
         }
 
-        public virtual BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public virtual BslMethodInfo GetMethodInfo(int methodNumber)
         {
             return Methods.GetRuntimeMethod(methodNumber);
         }

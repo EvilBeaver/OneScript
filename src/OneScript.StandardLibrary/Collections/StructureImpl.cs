@@ -134,7 +134,7 @@ namespace OneScript.StandardLibrary.Collections
             return GetPropertyName(propNum);
         }
 
-        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetRuntimeMethod(methodNumber);
         }

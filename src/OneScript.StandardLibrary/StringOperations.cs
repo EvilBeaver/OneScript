@@ -268,12 +268,12 @@ namespace OneScript.StandardLibrary
             return method.Build();
         }
 
-        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             if (methodNumber == STRTEMPLATE_ID)
                 return CreateStrTemplateRuntimeMethodInfo();
             else
-                return base.GetRuntimeMethodInfo(methodNumber);
+                return base.GetMethodInfo(methodNumber);
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)

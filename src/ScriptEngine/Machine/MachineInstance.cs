@@ -1242,7 +1242,7 @@ namespace ScriptEngine.Machine
             IValue[] argValues;
             PrepareContextCallArguments(arg, out context, out methodId, out argValues);
 
-            if (!context.DynamicMethodSignatures && context.GetRuntimeMethodInfo(methodId).ReturnType == typeof(void))
+            if (!context.DynamicMethodSignatures && context.GetMethodInfo(methodId).ReturnType == typeof(void))
             {
                 throw RuntimeException.UseProcAsAFunction();
             }
@@ -1267,7 +1267,7 @@ namespace ScriptEngine.Machine
             context = objIValue.AsObject();
             var methodName = _module.Constants[arg].AsString();
             methodId = context.FindMethod(methodName);
-            var methodInfo = context.GetRuntimeMethodInfo(methodId);
+            var methodInfo = context.GetMethodInfo(methodId);
             var methodParams = methodInfo.GetParameters();
             
             if(context.DynamicMethodSignatures)

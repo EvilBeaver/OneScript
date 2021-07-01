@@ -239,7 +239,7 @@ namespace oscript
 			return _methods.FindMethod(name);
 		}
 		
-		public BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+		public BslMethodInfo GetMethodInfo(int methodNumber)
 		{
 			return _methods.GetRuntimeMethod(methodNumber);
 		}

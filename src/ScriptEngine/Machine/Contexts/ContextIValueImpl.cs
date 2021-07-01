@@ -166,7 +166,7 @@ namespace ScriptEngine.Machine.Contexts
             throw RuntimeException.MethodNotFoundException(name);
         }
         
-        public virtual BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public virtual BslMethodInfo GetMethodInfo(int methodNumber)
         {
             throw new NotImplementedException();
         }
@@ -281,7 +281,7 @@ namespace ScriptEngine.Machine.Contexts
                 return false;
             }
 
-            var parameters = GetRuntimeMethodInfo(methIdx).GetParameters();
+            var parameters = GetMethodInfo(methIdx).GetParameters();
             var valueArgs = new IValue[parameters.Length];
             var passedArgs = args.Select(x => ContextValuesMarshaller.ConvertReturnValue(x, x.GetType())).ToArray();
             for (int i = 0; i < valueArgs.Length; i++)

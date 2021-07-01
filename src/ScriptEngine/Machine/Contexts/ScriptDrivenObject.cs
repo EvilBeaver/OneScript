@@ -340,7 +340,7 @@ namespace ScriptEngine.Machine.Contexts
             
         }
 
-        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             if (MethodDefinedInScript(methodNumber))
             {

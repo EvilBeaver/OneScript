@@ -173,7 +173,7 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.IndexOf(md);
         }
 
-        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             //TODO: Доработать RcwMethodMetadata
             return BslMethodBuilder.Create().Build();

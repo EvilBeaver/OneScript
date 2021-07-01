@@ -60,7 +60,7 @@ namespace ScriptEngine.Machine.Contexts
 
             if (methId > -1)
             {
-                var procInfo = GetRuntimeMethodInfo(GetOwnMethodCount()+methId);
+                var procInfo = GetMethodInfo(GetOwnMethodCount()+methId);
 
                 var parameters = procInfo.GetParameters();
                 int procParamsCount = parameters.Length;
@@ -92,7 +92,7 @@ namespace ScriptEngine.Machine.Contexts
                 _asStringOverride = base.ConvertToString;
             else
             {
-                var signature = GetRuntimeMethodInfo(methId);
+                var signature = GetMethodInfo(methId);
                 if (signature.GetParameters().Length != 2)
                     throw new RuntimeException("Обработчик получения представления должен иметь 2 параметра");
 

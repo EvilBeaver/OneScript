@@ -267,7 +267,7 @@ namespace ScriptEngine.HostedScript.Library
             return _methods.FindMethod(name);
         }
 
-        public virtual BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public virtual BslMethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetRuntimeMethod(methodNumber);
         }

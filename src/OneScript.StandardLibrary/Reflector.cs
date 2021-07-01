@@ -41,7 +41,7 @@ namespace OneScript.StandardLibrary
         public IValue CallMethod(IRuntimeContextInstance target, string methodName, ArrayImpl arguments = null)
         {
             var methodIdx = target.FindMethod(methodName);
-            var methInfo = target.GetRuntimeMethodInfo(methodIdx);
+            var methInfo = target.GetMethodInfo(methodIdx);
 
             var argsToPass = GetArgsToPass(arguments, methInfo.GetParameters());
 

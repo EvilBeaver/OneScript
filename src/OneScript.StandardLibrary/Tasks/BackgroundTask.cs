@@ -35,7 +35,7 @@ namespace OneScript.StandardLibrary.Tasks
             Identifier = new GuidWrapper();
             
             _methIndex = Target.FindMethod(MethodName);
-            _method = Target.GetRuntimeMethodInfo(_methIndex);
+            _method = Target.GetMethodInfo(_methIndex);
         }
 
         public Task WorkerTask

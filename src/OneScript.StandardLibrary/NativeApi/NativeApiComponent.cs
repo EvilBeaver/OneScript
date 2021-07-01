@@ -181,7 +181,7 @@ namespace OneScript.StandardLibrary.NativeApi
             return methodNumber;
         }
 
-        public BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public BslMethodInfo GetMethodInfo(int methodNumber)
         {
             var method = BslMethodBuilder.Create();
             if (methodNumber < 0)

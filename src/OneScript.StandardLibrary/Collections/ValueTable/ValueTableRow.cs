@@ -178,7 +178,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         private static readonly ContextMethodsMapper<ValueTableRow> _methods = new ContextMethodsMapper<ValueTableRow>();
 
-        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetRuntimeMethod(methodNumber);
         }

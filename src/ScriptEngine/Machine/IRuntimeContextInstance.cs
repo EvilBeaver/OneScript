@@ -32,7 +32,7 @@ namespace ScriptEngine.Machine
         int FindMethod(string name);
         int GetMethodsCount();
 
-        BslMethodInfo GetRuntimeMethodInfo(int methodNumber);
+        BslMethodInfo GetMethodInfo(int methodNumber);
         
         [Obsolete]
         VariableInfo GetPropertyInfo(int propertyNumber);
@@ -48,7 +48,7 @@ namespace ScriptEngine.Machine
             var methods = new BslMethodInfo[context.GetMethodsCount()];
             for (int i = 0; i < methods.Length; i++)
             {
-                methods[i] = context.GetRuntimeMethodInfo(i);
+                methods[i] = context.GetMethodInfo(i);
             }
 
             return methods;

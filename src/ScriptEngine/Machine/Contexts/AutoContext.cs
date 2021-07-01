@@ -88,7 +88,7 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.Count;
         }
 
-        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetRuntimeMethod(methodNumber);
         }

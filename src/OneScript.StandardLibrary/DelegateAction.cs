@@ -64,7 +64,7 @@ namespace OneScript.StandardLibrary
             return 1;
         }
 
-        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             return BslMethodBuilder.Create()
                 .SetNames(MethodName_Ru, MethodName_En)

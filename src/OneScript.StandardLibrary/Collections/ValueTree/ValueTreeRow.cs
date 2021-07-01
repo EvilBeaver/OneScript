@@ -247,7 +247,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             return propIndex - _properties.Count;
         }
 
-        public override BslMethodInfo GetRuntimeMethodInfo(int methodNumber)
+        public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetRuntimeMethod(methodNumber);
         }
