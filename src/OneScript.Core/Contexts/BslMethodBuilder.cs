@@ -74,6 +74,12 @@ namespace OneScript.Contexts
             _member.SetExportFlag(exportFlag);
             return this;
         }
+
+        public BslMethodBuilder<T> SetAnnotations(IEnumerable<object> annotations)
+        {
+            _member.SetAnnotations(annotations);
+            return this;
+        }
         
         public BslParameterBuilder NewParameter()
         {

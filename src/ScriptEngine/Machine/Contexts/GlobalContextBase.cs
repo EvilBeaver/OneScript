@@ -117,12 +117,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
         {
-            variables = RCIHelperExtensions.GetProperties(this)
+            variables = RciHelperExtensions.GetProperties(this)
                 .OrderBy(x => x.Index)
                 .Select(x => Variable.CreateContextPropertyReference(this, x.Index, x.Identifier))
                 .ToArray();
 
-            methods = RCIHelperExtensions.GetMethods(this)
+            methods = RciHelperExtensions.GetMethods(this)
                 .Select(x => x.MakeSignature())
                 .ToArray();
         }

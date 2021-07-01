@@ -16,8 +16,6 @@ using ScriptEngine.Machine;
 namespace ScriptEngine.Compiler
 {
     class Compiler    {
-        public const string BODY_METHOD_NAME = "$entry";
-
         private const int DUMMY_ADDRESS = -1;
         private static readonly Dictionary<Token, OperationCode> _tokenToOpCode;
 
@@ -395,7 +393,7 @@ namespace ScriptEngine.Compiler
             if (entry != _module.Code.Count)
             {
                 var bodyMethod = new MethodSignature();
-                bodyMethod.Name = BODY_METHOD_NAME;
+                bodyMethod.Name = ModuleImage.BODY_METHOD_NAME;
                 var descriptor = new MethodDescriptor();
                 descriptor.EntryPoint = entry;
                 descriptor.Signature = bodyMethod;

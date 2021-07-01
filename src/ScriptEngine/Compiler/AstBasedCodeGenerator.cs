@@ -11,11 +11,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Language.Extensions;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using OneScript.Values;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
@@ -152,7 +154,7 @@ namespace ScriptEngine.Compiler
         protected override void VisitModuleVariable(VariableDefinitionNode varNode)
         {
             var symbolicName = varNode.Name;
-            var annotations = GetAnnotations(varNode);
+            var annotations = _GetAnnotations(varNode);
             var definition = _ctx.DefineVariable(symbolicName);
             _module.VariableRefs.Add(definition);
             _module.Variables.Add(new VariableInfo
@@ -198,11 +200,20 @@ namespace ScriptEngine.Compiler
 
             if (entry != _module.Code.Count)
             {
-                var bodyMethod = new MethodSignature();
-                bodyMethod.Name = ModuleImage.BODY_METHOD_NAME;
-                var descriptor = new MethodDescriptor();
-                descriptor.EntryPoint = entry;
-                descriptor.Signature = bodyMethod;
+                var bodyMethod = new MethodSignature
+                {
+                    Name = ModuleImage.BODY_METHOD_NAME
+                };
+
+                var descriptor = new MethodDescriptor
+                {
+                    EntryPoint = entry,
+                    Signature = bodyMethod,
+                    MethodInfo = BslMethodBuilder
+                        .Create()
+                        .Name(bodyMethod.Name)
+                        .Build()
+                };
                 FillVariablesFrame(ref descriptor, localCtx);
 
                 var entryRefNumber = _module.MethodRefs.Count;
@@ -226,19 +237,19 @@ namespace ScriptEngine.Compiler
                 descriptor.Variables.Add(localCtx.GetVariable(i));
             }
         }
-        
+
         protected override void VisitMethod(MethodNode methodNode)
         {
             var signature = methodNode.Signature;
-            
-            MethodSignature method = new MethodSignature();
-            method.Name = signature.MethodName;
-            method.IsFunction = signature.IsFunction;
-            method.Annotations = GetAnnotations(methodNode);
-            method.IsExport = signature.IsExported;
+            var methodBuilder = BslMethodBuilder.Create();
+
+            methodBuilder.Name(signature.MethodName)
+                .ReturnType(signature.IsFunction ? typeof(BslValue) : typeof(void))
+                .IsExported(signature.IsExported)
+                .SetAnnotations(GetAnnotationAttributes(methodNode));
             
             var methodCtx = new SymbolScope();
-            var paramsList = new List<ParameterDefinition>();
+            
             foreach (var paramNode in signature.GetParameters())
             {
                 int defValueIndex = AstBasedCodeGenerator.DUMMY_ADDRESS;
@@ -247,20 +258,16 @@ namespace ScriptEngine.Compiler
                     var constDef = CreateConstDefinition(paramNode.DefaultValue);
                     defValueIndex = GetConstNumber(constDef);
                 }
+
+                methodBuilder.NewParameter()
+                    .Name(paramNode.Name)
+                    .ByValue(paramNode.IsByValue)
+                    .CompileTimeBslConstant(defValueIndex)
+                    .SetAnnotations(GetAnnotationAttributes(paramNode));
                 
-                var p = new ParameterDefinition
-                {
-                    Annotations = GetAnnotations(paramNode),
-                    Name = paramNode.Name,
-                    IsByValue = paramNode.IsByValue,
-                    HasDefaultValue = paramNode.HasDefaultValue,
-                    DefaultValueIndex = defValueIndex
-                };
-                paramsList.Add(p);
-                methodCtx.DefineVariable(p.Name);
+                methodCtx.DefineVariable(paramNode.Name);
             }
-            method.Params = paramsList.ToArray();
-            
+
             _ctx.PushScope(methodCtx);
             var entryPoint = _module.Code.Count;
             try
@@ -271,16 +278,19 @@ namespace ScriptEngine.Compiler
             {
                 _ctx.PopScope();
             }
+
+            var methodInfo = methodBuilder.Build();
             
             var descriptor = new MethodDescriptor();
             descriptor.EntryPoint = entryPoint;
-            descriptor.Signature = method;
+            descriptor.Signature = methodInfo.MakeSignature();
+            descriptor.MethodInfo = methodInfo;
             FillVariablesFrame(ref descriptor, methodCtx);
 
             SymbolBinding binding;
             try
             {
-                binding = _ctx.DefineMethod(method);
+                binding = _ctx.DefineMethod(descriptor.Signature);
             }
             catch (CompilerException)
             {
@@ -297,11 +307,10 @@ namespace ScriptEngine.Compiler
             {
                 _module.ExportedMethods.Add(new ExportedSymbol()
                 {
-                    SymbolicName = method.Name,
+                    SymbolicName = methodInfo.Name,
                     Index = binding.CodeIndex
                 });
             }
-
         }
 
         protected override void VisitMethodBody(MethodNode methodNode)
@@ -1042,7 +1051,44 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.PushConst, num);
         }
 
-        private AnnotationDefinition[] GetAnnotations(AnnotatableNode parent)
+        private IEnumerable<object> GetAnnotationAttributes(AnnotatableNode node)
+        {
+            var mappedAnnotations = new List<object>();
+            foreach (var annotation in node.Annotations)
+            {
+                var anno = new BslAnnotationAttribute(annotation.Name);
+                anno.SetParameters(GetAnnotationAtrParameters(annotation));
+                mappedAnnotations.Add(anno);
+            }
+
+            return mappedAnnotations;
+        }
+        
+        private IEnumerable<BslAnnotationParameter> GetAnnotationAtrParameters(AnnotationNode node)
+        {
+            return node.Children.Cast<AnnotationParameterNode>()
+                .Select(MakeAnnotationParameter)
+                .ToList();
+        }
+
+        private BslAnnotationParameter MakeAnnotationParameter(AnnotationParameterNode param)
+        {
+            BslAnnotationParameter result;
+            if (param.Value.Type != LexemType.NotALexem)
+            {
+                var constDef = CreateConstDefinition(param.Value);
+                result = new BslAnnotationParameter(param.Name, GetConstNumber(constDef));
+            }
+            else
+            {
+                result = new BslAnnotationParameter(param.Name, null);
+            }
+
+            return result;
+        }
+        
+        [Obsolete]
+        private AnnotationDefinition[] _GetAnnotations(AnnotatableNode parent)
         {
             var annotations = new List<AnnotationDefinition>();
             foreach (var node in parent.Annotations)
@@ -1063,11 +1109,8 @@ namespace ScriptEngine.Compiler
             foreach (var param in node.Children.Cast<AnnotationParameterNode>())
             {
                 var paramDef = new AnnotationParameter();
-                if (param.Name != default)
-                {
-                    paramDef.Name = param.Name;
-                }
-
+                paramDef.Name = param.Name;
+                
                 if (param.Value.Type != LexemType.NotALexem)
                 {
                     var constDef = CreateConstDefinition(param.Value);

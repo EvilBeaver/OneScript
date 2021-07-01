@@ -37,6 +37,12 @@ namespace OneScript.Contexts
             _parameter.SetDefaultValue(value);
             return this;
         }
+        
+        public BslParameterBuilder CompileTimeBslConstant(int constant)
+        {
+            _parameter.ConstantValueIndex = constant;
+            return this;
+        }
 
         public BslParameterBuilder SetAnnotations(IEnumerable<object> annotations)
         {

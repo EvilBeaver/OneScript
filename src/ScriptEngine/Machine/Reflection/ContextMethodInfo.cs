@@ -15,12 +15,12 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Reflection
 {
-    public sealed class ContextMethodInfo : System.Reflection.MethodInfo, IObjectWrapper
+    public sealed class _ContextMethodInfo : System.Reflection.MethodInfo, IObjectWrapper
     {
         private readonly System.Reflection.MethodInfo _realMethod;
         private readonly ContextMethodAttribute _scriptMark;
 
-        public ContextMethodInfo(System.Reflection.MethodInfo realMethod)
+        public _ContextMethodInfo(System.Reflection.MethodInfo realMethod)
         {
             _realMethod = realMethod;
             _scriptMark = (ContextMethodAttribute)GetCustomAttributes(typeof(ContextMethodAttribute), false).First();

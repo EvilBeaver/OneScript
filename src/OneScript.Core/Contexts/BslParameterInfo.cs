@@ -46,7 +46,7 @@ namespace OneScript.Contexts
         
         public override object DefaultValue => DefaultValueImpl;
 
-        public override bool HasDefaultValue => DefaultValue != null;
+        public override bool HasDefaultValue => DefaultValue != null || ConstantValueIndex != -1;
         
         public virtual bool ExplicitByVal { get; protected set; }
 

@@ -74,7 +74,7 @@ namespace oscript
 		        new UserAddedScript()
 		        {
 			        Image = entry,
-			        Symbol = "$entry",
+			        Symbol = ModuleImage.BODY_METHOD_NAME,
 			        Type = UserAddedScriptType.Module
 		        }
 	        }.Concat(embeddedContext)
