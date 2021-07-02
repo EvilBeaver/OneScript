@@ -86,24 +86,25 @@ namespace ScriptEngine.HostedScript.Library.Hash
         [ContextMethod("Добавить", "Append")]
         public void Append(IValue toAdd, uint count = 0)
         {
-            switch (toAdd.DataType)
+            var toAddRawValue = toAdd.GetRawValue();
+
+            switch (toAddRawValue.DataType)
             {
                 case DataType.String:
-                    AddStream(new MemoryStream(Encoding.UTF8.GetBytes(toAdd.AsString())));
+                    AddStream(new MemoryStream(Encoding.UTF8.GetBytes(toAddRawValue.AsString())));
                     break;
-                case DataType.Object when toAdd is GenericStream stream:
-                    var length = Math.Min(count == 0 ? stream.Size() : count, stream.Size() - stream.CurrentPosition());
-                    var buffer = (stream.GetUnderlyingStream() as MemoryStream)?.GetBuffer();
-                    if (buffer == null)
-                        throw RuntimeException.InvalidArgumentValue();
-                    AddStream(new MemoryStream(buffer, (int) stream.CurrentPosition(), (int) length));
-                    stream.Seek((int) length, StreamPositionEnum.Current);
+                case DataType.Object when toAddRawValue is IStreamWrapper wrapper:
+                    var stream = wrapper.GetUnderlyingStream();
+                    var readByte = (int)Math.Min(count == 0 ? stream.Length : count, stream.Length - stream.Position);
+                    var buffer = new byte[readByte];
+                    stream.Read(buffer, 0, readByte);
+                    AddStream(new MemoryStream(buffer));
                     break;
-                case DataType.Object when toAdd is BinaryDataContext binaryData:
+                case DataType.Object when toAddRawValue is BinaryDataContext binaryData:
                     AddStream(new MemoryStream(binaryData.Buffer));
                     break;
                 default:
-                    throw RuntimeException.InvalidArgumentType();
+                    throw RuntimeException.InvalidArgumentType(nameof(toAdd));
             }
         }
 
