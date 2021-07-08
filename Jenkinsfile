@@ -22,6 +22,7 @@ pipeline {
                             docker login -p $dockerpassword -u $dockeruser
                             docker push oscript/onescript-builder:deb
                             docker push oscript/onescript-builder:rpm
+                            docker push oscript/onescript-builder:gcc
                             """.stripIndent()
                         }
                     }
