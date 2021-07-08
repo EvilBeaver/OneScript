@@ -1,5 +1,9 @@
 FROM gcc:latest
 
+VOLUME [ "/build/src" ]
+
+WORKDIR /build/src/
+
 RUN ls
 
 RUN apt-get update && \
