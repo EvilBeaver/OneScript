@@ -5,7 +5,7 @@ COPY . /build
 WORKDIR /build
 
 RUN apt-get update && \
-    apt-get install -y cmake libc6-dev && \
+    apt-get install -y cmake libc6-dev libc6-dev-i386 && \
     chmod +x ./build.sh && \
     ./build.sh
 
