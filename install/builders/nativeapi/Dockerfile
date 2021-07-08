@@ -2,14 +2,13 @@ FROM gcc:latest
 
 VOLUME [ "/build/src" ]
 
-ADD ./src /build/src
+COPY ./ /build
 
 WORKDIR /build/src/ScriptEngine.NativeApi
 
 RUN apt-get update && \
     apt-get install -y cmake libc6-dev && \
-    ./build.sh && \
-    rm -rf /var/lib/apt/lists/* 
+    ./build.sh
 
 COPY --from=build /build/src/ScriptEngine.NativeApi/build64/ScriptEngine.NativeApi32.so .
 
