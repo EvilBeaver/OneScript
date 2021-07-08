@@ -1,6 +1,6 @@
 FROM gcc:latest
 
-COPY ./ /build
+COPY ../../../.. /build
 
 WORKDIR /build/
 
