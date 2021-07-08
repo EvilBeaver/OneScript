@@ -1,14 +1,6 @@
 FROM gcc:latest
 
-COPY ../../../.. /build
-
-WORKDIR /build/
-
 RUN ls
-
-WORKDIR /build/src/ScriptEngine.NativeApi
-
-
 
 RUN apt-get update && \
     apt-get install -y cmake libc6-dev && \
