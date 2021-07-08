@@ -8,6 +8,8 @@ WORKDIR /build/src/ScriptEngine.NativeApi
 
 RUN apt-get update && \
     apt-get install -y cmake libc6-dev && \
+    pwd && \
+    ls && \
     ./build.sh
 
 COPY --from=build /build/src/ScriptEngine.NativeApi/build64/ScriptEngine.NativeApi32.so .
