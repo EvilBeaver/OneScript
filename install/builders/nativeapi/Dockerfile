@@ -6,6 +6,7 @@ WORKDIR /build
 
 RUN apt-get update && \
     apt-get install -y cmake libc6-dev && \
+    chmod +x ./build.sh && \
     ./build.sh
 
 COPY --from=build /build/build32/ScriptEngine.NativeApi32.so .
