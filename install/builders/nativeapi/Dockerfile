@@ -1,4 +1,4 @@
-FROM gcc:ubuntu18.4
+FROM ubuntu:18.4
 
 VOLUME [ "/build/src" ]
 
