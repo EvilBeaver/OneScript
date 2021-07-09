@@ -11,4 +11,4 @@ docker build -t oscript/onescript-builder:rpm .
 cd $THISDIR/../src/ScriptEngine.NativeApi
 docker build -t gcc -f $THISDIR/builders/nativeapi/Dockerfile .
 docker run gcc sh ./build.sh
-docker cp gcc:/build/src/ .
+docker container cp gcc:/build/src/ .
