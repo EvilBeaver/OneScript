@@ -10,5 +10,6 @@ docker build -t oscript/onescript-builder:rpm .
 
 cd $THISDIR/../src/ScriptEngine.NativeApi
 docker build -t oscript/onescript-builder:gcc -f $THISDIR/builders/nativeapi/Dockerfile .
-docker run -v $THISDIR/../src/ScriptEngine.NativeApi:/build/src oscript/onescript-builder:gcc pwd
-docker run -v $THISDIR/../src/ScriptEngine.NativeApi:/build/src oscript/onescript-builder:gcc ls
+docker run -v $(pwd):/build/src oscript/onescript-builder:gcc pwd
+docker run -v $(pwd):/build/src oscript/onescript-builder:gcc sh ls && pwd
+docker run -v $(pwd):/build/src oscript/onescript-builder:gcc sh ./build.sh
