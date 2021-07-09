@@ -8,9 +8,6 @@ add_library(${TARGET} SHARED
 	NativeInterface.cpp
 	NativeInterface.h)
 
-add_executable(DetectUnionOffset 
-	DetectUnionOffset.cpp)
-
 target_compile_definitions(${TARGET} PRIVATE UNICODE _UNICODE)
 target_include_directories(${TARGET} PRIVATE include)
 
