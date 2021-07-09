@@ -1,6 +1,6 @@
 FROM ubuntu:18.04 AS gcc
 
-COPY . /build
+COPY . /build/src
 
 WORKDIR /build/src
 
