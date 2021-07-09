@@ -9,6 +9,6 @@ RUN apt-get update -qq && \
     chmod +x ./build.sh && \
     ./build.sh
 
-COPY --from=build /build/build32/ScriptEngine.NativeApi32.so .
+COPY --from=gcc /build/build32/ScriptEngine.NativeApi32.so .
 
-COPY --from=build /build/build64/ScriptEngine.NativeApi64.so .
+COPY --from=gcc /build/build64/ScriptEngine.NativeApi64.so .
