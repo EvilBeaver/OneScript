@@ -1,5 +1,7 @@
 FROM ubuntu:18.04 AS gcc
 
+COPY . /build
+
 WORKDIR /build/src
 
 RUN apt-get update -qq \
