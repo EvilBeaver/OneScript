@@ -1,4 +1,4 @@
-FROM gcc:latest AS gcc
+FROM ubuntu:16.04 AS gcc
 
 COPY . /build
 
