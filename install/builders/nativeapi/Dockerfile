@@ -11,5 +11,8 @@ RUN apt-get update -qq \
     && ./build.sh
 
 COPY gcc:/build/build32/ScriptEngine.NativeApi32.so .
-
 COPY gcc:/build/build64/ScriptEngine.NativeApi64.so .
+
+COPY gcc:/build/src/ScriptEngine.NativeApi/build32/ScriptEngine.NativeApi32.so .
+COPY gcc:/build/src/ScriptEngine.NativeApi/build64/ScriptEngine.NativeApi64.so .
+
