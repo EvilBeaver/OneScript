@@ -6,7 +6,7 @@ WORKDIR /build
 
 RUN apt-get update -qq \
     && dpkg --add-architecture i386 \
-    && apt-get install -y -qq cmake gcc-multilib g++-multilib \
+    && apt-get install -y -qq cmake uuid-dev uuid-dev:i386 gcc-multilib g++-multilib \
     && chmod +x ./build.sh \
     && ./build.sh
 
