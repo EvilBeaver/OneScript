@@ -8,6 +8,4 @@ RUN apt-get update -qq \
     && dpkg --add-architecture i386 \
     && apt-get install -y -qq build-essential cmake uuid-dev libc6-dev gcc-multilib g++-multilib \
     && chmod +x ./build.sh \
-    && ./build.sh \
-    && docker cp gcc:/build/build32/ScriptEngine.NativeApi32.so . \
-    && docker cp gcc:/build/build64/ScriptEngine.NativeApi64.so .
+    && ./build.sh
