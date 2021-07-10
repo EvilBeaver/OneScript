@@ -26,7 +26,7 @@ pipeline {
                             """.stripIndent()
                         }
                         script {
-                            stash includes: 'ScriptEngine.NativeApi??.so', name: 'NativeApiLinux'
+                            stash includes: '/built/ScriptEngine.NativeApi??.so ', name: 'NativeApi'
                         }
                     }
                 }

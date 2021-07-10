@@ -1,8 +1,8 @@
 FROM ubuntu:18.04
 
-COPY . /src
+COPY . /built
 
-WORKDIR /src
+WORKDIR /built
 
 RUN apt-get update -qq \
     && dpkg --add-architecture i386 \

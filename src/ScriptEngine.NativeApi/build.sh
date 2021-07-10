@@ -14,4 +14,5 @@ cmake --build .
 cp *.so ..
 cd ..
 
+pwd
 ls *.so
