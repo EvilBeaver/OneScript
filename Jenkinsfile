@@ -26,8 +26,7 @@ pipeline {
                             """.stripIndent()
                         }
                         script {
-                            stash includes: '/built/*.so ', name: 'builtNativeApi'
-                            stash includes: '/tests/*.so ', name: 'testsNativeApi'
+                            stash includes: '/built/** ', name: 'builtNativeApi'
                         }
                     }
                 }
@@ -124,6 +123,7 @@ pipeline {
                         }
                         
                         unstash 'buildResults'
+                        unstash 'builtNativeApi'
 
                         sh '''\
                         if [ ! -d lintests ]; then
@@ -185,6 +185,7 @@ pipeline {
 
                     steps {
                         unstash 'buildResults'
+                        unstash 'builtNativeApi'
                         sh '/bld/build.sh'
                         archiveArtifacts artifacts: 'out/deb/*', fingerprint: true
                         stash includes: 'out/deb/*', name: 'debian'
@@ -201,6 +202,7 @@ pipeline {
 
                     steps {
                         unstash 'buildResults'
+                        unstash 'builtNativeApi'
                         sh '/bld/build.sh'
                         archiveArtifacts artifacts: 'out/rpm/*', fingerprint: true
                         stash includes: 'out/rpm/*', name: 'redhat'
