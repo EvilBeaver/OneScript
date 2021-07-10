@@ -12,4 +12,4 @@ cd $THISDIR/builders/gcc
 docker build --no-cache -t oscript/onescript-builder:gcc .
 
 cd $THISDIR/../src/ScriptEngine.NativeApi
-docker run -v $(pwd):/src oscript/onescript-builder:gcc
+docker run -v $(pwd):/src oscript/onescript-builder:gcc sh ./build.sh
