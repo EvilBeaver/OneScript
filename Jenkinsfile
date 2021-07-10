@@ -26,7 +26,8 @@ pipeline {
                             """.stripIndent()
                         }
                         script {
-                            stash includes: '/built/ScriptEngine.NativeApi??.so ', name: 'NativeApi'
+                            stash includes: '/built/*.so ', name: 'builtNativeApi'
+                            stash includes: '/tests/*.so ', name: 'testsNativeApi'
                         }
                     }
                 }
