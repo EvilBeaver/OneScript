@@ -12,7 +12,4 @@ cd $THISDIR/builders/gcc
 docker build -t oscript/onescript-builder:gcc .
 
 cd $THISDIR/../src/ScriptEngine.NativeApi
-chmod +x build.sh
-pwd
-ls
 docker run -v $(pwd):/src oscript/onescript-builder:gcc
