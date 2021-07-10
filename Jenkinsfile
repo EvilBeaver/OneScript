@@ -25,6 +25,9 @@ pipeline {
                             docker push oscript/onescript-builder:gcc
                             """.stripIndent()
                         }
+                        script {
+                            stash includes: 'ScriptEngine.NativeApi??.so', name: 'NativeApiLinux'
+                        }
                     }
                 }
 
