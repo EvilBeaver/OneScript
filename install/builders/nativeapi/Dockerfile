@@ -1,5 +1,7 @@
 FROM ubuntu:18.04
 
+COPY . /src
+
 WORKDIR /src
 
 RUN apt-get update -qq \
