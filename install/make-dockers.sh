@@ -10,4 +10,4 @@ docker build -t oscript/onescript-builder:rpm .
 
 cd $THISDIR/../src/ScriptEngine.NativeApi
 docker build --no-cache -t oscript/onescript-builder:gcc -f $THISDIR/builders/nativeapi/Dockerfile .
-docker run --mount type=bind,source=$(pwd),target=/build/src oscript/onescript-builder:gcc
+docker run -v "$(pwd)":/build/src oscript/onescript-builder:gcc
