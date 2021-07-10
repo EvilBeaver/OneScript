@@ -1,8 +1,6 @@
-FROM ubuntu:18.04 AS gcc
+FROM ubuntu:18.04
 
-VOLUME ["/build/src"]
-
-WORKDIR /build/src
+WORKDIR /src
 
 RUN apt-get update -qq \
     && dpkg --add-architecture i386 \
