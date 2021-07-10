@@ -18,4 +18,5 @@ RUN cd / \
     && mkdir built/tests \
     && cp /src/proxy/*.so built/bin \
     && cp /src/tests/*.so built/tests \
-    && ls -lh -R built
+    && ls -lh built/bin/*.so \
+    && ls -lh built/tests/*.so
