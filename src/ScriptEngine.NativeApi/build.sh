@@ -13,6 +13,3 @@ cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=OFF --build 
 cmake --build .
 cp *.so ..
 cd ..
-
-pwd
-ls *.so

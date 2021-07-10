@@ -6,8 +6,8 @@ RUN apt-get update -qq \
 
 WORKDIR /built
 COPY /src/ScriptEngine.NativeApi /built
-RUN chmod +x build.sh && ./build.sh && pwd && ls
+RUN chmod +x build.sh && ./build.sh && pwd && ls *.so
 
 WORKDIR /tests
 COPY /tests/native-api /tests
-RUN chmod +x build.sh && ./build.sh && pwd && ls
+RUN chmod +x build.sh && ./build.sh && pwd && ls *.so
