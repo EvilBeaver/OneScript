@@ -26,7 +26,7 @@ pipeline {
                             """.stripIndent()
                         }
                         script {
-                            stash includes: '/built/** ', name: 'builtNativeApi'
+                            stash includes: 'built/** ', name: 'builtNativeApi'
                         }
                     }
                 }
