@@ -1,6 +1,6 @@
 FROM ubuntu:18.04 AS gcc
 
-COPY . /build/src
+VOLUME ["/build/src"]
 
 WORKDIR /build/src
 
