@@ -9,4 +9,4 @@ cd $THISDIR/builders/rpm
 docker build -t oscript/onescript-builder:rpm .
 
 cd $THISDIR
-docker build --no-cache -t oscript/onescript-builder:gcc -f $THISDIR/builders/nativeapi/Dockerfile ..
+docker build -t oscript/onescript-builder:gcc -f $THISDIR/builders/nativeapi/Dockerfile ..
