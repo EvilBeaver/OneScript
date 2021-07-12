@@ -19,4 +19,6 @@ ENV ARTIFACTS_ROOT built/tmp
 COPY ./ /opt/deb/
 RUN mkdir /bld && cp /opt/deb/build.sh /bld/build.sh && chmod +x /bld/build.sh
 
+RUN mkdir /built && touch /built/deb.empty
+
 
