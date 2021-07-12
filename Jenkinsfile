@@ -25,6 +25,9 @@ pipeline {
                             docker push oscript/onescript-builder:gcc
                             """.stripIndent()
                         }
+                        script {
+                            stash includes: 'built/** ', name: 'builtNativeApi'
+                        }
                     }
                 }
 
@@ -120,6 +123,7 @@ pipeline {
                         }
                         
                         unstash 'buildResults'
+                        unstash 'builtNativeApi'
 
                         sh '''\
                         if [ ! -d lintests ]; then
@@ -181,6 +185,7 @@ pipeline {
 
                     steps {
                         unstash 'buildResults'
+                        unstash 'builtNativeApi'
                         sh '/bld/build.sh'
                         archiveArtifacts artifacts: 'out/deb/*', fingerprint: true
                         stash includes: 'out/deb/*', name: 'debian'
@@ -197,6 +202,7 @@ pipeline {
 
                     steps {
                         unstash 'buildResults'
+                        unstash 'builtNativeApi'
                         sh '/bld/build.sh'
                         archiveArtifacts artifacts: 'out/rpm/*', fingerprint: true
                         stash includes: 'out/rpm/*', name: 'redhat'
