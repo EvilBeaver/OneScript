@@ -44,10 +44,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public void AddAnnotation(AnnotationDefinition annotation)
         {
-            _attributes.Add(new UserAnnotationAttribute(annotation.Name)
-            {
-                Annotation = annotation
-            });
+            _attributes.Add(new UserAnnotationAttribute(annotation));
         }
 
         public void SetDefaultValue(IValue val)

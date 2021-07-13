@@ -18,5 +18,10 @@ namespace ScriptEngine.Machine.Reflection
         public UserAnnotationAttribute(string name) : base(name)
         {
         }
+
+        public UserAnnotationAttribute(AnnotationDefinition annotation) : base(annotation.Name)
+        {
+            Annotation = annotation;
+        }
     }
 }

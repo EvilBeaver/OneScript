@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
+using ScriptEngine.Machine.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -204,6 +205,11 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw new NotImplementedException();
         }
+        
+        protected virtual BslPropertyInfo GetOwnPropertyInfo(int index)
+        {
+            throw new NotImplementedException();
+        }
 
         protected virtual void CallOwnProcedure(int index, IValue[] arguments)
         {
@@ -338,6 +344,23 @@ namespace ScriptEngine.Machine.Contexts
                 SetOwnPropValue(propNum, newVal);
             }
             
+        }
+
+        public override BslPropertyInfo GetPropertyInfo(int propertyNumber)
+        {
+            if (PropDefinedInScript(propertyNumber))
+            {
+                var variable = _module.Variables[propertyNumber];
+                return BslPropertyBuilder.Create()
+                    .Name(variable.Identifier)
+                    .IsExported(_propertySearchCache.ContainsKey(variable.Identifier))
+                    .SetAnnotations(variable.Annotations.Select(x => new UserAnnotationAttribute(x)))
+                    .Build();
+            }
+            else
+            {
+                return GetOwnPropertyInfo(propertyNumber);
+            }
         }
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)

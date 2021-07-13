@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Commons;
+using OneScript.Contexts;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -67,12 +68,24 @@ namespace ScriptEngine.Machine.Contexts
             if (index == THISOBJ_VARIABLE_INDEX)
                 return this;
 
-            throw new InvalidOperationException($"Property {index} should not be accessed through base class");;
+            throw new InvalidOperationException($"Property {index} should not be accessed through base class");
         }
 
         protected override string GetOwnPropName(int index)
         {
             return Locale.NStr($"ru='{THISOBJ_RU}';en='{THISOBJ_EN}'");
+        }
+
+        protected override BslPropertyInfo GetOwnPropertyInfo(int index)
+        {
+            if (index != THISOBJ_VARIABLE_INDEX)
+                throw new InvalidOperationException($"Property {index} should not be accessed through base class");
+
+            return BslPropertyBuilder.Create()
+                .SetNames(THISOBJ_RU, THISOBJ_EN)
+                .DeclaringType(GetType())
+                .SetDispatchingIndex(index)
+                .Build();
         }
 
         protected static void RegisterSymbols(ICompilerService compiler)

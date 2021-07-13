@@ -132,9 +132,9 @@ namespace OneScript.StandardLibrary
                     return collection.Count() != 0;
                 case BslNumericValue v:
                     return v != 0;
-                case BslUndefinedValue v:
+                case BslUndefinedValue _:
                     return false;
-                case BslNullValue v:
+                case BslNullValue _:
                     return false;
                 case BslDateValue v:
                     return !((DateTime)v).Equals(DateTime.MinValue);
